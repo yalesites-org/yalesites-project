@@ -13,9 +13,12 @@ type ModalProps = {
   footer: ReactNode;
   children: ReactNode;
   variant: string | undefined;
+  // Accessible name for the dialog (WCAG 4.1.2). Required for every modal so it
+  // never announces as a bare "dialog".
+  ariaLabel: string;
 };
 
-const Modal = ({ show, close, children, header, footer, variant}: ModalProps) => {
+const Modal = ({ show, close, children, header, footer, variant, ariaLabel}: ModalProps) => {
   const modalRef = useRef<HTMLDivElement>(null);
   const firstFocusableElement = useRef<HTMLElement | null>(null);
   const lastFocusableElement = useRef<HTMLElement | null>(null);
@@ -49,6 +52,18 @@ const Modal = ({ show, close, children, header, footer, variant}: ModalProps) =>
   };
 
   useEffect(() => {
+    // Remember what had focus when this modal opened, so focus returns there on
+    // close (WCAG 2.4.3). Captured before focusing the modal below.
+    const opener = document.activeElement as HTMLElement | null;
+
+    // If another modal is already open beneath this one (the citation overlay
+    // stacks on top of the chat modal), make it inert so only the top dialog is
+    // interactive and announced (WCAG 1.3.1 / 4.1.2). Restored on close.
+    const inertedBelow = (
+      Array.from(document.querySelectorAll('[modal-is-open="true"]')) as HTMLElement[]
+    ).filter((el) => el !== modalRef.current && !el.hasAttribute('inert'));
+    inertedBelow.forEach((el) => el.setAttribute('inert', ''));
+
     modalRef.current?.addEventListener('keydown', handleKeyDown);
 
     // focus the active modal
@@ -56,17 +71,14 @@ const Modal = ({ show, close, children, header, footer, variant}: ModalProps) =>
 
     return () => {
       modalRef.current?.removeEventListener('keydown', handleKeyDown);
+      // Un-inert before restoring focus so the target is focusable again.
+      inertedBelow.forEach((el) => el.removeAttribute('inert'));
+      opener?.focus?.();
     };
   }, []);
 
   const handleClose = () => {
     close();
-
-    // Check if the first modal is still open and focus it
-    const firstModal = document.querySelector('[modal-is-open="true"]');
-    if (firstModal) {
-      (firstModal as HTMLElement).focus();
-    }
   };
 
   return createPortal(
@@ -75,20 +87,20 @@ const Modal = ({ show, close, children, header, footer, variant}: ModalProps) =>
         className={`${variant == 'citation' ? styles.modalContainerCitation : styles.modalContainer} ${show ? "show" : ""}`}
         onClick={() => handleClose()}
       >
-        <section className={styles.modal} onClick={(e) => e.stopPropagation()} aria-modal={"true"} role={"dialog"} modal-is-open={"true"} ref={modalRef} tabIndex={0}>
+        <section className={styles.modal} onClick={(e) => e.stopPropagation()} aria-modal={"true"} role={"dialog"} aria-label={ariaLabel} modal-is-open={"true"} ref={modalRef} tabIndex={0}>
           <motion.div
             className={`${variant == 'citation' ? styles.modalCitation : styles.modalContent}`}
             initial={{ y: 50, opacity: 0, scale: 0.75 }}
             animate={{ y: 0, opacity: 1, scale: 1 }}
             transition={{ type: "spring", duration: 0.35 }}
           >
-            <header className={`${variant == 'citation' ? styles.modalHeaderCitation : styles.modalHeader}`} role={"banner"}>
+            <header className={`${variant == 'citation' ? styles.modalHeaderCitation : styles.modalHeader}`}>
               <Stack horizontal verticalAlign="center" horizontalAlign="space-between" className={styles.modalHeaderContainer}>
                 {header}
                 <Stack horizontal>
                   <div tabIndex={0} className="tabOver"></div>
                   <button className={styles.closeButton} onClick={handleClose} aria-label="Close modal">
-                    <svg width="16" height="16" viewBox="0 0 16 16" xmlns="http://www.w3.org/2000/svg">
+                    <svg width="16" height="16" viewBox="0 0 16 16" xmlns="http://www.w3.org/2000/svg" aria-hidden="true" focusable="false">
                       <path d="M15.1719 2.42188L9.54688 8.04688L15.125 13.625C15.5938 14.0469 15.5938 14.75 15.125 15.1719C14.7031 15.6406 14 15.6406 13.5781 15.1719L7.95312 9.59375L2.375 15.1719C1.95312 15.6406 1.25 15.6406 0.828125 15.1719C0.359375 14.75 0.359375 14.0469 0.828125 13.5781L6.40625 8L0.828125 2.42188C0.359375 2 0.359375 1.29688 0.828125 0.828125C1.25 0.40625 1.95312 0.40625 2.42188 0.828125L8 6.45312L13.5781 0.875C14 0.40625 14.7031 0.40625 15.1719 0.875C15.5938 1.29688 15.5938 2 15.1719 2.42188Z" />
                     </svg>
                   </button>
