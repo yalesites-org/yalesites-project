@@ -28,7 +28,7 @@ third_party_settings:
         url: ''
         external: ''
 id: audio
-label: 'Audio Player'
+label: Audio
 description: 'Used for uploading an Audio file to Drupal.'
 source: audio_file
 queue_thumbnail_downloads: false
