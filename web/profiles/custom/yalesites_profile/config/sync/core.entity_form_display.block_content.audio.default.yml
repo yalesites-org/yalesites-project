@@ -7,61 +7,9 @@ dependencies:
     - field.field.block_content.audio.field_audio_label
     - field.field.block_content.audio.field_media
   module:
-    - field_group
     - hide_revision_field
     - media_library
     - media_library_edit
-third_party_settings:
-  field_group:
-    group_block_tabs:
-      children:
-        - group_content_tab
-        - group_advanced_tab
-      label: 'Block tabs'
-      region: content
-      parent_name: ''
-      weight: 0
-      format_type: tabs
-      format_settings:
-        classes: ''
-        show_empty_fields: false
-        id: ''
-        direction: horizontal
-        width_breakpoint: 640
-    group_content_tab:
-      children:
-        - field_media
-        - field_audio_label
-      label: Content
-      region: content
-      parent_name: group_block_tabs
-      weight: 1
-      format_type: tab
-      format_settings:
-        classes: ''
-        show_empty_fields: false
-        id: ''
-        formatter: closed
-        description: ''
-        required_fields: true
-        open: true
-        weight: -10
-    group_advanced_tab:
-      children:
-        - info
-        - revision_log
-      label: Advanced
-      region: content
-      parent_name: group_block_tabs
-      weight: 3
-      format_type: tab
-      format_settings:
-        classes: ''
-        show_empty_fields: false
-        id: ''
-        formatter: closed
-        description: ''
-        required_fields: false
 id: block_content.audio.default
 targetEntityType: block_content
 bundle: audio
@@ -69,7 +17,7 @@ mode: default
 content:
   field_audio_label:
     type: string_textfield
-    weight: 2
+    weight: 1
     region: content
     settings:
       size: 60
@@ -77,7 +25,7 @@ content:
     third_party_settings: {  }
   field_media:
     type: media_library_widget
-    weight: 1
+    weight: 0
     region: content
     settings:
       media_types: {  }
@@ -86,7 +34,7 @@ content:
         show_edit: '1'
   info:
     type: string_textfield
-    weight: 0
+    weight: 2
     region: content
     settings:
       size: 60
