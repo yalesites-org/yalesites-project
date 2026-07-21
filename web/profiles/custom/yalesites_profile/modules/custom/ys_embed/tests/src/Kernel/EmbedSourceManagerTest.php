@@ -6,6 +6,7 @@ use Drupal\Core\Plugin\DefaultPluginManager;
 use Drupal\KernelTests\KernelTestBase;
 use Drupal\ys_embed\Plugin\EmbedSource\Broken;
 use Drupal\ys_embed\Plugin\EmbedSource\Twitter;
+use Drupal\ys_embed\Plugin\EmbedSourceInterface;
 use Drupal\ys_embed\Plugin\EmbedSourceManager;
 
 /**
@@ -193,6 +194,23 @@ class EmbedSourceManagerTest extends KernelTestBase {
 
     $this->assertInstanceOf(Broken::class, $result);
     $this->assertSame([], $captured);
+  }
+
+  /**
+   * @covers ::loadAll
+   */
+  public function testLoadAllReturnsAnInstanceForEveryActiveSource(): void {
+    $instances = $this->manager->loadAll();
+
+    // loadAll() instantiates every active source and returns them keyed by
+    // plugin id -- not NULL, and not the inactive 'broken' source.
+    $this->assertIsArray($instances);
+    $this->assertEqualsCanonicalizing(
+      array_keys($this->manager->getSources()),
+      array_keys($instances)
+    );
+    $this->assertContainsOnlyInstancesOf(EmbedSourceInterface::class, $instances);
+    $this->assertInstanceOf(Twitter::class, $instances['twitter']);
   }
 
 }

@@ -201,6 +201,15 @@ class ProfileImportService {
         if ($node) {
           $created++;
         }
+        else {
+          $errors[] = $this->t(
+            'Row @row: could not create profile @name.', [
+              // +2 because index starts at 0 and we skip header
+              '@row' => $index + 2,
+              '@name' => $profile_data['display_name'] ?? '',
+            ]
+          );
+        }
       }
       catch (\Exception $e) {
         $errors[] = $this->t(
