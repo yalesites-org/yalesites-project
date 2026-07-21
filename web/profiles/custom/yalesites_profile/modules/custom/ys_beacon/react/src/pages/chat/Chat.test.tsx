@@ -318,7 +318,7 @@ describe("Citation overlay accessibility (#1441)", () => {
     ).toBeInTheDocument();
   });
 
-  it("renders the citation source as a real external link that announces the new tab (WCAG 2.1.1/4.1.2/3.2.5)", async () => {
+  it("renders the citation source as a real external link (WCAG 2.1.1/4.1.2/2.4.4)", async () => {
     renderChat({ currentChat: conversationWithRichCitation() });
 
     await openCitation();
@@ -327,7 +327,9 @@ describe("Citation overlay accessibility (#1441)", () => {
     expect(link).toHaveAttribute("href", "https://example.com");
     expect(link).toHaveAttribute("target", "_blank");
     expect(link.getAttribute("rel") ?? "").toContain("noopener");
-    expect(link).toHaveAccessibleName(/opens in a new tab/i);
+    // The external / "opens in a new window" icon and screen-reader announcement
+    // are added at runtime by linkpurpose (component-library-twig), site-wide, so
+    // this component intentionally carries no icon or new-tab text of its own.
     // The old fake <h5 role="link"> is gone: the title is not a heading.
     expect(
       screen.queryByRole("heading", { name: /Example Source/i })
