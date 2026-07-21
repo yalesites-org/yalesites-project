@@ -436,7 +436,7 @@ const Chat = () => {
                 {isModalOpen && <Modal show={isModalOpen} header={<CitationHeader />} footer={null} close={handleCloseModal} variant={'citation'}>
 
                 {messages && messages.length > 0 && isCitationPanelOpen && activeCitation && (
-                    <Stack.Item className={`${styles.citationPanel}`} tabIndex={0} role="tabpanel" aria-label="Citations Panel">
+                    <Stack.Item className={`${styles.citationPanel}`}>
 
                         <div className={`${styles.citationPanelContentContainer}`}>
                             <h5 className={styles.citationPanelTitle} role="link" tabIndex={0} title={activeCitation.url && !activeCitation.url.includes("blob.core") ? activeCitation.url : activeCitation.title ?? ""} onClick={() => onViewSource(activeCitation)}>
