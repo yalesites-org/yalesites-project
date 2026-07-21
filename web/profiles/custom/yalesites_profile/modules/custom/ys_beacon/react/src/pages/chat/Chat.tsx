@@ -348,7 +348,7 @@ const Chat = () => {
                             {messages.map((answer, index) => (
                                 <>
                                     {answer.role === "user" ? (
-                                        <div className={styles.chatMessageUser} tabIndex={0}>
+                                        <div className={styles.chatMessageUser} tabIndex={0} role="group" aria-label="user message">
                                             <div className={styles.chatMessageUserMessage}>
                                                 <div className={styles.chatMessageUserMessageWrap}>
                                                     {answer.content}
@@ -356,7 +356,7 @@ const Chat = () => {
                                             </div>
                                         </div>
                                     ) : (
-                                        answer.role === "assistant" ? <div className={styles.chatMessageGpt}>
+                                        answer.role === "assistant" ? <div className={styles.chatMessageGpt} role="group" aria-label="Beacon response">
                                             <Answer
                                                 answer={{
                                                     answer: answer.content,
@@ -364,7 +364,7 @@ const Chat = () => {
                                                 }}
                                                 onCitationClicked={c => onShowCitation(c)}
                                             />
-                                        </div> : answer.role === "error" ? <div className={styles.chatMessageError}>
+                                        </div> : answer.role === "error" ? <div className={styles.chatMessageError} role="group" aria-label="Error message">
                                             <Stack horizontal className={styles.chatMessageErrorContentHeader}>
                                                 <ErrorCircleRegular className={styles.errorIcon} />
                                                 <span>Error</span>

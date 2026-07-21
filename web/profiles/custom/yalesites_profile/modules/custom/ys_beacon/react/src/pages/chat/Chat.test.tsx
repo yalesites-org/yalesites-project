@@ -100,6 +100,44 @@ describe("Initial question prompts", () => {
   });
 });
 
+describe("Message grouping for screen readers", () => {
+  const conversationWithTurn = (): Conversation => ({
+    id: "conversation-1",
+    title: "Office hours",
+    messages: [
+      {
+        id: "message-user",
+        role: "user",
+        content: "What are the office hours?",
+        date: "2026-01-01T00:00:00Z",
+      },
+      {
+        id: "message-assistant",
+        role: "assistant",
+        content: "Office hours are 9am to 5pm.",
+        date: "2026-01-01T00:00:00Z",
+      },
+    ],
+    date: "2026-01-01T00:00:00Z",
+  });
+
+  it("groups the user message with an identifying aria-label", () => {
+    renderChat({ currentChat: conversationWithTurn() });
+
+    expect(
+      screen.getByRole("group", { name: "user message" })
+    ).toBeInTheDocument();
+  });
+
+  it("groups the Beacon response with an identifying aria-label", () => {
+    renderChat({ currentChat: conversationWithTurn() });
+
+    expect(
+      screen.getByRole("group", { name: "Beacon response" })
+    ).toBeInTheDocument();
+  });
+});
+
 describe("Citation panel ARIA", () => {
   // The citation Modal portals into #ys-beacon-chat-widget; without it the modal
   // renders into a detached node and screen queries cannot see it.
