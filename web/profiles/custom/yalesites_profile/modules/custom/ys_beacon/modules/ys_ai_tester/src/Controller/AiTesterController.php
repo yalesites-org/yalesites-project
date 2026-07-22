@@ -47,7 +47,7 @@ class AiTesterController extends ControllerBase {
    * Renders the detail page for a single tester run.
    */
   public function run(int $run_id): array {
-    $run = $this->loadRunOr404($run_id, 'id, created, yaml_filename, status');
+    $run = $this->loadRunOr404($run_id, 'id, created, source_filename, status');
 
     $results = $this->database->query(
       'SELECT * FROM {ys_ai_tester_result} WHERE run_id = :run_id ORDER BY delta ASC',
@@ -76,7 +76,7 @@ class AiTesterController extends ControllerBase {
           [
             '@id' => $run->id,
             '@date' => $this->dateFormatter->format($run->created, 'medium'),
-            '@file' => $run->yaml_filename,
+            '@file' => $run->source_filename,
             '@status' => $run->status,
           ]
         ),
@@ -89,11 +89,18 @@ class AiTesterController extends ControllerBase {
           '#url' => Url::fromRoute('ys_ai_tester.download_json', ['run_id' => $run_id]),
           '#attributes' => $link_attrs,
         ],
-        'separator' => ['#markup' => ' '],
-        'yaml' => [
+        'separator_csv' => ['#markup' => ' '],
+        'csv' => [
           '#type' => 'link',
-          '#title' => $this->t('Download YAML'),
-          '#url' => Url::fromRoute('ys_ai_tester.download_yaml', ['run_id' => $run_id]),
+          '#title' => $this->t('Download CSV'),
+          '#url' => Url::fromRoute('ys_ai_tester.download_csv', ['run_id' => $run_id]),
+          '#attributes' => $link_attrs,
+        ],
+        'separator_questions' => ['#markup' => ' '],
+        'questions' => [
+          '#type' => 'link',
+          '#title' => $this->t('Download questions (.txt)'),
+          '#url' => Url::fromRoute('ys_ai_tester.download_questions', ['run_id' => $run_id]),
           '#attributes' => $link_attrs,
         ],
       ],
@@ -226,16 +233,82 @@ class AiTesterController extends ControllerBase {
   }
 
   /**
-   * Returns the original uploaded YAML file as a download.
+   * Returns the run's question list as a downloadable plain-text file.
+   *
+   * One question per line, ready to edit and re-upload as a new run.
    */
-  public function downloadYaml(int $run_id): Response {
-    $run = $this->loadRunOr404($run_id, 'yaml_content, yaml_filename');
+  public function downloadQuestions(int $run_id): Response {
+    $run = $this->loadRunOr404($run_id, 'source_content');
 
-    $response = new Response($run->yaml_content);
-    $safe_filename = preg_replace('/[^\w.\-]/', '_', $run->yaml_filename);
-    $response->headers->set('Content-Type', 'application/x-yaml');
-    $response->headers->set('Content-Disposition', 'attachment; filename="' . $safe_filename . '"');
+    $response = new Response($run->source_content);
+    $response->headers->set('Content-Type', 'text/plain; charset=utf-8');
+    $response->headers->set('X-Content-Type-Options', 'nosniff');
+    $response->headers->set('Content-Disposition', 'attachment; filename="run-' . $run_id . '-questions.txt"');
     return $response;
+  }
+
+  /**
+   * Returns the run's results as a downloadable, spreadsheet-friendly CSV.
+   */
+  public function downloadCsv(int $run_id): Response {
+    $this->loadRunOr404($run_id, 'id');
+
+    $results = $this->database->query(
+      'SELECT question, answer, citations FROM {ys_ai_tester_result}
+       WHERE run_id = :run_id ORDER BY delta ASC',
+      [':run_id' => $run_id]
+    )->fetchAll();
+
+    $rows = [];
+    foreach ($results as $result) {
+      // Drop URL-less citations from the Sources column: they carry no URL to
+      // list, matching how the comparison CSV omits them.
+      $sources = array_filter(
+        $this->decodeCitations($result->citations),
+        static fn (array $citation): bool => !empty($citation['url']),
+      );
+      $rows[] = [
+        'question' => (string) $result->question,
+        'answer' => (string) $result->answer,
+        'sources' => $this->joinSourceUrls($sources),
+      ];
+    }
+
+    $response = new Response($this->buildResultsCsv($rows));
+    $response->headers->set('Content-Type', 'text/csv; charset=utf-8');
+    $response->headers->set('X-Content-Type-Options', 'nosniff');
+    $response->headers->set('Content-Disposition', 'attachment; filename="run-' . $run_id . '.csv"');
+    return $response;
+  }
+
+  /**
+   * Builds the run-detail results CSV body.
+   *
+   * Prepends a UTF-8 BOM so Excel renders non-ASCII characters correctly, and
+   * runs every cell through csvCell() to neutralize spreadsheet formula
+   * injection. Multiline answers are quoted by fputcsv and stay in one cell.
+   *
+   * @param array $rows
+   *   Result rows, each with 'question', 'answer', and 'sources' strings.
+   *
+   * @return string
+   *   The CSV file body, including the leading BOM.
+   */
+  protected function buildResultsCsv(array $rows): string {
+    $handle = fopen('php://temp', 'r+');
+    fputcsv($handle, ['Question', 'Answer', 'Sources']);
+    foreach ($rows as $row) {
+      fputcsv($handle, array_map([$this, 'csvCell'], [
+        $row['question'],
+        $row['answer'],
+        $row['sources'],
+      ]));
+    }
+    rewind($handle);
+    $csv = stream_get_contents($handle);
+    fclose($handle);
+
+    return "\xEF\xBB\xBF" . $csv;
   }
 
   /**
@@ -341,7 +414,7 @@ class AiTesterController extends ControllerBase {
    * @param string|\Drupal\Component\Render\MarkupInterface $label
    *   The run label (e.g. a t() "Run A").
    * @param array $meta
-   *   The run meta: id, created, yaml_filename, status.
+   *   The run meta: id, created, source_filename, status.
    *
    * @return array
    *   A #markup render element.
@@ -353,7 +426,7 @@ class AiTesterController extends ControllerBase {
         '@label' => $label,
         '@id' => $meta['id'],
         '@date' => $this->dateFormatter->format($meta['created'], 'medium'),
-        '@file' => $meta['yaml_filename'],
+        '@file' => $meta['source_filename'],
         '@status' => $meta['status'],
       ]
     ));
