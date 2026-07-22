@@ -14,16 +14,17 @@ use Drupal\Core\Session\AccountProxyInterface;
 use Drupal\Core\Url;
 use Drupal\ys_ai_tester\AiTesterBatch;
 use Symfony\Component\DependencyInjection\ContainerInterface;
-use Symfony\Component\Yaml\Exception\ParseException;
-use Symfony\Component\Yaml\Yaml;
 
 /**
- * Form for batch testing the Beacon assistant with a YAML question file.
+ * Form for batch testing the Beacon assistant with a list of questions.
+ *
+ * Questions are supplied one per line, either as an uploaded plain-text file or
+ * typed directly into a textarea (one input or the other, never both).
  */
 class AiTesterForm extends FormBase {
 
   /**
-   * Maximum allowed size, in bytes, for an uploaded YAML question file.
+   * Maximum allowed size, in bytes, for an uploaded questions file.
    */
   const MAX_UPLOAD_BYTES = 262144;
 
@@ -57,14 +58,67 @@ class AiTesterForm extends FormBase {
   }
 
   /**
+   * Splits raw question text into a trimmed list, dropping blank lines.
+   *
+   * @param string $text
+   *   The raw file or textarea content.
+   *
+   * @return string[]
+   *   The non-empty, trimmed question lines, in order.
+   */
+  public static function parseQuestionLines(string $text): array {
+    $questions = [];
+    foreach (preg_split('/\r\n|\r|\n/', $text) as $line) {
+      $trimmed = trim($line);
+      if ($trimmed !== '') {
+        $questions[] = $trimmed;
+      }
+    }
+    return $questions;
+  }
+
+  /**
+   * Resolves which question input was supplied, or why it is invalid.
+   *
+   * A user must use exactly one of the two inputs.
+   *
+   * @param bool $has_file
+   *   Whether a valid file was uploaded.
+   * @param bool $has_text
+   *   Whether the textarea has non-whitespace content.
+   *
+   * @return string
+   *   'file' or 'text' for the chosen source, or 'both'/'neither' when the
+   *   one-or-the-other rule is violated.
+   */
+  public static function classifyInput(bool $has_file, bool $has_text): string {
+    return match (TRUE) {
+      $has_file && $has_text => 'both',
+      !$has_file && !$has_text => 'neither',
+      $has_file => 'file',
+      default => 'text',
+    };
+  }
+
+  /**
    * {@inheritdoc}
    */
   public function buildForm(array $form, FormStateInterface $form_state): array {
-    $form['yaml_file'] = [
+    $form['intro'] = [
+      '#markup' => '<p>' . $this->t('Run a list of questions through the Beacon assistant, one question per line. Either upload a plain-text file or type the questions below — use one or the other, not both.') . '</p>',
+    ];
+
+    $form['questions_file'] = [
       '#type' => 'file',
-      '#title' => $this->t('Questions YAML file'),
-      '#description' => $this->t('Upload a .yml file containing a flat list of question strings. Each question is run through the Beacon assistant.'),
-      '#required' => TRUE,
+      '#title' => $this->t('Questions file (.txt)'),
+      '#description' => $this->t('Upload a plain-text file with one question per line. Blank lines are ignored.'),
+    ];
+
+    $form['questions_text'] = [
+      '#type' => 'textarea',
+      '#title' => $this->t('Or type questions'),
+      '#description' => $this->t('One question per line. Blank lines are ignored. Use this or upload a file above — not both.'),
+      '#rows' => 8,
     ];
 
     $form['submit'] = [
@@ -110,11 +164,12 @@ class AiTesterForm extends FormBase {
    * Builds the run history tableselect render array.
    *
    * A tableselect (rather than a plain table) lets a user pick exactly two runs
-   * to compare; the per-row "View" link to a single run is preserved.
+   * to compare; per-row "View" and "Rerun" links are preserved in the actions
+   * column. Rerun is hidden while a run is still processing.
    */
   protected function buildHistoryTable(): array {
     $query = $this->database->select('ys_ai_tester_run', 'r')
-      ->fields('r', ['id', 'created', 'uid', 'yaml_filename', 'question_count', 'status'])
+      ->fields('r', ['id', 'created', 'uid', 'source_filename', 'question_count', 'status'])
       ->orderBy('r.created', 'DESC')
       ->range(0, 50);
     $query->leftJoin('users_field_data', 'u', 'r.uid = u.uid');
@@ -123,18 +178,30 @@ class AiTesterForm extends FormBase {
 
     $options = [];
     foreach ($rows as $row) {
+      $actions = [
+        'view' => Link::fromTextAndUrl(
+          $this->t('View'),
+          Url::fromRoute('ys_ai_tester.run', ['run_id' => $row->id])
+        )->toRenderable(),
+      ];
+      // Re-running a still-processing run is refused server-side, and only a
+      // finished run is a meaningful comparison baseline, so the action is
+      // hidden until it completes.
+      if ($row->status !== 'processing') {
+        $actions['separator'] = ['#markup' => ' | '];
+        $actions['rerun'] = Link::fromTextAndUrl(
+          $this->t('Rerun'),
+          Url::fromRoute('ys_ai_tester.rerun', ['run_id' => $row->id])
+        )->toRenderable();
+      }
+
       $options[$row->id] = [
         'date' => $this->dateFormatter->format($row->created, 'short'),
         'user' => $row->name ?? $this->t('Unknown'),
-        'file' => $row->yaml_filename,
+        'file' => $row->source_filename,
         'questions' => $row->question_count,
         'status' => $row->status,
-        'actions' => [
-          'data' => Link::fromTextAndUrl(
-            $this->t('View'),
-            Url::fromRoute('ys_ai_tester.run', ['run_id' => $row->id])
-          )->toRenderable(),
-        ],
+        'actions' => ['data' => $actions],
       ];
     }
 
@@ -161,70 +228,79 @@ class AiTesterForm extends FormBase {
    * {@inheritdoc}
    */
   public function validateForm(array &$form, FormStateInterface $form_state): void {
-    $file = $this->getRequest()->files->get('files')['yaml_file'] ?? NULL;
+    $file = $this->getRequest()->files->get('files')['questions_file'] ?? NULL;
+    $has_file = $file && $file->isValid();
+    $has_text = trim((string) $form_state->getValue('questions_text')) !== '';
 
-    if (!$file || !$file->isValid()) {
-      $form_state->setErrorByName('yaml_file', $this->t('Please upload a valid YAML file.'));
-      return;
-    }
-
-    // Restrict to YAML files by extension. The content is only ever parsed as
-    // YAML (never stored or executed), but rejecting non-YAML uploads at the
-    // boundary is cheap defense in depth. MIME sniffing is intentionally not
-    // used: YAML has no reliable magic bytes and is commonly detected as
-    // text/plain, which would reject legitimate uploads.
-    $extension = strtolower(pathinfo($file->getClientOriginalName(), PATHINFO_EXTENSION));
-    if (!in_array($extension, ['yml', 'yaml'], TRUE)) {
-      $form_state->setErrorByName('yaml_file', $this->t('The file must be a .yml or .yaml file.'));
-      return;
-    }
-
-    if ($file->getSize() > self::MAX_UPLOAD_BYTES) {
-      $form_state->setErrorByName('yaml_file', $this->t('The file is too large. The maximum size is @max KB.', [
-        '@max' => (int) (self::MAX_UPLOAD_BYTES / 1024),
-      ]));
-      return;
-    }
-
-    $content = file_get_contents($file->getPathname());
-
-    try {
-      $questions = Yaml::parse($content);
-    }
-    catch (ParseException $e) {
-      $form_state->setErrorByName('yaml_file', $this->t('Invalid YAML: @msg', ['@msg' => $e->getMessage()]));
-      return;
-    }
-
-    if (!is_array($questions) || empty($questions)) {
-      $form_state->setErrorByName('yaml_file', $this->t('YAML must contain a non-empty list of questions.'));
-      return;
-    }
-
-    foreach ($questions as $q) {
-      if (!is_string($q)) {
-        $form_state->setErrorByName('yaml_file', $this->t('All YAML values must be strings.'));
+    switch (self::classifyInput($has_file, $has_text)) {
+      case 'both':
+        $form_state->setError($form, $this->t('Provide questions either by uploading a file or by typing them — not both.'));
         return;
-      }
+
+      case 'neither':
+        $form_state->setError($form, $this->t('Upload a questions file or type at least one question.'));
+        return;
+
+      case 'file':
+        // Restrict to plain-text files by extension. MIME sniffing is not used:
+        // a question list has no reliable magic bytes and is detected as
+        // text/plain, so extension is the cheap boundary check.
+        $extension = strtolower(pathinfo($file->getClientOriginalName(), PATHINFO_EXTENSION));
+        if ($extension !== 'txt') {
+          $form_state->setErrorByName('questions_file', $this->t('The file must be a .txt file.'));
+          return;
+        }
+        if ($file->getSize() > self::MAX_UPLOAD_BYTES) {
+          $form_state->setErrorByName('questions_file', $this->t('The file is too large. The maximum size is @max KB.', [
+            '@max' => (int) (self::MAX_UPLOAD_BYTES / 1024),
+          ]));
+          return;
+        }
+        $questions = self::parseQuestionLines((string) file_get_contents($file->getPathname()));
+        $filename = $file->getClientOriginalName();
+        $error_field = 'questions_file';
+        break;
+
+      default:
+        $text = (string) $form_state->getValue('questions_text');
+        // Cap the typed input at the same size as an uploaded file, so neither
+        // path can enqueue an unbounded batch.
+        if (strlen($text) > self::MAX_UPLOAD_BYTES) {
+          $form_state->setErrorByName('questions_text', $this->t('The text is too large. The maximum size is @max KB.', [
+            '@max' => (int) (self::MAX_UPLOAD_BYTES / 1024),
+          ]));
+          return;
+        }
+        $questions = self::parseQuestionLines($text);
+        $filename = 'typed-questions.txt';
+        $error_field = 'questions_text';
     }
 
-    $form_state->set('yaml_questions', array_values($questions));
-    $form_state->set('yaml_filename', $file->getClientOriginalName());
-    $form_state->set('yaml_content', $content);
+    if (!$questions) {
+      $form_state->setErrorByName($error_field, $this->t('No questions found. Enter at least one non-empty line.'));
+      return;
+    }
+
+    $form_state->set('questions', $questions);
+    $form_state->set('source_filename', $filename);
+    // The stored source is the normalized question list, ready to download as a
+    // .txt and re-upload or re-run.
+    $form_state->set('source_content', implode("\n", $questions));
   }
 
   /**
    * {@inheritdoc}
    */
   public function submitForm(array &$form, FormStateInterface $form_state): void {
-    $questions = $form_state->get('yaml_questions');
+    $questions = $form_state->get('questions');
 
     $run_id = $this->database->insert('ys_ai_tester_run')
       ->fields([
         'uid' => $this->currentUser->id(),
         'created' => $this->time->getRequestTime(),
-        'yaml_filename' => $form_state->get('yaml_filename'),
-        'yaml_content' => $form_state->get('yaml_content'),
+        'source_filename' => $form_state->get('source_filename'),
+        'source_content' => $form_state->get('source_content'),
+        'source_run_id' => 0,
         'status' => 'processing',
         'question_count' => count($questions),
       ])

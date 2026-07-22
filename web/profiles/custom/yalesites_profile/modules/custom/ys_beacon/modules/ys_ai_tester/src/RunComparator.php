@@ -50,7 +50,7 @@ class RunComparator {
    * Compares two runs' results, aligning questions by text.
    *
    * @param array $meta_a
-   *   Run A meta: id, created, yaml_filename, status.
+   *   Run A meta: id, created, source_filename, status.
    * @param array $meta_b
    *   Run B meta, same shape.
    * @param array $results_a
@@ -214,7 +214,7 @@ class RunComparator {
     return [
       'id' => (int) $meta['id'],
       'created' => (int) $meta['created'],
-      'yaml_filename' => (string) $meta['yaml_filename'],
+      'source_filename' => (string) $meta['source_filename'],
       'status' => (string) $meta['status'],
     ];
   }
@@ -224,7 +224,7 @@ class RunComparator {
    */
   protected function loadRun(int $run_id): array {
     $row = $this->database->query(
-      'SELECT id, created, yaml_filename, status FROM {ys_ai_tester_run} WHERE id = :id',
+      'SELECT id, created, source_filename, status FROM {ys_ai_tester_run} WHERE id = :id',
       [':id' => $run_id]
     )->fetchAssoc();
 

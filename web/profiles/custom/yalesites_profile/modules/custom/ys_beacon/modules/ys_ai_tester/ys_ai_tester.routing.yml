@@ -60,11 +60,31 @@ ys_ai_tester.download_json:
     _ys_beacon_authorized: 'TRUE'
     run_id: '\d+'
 
-ys_ai_tester.download_yaml:
-  path: '/admin/config/yalesites/ys-beacon/tester/{run_id}/download/yaml'
+ys_ai_tester.download_questions:
+  path: '/admin/config/yalesites/ys-beacon/tester/{run_id}/download/questions'
   defaults:
-    _controller: '\Drupal\ys_ai_tester\Controller\AiTesterController::downloadYaml'
-    _title: 'Download YAML'
+    _controller: '\Drupal\ys_ai_tester\Controller\AiTesterController::downloadQuestions'
+    _title: 'Download questions'
+  requirements:
+    _permission: 'use ys ai tester'
+    _ys_beacon_authorized: 'TRUE'
+    run_id: '\d+'
+
+ys_ai_tester.download_csv:
+  path: '/admin/config/yalesites/ys-beacon/tester/{run_id}/download/csv'
+  defaults:
+    _controller: '\Drupal\ys_ai_tester\Controller\AiTesterController::downloadCsv'
+    _title: 'Download CSV'
+  requirements:
+    _permission: 'use ys ai tester'
+    _ys_beacon_authorized: 'TRUE'
+    run_id: '\d+'
+
+ys_ai_tester.rerun:
+  path: '/admin/config/yalesites/ys-beacon/tester/{run_id}/rerun'
+  defaults:
+    _form: '\Drupal\ys_ai_tester\Form\AiTesterRerunForm'
+    _title: 'Re-run test'
   requirements:
     _permission: 'use ys ai tester'
     _ys_beacon_authorized: 'TRUE'
