@@ -115,6 +115,9 @@ class CsvValidatorService {
         continue;
       }
 
+      // Carry the true CSV line number so consumers report the real row rather
+      // than a compacted array offset (blank rows skipped above shift offsets).
+      $row_data['_row_number'] = $row_number;
       $data[] = $row_data;
     }
 
