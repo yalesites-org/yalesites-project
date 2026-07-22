@@ -20,16 +20,6 @@ class DcnFieldDefaultFormatterTest extends KernelTestBase {
 
   /**
    * {@inheritdoc}
-   *
-   * The module ships no config schema for its field settings, so strict schema
-   * checking would fail on every field save. It is disabled here to exercise
-   * real field behavior; the missing schema is logged as a GAP.
-   */
-  // phpcs:ignore DrupalPractice.Objects.StrictSchemaDisabled.StrictConfigSchema
-  protected $strictConfigSchema = FALSE;
-
-  /**
-   * {@inheritdoc}
    */
   protected static $modules = [
     'system',
@@ -145,34 +135,11 @@ class DcnFieldDefaultFormatterTest extends KernelTestBase {
   }
 
   /**
-   * Locks in the current (buggy) viewElements() output for a literal "0".
-   *
-   * Paired with testViewElementsShouldRenderZeroIdentifier() -- delete once the
-   * GAP is fixed.
-   *
-   * @covers ::viewElements
-   */
-  public function testViewElementsCurrentBehaviorHidesZeroIdentifier() {
-    $entity = \Drupal::entityTypeManager()->getStorage('entity_test')->create([
-      'field_dcn' => [
-        'dcn_type_target_id' => $this->term->id(),
-        'dcn_identifier' => '0',
-      ],
-    ]);
-    $output = $this->renderField($entity, ['separator' => ' - ', 'show_label' => TRUE]);
-    // A literal "0" identifier is falsy in PHP, so viewElements() silently
-    // omits it even though the term and identifier are both set.
-    $this->assertSame('', trim($output));
-  }
-
-  /**
-   * Paired with testViewElementsCurrentBehaviorHidesZeroIdentifier().
+   * A literal "0" identifier renders (not treated as falsy/empty).
    *
    * @covers ::viewElements
    */
   public function testViewElementsShouldRenderZeroIdentifier() {
-    $this->markTestSkipped('GAP: DcnFieldDefaultFormatter::viewElements() uses a truthiness check on $dcn_identifier, so a literal "0" identifier never renders -- see ~/Documents/Claude/not_dave/module-tests-20260710/ys_dcn_field.md');
-
     $entity = \Drupal::entityTypeManager()->getStorage('entity_test')->create([
       'field_dcn' => [
         'dcn_type_target_id' => $this->term->id(),

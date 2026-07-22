@@ -83,7 +83,10 @@ class CsvValidatorServiceTest extends UnitTestCase {
       'last name' => 'Doe',
       'email' => 'jane@example.com',
       'teaser text' => 'Short bio text.',
+      '_row_number' => 2,
     ], $result['data'][0]);
+    // The second data row is CSV line 3 (header is line 1).
+    $this->assertSame(3, $result['data'][1]['_row_number']);
     $this->assertEquals([
       'display name' => 'Display Name',
       'first name' => 'First Name',
@@ -104,7 +107,7 @@ class CsvValidatorServiceTest extends UnitTestCase {
     $result = $this->csvValidator->validateCsvStructure($path);
 
     $this->assertTrue($result['valid']);
-    $this->assertEquals([['display name' => 'Jane Doe']], $result['data']);
+    $this->assertEquals([['display name' => 'Jane Doe', '_row_number' => 2]], $result['data']);
   }
 
   /**
@@ -231,6 +234,11 @@ class CsvValidatorServiceTest extends UnitTestCase {
 
     $this->assertTrue($result['valid']);
     $this->assertCount(2, $result['data']);
+    // The blank line 3 is skipped, so John is CSV line 4 -- the reported row
+    // number must reflect the true line, not the compacted array offset (which
+    // would give 3). This is the row-number-drift regression guard.
+    $this->assertSame(2, $result['data'][0]['_row_number']);
+    $this->assertSame(4, $result['data'][1]['_row_number']);
   }
 
   /**
@@ -251,6 +259,7 @@ class CsvValidatorServiceTest extends UnitTestCase {
     $this->assertEquals([
       'display name' => 'Jane Doe',
       'email' => 'jane@example.com',
+      '_row_number' => 2,
     ], $result['data'][0]);
   }
 

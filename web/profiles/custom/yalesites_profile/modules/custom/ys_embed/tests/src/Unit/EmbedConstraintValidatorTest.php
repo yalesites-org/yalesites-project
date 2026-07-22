@@ -131,18 +131,36 @@ class EmbedConstraintValidatorTest extends UnitTestCase {
   }
 
   /**
+   * A SoundCloud playlist embed is accepted (no invalidAudioTrack violation).
+   *
    * @covers ::validate
    * @covers ::isTrack
    * @covers ::isSoundcloud
    */
-  public function testValidateAddsInvalidAudioTrackViolationForSoundcloudPlaylist(): void {
+  public function testValidateAddsNoViolationForValidSoundcloudPlaylist(): void {
+    $this->embedManager->method('isValid')->willReturn(TRUE);
+    $this->context->expects($this->never())->method('addViolation');
+
+    $this->validator->validate(
+      $this->mockValueForInput('https://api.soundcloud.com/playlists/123456'),
+      $this->constraint
+    );
+  }
+
+  /**
+   * A non-track, non-playlist SoundCloud embed still trips the violation.
+   *
+   * @covers ::validate
+   * @covers ::isTrack
+   */
+  public function testValidateAddsInvalidAudioTrackViolationForOtherSoundcloudForm(): void {
     $this->embedManager->method('isValid')->willReturn(TRUE);
     $this->context->expects($this->once())
       ->method('addViolation')
       ->with($this->constraint->invalidAudioTrack);
 
     $this->validator->validate(
-      $this->mockValueForInput('https://api.soundcloud.com/playlists/123456'),
+      $this->mockValueForInput('https://api.soundcloud.com/users/123456'),
       $this->constraint
     );
   }
@@ -208,34 +226,16 @@ class EmbedConstraintValidatorTest extends UnitTestCase {
   }
 
   /**
-   * CHARACTERIZATION: isVideo() false-positives on a non-video URL.
+   * IsVideo() matches on the parsed host, not a substring.
    *
-   * It flags a URL as a video embed even when "youtube.com" merely appears
-   * elsewhere in the string, because $p1 uses an unescaped "." (matches any
-   * character, not a literal dot) and a leading "\S+" with no host
-   * anchoring. A legitimate non-video embed whose URL happens to contain
-   * that substring is wrongly rejected as "should use the Video component
-   * instead".
-   *
-   * Paired with testIsVideoShouldOnlyMatchTheActualHost() -- delete once the
-   * GAP is fixed.
+   * IsVideo() anchors on parse_url()'s host, so a non-video URL that merely
+   * contains "youtube.com" elsewhere in the string is not misclassified as a
+   * video embed.
    *
    * @covers ::isVideo
    */
-  public function testIsVideoFalsePositivesOnUnrelatedHostContainingYoutubeSubstring(): void {
-    $this->assertTrue($this->invokeProtected('isVideo', 'https://evil.com/redirect?to=youtube.com/x'));
-  }
-
-  /**
-   * GAP: isVideo() should anchor its match to the actual request host.
-   *
-   * It should anchor $p1 to the actual host (e.g. via parse_url()) and
-   * escape the literal "." in "youtube.com", instead of a bare
-   * "\S+.youtube.com" that matches the substring anywhere in the string --
-   * see ~/Documents/Claude/not_dave/module-tests-20260710/ys_embed.md.
-   */
-  public function testIsVideoShouldOnlyMatchTheActualHost(): void {
-    $this->markTestSkipped('GAP: EmbedConstraintValidator::isVideo() wrongly classifies a non-YouTube URL as a video embed because its regex is unanchored and its "." is unescaped -- see ~/Documents/Claude/not_dave/module-tests-20260710/ys_embed.md');
+  public function testIsVideoOnlyMatchesTheActualHost(): void {
+    $this->assertFalse($this->invokeProtected('isVideo', 'https://evil.com/redirect?to=youtube.com/x'));
   }
 
   /**
@@ -257,8 +257,8 @@ class EmbedConstraintValidatorTest extends UnitTestCase {
   /**
    * @covers ::isTrack
    */
-  public function testIsTrackFalseForSoundcloudPlaylist(): void {
-    $this->assertFalse($this->invokeProtected('isTrack', 'https://api.soundcloud.com/playlists/1'));
+  public function testIsTrackTrueForSoundcloudPlaylist(): void {
+    $this->assertTrue($this->invokeProtected('isTrack', 'https://api.soundcloud.com/playlists/1'));
   }
 
   /**
@@ -266,6 +266,29 @@ class EmbedConstraintValidatorTest extends UnitTestCase {
    */
   public function testIsTrackTrueForSoundcloudTrack(): void {
     $this->assertTrue($this->invokeProtected('isTrack', 'https://api.soundcloud.com/tracks/1'));
+  }
+
+  /**
+   * A SoundCloud URL that is neither a track nor a playlist is still rejected.
+   *
+   * @covers ::isTrack
+   */
+  public function testIsTrackFalseForOtherSoundcloudForm(): void {
+    $this->assertFalse($this->invokeProtected('isTrack', 'https://api.soundcloud.com/users/1'));
+  }
+
+  /**
+   * IsTrack() accepts the real full-iframe embeds authors actually paste.
+   *
+   * The other isTrack tests use bare API URLs; these use the complete <iframe>
+   * embed code (the canonical SoundCloud examples), so a regex regression that
+   * only broke the real form would still be caught.
+   *
+   * @covers ::isTrack
+   */
+  public function testIsTrackAcceptsRealSoundcloudIframes(): void {
+    $this->assertTrue($this->invokeProtected('isTrack', SoundCloudTest::TRACK_EMBED));
+    $this->assertTrue($this->invokeProtected('isTrack', SoundCloudTest::PLAYLIST_EMBED));
   }
 
 }

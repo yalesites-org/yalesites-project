@@ -368,40 +368,36 @@ class ToolbarItemsServiceTest extends UnitTestCase {
   }
 
   /**
-   * Locks in the current buildOffCanvasButton() access behavior for the GAP.
+   * The off-canvas button's #access reflects the manage-settings permission.
    *
-   * Paired with testBuildOffCanvasButtonAccessShouldCheckPermission() -- delete
-   * once the GAP is fixed. buildOffCanvasButton() sets '#access' to the literal
-   * permission-name string 'yalesites manage settings' rather than the result
-   * of an actual permission check. Drupal's renderer only denies access when
-   * '#access' is strictly FALSE or an AccessResultInterface (see
-   * Renderer::doRender()), so this non-empty string is always truthy and the
-   * Theme Settings link is rendered for every user regardless of permissions.
+   * BuildOffCanvasButton() sets '#access' to the result of
+   * $account->hasPermission('yalesites manage settings'), so the Theme Settings
+   * link is denied for a user without that permission (Drupal's renderer treats
+   * a FALSE '#access' as denied).
    *
    * @covers ::buildOffCanvasButton
    */
-  public function testBuildOffCanvasButtonAccessCurrentBehavior() {
-    $service = $this->createService(NULL);
-
-    $button = $this->invokeMethod($service, 'buildOffCanvasButton', ['ys_themes.theme_settings', 'Theme Settings']);
-
-    $this->assertSame('yalesites manage settings', $button['tab']['#access']);
-  }
-
-  /**
-   * Paired with testBuildOffCanvasButtonAccessCurrentBehavior().
-   *
-   * @covers ::buildOffCanvasButton
-   */
-  public function testBuildOffCanvasButtonAccessShouldCheckPermission() {
-    $this->markTestSkipped('GAP: buildOffCanvasButton() never actually checks the "yalesites manage settings" permission -- see ~/Documents/Claude/not_dave/module-tests-20260710/ys_toolbar.md');
-
+  public function testBuildOffCanvasButtonAccessChecksPermission() {
     $this->account->method('hasPermission')->with('yalesites manage settings')->willReturn(FALSE);
     $service = $this->createService(NULL);
 
     $button = $this->invokeMethod($service, 'buildOffCanvasButton', ['ys_themes.theme_settings', 'Theme Settings']);
 
     $this->assertFalse($button['tab']['#access']);
+  }
+
+  /**
+   * The button is shown to a user with the manage-settings permission.
+   *
+   * @covers ::buildOffCanvasButton
+   */
+  public function testBuildOffCanvasButtonAccessGrantedForPermittedUser() {
+    $this->account->method('hasPermission')->with('yalesites manage settings')->willReturn(TRUE);
+    $service = $this->createService(NULL);
+
+    $button = $this->invokeMethod($service, 'buildOffCanvasButton', ['ys_themes.theme_settings', 'Theme Settings']);
+
+    $this->assertTrue($button['tab']['#access']);
   }
 
   /**

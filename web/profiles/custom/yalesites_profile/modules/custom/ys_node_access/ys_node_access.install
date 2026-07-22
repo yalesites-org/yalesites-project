@@ -13,3 +13,15 @@
 function ys_node_access_install() {
   node_access_rebuild();
 }
+
+/**
+ * Rebuild node access grants after the unpublished-content access fix.
+ *
+ * Ys_node_access_node_access_records() no longer grants view access to
+ * unpublished nodes, but existing nodes keep their previously-written grant
+ * records in the node_access table until a rebuild. Rebuild so the fix applies
+ * to content that already exists, not only to nodes saved after this deploy.
+ */
+function ys_node_access_update_10001() {
+  node_access_rebuild();
+}

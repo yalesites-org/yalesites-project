@@ -260,11 +260,14 @@ class ProfileImportServiceTest extends UnitTestCase {
   }
 
   /**
-   * CreateProfileNode() logs and returns NULL when save() fails.
+   * CreateProfileNode() logs and re-throws when save() fails.
+   *
+   * The exception is re-thrown (after logging) rather than swallowed into a
+   * NULL return, so processImport() can surface the real failure reason.
    *
    * @covers ::createProfileNode
    */
-  public function testCreateProfileNodeSaveFails() {
+  public function testCreateProfileNodeSaveFailsLogsAndRethrows() {
     $node = $this->createMock(NodeInterface::class);
     $node->method('save')->willThrowException(new \Exception('Database error'));
     $this->nodeStorage->method('create')->willReturn($node);
@@ -285,9 +288,9 @@ class ProfileImportServiceTest extends UnitTestCase {
       'custom_vocab' => [],
     ];
 
-    $result = $this->profileImport->createProfileNode($data);
-
-    $this->assertNull($result);
+    $this->expectException(\Exception::class);
+    $this->expectExceptionMessage('Database error');
+    $this->profileImport->createProfileNode($data);
   }
 
   /**
@@ -348,41 +351,47 @@ class ProfileImportServiceTest extends UnitTestCase {
   }
 
   /**
-   * CURRENT BEHAVIOR: a failed node creation is silently dropped.
+   * A failed node creation is reported with its real reason, not dropped.
    *
-   * Paired with testProcessImportShouldReportFailedNodeCreation() -- delete
-   * once the GAP is fixed.
-   *
-   * createProfileNode() already logs the failure and returns NULL, but
-   * processImport() does not record it in either the "skipped" count or the
-   * "errors" list -- the row simply vanishes from the reported results.
-   *
-   * @covers ::processImport
-   */
-  public function testProcessImportSilentlyDropsFailedNodeCreation() {
-    $service = $this->partialProfileImport(['prepareProfileData', 'findExistingProfile', 'createProfileNode']);
-    $service->method('prepareProfileData')->willReturn(['display_name' => 'Someone', 'email' => '']);
-    $service->method('createProfileNode')->willReturn(NULL);
-
-    $result = $service->processImport([['row' => 1]], TRUE);
-
-    $this->assertSame(0, $result['created']);
-    $this->assertSame(0, $result['skipped']);
-    $this->assertSame([], $result['errors']);
-  }
-
-  /**
-   * GAP: processImport() should report a failed node creation.
-   *
-   * It currently silently drops rows where createProfileNode() fails
-   * (returns NULL) without incrementing any counter or recording an error,
-   * even though createProfileNode() already logged the failure -- see
-   * ~/Documents/Claude/not_dave/module-tests-20260710/ys_migrate.md.
+   * When createProfileNode() throws, processImport() records the row in the
+   * returned "errors" list with the actual failure message instead of a
+   * generic "could not create profile" line.
    *
    * @covers ::processImport
    */
   public function testProcessImportShouldReportFailedNodeCreation() {
-    $this->markTestSkipped('GAP: processImport() silently drops rows where createProfileNode() fails (returns NULL) without incrementing any counter or recording an error, even though createProfileNode() already logged the failure -- see ~/Documents/Claude/not_dave/module-tests-20260710/ys_migrate.md');
+    $service = $this->partialProfileImport(['prepareProfileData', 'findExistingProfile', 'createProfileNode']);
+    $service->method('prepareProfileData')->willReturn(['display_name' => 'Someone', 'email' => '']);
+    $service->method('createProfileNode')->willThrowException(new \Exception('Field constraint violated'));
+
+    $result = $service->processImport([['_row_number' => 2]], TRUE);
+
+    $this->assertSame(0, $result['created']);
+    $this->assertCount(1, $result['errors']);
+    // The row is reported with its true CSV line and the real failure reason.
+    $this->assertStringContainsString('Row 2', (string) $result['errors'][0]);
+    $this->assertStringContainsString('Field constraint violated', (string) $result['errors'][0]);
+  }
+
+  /**
+   * ProcessImport() reports the true CSV row threaded by the validator.
+   *
+   * The row number comes from the '_row_number' carried on each row (the true
+   * CSV line), not the array offset, so blank rows earlier in the file do not
+   * skew the reported line.
+   *
+   * @covers ::processImport
+   */
+  public function testProcessImportUsesThreadedRowNumber() {
+    $service = $this->partialProfileImport(['prepareProfileData', 'createProfileNode']);
+    $service->method('prepareProfileData')->willReturn(['display_name' => 'Someone', 'email' => '']);
+    $service->method('createProfileNode')->willThrowException(new \Exception('Save failed'));
+
+    // A single data row carrying its true CSV line (7), e.g. after blank rows.
+    $result = $service->processImport([['_row_number' => 7]], TRUE);
+
+    $this->assertCount(1, $result['errors']);
+    $this->assertStringContainsString('Row 7', (string) $result['errors'][0]);
   }
 
   /**

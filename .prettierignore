@@ -1,0 +1,3 @@
+# Deliberately-malformed test fixture (invalid JSON by design). Prettier throws a
+# SyntaxError on it, so exclude it from formatting checks.
+web/profiles/custom/yalesites_profile/modules/custom/ys_themes/tests/fixtures/tokens-fixture-malformed.json
