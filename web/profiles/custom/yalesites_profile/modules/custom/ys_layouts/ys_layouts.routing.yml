@@ -22,3 +22,15 @@ block_content.add_page:
     _admin_route: TRUE
   requirements:
     _entity_create_any_access: 'block_content'
+ys_layouts.detach_reusable_block:
+  path: '/layout_builder/detach/block/{section_storage_type}/{section_storage}/{delta}/{region}/{uuid}'
+  defaults:
+    _form: '\Drupal\ys_layouts\Form\DetachReusableBlockForm'
+  requirements:
+    _layout_builder_access: 'view'
+    _ys_layouts_detach_reusable_block: 'TRUE'
+  options:
+    _admin_route: TRUE
+    parameters:
+      section_storage:
+        layout_builder_tempstore: TRUE

@@ -5,5 +5,7 @@ package: Core
 core_version_requirement: '^9 || ^10'
 version: VERSION
 dependencies:
+  - drupal:block_content
+  - drupal:layout_builder
   - calendar_link
   - ys_localist
