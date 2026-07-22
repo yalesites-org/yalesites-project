@@ -71,8 +71,8 @@ class AiTesterCompareRenderTest extends UnitTestCase {
    */
   public function testCompareRendersEveryPairState(): void {
     $data = [
-      'run_a' => ['id' => 2, 'created' => 1000, 'yaml_filename' => 'a.yml', 'status' => 'complete'],
-      'run_b' => ['id' => 3, 'created' => 2000, 'yaml_filename' => 'b.yml', 'status' => 'complete'],
+      'run_a' => ['id' => 2, 'created' => 1000, 'source_filename' => 'a.yml', 'status' => 'complete'],
+      'run_b' => ['id' => 3, 'created' => 2000, 'source_filename' => 'b.yml', 'status' => 'complete'],
       'pairs' => [
         [
           'question' => 'What is Yale?',
@@ -142,8 +142,8 @@ class AiTesterCompareRenderTest extends UnitTestCase {
    */
   public function testCompareUniqueSourcesAreNewWindowLinks(): void {
     $data = [
-      'run_a' => ['id' => 2, 'created' => 1000, 'yaml_filename' => 'a.yml', 'status' => 'complete'],
-      'run_b' => ['id' => 3, 'created' => 2000, 'yaml_filename' => 'b.yml', 'status' => 'complete'],
+      'run_a' => ['id' => 2, 'created' => 1000, 'source_filename' => 'a.yml', 'status' => 'complete'],
+      'run_b' => ['id' => 3, 'created' => 2000, 'source_filename' => 'b.yml', 'status' => 'complete'],
       'pairs' => [
         [
           'question' => 'What is Yale?',
