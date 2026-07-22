@@ -19,3 +19,8 @@ services:
   ys_layouts.resource_author_builder:
     class: Drupal\ys_layouts\Service\ResourceAuthorBuilder
     arguments: ['@ys_layouts.author_collator']
+  # Resolves cover-image alt text for Resource media.
+  # Used by ResourceMetaBlock and atomic_preprocess_node() so the block
+  # render and the card/list templates apply identical alt text.
+  ys_layouts.media_alt_resolver:
+    class: Drupal\ys_layouts\Service\MediaAltResolver

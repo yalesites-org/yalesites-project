@@ -109,7 +109,8 @@ class ViewsContentResourcesDefaultWidget extends WidgetBase implements Container
     Array &$form,
     FormStateInterface $formState,
   ) {
-    $decodedParams = json_decode($items[$delta]->params, TRUE);
+    $decodedParams = json_decode($items[$delta]->params ?? '', TRUE);
+    $entityValue = NULL;
     if (!empty($decodedParams['filters']['types'][0])) {
       $entityValue = $decodedParams['filters']['types'][0];
     }

@@ -12,8 +12,10 @@ entity_type_groups:
     post:
       basic: basic
       ai_engine: ai_engine
-      open_graph: open_graph
     profile:
+      basic: basic
+      ai_engine: ai_engine
+    resource:
       basic: basic
       ai_engine: ai_engine
 separator: ','

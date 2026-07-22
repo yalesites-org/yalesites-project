@@ -1,0 +1,11 @@
+uuid: ff1d7e5d-8dd2-49c3-9774-9051835023f9
+langcode: en
+status: true
+dependencies:
+  module:
+    - media
+id: media.gallery_thumbnail
+label: 'Gallery Thumbnail'
+description: ''
+targetEntityType: media
+cache: true

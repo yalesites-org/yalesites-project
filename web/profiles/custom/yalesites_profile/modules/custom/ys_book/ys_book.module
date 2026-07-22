@@ -111,6 +111,41 @@ function ys_book_form_alter(&$form, FormStateInterface $form_state, $form_id) {
       '#weight' => -10,
     ];
 
+    // Add Menu link title field to sidebar widget.
+    /** @var \Drupal\node\NodeInterface $node */
+    $node = $form_state->getFormObject()->getEntity();
+    $book_manager = \Drupal::service('book.manager');
+
+    // Get current book link if node is already in a collection.
+    $default_title = $node->label();
+    if (!$node->isNew()) {
+      // Use $translate = FALSE to get raw database value before
+      // bookLinkTranslate overwrites it.
+      $book_link = $book_manager->loadBookLink($node->id(), FALSE);
+      if ($book_link && !empty($book_link['title'])) {
+        $default_title = $book_link['title'];
+      }
+    }
+
+    $form['book']['title'] = [
+      '#type' => 'textfield',
+      '#title' => t('Menu link title'),
+      '#description' => t('The title to display in the Content Collection menu. If left empty, the node title will be used.'),
+      '#default_value' => $default_title,
+      '#weight' => -4,
+      '#maxlength' => 255,
+      '#states' => [
+        'visible' => [
+          ':input[name="book[bid]"]' => ['!value' => '0'],
+        ],
+      ],
+    ];
+
+    // Add submit handler to process the title field.
+    if (!in_array('ys_book_node_form_submit', $form['#submit'] ?? [])) {
+      array_unshift($form['#submit'], 'ys_book_node_form_submit');
+    }
+
     // Replace prefix.
     if (isset($form['book']['pid']['#prefix'])) {
       $form['book']['pid']['#prefix'] = str_replace(
@@ -136,6 +171,33 @@ function ys_book_form_alter(&$form, FormStateInterface $form_state, $form_id) {
     if (isset($form['book']['bid']['#description'])) {
       $form['book']['bid']['#description'] = t('Your page will be a part of the selected collection.');
     }
+
+    // Add Menu link title field.
+    /** @var \Drupal\node\NodeInterface $node */
+    $node = $form_state->getFormObject()->getEntity();
+    $book_manager = \Drupal::service('book.manager');
+    // Use $translate = FALSE to get raw database value before
+    // bookLinkTranslate overwrites it.
+    $book_link = $book_manager->loadBookLink($node->id(), FALSE);
+
+    // Default to node title if no custom title exists.
+    $default_title = $node->label();
+    if ($book_link && !empty($book_link['title'])) {
+      $default_title = $book_link['title'];
+    }
+
+    $form['book']['title'] = [
+      '#type' => 'textfield',
+      '#title' => t('Menu link title'),
+      '#description' => t('The title to display in the Content Collection menu. To edit this field, go to the node edit form and use the "Menu link title" field in the Content Collection sidebar widget.'),
+      '#default_value' => $default_title,
+      '#weight' => -4,
+      '#maxlength' => 255,
+      '#disabled' => TRUE,
+    ];
+
+    // Attach CSS library for disabled field styling.
+    $form['#attached']['library'][] = 'ys_book/ys_book';
 
     // Update button text.
     if (isset($form['actions']['submit']['#value'])) {
@@ -191,15 +253,53 @@ function ys_book_form_book_admin_edit_alter(&$form, FormStateInterface $form_sta
     $form['save']['#value'] = t('Save collection');
   }
 
-  // Add required indicator to all title fields in the book admin table.
+  // Add submit handler to save menu link titles to book table
+  // instead of node titles.
+  array_unshift($form['#submit'], 'ys_book_book_admin_edit_form_submit');
+
+  // Replace node title fields with book menu link title fields
+  // in the admin table.
   if (isset($form['table'])) {
+    // Change the table header from "Title" to "Menu link title".
+    if (isset($form['table']['#header']) && is_array($form['table']['#header'])) {
+      $form['table']['#header'][0] = t('Menu link title');
+    }
+
     /** @var \Drupal\book\BookManagerInterface $bookManager */
     $bookManager = \Drupal::service('book.manager');
     $destination = \Drupal::destination()->getAsArray();
 
     foreach (Element::children($form['table']) as $key) {
       if (isset($form['table'][$key]['title'])) {
-        $form['table'][$key]['title']['#required'] = TRUE;
+        // Get the book link to retrieve the custom menu title.
+        $nid = $form['table'][$key]['#nid'] ?? NULL;
+        if ($nid) {
+          $book_link = $bookManager->loadBookLink($nid, FALSE);
+          $default_title = $book_link['title'] ?? NULL;
+
+          // If no custom title, use node title as default.
+          if (empty($default_title)) {
+            /** @var \Drupal\node\NodeInterface $node */
+            $node = \Drupal::entityTypeManager()->getStorage('node')->load($nid);
+            if ($node) {
+              $default_title = $node->label();
+            }
+          }
+
+          // Replace the node title field with a book menu link title field.
+          $form['table'][$key]['title'] = [
+            '#type' => 'textfield',
+            '#title' => t('Menu link title'),
+            '#title_display' => 'hidden',
+            '#default_value' => $default_title,
+            '#required' => TRUE,
+            '#wrapper_attributes' => ['class' => ['container-inline']],
+            '#attributes' => ['class' => ['book-admin-title']],
+          ];
+        }
+        else {
+          $form['table'][$key]['title']['#required'] = TRUE;
+        }
       }
 
       // Add Remove action to operations column if it exists.
@@ -220,7 +320,86 @@ function ys_book_form_book_admin_edit_alter(&$form, FormStateInterface $form_sta
   }
 
   // Add cache invalidation submit handler.
-  $form['save']['#submit'][] = '_ys_book_admin_edit_submit';
+  $form['#submit'][] = '_ys_book_admin_edit_submit';
+}
+
+/**
+ * Implements hook_ENTITY_TYPE_update() for nodes.
+ */
+function ys_book_node_update(NodeInterface $node): void {
+  _ys_book_save_menu_link_title($node);
+
+  // Scenario 1: field_collection_nav_position changed on a book root node.
+  if ($node->hasField('field_collection_nav_position') && isset($node->original)) {
+    $current_value = $node->get('field_collection_nav_position')->getString();
+    $original_value = $node->original->get('field_collection_nav_position')->getString();
+
+    if ($current_value !== $original_value) {
+      _ys_book_invalidate_collection_nav_cache($node->id());
+    }
+  }
+
+  // Scenario 2: Book assignment changed (node added to, removed from,
+  // or moved between books).
+  $current_bid = $node->book['bid'] ?? NULL;
+  $original_bid = $node->book['original_bid'] ?? $node->original->book['bid'] ?? NULL;
+
+  if ($current_bid !== $original_bid) {
+    // Invalidate both the old and new book's caches.
+    if ($current_bid) {
+      _ys_book_invalidate_collection_nav_cache($current_bid);
+    }
+    if ($original_bid && $original_bid !== $current_bid) {
+      _ys_book_invalidate_collection_nav_cache($original_bid);
+    }
+  }
+}
+
+/**
+ * Implements hook_ENTITY_TYPE_insert() for nodes.
+ */
+function ys_book_node_insert(NodeInterface $node): void {
+  _ys_book_save_menu_link_title($node);
+  if (!empty($node->book['bid'])) {
+    _ys_book_invalidate_collection_nav_cache($node->book['bid']);
+  }
+}
+
+/**
+ * Helper function to save menu link title to book table.
+ */
+function _ys_book_save_menu_link_title(NodeInterface $node): void {
+  if (!$node->id()) {
+    return;
+  }
+
+  // Get the title from node book data (already processed by submit handler).
+  $title = NULL;
+  if (isset($node->book['title'])) {
+    $title = $node->book['title'];
+    // Ensure it's NULL if empty or matches node title (safety check).
+    if (!empty($title) && $title === $node->label()) {
+      $title = NULL;
+    }
+  }
+
+  // Check if book link exists in database and update the title.
+  $book_manager = \Drupal::service('book.manager');
+  $book_link = $book_manager->loadBookLink($node->id(), FALSE);
+
+  if ($book_link && !empty($book_link['bid'])) {
+    \Drupal::database()->update('book')
+      ->fields(['title' => $title])
+      ->condition('nid', $node->id())
+      ->execute();
+
+    // BookManager::doBookTreeBuild() permanently caches the book tree
+    // (including link titles) under a 'bid:<bid>' tag. That cache is only
+    // busted by core on outline structure changes, so a title-only update
+    // via this raw query must invalidate it manually or the tree (and any
+    // nav built from it) keeps serving the stale title.
+    Cache::invalidateTags(['bid:' . $book_link['bid']]);
+  }
 }
 
 /**
@@ -230,6 +409,31 @@ function ys_book_menu_links_discovered_alter(&$links) {
   // Target the menu item with the route 'book.admin'.
   if (isset($links['book.admin'])) {
     $links['book.admin']['title'] = t('Content Collections');
+  }
+}
+
+/**
+ * Implements hook_preprocess_block().
+ */
+function ys_book_preprocess_block(&$variables) {
+  // Add top level book link to the book navigation sub-nav.
+  if ($variables['base_plugin_id'] == 'custom_book_navigation') {
+    if (isset($variables['content']['#items']) && is_array($variables['content']['#items'])) {
+
+      foreach ($variables['content']['#items'] as &$menuItem) {
+        if (empty($menuItem['below'])) {
+          continue;
+        }
+
+        // Clone top level menu item.
+        $clonedMenuItem = $menuItem;
+
+        // We don't want any other subitems, just the top level.
+        $clonedMenuItem['below'] = NULL;
+
+        array_unshift($menuItem['below'], $clonedMenuItem);
+      }
+    }
   }
 }
 
@@ -279,6 +483,95 @@ function ys_book_library_info_alter(&$libraries, $extension) {
 }
 
 /**
+ * Submit handler for node forms to process menu link title.
+ */
+function ys_book_node_form_submit(array &$form, FormStateInterface $form_state): void {
+  $book_values = $form_state->getValue('book');
+  if (!isset($book_values) || empty($book_values['bid']) || $book_values['bid'] == '0') {
+    return;
+  }
+
+  /** @var \Drupal\node\NodeInterface $node */
+  $node = $form_state->getFormObject()->getEntity();
+
+  // Process the title.
+  $title = NULL;
+  if (isset($book_values['title'])) {
+    $title = trim($book_values['title']);
+    $node_title = $node->label();
+    // If title is empty or matches node title, set to NULL
+    // so it uses node title.
+    if (empty($title) || $title === $node_title) {
+      $title = NULL;
+    }
+  }
+
+  // Set the processed title in book values so it's available in hooks.
+  $book_values['title'] = $title;
+  $form_state->setValue('book', $book_values);
+}
+
+/**
+ * Submit handler for book admin edit form to save menu link titles.
+ */
+function ys_book_book_admin_edit_form_submit(array &$form, FormStateInterface $form_state): void {
+  $values = $form_state->getValues();
+  if (!isset($values['table'])) {
+    return;
+  }
+
+  /** @var \Drupal\book\BookManagerInterface $bookManager */
+  $bookManager = \Drupal::service('book.manager');
+  $nodeStorage = \Drupal::entityTypeManager()->getStorage('node');
+
+  foreach (Element::children($form['table']) as $key) {
+    if (!isset($form['table'][$key]['#item']) || !isset($values['table'][$key])) {
+      continue;
+    }
+
+    $row = $form['table'][$key];
+    $row_values = $values['table'][$key];
+    $nid = $row_values['nid'] ?? NULL;
+
+    if (!$nid) {
+      continue;
+    }
+
+    $default_title = $row['title']['#default_value'] ?? NULL;
+    $new_title = trim($row_values['title'] ?? '');
+
+    // If title changed, save to book table.
+    if ($default_title !== $new_title) {
+      $link = $bookManager->loadBookLink($nid, FALSE);
+      if ($link && !empty($link['bid'])) {
+        /** @var \Drupal\node\NodeInterface $node */
+        $node = $nodeStorage->load($nid);
+
+        // Save NULL if title is empty or matches node title.
+        $title_to_save = (!empty($new_title) && $node && $new_title !== $node->label())
+          ? $new_title
+          : NULL;
+
+        \Drupal::database()->update('book')
+          ->fields(['title' => $title_to_save])
+          ->condition('nid', $nid)
+          ->execute();
+
+        // See _ys_book_save_menu_link_title() for why this is required:
+        // BookManager::doBookTreeBuild() permanently caches the tree under
+        // a 'bid:<bid>' tag that this raw title update wouldn't otherwise
+        // invalidate.
+        Cache::invalidateTags(['bid:' . $link['bid']]);
+      }
+    }
+
+    // Restore original value to prevent
+    // default handler from updating node title.
+    $form_state->setValue(['table', $key, 'title'], $default_title);
+  }
+}
+
+/**
  * Submit handler for book outline form to invalidate collection nav cache.
  */
 function _ys_book_outline_form_submit($form, FormStateInterface $form_state) {
@@ -311,39 +604,6 @@ function _ys_book_remove_form_submit($form, FormStateInterface $form_state) {
 function _ys_book_admin_edit_submit($form, FormStateInterface $form_state) {
   if (isset($form['#node']) && !empty($form['#node']->book['bid'])) {
     _ys_book_invalidate_collection_nav_cache($form['#node']->book['bid']);
-  }
-}
-
-/**
- * Implements hook_ENTITY_TYPE_update() for node entities.
- *
- * Invalidates collection nav cache when field_collection_nav_position changes
- * or when a node's book assignment changes.
- */
-function ys_book_node_update($node) {
-  // Scenario 1: field_collection_nav_position changed on a book root node.
-  if ($node->hasField('field_collection_nav_position') && isset($node->original)) {
-    $current_value = $node->get('field_collection_nav_position')->getString();
-    $original_value = $node->original->get('field_collection_nav_position')->getString();
-
-    if ($current_value !== $original_value) {
-      _ys_book_invalidate_collection_nav_cache($node->id());
-    }
-  }
-
-  // Scenario 2: Book assignment changed (node added to, removed from,
-  // or moved between books).
-  $current_bid = $node->book['bid'] ?? NULL;
-  $original_bid = $node->book['original_bid'] ?? $node->original->book['bid'] ?? NULL;
-
-  if ($current_bid !== $original_bid) {
-    // Invalidate both the old and new book's caches.
-    if ($current_bid) {
-      _ys_book_invalidate_collection_nav_cache($current_bid);
-    }
-    if ($original_bid && $original_bid !== $current_bid) {
-      _ys_book_invalidate_collection_nav_cache($original_bid);
-    }
   }
 }
 
@@ -394,17 +654,6 @@ function ys_book_node_presave($node) {
 }
 
 /**
- * Implements hook_ENTITY_TYPE_insert() for node entities.
- *
- * Invalidates collection nav cache when a new node is added to a book.
- */
-function ys_book_node_insert($node) {
-  if (!empty($node->book['bid'])) {
-    _ys_book_invalidate_collection_nav_cache($node->book['bid']);
-  }
-}
-
-/**
  * Implements hook_ENTITY_TYPE_predelete() for node entities.
  *
  * Invalidates collection nav cache when a book node is deleted.
@@ -420,12 +669,18 @@ function ys_book_node_predelete($node) {
  *
  * This clears:
  * 1. The persistent cache entry for the navigation position function.
- * 2. The rendered page cache for all nodes in the book so headers re-render.
+ * 2. The rendered navigation block cache (tagged by bookTreeOutput).
+ * 3. The rendered page cache for all nodes in the book so headers re-render.
  *
  * @param int $bid
  *   The book ID (nid of the root book node).
+ * @param int[]|null $nids
+ *   (optional) The node IDs in the book. Callers that have already removed the
+ *   book outline rows (for example when deleting a whole collection) must pass
+ *   the node IDs captured beforehand, since they can no longer be queried.
+ *   Defaults to querying the current members of the book.
  */
-function _ys_book_invalidate_collection_nav_cache(int $bid) {
+function _ys_book_invalidate_collection_nav_cache(int $bid, ?array $nids = NULL) {
   // 1. Delete the persistent navigation position cache entry.
   \Drupal::cache()->delete('collection:nav_position:' . $bid);
 
@@ -434,9 +689,14 @@ function _ys_book_invalidate_collection_nav_cache(int $bid) {
   // the navigation position for this book.
   Cache::invalidateTags(['ys_collection_nav:' . $bid]);
 
-  // 3. Invalidate node cache tags for all nodes in the book.
+  // 3. Invalidate the cache tag that bookTreeOutput() sets on the navigation
+  // block render array. Without this, the block render cache keeps serving
+  // the old page order even after weights are saved.
+  Cache::invalidateTags(['config:system.book.' . $bid]);
+
+  // 4. Invalidate node cache tags for all nodes in the book.
   // This ensures the rendered pages are rebuilt with the new header.
-  $nids = _ys_book_get_all_book_nids($bid);
+  $nids = $nids ?? _ys_book_get_all_book_nids($bid);
   if (!empty($nids)) {
     $tags = [];
     foreach ($nids as $nid) {
@@ -444,6 +704,41 @@ function _ys_book_invalidate_collection_nav_cache(int $bid) {
     }
     Cache::invalidateTags($tags);
   }
+}
+
+/**
+ * Deletes a content collection while keeping its pages as standalone content.
+ *
+ * A content collection is a Drupal book. This removes every page from the book
+ * outline — dismantling the collection grouping and navigation — without
+ * deleting any page node. Pages are removed deepest-first so the contrib book
+ * manager never promotes a child into a new standalone collection:
+ * BookManager::deleteFromBook() only promotes the children of a top-level page,
+ * and by the time the top-level page is reached it has no remaining children.
+ *
+ * @param int $bid
+ *   The book ID (nid of the collection's top-level page).
+ */
+function _ys_book_dismantle_collection(int $bid) {
+  /** @var \Drupal\book\BookManagerInterface $book_manager */
+  $book_manager = \Drupal::service('book.manager');
+
+  // Capture the node IDs before removing outline rows so the caches can still
+  // be invalidated afterwards.
+  $nids = _ys_book_get_all_book_nids($bid);
+  if (empty($nids)) {
+    return;
+  }
+
+  // Order the pages deepest-first before removing them from the outline.
+  $links = $book_manager->loadBookLinks($nids, FALSE);
+  usort($links, fn(array $a, array $b) => $b['depth'] <=> $a['depth']);
+
+  foreach ($links as $link) {
+    $book_manager->deleteFromBook((int) $link['nid']);
+  }
+
+  _ys_book_invalidate_collection_nav_cache($bid, $nids);
 }
 
 /**

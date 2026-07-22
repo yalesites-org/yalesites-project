@@ -1,0 +1,294 @@
+<?php
+
+namespace Drupal\Tests\ys_embed\Unit;
+
+use Drupal\Core\Field\FieldItemInterface;
+use Drupal\Tests\UnitTestCase;
+use Drupal\media\MediaInterface;
+use Drupal\media\MediaSourceInterface;
+use Drupal\ys_embed\Plugin\EmbedSourceManager;
+use Drupal\ys_embed\Plugin\Validation\Constraint\EmbedConstraint;
+use Drupal\ys_embed\Plugin\Validation\Constraint\EmbedConstraintValidator;
+use Symfony\Component\Validator\Context\ExecutionContextInterface;
+
+/**
+ * @coversDefaultClass \Drupal\ys_embed\Plugin\Validation\Constraint\EmbedConstraintValidator
+ *
+ * @group yalesites
+ * @group ys_embed
+ */
+class EmbedConstraintValidatorTest extends UnitTestCase {
+
+  /**
+   * The mocked EmbedSource plugin manager.
+   *
+   * @var \Drupal\ys_embed\Plugin\EmbedSourceManager|\PHPUnit\Framework\MockObject\MockObject
+   */
+  protected $embedManager;
+
+  /**
+   * The mocked validation execution context.
+   *
+   * @var \Symfony\Component\Validator\Context\ExecutionContextInterface|\PHPUnit\Framework\MockObject\MockObject
+   */
+  protected $context;
+
+  /**
+   * The validator under test.
+   *
+   * @var \Drupal\ys_embed\Plugin\Validation\Constraint\EmbedConstraintValidator
+   */
+  protected $validator;
+
+  /**
+   * The constraint whose violation messages are asserted against.
+   *
+   * @var \Drupal\ys_embed\Plugin\Validation\Constraint\EmbedConstraint
+   */
+  protected $constraint;
+
+  /**
+   * {@inheritdoc}
+   */
+  protected function setUp(): void {
+    parent::setUp();
+    $this->embedManager = $this->createMock(EmbedSourceManager::class);
+    $this->context = $this->createMock(ExecutionContextInterface::class);
+    $this->constraint = new EmbedConstraint();
+    $this->validator = new EmbedConstraintValidator($this->embedManager);
+    $this->validator->initialize($this->context);
+  }
+
+  /**
+   * Builds a mocked $value for validate() to read via getEntity().
+   *
+   * The getEntity()->getSource()->getSourceFieldValue() chain is mocked to
+   * return $input, mirroring what EmbedConstraintValidator::validate() reads.
+   *
+   * @param string $input
+   *   The embed code/URL that the media's source field should yield.
+   *
+   * @return \Drupal\Core\Field\FieldItemInterface|\PHPUnit\Framework\MockObject\MockObject
+   *   The mocked field item to pass as $value.
+   */
+  protected function mockValueForInput(string $input) {
+    $source = $this->createMock(MediaSourceInterface::class);
+    $source->method('getSourceFieldValue')->willReturn($input);
+
+    $media = $this->createMock(MediaInterface::class);
+    $media->method('getSource')->willReturn($source);
+
+    $value = $this->createMock(FieldItemInterface::class);
+    $value->method('getEntity')->willReturn($media);
+
+    return $value;
+  }
+
+  /**
+   * @covers ::validate
+   * @covers ::isVideo
+   */
+  public function testValidateAddsIsVideoViolationForYoutubeUrl(): void {
+    $this->context->expects($this->once())
+      ->method('addViolation')
+      ->with($this->constraint->isVideo);
+    $this->embedManager->expects($this->never())->method('isValid');
+
+    $this->validator->validate(
+      $this->mockValueForInput('https://www.youtube.com/watch?v=abc123'),
+      $this->constraint
+    );
+  }
+
+  /**
+   * @covers ::validate
+   * @covers ::isVideo
+   */
+  public function testValidateAddsIsVideoViolationForVimeoUrl(): void {
+    $this->context->expects($this->once())
+      ->method('addViolation')
+      ->with($this->constraint->isVideo);
+
+    $this->validator->validate(
+      $this->mockValueForInput('https://vimeo.com/123456'),
+      $this->constraint
+    );
+  }
+
+  /**
+   * @covers ::validate
+   */
+  public function testValidateAddsInvalidPatternViolationWhenManagerRejects(): void {
+    $this->embedManager->method('isValid')->willReturn(FALSE);
+    $this->context->expects($this->once())
+      ->method('addViolation')
+      ->with($this->constraint->invalidPattern);
+
+    $this->validator->validate(
+      $this->mockValueForInput('not a recognized embed code'),
+      $this->constraint
+    );
+  }
+
+  /**
+   * A SoundCloud playlist embed is accepted (no invalidAudioTrack violation).
+   *
+   * @covers ::validate
+   * @covers ::isTrack
+   * @covers ::isSoundcloud
+   */
+  public function testValidateAddsNoViolationForValidSoundcloudPlaylist(): void {
+    $this->embedManager->method('isValid')->willReturn(TRUE);
+    $this->context->expects($this->never())->method('addViolation');
+
+    $this->validator->validate(
+      $this->mockValueForInput('https://api.soundcloud.com/playlists/123456'),
+      $this->constraint
+    );
+  }
+
+  /**
+   * A non-track, non-playlist SoundCloud embed still trips the violation.
+   *
+   * @covers ::validate
+   * @covers ::isTrack
+   */
+  public function testValidateAddsInvalidAudioTrackViolationForOtherSoundcloudForm(): void {
+    $this->embedManager->method('isValid')->willReturn(TRUE);
+    $this->context->expects($this->once())
+      ->method('addViolation')
+      ->with($this->constraint->invalidAudioTrack);
+
+    $this->validator->validate(
+      $this->mockValueForInput('https://api.soundcloud.com/users/123456'),
+      $this->constraint
+    );
+  }
+
+  /**
+   * @covers ::validate
+   * @covers ::isTrack
+   */
+  public function testValidateAddsNoViolationForValidSoundcloudTrack(): void {
+    $this->embedManager->method('isValid')->willReturn(TRUE);
+    $this->context->expects($this->never())->method('addViolation');
+
+    $this->validator->validate(
+      $this->mockValueForInput('https://api.soundcloud.com/tracks/123456'),
+      $this->constraint
+    );
+  }
+
+  /**
+   * @covers ::validate
+   */
+  public function testValidateAddsNoViolationForValidNonSoundcloudEmbed(): void {
+    $this->embedManager->method('isValid')->willReturn(TRUE);
+    $this->context->expects($this->never())->method('addViolation');
+
+    $this->validator->validate(
+      $this->mockValueForInput('<blockquote class="twitter-tweet"></blockquote>'),
+      $this->constraint
+    );
+  }
+
+  /**
+   * Invokes a protected method on the validator via reflection.
+   *
+   * @param string $method
+   *   The protected method name.
+   * @param string $input
+   *   The embed code/URL argument.
+   *
+   * @return bool
+   *   The method's return value.
+   */
+  protected function invokeProtected(string $method, string $input): bool {
+    $reflection = new \ReflectionMethod($this->validator, $method);
+    $reflection->setAccessible(TRUE);
+    return $reflection->invoke($this->validator, $input);
+  }
+
+  /**
+   * @covers ::isVideo
+   */
+  public function testIsVideoAcceptsYoutubeYoutubeDotBeAndVimeo(): void {
+    $this->assertTrue($this->invokeProtected('isVideo', 'https://www.youtube.com/watch?v=abc123'));
+    $this->assertTrue($this->invokeProtected('isVideo', 'https://youtu.be/abc123'));
+    $this->assertTrue($this->invokeProtected('isVideo', 'https://vimeo.com/123456'));
+  }
+
+  /**
+   * @covers ::isVideo
+   */
+  public function testIsVideoRejectsUnrelatedUrl(): void {
+    $this->assertFalse($this->invokeProtected('isVideo', 'https://example.com/some-page'));
+  }
+
+  /**
+   * IsVideo() matches on the parsed host, not a substring.
+   *
+   * IsVideo() anchors on parse_url()'s host, so a non-video URL that merely
+   * contains "youtube.com" elsewhere in the string is not misclassified as a
+   * video embed.
+   *
+   * @covers ::isVideo
+   */
+  public function testIsVideoOnlyMatchesTheActualHost(): void {
+    $this->assertFalse($this->invokeProtected('isVideo', 'https://evil.com/redirect?to=youtube.com/x'));
+  }
+
+  /**
+   * @covers ::isSoundcloud
+   */
+  public function testIsSoundcloudAcceptsSoundcloudSubdomain(): void {
+    $this->assertTrue($this->invokeProtected('isSoundcloud', 'https://api.soundcloud.com/tracks/1'));
+    $this->assertFalse($this->invokeProtected('isSoundcloud', 'https://example.com/tracks/1'));
+  }
+
+  /**
+   * @covers ::isTrack
+   */
+  public function testIsTrackTrueForNonSoundcloudInput(): void {
+    // isTrack() only restricts SoundCloud URLs; anything else passes.
+    $this->assertTrue($this->invokeProtected('isTrack', 'https://example.com/anything'));
+  }
+
+  /**
+   * @covers ::isTrack
+   */
+  public function testIsTrackTrueForSoundcloudPlaylist(): void {
+    $this->assertTrue($this->invokeProtected('isTrack', 'https://api.soundcloud.com/playlists/1'));
+  }
+
+  /**
+   * @covers ::isTrack
+   */
+  public function testIsTrackTrueForSoundcloudTrack(): void {
+    $this->assertTrue($this->invokeProtected('isTrack', 'https://api.soundcloud.com/tracks/1'));
+  }
+
+  /**
+   * A SoundCloud URL that is neither a track nor a playlist is still rejected.
+   *
+   * @covers ::isTrack
+   */
+  public function testIsTrackFalseForOtherSoundcloudForm(): void {
+    $this->assertFalse($this->invokeProtected('isTrack', 'https://api.soundcloud.com/users/1'));
+  }
+
+  /**
+   * IsTrack() accepts the real full-iframe embeds authors actually paste.
+   *
+   * The other isTrack tests use bare API URLs; these use the complete <iframe>
+   * embed code (the canonical SoundCloud examples), so a regex regression that
+   * only broke the real form would still be caught.
+   *
+   * @covers ::isTrack
+   */
+  public function testIsTrackAcceptsRealSoundcloudIframes(): void {
+    $this->assertTrue($this->invokeProtected('isTrack', SoundCloudTest::TRACK_EMBED));
+    $this->assertTrue($this->invokeProtected('isTrack', SoundCloudTest::PLAYLIST_EMBED));
+  }
+
+}
