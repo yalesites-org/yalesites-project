@@ -15,12 +15,14 @@ entity_type_groups:
     post:
       basic: basic
       ai_engine: ai_engine
-      open_graph: open_graph
       ys_beacon: ys_beacon
     profile:
       basic: basic
       ai_engine: ai_engine
       ys_beacon: ys_beacon
+    resource:
+      basic: basic
+      ai_engine: ai_engine
 separator: ','
 tag_trim_method: beforeValue
 use_maxlength: true

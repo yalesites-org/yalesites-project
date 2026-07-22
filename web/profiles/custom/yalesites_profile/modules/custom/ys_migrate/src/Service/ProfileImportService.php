@@ -130,8 +130,12 @@ class ProfileImportService {
    * @param array $data
    *   The profile data.
    *
-   * @return \Drupal\node\NodeInterface|null
-   *   The created node or null on failure.
+   * @return \Drupal\node\NodeInterface
+   *   The created node.
+   *
+   * @throws \Exception
+   *   If the node cannot be saved. The reason is logged and re-thrown so the
+   *   caller can surface it instead of a generic failure message.
    */
   public function createProfileNode(array $data) {
     $node = $this->entityTypeManager->getStorage('node')->create(
@@ -165,7 +169,9 @@ class ProfileImportService {
     }
     catch (\Exception $e) {
       $this->loggerFactory->get('ys_migrate')->error('Failed to create profile node: @error', ['@error' => $e->getMessage()]);
-      return NULL;
+      // Re-throw so processImport() can report the real reason to the user
+      // instead of a generic "could not create profile" message.
+      throw $e;
     }
   }
 
@@ -186,6 +192,10 @@ class ProfileImportService {
     $errors = [];
 
     foreach ($data as $index => $row) {
+      // Use the true CSV line threaded through by the validator, falling
+      // back to the array offset (+2 for header and 0-based index).
+      $row_number = $row['_row_number'] ?? ($index + 2);
+
       try {
         $profile_data = $this->prepareProfileData($row);
 
@@ -197,25 +207,15 @@ class ProfileImportService {
           }
         }
 
-        $node = $this->createProfileNode($profile_data);
-        if ($node) {
-          $created++;
-        }
-        else {
-          $errors[] = $this->t(
-            'Row @row: could not create profile @name.', [
-              // +2 because index starts at 0 and we skip header
-              '@row' => $index + 2,
-              '@name' => $profile_data['display_name'] ?? '',
-            ]
-          );
-        }
+        // createProfileNode() returns the node or throws with the real reason,
+        // which the catch below reports (never silently dropping the row).
+        $this->createProfileNode($profile_data);
+        $created++;
       }
       catch (\Exception $e) {
         $errors[] = $this->t(
           'Row @row: @error', [
-            // +2 because index starts at 0 and we skip header
-            '@row' => $index + 2,
+            '@row' => $row_number,
             '@error' => $e->getMessage(),
           ]
         );

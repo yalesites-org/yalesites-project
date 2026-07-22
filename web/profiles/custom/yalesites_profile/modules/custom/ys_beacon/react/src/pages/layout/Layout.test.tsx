@@ -45,7 +45,7 @@ describe("Layout body scroll lock", () => {
     renderLayout();
 
     await userEvent.click(
-      screen.getByRole("button", { name: /try askyale now/i })
+      screen.getByRole("button", { name: /try beacon now/i })
     );
 
     expect(document.body.getAttribute("data-body-frozen")).toBe("true");
@@ -57,7 +57,7 @@ describe("Layout body scroll lock", () => {
     renderLayout();
 
     await userEvent.click(
-      screen.getByRole("button", { name: /try askyale now/i })
+      screen.getByRole("button", { name: /try beacon now/i })
     );
     // Layout closes the modal on Escape.
     await userEvent.keyboard("{Escape}");
@@ -66,5 +66,39 @@ describe("Layout body scroll lock", () => {
     expect(document.body.hasAttribute("data-modal-active")).toBe(false);
     expect(document.body.style.top).toBe("");
     expect(window.scrollTo).toHaveBeenCalledWith(0, SCROLL_OFFSET);
+  });
+});
+
+describe("Layout background inert while the modal is open (#1441)", () => {
+  it("marks the underlying page inert on open and restores it on close, leaving the widget host interactive", async () => {
+    // Stand-in for the host page's content, a sibling of the widget mount.
+    const pageContent = document.createElement("div");
+    pageContent.id = "page-content-under-test";
+    document.body.appendChild(pageContent);
+
+    try {
+      renderLayout();
+      expect(pageContent.hasAttribute("inert")).toBe(false);
+
+      await userEvent.click(
+        screen.getByRole("button", { name: /try beacon now/i })
+      );
+
+      // Background page is inert (removed from the a11y tree + tab order) so the
+      // dialog is a true modal context (WCAG 1.3.1 / 4.1.2).
+      expect(pageContent.hasAttribute("inert")).toBe(true);
+      // The Beacon widget host must stay interactive — it holds the modal.
+      expect(
+        document
+          .getElementById("ys-beacon-chat-widget")
+          ?.hasAttribute("inert")
+      ).toBe(false);
+
+      // Layout closes the modal on Escape.
+      await userEvent.keyboard("{Escape}");
+      expect(pageContent.hasAttribute("inert")).toBe(false);
+    } finally {
+      pageContent.remove();
+    }
   });
 });

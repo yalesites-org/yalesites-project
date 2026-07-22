@@ -5,6 +5,7 @@ import styles from "./Answer.module.css";
 
 import { AskResponse, Citation } from "../../api";
 import { parseAnswer } from "./AnswerParser";
+import { demotedHeadingComponents } from "../../constants/markdownComponents";
 
 import ReactMarkdown from "react-markdown";
 import remarkGfm from "remark-gfm";
@@ -54,6 +55,7 @@ export const Answer = ({
                         children={parsedAnswer.markdownFormatText}
                         className={styles.answerText}
                         components={{
+                            ...demotedHeadingComponents,
                             sup: ({ children }: { children?: ReactNode }) => {
                                 const text = Array.isArray(children) ? children.join("") : String(children ?? "");
                                 const n = Number(text);

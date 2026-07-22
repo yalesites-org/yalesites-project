@@ -26,6 +26,7 @@ import { Answer } from "../../components/Answer";
 import { QuestionInput } from "../../components/QuestionInput";
 import { AppStateContext } from "../../state/AppProvider";
 import { XSSAllowTags } from "../../constants/xssAllowTags";
+import { demotedHeadingComponents } from "../../constants/markdownComponents";
 
 const enum messageStatus {
     NotRunning = "Not Running",
@@ -63,6 +64,15 @@ const Chat = () => {
     const handleCloseModal = () => {
         setIsModalOpen(false);
     };
+
+    // Only wire the input's aria-describedby / render the disclaimer when there
+    // is disclaimer text; otherwise aria-describedby would point at an empty
+    // element (WCAG 1.3.1). Static per page load, so read once (matches
+    // initialQuestions above).
+    const hasDisclaimer = useMemo(
+        () => getWidgetAttribute("data-disclaimer").trim().length > 0,
+        []
+    );
 
     const [ASSISTANT, TOOL, ERROR] = ["assistant", "tool", "error"]
 
@@ -257,12 +267,6 @@ const Chat = () => {
         setIsModalOpen(true);
     };
 
-    const onViewSource = (citation: Citation) => {
-        if (citation.url && !citation.url.includes("blob.core")) {
-            window.open(citation.url, "_blank");
-        }
-    };
-
     const parseCitationFromMessage = (message: ChatMessage) => {
         if (message?.role && message?.role === "tool") {
             try {
@@ -316,13 +320,13 @@ const Chat = () => {
     const CitationHeader = () => {
         return (
             <Stack aria-label="Citations Panel Header Container" horizontal className={styles.citationPanelHeaderContainer} horizontalAlign="space-between" verticalAlign="center">
-                <span aria-label="Citations" className={styles.citationPanelHeader}>Citations</span>
+                <h2 className={styles.citationPanelHeader}>Citations</h2>
             </Stack>
         );
     }
 
     return (
-        <div className={isLoading ? styles.containerLoading : styles.container} role="main">
+        <div className={isLoading ? styles.containerLoading : styles.container}>
             <Stack horizontal className={styles.chatRoot}>
                 <div className={messages.length < 1 ? styles.chatEmptyWrapper: styles.chatContainer }>
                     {!messages || messages.length < 1 ? (
@@ -333,8 +337,7 @@ const Chat = () => {
                                     <li key={prompt}>
                                         <button key={prompt} onClick={() => handleButtonClick(prompt)}>
                                             <span>{prompt}</span>
-                                            <svg width="48" height="48" viewBox="0 0 48 48" xmlns="http://www.w3.org/2000/svg">
-                                                <title>Ask any question</title>
+                                            <svg width="48" height="48" viewBox="0 0 48 48" xmlns="http://www.w3.org/2000/svg" aria-hidden="true" focusable="false">
                                                 <path d="M12.427 10.2108L39.5284 22.2175C41.4905 23.093 41.4905 25.907 39.5284 26.7825L12.427 38.7892C10.3423 39.7272 8.19622 37.3509 9.2999 35.2872L13.592 27.2203C13.8372 26.72 14.3278 26.3448 14.9409 26.2822L25.7324 24.9065C25.9164 24.9065 26.1003 24.7189 26.1003 24.4687C26.1003 24.2811 25.9164 24.0935 25.7324 24.0935L14.9409 22.7178C14.3278 22.5927 13.8372 22.28 13.592 21.7797L9.2999 13.7128C8.19622 11.6491 10.3423 9.27279 12.427 10.2108Z"/>
                                             </svg>
                                         </button>
@@ -348,7 +351,7 @@ const Chat = () => {
                             {messages.map((answer, index) => (
                                 <>
                                     {answer.role === "user" ? (
-                                        <div className={styles.chatMessageUser} tabIndex={0}>
+                                        <div className={styles.chatMessageUser} tabIndex={0} role="group" aria-label="user message">
                                             <div className={styles.chatMessageUserMessage}>
                                                 <div className={styles.chatMessageUserMessageWrap}>
                                                     {answer.content}
@@ -356,7 +359,7 @@ const Chat = () => {
                                             </div>
                                         </div>
                                     ) : (
-                                        answer.role === "assistant" ? <div className={styles.chatMessageGpt}>
+                                        answer.role === "assistant" ? <div className={styles.chatMessageGpt} role="group" aria-label="Beacon response">
                                             <Answer
                                                 answer={{
                                                     answer: answer.content,
@@ -364,7 +367,7 @@ const Chat = () => {
                                                 }}
                                                 onCitationClicked={c => onShowCitation(c)}
                                             />
-                                        </div> : answer.role === "error" ? <div className={styles.chatMessageError}>
+                                        </div> : answer.role === "error" ? <div className={styles.chatMessageError} role="group" aria-label="Error message">
                                             <Stack horizontal className={styles.chatMessageErrorContentHeader}>
                                                 <ErrorCircleRegular className={styles.errorIcon} />
                                                 <span>Error</span>
@@ -413,7 +416,7 @@ const Chat = () => {
                             placeholder="Ask any question..."
                             disabled={isLoading}
                             providedQuestion={providedQuestion}
-                            describedById={DISCLAIMER_ID}
+                            describedById={hasDisclaimer ? DISCLAIMER_ID : undefined}
                             onSend={(question, id) => {
                                 makeApiRequest(question, id)
                             }}
@@ -429,22 +432,26 @@ const Chat = () => {
                         >
                             New chat
                         </button>
-                        <Disclaimer id={DISCLAIMER_ID} />
+                        {hasDisclaimer && <Disclaimer id={DISCLAIMER_ID} />}
                     </div>
                 </div>
                 {/* Citation Panel */}
-                {isModalOpen && <Modal show={isModalOpen} header={<CitationHeader />} footer={null} close={handleCloseModal} variant={'citation'}>
+                {isModalOpen && <Modal show={isModalOpen} header={<CitationHeader />} footer={null} close={handleCloseModal} variant={'citation'} ariaLabel="Citations">
 
                 {messages && messages.length > 0 && isCitationPanelOpen && activeCitation && (
-                    <Stack.Item className={`${styles.citationPanel}`} tabIndex={0} role="tabpanel" aria-label="Citations Panel">
+                    <Stack.Item className={`${styles.citationPanel}`}>
 
                         <div className={`${styles.citationPanelContentContainer}`}>
-                            <h5 className={styles.citationPanelTitle} role="link" tabIndex={0} title={activeCitation.url && !activeCitation.url.includes("blob.core") ? activeCitation.url : activeCitation.title ?? ""} onClick={() => onViewSource(activeCitation)}>
-                                {activeCitation.title}
-                                <svg version="1.1" xmlns="http://www.w3.org/2000/svg" width="28" height="28" viewBox="0 0 28 28">
-                                <path d="M22 14.5v5c0 2.484-2.016 4.5-4.5 4.5h-13c-2.484 0-4.5-2.016-4.5-4.5v-13c0-2.484 2.016-4.5 4.5-4.5h11c0.281 0 0.5 0.219 0.5 0.5v1c0 0.281-0.219 0.5-0.5 0.5h-11c-1.375 0-2.5 1.125-2.5 2.5v13c0 1.375 1.125 2.5 2.5 2.5h13c1.375 0 2.5-1.125 2.5-2.5v-5c0-0.281 0.219-0.5 0.5-0.5h1c0.281 0 0.5 0.219 0.5 0.5zM28 1v8c0 0.547-0.453 1-1 1-0.266 0-0.516-0.109-0.703-0.297l-2.75-2.75-10.187 10.187c-0.094 0.094-0.234 0.156-0.359 0.156s-0.266-0.063-0.359-0.156l-1.781-1.781c-0.094-0.094-0.156-0.234-0.156-0.359s0.063-0.266 0.156-0.359l10.187-10.187-2.75-2.75c-0.187-0.187-0.297-0.438-0.297-0.703 0-0.547 0.453-1 1-1h8c0.547 0 1 0.453 1 1z"></path>
-                                </svg>
-                            </h5>
+                            {activeCitation.url && /^https?:\/\//i.test(activeCitation.url) && !activeCitation.url.includes("blob.core") ? (
+                                // linkpurpose (component-library-twig) decorates external / new-window
+                                // links site-wide with an icon and a screen-reader announcement, so this
+                                // link intentionally carries no icon or "opens in a new tab" text of its own.
+                                <a className={styles.citationPanelTitle} href={activeCitation.url} target="_blank" rel="noopener noreferrer">
+                                    {activeCitation.title}
+                                </a>
+                            ) : (
+                                <span className={styles.citationPanelTitle}>{activeCitation.title}</span>
+                            )}
                             <div tabIndex={0}>
                             <ReactMarkdown
                                 linkTarget="_blank"
@@ -452,6 +459,7 @@ const Chat = () => {
                                 children={DOMPurify.sanitize(activeCitation.content, { ALLOWED_TAGS: XSSAllowTags })}
                                 remarkPlugins={[remarkGfm]}
                                 rehypePlugins={[rehypeRaw]}
+                                components={demotedHeadingComponents}
                             />
                             </div>
                         </div>

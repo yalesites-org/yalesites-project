@@ -1,33 +1,29 @@
 .questionInputContainer {
     display: flex;
-    flex-direction: row;
-    flex-wrap: wrap;
-    justify-content: space-between;
+    flex-direction: column;
+    gap: 0.5rem;
+    width: 100%;
+}
+
+/* The input and its overlaid send button; owns the positioning context the
+   absolutely-positioned send button anchors to. The visible label sits above
+   this row (WCAG 3.3.2). */
+.questionInputRow {
     position: relative;
-    gap: 1rem;
+    display: flex;
+    flex-direction: row;
+    width: 100%;
 }
 
-/* Off-screen clip technique: keeps the input's associated label in the
-   accessibility tree (so it supplies the accessible name) while hiding it
-   visually. Bundled with the widget so the label never depends on the host
-   theme also defining a `.visually-hidden` class. */
-.visuallyHidden {
-    position: absolute;
-    width: 1px;
-    height: 1px;
-    padding: 0;
-    margin: -1px;
-    overflow: hidden;
-    clip: rect(0, 0, 0, 0);
-    white-space: nowrap;
-    border: 0;
-}
-
-@media screen and (min-width:800px) {
-    .questionInputContainer {
-        flex-wrap: nowrap;
-        width: 100%;
-    }
+/* Persistent, visible label for the chat input. The placeholder disappears on
+   typing, so a visible label must stay on screen (WCAG 3.3.2). Full-width so it
+   sits on its own line above the input/send-button row. */
+.questionInputLabel {
+    width: 100%;
+    font-weight: 600;
+    font-size: 1rem;
+    line-height: 1.2;
+    color: hsl(210, 100%, 21%);
 }
 
 .questionInputTextArea {
