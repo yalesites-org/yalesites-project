@@ -14,8 +14,8 @@ __NOTE: Documentation assumes you are using MacOS with at least 8GB of memory on
 4. [Node.js (>= 8.0, < 11.0)](#additional-tools)
 5. [Composer](#additional-tools): Version 2.x.
 6. [Terminus](#terminus): Machine auth token
-7. [Lando](#lando)
-8. Docker: Use the version Lando wants to install and increase memory resources to at least 3GB memory and 3 CPUs if possible
+7. [Lando](#lando) or [DDEV](#ddev)
+8. Docker: Use the version your local development tool wants to install and increase memory resources to at least 3GB memory and 3 CPUs if possible
 9. **PHP Version**: 8.3 (as configured in composer.json platform requirement)
 10. [Project Setup](#project-setup)
     ```bash
@@ -50,6 +50,8 @@ In some cases, git will complain about ownership issues when building packages. 
 ```bash
 git config --global --add safe.directory /app/web/themes/contrib/atomic'
 ```
+
+If you use **DDEV**, Composer may instead warn about paths under `/var/www/html/...` inside the container. The committed `.ddev/config.yaml` runs a `post-start` hook that adds `/var/www/html` as a safe directory there so you usually do not need a separate manual step for DDEV.
 
 Keep in mind the above command is a global so it will stay in your `.gitconfig` for future builds.
 
@@ -89,9 +91,37 @@ This project supports development with Lando using the Pantheon recipe. This pro
 3. [Setup local certificate authority](https://docs.devwithlando.io/config/security.html)
 4. Increase Docker resources: Locate the 'Resources' section in your Docker preferences. For most architectures, this project requires at least 3GB of memory and 3 CPUs. Additional CPUs and memory may be helpful but should stay under the halfway mark of your total available resources. Also disable the _'Start Docker when you log in'_ setting under the 'General' tab.
 
+### DDEV
+
+This project supports development with **DDEV** as well as Lando. The committed `.ddev` configuration provides a local environment suitable for Drupal work with **PHP, MariaDB, Redis** (via the [ddev-redis](https://github.com/ddev/ddev-redis) add-on), and **Nginx**.
+
+1. [Install DDEV](https://docs.ddev.com/en/stable/users/install/ddev-installation/) (for example: `brew install ddev/ddev/ddev`).
+2. Ensure Docker Desktop (or your supported Docker engine) is running.
+3. Increase Docker resources the same way as for [Lando](#lando): at least **3GB memory** and **3 CPUs** where possible.
+
+The local scripts **default to Lando**. To use DDEV for a shell session when running setup or other `npm run` local scripts:
+
+```bash
+export YALESITES_LOCAL_DOCKER_TOOL=ddev
+npm run setup
+```
+
+The shared selector lives in `scripts/local/local-dev-tool.sh`. It defaults to `lando`, and supports `ddev` for Composer, Drush, cache rebuilds, and Pantheon database/file pulls.
+
+`ddev pull pantheon` reads **`PANTHEON_SITE`** and **`PANTHEON_ENVIRONMENT`** from `.ddev/config.yaml`. To override site or environment without editing the committed file, copy **`.ddev/config.local.example.yaml`** to **`.ddev/config.local.yaml`** (gitignored) and set `web_environment` there.
+
+Useful commands:
+
+- **`ddev describe`** — local URL, services, and ports.
+- **`ddev drush uli`** — one-time login link.
+- **`ddev phpunit`** — run PHPUnit with the project root **`phpunit.xml`**.
+- **`ddev redis-cli`** / **`ddev redis-flush`** — inspect or clear the local Redis instance when the add-on is installed.
+
+If **`ddev pull pantheon`** fails with **`mkdir .../.ddev/.downloads: file exists`** while Mutagen performance mode is on, set **`performance_mode: "none"`** for this project (already set in the committed `config.yaml`) or see comments in that file.
+
 ### Additional tools
 
-- [Composer](https://getcomposer.org/download/): PHP package manager. Version 2.x. (Can use lando instead if you prefer)
+- [Composer](https://getcomposer.org/download/): PHP package manager. Version 2.x. (Can use your selected local development tool instead if you prefer)
 - [NVM](https://github.com/nvm-sh/nvm#install--update-script): Node Version Manager
 - Node.js (>=8.0,<11.0). Via NVM.
 
@@ -110,7 +140,7 @@ This repository is a Pantheon Custom Upstream used to create and manage every si
 npm run setup
 ```
 
-Visit the local dev site [https://yalesites-project.lndo.site/](https://yalesites-project.lndo.site/) or run `lando drush uli` to obtain a login link.
+Visit the local dev site for **Lando** at [https://yalesites-project.lndo.site/](https://yalesites-project.lndo.site/) (URL follows the `name` in `.lando.local.yml`). For **DDEV**, open the HTTPS URL from `ddev describe` (typically `https://<project>.ddev.site`, matching the `name` in `.ddev/config.yaml`), or run `ddev drush uli`. You can also run `npm run build` to obtain a login link using your selected local tool.
 
 ## Working on projects within this repository
 
@@ -126,12 +156,14 @@ The [YaleSites Atomic theme](https://github.com/yalesites-org/atomic) is a flexi
 
 ```bash
 # Step 1: Configure Composer to use source packaged versions.
+# Use `ddev composer ...` instead if DDEV is your selected local tool.
 lando composer config --global 'preferred-install.yalesites-org/*' source
 
 # Step 2: Manually remove the originally downloaded dist packaged version.
 rm -rf web/themes/contrib/atomic
 
-# Step 3: Use Composer to download the new version of the thme.
+# Step 3: Use Composer to download the new version of the theme.
+# Use `ddev composer ...` instead if DDEV is your selected local tool.
 lando composer update atomic
 
 # Step 4: Verify that the theme is tracking a remote repository.
@@ -207,4 +239,5 @@ npm run test                                    # Runs prettier and linting
 ### Composer
 ```bash
 lando composer code-sniff                       # Test for PHP linting issues that CI tests against
+ddev composer code-sniff                        # DDEV equivalent
 ```
