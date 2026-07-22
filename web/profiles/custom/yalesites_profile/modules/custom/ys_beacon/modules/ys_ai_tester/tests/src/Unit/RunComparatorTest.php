@@ -38,7 +38,7 @@ class RunComparatorTest extends UnitTestCase {
     return [
       'id' => $id,
       'created' => 1000 + $id,
-      'yaml_filename' => "run$id.yml",
+      'source_filename' => "run$id.yml",
       'status' => 'complete',
     ];
   }
@@ -270,7 +270,7 @@ class RunComparatorTest extends UnitTestCase {
 
     $this->assertSame(7, $out['run_a']['id']);
     $this->assertSame(9, $out['run_b']['id']);
-    $this->assertSame('run7.yml', $out['run_a']['yaml_filename']);
+    $this->assertSame('run7.yml', $out['run_a']['source_filename']);
   }
 
 }
