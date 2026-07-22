@@ -1,0 +1,12 @@
+name: YaleSites migrate WHC
+type: module
+description: WHC-specific migration support for YaleSites
+core_version_requirement: '^9 || ^10'
+package: YaleSites
+dependencies:
+  - ys_migrate:ys_migrate
+  - migrate_plus
+  - migrate_tools
+  - migrate_drupal
+  - migrate_file_to_media
+  - migrate_conditions

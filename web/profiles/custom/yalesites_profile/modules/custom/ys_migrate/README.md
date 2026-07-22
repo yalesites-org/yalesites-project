@@ -77,6 +77,27 @@ drush migrate:import ys_onha_program_body
 drush migrate:import ys_onha_programs
 ```
 
+## Specific Migration: Whitney Humanities Center (WHC)
+
+The WHC migration transfers events, videos, people/profiles, taxonomy, and media
+from Drupal 7 to Drupal 10 YaleSites. It is packaged as the `ys_migrate_whc`
+sub-module (migration group `ys_whc`) and, like the other sub-modules, is opt-in:
+enable it only on the environment running the migration and disable it afterwards.
+It also relies on two additional contrib modules that are available on the
+platform but only enabled with the sub-module: `migrate_file_to_media` and
+`migrate_conditions`.
+
+See `modules/ys_migrate_whc/README.md` for the full contents, run steps, and a
+reusability note. In short:
+
+```bash
+drush en ys_migrate_whc
+drush migrate:status --group=ys_whc
+drush migrate:duplicate-file-detection whc_node_images
+drush migrate:duplicate-file-detection whc_user_images
+drush migrate:import --tag=whc_node --execute-dependencies
+```
+
 ## Running tests
 
 This module has PHPUnit tests under `tests/src/Unit/` for the CSV importer (`CsvValidatorService`, `TaxonomyResolverService`, `ProfileImportService`, `ProfileCsvImportForm`). Run them from the project root on the local Lando environment, passing the module's `tests` path so PHPUnit only discovers this module's tests (not Drupal core/contrib):
@@ -89,7 +110,7 @@ lando ssh -c "env SIMPLETEST_DB=mysql://pantheon:pantheon@database/pantheon \
 
 Add `--testdox` for readable output. Unit-only tests (no database) can also be run with the shorthand `lando phpunit web/profiles/custom/yalesites_profile/modules/custom/ys_migrate/tests`.
 
-The `ys_migrate_onha` and `ys_migrate_sustainability_news` submodules each have their own tests, under their own `tests/src/Unit/` directories, covering their migrate process/source plugins. Run each the same way, substituting its own `tests` path, e.g.:
+The `ys_migrate_onha`, `ys_migrate_sustainability_news`, and `ys_migrate_whc` submodules each have their own tests, under their own `tests/src/Unit/` directories, covering their migrate process/source plugins. Run each the same way, substituting its own `tests` path, e.g.:
 
 ```bash
 lando ssh -c "env SIMPLETEST_DB=mysql://pantheon:pantheon@database/pantheon \
@@ -99,4 +120,8 @@ lando ssh -c "env SIMPLETEST_DB=mysql://pantheon:pantheon@database/pantheon \
 lando ssh -c "env SIMPLETEST_DB=mysql://pantheon:pantheon@database/pantheon \
   php /app/vendor/bin/phpunit -c /app/phpunit.xml \
   /app/web/profiles/custom/yalesites_profile/modules/custom/ys_migrate/modules/ys_migrate_sustainability_news/tests"
+
+lando ssh -c "env SIMPLETEST_DB=mysql://pantheon:pantheon@database/pantheon \
+  php /app/vendor/bin/phpunit -c /app/phpunit.xml \
+  /app/web/profiles/custom/yalesites_profile/modules/custom/ys_migrate/modules/ys_migrate_whc/tests"
 ```
