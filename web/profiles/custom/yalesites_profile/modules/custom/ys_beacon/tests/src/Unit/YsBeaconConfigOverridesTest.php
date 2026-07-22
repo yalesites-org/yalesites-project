@@ -42,17 +42,18 @@ class YsBeaconConfigOverridesTest extends UnitTestCase {
    *   The raw ys_beacon.settings returned by the config storage.
    * @param array $keys
    *   Map of key id => resolved value. A missing id resolves to no key entity.
-   * @param string $pinned_url
-   *   The endpoint already pinned on the raw VDB connection config, if any.
+   * @param string $server_url
+   *   The endpoint URL configured on the Beacon search server, if any.
    *
    * @return \Drupal\ys_beacon\Config\YsBeaconConfigOverrides
    *   The override under test, with a key.repository placed in the container.
    */
-  protected function buildOverride(array $settings, array $keys, string $pinned_url = ''): YsBeaconConfigOverrides {
+  protected function buildOverride(array $settings, array $keys, string $server_url = ''): YsBeaconConfigOverrides {
+    $server_id = ($settings['search_server_id'] ?? '') ?: 'ys_beacon';
     $storage = $this->createMock(StorageInterface::class);
     $storage->method('read')->willReturnCallback(fn (string $name) => match ($name) {
       'ys_beacon.settings' => $settings,
-      self::VDB_CONFIG => ['url' => $pinned_url],
+      'search_api.server.' . $server_id => ['backend_config' => ['database_settings' => ['url' => $server_url]]],
       default => [],
     });
 
@@ -391,34 +392,37 @@ class YsBeaconConfigOverridesTest extends UnitTestCase {
   }
 
   /**
-   * A pinned endpoint is left to the real config; the secret is not layered.
+   * The endpoint configured on the search server wins over the secret default.
    *
-   * Once a site has created its index it pins the resolved endpoint onto the
-   * VDB connection config, so this override steps aside and a later change to
-   * the shared Pantheon secret only moves sites that have not created an index
-   * yet (yalesites-org/YaleSites-Internal#1440).
+   * A non-empty URL on the Beacon search server's connection config is the
+   * site's authoritative endpoint; the platform Pantheon-secret default is only
+   * a fallback for a server that has none. A configured endpoint is used even
+   * when the secret-backed key resolves to a different service - the
+   * requirement that a pre-filled URL is honoured rather than silently ignored
+   * (yalesites-org/YaleSites-Internal#1440, #1448).
    *
    * @covers ::loadOverrides
-   * @covers ::hasPinnedUrl
+   * @covers ::configuredServerUrl
    */
-  public function testPinnedUrlIsLeftToTheRealConfig(): void {
+  public function testConfiguredServerUrlWinsOverSecret(): void {
     $override = $this->buildOverride(
-      [],
+      ['azure_search_url_key' => ''],
       [YsBeaconConfigOverrides::DEFAULT_URL_KEY => 'https://secret.search.windows.net'],
-      'https://pinned.search.windows.net',
+      'https://configured.search.windows.net',
     );
 
-    // No override applied, so the pinned value on the config stands.
-    $this->assertArrayNotHasKey(self::VDB_CONFIG, $override->loadOverrides([self::VDB_CONFIG]));
+    $overrides = $override->loadOverrides([self::VDB_CONFIG]);
+    $this->assertSame('https://configured.search.windows.net', $overrides[self::VDB_CONFIG]['url']);
   }
 
   /**
-   * With no pinned URL the endpoint still resolves from the secret-backed key.
+   * A server with no configured endpoint falls back to the secret-backed key.
    *
    * @covers ::loadOverrides
-   * @covers ::hasPinnedUrl
+   * @covers ::configuredServerUrl
+   * @covers ::getAzureSearchUrl
    */
-  public function testUnpinnedSiteResolvesUrlFromSecret(): void {
+  public function testEmptyServerUrlFallsBackToSecret(): void {
     $override = $this->buildOverride(
       ['azure_search_url_key' => ''],
       [YsBeaconConfigOverrides::DEFAULT_URL_KEY => 'https://secret.search.windows.net'],
@@ -427,6 +431,39 @@ class YsBeaconConfigOverridesTest extends UnitTestCase {
 
     $overrides = $override->loadOverrides([self::VDB_CONFIG]);
     $this->assertSame('https://secret.search.windows.net', $overrides[self::VDB_CONFIG]['url']);
+  }
+
+  /**
+   * A scheme-less endpoint configured on the server is normalized to https.
+   *
+   * @covers ::loadOverrides
+   * @covers ::configuredServerUrl
+   * @covers ::normalizeEndpoint
+   */
+  public function testConfiguredServerBareHostGetsHttpsScheme(): void {
+    $override = $this->buildOverride(
+      ['azure_search_url_key' => ''],
+      [YsBeaconConfigOverrides::DEFAULT_URL_KEY => 'https://secret.search.windows.net'],
+      'configured.search.windows.net',
+    );
+
+    $overrides = $override->loadOverrides([self::VDB_CONFIG]);
+    $this->assertSame('https://configured.search.windows.net', $overrides[self::VDB_CONFIG]['url']);
+  }
+
+  /**
+   * The VDB override is invalidated when the server's endpoint changes.
+   *
+   * The endpoint is resolved from the search server's connection URL, so the
+   * override's cache metadata must tag that server config - otherwise an edited
+   * endpoint only takes effect after a full cache rebuild.
+   *
+   * @covers ::getCacheableMetadata
+   */
+  public function testVdbCacheMetadataTagsTheServer(): void {
+    $override = $this->buildOverride(['azure_search_url_key' => ''], []);
+    $tags = $override->getCacheableMetadata(self::VDB_CONFIG)->getCacheTags();
+    $this->assertContains('config:search_api.server.ys_beacon', $tags);
   }
 
 }

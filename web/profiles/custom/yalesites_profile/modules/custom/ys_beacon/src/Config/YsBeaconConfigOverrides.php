@@ -10,9 +10,14 @@ use Drupal\Core\Config\StorageInterface;
  * Injects per-site Beacon values into platform-managed configuration.
  *
  * Two things are layered in at runtime rather than stored in synced config: the
- * Azure AI Search endpoint URL (resolved from a key entity backed by Pantheon
- * secrets) on the vector database connection config, and safety-net toggles on
- * the search index status and the Beacon chat setting.
+ * Azure AI Search endpoint URL on the vector database connection config, and
+ * safety-net toggles on the search index status and the Beacon chat setting.
+ *
+ * The endpoint URL is resolved from the Beacon search server's configured
+ * connection URL (the field an admin edits, and the field
+ * BeaconIndexManager pins the resolved endpoint onto once a site owns an
+ * index); only when the server has no URL of its own does it fall back to the
+ * platform default from a key entity backed by Pantheon secrets.
  *
  * The per-site index name and read-only flag are NOT overridden here: they are
  * persisted directly onto the real Search API config (the server's Azure
@@ -119,14 +124,17 @@ class YsBeaconConfigOverrides implements ConfigFactoryOverrideInterface {
       }
     }
 
-    if (in_array(self::VDB_CONFIG, $names, TRUE) && !$this->hasPinnedUrl()) {
-      // Only layer the secret-backed endpoint over the connection config when
-      // the site has NOT pinned one. Once a site creates an index it pins the
-      // resolved URL onto this config (config-ignored), and this override then
-      // steps aside so a later change to the shared Pantheon secret only moves
-      // sites that have not created an index yet
-      // (yalesites-org/YaleSites-Internal#1440).
-      $url = $this->getAzureSearchUrl(($settings['azure_search_url_key'] ?? '') ?: self::DEFAULT_URL_KEY);
+    if (in_array(self::VDB_CONFIG, $names, TRUE)) {
+      // The endpoint the admin configured on the Beacon search server wins; an
+      // empty field falls back to the platform Pantheon-secret default. Once a
+      // site creates (or adopts) an index the resolved endpoint is written back
+      // onto that same server field by BeaconIndexManager::pinSearchUrl(), so a
+      // later secret change only moves sites that have not created one yet
+      // (yalesites-org/YaleSites-Internal#1440, #1448).
+      $url = $this->configuredServerUrl($settings);
+      if ($url === '') {
+        $url = $this->getAzureSearchUrl(($settings['azure_search_url_key'] ?? '') ?: self::DEFAULT_URL_KEY);
+      }
       if ($url !== '') {
         $overrides[self::VDB_CONFIG] = ['url' => $url];
       }
@@ -185,21 +193,41 @@ class YsBeaconConfigOverrides implements ConfigFactoryOverrideInterface {
   }
 
   /**
-   * Whether this site has pinned an Azure AI Search endpoint.
+   * The Azure endpoint URL configured on the Beacon search server.
    *
-   * A pinned endpoint is a non-empty url persisted directly onto the VDB
-   * connection config by BeaconIndexManager::pinSearchUrl() once the site
-   * created its index; the two sides share this "non-empty url means pinned"
-   * invariant. It is read from raw storage to see the persisted value rather
-   * than this override's own layered one, and to avoid re-entering the config
-   * factory while overrides resolve.
+   * This is the value entered in the search server's Vector Database
+   * Configuration form (backend_config.database_settings.url) and the field
+   * BeaconIndexManager::pinSearchUrl() writes the resolved endpoint back onto
+   * once a site owns an index. It is the site's authoritative endpoint: a
+   * non-empty value is used as-is and only an empty one falls back to the
+   * Pantheon-secret default. It is read from raw storage to see the persisted
+   * value and to avoid re-entering the config factory while overrides resolve
+   * (yalesites-org/YaleSites-Internal#1440, #1448).
    *
-   * @return bool
-   *   TRUE when the connection config already carries a pinned endpoint URL.
+   * @param array $settings
+   *   The raw ys_beacon settings.
+   *
+   * @return string
+   *   The configured endpoint URL (scheme-normalized), or an empty string when
+   *   the server has none.
    */
-  protected function hasPinnedUrl(): bool {
-    $connection = $this->configStorage->read(self::VDB_CONFIG) ?: [];
-    return trim((string) ($connection['url'] ?? '')) !== '';
+  protected function configuredServerUrl(array $settings): string {
+    $server = $this->configStorage->read($this->serverConfigName($settings)) ?: [];
+    $url = $server['backend_config']['database_settings']['url'] ?? '';
+    return self::normalizeEndpoint((string) $url);
+  }
+
+  /**
+   * The Search API server config object name backing the chatbot.
+   *
+   * @param array $settings
+   *   The raw ys_beacon settings.
+   *
+   * @return string
+   *   The config object name.
+   */
+  protected function serverConfigName(array $settings): string {
+    return 'search_api.server.' . (($settings['search_server_id'] ?? '') ?: 'ys_beacon');
   }
 
   /**
@@ -301,13 +329,16 @@ class YsBeaconConfigOverrides implements ConfigFactoryOverrideInterface {
     if (in_array($name, $ours, TRUE)) {
       $metadata->addCacheTags(['config:ys_beacon.settings']);
     }
-    // The injected endpoint URL is read from the key entity, so the override
-    // must be invalidated when that key is created or changed (for example by
-    // the pantheon_secrets sync). Without this, a newly synced key only takes
-    // effect after a full cache rebuild.
+    // The endpoint is the server's configured URL, with the secret-backed key
+    // as fallback, so the override must be invalidated when either changes: an
+    // edited endpoint, or a newly synced key (for example from the
+    // pantheon_secrets sync) that only takes effect after a full cache rebuild.
     if ($name === self::VDB_CONFIG) {
       $key_id = ($settings['azure_search_url_key'] ?? '') ?: self::DEFAULT_URL_KEY;
-      $metadata->addCacheTags(['config:key.key.' . $key_id]);
+      $metadata->addCacheTags([
+        'config:key.key.' . $key_id,
+        'config:' . $this->serverConfigName($settings),
+      ]);
     }
     return $metadata;
   }
