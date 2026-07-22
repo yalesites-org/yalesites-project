@@ -110,7 +110,7 @@
   "config": {
     "policy": {
       "advisories": {
-        "ignore-id":[
+        "ignore-id": [
           "SA-CONTRIB-2025-060"
         ]
       }
@@ -155,6 +155,9 @@
     ],
     "post-create-project-cmd": [
       "DrupalProject\\composer\\ScriptHandler::createRequiredFiles"
+    ],
+    "test:sdc": [
+      "./vendor/bin/phpunit --group sdc web/themes/contrib/atomic/tests"
     ]
   }
 }
