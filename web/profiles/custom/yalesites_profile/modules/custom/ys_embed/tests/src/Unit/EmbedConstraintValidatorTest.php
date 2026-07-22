@@ -131,18 +131,36 @@ class EmbedConstraintValidatorTest extends UnitTestCase {
   }
 
   /**
+   * A SoundCloud playlist embed is accepted (no invalidAudioTrack violation).
+   *
    * @covers ::validate
    * @covers ::isTrack
    * @covers ::isSoundcloud
    */
-  public function testValidateAddsInvalidAudioTrackViolationForSoundcloudPlaylist(): void {
+  public function testValidateAddsNoViolationForValidSoundcloudPlaylist(): void {
+    $this->embedManager->method('isValid')->willReturn(TRUE);
+    $this->context->expects($this->never())->method('addViolation');
+
+    $this->validator->validate(
+      $this->mockValueForInput('https://api.soundcloud.com/playlists/123456'),
+      $this->constraint
+    );
+  }
+
+  /**
+   * A non-track, non-playlist SoundCloud embed still trips the violation.
+   *
+   * @covers ::validate
+   * @covers ::isTrack
+   */
+  public function testValidateAddsInvalidAudioTrackViolationForOtherSoundcloudForm(): void {
     $this->embedManager->method('isValid')->willReturn(TRUE);
     $this->context->expects($this->once())
       ->method('addViolation')
       ->with($this->constraint->invalidAudioTrack);
 
     $this->validator->validate(
-      $this->mockValueForInput('https://api.soundcloud.com/playlists/123456'),
+      $this->mockValueForInput('https://api.soundcloud.com/users/123456'),
       $this->constraint
     );
   }
@@ -239,8 +257,8 @@ class EmbedConstraintValidatorTest extends UnitTestCase {
   /**
    * @covers ::isTrack
    */
-  public function testIsTrackFalseForSoundcloudPlaylist(): void {
-    $this->assertFalse($this->invokeProtected('isTrack', 'https://api.soundcloud.com/playlists/1'));
+  public function testIsTrackTrueForSoundcloudPlaylist(): void {
+    $this->assertTrue($this->invokeProtected('isTrack', 'https://api.soundcloud.com/playlists/1'));
   }
 
   /**
@@ -248,6 +266,29 @@ class EmbedConstraintValidatorTest extends UnitTestCase {
    */
   public function testIsTrackTrueForSoundcloudTrack(): void {
     $this->assertTrue($this->invokeProtected('isTrack', 'https://api.soundcloud.com/tracks/1'));
+  }
+
+  /**
+   * A SoundCloud URL that is neither a track nor a playlist is still rejected.
+   *
+   * @covers ::isTrack
+   */
+  public function testIsTrackFalseForOtherSoundcloudForm(): void {
+    $this->assertFalse($this->invokeProtected('isTrack', 'https://api.soundcloud.com/users/1'));
+  }
+
+  /**
+   * IsTrack() accepts the real full-iframe embeds authors actually paste.
+   *
+   * The other isTrack tests use bare API URLs; these use the complete <iframe>
+   * embed code (the canonical SoundCloud examples), so a regex regression that
+   * only broke the real form would still be caught.
+   *
+   * @covers ::isTrack
+   */
+  public function testIsTrackAcceptsRealSoundcloudIframes(): void {
+    $this->assertTrue($this->invokeProtected('isTrack', SoundCloudTest::TRACK_EMBED));
+    $this->assertTrue($this->invokeProtected('isTrack', SoundCloudTest::PLAYLIST_EMBED));
   }
 
 }
