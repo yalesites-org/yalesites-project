@@ -43,7 +43,7 @@ ys_core.admin_views_settings:
   path: '/admin/yalesites/views-settings'
   defaults:
     _form: '\Drupal\ys_core\Form\ViewsSettingsForm'
-    _title: 'Views Settings'
+    _title: 'Search Settings'
   requirements:
     _permission: 'yalesites manage settings'
 # Dashboard settings form.

@@ -45,10 +45,10 @@ ys_core.admin_footer_settings:
   weight: 20
 # Views settings form.
 ys_core.admin_views_settings:
-  description: "Views settings."
+  description: "Site search settings."
   parent: ys_core.admin_yalesites
   route_name: ys_core.admin_views_settings
-  title: "Views Settings"
+  title: "Search Settings"
   weight: 25
 # Dashboard settings form.
 ys_core.admin_dashboard_settings:
