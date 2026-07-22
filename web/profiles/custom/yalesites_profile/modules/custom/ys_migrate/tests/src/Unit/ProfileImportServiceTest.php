@@ -260,11 +260,14 @@ class ProfileImportServiceTest extends UnitTestCase {
   }
 
   /**
-   * CreateProfileNode() logs and returns NULL when save() fails.
+   * CreateProfileNode() logs and re-throws when save() fails.
+   *
+   * The exception is re-thrown (after logging) rather than swallowed into a
+   * NULL return, so processImport() can surface the real failure reason.
    *
    * @covers ::createProfileNode
    */
-  public function testCreateProfileNodeSaveFails() {
+  public function testCreateProfileNodeSaveFailsLogsAndRethrows() {
     $node = $this->createMock(NodeInterface::class);
     $node->method('save')->willThrowException(new \Exception('Database error'));
     $this->nodeStorage->method('create')->willReturn($node);
@@ -285,9 +288,9 @@ class ProfileImportServiceTest extends UnitTestCase {
       'custom_vocab' => [],
     ];
 
-    $result = $this->profileImport->createProfileNode($data);
-
-    $this->assertNull($result);
+    $this->expectException(\Exception::class);
+    $this->expectExceptionMessage('Database error');
+    $this->profileImport->createProfileNode($data);
   }
 
   /**
@@ -348,26 +351,47 @@ class ProfileImportServiceTest extends UnitTestCase {
   }
 
   /**
-   * A failed node creation is reported in the errors list, not dropped.
+   * A failed node creation is reported with its real reason, not dropped.
    *
-   * When createProfileNode() returns NULL, processImport() records the row in
-   * the returned "errors" list instead of silently omitting it.
+   * When createProfileNode() throws, processImport() records the row in the
+   * returned "errors" list with the actual failure message instead of a
+   * generic "could not create profile" line.
    *
    * @covers ::processImport
    */
   public function testProcessImportShouldReportFailedNodeCreation() {
     $service = $this->partialProfileImport(['prepareProfileData', 'findExistingProfile', 'createProfileNode']);
     $service->method('prepareProfileData')->willReturn(['display_name' => 'Someone', 'email' => '']);
-    $service->method('createProfileNode')->willReturn(NULL);
+    $service->method('createProfileNode')->willThrowException(new \Exception('Field constraint violated'));
 
-    $result = $service->processImport([['row' => 1]], TRUE);
+    $result = $service->processImport([['_row_number' => 2]], TRUE);
 
     $this->assertSame(0, $result['created']);
     $this->assertCount(1, $result['errors']);
-    // The single data row is CSV row 2 (header + 1), and the message carries
-    // the profile's display name.
+    // The row is reported with its true CSV line and the real failure reason.
     $this->assertStringContainsString('Row 2', (string) $result['errors'][0]);
-    $this->assertStringContainsString('Someone', (string) $result['errors'][0]);
+    $this->assertStringContainsString('Field constraint violated', (string) $result['errors'][0]);
+  }
+
+  /**
+   * ProcessImport() reports the true CSV row threaded by the validator.
+   *
+   * The row number comes from the '_row_number' carried on each row (the true
+   * CSV line), not the array offset, so blank rows earlier in the file do not
+   * skew the reported line.
+   *
+   * @covers ::processImport
+   */
+  public function testProcessImportUsesThreadedRowNumber() {
+    $service = $this->partialProfileImport(['prepareProfileData', 'createProfileNode']);
+    $service->method('prepareProfileData')->willReturn(['display_name' => 'Someone', 'email' => '']);
+    $service->method('createProfileNode')->willThrowException(new \Exception('Save failed'));
+
+    // A single data row carrying its true CSV line (7), e.g. after blank rows.
+    $result = $service->processImport([['_row_number' => 7]], TRUE);
+
+    $this->assertCount(1, $result['errors']);
+    $this->assertStringContainsString('Row 7', (string) $result['errors'][0]);
   }
 
   /**
