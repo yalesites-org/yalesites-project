@@ -92,20 +92,25 @@ class EmbedConstraintValidator extends ConstraintValidator implements ContainerI
   }
 
   /**
-   * Check if the embed code matches a track.
+   * Check if the embed code is a supported SoundCloud audio embed.
+   *
+   * SoundCloud embeds are limited to single tracks and playlists (the two forms
+   * captured by SoundCloud::$pattern's track_or_playlist group); any other
+   * SoundCloud form is rejected. Non-SoundCloud embeds are unaffected.
    *
    * @param string $input
    *   The user provided embed code.
    *
    * @return bool
-   *   TRUE if the embed code matches a track.
+   *   TRUE if the embed code is a SoundCloud track or playlist, or is not a
+   *   SoundCloud embed at all.
    */
   protected function isTrack(string $input): bool {
     if (!$this->isSoundcloud($input)) {
       return TRUE;
     }
 
-    $p1 = "https:\/\/\S+.soundcloud.com\/tracks\S+";
+    $p1 = "https:\/\/\S+.soundcloud.com\/(?:tracks|playlists)\S+";
     $pattern = "/{$p1}/";
     return (bool) preg_match($pattern, $input, $matches);
   }
