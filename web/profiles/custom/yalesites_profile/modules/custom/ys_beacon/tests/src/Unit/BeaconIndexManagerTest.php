@@ -6,11 +6,10 @@ use Drupal\Core\Config\Config;
 use Drupal\Core\Config\ConfigFactoryInterface;
 use Drupal\Core\Config\Entity\ConfigEntityStorageInterface;
 use Drupal\Core\Entity\EntityTypeManagerInterface;
-use Drupal\key\KeyInterface;
-use Drupal\key\KeyRepositoryInterface;
 use Drupal\search_api\IndexInterface;
 use Drupal\search_api\ServerInterface;
 use Drupal\Tests\UnitTestCase;
+use Drupal\ys_beacon\Service\BeaconCredentials;
 use Drupal\ys_beacon\Service\BeaconIndexManager;
 use GuzzleHttp\ClientInterface;
 use GuzzleHttp\Psr7\Utils;
@@ -236,10 +235,7 @@ class BeaconIndexManagerTest extends UnitTestCase {
     });
     $editable->method('save')->willReturnSelf();
 
-    $immutable = $this->createMock(Config::class);
-    $immutable->method('get')->willReturnCallback(
-      fn (string $key) => in_array($key, ['search_server_id', 'search_index_id'], TRUE) ? 'ys_beacon' : NULL,
-    );
+    $immutable = $this->serverIdSettingsMock();
 
     $config_factory = $this->createMock(ConfigFactoryInterface::class);
     $config_factory->method('getEditable')->with('ys_beacon.settings')->willReturn($editable);
@@ -406,10 +402,7 @@ class BeaconIndexManagerTest extends UnitTestCase {
     $site = $this->createMock(Config::class);
     $site->method('get')->willReturnCallback(fn (string $key) => $key === 'uuid' ? $uuid : NULL);
 
-    $settings = $this->createMock(Config::class);
-    $settings->method('get')->willReturnCallback(
-      fn (string $key) => in_array($key, ['search_server_id', 'search_index_id'], TRUE) ? 'ys_beacon' : NULL,
-    );
+    $settings = $this->serverIdSettingsMock();
 
     $server = $this->createMock(Config::class);
     $server->method('get')->willReturnCallback(
@@ -569,7 +562,13 @@ class BeaconIndexManagerTest extends UnitTestCase {
   }
 
   /**
-   * Pins the resolved endpoint so a later secret change skips this site.
+   * Pins the resolved endpoint onto the server so a secret change skips it.
+   *
+   * When the server has no endpoint configured, the resolved endpoint (here the
+   * secret-backed default) is written onto the server's connection URL - the
+   * field an admin edits and the override resolves from - so the site keeps
+   * that service even if the shared secret is later repointed
+   * (yalesites-org/YaleSites-Internal#1440, #1448).
    *
    * @covers ::pinSearchUrl
    */
@@ -577,25 +576,25 @@ class BeaconIndexManagerTest extends UnitTestCase {
     $captured = [];
     $manager = $this->buildManagerForPin('https://svc.search.windows.net', '', $captured);
     $this->assertTrue($manager->pinSearchUrl());
-    $this->assertSame('https://svc.search.windows.net', $captured['url'] ?? NULL);
+    $this->assertSame('https://svc.search.windows.net', $captured[0] ?? NULL);
   }
 
   /**
-   * PinSearchUrl writes nothing when the endpoint is already pinned unchanged.
+   * PinSearchUrl leaves an endpoint an admin already configured untouched.
    *
    * @covers ::pinSearchUrl
    */
-  public function testPinSearchUrlSkipsWhenUnchanged(): void {
+  public function testPinSearchUrlSkipsWhenServerAlreadyConfigured(): void {
     $captured = [];
     $manager = $this->buildManagerForPin(
       'https://svc.search.windows.net',
       'https://svc.search.windows.net',
       $captured,
     );
-    // The endpoint still resolved, so it is reported pinned even though the
-    // already-current value is not re-written.
+    // The endpoint resolved, so it is reported pinned, but the server already
+    // carries one so nothing is written over it.
     $this->assertTrue($manager->pinSearchUrl());
-    $this->assertArrayNotHasKey('url', $captured);
+    $this->assertSame([], $captured);
   }
 
   /**
@@ -609,7 +608,148 @@ class BeaconIndexManagerTest extends UnitTestCase {
     // Nothing resolved: reported unpinned so callers can surface it, and no
     // value is written.
     $this->assertFalse($manager->pinSearchUrl());
-    $this->assertArrayNotHasKey('url', $captured);
+    $this->assertSame([], $captured);
+  }
+
+  /**
+   * Request() authenticates with the key paired with the configured endpoint.
+   *
+   * The provisioning path resolves the API key for the site's effective
+   * endpoint through the credentials resolver, so it sends the same per-service
+   * key the query path uses (yalesites-org/YaleSites-Internal#1448).
+   *
+   * @covers ::request
+   * @covers ::countIndexes
+   */
+  public function testRequestUsesEndpointMatchedApiKey(): void {
+    $vdb = $this->createMock(Config::class);
+    $vdb->method('get')->willReturnCallback(fn (string $key) => match ($key) {
+      'url' => 'https://svc.search.windows.net',
+      'api_version' => '2023-11-01',
+      default => NULL,
+    });
+    $config_factory = $this->createMock(ConfigFactoryInterface::class);
+    $config_factory->method('get')->willReturnCallback(
+      fn (string $name) => $name === 'ai_vdb_provider_azure_ai_search.settings' ? $vdb : $this->createMock(Config::class),
+    );
+
+    // The resolver is asked for the key of the site's configured endpoint.
+    $credentials = $this->createMock(BeaconCredentials::class);
+    $credentials->expects($this->atLeastOnce())->method('apiKeyForEndpoint')
+      ->with('https://svc.search.windows.net')->willReturn('endpoint-key');
+
+    $captured = [];
+    $response = $this->createMock(ResponseInterface::class);
+    $response->method('getBody')->willReturn(Utils::streamFor('{"value":[]}'));
+    $http_client = $this->createMock(ClientInterface::class);
+    $http_client->method('request')->willReturnCallback(
+      function (string $method, string $uri, array $options) use (&$captured, $response) {
+        $captured = $options;
+        return $response;
+      },
+    );
+
+    $manager = (new \ReflectionClass(BeaconIndexManager::class))->newInstanceWithoutConstructor();
+    $this->setProperty($manager, 'configFactory', $config_factory);
+    $this->setProperty($manager, 'credentials', $credentials);
+    $this->setProperty($manager, 'httpClient', $http_client);
+
+    $manager->countIndexes();
+
+    // The resolved per-endpoint key is what actually authenticates the request.
+    $this->assertSame('endpoint-key', $captured['headers']['api-key'] ?? NULL);
+  }
+
+  /**
+   * Repin() refuses an endpoint that has no key in the map.
+   *
+   * Moving a site to a service it cannot authenticate against would strand it,
+   * so repin fails closed before it writes anything or provisions
+   * (yalesites-org/YaleSites-Internal#1448).
+   *
+   * @covers ::repin
+   */
+  public function testRepinRefusesEndpointMissingFromMap(): void {
+    $credentials = $this->createMock(BeaconCredentials::class);
+    $credentials->method('apiKeyForEndpoint')->willReturn(NULL);
+
+    $manager = $this->getMockBuilder(BeaconIndexManager::class)
+      ->disableOriginalConstructor()
+      ->onlyMethods(['provision'])
+      ->getMock();
+    // It must not provision when the target endpoint is unusable.
+    $manager->expects($this->never())->method('provision');
+    $this->setProperty($manager, 'credentials', $credentials);
+
+    $this->expectException(\RuntimeException::class);
+    $manager->repin('https://unmapped.search.windows.net');
+  }
+
+  /**
+   * Repin() pins the normalized endpoint onto the server then provisions.
+   *
+   * @covers ::repin
+   */
+  public function testRepinPinsEndpointAndProvisions(): void {
+    $credentials = $this->createMock(BeaconCredentials::class);
+    $credentials->method('apiKeyForEndpoint')->with('https://new.search.windows.net')->willReturn('KEY');
+
+    $captured = [];
+    $manager = $this->getMockBuilder(BeaconIndexManager::class)
+      ->disableOriginalConstructor()
+      ->onlyMethods(['provision'])
+      ->getMock();
+    $manager->expects($this->once())->method('provision')->willReturn('my-index');
+    $this->setProperty($manager, 'credentials', $credentials);
+    $this->setProperty($manager, 'entityTypeManager', $this->serverCapturingEtm('', $captured));
+    $this->setProperty($manager, 'configFactory', $this->serverIdConfigFactory());
+    $this->injectLogger($manager, $this->createMock(LoggerInterface::class));
+
+    $this->assertSame('my-index', $manager->repin('new.search.windows.net'));
+    // A scheme-less input is normalized to https before it is pinned onto the
+    // server's connection URL.
+    $this->assertSame('https://new.search.windows.net', $captured[0] ?? NULL);
+  }
+
+  /**
+   * Repin() restores the previous endpoint when provisioning fails.
+   *
+   * The VDB url is config-ignored, so a failed repin that left the new endpoint
+   * pinned would strand the site pointing at an index-less service with no
+   * deploy-time recovery. repin() must roll the endpoint back on failure
+   * (yalesites-org/YaleSites-Internal#1448).
+   *
+   * @covers ::repin
+   */
+  public function testRepinRestoresPreviousEndpointWhenProvisionFails(): void {
+    $credentials = $this->createMock(BeaconCredentials::class);
+    $credentials->method('apiKeyForEndpoint')->willReturn('KEY');
+
+    $captured = [];
+    $manager = $this->getMockBuilder(BeaconIndexManager::class)
+      ->disableOriginalConstructor()
+      ->onlyMethods(['provision'])
+      ->getMock();
+    // Provisioning on the new service fails (e.g. it is at the index cap).
+    $manager->method('provision')->willThrowException(new \RuntimeException('at capacity'));
+    $this->setProperty($manager, 'credentials', $credentials);
+    $this->setProperty($manager, 'entityTypeManager', $this->serverCapturingEtm('https://old.search.windows.net', $captured));
+    $this->setProperty($manager, 'configFactory', $this->serverIdConfigFactory());
+    $this->injectLogger($manager, $this->createMock(LoggerInterface::class));
+
+    try {
+      $manager->repin('new.search.windows.net');
+      $this->fail('Expected the failed provision to propagate.');
+    }
+    catch (\RuntimeException $e) {
+      // Expected: the provision failure propagates to the caller.
+    }
+
+    // The new endpoint was pinned, then rolled back to the previous one.
+    $this->assertSame(
+      ['https://new.search.windows.net', 'https://old.search.windows.net'],
+      $captured,
+    );
   }
 
   /**
@@ -636,7 +776,6 @@ class BeaconIndexManagerTest extends UnitTestCase {
     $vdb->method('get')->willReturnCallback(fn (string $key) => match ($key) {
       'url' => 'https://svc.search.windows.net',
       'api_version' => '2023-11-01',
-      'api_key' => 'azure_ai_search_api_key',
       default => NULL,
     });
     $config_factory = $this->createMock(ConfigFactoryInterface::class);
@@ -644,10 +783,8 @@ class BeaconIndexManagerTest extends UnitTestCase {
       fn (string $name) => $name === 'ai_vdb_provider_azure_ai_search.settings' ? $vdb : $this->createMock(Config::class),
     );
 
-    $key = $this->createMock(KeyInterface::class);
-    $key->method('getKeyValue')->willReturn('admin-key');
-    $key_repository = $this->createMock(KeyRepositoryInterface::class);
-    $key_repository->method('getKey')->with('azure_ai_search_api_key')->willReturn($key);
+    $credentials = $this->createMock(BeaconCredentials::class);
+    $credentials->method('apiKeyForEndpoint')->willReturn('admin-key');
 
     $response = $this->createMock(ResponseInterface::class);
     $response->method('getBody')->willReturn(Utils::streamFor($json));
@@ -656,7 +793,7 @@ class BeaconIndexManagerTest extends UnitTestCase {
 
     $manager = (new \ReflectionClass(BeaconIndexManager::class))->newInstanceWithoutConstructor();
     $this->setProperty($manager, 'configFactory', $config_factory);
-    $this->setProperty($manager, 'keyRepository', $key_repository);
+    $this->setProperty($manager, 'credentials', $credentials);
     $this->setProperty($manager, 'httpClient', $http_client);
     return $manager;
   }
@@ -665,37 +802,99 @@ class BeaconIndexManagerTest extends UnitTestCase {
    * Builds a manager for pinSearchUrl() tests.
    *
    * @param string $resolved_url
-   *   The endpoint the VDB config currently resolves to (the override-applied
-   *   value pinSearchUrl reads back).
-   * @param string $current_pin
-   *   The endpoint already pinned on the raw VDB connection config.
+   *   The override-applied VDB endpoint pinSearchUrl reads back (the server's
+   *   configured URL, or the secret-backed default when it has none).
+   * @param string $current_field
+   *   The endpoint URL already stored on the server's connection config.
    * @param array $captured
-   *   Populated with any value written to the VDB connection config.
+   *   Populated with each endpoint URL written onto the server, in order.
    *
    * @return \Drupal\ys_beacon\Service\BeaconIndexManager
-   *   The manager under test with only its config factory wired.
+   *   The manager under test with its config factory and entity manager wired.
    */
-  private function buildManagerForPin(string $resolved_url, string $current_pin, array &$captured): BeaconIndexManager {
-    // The immutable (override-applied) VDB config pinSearchUrl reads back.
-    $immutable = $this->createMock(Config::class);
-    $immutable->method('get')->with('url')->willReturn($resolved_url);
-
-    // The editable (raw) VDB config pinSearchUrl writes the pinned url onto.
-    $editable = $this->createMock(Config::class);
-    $editable->method('get')->with('url')->willReturn($current_pin);
-    $editable->method('set')->willReturnCallback(function (string $key, $value) use (&$captured, $editable) {
-      $captured[$key] = $value;
-      return $editable;
-    });
-    $editable->method('save')->willReturnSelf();
-
+  private function buildManagerForPin(string $resolved_url, string $current_field, array &$captured): BeaconIndexManager {
+    // The override-applied VDB endpoint pinSearchUrl reads back.
+    $vdb = $this->createMock(Config::class);
+    $vdb->method('get')->with('url')->willReturn($resolved_url);
+    $settings = $this->serverIdSettingsMock();
     $config_factory = $this->createMock(ConfigFactoryInterface::class);
-    $config_factory->method('get')->with('ai_vdb_provider_azure_ai_search.settings')->willReturn($immutable);
-    $config_factory->method('getEditable')->with('ai_vdb_provider_azure_ai_search.settings')->willReturn($editable);
+    $config_factory->method('get')->willReturnCallback(fn (string $name) => match ($name) {
+      'ai_vdb_provider_azure_ai_search.settings' => $vdb,
+      'ys_beacon.settings' => $settings,
+      default => $this->createMock(Config::class),
+    });
 
     $manager = (new \ReflectionClass(BeaconIndexManager::class))->newInstanceWithoutConstructor();
     $this->setProperty($manager, 'configFactory', $config_factory);
+    $this->setProperty($manager, 'entityTypeManager', $this->serverCapturingEtm($current_field, $captured));
     return $manager;
+  }
+
+  /**
+   * Builds an entity type manager whose Beacon server captures endpoint writes.
+   *
+   * The mocked search server starts with the given connection URL and records
+   * every URL subsequently written onto its backend config, so pin/repin tests
+   * can assert what was persisted (and rolled back).
+   *
+   * @param string $current_field
+   *   The endpoint URL initially stored on the server's backend config.
+   * @param array $captured
+   *   Populated with each endpoint URL written onto the server, in order.
+   *
+   * @return \Drupal\Core\Entity\EntityTypeManagerInterface
+   *   The mocked entity type manager.
+   */
+  private function serverCapturingEtm(string $current_field, array &$captured): EntityTypeManagerInterface {
+    $server = $this->createMock(ServerInterface::class);
+    $server->method('get')->with('backend_config')->willReturn([
+      'database_settings' => ['database_name' => 'idx', 'url' => $current_field],
+      'embeddings_engine' => 'portkey',
+    ]);
+    $server->method('set')->willReturnCallback(function (string $key, $value) use (&$captured, $server) {
+      if ($key === 'backend_config') {
+        $captured[] = $value['database_settings']['url'] ?? NULL;
+      }
+      return $server;
+    });
+    $server->method('save')->willReturn(1);
+
+    $storage = $this->createMock(ConfigEntityStorageInterface::class);
+    $storage->method('loadOverrideFree')->with('ys_beacon')->willReturn($server);
+    $etm = $this->createMock(EntityTypeManagerInterface::class);
+    $etm->method('getStorage')->with('search_api_server')->willReturn($storage);
+    return $etm;
+  }
+
+  /**
+   * Builds a config factory that resolves the default Beacon server id.
+   *
+   * Repin() and pinSearchUrl() read search_server_id to load the server and
+   * reset the VDB config after writing it; this wires both to no-op defaults.
+   *
+   * @return \Drupal\Core\Config\ConfigFactoryInterface
+   *   The mocked config factory.
+   */
+  private function serverIdConfigFactory(): ConfigFactoryInterface {
+    $settings = $this->serverIdSettingsMock();
+    $config_factory = $this->createMock(ConfigFactoryInterface::class);
+    $config_factory->method('get')->willReturn($settings);
+    return $config_factory;
+  }
+
+  /**
+   * Builds a ys_beacon.settings mock resolving the default server/index ids.
+   *
+   * @return \Drupal\Core\Config\Config
+   *   A config mock whose search_server_id and search_index_id both resolve to
+   *   'ys_beacon' and every other key to NULL.
+   */
+  private function serverIdSettingsMock(): Config {
+    $settings = $this->createMock(Config::class);
+    $settings->method('get')->willReturnCallback(
+      fn (string $key) => in_array($key, ['search_server_id', 'search_index_id'], TRUE) ? 'ys_beacon' : NULL,
+    );
+    return $settings;
   }
 
   /**

@@ -42,11 +42,17 @@ services:
       - '@config.factory'
       - '@ys_beacon.system_instructions_storage'
 
+  ys_beacon.credentials:
+    class: Drupal\ys_beacon\Service\BeaconCredentials
+    arguments:
+      - '@key.repository'
+      - '@logger.channel.ys_beacon'
+
   ys_beacon.index_manager:
     class: Drupal\ys_beacon\Service\BeaconIndexManager
     arguments:
       - '@config.factory'
-      - '@key.repository'
+      - '@ys_beacon.credentials'
       - '@http_client'
       - '@logger.channel.ys_beacon'
       - '@entity_type.manager'
