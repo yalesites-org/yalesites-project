@@ -95,6 +95,39 @@ class SystemPromptBuilderTest extends UnitTestCase {
   }
 
   /**
+   * The model is given each source URL and told to link with real URLs.
+   *
+   * Regression guard for #1456: without the URL (and the instruction to use it)
+   * the model fabricates link targets - [docN], a placeholder phrase, or a
+   * reference label - which all render as broken links in the chat.
+   *
+   * @covers ::build
+   */
+  public function testBuildIncludesSourceUrlAndLinkGuidance(): void {
+    $builder = $this->createBuilder(NULL);
+    $citations = [
+      [
+        'title' => 'Request a Site',
+        'content' => 'Body one',
+        'url' => 'https://yalesites.yale.edu/request',
+      ],
+      ['title' => 'No URL Source', 'content' => 'Body two', 'url' => NULL],
+    ];
+    $prompt = $builder->build($citations);
+
+    // A source with a URL exposes it to the model, before the content.
+    $this->assertStringContainsString(
+      "[doc1] Request a Site\nURL: https://yalesites.yale.edu/request\nBody one",
+      $prompt,
+    );
+    // A source without a URL gets no URL line.
+    $this->assertStringContainsString("[doc2] No URL Source\nBody two", $prompt);
+    // The model is told to link with the real URL and never invent a target.
+    $this->assertStringContainsString('write a normal Markdown link using that source', $prompt);
+    $this->assertStringContainsString('Never invent, guess, or leave a link target empty', $prompt);
+  }
+
+  /**
    * Locks the [docN] marker to citation-order contract.
    *
    * Regression guard for the chat citation feature: the Nth source must be

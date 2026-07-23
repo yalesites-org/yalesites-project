@@ -3,6 +3,7 @@
 namespace Drupal\Tests\ys_beacon\Unit;
 
 use Drupal\Tests\UnitTestCase;
+use Drupal\ai\Service\HostnameFilter;
 use Drupal\ys_beacon\Controller\ChatApiController;
 
 /**
@@ -114,6 +115,70 @@ class ChatApiControllerTest extends UnitTestCase {
     // The envelope must be a single line of JSON: the frontend splits the
     // stream on newlines and parses each line independently.
     $this->assertSame(1, substr_count($line, "\n"));
+  }
+
+  /**
+   * @covers ::withOutputFilteringDisabled
+   */
+  public function testWithOutputFilteringDisabledEnablesFullTrustAroundCallback(): void {
+    $filter = $this->createMock(HostnameFilter::class);
+    $snapshot = ['sentinel' => TRUE];
+    $filter->method('snapshotSettings')->willReturn($snapshot);
+
+    // Beacon disables the AI module's output URL filter for its own responses:
+    // the allow-list ships empty (block-all), so otherwise every source link
+    // the model returns is stripped and renders as a broken "[text](" fragment.
+    $calls = [];
+    $filter->expects($this->once())->method('setFullTrust')->with(TRUE)
+      ->willReturnCallback(function () use (&$calls) {
+        $calls[] = 'fullTrust';
+      });
+    $filter->expects($this->once())->method('restoreSettings')->with($snapshot)
+      ->willReturnCallback(function () use (&$calls) {
+        $calls[] = 'restore';
+      });
+    $this->setHostnameFilter($filter);
+
+    $ran = FALSE;
+    $this->invoke('withOutputFilteringDisabled', [
+      function () use (&$ran, &$calls) {
+        $ran = TRUE;
+        $calls[] = 'consume';
+      },
+    ]);
+
+    $this->assertTrue($ran, 'The callback runs.');
+    // Full trust is enabled before, and the filter restored after, the callback
+    // that consumes the (possibly streamed) model output.
+    $this->assertSame(['fullTrust', 'consume', 'restore'], $calls);
+  }
+
+  /**
+   * @covers ::withOutputFilteringDisabled
+   */
+  public function testWithOutputFilteringDisabledRestoresFilterOnException(): void {
+    $filter = $this->createMock(HostnameFilter::class);
+    $filter->method('snapshotSettings')->willReturn([]);
+    // The filter must be restored even when the callback throws, so a failed
+    // Beacon turn never leaks full-trust to other AI features on the site.
+    $filter->expects($this->once())->method('restoreSettings');
+    $this->setHostnameFilter($filter);
+
+    $this->expectException(\RuntimeException::class);
+    $this->invoke('withOutputFilteringDisabled', [
+      function () {
+        throw new \RuntimeException('stream blew up');
+      },
+    ]);
+  }
+
+  /**
+   * Injects a hostname filter service into the controller under test.
+   */
+  protected function setHostnameFilter(HostnameFilter $filter): void {
+    $property = new \ReflectionProperty(ChatApiController::class, 'hostnameFilter');
+    $property->setAccessible(TRUE);
+    $property->setValue($this->controller, $filter);
   }
 
 }

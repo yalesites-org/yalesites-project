@@ -72,11 +72,17 @@ EOT;
 
     if ($citations) {
       $prompt .= "\n\nAnswer using only the numbered sources below. Cite every fact with its source marker, for example [doc1]. Combine markers when multiple sources support a fact, for example [doc1][doc3].";
+      $prompt .= "\n\nWhen you refer the user to a source page, write a normal Markdown link using that source's exact URL from below, for example [Site Request Forms](https://example.yale.edu/forms). Never invent, guess, or leave a link target empty, and never use a [docN] marker or a description as a link target. If a source has no URL, mention it by name without a link.";
       $prompt .= "\n\nSources:";
       foreach (array_values($citations) as $index => $citation) {
         $number = $index + 1;
         $title = trim((string) ($citation['title'] ?? ''));
-        $prompt .= "\n\n[doc{$number}] {$title}\n" . $citation['content'];
+        $url = trim((string) ($citation['url'] ?? ''));
+        $header = "[doc{$number}] {$title}";
+        if ($url !== '') {
+          $header .= "\nURL: {$url}";
+        }
+        $prompt .= "\n\n{$header}\n" . $citation['content'];
       }
     }
     else {

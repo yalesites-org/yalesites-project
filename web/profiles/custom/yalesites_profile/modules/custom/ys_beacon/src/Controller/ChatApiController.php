@@ -8,6 +8,7 @@ use Drupal\Core\Flood\FloodInterface;
 use Drupal\ai\AiProviderPluginManager;
 use Drupal\ai\OperationType\Chat\ChatInput;
 use Drupal\ai\OperationType\Chat\ChatMessage;
+use Drupal\ai\Service\HostnameFilter;
 use Drupal\ys_beacon\Service\RagRetriever;
 use Drupal\ys_beacon\Service\SystemPromptBuilder;
 use Psr\Log\LoggerInterface;
@@ -91,6 +92,13 @@ class ChatApiController extends ControllerBase {
   protected LoggerInterface $logger;
 
   /**
+   * The AI module's output URL (hostname) filter.
+   *
+   * @var \Drupal\ai\Service\HostnameFilter
+   */
+  protected HostnameFilter $hostnameFilter;
+
+  /**
    * {@inheritdoc}
    */
   public static function create(ContainerInterface $container) {
@@ -101,6 +109,7 @@ class ChatApiController extends ControllerBase {
     $instance->flood = $container->get('flood');
     $instance->uuid = $container->get('uuid');
     $instance->logger = $container->get('logger.channel.ys_beacon');
+    $instance->hostnameFilter = $container->get('ai.hostname_filter_service');
     return $instance;
   }
 
@@ -180,25 +189,30 @@ class ChatApiController extends ControllerBase {
         if ($streaming) {
           $provider->streamedOutput(TRUE);
         }
-        $output = $provider->chat(new ChatInput($messages), $model_id, ['ys_beacon']);
-        $normalized = $output->getNormalized();
+        // The AI module's output filter blocks the links the model returns
+        // (its allow-list is empty = block-all), so disable it for this
+        // response. See withOutputFilteringDisabled() for the safety rationale.
+        $this->withOutputFilteringDisabled(function () use ($provider, $messages, $model_id, $emit, $response_id) {
+          $output = $provider->chat(new ChatInput($messages), $model_id, ['ys_beacon']);
+          $normalized = $output->getNormalized();
 
-        if ($normalized instanceof \Traversable) {
-          foreach ($normalized as $chunk) {
-            $delta = $chunk->getText();
-            if ($delta === '') {
-              continue;
+          if ($normalized instanceof \Traversable) {
+            foreach ($normalized as $chunk) {
+              $delta = $chunk->getText();
+              if ($delta === '') {
+                continue;
+              }
+              $emit($this->envelope($response_id, $model_id, [
+                ['role' => 'assistant', 'content' => $delta],
+              ]));
             }
+          }
+          else {
             $emit($this->envelope($response_id, $model_id, [
-              ['role' => 'assistant', 'content' => $delta],
+              ['role' => 'assistant', 'content' => $normalized->getText()],
             ]));
           }
-        }
-        else {
-          $emit($this->envelope($response_id, $model_id, [
-            ['role' => 'assistant', 'content' => $normalized->getText()],
-          ]));
-        }
+        });
       }
       catch (\Throwable $e) {
         $this->logger->error('Beacon conversation failed: @message', ['@message' => $e->getMessage()]);
@@ -210,6 +224,49 @@ class ChatApiController extends ControllerBase {
     $response->headers->set('Cache-Control', 'no-cache, private');
     $response->headers->set('X-Accel-Buffering', 'no');
     return $response;
+  }
+
+  /**
+   * Runs a callback with the AI module's output content filter disabled.
+   *
+   * The AI module (\Drupal\ai\Service\HostnameFilter) filters all model output:
+   * it removes links/images whose host is not on ai.settings.allowed_hosts, and
+   * also strips dangerous HTML (script/iframe tags, on* handlers,
+   * javascript:/data: URLs). Full trust bypasses the whole filter for the
+   * duration of the call, not only the hostname allow-list.
+   *
+   * We disable it because the allow-list ships empty, which the filter treats
+   * as block-all: every source or citation link the model returns is stripped
+   * (while streaming the removal runs per delta, leaving a broken "[text(").
+   * YaleSites content links out to an open-ended set of legitimate hosts
+   * (yale.edu, ServiceNow, Microsoft, ...) that cannot be enumerated in an
+   * allow-list, and the module offers no denylist.
+   *
+   * Safe only because the chat answer is rendered by react-markdown WITHOUT
+   * rehype-raw (see react/.../Answer.tsx), so raw HTML in model output is
+   * escaped rather than executed and dangerous URL schemes are dropped. If
+   * raw-HTML rendering is ever enabled on the answer, restore a server-side
+   * sanitizer here - full trust removes the only server-side one.
+   *
+   * A per-request HostnameFilterDto cannot cover streaming: the provider proxy
+   * restores the filter before the lazy stream is consumed, and the streamed
+   * iterator re-applies filtering per chunk. So the override is set on the
+   * shared filter service here and restored afterwards - even on error - so it
+   * never leaks to other AI features on the site.
+   *
+   * @param callable $consume
+   *   Callback that invokes the model and consumes its (possibly streamed)
+   *   output. It runs with the AI output filter disabled.
+   */
+  protected function withOutputFilteringDisabled(callable $consume): void {
+    $snapshot = $this->hostnameFilter->snapshotSettings();
+    $this->hostnameFilter->setFullTrust(TRUE);
+    try {
+      $consume();
+    }
+    finally {
+      $this->hostnameFilter->restoreSettings($snapshot);
+    }
   }
 
   /**
