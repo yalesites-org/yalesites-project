@@ -19,6 +19,18 @@ services:
   ys_layouts.resource_author_builder:
     class: Drupal\ys_layouts\Service\ResourceAuthorBuilder
     arguments: ['@ys_layouts.author_collator']
+  # Converts a placed reusable block into an independent inline block
+  # (instance-level detach) for the Layout Builder "Make non-reusable" action.
+  ys_layouts.reusable_block_detacher:
+    class: Drupal\ys_layouts\ReusableBlockDetacher
+    arguments: ['@entity.repository', '@entity_type.manager']
+  # Restricts the detach route (and its contextual link) to placements of
+  # reusable content blocks.
+  ys_layouts.detach_reusable_block_access:
+    class: Drupal\ys_layouts\Access\DetachReusableBlockAccessCheck
+    arguments: ['@ys_layouts.reusable_block_detacher']
+    tags:
+      - { name: access_check, applies_to: _ys_layouts_detach_reusable_block }
   # Resolves cover-image alt text for Resource media.
   # Used by ResourceMetaBlock and atomic_preprocess_node() so the block
   # render and the card/list templates apply identical alt text.

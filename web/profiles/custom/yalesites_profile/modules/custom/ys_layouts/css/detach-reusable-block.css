@@ -1,0 +1,13 @@
+/**
+ * @file
+ * Styling for the "Make non-reusable" (detach) off-canvas confirm dialog.
+ *
+ * gin_lb applies its confirm-dialog top spacing only to core's own remove form
+ * IDs (.layout-builder-remove-block / -remove-section). Extend the same spacing
+ * to this module's detach confirm form so its description sits below the
+ * off-canvas header with matching padding instead of cramped against it.
+ */
+
+#drupal-off-canvas .ys-layouts-detach-reusable-block {
+  padding-top: 40px;
+}
