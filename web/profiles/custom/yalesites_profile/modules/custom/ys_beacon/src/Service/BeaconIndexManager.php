@@ -4,7 +4,8 @@ namespace Drupal\ys_beacon\Service;
 
 use Drupal\Core\Config\ConfigFactoryInterface;
 use Drupal\Core\Entity\EntityTypeManagerInterface;
-use Drupal\key\KeyRepositoryInterface;
+use Drupal\search_api\ServerInterface;
+use Drupal\ys_beacon\Config\YsBeaconConfigOverrides;
 use GuzzleHttp\ClientInterface;
 use GuzzleHttp\Exception\ClientException;
 use Psr\Log\LoggerInterface;
@@ -30,9 +31,22 @@ class BeaconIndexManager {
    */
   protected const MAX_NAME_LENGTH = 128;
 
+  /**
+   * Maximum number of indexes one Azure AI Search service may hold.
+   *
+   * A single Azure AI Search service caps how many indexes it can contain, and
+   * creating another once it is full fails. Beacon refuses to create past this
+   * limit and logs an actionable error instead of hitting an opaque Azure
+   * rejection. This is a fixed property of the shared search service, the same
+   * for every site on it - not a per-site preference; if the cap ever changes
+   * we change it here (and provision/repoint search services to match), so it
+   * lives in this one constant (yalesites-org/YaleSites-Internal#1440).
+   */
+  public const MAX_INDEXES = 50;
+
   public function __construct(
     protected ConfigFactoryInterface $configFactory,
-    protected KeyRepositoryInterface $keyRepository,
+    protected BeaconCredentials $credentials,
     protected ClientInterface $httpClient,
     protected LoggerInterface $logger,
     protected EntityTypeManagerInterface $entityTypeManager,
@@ -50,6 +64,10 @@ class BeaconIndexManager {
    *
    * @param string|null $name
    *   The index name, or NULL to use the per-site default.
+   * @param bool $enforce_capacity
+   *   Whether to refuse creation when the target service is at its index limit.
+   *   TRUE for a genuinely new index; FALSE when recreating an index this site
+   *   already owns (reprovision), which is net-zero against the limit.
    *
    * @return string
    *   The provisioned index name.
@@ -57,12 +75,18 @@ class BeaconIndexManager {
    * @throws \RuntimeException
    *   When the index cannot be verified or created.
    */
-  public function provision(?string $name = NULL): string {
-    $name = $this->ensureIndex($name);
+  public function provision(?string $name = NULL, bool $enforce_capacity = TRUE): string {
+    $name = $this->ensureIndex($name, $enforce_capacity);
 
     // A provisioned index is owned and written by this site, so persist the
     // connection into the real Search API config as writable (read-only off).
     $this->propagateConnection($name, FALSE);
+
+    // Pin the endpoint now that this site owns an index on it, so a later
+    // change to the shared Pantheon secret only moves sites that have not
+    // created an index yet (yalesites-org/YaleSites-Internal#1440). A failed
+    // ensureIndex() throws before this line, so a failed provision never pins.
+    $this->pinSearchUrl();
 
     // The Beacon search index stays disabled at runtime until an index name
     // exists, so Search API never initialized its tracker. Rebuild it now
@@ -86,6 +110,12 @@ class BeaconIndexManager {
    * tracking, queuing a full reindex that rewrites every document in the
    * current format.
    *
+   * The capacity guard is deliberately skipped here: this recreates an index
+   * the site already owns (and just deleted), so it is net-zero against the
+   * service index limit. Enforcing the limit after the delete could refuse the
+   * recreate on a full service and strand the site with no index at all
+   * (yalesites-org/YaleSites-Internal#1440).
+   *
    * @param string|null $name
    *   The index name, or NULL to use the configured (or default) one.
    *
@@ -101,7 +131,68 @@ class BeaconIndexManager {
     if ($this->indexExists($name)) {
       $this->deleteIndex($name);
     }
-    return $this->provision($name);
+    return $this->provision($name, FALSE);
+  }
+
+  /**
+   * Repoints this site to a different Azure AI Search service and provisions.
+   *
+   * Moving an already-provisioned site to another service means pinning the
+   * new endpoint and creating its index there; the paired API key then follows
+   * automatically from the shared map. Capacity is enforced - this is a
+   * genuinely new index on the target service. The index on the previous
+   * service is left in place (orphaned, for manual cleanup). If provisioning
+   * on the new service fails, the endpoint is rolled back so the site keeps
+   * talking to its existing index rather than being stranded
+   * (yalesites-org/YaleSites-Internal#1448).
+   *
+   * @param string $url
+   *   The new Azure AI Search endpoint URL.
+   *
+   * @return string
+   *   The provisioned index name on the new service.
+   *
+   * @throws \InvalidArgumentException
+   *   When no endpoint URL is given.
+   * @throws \RuntimeException
+   *   When the target endpoint has no API key in the map, or provisioning
+   *   fails.
+   */
+  public function repin(string $url): string {
+    $endpoint = YsBeaconConfigOverrides::normalizeEndpoint($url);
+    if ($endpoint === '') {
+      throw new \InvalidArgumentException('A non-empty Azure AI Search endpoint URL is required.');
+    }
+    // Fail closed before changing anything if the new service has no key in the
+    // map: the site could reach it but never authenticate against it.
+    if ($this->credentials->apiKeyForEndpoint($endpoint) === NULL) {
+      throw new \RuntimeException(sprintf('Refusing to repin to "%s": no API key is defined for it in the "azure_ai_search_api_keys" map.', $endpoint));
+    }
+    $server = $this->loadServer();
+    if (!$server) {
+      throw new \RuntimeException('The Beacon search server configuration was not found.');
+    }
+    // Pin the new endpoint onto the server; the connection url is
+    // config-ignored, so it stands.
+    $previous = (string) ($server->get('backend_config')['database_settings']['url'] ?? '');
+    $this->setServerEndpoint($server, $endpoint);
+    try {
+      // Create/adopt the index on the new service and queue a full reindex.
+      $name = $this->provision();
+    }
+    catch (\Throwable $e) {
+      // Provisioning on the new service failed (e.g. it is at the index cap).
+      // Roll the endpoint back: the url is config-ignored, so leaving it
+      // changed would strand the site pointing at an index-less service
+      // with no deploy-time recovery.
+      $this->setServerEndpoint($server, $previous);
+      throw $e;
+    }
+    $this->logger->notice('Repinned Beacon to Azure AI Search endpoint @url; index @name is now provisioned there and content is queued for reindex. Any index on the previous service is orphaned and can be removed manually.', [
+      '@url' => $endpoint,
+      '@name' => $name,
+    ]);
+    return $name;
   }
 
   /**
@@ -138,7 +229,7 @@ class BeaconIndexManager {
         ->save();
     }
 
-    $server = $this->entityTypeManager->getStorage('search_api_server')->loadOverrideFree($this->searchServerId());
+    $server = $this->loadServer();
     if ($server) {
       $backend_config = $server->get('backend_config');
       $current = $backend_config['database_settings']['database_name'] ?? NULL;
@@ -155,10 +246,85 @@ class BeaconIndexManager {
   }
 
   /**
+   * Pins the resolved Azure AI Search endpoint onto the search server config.
+   *
+   * Once a site has created (or adopted) an index it keeps talking to that
+   * service even if the shared Pantheon secret is later repointed. The resolved
+   * endpoint (the secret-backed default when the server has no URL of its own)
+   * is written onto the Beacon search server's connection URL - the same field
+   * an admin edits in the Vector Database Configuration form, which is
+   * config-ignored so the pin survives config import; YsBeaconConfigOverrides
+   * then resolves the endpoint from that field, so the pinned value stands. The
+   * field is only written when empty, so an endpoint the admin configured is
+   * never overwritten. When nothing resolves (no server URL and no secret) the
+   * site is left unpinned so it keeps resolving on the next attempt
+   * (yalesites-org/YaleSites-Internal#1440, #1448).
+   *
+   * @return bool
+   *   TRUE when an endpoint resolved (and is now pinned, or was already set);
+   *   FALSE when nothing resolved and the site was left unpinned. Callers that
+   *   expect a resolvable endpoint (e.g. the backfill of an already-provisioned
+   *   site) can surface the FALSE case rather than skip it silently.
+   */
+  public function pinSearchUrl(): bool {
+    // The override-applied endpoint: the server's configured URL, or the
+    // secret-backed default when it has none.
+    $resolved = (string) $this->configFactory->get('ai_vdb_provider_azure_ai_search.settings')->get('url');
+    if ($resolved === '') {
+      return FALSE;
+    }
+    $server = $this->loadServer();
+    if (!$server) {
+      return FALSE;
+    }
+    // Only pin when the server has no endpoint of its own yet, so an endpoint
+    // an admin configured is never overwritten.
+    $backend_config = $server->get('backend_config');
+    if ((string) ($backend_config['database_settings']['url'] ?? '') === '') {
+      $this->setServerEndpoint($server, $resolved);
+    }
+    return TRUE;
+  }
+
+  /**
+   * Writes an endpoint URL onto the Beacon search server connection config.
+   *
+   * The endpoint lives in the search server's backend config - the field an
+   * admin edits and the override resolves the VDB URL from - so after writing
+   * it the override-applied VDB config is reset: any value read earlier this
+   * request is stale, and a later read (for example provision() during a repin)
+   * must see the new endpoint.
+   *
+   * @param \Drupal\search_api\ServerInterface $server
+   *   The Beacon search server, loaded override-free.
+   * @param string $url
+   *   The endpoint URL to persist (an empty string clears it).
+   */
+  protected function setServerEndpoint(ServerInterface $server, string $url): void {
+    $backend_config = $server->get('backend_config');
+    $backend_config['database_settings']['url'] = $url;
+    $server->set('backend_config', $backend_config)->save();
+    $this->configFactory->reset('ai_vdb_provider_azure_ai_search.settings');
+  }
+
+  /**
+   * Loads the Beacon search server config entity, override-free.
+   *
+   * @return \Drupal\search_api\ServerInterface|null
+   *   The server, or NULL when it does not exist.
+   */
+  protected function loadServer(): ?ServerInterface {
+    $server = $this->entityTypeManager->getStorage('search_api_server')->loadOverrideFree($this->searchServerId());
+    return $server instanceof ServerInterface ? $server : NULL;
+  }
+
+  /**
    * Ensures an index exists, creating it only when missing.
    *
    * @param string|null $name
    *   The index name, or NULL to use the per-site default.
+   * @param bool $enforce_capacity
+   *   Whether to check the service index limit before creating a missing index.
    *
    * @return string
    *   The (existing or newly created) index name.
@@ -166,12 +332,26 @@ class BeaconIndexManager {
    * @throws \RuntimeException
    *   When the connection is unconfigured or the index cannot be created.
    */
-  public function ensureIndex(?string $name = NULL): string {
+  public function ensureIndex(?string $name = NULL, bool $enforce_capacity = TRUE): string {
     $name = $name ?: $this->getDefaultIndexName();
-    if (!$this->indexExists($name)) {
-      $this->createIndex($name);
-      $this->logger->notice('Created Azure AI Search index @name.', ['@name' => $name]);
+    if ($this->indexExists($name)) {
+      // Adopt an index that already exists on the target service rather than
+      // recreating it (createIndex() would fail on it anyway). Logged so the
+      // adoption is traceable: for a first-time provision it can mean the
+      // endpoint now resolves to a service that already holds this index; for a
+      // borrow-to-writable switch it is the expected, already-present
+      // collection. Kept at notice level so the expected case is not alarming
+      // (yalesites-org/YaleSites-Internal#1440).
+      $this->logger->notice('Azure AI Search index @name already exists on the target service; adopting it as-is.', ['@name' => $name]);
+      return $name;
     }
+    // Refuse to create once the shared service is full so the failure is a
+    // clear, actionable log entry rather than an opaque Azure rejection.
+    if ($enforce_capacity) {
+      $this->assertCapacity();
+    }
+    $this->createIndex($name);
+    $this->logger->notice('Created Azure AI Search index @name.', ['@name' => $name]);
     return $name;
   }
 
@@ -262,6 +442,57 @@ class BeaconIndexManager {
     catch (\Throwable $e) {
       throw new \RuntimeException('Azure AI Search is unreachable: ' . $e->getMessage(), 0, $e);
     }
+  }
+
+  /**
+   * Fails when the target service has no room for another index.
+   *
+   * A single Azure AI Search service caps how many indexes it can hold, so
+   * before creating one Beacon checks the current index count against the fixed
+   * service limit (self::MAX_INDEXES). When the service is full it logs a
+   * clear, referenceable error - pointing at the fix (provision a new service
+   * and update the Pantheon secret) - and throws, so the caller persists
+   * nothing (yalesites-org/YaleSites-Internal#1440).
+   *
+   * @throws \RuntimeException
+   *   When the service is at or over the index limit, or the index count cannot
+   *   be read.
+   */
+  protected function assertCapacity(): void {
+    $count = $this->countIndexes();
+    if ($count >= self::MAX_INDEXES) {
+      $this->logger->error('Azure AI Search service is at capacity: @count of @limit indexes exist, so a new Beacon index cannot be created. Provision a new Azure AI Search service and update the "azure_ai_search_url" Pantheon secret so sites without an index create it on the new service.', [
+        '@count' => $count,
+        '@limit' => self::MAX_INDEXES,
+      ]);
+      throw new \RuntimeException(sprintf('Azure AI Search service is at capacity (%d of %d indexes); cannot create a new index.', $count, self::MAX_INDEXES));
+    }
+  }
+
+  /**
+   * Counts the indexes that currently exist on the target service.
+   *
+   * @return int
+   *   The number of indexes on the service.
+   *
+   * @throws \RuntimeException
+   *   When the connection is unconfigured or the service cannot be listed.
+   */
+  public function countIndexes(): int {
+    try {
+      $response = $this->request('GET', '/indexes');
+    }
+    catch (\Throwable $e) {
+      throw new \RuntimeException('Azure AI Search returned an error listing indexes: ' . $e->getMessage(), 0, $e);
+    }
+    // Azure AI Search returns the index list under a top-level "value" array. A
+    // 2xx that lacks it is not a real index listing (e.g. a proxy/SSO HTML page
+    // from a mis-repointed endpoint), so fail closed rather than treat it as an
+    // empty service - the latter would bypass the capacity guard entirely.
+    if (!is_array($response['value'] ?? NULL)) {
+      throw new \RuntimeException('Azure AI Search returned an unexpected response listing indexes; refusing to assume the service is empty.');
+    }
+    return count($response['value']);
   }
 
   /**
@@ -461,11 +692,20 @@ class BeaconIndexManager {
     $settings = $this->configFactory->get('ai_vdb_provider_azure_ai_search.settings');
     $url = rtrim((string) $settings->get('url'), '/');
     $api_version = (string) $settings->get('api_version');
-    $key_id = (string) $settings->get('api_key');
-    $api_key = $key_id ? $this->keyRepository->getKey($key_id)?->getKeyValue() : NULL;
+    // Resolve the API key paired with this endpoint from the shared map, the
+    // same way the query path does, so provisioning uses the right per-service
+    // key when several services are live
+    // (yalesites-org/YaleSites-Internal#1448).
+    $api_key = $this->credentials->apiKeyForEndpoint($url);
 
-    if (!$url || !$api_key) {
-      throw new \RuntimeException('The Azure AI Search connection is not configured: endpoint URL or API key is missing.');
+    if (!$url) {
+      throw new \RuntimeException('The Azure AI Search connection is not configured: endpoint URL is missing.');
+    }
+    if (!$api_key) {
+      // The resolver has already logged the actionable reason; surface a
+      // specific message so a provisioning failure names the endpoint rather
+      // than a generic "not configured".
+      throw new \RuntimeException(sprintf('No Azure AI Search API key resolved for endpoint "%s"; add it to the "azure_ai_search_api_keys" map.', $url));
     }
 
     $options = [

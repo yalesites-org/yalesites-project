@@ -12,6 +12,7 @@ use Drupal\search_api\Query\ConditionGroupInterface;
 use Drupal\search_api\Query\QueryInterface;
 use Drupal\Tests\UnitTestCase;
 use Drupal\ys_beacon\Plugin\VdbProvider\BeaconAzureAiSearchProvider;
+use Drupal\ys_beacon\Service\BeaconCredentials;
 use Drupal\ys_beacon\Service\BeaconIndexManager;
 
 /**
@@ -313,6 +314,51 @@ class BeaconAzureAiSearchProviderTest extends UnitTestCase {
       "(bundle eq 'page' or bundle eq 'post') and site_id eq 'sitea'",
       $provider->prepareFilters($query),
     );
+  }
+
+  /**
+   * GetClient() hands the Azure client the key paired with the site endpoint.
+   *
+   * Every Azure query/write funnels through getClient(); Beacon overrides it so
+   * the key is resolved for the site's effective endpoint from the map, not a
+   * single shared key (yalesites-org/YaleSites-Internal#1448).
+   *
+   * @covers ::getClient
+   */
+  public function testGetClientUsesEndpointMatchedKey(): void {
+    $endpoint = 'https://svc.search.windows.net';
+
+    $credentials = $this->createMock(BeaconCredentials::class);
+    $credentials->method('apiKeyForEndpoint')->with($endpoint)->willReturn('RESOLVED_KEY');
+
+    $captured = NULL;
+    $client = $this->createMock(AzureAiSearch::class);
+    $azure = $this->createMock(AzureAiSearch::class);
+    $azure->method('getClient')->willReturnCallback(function (string $key) use (&$captured, $client) {
+      $captured = $key;
+      return $client;
+    });
+
+    $provider = (new \ReflectionClass(BeaconAzureAiSearchProvider::class))->newInstanceWithoutConstructor();
+    $this->setProperty($provider, 'configFactory', $this->getConfigFactoryStub([
+      'ai_vdb_provider_azure_ai_search.settings' => ['url' => $endpoint],
+    ]));
+    $this->setProperty($provider, 'beaconCredentials', $credentials);
+    $this->setProperty($provider, 'azureAiSearch', $azure);
+
+    $result = $provider->getClient();
+
+    $this->assertSame('RESOLVED_KEY', $captured);
+    $this->assertSame($client, $result);
+  }
+
+  /**
+   * Sets a protected property on a provider under test via reflection.
+   */
+  private function setProperty(object $provider, string $name, mixed $value): void {
+    $property = new \ReflectionProperty($provider, $name);
+    $property->setAccessible(TRUE);
+    $property->setValue($provider, $value);
   }
 
   /**

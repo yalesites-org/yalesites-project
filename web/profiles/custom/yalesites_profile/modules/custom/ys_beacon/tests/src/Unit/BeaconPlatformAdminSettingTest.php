@@ -331,7 +331,6 @@ class BeaconPlatformAdminSettingTest extends UnitTestCase {
    *
    * @covers ::submitSettings
    * @covers ::enableIndex
-   * @covers ::configuredIndexMissing
    * @covers ::setIndexStatus
    */
   public function testEnableTransitionProvisionsIndex(): void {
@@ -377,9 +376,12 @@ class BeaconPlatformAdminSettingTest extends UnitTestCase {
   /**
    * Re-enabling with an existing index enables it without re-provisioning.
    *
+   * It is never re-provisioned, but the resolved endpoint is still pinned so an
+   * adopted index survives a later Pantheon-secret change
+   * (yalesites-org/YaleSites-Internal#1440).
+   *
    * @covers ::submitSettings
    * @covers ::enableIndex
-   * @covers ::configuredIndexMissing
    */
   public function testEnableWithExistingIndexSkipsProvision(): void {
     $settings = [
@@ -404,9 +406,12 @@ class BeaconPlatformAdminSettingTest extends UnitTestCase {
     $entity_type_manager = $this->entityTypeManagerWithWritableIndex($index);
 
     $index_manager = $this->createMock(BeaconIndexManager::class);
-    // The index already exists, so it must never be re-provisioned.
+    // The index already exists, so it must never be re-provisioned - but the
+    // resolved endpoint is still pinned so the adopted index is not moved by a
+    // later Pantheon-secret change.
     $index_manager->expects($this->once())->method('indexExists')->with('my-index')->willReturn(TRUE);
     $index_manager->expects($this->never())->method('provision');
+    $index_manager->expects($this->once())->method('pinSearchUrl')->willReturn(TRUE);
 
     $messenger = $this->createMock(MessengerInterface::class);
     $messenger->expects($this->never())->method('addStatus');
@@ -422,20 +427,134 @@ class BeaconPlatformAdminSettingTest extends UnitTestCase {
   }
 
   /**
-   * A transient Azure outage on re-enable keeps an existing index enabled.
+   * An already-enabled site stays enabled when the index can't be verified.
    *
-   * The indexExists() check throws when the endpoint is unreachable, so the
-   * enable path must treat that as "not missing": it never disables a healthy
-   * existing index or shows a misleading "could not be created" warning,
-   * matching the site form.
+   * On a re-save while chat is already on, an indexExists() error (Azure
+   * unreachable or an auth failure) is inconclusive, so it must not disable a
+   * working index over a transient blip: the prior enabled state is kept, the
+   * operator is warned to try again, and the reason is logged
+   * (yalesites-org/YaleSites-Internal#1448).
    *
    * @covers ::submitSettings
    * @covers ::enableIndex
-   * @covers ::configuredIndexMissing
    */
-  public function testEnableDuringTransientOutageKeepsIndexEnabled(): void {
+  public function testAlreadyEnabledStaysEnabledWhenUnverifiable(): void {
+    $settings = [
+      'enable_chat' => TRUE,
+      'read_only' => FALSE,
+      'azure_index_name' => 'my-index',
+      'search_index_id' => 'ys_beacon',
+    ];
+    $config = $this->createMock(Config::class);
+    $config->method('get')->willReturnCallback(fn (string $key) => $settings[$key] ?? NULL);
+    $set = [];
+    $config->method('set')->willReturnCallback(function (string $key, $value) use (&$set, $config) {
+      $set[$key] = $value;
+      return $config;
+    });
+    $config->method('save')->willReturnSelf();
+
+    $factory = $this->createMock(ConfigFactoryInterface::class);
+    $factory->method('getEditable')->with('ys_beacon.settings')->willReturn($config);
+    $factory->method('get')->with('ys_beacon.settings')->willReturn($config);
+
+    // An inconclusive check changes no index state, so storage is untouched.
+    $entity_type_manager = $this->createMock(EntityTypeManagerInterface::class);
+    $entity_type_manager->expects($this->never())->method('getStorage');
+
+    $index_manager = $this->createMock(BeaconIndexManager::class);
+    $index_manager->method('indexExists')->with('my-index')
+      ->willThrowException(new \RuntimeException('unreachable'));
+    $index_manager->expects($this->never())->method('provision');
+
+    $messenger = $this->createMock(MessengerInterface::class);
+    $messenger->expects($this->once())->method('addWarning');
+    $logger = $this->createMock(LoggerInterface::class);
+    $logger->expects($this->once())->method('error');
+
+    $plugin = $this->plugin($factory, $entity_type_manager, $index_manager, $messenger, $logger);
+
+    $form_state = new FormState();
+    $form_state->setValue(['ys_beacon', 'platform_authorized'], 1);
+    $form_state->setValue(['ys_beacon', 'enable_chat'], 1);
+    $form = [];
+    $plugin->submitSettings($form, $form_state);
+
+    // The widget stays enabled - the inconclusive check did not turn it off.
+    $this->assertTrue($set['enable_chat']);
+  }
+
+  /**
+   * A first-time enable that can't verify the index is turned back off.
+   *
+   * Turning the widget on for the first time when the index cannot even be
+   * checked most likely means it could not be created, so the widget must not
+   * report itself enabled: it reverts to off, warns the operator, and logs the
+   * reason (yalesites-org/YaleSites-Internal#1448).
+   *
+   * @covers ::submitSettings
+   * @covers ::enableIndex
+   */
+  public function testFreshEnableRevertsToOffWhenUnverifiable(): void {
     $settings = [
       'enable_chat' => FALSE,
+      'read_only' => FALSE,
+      'azure_index_name' => 'my-index',
+      'search_index_id' => 'ys_beacon',
+    ];
+    $config = $this->createMock(Config::class);
+    $config->method('get')->willReturnCallback(fn (string $key) => $settings[$key] ?? NULL);
+    $set = [];
+    $config->method('set')->willReturnCallback(function (string $key, $value) use (&$set, $config) {
+      $set[$key] = $value;
+      return $config;
+    });
+    $config->method('save')->willReturnSelf();
+
+    $factory = $this->createMock(ConfigFactoryInterface::class);
+    $factory->method('getEditable')->with('ys_beacon.settings')->willReturn($config);
+    $factory->method('get')->with('ys_beacon.settings')->willReturn($config);
+
+    // Nothing is enabled, so the index status is never touched.
+    $entity_type_manager = $this->createMock(EntityTypeManagerInterface::class);
+    $entity_type_manager->expects($this->never())->method('getStorage');
+
+    $index_manager = $this->createMock(BeaconIndexManager::class);
+    $index_manager->method('indexExists')->with('my-index')
+      ->willThrowException(new \RuntimeException('unreachable'));
+    $index_manager->expects($this->never())->method('provision');
+
+    $messenger = $this->createMock(MessengerInterface::class);
+    $messenger->expects($this->once())->method('addWarning');
+    $logger = $this->createMock(LoggerInterface::class);
+    $logger->expects($this->once())->method('error');
+
+    $plugin = $this->plugin($factory, $entity_type_manager, $index_manager, $messenger, $logger);
+
+    $form_state = new FormState();
+    $form_state->setValue(['ys_beacon', 'platform_authorized'], 1);
+    $form_state->setValue(['ys_beacon', 'enable_chat'], 1);
+    $form = [];
+    $plugin->submitSettings($form, $form_state);
+
+    // The widget reverts to off - it never reports enabled while unconfirmed.
+    $this->assertFalse($set['enable_chat']);
+  }
+
+  /**
+   * A re-save while enabled re-checks and recreates an index removed in Azure.
+   *
+   * Provisioning runs on every save while chat is on, not just the off->on
+   * transition, so deleting the index in Azure and re-saving the form recreates
+   * it without toggling the widget off and on
+   * (yalesites-org/YaleSites-Internal#1448).
+   *
+   * @covers ::submitSettings
+   * @covers ::enableIndex
+   */
+  public function testAlreadyEnabledRechecksAndRecreatesMissingIndex(): void {
+    $settings = [
+      'enable_chat' => TRUE,
       'read_only' => FALSE,
       'azure_index_name' => 'my-index',
       'search_index_id' => 'ys_beacon',
@@ -450,18 +569,68 @@ class BeaconPlatformAdminSettingTest extends UnitTestCase {
     $factory->method('get')->with('ys_beacon.settings')->willReturn($config);
 
     $index = $this->createMock(IndexInterface::class);
-    $index->expects($this->once())->method('setStatus')->with(TRUE)->willReturnSelf();
-    $index->expects($this->once())->method('save');
-    $index->expects($this->once())->method('rebuildTracker');
+    $index->method('setStatus')->willReturnSelf();
     $entity_type_manager = $this->entityTypeManagerWithWritableIndex($index);
 
     $index_manager = $this->createMock(BeaconIndexManager::class);
-    $index_manager->method('indexExists')->with('my-index')
-      ->willThrowException(new \RuntimeException('unreachable'));
-    // A transient outage must not trigger a doomed re-provision.
+    // The index was removed in Azure: the re-save re-checks and recreates it,
+    // proving the check is not gated on an off->on transition.
+    $index_manager->expects($this->once())->method('indexExists')->with('my-index')->willReturn(FALSE);
+    $index_manager->expects($this->once())->method('provision')->with('my-index')->willReturn('my-index');
+
+    $messenger = $this->createMock(MessengerInterface::class);
+    $messenger->expects($this->once())->method('addStatus');
+    $messenger->expects($this->never())->method('addWarning');
+
+    $plugin = $this->plugin($factory, $entity_type_manager, $index_manager, $messenger);
+
+    $form_state = new FormState();
+    $form_state->setValue(['ys_beacon', 'platform_authorized'], 1);
+    $form_state->setValue(['ys_beacon', 'enable_chat'], 1);
+    $form = [];
+    $plugin->submitSettings($form, $form_state);
+  }
+
+  /**
+   * A routine re-save with a healthy index re-checks but does not re-queue.
+   *
+   * While chat is on, every save re-verifies the index, but when it already
+   * exists and is enabled the tracker is left alone so a routine save does not
+   * re-queue already-indexed content (yalesites-org/YaleSites-Internal#1448).
+   *
+   * @covers ::submitSettings
+   * @covers ::enableIndex
+   */
+  public function testAlreadyEnabledExistingIndexSkipsRequeue(): void {
+    $settings = [
+      'enable_chat' => TRUE,
+      'read_only' => FALSE,
+      'azure_index_name' => 'my-index',
+      'search_index_id' => 'ys_beacon',
+    ];
+    $config = $this->createMock(Config::class);
+    $config->method('get')->willReturnCallback(fn (string $key) => $settings[$key] ?? NULL);
+    $config->method('set')->willReturnSelf();
+    $config->method('save')->willReturnSelf();
+
+    $factory = $this->createMock(ConfigFactoryInterface::class);
+    $factory->method('getEditable')->with('ys_beacon.settings')->willReturn($config);
+    $factory->method('get')->with('ys_beacon.settings')->willReturn($config);
+
+    $index = $this->createMock(IndexInterface::class);
+    $index->method('status')->willReturn(TRUE);
+    // Already enabled and healthy: never re-status and never re-queue.
+    $index->expects($this->never())->method('setStatus');
+    $index->expects($this->never())->method('rebuildTracker');
+    $entity_type_manager = $this->entityTypeManagerWithWritableIndex($index);
+
+    $index_manager = $this->createMock(BeaconIndexManager::class);
+    // The index is re-checked every save (proves it is not transition-gated).
+    $index_manager->expects($this->once())->method('indexExists')->with('my-index')->willReturn(TRUE);
     $index_manager->expects($this->never())->method('provision');
 
     $messenger = $this->createMock(MessengerInterface::class);
+    $messenger->expects($this->never())->method('addStatus');
     $messenger->expects($this->never())->method('addWarning');
 
     $plugin = $this->plugin($factory, $entity_type_manager, $index_manager, $messenger);
@@ -545,6 +714,9 @@ class BeaconPlatformAdminSettingTest extends UnitTestCase {
   /**
    * A read-only borrow enables the index but never provisions or writes it.
    *
+   * A borrower does not own the collection it reads, so it must never pin the
+   * endpoint either (yalesites-org/YaleSites-Internal#1440).
+   *
    * @covers ::submitSettings
    * @covers ::enableIndex
    */
@@ -568,6 +740,7 @@ class BeaconPlatformAdminSettingTest extends UnitTestCase {
 
     $index_manager = $this->createMock(BeaconIndexManager::class);
     $index_manager->expects($this->never())->method('provision');
+    $index_manager->expects($this->never())->method('pinSearchUrl');
 
     $plugin = $this->plugin($factory, $entity_type_manager, $index_manager);
 
@@ -579,15 +752,15 @@ class BeaconPlatformAdminSettingTest extends UnitTestCase {
   }
 
   /**
-   * A failed first-time provision leaves the index off and warns the user.
+   * A failed first-time provision leaves the index off, warns, and reverts.
    *
    * With no index name yet, a provision failure persists no name, so the config
-   * override keeps the index disabled; the status is never set on and never
-   * needs a rollback.
+   * override keeps the index disabled and the status is never set on; the chat
+   * toggle is reverted to off so it never reports enabled while broken, and the
+   * reason is logged (yalesites-org/YaleSites-Internal#1448).
    *
    * @covers ::submitSettings
    * @covers ::enableIndex
-   * @covers ::configuredIndexMissing
    */
   public function testProvisionFailureLeavesIndexOffAndWarns(): void {
     $settings = [
@@ -598,7 +771,11 @@ class BeaconPlatformAdminSettingTest extends UnitTestCase {
     ];
     $config = $this->createMock(Config::class);
     $config->method('get')->willReturnCallback(fn (string $key) => $settings[$key] ?? NULL);
-    $config->method('set')->willReturnSelf();
+    $set = [];
+    $config->method('set')->willReturnCallback(function (string $key, $value) use (&$set, $config) {
+      $set[$key] = $value;
+      return $config;
+    });
     $config->method('save')->willReturnSelf();
 
     $factory = $this->createMock(ConfigFactoryInterface::class);
@@ -625,6 +802,57 @@ class BeaconPlatformAdminSettingTest extends UnitTestCase {
     $form_state->setValue(['ys_beacon', 'enable_chat'], 1);
     $form = [];
     // Must not throw: the handler catches the provisioning failure.
+    $plugin->submitSettings($form, $form_state);
+
+    // The widget reverts to off after a failed provision.
+    $this->assertFalse($set['enable_chat']);
+  }
+
+  /**
+   * De-authorizing a site never verifies the index and disables it.
+   *
+   * Beacon is inactive without platform authorization regardless of the chat
+   * toggle, so saving a de-authorized site must not verify or provision the
+   * index (no Azure round-trip, no re-queue); it only disables the local index
+   * (yalesites-org/YaleSites-Internal#1448).
+   *
+   * @covers ::submitSettings
+   */
+  public function testDeauthorizedSiteSkipsVerifyAndDisablesIndex(): void {
+    $settings = [
+      'enable_chat' => TRUE,
+      'read_only' => FALSE,
+      'azure_index_name' => 'my-index',
+      'search_index_id' => 'ys_beacon',
+    ];
+    $config = $this->createMock(Config::class);
+    $config->method('get')->willReturnCallback(fn (string $key) => $settings[$key] ?? NULL);
+    $config->method('set')->willReturnSelf();
+    $config->method('save')->willReturnSelf();
+
+    $factory = $this->createMock(ConfigFactoryInterface::class);
+    $factory->method('getEditable')->with('ys_beacon.settings')->willReturn($config);
+    $factory->method('get')->with('ys_beacon.settings')->willReturn($config);
+
+    // Only the disable path runs: the index is set off, never verified.
+    $index = $this->createMock(IndexInterface::class);
+    $index->expects($this->once())->method('setStatus')->with(FALSE)->willReturnSelf();
+    $storage = $this->createMock(ConfigEntityStorageInterface::class);
+    $storage->method('loadOverrideFree')->with('ys_beacon')->willReturn($index);
+    $entity_type_manager = $this->createMock(EntityTypeManagerInterface::class);
+    $entity_type_manager->method('getStorage')->with('search_api_index')->willReturn($storage);
+
+    $index_manager = $this->createMock(BeaconIndexManager::class);
+    $index_manager->expects($this->never())->method('indexExists');
+    $index_manager->expects($this->never())->method('provision');
+
+    $plugin = $this->plugin($factory, $entity_type_manager, $index_manager);
+
+    $form_state = new FormState();
+    // De-authorized, but the chat toggle is left checked.
+    $form_state->setValue(['ys_beacon', 'platform_authorized'], 0);
+    $form_state->setValue(['ys_beacon', 'enable_chat'], 1);
+    $form = [];
     $plugin->submitSettings($form, $form_state);
   }
 

@@ -16,6 +16,7 @@ use Drupal\search_api\IndexInterface;
 use Drupal\search_api\Query\Condition;
 use Drupal\search_api\Query\ConditionGroupInterface;
 use Drupal\search_api\Query\QueryInterface;
+use Drupal\ys_beacon\Service\BeaconCredentials;
 use Drupal\ys_beacon\Service\BeaconIndexManager;
 use Symfony\Component\DependencyInjection\ContainerInterface;
 use Symfony\Component\EventDispatcher\EventDispatcherInterface;
@@ -76,6 +77,7 @@ class BeaconAzureAiSearchProvider extends AzureAiSearchProvider {
     AzureAiSearch $azure_ai_search,
     protected BeaconIndexManager $beaconIndexManager,
     protected TimeInterface $time,
+    protected BeaconCredentials $beaconCredentials,
   ) {
     parent::__construct(
       $pluginId,
@@ -104,7 +106,23 @@ class BeaconAzureAiSearchProvider extends AzureAiSearchProvider {
       $container->get('azure_ai_search.api'),
       $container->get('ys_beacon.index_manager'),
       $container->get('datetime.time'),
+      $container->get('ys_beacon.credentials'),
     );
+  }
+
+  /**
+   * {@inheritdoc}
+   *
+   * Resolves the API key paired with this site's endpoint from the shared map,
+   * instead of the parent's single configured key, so a site pinned to one
+   * Azure service uses that service's key even when another is live
+   * (yalesites-org/YaleSites-Internal#1448). Every Azure query/write funnels
+   * through getClient(), so this one override covers the whole read/write path.
+   */
+  public function getClient($host = TRUE): AzureAiSearch {
+    $endpoint = (string) $this->getConfig()->get('url');
+    $key = $this->beaconCredentials->apiKeyForEndpoint($endpoint) ?? '';
+    return $this->azureAiSearch->getClient($key);
   }
 
   /**

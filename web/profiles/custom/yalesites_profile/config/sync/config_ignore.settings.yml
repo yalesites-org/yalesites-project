@@ -15,6 +15,7 @@ ignored_config_entities:
   - 'google_tag*'
   - 'search_api.index.ys_beacon:read_only'
   - 'search_api.server.ys_beacon:backend_config.database_settings.database_name'
+  - 'search_api.server.ys_beacon:backend_config.database_settings.url'
   - 'system.site*'
   - 'taxonomy.vocabulary.custom_vocab:name'
   - 'ys_ai_system_instructions*'
