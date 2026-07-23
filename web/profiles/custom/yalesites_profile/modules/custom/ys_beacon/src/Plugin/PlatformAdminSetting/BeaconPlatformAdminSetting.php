@@ -224,12 +224,21 @@ class BeaconPlatformAdminSetting extends PlatformAdminSettingBase {
     }
     $settings->save();
 
-    // Keep the Search API index in sync with the chat toggle: enable and seed
-    // it on turn-on, disable it on turn-off.
-    if ($enable_chat && !$previous_enable) {
-      $this->enableIndex($settings);
+    // Keep the Search API index in sync with the chat toggle. Beacon is only
+    // active when a platform admin has authorized the site AND chat is on (the
+    // config override forces it off otherwise), so verify - and provision when
+    // needed - on every save while both hold, not only the off->on transition:
+    // re-saving re-checks and can recreate an index removed in Azure. If it
+    // cannot be made functional, turn the widget back off so it never reports
+    // enabled while broken. Verifying is skipped for de-authorized sites (which
+    // the override keeps offline anyway); turning off only disables the local
+    // index and makes no Azure call.
+    if ($authorized && $enable_chat) {
+      if (!$this->enableIndex($settings, $previous_enable)) {
+        $settings->set('enable_chat', FALSE)->save();
+      }
     }
-    elseif (!$enable_chat && $previous_enable) {
+    elseif ($previous_enable) {
       $this->setIndexStatus(FALSE);
     }
   }
@@ -274,90 +283,96 @@ class BeaconPlatformAdminSetting extends PlatformAdminSettingBase {
   }
 
   /**
-   * Enables the Beacon index in sync with the chat toggle turning on.
+   * Ensures the Beacon index is functional while the chat toggle is on.
    *
-   * Provisions the index only when the configured index is actually missing,
-   * then enables indexing and queues existing content once an index name
-   * exists. Provisioning is gated on configuredIndexMissing() -
-   * which treats an unreachable endpoint as "not missing" - so a transient
-   * Azure outage on re-enable keeps an existing index enabled for cron to
-   * catch up rather than disabling it. Either way the resolved endpoint is
-   * pinned for a writable index (freshly provisioned or adopted) so it is not
-   * moved by a later Pantheon-secret change. A read-only borrower never
-   * provisions, pins, or writes the collection it reads; it just enables the
-   * local index to query it.
+   * Runs on every save while chat is on (not only the off->on transition), so a
+   * re-save re-verifies the index and can recreate one removed in Azure. The
+   * outcome is always reported, and always logged on failure:
+   * - Index present: enabled; the tracker is seeded only when the index was
+   *   just created or was not already enabled, so a routine save never
+   *   re-queues already-indexed content.
+   * - Index missing: provisioned (created and queued); or, when creation fails
+   *   (for example the Azure service is at its index cap), the operator is
+   *   warned and this returns FALSE so the caller turns the widget back off.
+   * - Index unverifiable (Azure unreachable / auth error - inconclusive, not a
+   *   definitive "missing"): the prior enabled state is kept, so a transient
+   *   blip never disables a working site while a first-time enable that could
+   *   not be confirmed is left off. The operator is warned to try again.
+   * A read-only borrower never provisions, pins, or writes the collection it
+   * reads; it just enables the local index to query it.
    *
    * @param \Drupal\Core\Config\Config $settings
    *   The editable ys_beacon.settings config.
+   * @param bool $previously_enabled
+   *   Whether the chat widget was already enabled before this save. Decides the
+   *   inconclusive-check outcome: keep a working site on, leave a fresh enable
+   *   off.
+   *
+   * @return bool
+   *   TRUE when the widget should remain enabled; FALSE when the index could
+   *   not be made functional and the caller must turn the widget back off.
    */
-  protected function enableIndex(Config $settings): void {
+  protected function enableIndex(Config $settings, bool $previously_enabled): bool {
     if ($settings->get('read_only')) {
+      // A borrowing site does not own the collection; it just enables the local
+      // index to query the owner-managed, shared collection.
       $this->setIndexStatus(TRUE);
-      return;
+      return TRUE;
     }
     $name = (string) $settings->get('azure_index_name');
-    if ($this->configuredIndexMissing($settings)) {
+
+    // Establish whether the configured index exists. A clean "missing" (or no
+    // name yet) drops through to provisioning; an error means the endpoint
+    // could not be reached or authenticated, which is inconclusive.
+    if ($name !== '') {
+      try {
+        $exists = $this->indexManager->indexExists($name);
+      }
+      catch (\RuntimeException $e) {
+        $this->logger->error('Beacon could not verify the Azure AI Search index: @message', ['@message' => $e->getMessage()]);
+        $this->messenger->addWarning($this->t('The Beacon search index could not be verified right now: @message Please try again later.', ['@message' => $e->getMessage()]));
+        // Inconclusive: keep the prior state. A working site stays enabled (a
+        // transient outage must not disable it); a first-time enable that could
+        // not be confirmed is left off.
+        return $previously_enabled;
+      }
+    }
+    else {
+      $exists = FALSE;
+    }
+
+    // Missing: create it, or report why it could not be created and leave the
+    // widget off.
+    $created = FALSE;
+    if (!$exists) {
       try {
         $name = $this->indexManager->provision($name ?: NULL);
+        $created = TRUE;
         $this->messenger->addStatus($this->t('The search index %name is ready and site content has been queued for indexing.', ['%name' => $name]));
       }
       catch (\RuntimeException $e) {
-        // Creation failed: no index name is persisted, so the config override
-        // keeps the index off. The chat flag stays set (matching the site
-        // control); warn the operator and stop before enabling a backing-less
-        // index.
+        // A capacity failure needs an ops action (a new Azure service +
+        // Pantheon secret), so surface the specific reason rather than a
+        // generic notice (yalesites-org/YaleSites-Internal#1440).
         $this->logger->error('Automatic index provisioning failed: @message', ['@message' => $e->getMessage()]);
-        // Surface the specific reason: a capacity failure needs an ops action
-        // (a new Azure service + Pantheon secret), which the generic "configure
-        // it in Beacon settings" advice would misdirect
-        // (yalesites-org/YaleSites-Internal#1440).
-        $this->messenger->addWarning($this->t('The chat widget is enabled, but the search index could not be created automatically: @message Until this is resolved, the assistant will not find site content.', ['@message' => $e->getMessage()]));
-        return;
+        $this->messenger->addWarning($this->t('The chat widget could not be enabled because the search index could not be created: @message', ['@message' => $e->getMessage()]));
+        return FALSE;
       }
     }
-    // Enable indexing and queue existing content once an index name exists (a
-    // failed first-time provision leaves none). rebuildTracker() re-enumerates
-    // the datasources so a never-seeded tracker is populated, not just
-    // re-flagged (issue #1383), matching the site settings form.
-    if ($name !== '') {
-      // Pin the resolved endpoint for this writable site's index. provision()
-      // already pins a freshly created one, but when the index already existed
-      // provisioning was skipped above, so pin here too - otherwise a site that
-      // adopted an existing index would never pin and would follow a later
-      // Pantheon-secret change (yalesites-org/YaleSites-Internal#1440).
-      // Idempotent when provision() already pinned it.
-      $this->indexManager->pinSearchUrl();
+
+    // The index now exists (created or pre-existing): pin the resolved endpoint
+    // so an adopted index is not moved by a later Pantheon-secret change, and
+    // enable + seed the tracker only when it was created or was not already
+    // enabled, so a routine re-save never re-queues indexed content
+    // (rebuildTracker() re-enumerates datasources rather than only re-flagging,
+    // issue #1383).
+    $this->indexManager->pinSearchUrl();
+    $index = $this->loadBeaconIndex();
+    if ($created || !($index && $index->status())) {
       $this->setIndexStatus(TRUE);
       $this->loadBeaconIndex()?->rebuildTracker();
     }
-  }
-
-  /**
-   * Whether the configured Azure index still needs to be created.
-   *
-   * TRUE when the site has no index name assigned yet or the assigned index no
-   * longer exists in Azure (deleted, or a newly chosen name). An unreachable
-   * endpoint returns FALSE so
-   * a transient outage neither triggers a doomed provision nor disables an
-   * existing index. The caller guarantees a writable (non-read-only) site.
-   *
-   * @param \Drupal\Core\Config\Config $settings
-   *   The ys_beacon.settings config.
-   *
-   * @return bool
-   *   TRUE when provisioning should run.
-   */
-  protected function configuredIndexMissing(Config $settings): bool {
-    $name = (string) $settings->get('azure_index_name');
-    if ($name === '') {
-      return TRUE;
-    }
-    try {
-      return !$this->indexManager->indexExists($name);
-    }
-    catch (\RuntimeException $e) {
-      return FALSE;
-    }
+    return TRUE;
   }
 
   /**
