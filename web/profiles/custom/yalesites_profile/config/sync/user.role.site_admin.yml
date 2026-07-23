@@ -14,7 +14,10 @@ dependencies:
     - block_content.type.directory
     - block_content.type.divider
     - block_content.type.embed
+    - block_content.type.event_card
+    - block_content.type.event_condensed
     - block_content.type.event_list
+    - block_content.type.event_list_item
     - block_content.type.facts
     - block_content.type.gallery
     - block_content.type.grand_hero
@@ -23,7 +26,17 @@ dependencies:
     - block_content.type.inline_message
     - block_content.type.link_grid
     - block_content.type.media_grid
+    - block_content.type.page_card
+    - block_content.type.page_condensed
+    - block_content.type.page_list_item
+    - block_content.type.post_card
+    - block_content.type.post_condensed
     - block_content.type.post_list
+    - block_content.type.post_list_item
+    - block_content.type.profile_card
+    - block_content.type.profile_condensed
+    - block_content.type.profile_directory
+    - block_content.type.profile_list_item
     - block_content.type.pull_quote
     - block_content.type.quick_links
     - block_content.type.quote_callout
@@ -158,7 +171,10 @@ permissions:
   - 'create embed block content'
   - 'create embed media'
   - 'create event content'
+  - 'create event_card block content'
+  - 'create event_condensed block content'
   - 'create event_list block content'
+  - 'create event_list_item block content'
   - 'create facts block content'
   - 'create gallery block content'
   - 'create grand_hero block content'
@@ -171,9 +187,19 @@ permissions:
   - 'create media_grid block content'
   - 'create new books'
   - 'create page content'
+  - 'create page_card block content'
+  - 'create page_condensed block content'
+  - 'create page_list_item block content'
   - 'create post content'
+  - 'create post_card block content'
+  - 'create post_condensed block content'
   - 'create post_list block content'
+  - 'create post_list_item block content'
   - 'create profile content'
+  - 'create profile_card block content'
+  - 'create profile_condensed block content'
+  - 'create profile_directory block content'
+  - 'create profile_list_item block content'
   - 'create pull_quote block content'
   - 'create quick_links block content'
   - 'create quote_callout block content'
@@ -233,8 +259,14 @@ permissions:
   - 'delete any embed block content revisions'
   - 'delete any embed media'
   - 'delete any event content'
+  - 'delete any event_card block content'
+  - 'delete any event_card block content revisions'
+  - 'delete any event_condensed block content'
+  - 'delete any event_condensed block content revisions'
   - 'delete any event_list block content'
   - 'delete any event_list block content revisions'
+  - 'delete any event_list_item block content'
+  - 'delete any event_list_item block content revisions'
   - 'delete any facts block content'
   - 'delete any facts block content revisions'
   - 'delete any gallery block content'
@@ -254,10 +286,30 @@ permissions:
   - 'delete any media_grid block content'
   - 'delete any media_grid block content revisions'
   - 'delete any page content'
+  - 'delete any page_card block content'
+  - 'delete any page_card block content revisions'
+  - 'delete any page_condensed block content'
+  - 'delete any page_condensed block content revisions'
+  - 'delete any page_list_item block content'
+  - 'delete any page_list_item block content revisions'
   - 'delete any post content'
+  - 'delete any post_card block content'
+  - 'delete any post_card block content revisions'
+  - 'delete any post_condensed block content'
+  - 'delete any post_condensed block content revisions'
   - 'delete any post_list block content'
   - 'delete any post_list block content revisions'
+  - 'delete any post_list_item block content'
+  - 'delete any post_list_item block content revisions'
   - 'delete any profile content'
+  - 'delete any profile_card block content'
+  - 'delete any profile_card block content revisions'
+  - 'delete any profile_condensed block content'
+  - 'delete any profile_condensed block content revisions'
+  - 'delete any profile_directory block content'
+  - 'delete any profile_directory block content revisions'
+  - 'delete any profile_list_item block content'
+  - 'delete any profile_list_item block content revisions'
   - 'delete any pull_quote block content'
   - 'delete any pull_quote block content revisions'
   - 'delete any quick_links block content'
@@ -331,7 +383,10 @@ permissions:
   - 'edit any embed block content'
   - 'edit any embed media'
   - 'edit any event content'
+  - 'edit any event_card block content'
+  - 'edit any event_condensed block content'
   - 'edit any event_list block content'
+  - 'edit any event_list_item block content'
   - 'edit any facts block content'
   - 'edit any gallery block content'
   - 'edit any grand_hero block content'
@@ -342,9 +397,19 @@ permissions:
   - 'edit any link_grid block content'
   - 'edit any media_grid block content'
   - 'edit any page content'
+  - 'edit any page_card block content'
+  - 'edit any page_condensed block content'
+  - 'edit any page_list_item block content'
   - 'edit any post content'
+  - 'edit any post_card block content'
+  - 'edit any post_condensed block content'
   - 'edit any post_list block content'
+  - 'edit any post_list_item block content'
   - 'edit any profile content'
+  - 'edit any profile_card block content'
+  - 'edit any profile_condensed block content'
+  - 'edit any profile_directory block content'
+  - 'edit any profile_list_item block content'
   - 'edit any pull_quote block content'
   - 'edit any quick_links block content'
   - 'edit any quote_callout block content'
@@ -407,7 +472,10 @@ permissions:
   - 'revert any directory block content revisions'
   - 'revert any divider block content revisions'
   - 'revert any embed block content revisions'
+  - 'revert any event_card block content revisions'
+  - 'revert any event_condensed block content revisions'
   - 'revert any event_list block content revisions'
+  - 'revert any event_list_item block content revisions'
   - 'revert any facts block content revisions'
   - 'revert any gallery block content revisions'
   - 'revert any grand_hero block content revisions'
@@ -416,7 +484,17 @@ permissions:
   - 'revert any inline_message block content revisions'
   - 'revert any link_grid block content revisions'
   - 'revert any media_grid block content revisions'
+  - 'revert any page_card block content revisions'
+  - 'revert any page_condensed block content revisions'
+  - 'revert any page_list_item block content revisions'
+  - 'revert any post_card block content revisions'
+  - 'revert any post_condensed block content revisions'
   - 'revert any post_list block content revisions'
+  - 'revert any post_list_item block content revisions'
+  - 'revert any profile_card block content revisions'
+  - 'revert any profile_condensed block content revisions'
+  - 'revert any profile_directory block content revisions'
+  - 'revert any profile_list_item block content revisions'
   - 'revert any pull_quote block content revisions'
   - 'revert any quick_links block content revisions'
   - 'revert any quote_callout block content revisions'
@@ -463,7 +541,10 @@ permissions:
   - 'view any directory block content history'
   - 'view any divider block content history'
   - 'view any embed block content history'
+  - 'view any event_card block content history'
+  - 'view any event_condensed block content history'
   - 'view any event_list block content history'
+  - 'view any event_list_item block content history'
   - 'view any facts block content history'
   - 'view any gallery block content history'
   - 'view any grand_hero block content history'
@@ -472,7 +553,17 @@ permissions:
   - 'view any inline_message block content history'
   - 'view any link_grid block content history'
   - 'view any media_grid block content history'
+  - 'view any page_card block content history'
+  - 'view any page_condensed block content history'
+  - 'view any page_list_item block content history'
+  - 'view any post_card block content history'
+  - 'view any post_condensed block content history'
   - 'view any post_list block content history'
+  - 'view any post_list_item block content history'
+  - 'view any profile_card block content history'
+  - 'view any profile_condensed block content history'
+  - 'view any profile_directory block content history'
+  - 'view any profile_list_item block content history'
   - 'view any pull_quote block content history'
   - 'view any quick_links block content history'
   - 'view any quote_callout block content history'

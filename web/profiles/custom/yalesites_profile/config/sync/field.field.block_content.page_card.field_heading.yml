@@ -1,0 +1,24 @@
+uuid: cb106f90-1f70-4822-a8aa-90afe6e94c9a
+langcode: en
+status: true
+dependencies:
+  config:
+    - block_content.type.page_card
+    - field.storage.block_content.field_heading
+    - filter.format.heading_html
+  module:
+    - text
+id: block_content.page_card.field_heading
+field_name: field_heading
+entity_type: block_content
+bundle: page_card
+label: 'View Heading'
+description: ''
+required: false
+translatable: true
+default_value: {  }
+default_value_callback: ''
+settings:
+  allowed_formats:
+    - heading_html
+field_type: text

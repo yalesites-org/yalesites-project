@@ -1,0 +1,24 @@
+uuid: 4549fb7e-4354-455c-a010-275bda4459bf
+langcode: en
+status: true
+dependencies:
+  config:
+    - block_content.type.post_card
+    - field.storage.block_content.field_heading
+    - filter.format.heading_html
+  module:
+    - text
+id: block_content.post_card.field_heading
+field_name: field_heading
+entity_type: block_content
+bundle: post_card
+label: 'View Heading'
+description: ''
+required: false
+translatable: true
+default_value: {  }
+default_value_callback: ''
+settings:
+  allowed_formats:
+    - heading_html
+field_type: text

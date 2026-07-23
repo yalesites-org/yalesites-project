@@ -96,6 +96,15 @@ class ViewsContentResourcesDefaultFormatter extends FormatterBase implements Con
     foreach ($items as $delta => $item) {
       $view = $this->viewsContentResourcesManager->getView('rendered', $item->getValue()['params']);
 
+      // getView() returns NULL when the view cannot be built (e.g. a re-entrant
+      // render bails on the recursion guard, as during search_api indexing), so
+      // guard the exposed-widgets read to avoid a warning, matching
+      // ViewsBasicDefaultFormatter.
+      $exposedWidgets = NULL;
+      if (is_array($view) && isset($view['#view']->exposed_widgets)) {
+        $exposedWidgets = $view['#view']->exposed_widgets;
+      }
+
       $elements[$delta] = [
         '#theme' => 'views_basic_formatter_default',
         '#view' => $view,
@@ -107,7 +116,7 @@ class ViewsContentResourcesDefaultFormatter extends FormatterBase implements Con
         // when AJAX operations are performed on the view,
         // allowing for better control over which filters are displayed
         // and maintaining the expected user interface behavior.
-        '#exposed' => $view['#view']->exposed_widgets,
+        '#exposed' => $exposedWidgets,
       ];
     }
 

@@ -5,9 +5,35 @@
  * Contains ys_views_basic.module functions.
  */
 
+use Drupal\block_content\BlockContentInterface;
 use Drupal\Core\Entity\Display\EntityViewDisplayInterface;
+use Drupal\Core\Form\FormStateInterface;
 use Drupal\node\NodeInterface;
 use Drupal\views\ViewExecutable;
+use Drupal\ys_views_basic\ViewsBasicManager;
+
+/**
+ * Implements hook_theme_suggestions_HOOK_alter() for block.
+ *
+ * The per-(content type, display mode) listing bundles created by the views
+ * rework render identically to the legacy "view" block, but atomic registers
+ * block templates by bundle machine name, so the new bundles have no template
+ * and fall back to the default block render — printing the padding-options
+ * field and losing the heading/CTA styling. Reuse atomic's
+ * block--inline-block--view.html.twig for every listing bundle so they are a
+ * drop-in replacement (no atomic change required).
+ */
+function ys_views_basic_theme_suggestions_block_alter(array &$suggestions, array $variables) {
+  if (($variables['elements']['#base_plugin_id'] ?? NULL) !== 'inline_block') {
+    return;
+  }
+  $bundle = $variables['elements']['#derivative_plugin_id'] ?? NULL;
+  if ($bundle !== NULL && isset(ViewsBasicManager::LISTING_BUNDLES[$bundle])) {
+    // Appended last so it takes priority over the (template-less) per-bundle
+    // suggestion and resolves to block--inline-block--view.html.twig.
+    $suggestions[] = 'block__inline_block__view';
+  }
+}
 
 /**
  * Implements hook_theme().
@@ -38,6 +64,16 @@ function ys_views_basic_theme($existing, $type, $theme, $path): array {
     'views_basic_events_calendar' => [
       'variables' => [
         'month_data' => [],
+      ],
+    ],
+    // Authoring-form live mockup preview panel (#1318); see
+    // ViewsBasicWidgetBase::buildPreviewPanel().
+    'views_basic_mockup_preview' => [
+      'variables' => [
+        'content_type' => NULL,
+        'view_mode' => NULL,
+        'image_src' => NULL,
+        'font_pairing' => NULL,
       ],
     ],
   ];
@@ -119,6 +155,12 @@ function ys_views_basic_views_pre_render(ViewExecutable $view): void {
       $row->_entity->show_thumbnail = $field_display_options->show_thumbnail;
       $row->_entity->hide_add_to_calendar = $event_field_display_options->hide_add_to_calendar;
       $row->_entity->show_eyebrow = $post_field_display_options->show_eyebrow;
+      // Context-derived heading level for each result card: H3 when the block
+      // renders its own heading (the cards nest under it), H2 when the cards
+      // are the first heading on the page. The listing node templates read
+      // node.card_heading_level (falling back to their own default for non
+      // listing renders, which never set this property).
+      $row->_entity->card_heading_level = !empty($field_display_options->block_has_heading) ? '3' : '2';
 
       $sticky = (bool) $row->_entity->get('sticky')->value;
       if ($sticky) {
@@ -134,7 +176,6 @@ function ys_views_basic_views_pre_render(ViewExecutable $view): void {
 function ys_views_basic_views_pre_view(ViewExecutable $view, $display_id, array &$args) {
   if (!in_array($view->id(), ['views_basic_scaffold', 'views_basic_scaffold_events'])) {
     return;
-
   }
 
   // Detect if this is an AJAX request.
@@ -143,8 +184,37 @@ function ys_views_basic_views_pre_view(ViewExecutable $view, $display_id, array 
     return;
   }
 
-  $viewsBasicManager = \Drupal::service('ys_views_basic.views_basic_manager');
-  $viewsBasicManager->setupView($view, end($args));
+  // setupView() calls ViewExecutable::preview(), which re-fires
+  // hook_views_pre_view() for this same view object. Without a guard the hook
+  // re-enters setupView() and recurses until PHP exhausts the stack — the
+  // Layout Builder "Add Section" AJAX save hangs as a result. Key the guard on
+  // the view instance (preview() re-fires the hook with the same object) so a
+  // re-entrant call bails while other listing blocks in the same request — each
+  // a distinct view object — still run.
+  static $processing = [];
+  $object_id = spl_object_id($view);
+  if (!empty($processing[$object_id])) {
+    return;
+  }
+  $processing[$object_id] = TRUE;
+  try {
+    $viewsBasicManager = \Drupal::service('ys_views_basic.views_basic_manager');
+    // setupView() rebuilds the field-display options from the stored params,
+    // which do not carry the host block's heading-presence signal (it is a
+    // block-entity fact resolved by the formatter, not a saved param). Recover
+    // it from the incoming view arguments so exposed-filter and pager AJAX
+    // re-renders keep the same result-card heading level as the initial render.
+    // args[8] is the field_display_options JSON (see setupView() arg order).
+    $block_has_heading = FALSE;
+    if (isset($args[8])) {
+      $incoming_display = json_decode($args[8]);
+      $block_has_heading = !empty($incoming_display->block_has_heading);
+    }
+    $viewsBasicManager->setupView($view, end($args), NULL, $block_has_heading);
+  }
+  finally {
+    unset($processing[$object_id]);
+  }
 }
 
 /**
@@ -161,4 +231,149 @@ function ys_views_basic_node_view(array &$build, NodeInterface $node, EntityView
   if (in_array($view_mode, $view_modes)) {
     $build['#cache']['max-age'] = 0;
   }
+}
+
+/**
+ * Implements hook_form_alter().
+ *
+ * Unifies the listing-block authoring form (Layout Builder add/update block)
+ * into a single horizontal tab bar: General | Field display & filters |
+ * Tags, sorting & pinned | Display options.
+ *
+ * The last three tabs are the field widget's own inner "details" groups
+ * (ViewsBasicWidgetBase::initSelectionContainers()); "General" collects the
+ * outer block fields (heading, heading links, padding, admin title, reusable).
+ * Because the widget groups live inside the field_view_params widget,
+ * field_group (which is driven by form-display config) cannot reach them, so
+ * the grouping is done here with core's #group mechanism instead.
+ *
+ * The tab set and the General group are built in a #process callback appended
+ * to the content-block subform, because the block fields do not exist until
+ * that subform's own #process (InlineBlock::processBlockForm()) has run. The
+ * root-level reusable/admin-title fields are attached to the General group
+ * here in the alter — before form processing begins — so their #group is set
+ * before their own #process runs, regardless of the order in which the form
+ * tree is processed. ys_layouts_form_alter() relabels those two fields; this
+ * hook only groups them, so the two do not conflict.
+ */
+function ys_views_basic_form_alter(array &$form, FormStateInterface $form_state, string $form_id): void {
+  if ($form_id !== 'layout_builder_add_block' && $form_id !== 'layout_builder_update_block') {
+    return;
+  }
+
+  // The inline-block authoring form nests the content-block subform under
+  // 'settings'; a reusable (block_content) block places it at the top level.
+  if (isset($form['settings']['block_form'])) {
+    $block_form = &$form['settings']['block_form'];
+  }
+  elseif (isset($form['block_form'])) {
+    $block_form = &$form['block_form'];
+  }
+  else {
+    return;
+  }
+
+  // Only listing-view blocks get the tabbed layout.
+  $block = $block_form['#block'] ?? NULL;
+  if (!$block instanceof BlockContentInterface || !isset(ViewsBasicManager::LISTING_BUNDLES[$block->bundle()])) {
+    return;
+  }
+
+  // Attach the root-level reusable/admin-title fields (inline-block only) to
+  // the General tab. Weights place them below the content fields within it.
+  foreach (['info' => 20, 'reusable' => 21] as $key => $weight) {
+    if (isset($form[$key])) {
+      $form[$key]['#group'] = 'group_listing_general';
+      $form[$key]['#weight'] = $weight;
+    }
+  }
+
+  $block_form['#process'][] = '_ys_views_basic_listing_form_tabs';
+
+  // Space out the horizontal tab bar (Gin collapses the field_group defaults).
+  $form['#attached']['library'][] = 'ys_views_basic/listing_form_tabs';
+}
+
+/**
+ * Process callback: gathers the listing-block fields into one tab bar.
+ *
+ * Runs after the content-block subform is built, so the field widgets and the
+ * widget's inner group details are present. Adds a horizontal_tabs element and
+ * a "General" details, then attaches the four groups to the tab bar via
+ * #group. The widget's three details self-register as group members (details
+ * elements run RenderElement::processGroup()); the plain field wrappers do
+ * not, so they are moved into the General details instead. Their #parents were
+ * assigned at widget-build time and survive the move (FormBuilder only assigns
+ * #parents when unset), so the stored form values are unaffected.
+ *
+ * @param array $element
+ *   The content-block subform element.
+ * @param \Drupal\Core\Form\FormStateInterface $form_state
+ *   The current state of the form.
+ * @param array $complete_form
+ *   The complete form structure.
+ *
+ * @return array
+ *   The processed subform element.
+ */
+function _ys_views_basic_listing_form_tabs(array $element, FormStateInterface $form_state, array &$complete_form): array {
+  // The widget's inner groups only exist once the entity form has been built.
+  if (!isset($element['group_user_selection'])) {
+    return $element;
+  }
+
+  $tabs = 'group_listing_tabs';
+  $general = 'group_listing_general';
+
+  // The single tab bar. An explicit #parents fixes the group identifier that
+  // member details reference via #group, independent of tree position.
+  $element[$tabs] = [
+    '#type' => 'horizontal_tabs',
+    '#parents' => [$tabs],
+    '#weight' => 1,
+  ];
+
+  // "General": the outer block fields. field_heading, field_heading_links and
+  // field_padding_options are moved in physically because field wrappers do
+  // not self-register with #group; reusable/info are attached by #group in the
+  // form alter above.
+  $element[$general] = [
+    '#type' => 'details',
+    '#title' => t('General'),
+    '#group' => $tabs,
+    '#parents' => [$general],
+    '#weight' => 0,
+    '#open' => TRUE,
+  ];
+  foreach (['field_heading', 'field_heading_links', 'field_padding_options'] as $field) {
+    if (isset($element[$field])) {
+      $element[$general][$field] = $element[$field];
+      unset($element[$field]);
+    }
+  }
+
+  // The remaining three tabs are the widget's existing inner details groups.
+  // Their keys, contents and #parents stay unchanged, so massageFormValues()'s
+  // fixed paths still resolve; only #group (and the active-tab #open flag) are
+  // set here.
+  // Weight the widget groups after General (#weight 0) so the bar reads
+  // General | Field display & filters | Tags, sorting & pinned |
+  // Display options.
+  $group_weight = 1;
+  foreach (['entity_and_view_mode', 'filter_and_sort', 'options'] as $group) {
+    if (isset($element['group_user_selection'][$group])) {
+      $element['group_user_selection'][$group]['#group'] = $tabs;
+      $element['group_user_selection'][$group]['#open'] = FALSE;
+      $element['group_user_selection'][$group]['#weight'] = $group_weight++;
+    }
+  }
+
+  // Those three groups now render inside the tab bar via #group (the event
+  // time-period control lives in the "options" group, so it moves into the
+  // Display options tab too). What remains directly under group_user_selection
+  // is only empty helper containers, so it renders as a stray empty <div>; drop
+  // the wrapper so nothing is emitted.
+  $element['group_user_selection']['#theme_wrappers'] = [];
+
+  return $element;
 }

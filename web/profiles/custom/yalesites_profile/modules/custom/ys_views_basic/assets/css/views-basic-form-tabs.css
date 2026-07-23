@@ -1,0 +1,152 @@
+/*
+ * Listing block form tabs (#1299).
+ *
+ * In the Layout Builder modal, gin_lb tags each horizontal-tab button with
+ * .glb-claro-details, whose `margin: 0 -0.25em 0 -1.25em !important`
+ * (gin_lb/dist/css/gin_lb.css) pulls every tab ~20px left over its neighbour,
+ * so the labels collide (they read as one run of text). Re-space them into
+ * clearly separated, padded tabs sitting on a shared baseline; the margin reset
+ * needs !important to win against that rule. Loaded only on the listing block
+ * authoring forms (via the ys_views_basic/listing-form-tabs library, attached
+ * in the tabs form_alter) and scoped to the block configure form, so no other
+ * field_group tabs are touched.
+ *
+ * Gin's tabs.css and field_group's horizontal-tabs.css both target
+ * `ul.horizontal-tabs-list li.horizontal-tab-button a`, which beats our
+ * class-only selectors on specificity (their ul/li tip the balance). Worse,
+ * field_group also has a `li.selected a` branch at the same specificity that
+ * wins the tie for the active tab only, giving it different (shorter)
+ * padding than inactive tabs. `!important` throughout this file is what
+ * makes our spacing win consistently across every tab state.
+ */
+.layout-builder-configure-block .horizontal-tabs-list {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.25rem;
+  margin: 0 !important;
+  padding: 0 !important;
+  border-bottom: 1px solid var(--gin-border-color, #d3d4d9);
+}
+
+.layout-builder-configure-block .horizontal-tabs-list .horizontal-tab-button {
+  float: none;
+  margin: 0 !important;
+  padding: 0;
+  border: 0;
+  list-style: none;
+}
+
+.layout-builder-configure-block .horizontal-tabs-list .horizontal-tab-button a {
+  display: block;
+  padding: 0.5rem 1rem !important;
+  white-space: nowrap;
+  text-decoration: none;
+}
+
+/*
+ * Gin's tabs.css also draws its own underline via ::after on the tab list,
+ * offset up from the bottom edge by a fixed spacing value (inset-block-end:
+ * var(--gin-spacing-l)) calibrated for Gin's own, taller default tab height.
+ * Now that the tabs above are shorter, that fixed offset lands mid-label
+ * instead of at the bottom edge, showing as a stray line through the tab
+ * text. We already draw our own border-bottom on the list above, so this
+ * second underline is redundant as well as misplaced; hide it.
+ */
+.layout-builder-configure-block .horizontal-tabs-list::after {
+  display: none !important;
+}
+
+/*
+ * Give the tab panes the same layer background and left/right alignment the
+ * rest of the form uses. Two separate gin_lb overrides fight this:
+ * - .glb-claro-details__wrapper gets `background: var(--gin-bg-app)
+ *   !important` (gin_lb.css) — the near-black app background, not the
+ *   lighter layer surface — and it sits *inside* .horizontal-tabs-panes, so
+ *   it paints over the background set below regardless of what that
+ *   resolves to.
+ * - The same selector also gets `padding-inline: 1.5em !important`, which
+ *   insets the pane content ~24px past the tab list's left edge, breaking
+ *   the alignment between the tab bar and the fields below it. We bring
+ *   that down to a small 0.5rem gutter instead of removing it outright, so
+ *   fields aren't flush against the panel edge, while staying close enough
+ *   to the tab bar's edge to still read as aligned.
+ * Both need !important overrides, scoped to this wrapper specifically, to
+ * win.
+ */
+.layout-builder-configure-block .horizontal-tabs-panes {
+  background: var(--gin-bg-layer, #fff);
+}
+
+.layout-builder-configure-block .horizontal-tabs-panes .glb-claro-details__wrapper {
+  padding-left: 0.5rem !important;
+  padding-right: 0.5rem !important;
+  background: var(--gin-bg-layer, #fff) !important;
+}
+
+/*
+ * The pane itself (not just its inner wrapper above) also carries
+ * .glb-claro-details, so it inherits that same class's `margin-left:
+ * -1.25em !important` (gin_lb.css) — meant to compensate the tab buttons'
+ * own indent, but here it just shifts the whole pane content 20px left of
+ * the tab bar above it. Zero it out for panes specifically.
+ */
+.layout-builder-configure-block .horizontal-tabs-panes .horizontal-tabs-pane {
+  margin: 0 !important;
+}
+
+/*
+ * Restore the icon-radio "card" styling (e.g. Event Time Period) for
+ * controls that now live inside the tab bar. ViewsBasicWidgetBase's
+ * initSelectionContainers() puts the styling hook class
+ * .views-basic--group-user-selection on the *outer* group_user_selection
+ * container, and views-basic.css keys the whole card treatment — hiding
+ * the native radio circle, the bordered label, the icon sizing, the
+ * flex-wrap layout — off that ancestor. But _ys_views_basic_listing_form_tabs()
+ * moves the entity_and_view_mode/filter_and_sort/options subgroups into the
+ * tab bar via Drupal's #group mechanism, which re-parents their rendered
+ * markup under .horizontal-tabs-panes, outside that outer container. So
+ * every .views-basic--group-user-selection-scoped rule silently stops
+ * matching for anything inside those groups. Re-declare the subset that
+ * applies to icon-radio controls here, scoped to the new ancestor, rather
+ * than changing the #group relocation itself.
+ */
+.layout-builder-configure-block .horizontal-tabs-panes .grouped-items input.form-radio {
+  border: 0;
+  clip: rect(0 0 0 0);
+  height: 1px;
+  margin: -1px;
+  overflow: hidden;
+  padding: 0;
+  position: absolute;
+  width: 1px;
+}
+
+.layout-builder-configure-block .horizontal-tabs-panes .grouped-items .glb-form-type--radio {
+  position: relative;
+}
+
+.layout-builder-configure-block .horizontal-tabs-panes .glb-form-type--radio label.glb-option {
+  display: flex !important;
+  align-items: center;
+  flex-direction: column;
+  gap: 1rem;
+  flex: 1 auto;
+  border: 2px solid;
+  aspect-ratio: 2/1;
+  text-align: left;
+  padding: 0.75rem 1rem;
+  color: var(--gin-color-text);
+  border-radius: 0.25rem;
+  margin-bottom: 0.75rem;
+}
+
+.layout-builder-configure-block .horizontal-tabs-panes .grouped-items img {
+  width: auto;
+}
+
+.layout-builder-configure-block .horizontal-tabs-panes .form-boolean-group {
+  display: flex;
+  gap: 1rem;
+  width: 100%;
+  flex-flow: row wrap;
+}

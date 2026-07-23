@@ -7,3 +7,19 @@ ys_views_basic:
   dependencies:
     - core/once
 
+ys_views_basic_preview:
+  css:
+    theme:
+      assets/css/views-basic-preview.css: {}
+  js:
+    assets/js/views-basic-preview.js: {}
+  dependencies:
+    - core/drupal
+    - core/once
+    - ys_core/font_preview
+
+listing_form_tabs:
+  css:
+    theme:
+      assets/css/views-basic-form-tabs.css: {}
+

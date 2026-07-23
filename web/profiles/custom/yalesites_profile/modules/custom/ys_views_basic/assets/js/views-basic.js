@@ -35,6 +35,10 @@
         'input[name="term_operator"]',
         'input[name="settings[block_form][group_user_selection][entity_specific][event_time_period]"]',
         'input[name="block_form[group_user_selection][entity_specific][event_time_period]"]',
+        // event_view_widget now renders Event Time Period under the Display
+        // options group; the legacy widgets keep the entity_specific path above.
+        'input[name="settings[block_form][group_user_selection][options][event_time_period]"]',
+        'input[name="block_form[group_user_selection][options][event_time_period]"]',
         'input[name="event_time_period"]',
       ];
 

@@ -1,0 +1,24 @@
+uuid: 9b7e5e93-c25b-4a2a-8b92-46062d23549e
+langcode: en
+status: true
+dependencies:
+  config:
+    - block_content.type.post_list_item
+    - field.storage.block_content.field_heading
+    - filter.format.heading_html
+  module:
+    - text
+id: block_content.post_list_item.field_heading
+field_name: field_heading
+entity_type: block_content
+bundle: post_list_item
+label: 'View Heading'
+description: ''
+required: false
+translatable: true
+default_value: {  }
+default_value_callback: ''
+settings:
+  allowed_formats:
+    - heading_html
+field_type: text

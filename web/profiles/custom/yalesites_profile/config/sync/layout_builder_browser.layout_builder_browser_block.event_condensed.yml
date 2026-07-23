@@ -1,0 +1,11 @@
+uuid: c0033ea9-1505-4a67-a996-21dbf8a7959d
+langcode: en
+status: true
+dependencies: {  }
+id: event_condensed
+block_id: 'inline_block:event_condensed'
+category: event_listings
+label: 'Events - Condensed View'
+image_path: ''
+image_alt: ''
+weight: 0
