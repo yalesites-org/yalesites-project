@@ -5,7 +5,9 @@ declare(strict_types=1);
 namespace Drupal\ys_layouts;
 
 use Drupal\Core\Entity\EntityRepositoryInterface;
+use Drupal\Core\Entity\EntityTypeManagerInterface;
 use Drupal\Core\Entity\FieldableEntityInterface;
+use Drupal\block_content\BlockContentInterface;
 use Drupal\layout_builder\SectionComponent;
 
 /**
@@ -23,12 +25,29 @@ class ReusableBlockDetacher {
    */
   protected const REUSABLE_PLUGIN_PREFIX = 'block_content:';
 
+  /**
+   * Plugin id prefix identifying a placed inline (non-shared) content block.
+   */
+  protected const INLINE_PLUGIN_PREFIX = 'inline_block:';
+
   public function __construct(
     protected EntityRepositoryInterface $entityRepository,
+    protected EntityTypeManagerInterface $entityTypeManager,
   ) {}
 
   /**
-   * Determines whether a component is a placed reusable content block.
+   * Determines whether a component places a detachable reusable block.
+   *
+   * A placement shows a shared reusable block in two shapes:
+   * - a library placement, plugin id block_content:<uuid>, which by definition
+   *   references a reusable block (the derivative only exists for reusable
+   *   blocks); and
+   * - an inline_block:<bundle> placement whose referenced block_content was
+   *   flagged reusable without the placement id being rewritten. That happens
+   *   when the "Reusable" checkbox is ticked (which saves reusable=TRUE on the
+   *   block immediately) but the layout is never saved, so the id conversion -
+   *   which lives only in tempstore until save - is discarded. Such a placement
+   *   still shows the shared reusable block, so it must be detachable too.
    *
    * @param \Drupal\layout_builder\SectionComponent $component
    *   The section component to inspect.
@@ -37,7 +56,17 @@ class ReusableBlockDetacher {
    *   TRUE if the component places a reusable block that can be detached.
    */
   public function isReusableBlockComponent(SectionComponent $component): bool {
-    return str_starts_with($component->getPluginId(), self::REUSABLE_PLUGIN_PREFIX);
+    $plugin_id = $component->getPluginId();
+
+    if (str_starts_with($plugin_id, self::REUSABLE_PLUGIN_PREFIX)) {
+      return TRUE;
+    }
+
+    if (str_starts_with($plugin_id, self::INLINE_PLUGIN_PREFIX)) {
+      return $this->loadReusableInlineBlock($component) instanceof BlockContentInterface;
+    }
+
+    return FALSE;
   }
 
   /**
@@ -57,14 +86,24 @@ class ReusableBlockDetacher {
    *   referenced block_content entity cannot be loaded.
    */
   public function detach(SectionComponent $component): void {
-    if (!$this->isReusableBlockComponent($component)) {
-      throw new \InvalidArgumentException('Only a placed reusable content block can be detached.');
+    $plugin_id = $component->getPluginId();
+
+    if (str_starts_with($plugin_id, self::REUSABLE_PLUGIN_PREFIX)) {
+      $uuid = substr($plugin_id, strlen(self::REUSABLE_PLUGIN_PREFIX));
+      $block = $this->entityRepository->loadEntityByUuid('block_content', $uuid);
+    }
+    elseif (str_starts_with($plugin_id, self::INLINE_PLUGIN_PREFIX)) {
+      // An inline placement of a block that was flagged reusable (see
+      // ::isReusableBlockComponent). Detaching it gives this page its own
+      // independent, non-reusable copy and stops it tracking the shared block.
+      $block = $this->loadReusableInlineBlock($component);
+    }
+    else {
+      $block = NULL;
     }
 
-    $uuid = substr($component->getPluginId(), strlen(self::REUSABLE_PLUGIN_PREFIX));
-    $block = $this->entityRepository->loadEntityByUuid('block_content', $uuid);
-    if ($block === NULL) {
-      throw new \InvalidArgumentException(sprintf('The reusable block "%s" could not be loaded.', $uuid));
+    if (!$block instanceof BlockContentInterface) {
+      throw new \InvalidArgumentException('Only a placed reusable content block can be detached.');
     }
 
     // An independent, non-reusable copy. Composed children (paragraphs) are
@@ -79,11 +118,37 @@ class ReusableBlockDetacher {
     // mapping, and any other keys it carries) and change only what turns the
     // shared reference into an owned inline copy.
     $configuration = $component->get('configuration');
-    $configuration['id'] = 'inline_block:' . $block->bundle();
+    $configuration['id'] = self::INLINE_PLUGIN_PREFIX . $block->bundle();
     $configuration['provider'] = 'layout_builder';
     $configuration['block_revision_id'] = NULL;
     $configuration['block_serialized'] = serialize($copy);
     $component->setConfiguration($configuration);
+  }
+
+  /**
+   * Loads the reusable block behind an inline_block placement, or NULL.
+   *
+   * An inline_block placement references its block by revision id. This returns
+   * that block only when it is flagged reusable - the state that makes an
+   * inline placement detachable - and NULL otherwise (an ordinary inline
+   * block, or an unsaved placement with only a serialized copy, has nothing
+   * shared to detach from).
+   *
+   * @param \Drupal\layout_builder\SectionComponent $component
+   *   The inline_block placement to inspect.
+   *
+   * @return \Drupal\block_content\BlockContentInterface|null
+   *   The referenced reusable block, or NULL.
+   */
+  protected function loadReusableInlineBlock(SectionComponent $component): ?BlockContentInterface {
+    $configuration = $component->get('configuration');
+    if (empty($configuration['block_revision_id'])) {
+      return NULL;
+    }
+    $block = $this->entityTypeManager
+      ->getStorage('block_content')
+      ->loadRevision($configuration['block_revision_id']);
+    return ($block instanceof BlockContentInterface && $block->isReusable()) ? $block : NULL;
   }
 
   /**

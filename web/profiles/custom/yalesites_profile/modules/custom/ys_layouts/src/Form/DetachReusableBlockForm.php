@@ -66,7 +66,7 @@ class DetachReusableBlockForm extends LayoutRebuildConfirmFormBase {
    * {@inheritdoc}
    */
   public function getDescription() {
-    return $this->t('This placement becomes an independent copy that you can edit here without affecting other pages. The original reusable block is left unchanged and stays available in the Reusable Blocks list. This cannot be undone.');
+    return $this->t('This placement becomes an independent copy you can edit here without affecting this block anywhere else it is used. If this block is placed on other pages, those placements are untouched and stay reusable - you can detach them separately if needed. This cannot be undone.');
   }
 
   /**

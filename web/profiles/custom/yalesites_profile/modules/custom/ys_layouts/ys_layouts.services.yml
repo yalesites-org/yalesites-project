@@ -23,7 +23,7 @@ services:
   # (instance-level detach) for the Layout Builder "Make non-reusable" action.
   ys_layouts.reusable_block_detacher:
     class: Drupal\ys_layouts\ReusableBlockDetacher
-    arguments: ['@entity.repository']
+    arguments: ['@entity.repository', '@entity_type.manager']
   # Restricts the detach route (and its contextual link) to placements of
   # reusable content blocks.
   ys_layouts.detach_reusable_block_access:

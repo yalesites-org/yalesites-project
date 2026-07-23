@@ -55,7 +55,10 @@ class DetachReusableBlockAccessCheckTest extends KernelTestBase {
     // Instantiate directly so the test avoids enabling ys_layouts and its
     // dependency chain (ys_localist -> migrate, etc.), matching
     // ReusableBlockDetacherTest.
-    $detacher = new ReusableBlockDetacher($this->container->get('entity.repository'));
+    $detacher = new ReusableBlockDetacher(
+      $this->container->get('entity.repository'),
+      $this->container->get('entity_type.manager'),
+    );
     $this->accessCheck = new DetachReusableBlockAccessCheck($detacher);
   }
 

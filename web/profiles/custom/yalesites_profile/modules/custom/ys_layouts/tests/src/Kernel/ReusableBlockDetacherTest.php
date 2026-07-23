@@ -91,11 +91,14 @@ class ReusableBlockDetacherTest extends KernelTestBase {
       ],
     ])->save();
 
-    // The detacher only needs the entity repository; instantiate it directly so
-    // the test does not have to enable ys_layouts and its dependency chain
-    // (ys_localist -> migrate, etc.). The class autoloads via the PHPUnit
-    // bootstrap namespace registration.
-    $this->detacher = new ReusableBlockDetacher($this->container->get('entity.repository'));
+    // The detacher only needs the entity repository and entity type manager;
+    // instantiate it directly so the test does not have to enable ys_layouts
+    // and its dependency chain (ys_localist -> migrate, etc.). The class
+    // autoloads via the PHPUnit bootstrap namespace registration.
+    $this->detacher = new ReusableBlockDetacher(
+      $this->container->get('entity.repository'),
+      $this->container->get('entity_type.manager'),
+    );
   }
 
   /**
@@ -245,6 +248,106 @@ class ReusableBlockDetacherTest extends KernelTestBase {
     );
 
     $this->assertFalse($this->detacher->isReusableBlockComponent($component));
+    $this->expectException(\InvalidArgumentException::class);
+    $this->detacher->detach($component);
+  }
+
+  /**
+   * Creates a saved block and an inline_block placement referencing it.
+   *
+   * Mirrors the state left when a block is flagged reusable - which saves
+   * reusable=TRUE on the entity immediately - but the layout is never saved, so
+   * the placement id is never rewritten from inline_block:<bundle> to
+   * block_content:<uuid>.
+   *
+   * @param bool $reusable
+   *   Whether the referenced block is flagged reusable.
+   *
+   * @return \Drupal\layout_builder\SectionComponent
+   *   The inline_block placement referencing the created block.
+   */
+  protected function createInlinePlacement(bool $reusable): SectionComponent {
+    $paragraph = Paragraph::create(['type' => 'gallery_item']);
+    $paragraph->save();
+
+    $block = BlockContent::create([
+      'type' => 'gallery',
+      'info' => 'Inline Gallery',
+      'reusable' => $reusable,
+      'field_gallery_items' => [
+        [
+          'target_id' => $paragraph->id(),
+          'target_revision_id' => $paragraph->getRevisionId(),
+        ],
+      ],
+    ]);
+    $block->save();
+
+    // An inline placement references its block by revision id.
+    $component = new SectionComponent(
+      $this->container->get('uuid')->generate(),
+      'content',
+      [
+        'id' => 'inline_block:gallery',
+        'label' => 'Inline Gallery',
+        'label_display' => 'visible',
+        'view_mode' => 'full',
+        'provider' => 'layout_builder',
+        'block_revision_id' => $block->getRevisionId(),
+        'block_serialized' => NULL,
+      ]
+    );
+
+    return $component;
+  }
+
+  /**
+   * An inline placement of a reusable block is detachable.
+   *
+   * A block can be flagged reusable while still placed as inline_block:<bundle>
+   * (reusable checkbox ticked, layout never saved). Such a placement shows the
+   * shared reusable block, so "Make non-reusable" must be offered and detaching
+   * must give the page its own independent, non-reusable copy.
+   *
+   * @covers ::isReusableBlockComponent
+   * @covers ::detach
+   */
+  public function testDetachInlinePlacementOfReusableBlock(): void {
+    $component = $this->createInlinePlacement(TRUE);
+
+    $this->assertTrue(
+      $this->detacher->isReusableBlockComponent($component),
+      'An inline placement whose referenced block is reusable is detachable.'
+    );
+
+    $this->detacher->detach($component);
+
+    $config = $component->get('configuration');
+    $this->assertSame('inline_block:gallery', $config['id']);
+    $this->assertNull($config['block_revision_id'], 'The shared revision reference is dropped so the copy is saved fresh.');
+    $this->assertNotEmpty($config['block_serialized'], 'An independent copy is serialized into the component.');
+
+    $copy = $this->getSerializedCopy($component);
+    $this->assertFalse((bool) $copy->get('reusable')->value, 'The detached copy is non-reusable.');
+    $this->assertNull(
+      $copy->get('field_gallery_items')->first()->entity->id(),
+      'The copied paragraph is a new unsaved entity, independent of the original.'
+    );
+  }
+
+  /**
+   * An inline placement of a non-reusable block is not detachable.
+   *
+   * @covers ::isReusableBlockComponent
+   * @covers ::detach
+   */
+  public function testInlinePlacementOfNonReusableBlockIsNotDetachable(): void {
+    $component = $this->createInlinePlacement(FALSE);
+
+    $this->assertFalse(
+      $this->detacher->isReusableBlockComponent($component),
+      'An ordinary inline block has nothing shared to detach from.'
+    );
     $this->expectException(\InvalidArgumentException::class);
     $this->detacher->detach($component);
   }

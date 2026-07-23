@@ -1,3 +1,9 @@
+detach_reusable_block:
+  version: VERSION
+  css:
+    theme:
+      css/detach-reusable-block.css: {}
+
 ys_layout_banner:
   version: VERSION
   css:
