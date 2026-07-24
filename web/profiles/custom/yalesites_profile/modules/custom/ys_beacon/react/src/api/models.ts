@@ -55,7 +55,9 @@ export type ChatResponse = {
         title: string;
         date: string;
     }
-    error?: any;
+    // The server only ever emits error as a plain string envelope
+    // (e.g. {"error": "..."}); see ChatApiController.
+    error?: string;
 }
 
 export type ConversationRequest = {
