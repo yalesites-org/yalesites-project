@@ -41,11 +41,15 @@ describe("Footer sanitization", () => {
     expect(container.innerHTML).not.toContain("alert(1)");
   });
 
-  it("wraps the pipe separator in a span injected after sanitization", () => {
+  it("wraps the pipe separator in a styled span injected after sanitization", () => {
     const { container } = renderFooter("A | B");
 
     const span = container.querySelector("span");
     expect(span).not.toBeNull();
     expect(span?.textContent).toBe("|");
+    // The span is injected AFTER DOMPurify runs; its inline style (not in the
+    // allowlist) survives only because of that ordering. Asserting the style
+    // fails if the replacement is moved before sanitization.
+    expect(span).toHaveAttribute("style");
   });
 });

@@ -144,11 +144,23 @@ const Chat = () => {
         let result = {} as ChatResponse;
         try {
             const response = await conversationApi(request, abortController.signal);
-            // A non-OK status or an absent body (e.g. a proxy 502 HTML error
-            // page or an empty response) never yields a parseable error
-            // envelope, so surface the standard error rather than finishing on
-            // a blank answer bubble.
+            // A failed request will not stream an answer. Prefer a specific
+            // error from a JSON body - the controller's own guards return
+            // {"error": "..."} for 403/429/413/400/503 - and fall back to the
+            // standard message only for an empty or non-JSON body (e.g. a proxy
+            // 502 HTML page), rather than finishing on a blank answer bubble.
             if (!response.ok || !response.body) {
+                if (response.body) {
+                    try {
+                        const parsed = JSON.parse(await response.text());
+                        if (typeof parsed?.error === "string") {
+                            result = { ...result, error: parsed.error } as ChatResponse;
+                        }
+                    }
+                    catch {
+                        // Non-JSON body: keep the standard error.
+                    }
+                }
                 throw new Error(`Conversation request failed with status ${response.status}.`);
             }
             const reader = response.body.getReader();
