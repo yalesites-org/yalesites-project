@@ -20,9 +20,13 @@ export type ToolMessageContent = {
     intent: string;
 }
 
+// Message roles the widget handles. 'user'/'assistant'/'tool'/'system' come
+// from the server; 'error' is a client-only synthetic role for failures.
+export type ChatRole = "user" | "assistant" | "tool" | "system" | "error";
+
 export type ChatMessage = {
     id: string;
-    role: string;
+    role: ChatRole;
     content: string;
     end_turn?: boolean;
     date: string;

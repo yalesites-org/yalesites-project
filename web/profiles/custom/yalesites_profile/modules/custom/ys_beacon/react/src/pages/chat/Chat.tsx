@@ -77,7 +77,7 @@ const Chat = () => {
         []
     );
 
-    const [ASSISTANT, TOOL, ERROR] = ["assistant", "tool", "error"]
+    const [ASSISTANT, TOOL, ERROR] = ["assistant", "tool", "error"] as const
 
     let assistantMessage = {} as ChatMessage
     let toolMessage = {} as ChatMessage
