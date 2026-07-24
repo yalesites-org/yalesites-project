@@ -24,7 +24,14 @@ use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
 class AiTesterController extends ControllerBase {
 
   /**
-   * {@inheritdoc}
+   * Constructs the AI Tester controller.
+   *
+   * @param \Drupal\Core\Database\Connection $database
+   *   The database connection.
+   * @param \Drupal\Core\Datetime\DateFormatterInterface $dateFormatter
+   *   The date formatter.
+   * @param \Drupal\ys_ai_tester\RunComparator $runComparator
+   *   The run comparator.
    */
   public function __construct(
     protected Connection $database,

@@ -38,7 +38,14 @@ class AiTesterRerunForm extends ConfirmFormBase {
   protected int $runId = 0;
 
   /**
-   * {@inheritdoc}
+   * Constructs the AI Tester rerun form.
+   *
+   * @param \Drupal\Core\Database\Connection $database
+   *   The database connection.
+   * @param \Drupal\Core\Session\AccountProxyInterface $currentUser
+   *   The current user.
+   * @param \Drupal\Component\Datetime\TimeInterface $time
+   *   The time service.
    */
   public function __construct(
     protected Connection $database,

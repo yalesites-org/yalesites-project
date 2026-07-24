@@ -29,7 +29,16 @@ class AiTesterForm extends FormBase {
   const MAX_UPLOAD_BYTES = 262144;
 
   /**
-   * {@inheritdoc}
+   * Constructs the AI Tester form.
+   *
+   * @param \Drupal\Core\Database\Connection $database
+   *   The database connection.
+   * @param \Drupal\Core\Session\AccountProxyInterface $currentUser
+   *   The current user.
+   * @param \Drupal\Core\Datetime\DateFormatterInterface $dateFormatter
+   *   The date formatter.
+   * @param \Drupal\Component\Datetime\TimeInterface $time
+   *   The time service.
    */
   public function __construct(
     protected Connection $database,
