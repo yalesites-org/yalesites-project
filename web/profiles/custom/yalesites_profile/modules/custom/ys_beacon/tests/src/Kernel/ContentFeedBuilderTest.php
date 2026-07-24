@@ -13,9 +13,8 @@ use Drupal\ys_beacon\Service\EntityCitationResolver;
 /**
  * Tests the AI content feed builder's querying, filtering, and item shape.
  *
- * BeaconIndexability and AiMetadataManager are stubbed (they have their own
- * coverage); this exercises the builder's own logic against real node storage
- * and rendering.
+ * BeaconIndexability and AiMetadataManager are stubbed so this exercises the
+ * builder's own logic against real node storage and rendering.
  *
  * @group ys_beacon
  * @coversDefaultClass \Drupal\ys_beacon\Service\ContentFeedBuilder
