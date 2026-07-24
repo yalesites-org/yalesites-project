@@ -39,7 +39,14 @@ class SmalotPdfTextExtractor implements PdfTextExtractorInterface {
       // Bound per-stream inflation so a crafted PDF cannot expand unbounded.
       $config->setDecodeMemoryLimit(self::DECODE_MEMORY_LIMIT);
       $document = (new Parser([], $config))->parseFile($path);
-      return trim((string) preg_replace('/\s+/', ' ', $document->getText()));
+      $normalized = preg_replace('/\s+/', ' ', $document->getText());
+      if ($normalized === NULL) {
+        // A PCRE failure (e.g. backtrack limit on a huge text layer) must not
+        // be coerced to '' and mislabelled "image-only" by the caller; surface
+        // it as an extraction failure instead.
+        throw new \RuntimeException('PDF text normalization failed: ' . (preg_last_error_msg() ?: 'unknown PCRE error'));
+      }
+      return trim($normalized);
     }
     catch (\Throwable $e) {
       // Wrap parser/library errors so callers catch one exception type.
