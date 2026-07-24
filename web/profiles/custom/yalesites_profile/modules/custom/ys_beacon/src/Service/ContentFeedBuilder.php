@@ -55,7 +55,10 @@ class ContentFeedBuilder {
    *   The page window size (clamped to MAX_PAGE_SIZE).
    *
    * @return array
-   *   The feed payload: data items, pagination, and totals.
+   *   The feed payload: data items, pagination, and totals. The totals count
+   *   published candidates before per-item indexability filtering, so they are
+   *   an upper bound - a page may contain fewer items than total_records
+   *   implies.
    *
    * @throws \InvalidArgumentException
    *   When the entity type is not supported.
@@ -70,6 +73,10 @@ class ContentFeedBuilder {
     $storage = $this->entityTypeManager->getStorage($type);
     $id_key = $this->entityTypeManager->getDefinition($type)->getKey('id');
 
+    // A count of published candidates only: the per-item indexability filter
+    // below needs a per-entity load and access check, which is infeasible
+    // across the whole set just to produce a total, so total_records/
+    // total_pages are an upper bound rather than the exact served count.
     $total = (int) $storage->getQuery()
       ->accessCheck(FALSE)
       ->condition($status_field, 1)
