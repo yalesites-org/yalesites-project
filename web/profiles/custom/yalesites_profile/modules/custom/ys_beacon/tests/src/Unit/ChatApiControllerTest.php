@@ -2,9 +2,13 @@
 
 namespace Drupal\Tests\ys_beacon\Unit;
 
+use Drupal\Core\Config\ConfigFactoryInterface;
+use Drupal\Core\Config\ImmutableConfig;
+use Drupal\Core\Flood\FloodInterface;
 use Drupal\Tests\UnitTestCase;
 use Drupal\ai\Service\HostnameFilter;
 use Drupal\ys_beacon\Controller\ChatApiController;
+use Symfony\Component\HttpFoundation\Request;
 
 /**
  * Tests the conversation endpoint transcript and envelope logic.
@@ -179,6 +183,90 @@ class ChatApiControllerTest extends UnitTestCase {
     $property = new \ReflectionProperty(ChatApiController::class, 'hostnameFilter');
     $property->setAccessible(TRUE);
     $property->setValue($this->controller, $filter);
+  }
+
+  /**
+   * Chat disabled in config yields a 403 before any work.
+   *
+   * @covers ::conversation
+   */
+  public function testConversationForbiddenWhenChatDisabled(): void {
+    $this->configureGuards(FALSE);
+    $response = $this->controller->conversation($this->request('{"messages":[{"role":"user","content":"hi"}]}'));
+    $this->assertSame(403, $response->getStatusCode());
+  }
+
+  /**
+   * Exceeding the per-IP flood limit yields a 429.
+   *
+   * @covers ::conversation
+   */
+  public function testConversationRateLimited(): void {
+    $this->configureGuards(TRUE, FALSE);
+    $response = $this->controller->conversation($this->request('{"messages":[{"role":"user","content":"hi"}]}'));
+    $this->assertSame(429, $response->getStatusCode());
+  }
+
+  /**
+   * A body over MAX_PAYLOAD_BYTES is rejected with 413 before JSON decoding.
+   *
+   * @covers ::conversation
+   */
+  public function testConversationRejectsOversizePayload(): void {
+    $this->configureGuards(TRUE);
+    $response = $this->controller->conversation($this->request(str_repeat('x', 70000)));
+    $this->assertSame(413, $response->getStatusCode());
+  }
+
+  /**
+   * A transcript with no user message yields a 400.
+   *
+   * @covers ::conversation
+   */
+  public function testConversationRejectsMissingUserMessage(): void {
+    $this->configureGuards(TRUE);
+    $response = $this->controller->conversation($this->request('{"messages":[]}'));
+    $this->assertSame(400, $response->getStatusCode());
+  }
+
+  /**
+   * Wires the collaborators the conversation() guards consult.
+   *
+   * Only the pre-provider guards (403/429/413/400) are exercised here; the
+   * no-provider 503 path needs the real (final) AiProviderPluginManager and is
+   * left to a functional test.
+   *
+   * @param bool $enableChat
+   *   The ys_beacon.settings:enable_chat value.
+   * @param bool $floodAllowed
+   *   Whether the flood service allows the request.
+   */
+  protected function configureGuards(bool $enableChat, bool $floodAllowed = TRUE): void {
+    $settings = $this->createMock(ImmutableConfig::class);
+    $settings->method('get')->willReturnCallback(fn ($name) => $name === 'enable_chat' ? $enableChat : NULL);
+    $configFactory = $this->createMock(ConfigFactoryInterface::class);
+    $configFactory->method('get')->with('ys_beacon.settings')->willReturn($settings);
+    $this->setControllerProperty('configFactory', $configFactory);
+
+    $flood = $this->createMock(FloodInterface::class);
+    $flood->method('isAllowed')->willReturn($floodAllowed);
+    $this->setControllerProperty('flood', $flood);
+  }
+
+  /**
+   * Builds a POST request carrying the given raw body.
+   */
+  protected function request(string $content): Request {
+    return Request::create('/api/ys-beacon/v1/conversation', 'POST', [], [], [], [], $content);
+  }
+
+  /**
+   * Sets a protected property (including inherited ones) on the controller.
+   */
+  protected function setControllerProperty(string $name, mixed $value): void {
+    $property = (new \ReflectionClass($this->controller))->getProperty($name);
+    $property->setAccessible(TRUE);
+    $property->setValue($this->controller, $value);
   }
 
 }
