@@ -1,0 +1,23 @@
+uuid: a50cf760-f720-4e87-9635-f8c504df0a62
+langcode: en
+status: true
+dependencies:
+  config:
+    - block_content.type.inline_message
+    - field.storage.block_content.field_icon
+  module:
+    - options
+id: block_content.inline_message.field_icon
+field_name: field_icon
+entity_type: block_content
+bundle: inline_message
+label: Icon
+description: 'Choose an icon to display alongside this message. Icons are decorative and should reinforce, not replace, the meaning of your text. Select "- None -" for a text-only message.'
+required: false
+translatable: false
+default_value:
+  -
+    value: _none
+default_value_callback: ''
+settings: {  }
+field_type: list_string

@@ -11,7 +11,11 @@ use Symfony\Component\HttpFoundation\Request;
 use Drupal\Core\Logger\LoggerChannelFactoryInterface;
 
 /**
- * Controller for Facts and Figures icon preview functionality.
+ * Controller for the admin icon-picker live preview.
+ *
+ * Renders the icon a user has selected in any icon-picker field (Facts and
+ * Figures, In-Line Message, ...). The render is intentionally not scoped to a
+ * single block type; the class/route names remain historical.
  */
 class FactsIconPreviewController extends ControllerBase {
 
@@ -90,19 +94,12 @@ class FactsIconPreviewController extends ControllerBase {
       ]);
     }
 
-    // Create render array using the same _yds-icon.twig template as frontend.
+    // Render the icon through a dedicated theme hook so the preview is not
+    // scoped to any one block type (it serves every icon-picker field) and the
+    // markup lives in a Twig template rather than a PHP string.
     $render_array = [
-      '#type' => 'inline_template',
-      '#template' => '{% include "@atoms/images/icons/_yds-icon.twig" with {
-        icon__name: icon_name,
-        icon__base_class: "facts-and-figures-icon",
-        icon__blockname: "facts-and-figures",
-        icon__decorative: true,
-        directory: "themes/contrib/atomic",
-      } %}',
-      '#context' => [
-        'icon_name' => $icon_name,
-      ],
+      '#theme' => 'ys_icon_preview',
+      '#icon_name' => $icon_name,
     ];
 
     try {
