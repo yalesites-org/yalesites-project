@@ -144,57 +144,62 @@ const Chat = () => {
         let result = {} as ChatResponse;
         try {
             const response = await conversationApi(request, abortController.signal);
-            if (response?.body) {
-                const reader = response.body.getReader();
-                const decoder = new TextDecoder("utf-8");
-                let runningText = "";
-
-                while (true) {
-                    setProcessMessages(messageStatus.Processing)
-                    const { done, value } = await reader.read();
-                    if (done) break;
-
-                    // Streaming mode keeps multibyte characters split across
-                    // network chunks intact.
-                    const text = decoder.decode(value, { stream: true });
-                    const objects = text.split("\n");
-                    objects.forEach((obj) => {
-                        try {
-                            if (obj !== "" && obj !== "{}") {
-                                runningText += obj;
-                                result = JSON.parse(runningText);
-                                if (result.choices?.length > 0) {
-                                    result.choices[0].messages.forEach((msg) => {
-                                        msg.id = result.id;
-                                        msg.date = new Date().toISOString();
-                                    })
-                                    if (result.choices[0].messages?.some(m => m.role === ASSISTANT)) {
-                                        setShowLoadingMessage(false);
-                                    }
-                                    result.choices[0].messages.forEach((resultObj) => {
-                                        processResultMessage(resultObj, userMessage, conversationId);
-                                    })
-                                }
-                                else if (result.error) {
-                                    throw Error(result.error);
-                                }
-                                runningText = "";
-                            }
-                        }
-                        catch (e) {
-                            if (!(e instanceof SyntaxError)) {
-                                console.error(e);
-                                throw e;
-                            } else {
-                                console.log("Incomplete message. Continuing...")
-                            }
-                        }
-                    });
-                }
-                conversation.messages.push(toolMessage, assistantMessage)
-                appStateContext?.dispatch({ type: 'UPDATE_CURRENT_CHAT', payload: conversation });
-                setMessages([...messages, toolMessage, assistantMessage]);
+            // A non-OK status or an absent body (e.g. a proxy 502 HTML error
+            // page or an empty response) never yields a parseable error
+            // envelope, so surface the standard error rather than finishing on
+            // a blank answer bubble.
+            if (!response.ok || !response.body) {
+                throw new Error(`Conversation request failed with status ${response.status}.`);
             }
+            const reader = response.body.getReader();
+            const decoder = new TextDecoder("utf-8");
+            let runningText = "";
+
+            while (true) {
+                setProcessMessages(messageStatus.Processing)
+                const { done, value } = await reader.read();
+                if (done) break;
+
+                // Streaming mode keeps multibyte characters split across
+                // network chunks intact.
+                const text = decoder.decode(value, { stream: true });
+                const objects = text.split("\n");
+                objects.forEach((obj) => {
+                    try {
+                        if (obj !== "" && obj !== "{}") {
+                            runningText += obj;
+                            result = JSON.parse(runningText);
+                            if (result.choices?.length > 0) {
+                                result.choices[0].messages.forEach((msg) => {
+                                    msg.id = result.id;
+                                    msg.date = new Date().toISOString();
+                                })
+                                if (result.choices[0].messages?.some(m => m.role === ASSISTANT)) {
+                                    setShowLoadingMessage(false);
+                                }
+                                result.choices[0].messages.forEach((resultObj) => {
+                                    processResultMessage(resultObj, userMessage, conversationId);
+                                })
+                            }
+                            else if (result.error) {
+                                throw Error(result.error);
+                            }
+                            runningText = "";
+                        }
+                    }
+                    catch (e) {
+                        if (!(e instanceof SyntaxError)) {
+                            console.error(e);
+                            throw e;
+                        } else {
+                            console.log("Incomplete message. Continuing...")
+                        }
+                    }
+                });
+            }
+            conversation.messages.push(toolMessage, assistantMessage)
+            appStateContext?.dispatch({ type: 'UPDATE_CURRENT_CHAT', payload: conversation });
+            setMessages([...messages, toolMessage, assistantMessage]);
 
         } catch (e) {
             if (!abortController.signal.aborted) {
