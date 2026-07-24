@@ -1,12 +1,7 @@
 import styles from "./Disclaimer.module.css";
 import DOMPurify from "dompurify";
 import { getWidgetAttribute } from "../../api";
-
-// The disclaimer intentionally supports links and basic inline formatting
-// (mirroring the footer), so it is sanitized to a small allowlist rather than
-// escaped outright.
-const ALLOWED_TAGS = ["a", "b", "i", "em", "strong", "br", "span"];
-const ALLOWED_ATTR = ["href", "target", "rel", "class"];
+import { RichTextAllowTags, RichTextAllowAttr } from "../../constants/richTextAllowTags";
 
 interface Props {
   // Stable id so the chat input can reference the disclaimer via aria-describedby.
@@ -15,7 +10,12 @@ interface Props {
 
 const Disclaimer = ({ id }: Props) => {
   const raw = getWidgetAttribute("data-disclaimer");
-  const disclaimerText = DOMPurify.sanitize(raw, { ALLOWED_TAGS, ALLOWED_ATTR });
+  // The disclaimer intentionally supports links and basic inline formatting, so
+  // it is sanitized to the shared small allowlist rather than escaped outright.
+  const disclaimerText = DOMPurify.sanitize(raw, {
+    ALLOWED_TAGS: RichTextAllowTags,
+    ALLOWED_ATTR: RichTextAllowAttr,
+  });
 
   return (
     <p id={id} className={styles.disclaimer}>

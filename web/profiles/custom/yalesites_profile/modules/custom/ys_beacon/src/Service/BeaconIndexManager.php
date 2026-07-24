@@ -44,6 +44,11 @@ class BeaconIndexManager {
    */
   public const MAX_INDEXES = 50;
 
+  /**
+   * Request-scoped cache of the per-site key, computed once by getSiteId().
+   */
+  protected ?string $siteId = NULL;
+
   public function __construct(
     protected ConfigFactoryInterface $configFactory,
     protected BeaconCredentials $credentials,
@@ -386,6 +391,9 @@ class BeaconIndexManager {
    *   letters, digits and dashes) so it is safe to embed in OData filters.
    */
   public function getSiteId(): string {
+    if ($this->siteId !== NULL) {
+      return $this->siteId;
+    }
     $site = getenv('PANTHEON_SITE_NAME') ?: '';
     $env = getenv('PANTHEON_ENVIRONMENT') ?: '';
     $name = trim($site . '-' . $env, '-');
@@ -393,7 +401,7 @@ class BeaconIndexManager {
       $uuid = (string) $this->configFactory->get('system.site')->get('uuid');
       $name = 'beacon-' . substr($uuid, 0, 8);
     }
-    return static::sanitizeIndexName($name);
+    return $this->siteId = static::sanitizeIndexName($name);
   }
 
   /**

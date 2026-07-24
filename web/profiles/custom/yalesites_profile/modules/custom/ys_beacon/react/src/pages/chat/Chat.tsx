@@ -46,6 +46,11 @@ const Chat = () => {
         return questionsFromData ? JSON.parse(questionsFromData) : [];
     }, []);
 
+    // The first few configured prompts, shown when the chat is empty, in the
+    // order the admin entered them. Derived from initialQuestions (static per
+    // page load), so it needs no state or effect.
+    const promptList: string[] = useMemo(() => initialQuestions.slice(0, 4), [initialQuestions]);
+
     const appStateContext = useContext(AppStateContext)
     const chatMessageStreamEnd = useRef<HTMLDivElement | null>(null);
     const [isLoading, setIsLoading] = useState<boolean>(false);
@@ -56,8 +61,6 @@ const Chat = () => {
     const [messages, setMessages] = useState<ChatMessage[]>([])
     const [processMessages, setProcessMessages] = useState<messageStatus>(messageStatus.NotRunning);
     const [providedQuestion, setProvidedQuestion] = useState<string>('')
-    const [promptList, setPromptList] = useState<string[]>([])
-    const [promptsLoaded, setpromptsLoaded] = useState<boolean>(false)
 
     const [isModalOpen, setIsModalOpen] = useState(false);
 
@@ -89,15 +92,12 @@ const Chat = () => {
 
         if (resultMessage.role === TOOL) toolMessage = resultMessage
 
-        if (!conversationId) {
-            isEmpty(toolMessage) ?
-                setMessages([...messages, userMessage, assistantMessage]) :
-                setMessages([...messages, userMessage, toolMessage, assistantMessage]);
-        } else {
-            isEmpty(toolMessage) ?
-                setMessages([...messages, assistantMessage]) :
-                setMessages([...messages, toolMessage, assistantMessage]);
-        }
+        // A new conversation prepends the user message; an existing one already
+        // has it. Either way the tool message is included only when present.
+        const base = conversationId ? messages : [...messages, userMessage];
+        setMessages(isEmpty(toolMessage) ?
+            [...base, assistantMessage] :
+            [...base, toolMessage, assistantMessage]);
     }
 
     const makeApiRequest = async (question: string, conversationId?: string) => {
@@ -280,42 +280,12 @@ const Chat = () => {
         return [];
     }
 
-    const disabledButton = () => {
-        return isLoading || (messages && messages.length === 0)
-    }
+    const disabledButton = isLoading || messages.length === 0;
 
     // SuggestionButtons
     const handleButtonClick = (label: string) => {
         setProvidedQuestion(label)
     };
-
-    useEffect(() => {
-        /**
-         * A list of possible prompts to show when the chat is empty.
-         */
-
-        const questionPrompts = initialQuestions ? initialQuestions : [];
-
-        /**
-         * Returns the first `num` prompts in the order the admin configured
-         * them, so they always display in the same sequence they were entered.
-         *
-         * @param num The maximum number of prompts to return
-         * @returns The configured prompts, in order, capped at `num`
-         */
-        const getInitialQuestionPrompts = (num: number | undefined) => {
-            return questionPrompts.slice(0, num);
-        }
-
-        /**
-         * A list of prompts to show when the chat is empty.
-         */
-        if (!promptsLoaded) {
-            setPromptList(getInitialQuestionPrompts(4))
-            setpromptsLoaded(true)
-        }
-    }, []);
-
 
     const CitationHeader = () => {
         return (
@@ -428,7 +398,7 @@ const Chat = () => {
                             type="button"
                             className={styles.newChatButton}
                             onClick={newChat}
-                            disabled={disabledButton()}
+                            disabled={disabledButton}
                         >
                             New chat
                         </button>

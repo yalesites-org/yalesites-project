@@ -5,11 +5,12 @@ namespace Drupal\ys_beacon\Service;
 /**
  * Normalizes retrieved sources into a citation list for display.
  *
- * Single, server-side home for the citation-marker logic that previously lived
- * only in the React chat app: it reads the [docN] markers the model emitted,
- * de-duplicates sources by URL, flags which were actually cited, and renumbers
- * them for display. The chat and the AI tester both build on this so the two
- * cannot drift.
+ * The server-side home for the AI tester's citation-marker handling: it reads
+ * the [docN] markers the model emitted, de-duplicates sources by URL, flags
+ * which were actually cited, and renumbers them for display. The live chat
+ * widget is not a consumer - it performs the equivalent parsing client-side
+ * (React AnswerParser) - so the two are independent implementations that must
+ * be kept consistent by hand.
  */
 class CitationFormatter {
 

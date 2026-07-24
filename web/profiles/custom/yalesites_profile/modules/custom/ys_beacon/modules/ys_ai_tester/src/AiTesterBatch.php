@@ -33,8 +33,8 @@ class AiTesterBatch {
     try {
       $result = \Drupal::service('ys_beacon.beacon_answer')->answer($question);
       $answer = $result['answer'];
-      // The shared formatter owns marker parsing, de-duplication, and the
-      // cited flag, so the tester and the chat agree on what was cited.
+      // The formatter owns marker parsing, de-duplication, and the cited flag
+      // for the tester; the chat widget derives the same fields client-side.
       $citations = \Drupal::service('ys_beacon.citation_formatter')
         ->format($answer, $result['citations']);
     }

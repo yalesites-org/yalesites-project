@@ -40,6 +40,7 @@ class ContentFeedBuilder {
     protected AiMetadataManager $aiMetadataManager,
     protected RendererInterface $renderer,
     protected AccountSwitcherInterface $accountSwitcher,
+    protected EntityCitationResolver $citationResolver,
   ) {
   }
 
@@ -132,8 +133,8 @@ class ContentFeedBuilder {
       'type' => $entity->getEntityTypeId(),
       'bundle' => $entity->bundle(),
       'uuid' => $entity->uuid(),
-      'title' => (string) $entity->label(),
-      'url' => $this->itemUrl($entity),
+      'title' => $this->citationResolver->title($entity),
+      'url' => $this->citationResolver->url($entity),
       'langcode' => $entity->language()->getId(),
       'created' => $created ? gmdate('c', $created) : NULL,
       'changed' => $changed ? gmdate('c', $changed) : NULL,
@@ -141,30 +142,6 @@ class ContentFeedBuilder {
       'ai_tags' => $ai['ai_tags'] ?? '',
       'content' => $entity instanceof MediaInterface ? '' : $this->renderContent($entity),
     ];
-  }
-
-  /**
-   * The canonical URL, or the source file URL for media.
-   */
-  protected function itemUrl(ContentEntityInterface $entity): ?string {
-    try {
-      if ($entity instanceof MediaInterface) {
-        $fid = $entity->getSource()->getSourceFieldValue($entity);
-        if ($fid && is_numeric($fid)) {
-          $file = $this->entityTypeManager->getStorage('file')->load($fid);
-          if ($file) {
-            return $file->createFileUrl(FALSE);
-          }
-        }
-      }
-      if ($entity->hasLinkTemplate('canonical')) {
-        return $entity->toUrl('canonical', ['absolute' => TRUE])->toString();
-      }
-    }
-    catch (\Throwable $e) {
-      // A missing link is acceptable; the item is still useful.
-    }
-    return NULL;
   }
 
   /**

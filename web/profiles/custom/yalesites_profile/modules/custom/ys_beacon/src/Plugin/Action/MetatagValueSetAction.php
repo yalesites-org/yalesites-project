@@ -117,8 +117,7 @@ class MetatagValueSetAction extends ActionBase implements ContainerFactoryPlugin
     if ($entity->hasField(static::$entityMetatagFieldName)) {
       $metaTagsArray = json_decode($entity->get(static::$entityMetatagFieldName)->value ?? "{}", TRUE);
       $metaTagsArray[static::$metatagFieldName] = static::$actionValue;
-      $metaTagsJson = json_encode($metaTagsArray);
-      $entity->get(static::$entityMetatagFieldName)->value = $metaTagsJson;
+      $entity->get(static::$entityMetatagFieldName)->value = json_encode($metaTagsArray);
       $entity->save();
     }
   }

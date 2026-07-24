@@ -212,11 +212,7 @@ class AiTesterController extends ControllerBase {
   public function downloadJson(int $run_id): JsonResponse {
     $this->loadRunOr404($run_id, 'id');
 
-    $results = $this->database->query(
-      'SELECT question, answer, citations FROM {ys_ai_tester_result}
-       WHERE run_id = :run_id ORDER BY delta ASC',
-      [':run_id' => $run_id]
-    )->fetchAll();
+    $results = $this->loadResultRows($run_id);
 
     $output = [];
     foreach ($results as $result) {
@@ -253,11 +249,7 @@ class AiTesterController extends ControllerBase {
   public function downloadCsv(int $run_id): Response {
     $this->loadRunOr404($run_id, 'id');
 
-    $results = $this->database->query(
-      'SELECT question, answer, citations FROM {ys_ai_tester_result}
-       WHERE run_id = :run_id ORDER BY delta ASC',
-      [':run_id' => $run_id]
-    )->fetchAll();
+    $results = $this->loadResultRows($run_id);
 
     $rows = [];
     foreach ($results as $result) {
@@ -279,6 +271,23 @@ class AiTesterController extends ControllerBase {
     $response->headers->set('X-Content-Type-Options', 'nosniff');
     $response->headers->set('Content-Disposition', 'attachment; filename="run-' . $run_id . '.csv"');
     return $response;
+  }
+
+  /**
+   * Loads a run's result rows in delta order.
+   *
+   * @param int $run_id
+   *   The run id.
+   *
+   * @return object[]
+   *   Result rows, each with question, answer, and citations properties.
+   */
+  protected function loadResultRows(int $run_id): array {
+    return $this->database->query(
+      'SELECT question, answer, citations FROM {ys_ai_tester_result}
+       WHERE run_id = :run_id ORDER BY delta ASC',
+      [':run_id' => $run_id]
+    )->fetchAll();
   }
 
   /**

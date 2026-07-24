@@ -8,6 +8,7 @@ use Drupal\node\Entity\NodeType;
 use Drupal\ys_beacon\Service\AiMetadataManager;
 use Drupal\ys_beacon\Service\BeaconIndexability;
 use Drupal\ys_beacon\Service\ContentFeedBuilder;
+use Drupal\ys_beacon\Service\EntityCitationResolver;
 
 /**
  * Tests the AI content feed builder's querying, filtering, and item shape.
@@ -111,6 +112,7 @@ class ContentFeedBuilderTest extends KernelTestBase {
       $metadata ?? $this->createMock(AiMetadataManager::class),
       $this->container->get('renderer'),
       $this->container->get('account_switcher'),
+      new EntityCitationResolver($this->container->get('entity_type.manager')),
     );
   }
 

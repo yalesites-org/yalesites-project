@@ -81,15 +81,26 @@ class AiMetadataProperties extends ProcessorPluginBase {
     $metadata = $this->aiMetadataManager->getAiMetadata($entity);
     $fields = $item->getFields(FALSE);
 
-    if (!empty($metadata['ai_description'])) {
-      foreach ($this->getFieldsHelper()->filterForPropertyPath($fields, NULL, 'ys_beacon_ai_description') as $field) {
-        $field->addValue($metadata['ai_description']);
-      }
+    $this->addMetadataValue($fields, 'ys_beacon_ai_description', $metadata['ai_description'] ?? NULL);
+    $this->addMetadataValue($fields, 'ys_beacon_ai_tags', $metadata['ai_tags'] ?? NULL);
+  }
+
+  /**
+   * Fills the fields matching a property path with a metadata value.
+   *
+   * @param \Drupal\search_api\Item\FieldInterface[] $fields
+   *   The item's fields.
+   * @param string $property_path
+   *   The processor property path to fill.
+   * @param string|null $value
+   *   The value to add; nothing is added when it is NULL or empty.
+   */
+  protected function addMetadataValue(array $fields, string $property_path, ?string $value): void {
+    if (empty($value)) {
+      return;
     }
-    if (!empty($metadata['ai_tags'])) {
-      foreach ($this->getFieldsHelper()->filterForPropertyPath($fields, NULL, 'ys_beacon_ai_tags') as $field) {
-        $field->addValue($metadata['ai_tags']);
-      }
+    foreach ($this->getFieldsHelper()->filterForPropertyPath($fields, NULL, $property_path) as $field) {
+      $field->addValue($value);
     }
   }
 

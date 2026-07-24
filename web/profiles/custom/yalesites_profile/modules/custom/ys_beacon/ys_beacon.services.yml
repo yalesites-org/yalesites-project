@@ -98,6 +98,7 @@ services:
       - '@ys_beacon.ai_metadata_manager'
       - '@renderer'
       - '@account_switcher'
+      - '@ys_beacon.entity_citation_resolver'
 
   ys_beacon.authorization:
     class: Drupal\ys_beacon\BeaconAuthorization
