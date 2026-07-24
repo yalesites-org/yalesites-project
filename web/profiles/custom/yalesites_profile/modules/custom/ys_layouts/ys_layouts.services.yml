@@ -24,3 +24,9 @@ services:
   # render and the card/list templates apply identical alt text.
   ys_layouts.media_alt_resolver:
     class: Drupal\ys_layouts\Service\MediaAltResolver
+  # Clones a single inline block within a Layout Builder section. Reuses
+  # quick_node_clone's deep-clone helpers so per-block cloning and node cloning
+  # stay in sync.
+  ys_layouts.block_cloner:
+    class: Drupal\ys_layouts\Service\BlockCloner
+    arguments: ['@quick_node_clone.entity.form_builder', '@uuid', '@entity_type.manager', '@logger.channel.ys_layouts']
