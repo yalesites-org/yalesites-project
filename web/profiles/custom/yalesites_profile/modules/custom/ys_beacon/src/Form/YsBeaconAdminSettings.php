@@ -6,6 +6,7 @@ use Drupal\Component\Utility\Html;
 use Drupal\Core\Form\ConfigFormBase;
 use Drupal\Core\Form\FormStateInterface;
 use Drupal\ys_beacon\Config\YsBeaconConfigOverrides;
+use Drupal\ys_beacon\Controller\ChatApiController;
 use Drupal\ys_beacon\Service\BeaconIndexManager;
 use Drupal\ys_beacon\Service\SystemPromptBuilder;
 use Symfony\Component\DependencyInjection\ContainerInterface;
@@ -133,6 +134,19 @@ class YsBeaconAdminSettings extends ConfigFormBase {
       '#description' => $this->t('Send answers token by token. Disable if the hosting edge buffers streamed responses.'),
       '#default_value' => $config->get('streaming') ?? TRUE,
     ];
+    $form['retrieval']['model_context_window'] = [
+      '#type' => 'number',
+      '#title' => $this->t('Model context window (tokens)'),
+      '#description' => $this->t("The context window, in tokens, of the model Portkey currently routes to. Long conversations are trimmed to fit within it so the chat degrades gracefully instead of erroring. The configured model id is only a placeholder - Portkey selects the real model server-side - so this value cannot be detected automatically: <strong>update it whenever the routed model changes</strong>. Defaults to Claude Haiku's 200000-token window."),
+      '#default_value' => $config->get('model_context_window') ?: ChatApiController::DEFAULT_CONTEXT_WINDOW,
+      // Floor comfortably above the reserved output + safety budget plus a full
+      // system prompt, so a too-small value is rejected here rather than
+      // silently trimming every turn away and erroring on the first message.
+      // Any realistic chat model's window is far larger than this.
+      '#min' => 16000,
+      '#step' => 1000,
+      '#required' => TRUE,
+    ];
     $form['retrieval']['fallback_system_prompt'] = [
       '#type' => 'textarea',
       '#title' => $this->t('Fallback system prompt'),
@@ -210,6 +224,7 @@ class YsBeaconAdminSettings extends ConfigFormBase {
       ->set('top_k', (int) $form_state->getValue('top_k'))
       ->set('score_threshold', (float) $form_state->getValue('score_threshold'))
       ->set('streaming', (bool) $form_state->getValue('streaming'))
+      ->set('model_context_window', (int) $form_state->getValue('model_context_window'))
       ->set('fallback_system_prompt', $form_state->getValue('fallback_system_prompt'))
       ->set('guardrail_supplement', $form_state->getValue('guardrail_supplement'))
       ->set('enable_metadata_fields', $enable_metadata_fields)

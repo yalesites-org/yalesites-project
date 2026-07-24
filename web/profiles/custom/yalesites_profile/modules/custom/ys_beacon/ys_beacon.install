@@ -5,6 +5,7 @@
  * Install and update functions for the ys_beacon module.
  */
 
+use Drupal\ys_beacon\Controller\ChatApiController;
 use Drupal\Core\Database\Connection;
 
 /**
@@ -542,4 +543,26 @@ function ys_beacon_update_10013() {
   // The VDB-config URL is no longer read at runtime; clear the decommissioned
   // pin so the two stores cannot drift.
   $vdb->set('url', '')->save();
+}
+
+/**
+ * Seed the model context window on existing sites.
+ *
+ * The new ys_beacon.settings:model_context_window bounds how much conversation
+ * history is sent to the model so long chats degrade gracefully. Beacon
+ * settings are config_ignored, so the config/install default never reaches an
+ * already-installed site via config:import; seed it here when absent. Runtime
+ * already falls back to ChatApiController::DEFAULT_CONTEXT_WINDOW, so this only
+ * makes the value explicit and editable in the administration form.
+ */
+function ys_beacon_update_10014() {
+  $settings = \Drupal::configFactory()->getEditable('ys_beacon.settings');
+  // Only touch sites that actually have Beacon settings; never create the
+  // config object here.
+  if ($settings->isNew()) {
+    return;
+  }
+  if ($settings->get('model_context_window') === NULL) {
+    $settings->set('model_context_window', ChatApiController::DEFAULT_CONTEXT_WINDOW)->save();
+  }
 }

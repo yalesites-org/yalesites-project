@@ -201,12 +201,108 @@ class ChatApiControllerTest extends UnitTestCase {
   /**
    * A body over MAX_PAYLOAD_BYTES is rejected with 413 before JSON decoding.
    *
+   * The cap is a coarse denial-of-service ceiling on the raw body, right-sized
+   * well above any legitimate conversation. The model-context limit is handled
+   * separately by token windowing (trimming), not by rejecting the request.
+   *
    * @covers ::conversation
    */
   public function testConversationRejectsOversizePayload(): void {
     $this->configureGuards(TRUE);
-    $response = $this->controller->conversation($this->request(str_repeat('x', 70000)));
+    // Just over the 1 MB raw-body ceiling.
+    $response = $this->controller->conversation($this->request(str_repeat('x', 1048577)));
     $this->assertSame(413, $response->getStatusCode());
+  }
+
+  /**
+   * A tool-inflated payload is not rejected as oversize.
+   *
+   * A body over the old 64 KB cap only because of prior-turn tool/citation
+   * messages must pass: the server discards tool/error messages before
+   * forwarding anything to the model (see ::extractTranscript), so the byte
+   * ceiling must not fire on data the model never sees. The request proceeds
+   * past the size gate - here it reaches the no-user-message guard (400).
+   * Regression test for issue 1460.
+   *
+   * @covers ::conversation
+   */
+  public function testConversationDoesNotRejectPayloadInflatedByToolMessages(): void {
+    $this->configureGuards(TRUE);
+
+    $tool = json_encode([
+      'citations' => [['content' => str_repeat('x', 70000)]],
+      'intent' => 'prior turn',
+    ]);
+    // Oversized against the old 64 KB cap purely because of the tool/citation
+    // message, which the server discards before forwarding anything to the
+    // model. No user-role message is included, so once the tool message is
+    // dropped the request reaches the no-user-message guard (400) - proving it
+    // passed the size gate rather than being rejected as oversize (413).
+    $body = json_encode([
+      'messages' => [
+        ['role' => 'tool', 'content' => $tool],
+        ['role' => 'assistant', 'content' => 'A short answer'],
+      ],
+    ]);
+    $this->assertGreaterThan(65536, strlen($body));
+
+    $response = $this->controller->conversation($this->request($body));
+    $this->assertNotSame(413, $response->getStatusCode(), 'A tool-inflated payload must not be rejected as oversize.');
+    $this->assertSame(400, $response->getStatusCode());
+  }
+
+  /**
+   * @covers ::estimateTokens
+   */
+  public function testEstimateTokensApproximatesCharacterCount(): void {
+    $this->assertSame(0, $this->invoke('estimateTokens', ['']));
+    // Roughly four characters per token.
+    $this->assertSame(100, $this->invoke('estimateTokens', [str_repeat('a', 400)]));
+    $this->assertSame(1, $this->invoke('estimateTokens', ['abc']));
+  }
+
+  /**
+   * @covers ::inputTokenBudget
+   */
+  public function testInputTokenBudgetSubtractsReservesFromConfiguredWindow(): void {
+    // OUTPUT_RESERVE_TOKENS (4096) + SAFETY_MARGIN_TOKENS (2048) are held back.
+    $expected = 200000 - 4096 - 2048;
+
+    $configured = $this->createMock(ImmutableConfig::class);
+    $configured->method('get')->with('model_context_window')->willReturn(200000);
+    $this->assertSame($expected, $this->invoke('inputTokenBudget', [$configured]));
+
+    // An unset window falls back to the default Haiku window (200000).
+    $unset = $this->createMock(ImmutableConfig::class);
+    $unset->method('get')->with('model_context_window')->willReturn(NULL);
+    $this->assertSame($expected, $this->invoke('inputTokenBudget', [$unset]));
+  }
+
+  /**
+   * @covers ::windowTranscriptToBudget
+   */
+  public function testWindowTranscriptToBudgetKeepsNewestMessagesThatFit(): void {
+    // Each 40-character message is ~10 tokens.
+    $transcript = [
+      ['role' => 'user', 'content' => str_repeat('a', 40)],
+      ['role' => 'assistant', 'content' => str_repeat('b', 40)],
+      ['role' => 'user', 'content' => str_repeat('c', 40)],
+      ['role' => 'assistant', 'content' => str_repeat('d', 40)],
+      ['role' => 'user', 'content' => str_repeat('e', 40)],
+    ];
+
+    // A budget for ~2.5 messages keeps the two newest, in chronological order.
+    $kept = $this->invoke('windowTranscriptToBudget', [$transcript, 25]);
+    $this->assertCount(2, $kept);
+    $this->assertSame(str_repeat('d', 40), $kept[0]['content']);
+    $this->assertSame(str_repeat('e', 40), $kept[1]['content']);
+
+    // A budget too small for even the newest turn cannot proceed.
+    $this->assertNull($this->invoke('windowTranscriptToBudget', [$transcript, 5]));
+    // A non-positive budget (fixed prompt alone exhausts it) cannot proceed.
+    $this->assertNull($this->invoke('windowTranscriptToBudget', [$transcript, 0]));
+    // Nothing to send.
+    $this->assertNull($this->invoke('windowTranscriptToBudget', [[], 100]));
   }
 
   /**

@@ -62,6 +62,9 @@ ys_beacon.settings:
     streaming:
       type: boolean
       label: 'Stream chat responses'
+    model_context_window:
+      type: integer
+      label: 'Context window in tokens of the model Portkey routes to'
     instructions_max_length:
       type: integer
       label: 'Maximum system instructions length in characters'

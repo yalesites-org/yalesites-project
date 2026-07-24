@@ -137,8 +137,14 @@ const Chat = () => {
         appStateContext?.dispatch({ type: 'UPDATE_CURRENT_CHAT', payload: conversation });
         setMessages(conversation.messages)
 
+        // Tool/citation messages are kept in local state to render prior-turn
+        // citations, but are excluded from the request: the server discards
+        // them (it re-retrieves citations fresh each turn) and re-sending their
+        // source text grows the body until it trips the server's size cap.
         const request: ConversationRequest = {
-            messages: [...conversation.messages.filter((answer) => answer.role !== ERROR)]
+            messages: conversation.messages.filter(
+                (answer) => answer.role !== ERROR && answer.role !== TOOL
+            )
         };
 
         let result = {} as ChatResponse;

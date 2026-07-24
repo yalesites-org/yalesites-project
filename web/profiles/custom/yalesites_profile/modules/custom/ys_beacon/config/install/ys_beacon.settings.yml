@@ -17,6 +17,13 @@ pdf_extraction_max_bytes: 20971520
 top_k: 5
 score_threshold: 0.0
 streaming: true
+# Context window (in tokens) of the model Portkey currently routes to. Used to
+# window long conversations so they degrade gracefully. Defaults to Claude
+# Haiku's 200k window; update it in the Beacon administration form when the
+# routed model changes. Keep in sync with
+# ChatApiController::DEFAULT_CONTEXT_WINDOW (the runtime fallback) and the
+# ys_beacon_update_10014() backfill.
+model_context_window: 200000
 instructions_max_length: 4000
 instructions_warning_threshold: 3500
 # Fallback used only when a site has no active system instructions. Keep in

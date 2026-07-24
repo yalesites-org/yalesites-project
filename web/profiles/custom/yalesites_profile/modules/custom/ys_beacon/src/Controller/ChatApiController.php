@@ -3,6 +3,7 @@
 namespace Drupal\ys_beacon\Controller;
 
 use Drupal\Component\Uuid\UuidInterface;
+use Drupal\Core\Config\ImmutableConfig;
 use Drupal\Core\Controller\ControllerBase;
 use Drupal\Core\Flood\FloodInterface;
 use Drupal\ai\AiProviderPluginManager;
@@ -31,13 +32,46 @@ class ChatApiController extends ControllerBase {
 
   /**
    * Maximum accepted request body size in bytes.
+   *
+   * A coarse denial-of-service ceiling on the raw body, sized well above any
+   * legitimate conversation. It is deliberately not the model-context limit:
+   * the transcript is windowed to the active model's token budget (see
+   * ::windowTranscriptToBudget), so an over-long conversation is trimmed rather
+   * than rejected. The client no longer re-sends prior-turn tool/citation
+   * messages (which the server discards anyway), so a normal conversation stays
+   * far below this ceiling.
    */
-  protected const MAX_PAYLOAD_BYTES = 65536;
+  protected const MAX_PAYLOAD_BYTES = 1048576;
 
   /**
    * Maximum number of transcript messages forwarded to the model.
    */
   protected const MAX_TRANSCRIPT_MESSAGES = 20;
+
+  /**
+   * Default model context window in tokens, used when unset in config.
+   *
+   * Sized for the current model (Claude Haiku, 200k). The real model is chosen
+   * by Portkey server-side and is not observable here, so operators set the
+   * true window in the Beacon administration form (model_context_window); this
+   * default only applies until they do.
+   */
+  public const DEFAULT_CONTEXT_WINDOW = 200000;
+
+  /**
+   * Tokens held back from the context window for the model's reply.
+   */
+  protected const OUTPUT_RESERVE_TOKENS = 4096;
+
+  /**
+   * Extra tokens held back to absorb token-estimate error.
+   */
+  protected const SAFETY_MARGIN_TOKENS = 2048;
+
+  /**
+   * Approximate characters per token, for the transcript-windowing estimate.
+   */
+  protected const CHARS_PER_TOKEN = 4;
 
   /**
    * Flood control: allowed requests per window, per client IP.
@@ -153,6 +187,18 @@ class ChatApiController extends ControllerBase {
 
     $citations = $this->ragRetriever->retrieve($question);
     $system_prompt = $this->promptBuilder->build($citations);
+
+    // The transcript is already coarse-capped by message count in
+    // extractTranscript(); here it is additionally windowed to the active
+    // model's token budget so a long conversation degrades gracefully instead
+    // of hitting the model's hard limit. The system prompt (immutable guardrail
+    // + instructions + fresh citations) is always kept; older turns are dropped
+    // oldest-first to fit.
+    $budget = $this->inputTokenBudget($settings) - $this->estimateTokens($system_prompt);
+    $transcript = $this->windowTranscriptToBudget($transcript, $budget);
+    if ($transcript === NULL) {
+      return new JsonResponse(['error' => 'This conversation is too long to continue. Please start a new chat.'], 413);
+    }
 
     $messages = [new ChatMessage('system', $system_prompt)];
     foreach ($transcript as $message) {
@@ -317,6 +363,73 @@ class ChatApiController extends ControllerBase {
       }
     }
     return NULL;
+  }
+
+  /**
+   * Estimates the token count of a string.
+   *
+   * A deliberately model-agnostic approximation (~4 characters per token). The
+   * real model is Portkey-routed and not observable here, so no exact tokenizer
+   * would be authoritative; the safety margin in ::inputTokenBudget absorbs the
+   * error, and windowing is a safety net rather than an exact cutoff.
+   *
+   * @param string $text
+   *   The text to measure.
+   *
+   * @return int
+   *   The estimated number of tokens.
+   */
+  protected function estimateTokens(string $text): int {
+    return (int) ceil(mb_strlen($text) / self::CHARS_PER_TOKEN);
+  }
+
+  /**
+   * Returns the token budget available for input, from the configured window.
+   *
+   * @param \Drupal\Core\Config\ImmutableConfig $settings
+   *   The ys_beacon settings.
+   *
+   * @return int
+   *   The context window (operator-set, or the default) minus the output
+   *   reserve and the safety margin.
+   */
+  protected function inputTokenBudget(ImmutableConfig $settings): int {
+    $window = (int) ($settings->get('model_context_window') ?: self::DEFAULT_CONTEXT_WINDOW);
+    return $window - self::OUTPUT_RESERVE_TOKENS - self::SAFETY_MARGIN_TOKENS;
+  }
+
+  /**
+   * Windows a transcript to fit a token budget, keeping the most recent turns.
+   *
+   * Messages are kept newest-first while they fit, then returned in
+   * chronological order. Returns NULL when even the most recent turn cannot fit
+   * the budget (the fixed system prompt has left too little room), signalling
+   * that the conversation cannot continue and the user should start a new chat.
+   *
+   * @param array[] $transcript
+   *   The sanitized transcript, oldest-first.
+   * @param int $available
+   *   Tokens available for the transcript after the system prompt.
+   *
+   * @return array[]|null
+   *   The kept messages in chronological order, or NULL when nothing fits.
+   */
+  protected function windowTranscriptToBudget(array $transcript, int $available): ?array {
+    if (!$transcript || $available <= 0) {
+      return NULL;
+    }
+    $kept = [];
+    $used = 0;
+    foreach (array_reverse($transcript) as $message) {
+      $cost = $this->estimateTokens($message['content']);
+      if ($used + $cost > $available) {
+        break;
+      }
+      $used += $cost;
+      $kept[] = $message;
+    }
+    // NULL when even the most recent turn did not fit the budget.
+    return $kept ? array_reverse($kept) : NULL;
   }
 
   /**
