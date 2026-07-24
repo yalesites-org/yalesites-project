@@ -85,6 +85,62 @@ stays consistent. The indexing buttons follow the same guards as the site form:
 they are hidden with an explanatory note when the site borrows a read-only index,
 and "Index now" is disabled when nothing is queued.
 
+### Cutting a site over from the legacy `ai_engine` chatbot
+
+A site that was running the legacy `ai_engine` chatbot is cut over by a platform
+admin, from the **Beacon (AI Chat)** section of the Platform Admin Settings page.
+The deploy does **not** do it automatically, and that is deliberate — see
+"Why the cutover is not automatic" below. The steps, all on that one page:
+
+Beacon is brought up **first** and the legacy chatbot is retired **last**. That
+order matters: Beacon stands down for as long as the legacy chat widget is live,
+so bringing it up costs the site nothing, whereas retiring first would leave the
+site with no assistant at all if provisioning then failed.
+
+1. **Allow site admins to configure and use Beacon** (`platform_authorized`).
+   Until this is on, every Beacon surface is hidden and the search index is
+   forced off at runtime.
+2. **Enable chat widget**, then save. This is the step that brings Beacon up: it
+   provisions the site's Azure index (or adopts an existing one), pins the
+   resolved endpoint, enables the Search API index, and queues the site's
+   content. Visitors still see the legacy chatbot throughout. If the index
+   cannot be created — an Azure outage, or the service at its index cap — the
+   specific reason is reported and the widget is left off, so the site keeps the
+   chatbot it had.
+3. **Index now** to run the indexing batch immediately instead of waiting for
+   cron to drain the queue. Confirm the "X of Y items indexed" count is moving
+   before switching visitors over.
+4. **Turn off legacy AI Engine.** This button appears only once Beacon is
+   authorized, enabled, and pointed at an index — that is, only once it can
+   actually take over. It clears all four legacy flags in one click
+   (`ai_engine_chat.settings:enable` and `:floating_button`,
+   `ai_engine_embedding.settings:enable`, `ai_engine_metadata.settings:enable`),
+   replacing the manual walk through three separate `ai_engine` forms. Visitors
+   switch to Beacon at this point.
+
+Until Beacon is ready, that section shows an explanatory note instead of the
+button. To roll back after step 4, re-enable "Enable chat widget" on the
+`ai_engine` Chat Admin form; the Beacon widget stands down again automatically.
+
+#### Why the cutover is not automatic
+
+Tracked by yalesites-org/YaleSites-Internal#1459. Two independent reasons:
+
+- **Beacon cannot be brought up during a deploy.** `ys_beacon` is enabled by the
+  `core.extension` diff in the config import's *extension* step, which core runs
+  strictly before the step that creates configuration
+  (`ConfigImporter::processExtensions()` then `::processConfigurations()`). The
+  `key.key.azure_ai_search_*` entities and the Beacon Search API server and
+  index all arrive in that later step, so at `hook_install()` time there are no
+  credentials to authenticate with and no index entity to enable. Update hooks
+  are even earlier (the `updatedb` phase, before `config:import` runs at all).
+  Note also that a site receiving Beacon for the first time runs **no** update
+  hook: installing a module sets its schema version straight to the newest
+  update, so `hook_install()` is the only entry point.
+- **Deferring it to cron is worse, not better.** An unattended job would swap a
+  live site's visitor-facing assistant at an unpredictable moment, before anyone
+  had confirmed Beacon could answer from a populated index.
+
 Secret values are never stored in Drupal config: the four key entities are
 Pantheon pointers (created by `config:import` as `key.key.*` config) whose
 values resolve live at read time. Per-site `ys_beacon*` config stays in

@@ -93,6 +93,12 @@ function ys_beacon_schema() {
  * here programmatically would clash with that config, and the pantheon_secrets
  * sync still coexists (it skips secrets already backed by a key via its
  * secret_name).
+ *
+ * Beacon is deliberately NOT switched on here, and the legacy ai_engine chat
+ * is deliberately NOT switched off; a platform admin cuts a site over from
+ * the Platform Admin Settings page instead. See "Cutting a site over from the
+ * legacy ai_engine chatbot" in README.md for the procedure and why the deploy
+ * cannot do it (yalesites-org/YaleSites-Internal#1459).
  */
 function ys_beacon_install() {
   $settings = \Drupal::configFactory()->getEditable('ys_beacon.settings');
@@ -154,14 +160,6 @@ function ys_beacon_install() {
   // copy). The helper no-ops when versions already exist, so migrations and
   // existing installs are never overwritten.
   _ys_beacon_seed_default_instructions($database);
-
-  // Kick off the legacy ai_engine to Beacon cutover. This is best-effort at
-  // install time: provisioning the Azure index needs a key the secrets sync
-  // may not have created yet, and the search index entity is imported from
-  // profile config after the module is installed. The work is idempotent and
-  // hook_cron() retries it until it completes, so a deferral here is expected
-  // and harmless.
-  \Drupal::service('ys_beacon.migration')->migrate();
 }
 
 /**
@@ -285,26 +283,25 @@ function ys_beacon_update_10002() {
 }
 
 /**
- * Run the legacy ai_engine to Beacon cutover on existing installs.
- *
- * Sites that already had ys_beacon installed never ran the install-time cutover
- * added in this change. Trigger it on deploy so a site whose legacy chatbot was
- * on is switched to Beacon; the work is idempotent and a no-op where there is
- * nothing to migrate, and hook_cron() still retries any deferred provisioning.
- */
-function ys_beacon_update_10003() {
-  \Drupal::service('ys_beacon.migration')->migrate();
-}
-
-/**
  * Authorize Beacon on sites already using it so no live site loses it.
  *
- * The new platform_authorized flag gates every Beacon surface and ships off by
+ * The platform_authorized flag gates every Beacon surface and ships off by
  * default, so a platform admin must authorize each site. Sites already running
  * Beacon (chat enabled, or the ys_beacon integration turned on) must keep it,
  * so authorize them here. This runs in the updatedb phase before config:import;
  * ys_beacon.settings is config_ignored, so the per-site value survives the
  * import.
+ *
+ * This only ever reaches a site that ALREADY had ys_beacon installed, which
+ * today means a development or multidev site. A site receiving Beacon for the
+ * first time installs the module from the core.extension diff, and installing a
+ * module sets its schema version straight to the newest update
+ * (ModuleInstaller::install()), so no ys_beacon update hook runs there at all.
+ * That is why platform_authorized was never toggled on for migrated sites
+ * (yalesites-org/YaleSites-Internal#1459). It is now correct by design rather
+ * than back-filled: a first-time site stays unauthorized until a platform admin
+ * authorizes it on the Platform Admin Settings page, which is what the flag is
+ * for.
  */
 function ys_beacon_update_10004() {
   $settings = \Drupal::configFactory()->getEditable('ys_beacon.settings');
@@ -565,4 +562,48 @@ function ys_beacon_update_10014() {
   if ($settings->get('model_context_window') === NULL) {
     $settings->set('model_context_window', ChatApiController::DEFAULT_CONTEXT_WINDOW)->save();
   }
+}
+
+/**
+ * Fail closed on sites left mid-migration by the removed auto-cutover.
+ *
+ * The deleted BeaconMigration set ys_beacon.settings:enable_chat = TRUE
+ * before provisioning the Azure index and returned early when provisioning
+ * failed, leaving a deliberate holding state - chat marked on,
+ * azure_index_name still empty - that hook_cron() retried until it healed.
+ * Removing the auto-cutover (yalesites-org/YaleSites-Internal#1459) also
+ * removes that retry, so any site already parked in that state would keep
+ * enable_chat = TRUE with no index and nothing to heal it. That is not merely
+ * cosmetic: the runtime override forces the search INDEX off when no index name
+ * is set, but it only forces enable_chat off for an UNAUTHORIZED site - so an
+ * authorized site parked here advertises a chat widget whose retrieval returns
+ * nothing, making every reply an ungrounded, uncited guess. The widget attach,
+ * the floating button, and the conversation endpoint now all refuse to serve
+ * without an index name; this hook clears the stored flag so it agrees.
+ *
+ * Fail closed instead: clear enable_chat so the stored state matches what the
+ * site actually serves, and log it. A platform admin then enables Beacon
+ * deliberately from the Platform Admin Settings page, which is the only path
+ * that provisions the index and reports failures. This matches the rule the
+ * settings form already enforces for a fresh enable it cannot verify.
+ *
+ * Only sites that already have ys_beacon installed reach this - a first-time
+ * site runs no update hook - which is exactly where the holding state can
+ * exist.
+ */
+function ys_beacon_update_10015() {
+  $settings = \Drupal::configFactory()->getEditable('ys_beacon.settings');
+  // Only touch sites that actually have Beacon settings; never create the
+  // config object here.
+  if ($settings->isNew()) {
+    return;
+  }
+  // A read-only borrower legitimately has no index of its own to provision.
+  if (!$settings->get('enable_chat')
+    || (string) $settings->get('azure_index_name') !== ''
+    || (bool) $settings->get('read_only')) {
+    return;
+  }
+  $settings->set('enable_chat', FALSE)->save();
+  \Drupal::logger('ys_beacon')->warning('Beacon chat was marked enabled with no search index configured - a holding state left by the removed automatic ai_engine cutover. The flag has been cleared so it matches what the site serves; enable Beacon from the Platform Admin Settings page to provision the index.');
 }
