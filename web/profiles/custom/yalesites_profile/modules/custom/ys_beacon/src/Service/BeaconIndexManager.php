@@ -438,8 +438,7 @@ class BeaconIndexManager {
    */
   public function indexExists(string $name): bool {
     try {
-      $this->request('GET', "/indexes('$name')");
-      return TRUE;
+      $response = $this->request('GET', "/indexes('$name')");
     }
     catch (ClientException $e) {
       if ($e->getResponse()->getStatusCode() === 404) {
@@ -450,6 +449,15 @@ class BeaconIndexManager {
     catch (\Throwable $e) {
       throw new \RuntimeException('Azure AI Search is unreachable: ' . $e->getMessage(), 0, $e);
     }
+    // A 2xx GET of a named index returns its definition, which carries a
+    // "name". A 2xx that lacks it is not a real index (e.g. a proxy/SSO HTML
+    // page from a mis-repointed endpoint), so fail closed rather than report
+    // that the index exists - the latter would make the caller adopt a
+    // nonexistent index. Mirrors the guard in countIndexes().
+    if (!isset($response['name'])) {
+      throw new \RuntimeException('Azure AI Search returned an unexpected response checking for the index; refusing to assume it exists.');
+    }
+    return TRUE;
   }
 
   /**
