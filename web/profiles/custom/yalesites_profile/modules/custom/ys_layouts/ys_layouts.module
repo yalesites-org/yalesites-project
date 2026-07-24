@@ -28,6 +28,7 @@ function ys_layouts_theme($existing, $type, $theme, $path): array {
         'ticket_cost' => NULL,
         'place' => [],
         'room' => NULL,
+        'location_additional_info' => NULL,
         'event_types' => [],
         'event_audience' => [],
         'event_topics' => [],

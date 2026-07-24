@@ -239,6 +239,15 @@ class MetaFieldsManager implements ContainerFactoryPluginInterface {
       }
     }
 
+    // Free-form location info (fallback when no Localist place is set).
+    $locationAdditionalInfo = NULL;
+    if ($node->hasField('field_location_additional_info') && !$node->get('field_location_additional_info')->isEmpty()) {
+      $field_value = $node->get('field_location_additional_info')->first()->getValue();
+      if (!empty($field_value['value'])) {
+        $locationAdditionalInfo = check_markup($field_value['value'], $field_value['format'] ?? 'basic_html');
+      }
+    }
+
     /*
      * ICS URL.
      *
@@ -283,6 +292,7 @@ class MetaFieldsManager implements ContainerFactoryPluginInterface {
       'localist_image_alt' => $localistImageAlt,
       'teaser_media' => $teaserMediaRender,
       'place_info' => $place,
+      'location_additional_info' => $locationAdditionalInfo,
       'event_types' => $eventTypes,
       'event_audience' => $eventAudience,
       'event_topics' => $eventTopics,

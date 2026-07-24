@@ -30,6 +30,7 @@ dependencies:
     - field.field.node.event.field_localist_id
     - field.field.node.event.field_localist_info
     - field.field.node.event.field_localist_register_enabled
+    - field.field.node.event.field_location_additional_info
     - field.field.node.event.field_login_required
     - field.field.node.event.field_metatags
     - field.field.node.event.field_stream_embed_code
@@ -134,7 +135,8 @@ third_party_settings:
         - title
         - field_event_description
         - field_event_cta
-        - group_place
+        - field_localist_event_experience
+        - field_location_additional_info
         - field_event_date
         - field_event_recurring
         - group_stream_information
@@ -181,6 +183,8 @@ third_party_settings:
         - field_localist_event_image_alt
         - field_localist_ics_url
         - field_localist_register_enabled
+        - field_event_place
+        - field_event_room
       label: 'Localist data'
       region: content
       parent_name: group_event_tabs
@@ -207,22 +211,6 @@ third_party_settings:
         show_empty_fields: false
         id: ''
         formatter: closed
-        description: ''
-        required_fields: true
-    group_place:
-      children:
-        - field_localist_event_experience
-        - field_event_place
-        - field_event_room
-      label: Location
-      region: content
-      parent_name: group_basic_info
-      weight: 6
-      format_type: fieldset
-      format_settings:
-        classes: ''
-        show_empty_fields: false
-        id: ''
         description: ''
         required_fields: true
     group_stream_information:
@@ -449,6 +437,14 @@ content:
     region: content
     settings:
       display_label: true
+    third_party_settings: {  }
+  field_location_additional_info:
+    type: text_textarea
+    weight: 6
+    region: content
+    settings:
+      rows: 5
+      placeholder: ''
     third_party_settings: {  }
   field_login_required:
     type: boolean_checkbox

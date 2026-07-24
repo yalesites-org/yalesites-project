@@ -1,0 +1,24 @@
+uuid: 2359407b-a24b-4f32-b4e2-382969aa00aa
+langcode: en
+status: true
+dependencies:
+  config:
+    - field.storage.node.field_location_additional_info
+    - filter.format.basic_html
+    - node.type.event
+  module:
+    - text
+id: node.event.field_location_additional_info
+field_name: field_location_additional_info
+entity_type: node
+bundle: event
+label: 'Additional Information'
+description: 'Free-form location details (address, building, virtual link, hybrid instructions, etc.) shown when no Localist location is set.'
+required: false
+translatable: null
+default_value: {  }
+default_value_callback: ''
+settings:
+  allowed_formats:
+    - basic_html
+field_type: text_long
