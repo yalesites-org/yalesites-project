@@ -11,11 +11,13 @@ use Drupal\Core\Session\AccountInterface;
  *
  * The administration form holds the most sensitive Beacon operator settings,
  * so access is limited to the platform superadmin (user 1). No other role,
- * however privileged, may reach it. User 1 bypasses permission checks but not
- * custom access checks, so this returns an explicit AccessResult::forbidden()
- * for everyone else (a neutral result would let another allowed check open the
- * route) and an explicit AccessResult::allowed() for user 1 (a forbidden result
- * would lock out user 1 too).
+ * however privileged, may reach it. User 1 bypasses permission (_permission)
+ * checks but not custom _access checks like this one, so this check must
+ * itself decide access: it returns an explicit AccessResult::allowed() for
+ * user 1 and AccessResult::forbidden() for everyone else. Returning an explicit
+ * forbidden (rather than a neutral result) keeps the route denied for all
+ * others under any access-combination mode and stays robust if it later gains
+ * additional access checks, since a forbidden result always wins.
  */
 class BeaconAdminAccessCheck implements AccessInterface {
 
