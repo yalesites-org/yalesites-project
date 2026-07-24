@@ -175,7 +175,7 @@ class YsBeaconAdminSettings extends ConfigFormBase {
     $form['guardrail']['guardrail_supplement'] = [
       '#type' => 'textarea',
       '#title' => $this->t('Additional guardrail rules for this site'),
-      '#description' => $this->t('Appended after the platform guardrail on every chat request. Use this to make this specific site stricter; it can add rules but never relax the platform guardrail.'),
+      '#description' => $this->t('Appended after the platform guardrail on every chat request; the platform guardrail is declared to take precedence over it. Use this to add site-specific rules, typically to make this site stricter.'),
       '#default_value' => $config->get('guardrail_supplement'),
       '#rows' => 4,
     ];

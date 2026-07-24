@@ -8,10 +8,13 @@ use Drupal\Core\Config\ConfigFactoryInterface;
  * Assembles the system prompt for the Beacon chat assistant.
  *
  * Layers, in order: the immutable platform guardrail (defined in code below),
- * an optional per-site guardrail supplement that can only add restrictions,
- * the per-site system instructions, and finally the retrieved, numbered
- * sources. Source markers follow the [docN] convention the chat frontend
- * turns into citation superscripts.
+ * an optional per-site guardrail supplement appended after it, the per-site
+ * system instructions, and finally the retrieved, numbered sources. The
+ * platform guardrail declares precedence over the supplement so it is meant to
+ * tighten behavior, but that ordering is prompt precedence honored by the
+ * model, not a mechanically enforced restriction-only guarantee. Source
+ * markers follow the [docN] convention the chat frontend turns into citation
+ * superscripts.
  */
 class SystemPromptBuilder {
 
