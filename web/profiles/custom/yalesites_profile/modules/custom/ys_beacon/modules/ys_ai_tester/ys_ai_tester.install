@@ -1,0 +1,100 @@
+<?php
+
+/**
+ * @file
+ * Install and uninstall functions for the YS AI Tester module.
+ */
+
+/**
+ * Implements hook_schema().
+ */
+function ys_ai_tester_schema(): array {
+  $schema['ys_ai_tester_run'] = [
+    'description' => 'Stores AI tester batch runs.',
+    'fields' => [
+      'id' => ['type' => 'serial', 'unsigned' => TRUE, 'not null' => TRUE],
+      'uid' => ['type' => 'int', 'unsigned' => TRUE, 'not null' => TRUE, 'default' => 0],
+      'created' => ['type' => 'int', 'unsigned' => TRUE, 'not null' => TRUE, 'default' => 0],
+      'source_filename' => ['type' => 'varchar', 'length' => 255, 'not null' => TRUE, 'default' => ''],
+      'source_content' => ['type' => 'blob', 'size' => 'big', 'not null' => TRUE],
+      'source_run_id' => [
+        'type' => 'int',
+        'unsigned' => TRUE,
+        'not null' => TRUE,
+        'default' => 0,
+        'description' => 'The run this one was created by re-running, or 0 for an original run.',
+      ],
+      'status' => ['type' => 'varchar', 'length' => 32, 'not null' => TRUE, 'default' => 'processing'],
+      'question_count' => ['type' => 'int', 'unsigned' => TRUE, 'not null' => TRUE, 'default' => 0],
+    ],
+    'primary key' => ['id'],
+    'indexes' => [
+      'created' => ['created'],
+      'uid' => ['uid'],
+      'source_run_id' => ['source_run_id'],
+    ],
+  ];
+
+  $schema['ys_ai_tester_result'] = [
+    'description' => 'Stores individual question results for AI tester runs.',
+    'fields' => [
+      'id' => ['type' => 'serial', 'unsigned' => TRUE, 'not null' => TRUE],
+      'run_id' => ['type' => 'int', 'unsigned' => TRUE, 'not null' => TRUE],
+      'delta' => ['type' => 'int', 'unsigned' => TRUE, 'not null' => TRUE, 'default' => 0],
+      'question' => ['type' => 'text', 'size' => 'medium', 'not null' => TRUE],
+      'answer' => ['type' => 'text', 'size' => 'big', 'not null' => TRUE],
+      'citations' => ['type' => 'text', 'size' => 'medium', 'not null' => TRUE],
+    ],
+    'primary key' => ['id'],
+    'indexes' => ['run_id' => ['run_id']],
+  ];
+
+  return $schema;
+}
+
+/**
+ * Rename yaml_* run columns to source_* and add source_run_id for reruns.
+ */
+function ys_ai_tester_update_10001(): void {
+  $schema = \Drupal::database()->schema();
+
+  // The question source is now a plain-text list, not YAML, so the columns get
+  // format-neutral names. There is no production data on this dev branch, so
+  // the rename simply preserves whatever bytes are stored.
+  if ($schema->fieldExists('ys_ai_tester_run', 'yaml_filename')) {
+    $schema->changeField('ys_ai_tester_run', 'yaml_filename', 'source_filename', [
+      'type' => 'varchar',
+      'length' => 255,
+      'not null' => TRUE,
+      'default' => '',
+    ]);
+  }
+
+  if ($schema->fieldExists('ys_ai_tester_run', 'yaml_content')) {
+    $schema->changeField('ys_ai_tester_run', 'yaml_content', 'source_content', [
+      'type' => 'blob',
+      'size' => 'big',
+      'not null' => TRUE,
+    ]);
+  }
+
+  // Records which run a rerun was created from, so a rerun already in progress
+  // can be detected server-side and not double-fired. The index is added
+  // separately: MySQL needs the field spec to normalize an index added in the
+  // same addField() call.
+  $source_run_id_spec = [
+    'type' => 'int',
+    'unsigned' => TRUE,
+    'not null' => TRUE,
+    'default' => 0,
+    'description' => 'The run this one was created by re-running, or 0 for an original run.',
+  ];
+  if (!$schema->fieldExists('ys_ai_tester_run', 'source_run_id')) {
+    $schema->addField('ys_ai_tester_run', 'source_run_id', $source_run_id_spec);
+  }
+  if (!$schema->indexExists('ys_ai_tester_run', 'source_run_id')) {
+    $schema->addIndex('ys_ai_tester_run', 'source_run_id', ['source_run_id'], [
+      'fields' => ['source_run_id' => $source_run_id_spec],
+    ]);
+  }
+}

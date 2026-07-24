@@ -104,6 +104,10 @@
 # Ignore packages installed by Node.
 /node_modules
 package-lock.json
+# Exception: the Beacon chat widget's bundle is committed (Pantheon has no build
+# step), so its lockfile must be committed too for the verify_beacon_bundle CI
+# check to run a reproducible `npm ci` build.
+!web/profiles/custom/yalesites_profile/modules/custom/ys_beacon/react/package-lock.json
 
 # Local files
 .DS_Store
@@ -115,6 +119,7 @@ reference
 # Yalesites profile assets
 web/profiles/custom/yalesites_profile/composer.lock
 web/profiles/custom/yalesites_profile/vendor/
+web/profiles/custom/yalesites_profile/modules/custom/ys_beacon/react/node_modules/
 
 # Ignore symlinks for dev
 /atomic

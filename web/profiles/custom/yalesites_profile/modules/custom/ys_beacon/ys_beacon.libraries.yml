@@ -1,0 +1,28 @@
+# Add and enable the chat widget on all pages.
+chat_widget:
+  css:
+    theme:
+      react/static/assets/index.css: {}
+  js:
+    js/init.js: {}
+    react/static/assets/index.js: { attributes: { type: module } }
+    js/events.js: {}
+  dependencies:
+    - core/drupalSettings
+chat_button:
+  css:
+    theme:
+      css/chat_button.css: {}
+system_instructions:
+  version: VERSION
+  js:
+    js/system-instructions.js: {}
+  css:
+    theme:
+      css/system-instructions.css: {}
+  dependencies:
+    - core/jquery
+    - core/drupal
+    - core/drupalSettings
+    - core/once
+    - gin/gin

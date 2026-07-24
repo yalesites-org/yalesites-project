@@ -1,0 +1,13 @@
+{{ attach_library('ys_beacon/chat_button') }}
+
+{# .ys-beacon-chat-button is listed in editoria11y.settings.yml ignore_elements to suppress a
+   false-positive flag. The icon is aria-hidden; the <span> provides the accessible name.
+   a[href="#launch-chat"] is also in that ignore_elements list so editoria11y does not raise a
+   broken same-page-link alert: #launch-chat is a JS launcher target, not a real on-page anchor.
+   Do not remove this class without updating that config. #}
+<div class="ys-beacon-chat-button" role="region" aria-label="Beacon chat">
+  <a href="#launch-chat">
+    <i class="fa-light {{ icon_class }}" aria-hidden="true"></i>
+    <span>{{ button_text }}</span>
+  </a>
+</div>

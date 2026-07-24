@@ -1,0 +1,6 @@
+manage ys beacon settings:
+  title: 'Manage YaleSites Beacon settings'
+  description: 'Set and update Beacon content and display settings.'
+manage ys beacon system instructions:
+  title: 'Manage Beacon system instructions'
+  description: 'Create, view, and revert versions of the Beacon system instructions.'

@@ -1,0 +1,132 @@
+services:
+  logger.channel.ys_beacon:
+    parent: logger.channel_base
+    arguments: ['ys_beacon']
+
+  ys_beacon.entity_citation_resolver:
+    class: Drupal\ys_beacon\Service\EntityCitationResolver
+    arguments:
+      - '@entity_type.manager'
+
+  ys_beacon.rag_retriever:
+    class: Drupal\ys_beacon\Service\RagRetriever
+    arguments:
+      - '@entity_type.manager'
+      - '@config.factory'
+      - '@logger.channel.ys_beacon'
+      - '@ys_beacon.entity_citation_resolver'
+
+  ys_beacon.citation_formatter:
+    class: Drupal\ys_beacon\Service\CitationFormatter
+
+  ys_beacon.beacon_answer:
+    class: Drupal\ys_beacon\Service\BeaconAnswerService
+    arguments:
+      - '@ai.provider'
+      - '@ys_beacon.rag_retriever'
+      - '@ys_beacon.prompt_builder'
+
+  ys_beacon.markdown_converter:
+    class: Drupal\ys_beacon\Service\MarkdownConverter
+
+  ys_beacon.system_instructions_storage:
+    class: Drupal\ys_beacon\Service\SystemInstructionsStorage
+    arguments:
+      - '@database'
+      - '@current_user'
+      - '@datetime.time'
+
+  ys_beacon.prompt_builder:
+    class: Drupal\ys_beacon\Service\SystemPromptBuilder
+    arguments:
+      - '@config.factory'
+      - '@ys_beacon.system_instructions_storage'
+
+  ys_beacon.credentials:
+    class: Drupal\ys_beacon\Service\BeaconCredentials
+    arguments:
+      - '@key.repository'
+      - '@logger.channel.ys_beacon'
+
+  ys_beacon.index_manager:
+    class: Drupal\ys_beacon\Service\BeaconIndexManager
+    arguments:
+      - '@config.factory'
+      - '@ys_beacon.credentials'
+      - '@http_client'
+      - '@logger.channel.ys_beacon'
+      - '@entity_type.manager'
+
+  ys_beacon.migration:
+    class: Drupal\ys_beacon\Service\BeaconMigration
+    arguments:
+      - '@config.factory'
+      - '@module_handler'
+      - '@ys_beacon.index_manager'
+      - '@entity_type.manager'
+      - '@logger.channel.ys_beacon'
+
+  ys_beacon.indexability:
+    class: Drupal\ys_beacon\Service\BeaconIndexability
+    arguments:
+      - '@metatag.manager'
+
+  ys_beacon.ai_metadata_manager:
+    class: Drupal\ys_beacon\Service\AiMetadataManager
+    arguments:
+      - '@metatag.manager'
+      - '@token'
+
+  ys_beacon.pdf_text_extractor:
+    class: Drupal\ys_beacon\Service\SmalotPdfTextExtractor
+
+  ys_beacon.pdf_text_indexer:
+    class: Drupal\ys_beacon\Service\PdfTextIndexer
+    arguments:
+      - '@entity_type.manager'
+      - '@file_system'
+      - '@ys_beacon.pdf_text_extractor'
+      - '@ys_beacon.indexability'
+      - '@config.factory'
+      - '@logger.channel.ys_beacon'
+
+  ys_beacon.content_feed_builder:
+    class: Drupal\ys_beacon\Service\ContentFeedBuilder
+    arguments:
+      - '@entity_type.manager'
+      - '@ys_beacon.indexability'
+      - '@ys_beacon.ai_metadata_manager'
+      - '@renderer'
+      - '@account_switcher'
+      - '@ys_beacon.entity_citation_resolver'
+
+  ys_beacon.authorization:
+    class: Drupal\ys_beacon\BeaconAuthorization
+    arguments:
+      - '@config.factory'
+
+  ys_beacon.system_instructions_access_check:
+    class: Drupal\ys_beacon\Access\SystemInstructionsAccessCheck
+    arguments:
+      - '@config.factory'
+    tags:
+      - { name: access_check, applies_to: _ys_beacon_instructions_access }
+
+  ys_beacon.authorized_access_check:
+    class: Drupal\ys_beacon\Access\BeaconAuthorizedAccessCheck
+    arguments:
+      - '@ys_beacon.authorization'
+    tags:
+      - { name: access_check, applies_to: _ys_beacon_authorized }
+
+  ys_beacon.admin_access_check:
+    class: Drupal\ys_beacon\Access\BeaconAdminAccessCheck
+    tags:
+      - { name: access_check, applies_to: _ys_beacon_admin_access }
+
+  ys_beacon.config_overrides:
+    class: Drupal\ys_beacon\Config\YsBeaconConfigOverrides
+    arguments:
+      - '@config.storage'
+    tags:
+      - { name: config.factory.override, priority: 5 }

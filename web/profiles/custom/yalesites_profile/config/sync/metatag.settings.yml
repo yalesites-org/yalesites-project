@@ -2,19 +2,24 @@ entity_type_groups:
   media:
     document:
       ai_engine: ai_engine
+      ys_beacon: ys_beacon
   node:
     event:
       basic: basic
       ai_engine: ai_engine
+      ys_beacon: ys_beacon
     page:
       basic: basic
       ai_engine: ai_engine
+      ys_beacon: ys_beacon
     post:
       basic: basic
       ai_engine: ai_engine
+      ys_beacon: ys_beacon
     profile:
       basic: basic
       ai_engine: ai_engine
+      ys_beacon: ys_beacon
     resource:
       basic: basic
       ai_engine: ai_engine
