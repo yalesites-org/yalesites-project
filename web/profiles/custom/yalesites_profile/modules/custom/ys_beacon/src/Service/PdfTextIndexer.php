@@ -75,6 +75,12 @@ class PdfTextIndexer {
     $file = $this->sourceFile($media);
     $path = $file ? $this->fileSystem->realpath($file->getFileUri()) : NULL;
     if (!$file || !$path || !is_file($path)) {
+      // isExtractable() already confirmed a PDF source file, so an unresolvable
+      // path here is an actionable anomaly (missing/moved file), not a routine
+      // skip. Log it to match the other non-happy paths in this method.
+      $this->logger->warning('Skipped PDF text extraction for media @id: the source file could not be read from disk.', [
+        '@id' => $media->id(),
+      ]);
       return;
     }
 
