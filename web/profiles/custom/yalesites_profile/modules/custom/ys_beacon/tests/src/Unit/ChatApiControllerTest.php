@@ -141,7 +141,7 @@ class ChatApiControllerTest extends UnitTestCase {
       ->willReturnCallback(function () use (&$calls) {
         $calls[] = 'restore';
       });
-    $this->setHostnameFilter($filter);
+    $this->setControllerProperty('hostnameFilter', $filter);
 
     $ran = FALSE;
     $this->invoke('withOutputFilteringDisabled', [
@@ -166,7 +166,7 @@ class ChatApiControllerTest extends UnitTestCase {
     // The filter must be restored even when the callback throws, so a failed
     // Beacon turn never leaks full-trust to other AI features on the site.
     $filter->expects($this->once())->method('restoreSettings');
-    $this->setHostnameFilter($filter);
+    $this->setControllerProperty('hostnameFilter', $filter);
 
     $this->expectException(\RuntimeException::class);
     $this->invoke('withOutputFilteringDisabled', [
@@ -174,15 +174,6 @@ class ChatApiControllerTest extends UnitTestCase {
         throw new \RuntimeException('stream blew up');
       },
     ]);
-  }
-
-  /**
-   * Injects a hostname filter service into the controller under test.
-   */
-  protected function setHostnameFilter(HostnameFilter $filter): void {
-    $property = new \ReflectionProperty(ChatApiController::class, 'hostnameFilter');
-    $property->setAccessible(TRUE);
-    $property->setValue($this->controller, $filter);
   }
 
   /**
