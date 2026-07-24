@@ -36,7 +36,9 @@ class AiMetadataManager {
    */
   public function getAiMetadata(ContentEntityInterface $entity) {
     $tags = $this->metatagManager->tagsFromEntity($entity);
-    $aiDesc = isset($tags['ai_description']) ? $this->token->replace($tags['ai_description'], [$entity->getEntityTypeId() => $entity]) : "";
+    // Both values feed the AI model / search index as plain text, so strip any
+    // markup from each consistently (previously only ai_tags was stripped).
+    $aiDesc = isset($tags['ai_description']) ? strip_tags($this->token->replace($tags['ai_description'], [$entity->getEntityTypeId() => $entity])) : "";
     $aiTags = isset($tags['ai_tags']) ? strip_tags($this->token->replace($tags['ai_tags'], [$entity->getEntityTypeId() => $entity])) : "";
     $aiDisableIndex = isset($tags['ai_disable_indexing']);
 
