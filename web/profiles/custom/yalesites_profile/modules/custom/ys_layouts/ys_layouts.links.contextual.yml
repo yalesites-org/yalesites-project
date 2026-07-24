@@ -1,0 +1,7 @@
+layout_builder_block_clone:
+  title: 'Clone block'
+  route_name: 'ys_layouts.clone_block'
+  group: 'layout_builder_block_clone'
+  options:
+    attributes:
+      class: ['use-ajax']

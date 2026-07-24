@@ -22,3 +22,17 @@ block_content.add_page:
     _admin_route: TRUE
   requirements:
     _entity_create_any_access: 'block_content'
+
+# Clones an inline block in Layout Builder. Mirrors layout_builder.remove_block
+# so the block contextual link can reuse the same route parameters.
+ys_layouts.clone_block:
+  path: '/layout_builder/clone/block/{section_storage_type}/{section_storage}/{delta}/{region}/{uuid}'
+  defaults:
+    _controller: '\Drupal\ys_layouts\Controller\CloneBlockController::build'
+  requirements:
+    _layout_builder_access: 'view'
+  options:
+    _admin_route: TRUE
+    parameters:
+      section_storage:
+        layout_builder_tempstore: TRUE

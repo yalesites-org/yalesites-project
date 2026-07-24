@@ -10,6 +10,7 @@ use Drupal\Core\Entity\FieldableEntityInterface;
 use Drupal\Core\Form\FormStateInterface;
 use Drupal\Core\Plugin\Context\Context;
 use Drupal\Core\Plugin\Context\EntityContextDefinition;
+use Drupal\ys_layouts\CloneBlockLinkBuilder;
 
 /**
  * Add template files.
@@ -378,5 +379,17 @@ function ys_layouts_preprocess_layout__page_meta(&$variables) {
         }
       }
     }
+  }
+}
+
+/**
+ * Implements hook_element_info_alter().
+ *
+ * Adds a pre-render to the Layout Builder UI element that attaches the "Clone"
+ * contextual link to inline blocks only (issue #190).
+ */
+function ys_layouts_element_info_alter(array &$info) {
+  if (isset($info['layout_builder'])) {
+    $info['layout_builder']['#pre_render'][] = [CloneBlockLinkBuilder::class, 'preRender'];
   }
 }
