@@ -175,7 +175,135 @@ class CoreTwigExtensionTest extends UnitTestCase {
    * @covers ::getUrlType
    */
   public function testGetUrlTypeShouldClassifyMailtoLinksAsMailto(): void {
-    $this->markTestSkipped('GAP: getUrlType() never returns "mailto" because isInternal() already matches any host-less URL -- see ~/Documents/Claude/not_dave/module-tests-20260710/ys_core.md');
+    $this->markTestSkipped(
+      'GAP: getUrlType() can never return "mailto". It tests isInternal() before '
+      . 'isMailTo(), and isInternal() treats any URL whose parse_url() host is '
+      . 'empty as internal -- which every mailto: URL is. Fixing it means moving '
+      . 'the isMailTo() check above isInternal(); that is a behavior change, so it '
+      . 'is out of scope for the behavior-preserving ys_core cleanup '
+      . '(yalesites-org/YaleSites-Internal#579). Delete this test and its '
+      . 'characterization pair once the ordering is fixed.'
+    );
+  }
+
+  /**
+   * The Twig extension registers exactly the five documented function names.
+   *
+   * These names are a public contract: atomic's templates call them
+   * directly, so renaming or dropping one breaks rendering with no PHP
+   * error. Constraint 2 of the ys_core cleanup issue
+   * (yalesites-org/YaleSites-Internal#579) states the names must not change,
+   * and nothing pinned them until now -- a class move or namespace change
+   * during the refactor could have silently altered this list.
+   *
+   * @covers ::getFunctions
+   */
+  public function testGetFunctionsRegistersTheDocumentedTwigFunctionNames(): void {
+    $names = array_map(
+      static fn($function) => $function->getName(),
+      $this->extension->getFunctions()
+    );
+
+    $this->assertSame(
+      [
+        'getCoreSetting',
+        'getHeaderSetting',
+        'getUrlType',
+        'getQueryParam',
+        'getAssetPath',
+      ],
+      $names
+    );
+  }
+
+  /**
+   * An absent manifest falls back to the unversioned asset name.
+   *
+   * A bogus directory makes both file_exists() checks miss, so this reaches the
+   * early return. It cannot tell the two misses apart, though: deleting the
+   * _yale-packages fallback would not fail this test. That branch is in fact
+   * uncovered -- a normal checkout has a manifest under node_modules, so the
+   * first path always wins and the fallback only runs where the theme's npm
+   * assets are absent but _yale-packages is populated.
+   *
+   * @covers ::getAssetPath
+   */
+  public function testGetAssetPathFallsBackToInputWhenManifestMissing(): void {
+    $this->assertSame(
+      'icons.svg',
+      $this->extension->getAssetPath('icons.svg', 'themes/contrib/does-not-exist')
+    );
+  }
+
+  /**
+   * A known asset resolves to the versioned filename from the manifest.
+   *
+   * Asserted against the manifest's actual contents rather than a literal hash:
+   * the hash changes on every component-library build, so hardcoding one would
+   * make this test fail on an unrelated rebuild.
+   *
+   * @covers ::getAssetPath
+   */
+  public function testGetAssetPathReturnsVersionedNameFromManifest(): void {
+    $manifest = $this->readAssetManifest();
+    $asset = array_key_first($manifest);
+
+    // Without this guard the assertion below would pass even if getAssetPath()
+    // never read the manifest and just returned its input, whenever the
+    // manifest happens to map an asset to its own unversioned name.
+    $this->assertNotSame(
+      $asset,
+      $manifest[$asset],
+      'Guard: the manifest actually versions this asset.'
+    );
+
+    $this->assertSame($manifest[$asset], $this->extension->getAssetPath($asset));
+  }
+
+  /**
+   * An asset missing from a present manifest falls back to the input name.
+   *
+   * @covers ::getAssetPath
+   */
+  public function testGetAssetPathFallsBackToInputWhenAssetNotInManifest(): void {
+    $manifest = $this->readAssetManifest();
+    $this->assertArrayNotHasKey('not-a-real-asset.svg', $manifest, 'Guard: the key is genuinely absent.');
+
+    $this->assertSame('not-a-real-asset.svg', $this->extension->getAssetPath('not-a-real-asset.svg'));
+  }
+
+  /**
+   * Reads the component library asset manifest getAssetPath() resolves against.
+   *
+   * GetAssetPath() reads the real filesystem relative to DRUPAL_ROOT and offers
+   * no seam to inject a fixture, so the manifest-present branches are exercised
+   * against the installed manifest and skipped when the theme's npm assets have
+   * not been built.
+   *
+   * @return array
+   *   The decoded manifest, asset name => versioned asset name.
+   */
+  protected function readAssetManifest(): array {
+    $base = DRUPAL_ROOT . '/themes/contrib/atomic/';
+    $candidates = [
+      $base . 'node_modules/@yalesites-org/component-library-twig/dist/manifest.json',
+      $base . '_yale-packages/component-library-twig/dist/manifest.json',
+    ];
+
+    foreach ($candidates as $path) {
+      if (file_exists($path)) {
+        $manifest = json_decode(file_get_contents($path), TRUE);
+        if (is_array($manifest) && $manifest !== []) {
+          return $manifest;
+        }
+      }
+    }
+
+    $this->markTestSkipped(
+      'No component library asset manifest is installed (build the theme assets). '
+      . 'getAssetPath() falls back to the unversioned name in that case, which '
+      . 'testGetAssetPathFallsBackToInputWhenManifestMissing() already covers.'
+    );
   }
 
 }
