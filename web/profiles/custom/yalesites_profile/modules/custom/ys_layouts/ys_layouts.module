@@ -10,6 +10,7 @@ use Drupal\Core\Entity\FieldableEntityInterface;
 use Drupal\Core\Form\FormStateInterface;
 use Drupal\Core\Plugin\Context\Context;
 use Drupal\Core\Plugin\Context\EntityContextDefinition;
+use Drupal\ys_layouts\CloneContextualLinks;
 
 /**
  * Add template files.
@@ -378,5 +379,38 @@ function ys_layouts_preprocess_layout__page_meta(&$variables) {
         }
       }
     }
+  }
+}
+
+/**
+ * Marks the Layout Builder blocks that may offer the Clone link.
+ *
+ * Implements hook_element_info_alter().
+ */
+function ys_layouts_element_info_alter(array &$info) {
+  if (!empty($info['layout_builder'])) {
+    $info['layout_builder']['#pre_render'][] = [
+      CloneContextualLinks::class,
+      'preRender',
+    ];
+  }
+}
+
+/**
+ * Removes the Clone link from blocks that cannot be cloned.
+ *
+ * Implements hook_contextual_links_view_alter().
+ */
+function ys_layouts_contextual_links_view_alter(&$element, $items) {
+  if (!isset($element['#links'][CloneContextualLinks::LINK_KEY])) {
+    return;
+  }
+
+  // $items is keyed by contextual-link PLUGIN id, not by group name; every
+  // item in a group carries that group's metadata.
+  // @see \Drupal\Core\Menu\ContextualLinkManager::getContextualLinksArrayByGroup()
+  $item = $items[CloneContextualLinks::PLUGIN_ID] ?? [];
+  if (!CloneContextualLinks::shouldKeepLink($item)) {
+    unset($element['#links'][CloneContextualLinks::LINK_KEY]);
   }
 }

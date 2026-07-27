@@ -19,6 +19,18 @@ services:
   ys_layouts.resource_author_builder:
     class: Drupal\ys_layouts\Service\ResourceAuthorBuilder
     arguments: ['@ys_layouts.author_collator']
+  # Deep-duplicates a Layout Builder component and its inline block content.
+  # Used by the "Clone block" contextual link and by the access check that
+  # decides which blocks may offer it.
+  ys_layouts.block_cloner:
+    class: Drupal\ys_layouts\Service\BlockCloner
+    arguments: ['@entity_type.manager', '@uuid', '@logger.channel.ys_layouts']
+  # Restricts the clone route to inline (non-reusable) blocks.
+  ys_layouts.clone_block_access_check:
+    class: Drupal\ys_layouts\Access\CloneBlockAccessCheck
+    arguments: ['@layout_builder.tempstore_repository', '@ys_layouts.block_cloner']
+    tags:
+      - { name: access_check, applies_to: _ys_layouts_clonable_block }
   # Resolves cover-image alt text for Resource media.
   # Used by ResourceMetaBlock and atomic_preprocess_node() so the block
   # render and the card/list templates apply identical alt text.

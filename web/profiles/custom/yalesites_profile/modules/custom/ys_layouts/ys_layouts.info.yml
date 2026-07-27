@@ -5,5 +5,10 @@ package: Core
 core_version_requirement: '^9 || ^10'
 version: VERSION
 dependencies:
+  # The Clone block link injects layout_builder.tempstore_repository and adds a
+  # link to the contextual group layout_builder_block, so both are hard
+  # requirements of the service container rather than optional integrations.
+  - drupal:contextual
+  - drupal:layout_builder
   - calendar_link
   - ys_localist

@@ -13,6 +13,29 @@ ys_layouts.resource_download:
   requirements:
     _custom_access: '\Drupal\ys_layouts\Controller\ResourceDownloadController::access'
     file_id: '\d+'
+# Clones a single Layout Builder block into the layout tempstore. The path and
+# parameter names mirror core's layout_builder.remove_block route because the
+# contextual link group "layout_builder_block" passes exactly these parameters.
+ys_layouts.clone_block:
+  path: '/layout_builder/clone/block/{section_storage_type}/{section_storage}/{delta}/{region}/{uuid}'
+  defaults:
+    _controller: '\Drupal\ys_layouts\Controller\CloneBlockController::build'
+  requirements:
+    # Matches core's layout_builder.add_block / update_block, which gate on the
+    # layout alone. Anyone who passes this can already add an inline block of
+    # any type to the layout, so cloning one grants no extra authority. Do not
+    # add a block_content permission here: "create and edit custom blocks" was
+    # removed from core in 10.1 and only still works because stale grants
+    # linger in the role config, so it would break on a role cleanup.
+    _layout_builder_access: 'view'
+    _ys_layouts_clonable_block: 'TRUE'
+    # The link is a GET that changes the tempstore, so it carries a token.
+    _csrf_token: 'TRUE'
+  options:
+    _admin_route: TRUE
+    parameters:
+      section_storage:
+        layout_builder_tempstore: TRUE
 block_content.add_page:
   path: '/block/add'
   defaults:
