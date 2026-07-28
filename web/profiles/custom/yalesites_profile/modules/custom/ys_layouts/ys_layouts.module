@@ -393,3 +393,21 @@ function ys_layouts_element_info_alter(array &$info) {
     $info['layout_builder']['#pre_render'][] = [CloneBlockLinkBuilder::class, 'preRender'];
   }
 }
+
+/**
+ * Implements hook_contextual_links_plugins_alter().
+ *
+ * Keeps "Remove" the last action in a Layout Builder block's contextual menu,
+ * and trims "block" from its label to match "Clone" (issue #190).
+ *
+ * Core ships no weight on Configure/Move/Remove, so every link sorts equal and
+ * the order falls out of which group was attached first — which put the "Clone"
+ * link this module adds after the destructive "Remove". Weighting Remove past
+ * Clone makes that order explicit instead of incidental.
+ */
+function ys_layouts_contextual_links_plugins_alter(array &$contextual_links) {
+  if (isset($contextual_links['layout_builder_block_remove'])) {
+    $contextual_links['layout_builder_block_remove']['title'] = t('Remove');
+    $contextual_links['layout_builder_block_remove']['weight'] = 10;
+  }
+}

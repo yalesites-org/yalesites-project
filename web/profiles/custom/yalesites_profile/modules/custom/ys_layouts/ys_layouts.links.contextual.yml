@@ -1,7 +1,10 @@
 layout_builder_block_clone:
-  title: 'Clone block'
+  title: 'Clone'
   route_name: 'ys_layouts.clone_block'
   group: 'layout_builder_block_clone'
+  # Sorts after core's unweighted Configure/Move but before Remove, which
+  # ys_layouts_contextual_links_plugins_alter() weights last.
+  weight: 5
   options:
     attributes:
       class: ['use-ajax']
