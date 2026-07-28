@@ -28,7 +28,10 @@ services:
   # reusable content blocks.
   ys_layouts.detach_reusable_block_access:
     class: Drupal\ys_layouts\Access\DetachReusableBlockAccessCheck
-    arguments: ['@ys_layouts.reusable_block_detacher']
+    arguments:
+      - '@ys_layouts.reusable_block_detacher'
+      - '@logger.channel.ys_layouts'
+      - '@layout_builder.tempstore_repository'
     tags:
       - { name: access_check, applies_to: _ys_layouts_detach_reusable_block }
   # Resolves cover-image alt text for Resource media.

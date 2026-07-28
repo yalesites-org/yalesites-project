@@ -10,6 +10,7 @@ use Drupal\Core\Entity\FieldableEntityInterface;
 use Drupal\Core\Form\FormStateInterface;
 use Drupal\Core\Plugin\Context\Context;
 use Drupal\Core\Plugin\Context\EntityContextDefinition;
+use Drupal\ys_layouts\Render\DetachContextualOperations;
 
 /**
  * Add template files.
@@ -282,6 +283,27 @@ function ys_layouts_form_ys_layouts_detach_reusable_block_alter(&$form, FormStat
   // gin_lb's confirm-dialog top spacing is keyed to core's own remove form IDs,
   // so extend the same padding to this form's off-canvas dialog.
   $form['#attached']['library'][] = 'ys_layouts/detach_reusable_block';
+}
+
+/**
+ * Implements hook_element_info_alter().
+ *
+ * Registers the "Make non-reusable" action in Layout Builder's contextual link
+ * metadata. Without this, adding the action never changes the contextual link
+ * id, so browsers keep replaying the previously cached menu out of
+ * sessionStorage and never ask the server for the new link.
+ *
+ * @see \Drupal\ys_layouts\Render\DetachContextualOperations
+ */
+function ys_layouts_element_info_alter(array &$info) {
+  if (isset($info['layout_builder'])) {
+    // Appended so it runs after Layout Builder's own pre_render has built the
+    // sections, and before the theme layer derives the contextual link id.
+    $info['layout_builder']['#pre_render'][] = [
+      DetachContextualOperations::class,
+      'addDetachOperation',
+    ];
+  }
 }
 
 /**

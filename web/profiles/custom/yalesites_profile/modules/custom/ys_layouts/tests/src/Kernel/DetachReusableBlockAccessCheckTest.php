@@ -3,11 +3,14 @@
 namespace Drupal\Tests\ys_layouts\Kernel;
 
 use Drupal\KernelTests\KernelTestBase;
+use Drupal\layout_builder\LayoutTempstoreRepositoryInterface;
 use Drupal\layout_builder\Section;
 use Drupal\layout_builder\SectionComponent;
 use Drupal\layout_builder\SectionStorageInterface;
 use Drupal\ys_layouts\Access\DetachReusableBlockAccessCheck;
 use Drupal\ys_layouts\ReusableBlockDetacher;
+use Prophecy\Argument;
+use Psr\Log\LoggerInterface;
 
 /**
  * Tests the access check that gates the "Make non-reusable" contextual link.
@@ -45,6 +48,20 @@ class DetachReusableBlockAccessCheckTest extends KernelTestBase {
   protected DetachReusableBlockAccessCheck $accessCheck;
 
   /**
+   * The logger the access check reports unresolvable components to.
+   *
+   * @var \Prophecy\Prophecy\ObjectProphecy
+   */
+  protected $logger;
+
+  /**
+   * The layout tempstore holding the layout currently being edited.
+   *
+   * @var \Prophecy\Prophecy\ObjectProphecy
+   */
+  protected $tempstore;
+
+  /**
    * {@inheritdoc}
    */
   protected function setUp(): void {
@@ -59,7 +76,16 @@ class DetachReusableBlockAccessCheckTest extends KernelTestBase {
       $this->container->get('entity.repository'),
       $this->container->get('entity_type.manager'),
     );
-    $this->accessCheck = new DetachReusableBlockAccessCheck($detacher);
+    $this->logger = $this->prophesize(LoggerInterface::class);
+    // By default a layout has no unsaved changes, so the tempstore hands back
+    // the storage it was given.
+    $this->tempstore = $this->prophesize(LayoutTempstoreRepositoryInterface::class);
+    $this->tempstore->get(Argument::any())->willReturnArgument(0);
+    $this->accessCheck = new DetachReusableBlockAccessCheck(
+      $detacher,
+      $this->logger->reveal(),
+      $this->tempstore->reveal()
+    );
   }
 
   /**
@@ -143,6 +169,57 @@ class DetachReusableBlockAccessCheckTest extends KernelTestBase {
 
     $this->assertFalse($result->isAllowed());
     $this->assertTrue($result->isForbidden(), 'An unresolvable component is explicitly forbidden.');
+  }
+
+  /**
+   * An unresolvable component is logged rather than swallowed silently.
+   *
+   * Layout Builder hides a contextual link whose route access is denied without
+   * surfacing any error, so a swallowed exception here makes a missing
+   * "Make non-reusable" action impossible to diagnose from the outside. The log
+   * entry is the only trace, so it is part of the behavior under test.
+   *
+   * @covers ::access
+   */
+  public function testUnresolvableComponentIsLogged(): void {
+    $storage = $this->sectionStorageWith();
+
+    $this->accessCheck->access($storage, 0, 'deadbeef-0000-0000-0000-000000000000');
+
+    $this->logger->debug(Argument::type('string'), Argument::type('array'))
+      ->shouldHaveBeenCalled();
+  }
+
+  /**
+   * The check judges the layout being edited, not the last saved one.
+   *
+   * Layout Builder swaps in the tempstore copy from a route enhancer, which
+   * runs only while routing a real request - not from
+   * AccessManager::checkNamedRoute(), which is how the contextual link system
+   * evaluates this route. Judging the saved layout would keep offering
+   * "Make non-reusable" on a placement already detached in this editing
+   * session, and acting on it would then fail.
+   *
+   * @covers ::access
+   */
+  public function testJudgesTheLayoutBeingEdited(): void {
+    $uuid = '33333333-3333-3333-3333-333333333333';
+    // The saved layout still holds the reusable placement.
+    $saved = $this->sectionStorageWith(
+      $this->component($uuid, 'block_content:99999999-9999-9999-9999-999999999999'),
+    );
+    // The unsaved editing session has already detached it to an inline block.
+    $edited = $this->sectionStorageWith(
+      $this->component($uuid, 'inline_block:accordion'),
+    );
+    $this->tempstore->get($saved)->willReturn($edited);
+
+    $result = $this->accessCheck->access($saved, 0, $uuid);
+
+    $this->assertFalse(
+      $result->isAllowed(),
+      'A placement already detached in this session is no longer offered.'
+    );
   }
 
 }
