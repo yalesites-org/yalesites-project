@@ -361,6 +361,105 @@ Reach it from the integrations dashboard or
 `/admin/config/yalesites/ys-beacon/tester` (permission: _Use YaleSites AI
 Tester_).
 
+## Guardrail telemetry
+
+Guardrail behaviour is measurable without storing conversations. `GuardrailTelemetry`
+keeps **aggregate counters only**, bucketed per UTC day, readable at
+`/admin/config/yalesites/ys-beacon/telemetry` (permission: _Manage ys beacon
+settings_, plus platform authorization). The same "what is and is not recorded"
+summary below is rendered on that page, so the platform's "conversations are not
+saved" claim can be checked from the interface rather than taken on trust.
+
+**Recorded** — a count, per day, for each event type, plus dimensioned breakdown
+rows:
+
+| Event | Counted when | Breakdowns |
+| --- | --- | --- |
+| `turns` | a turn reached the model — the denominator for the rest | — |
+| `refusal` | the answer's opening reads as a declined request | — |
+| `guardrail_stop` | a guardrail returned a stop (per stopping guardrail, so one turn can contribute more than one) | `mode.<pre\|during\|post>`, `plugin.<label>`, `set.<id>` |
+| `zero_citations` | retrieval returned no citations | — |
+| `injection_pattern` | the question matched a known injection pattern | `pattern.<name>` |
+
+`turns` exists so the others can be read as rates: without a denominator, a rise
+in refusals cannot be told apart from a rise in traffic.
+
+The recording API is **closed on purpose**. Every public method takes either no
+argument or a bounded identifier — `recordTurn()`, `recordRefusal()`,
+`recordZeroCitations()`, `recordInjectionPattern($pattern_name)`,
+`recordStreamingStop($plugin_label)`, `recordGuardrailResults($results, $set_ids)`
+— and the key-assembling `record()` is protected. A caller therefore cannot pass
+conversation text in even by accident, which matters because the most likely
+future caller is a streaming guardrail that has the offending text in hand.
+
+**Not recorded** — questions, answers, user names, IP addresses, session ids, or
+any sample of conversation text, hashed or redacted or otherwise. The
+`ys_beacon_telemetry` table has three columns (`bucket_date`, `event_key`,
+`event_count`); there is no column a transcript could be written into. The
+refusal check keeps only the first 400 characters of an answer while classifying
+it, and stores nothing — though that bound is a false-positive control for
+Beacon's own copy, not a privacy boundary in itself, since the AI module's
+streamed iterator already accumulates the whole answer in memory for the
+duration of the request. `GuardrailSignalDetector` is a separate,
+dependency-free class precisely so the component that reads question and answer
+text has no way to persist any of it.
+
+Most counters are written **after the answer has been streamed**, so recording
+cannot delay the visible answer. The exception is `injection_pattern`, recorded as
+soon as the question is parsed so an attempt still counts on a turn that is
+refused later — one bounded `preg_match` ahead of a retrieval that makes a remote
+call. Every read and write degrades quietly: if the table is missing or
+unavailable the turn continues and a warning goes to the `ys_beacon` channel,
+through a guard that tolerates the logger failing too (logging writes to the same
+database the counters do, so one outage takes both).
+
+Storage is a keyed table rather than State because State's read-modify-write is
+not atomic — concurrent turns on this public, unauthenticated endpoint would
+silently lose increments — and because every state write invalidates the whole
+state cache. Each increment tries an `UPDATE ... SET event_count = event_count + 1`
+first, so the ordinary case is one atomic statement; if no row exists yet it
+inserts, and the composite primary key turns a racing insert into a constraint
+violation that is folded back into an increment (MySQL/MariaDB — on PostgreSQL a
+failed statement aborts the surrounding transaction, which this platform does not
+use). Buckets older than 90 days are pruned when a new day's first row is
+inserted, so no cron hook is needed.
+
+Known limits. The first three are properties of the contrib `ai` module rather
+than choices here:
+
+- **Streaming-phase guardrail stops are only counted if the plugin reports
+  them.** A guardrail implementing `StreamableGuardrailInterface` is evaluated
+  inside `StreamedChatMessageIterator::processStreamingGuardrails()`, which never
+  calls `addGuardrailResult()`, so the stop is invisible to callers.
+  `AiGuardrailModeEnum::DuringGenerate` is declared in contrib and otherwise
+  never used. **Beacon ships `streaming: true`, so this is the normal path, not
+  an edge case:** a streaming guardrail must call
+  `GuardrailTelemetry::recordStreamingStop($this->label())` from inside its own
+  `processStreamedBuffer()`, or its stops will read as zero.
+- **`guardrail_stop` reads zero until a guardrail set is configured for Beacon.**
+  As of this change `ai.settings.global_guardrails` is empty and there is no
+  `ai.ai_guardrail*` config in `config/sync`, so no guardrail runs on a chat turn
+  at all. The counter is in place for when one is configured; the other three
+  event types are live immediately.
+- **"By plugin" means by plugin label.** `GuardrailResultInterface` exposes no
+  plugin id, so two `ai_guardrail` entities sharing a plugin are
+  indistinguishable.
+- **"By set" is attributed only when one set is active.** Contrib discards the
+  result-to-set association, so with several sets active the set is recorded as
+  `ambiguous` rather than credited to each.
+- **Refusal detection is a heuristic** over the answer's opening; the pattern
+  list lives in one constant in `GuardrailSignalDetector`.
+- **`injection_pattern` undercounts a sustained campaign.** Requests the flood
+  limiter rejects (30 per 5 minutes per IP) are not counted, because the question
+  has not been parsed at that point and parsing it before rate limiting would
+  invert the protection. A scripted burst therefore shows a smaller uptick than
+  the true number of attempts. Detection is also a fixed pattern list, and
+  `preg_match()` returning `FALSE` at PHP's `pcre.backtrack_limit` is treated as
+  "no match", so a sufficiently padded question can pass unflagged.
+- **`zero_citations` currently means "the index matched nothing."** With
+  `score_threshold` shipping at `0.0`, `RagRetriever` applies no score filter at
+  all, so raising that threshold later would change what this metric counts.
+
 ## System instruction layers
 
 `SystemPromptBuilder::build()` assembles the chat system prompt from three

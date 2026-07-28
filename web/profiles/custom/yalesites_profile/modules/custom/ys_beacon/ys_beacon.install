@@ -6,6 +6,7 @@
  */
 
 use Drupal\ys_beacon\Controller\ChatApiController;
+use Drupal\ys_beacon\Service\GuardrailTelemetry;
 use Drupal\Core\Database\Connection;
 
 /**
@@ -68,6 +69,35 @@ function ys_beacon_schema() {
         'columns' => ['created_by' => 'uid'],
       ],
     ],
+  ];
+
+  $schema[GuardrailTelemetry::TABLE] = [
+    'description' => 'Aggregate daily counts of guardrail-relevant Beacon chat events. Counters only - by design there is no column a question or an answer could be stored in.',
+    'fields' => [
+      'bucket_date' => [
+        'type' => 'varchar',
+        'length' => 10,
+        'not null' => TRUE,
+        'description' => 'UTC day the events were counted in, as YYYY-MM-DD.',
+      ],
+      'event_key' => [
+        'type' => 'varchar',
+        'length' => 160,
+        'not null' => TRUE,
+        'description' => 'Event type, optionally suffixed with a .dimension breakdown such as plugin.<label> or pattern.<name>.',
+      ],
+      'event_count' => [
+        'type' => 'int',
+        'unsigned' => TRUE,
+        'not null' => TRUE,
+        'default' => 0,
+        'description' => 'How many times the event was recorded that day.',
+      ],
+    ],
+    // The composite primary key is what makes the counter safe under
+    // concurrency: it turns a racing insert into a constraint violation that
+    // Merge recovers from with an atomic increment instead of a lost count.
+    'primary key' => ['bucket_date', 'event_key'],
   ];
 
   return $schema;
@@ -606,4 +636,19 @@ function ys_beacon_update_10015() {
   }
   $settings->set('enable_chat', FALSE)->save();
   \Drupal::logger('ys_beacon')->warning('Beacon chat was marked enabled with no search index configured - a holding state left by the removed automatic ai_engine cutover. The flag has been cleared so it matches what the site serves; enable Beacon from the Platform Admin Settings page to provision the index.');
+}
+
+/**
+ * Creates the guardrail telemetry counter table.
+ *
+ * New sites get the table from hook_schema(); existing sites need it created
+ * here. Guardrail telemetry records aggregate counts only - the table has no
+ * column for question or answer text (yalesites-org/YaleSites-Internal#1469).
+ */
+function ys_beacon_update_10016() {
+  $schema = \Drupal::database()->schema();
+  if ($schema->tableExists(GuardrailTelemetry::TABLE)) {
+    return;
+  }
+  $schema->createTable(GuardrailTelemetry::TABLE, ys_beacon_schema()[GuardrailTelemetry::TABLE]);
 }

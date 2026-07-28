@@ -10,6 +10,8 @@ use Drupal\ai\AiProviderPluginManager;
 use Drupal\ai\OperationType\Chat\ChatInput;
 use Drupal\ai\OperationType\Chat\ChatMessage;
 use Drupal\ai\Service\HostnameFilter;
+use Drupal\ys_beacon\Service\GuardrailSignalDetector;
+use Drupal\ys_beacon\Service\GuardrailTelemetry;
 use Drupal\ys_beacon\Service\RagRetriever;
 use Drupal\ys_beacon\Service\SystemPromptBuilder;
 use Psr\Log\LoggerInterface;
@@ -133,6 +135,20 @@ class ChatApiController extends ControllerBase {
   protected HostnameFilter $hostnameFilter;
 
   /**
+   * The guardrail telemetry recorder.
+   *
+   * @var \Drupal\ys_beacon\Service\GuardrailTelemetry
+   */
+  protected GuardrailTelemetry $telemetry;
+
+  /**
+   * The guardrail signal detector.
+   *
+   * @var \Drupal\ys_beacon\Service\GuardrailSignalDetector
+   */
+  protected GuardrailSignalDetector $signalDetector;
+
+  /**
    * {@inheritdoc}
    */
   public static function create(ContainerInterface $container) {
@@ -144,6 +160,8 @@ class ChatApiController extends ControllerBase {
     $instance->uuid = $container->get('uuid');
     $instance->logger = $container->get('logger.channel.ys_beacon');
     $instance->hostnameFilter = $container->get('ai.hostname_filter_service');
+    $instance->telemetry = $container->get('ys_beacon.guardrail_telemetry');
+    $instance->signalDetector = $container->get('ys_beacon.guardrail_signal_detector');
     return $instance;
   }
 
@@ -183,6 +201,20 @@ class ChatApiController extends ControllerBase {
     $question = $this->lastUserMessage($transcript);
     if ($question === NULL) {
       return new JsonResponse(['error' => 'No user message provided.'], 400);
+    }
+
+    // Counted here rather than with the rest of the turn's telemetry below, so
+    // an attempt still registers when the turn is refused later for a missing
+    // provider or an over-long transcript - the counter exists to make a
+    // campaign visible, and a campaign is exactly when turns get refused. It is
+    // one bounded preg_match plus a counter write, ahead of a retrieval that
+    // makes a remote call, so it is not a meaningful cost. Requests rejected by
+    // the flood limiter above are NOT counted: the question has not been parsed
+    // at that point, and parsing it before rate limiting would invert the
+    // protection. The report page says so.
+    $injection = $this->signalDetector->injectionPattern($question);
+    if ($injection !== NULL) {
+      $this->telemetry->recordInjectionPattern($injection);
     }
 
     $defaults = $this->aiProvider->getDefaultProviderForOperationType('chat');
@@ -225,7 +257,12 @@ class ChatApiController extends ControllerBase {
       ],
     ]);
 
-    $response = new StreamedResponse(function () use ($defaults, $messages, $streaming, $tool_line, $response_id, $model_id) {
+    // Only whether there were any citations is needed for telemetry, so the
+    // streamed closure captures a boolean rather than holding the whole
+    // citations payload alive for the life of the response.
+    $has_citations = $citations !== [];
+
+    $response = new StreamedResponse(function () use ($defaults, $messages, $streaming, $tool_line, $response_id, $model_id, $has_citations) {
       $emit = static function (string $line): void {
         echo $line;
         if (ob_get_level() > 0) {
@@ -236,16 +273,34 @@ class ChatApiController extends ControllerBase {
 
       $emit($tool_line);
 
+      // Guardrail telemetry is recorded once, in the finally below, after the
+      // answer has been streamed - so counting can never delay the visible
+      // answer, and a turn that failed part-way is still counted.
+      $chat_input = NULL;
+      // Only the opening of the answer is accumulated, and only for long
+      // enough to classify it as a refusal. It is never stored or logged.
+      $opening = '';
+
       try {
         $provider = $this->aiProvider->createInstance($defaults['provider_id']);
         if ($streaming) {
           $provider->streamedOutput(TRUE);
         }
+        // Held in a variable so the turn's guardrail results can be read back
+        // off it below: the AI module's provider proxy passes this very object
+        // (not a copy) to its pre- and post-generate events, and its guardrail
+        // subscriber records each result onto it, so by the time chat() returns
+        // the input carries what ran. That object identity is an implementation
+        // detail of the AI module rather than a documented contract - a
+        // pre-generate subscriber that replaced the input with a different
+        // object would leave guardrail stops uncounted (nothing in the module
+        // does so today).
+        $chat_input = new ChatInput($messages);
         // The AI module's output filter blocks the links the model returns
         // (its allow-list is empty = block-all), so disable it for this
         // response. See withOutputFilteringDisabled() for the safety rationale.
-        $this->withOutputFilteringDisabled(function () use ($provider, $messages, $model_id, $emit, $response_id) {
-          $output = $provider->chat(new ChatInput($messages), $model_id, ['ys_beacon']);
+        $this->withOutputFilteringDisabled(function () use ($provider, $chat_input, $model_id, $emit, $response_id, &$opening) {
+          $output = $provider->chat($chat_input, $model_id, ['ys_beacon']);
           $normalized = $output->getNormalized();
 
           if ($normalized instanceof \Traversable) {
@@ -254,14 +309,19 @@ class ChatApiController extends ControllerBase {
               if ($delta === '') {
                 continue;
               }
+              if (mb_strlen($opening) < GuardrailSignalDetector::REFUSAL_SAMPLE_LENGTH) {
+                $opening .= $delta;
+              }
               $emit($this->envelope($response_id, $model_id, [
                 ['role' => 'assistant', 'content' => $delta],
               ]));
             }
           }
           else {
+            $text = $normalized->getText();
+            $opening = mb_substr($text, 0, GuardrailSignalDetector::REFUSAL_SAMPLE_LENGTH);
             $emit($this->envelope($response_id, $model_id, [
-              ['role' => 'assistant', 'content' => $normalized->getText()],
+              ['role' => 'assistant', 'content' => $text],
             ]));
           }
         });
@@ -270,12 +330,68 @@ class ChatApiController extends ControllerBase {
         $this->logger->error('Beacon conversation failed: @message', ['@message' => $e->getMessage()]);
         $emit(json_encode(['error' => 'The assistant is currently unavailable. Please try again later.']) . "\n");
       }
+      finally {
+        // Telemetry must never be able to break a chat turn, so nothing escapes
+        // this block. GuardrailTelemetry already reports its own failures
+        // through a guard that tolerates the logger itself failing (logging
+        // writes to the same database the counters do), so anything still
+        // arriving here is both unexpected and unloggable - swallow it. An
+        // escaping throw would also put the answer opening into the logged
+        // backtrace as a stack argument, which the privacy constraint forbids.
+        try {
+          $this->recordTurnTelemetry($has_citations, $opening, $chat_input);
+        }
+        catch (\Throwable) {
+        }
+      }
     });
 
     $response->headers->set('Content-Type', 'application/x-ndjson');
     $response->headers->set('Cache-Control', 'no-cache, private');
     $response->headers->set('X-Accel-Buffering', 'no');
     return $response;
+  }
+
+  /**
+   * Records the guardrail telemetry for a finished chat turn.
+   *
+   * Aggregate counts only - nothing here stores, logs or returns question or
+   * answer text. The detector turns text into a boolean or a fixed pattern
+   * name, and the telemetry service accepts nothing else
+   * (yalesites-org/YaleSites-Internal#1469).
+   *
+   * The injection-pattern check is deliberately NOT here - it runs earlier, in
+   * ::conversation(), so an attempt is still counted on a turn that never got
+   * as far as an answer.
+   *
+   * @param bool $has_citations
+   *   Whether retrieval produced any citations for the turn.
+   * @param string $opening
+   *   The opening of the answer, inspected for a refusal. Empty when the turn
+   *   failed before the model produced anything.
+   * @param \Drupal\ai\OperationType\Chat\ChatInput|null $chat_input
+   *   The input the model was called with, carrying the turn's guardrail
+   *   results, or NULL if the call was never made.
+   */
+  protected function recordTurnTelemetry(bool $has_citations, string $opening, ?ChatInput $chat_input): void {
+    // The denominator: recorded for every turn that reached the model, so the
+    // other counters can be read as rates rather than raw volumes.
+    $this->telemetry->recordTurn();
+
+    if (!$has_citations) {
+      $this->telemetry->recordZeroCitations();
+    }
+
+    if ($this->signalDetector->isRefusal($opening)) {
+      $this->telemetry->recordRefusal();
+    }
+
+    if ($chat_input !== NULL) {
+      $this->telemetry->recordGuardrailResults(
+        $chat_input->getAllGuardrailResults(),
+        array_keys($chat_input->getGuardrailSets())
+      );
+    }
   }
 
   /**

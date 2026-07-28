@@ -25,3 +25,10 @@ ys_beacon.instructions:
   route_name: ys_beacon.instructions
   parent: ys_beacon.admin
   weight: 2
+
+ys_beacon.telemetry:
+  title: 'Guardrail telemetry'
+  description: 'Aggregate counts of refusals, guardrail stops and injection attempts'
+  route_name: ys_beacon.telemetry
+  parent: ys_beacon.admin
+  weight: 4

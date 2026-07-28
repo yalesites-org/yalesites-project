@@ -68,3 +68,12 @@ ys_beacon.instructions_revert:
     _ys_beacon_instructions_access: 'TRUE'
     _ys_beacon_authorized: 'TRUE'
     version: \d+
+
+ys_beacon.telemetry:
+  path: '/admin/config/yalesites/ys-beacon/telemetry'
+  defaults:
+    _controller: '\Drupal\ys_beacon\Controller\TelemetryController::report'
+    _title: 'Beacon guardrail telemetry'
+  requirements:
+    _permission: 'manage ys beacon settings'
+    _ys_beacon_authorized: 'TRUE'
