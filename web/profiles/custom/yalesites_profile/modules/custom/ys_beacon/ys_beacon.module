@@ -32,29 +32,16 @@ function ys_beacon_theme() {
 /**
  * Determines whether the legacy ai_engine chat widget is active.
  *
- * Beacon and the legacy chat must never render together. This single check
- * backs both the page attachment guard and the Beacon settings form
- * validation, so the two enforcement points cannot drift.
+ * Beacon and the legacy chat must never render together. The condition itself
+ * lives in LegacyAiEngine::chatActive(); this wrapper exists only because the
+ * two render hooks below are procedural and cannot be injected into, and it
+ * keeps the \Drupal::service() call to a single place.
  *
  * @return bool
  *   TRUE when the legacy chat widget is installed and enabled.
  */
 function ys_beacon_legacy_chat_active(): bool {
-  return \Drupal::moduleHandler()->moduleExists('ai_engine_chat')
-    && (bool) \Drupal::config('ai_engine_chat.settings')->get('enable');
-}
-
-/**
- * Implements hook_cron().
- *
- * Drives the legacy ai_engine to Beacon cutover. The work is idempotent and
- * cheap on the common paths (nothing to migrate, or already migrated), so it is
- * safe to run every cron; it self-heals the cases that install time cannot
- * complete, such as provisioning the Azure index once the secrets sync has
- * created its key.
- */
-function ys_beacon_cron() {
-  \Drupal::service('ys_beacon.migration')->migrate();
+  return \Drupal::service('ys_beacon.legacy_ai_engine')->chatActive();
 }
 
 /**
@@ -75,6 +62,15 @@ function ys_beacon_page_attachments_alter(array &$attachments) {
   );
 
   if (!$config->get('enable_chat')) {
+    return;
+  }
+
+  // Never advertise an assistant that cannot answer. Without an index name the
+  // search index is forced off at runtime, so retrieval returns nothing and
+  // every reply would be an ungrounded, uncited guess. The chat toggle is not
+  // enough on its own: the override only folds authorization into it, not the
+  // index (yalesites-org/YaleSites-Internal#1459).
+  if (!$config->get('azure_index_name')) {
     return;
   }
 
@@ -253,6 +249,9 @@ function ys_beacon_page_bottom(array &$page_bottom) {
   if (
     $config->get('floating_button')
     && $config->get('enable_chat')
+    // Same guard as the widget attach: no index means no grounded answer, so
+    // the button must not invite one.
+    && $config->get('azure_index_name')
     && !ys_beacon_legacy_chat_active()
     && $current_theme === $frontend_theme
   ) {

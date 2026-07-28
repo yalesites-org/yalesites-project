@@ -188,6 +188,23 @@ class ChatApiControllerTest extends UnitTestCase {
   }
 
   /**
+   * A site with no search index configured is refused, not answered.
+   *
+   * Without an index name the search index is forced off at runtime, so
+   * retrieval returns nothing and any reply would be an ungrounded, uncited
+   * guess. The chat toggle alone does not cover this: the config override folds
+   * authorization into enable_chat, never the index
+   * (yalesites-org/YaleSites-Internal#1459).
+   *
+   * @covers ::conversation
+   */
+  public function testConversationForbiddenWhenNoIndexConfigured(): void {
+    $this->configureGuards(TRUE, TRUE, '');
+    $response = $this->controller->conversation($this->request('{"messages":[{"role":"user","content":"hi"}]}'));
+    $this->assertSame(403, $response->getStatusCode());
+  }
+
+  /**
    * Exceeding the per-IP flood limit yields a 429.
    *
    * @covers ::conversation
@@ -327,10 +344,19 @@ class ChatApiControllerTest extends UnitTestCase {
    *   The ys_beacon.settings:enable_chat value.
    * @param bool $floodAllowed
    *   Whether the flood service allows the request.
+   * @param string $azureIndexName
+   *   The ys_beacon.settings:azure_index_name value. Defaults to a configured
+   *   index, because a site without one is refused before any later guard: with
+   *   no index the search index is forced off, so every answer would be
+   *   ungrounded (yalesites-org/YaleSites-Internal#1459).
    */
-  protected function configureGuards(bool $enableChat, bool $floodAllowed = TRUE): void {
+  protected function configureGuards(bool $enableChat, bool $floodAllowed = TRUE, string $azureIndexName = 'my-index'): void {
     $settings = $this->createMock(ImmutableConfig::class);
-    $settings->method('get')->willReturnCallback(fn ($name) => $name === 'enable_chat' ? $enableChat : NULL);
+    $settings->method('get')->willReturnCallback(fn ($name) => match ($name) {
+      'enable_chat' => $enableChat,
+      'azure_index_name' => $azureIndexName,
+      default => NULL,
+    });
     $configFactory = $this->createMock(ConfigFactoryInterface::class);
     $configFactory->method('get')->with('ys_beacon.settings')->willReturn($settings);
     $this->setControllerProperty('configFactory', $configFactory);

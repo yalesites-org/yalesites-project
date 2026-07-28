@@ -57,14 +57,11 @@ services:
       - '@logger.channel.ys_beacon'
       - '@entity_type.manager'
 
-  ys_beacon.migration:
-    class: Drupal\ys_beacon\Service\BeaconMigration
+  ys_beacon.legacy_ai_engine:
+    class: Drupal\ys_beacon\Service\LegacyAiEngine
     arguments:
       - '@config.factory'
       - '@module_handler'
-      - '@ys_beacon.index_manager'
-      - '@entity_type.manager'
-      - '@logger.channel.ys_beacon'
 
   ys_beacon.indexability:
     class: Drupal\ys_beacon\Service\BeaconIndexability

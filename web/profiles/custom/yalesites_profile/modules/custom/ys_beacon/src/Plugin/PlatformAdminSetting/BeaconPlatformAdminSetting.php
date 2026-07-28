@@ -13,6 +13,7 @@ use Drupal\search_api\IndexInterface;
 use Drupal\ys_beacon\BeaconAuthorization;
 use Drupal\ys_beacon\Form\YsBeaconSettings;
 use Drupal\ys_beacon\Service\BeaconIndexManager;
+use Drupal\ys_beacon\Service\LegacyAiEngine;
 use Drupal\ys_core\Attribute\PlatformAdminSetting;
 use Drupal\ys_core\PlatformAdminSettingBase;
 use Psr\Log\LoggerInterface;
@@ -36,6 +37,22 @@ use Symfony\Component\DependencyInjection\ContainerInterface;
  * widget reads across the site - and manages its on/off index side effects via
  * BeaconIndexManager. It is the only place the widget is enabled or disabled;
  * the per-site settings form shows that state read-only.
+ *
+ * This page is also where a site is cut over from the legacy ai_engine
+ * chatbot, rather than the deploy doing it: "Turn off legacy AI Engine"
+ * retires the legacy stack in one click, and enabling the widget provisions
+ * the index synchronously and reports failures. See "Cutting a site over from
+ * the legacy ai_engine chatbot" in the module README for the procedure and
+ * why the deploy cannot do it (yalesites-org/YaleSites-Internal#1459).
+ *
+ * Enabling Beacon chat is deliberately NOT blocked while the legacy widget is
+ * still live, which is why this plugin adds no validation. Only one assistant
+ * can ever be reached - the widget attach, the floating button, and the
+ * conversation endpoint all stand Beacon down while
+ * ys_beacon_legacy_chat_active() - so enabling Beacon first merely provisions
+ * its index and queues its content while the legacy chat keeps serving
+ * visitors. Blocking it forced the opposite, unsafe order: retire the working
+ * chatbot first and hope provisioning then succeeded.
  */
 #[PlatformAdminSetting(
   id: 'ys_beacon',
@@ -57,6 +74,13 @@ class BeaconPlatformAdminSetting extends PlatformAdminSettingBase {
    * @var \Drupal\ys_beacon\Service\BeaconIndexManager
    */
   protected BeaconIndexManager $indexManager;
+
+  /**
+   * The legacy ai_engine reader/retirement service.
+   *
+   * @var \Drupal\ys_beacon\Service\LegacyAiEngine
+   */
+  protected LegacyAiEngine $legacyAiEngine;
 
   /**
    * The Beacon logger channel.
@@ -82,6 +106,8 @@ class BeaconPlatformAdminSetting extends PlatformAdminSettingBase {
    *   The entity type manager.
    * @param \Drupal\ys_beacon\Service\BeaconIndexManager $index_manager
    *   The Beacon index manager.
+   * @param \Drupal\ys_beacon\Service\LegacyAiEngine $legacy_ai_engine
+   *   The legacy ai_engine reader/retirement service.
    * @param \Drupal\Core\Messenger\MessengerInterface $messenger
    *   The messenger.
    * @param \Psr\Log\LoggerInterface $logger
@@ -95,12 +121,14 @@ class BeaconPlatformAdminSetting extends PlatformAdminSettingBase {
     AccountInterface $current_user,
     EntityTypeManagerInterface $entity_type_manager,
     BeaconIndexManager $index_manager,
+    LegacyAiEngine $legacy_ai_engine,
     MessengerInterface $messenger,
     LoggerInterface $logger,
   ) {
     parent::__construct($configuration, $plugin_id, $plugin_definition, $config_factory, $current_user);
     $this->entityTypeManager = $entity_type_manager;
     $this->indexManager = $index_manager;
+    $this->legacyAiEngine = $legacy_ai_engine;
     $this->messenger = $messenger;
     $this->logger = $logger;
   }
@@ -117,6 +145,7 @@ class BeaconPlatformAdminSetting extends PlatformAdminSettingBase {
       $container->get('current_user'),
       $container->get('entity_type.manager'),
       $container->get('ys_beacon.index_manager'),
+      $container->get('ys_beacon.legacy_ai_engine'),
       $container->get('messenger'),
       $container->get('logger.channel.ys_beacon'),
     );
@@ -130,6 +159,41 @@ class BeaconPlatformAdminSetting extends PlatformAdminSettingBase {
     // the stored state: the config override forces enable_chat off at runtime
     // for an unauthorized site, which would otherwise misreport the value.
     $settings = $this->configFactory->getEditable(BeaconAuthorization::CONFIG_NAME);
+
+    // Assisted cutover, offered while any part of the legacy ai_engine stack is
+    // still switched on (hidden once it is dormant, the state of nearly every
+    // site). Retiring ai_engine is deliberately the LAST step: Beacon yields to
+    // the legacy widget for as long as that widget is live, so bringing Beacon
+    // up first costs the site nothing, while retiring first would leave it with
+    // no assistant at all if provisioning then failed
+    // (yalesites-org/YaleSites-Internal#1459).
+    if ($this->legacyAiEngine->isActive()) {
+      $form['legacy'] = [
+        '#type' => 'container',
+      ];
+      if ($this->beaconReadyToTakeOver($settings)) {
+        $form['legacy']['notice'] = [
+          '#type' => 'item',
+          '#markup' => $this->t('Beacon is configured and ready to take over on this site. Turning off the legacy AI Engine switches visitors to Beacon and disables the legacy chat widget, its embedding pipeline, and its AI metadata fields.'),
+        ];
+        $form['legacy']['retire'] = [
+          '#type' => 'submit',
+          '#name' => 'ys_beacon_retire_legacy',
+          '#value' => $this->t('Turn off legacy AI Engine'),
+          // A dedicated static handler, isolated from the shared host-form save
+          // (see the handler docblock), with empty validation so retiring never
+          // depends on the rest of this page validating.
+          '#submit' => [[static::class, 'retireLegacySubmit']],
+          '#limit_validation_errors' => [],
+        ];
+      }
+      else {
+        $form['legacy']['notice'] = [
+          '#type' => 'item',
+          '#markup' => $this->t('This site still runs the legacy AI Engine. Bring Beacon up first: authorize it and enable its chat widget below, then save - that creates the search index and queues this site&#039;s content. The legacy chat keeps serving visitors until then. Once Beacon is ready, a button appears here to switch over and retire AI Engine.'),
+        ];
+      }
+    }
 
     $form['platform_authorized'] = [
       '#type' => 'checkbox',
@@ -193,17 +257,6 @@ class BeaconPlatformAdminSetting extends PlatformAdminSettingBase {
   /**
    * {@inheritdoc}
    */
-  public function validateSettings(array &$form, FormStateInterface $form_state): void {
-    // Never allow two chat widgets at once: mirror the site settings form and
-    // block enabling Beacon chat while the legacy ai_engine chat is still on.
-    if ($form_state->getValue([$this->getPluginId(), 'enable_chat']) && ys_beacon_legacy_chat_active()) {
-      $form_state->setErrorByName($this->getPluginId() . '][enable_chat', $this->t('The legacy AI Engine chat widget is currently enabled. Disable it before enabling Beacon chat so visitors only see one chat widget.'));
-    }
-  }
-
-  /**
-   * {@inheritdoc}
-   */
   public function submitSettings(array &$form, FormStateInterface $form_state): void {
     $authorized = (bool) $form_state->getValue([$this->getPluginId(), 'platform_authorized']);
     $enable_chat = (bool) $form_state->getValue([$this->getPluginId(), 'enable_chat']);
@@ -262,6 +315,29 @@ class BeaconPlatformAdminSetting extends PlatformAdminSettingBase {
   public static function reindexAllSubmit(array &$form, FormStateInterface $form_state): void {
     // phpcs:ignore DrupalPractice.Objects.GlobalDrupal.GlobalDrupal
     \Drupal::classResolver(YsBeaconSettings::class)->reindexAll($form, $form_state);
+  }
+
+  /**
+   * Retires the legacy ai_engine stack on the platform admin's behalf.
+   *
+   * Static for the same reason as the indexing handlers: a plugin-contributed
+   * button cannot own an instance `#submit` handler, because Form API resolves
+   * `::method` against the host form object, which is Beacon-agnostic.
+   *
+   * Turns off the legacy chat widget, embedding pipeline, and AI metadata
+   * fields - the manual three-form cutover an operator would otherwise do by
+   * hand - so the platform admin can then enable Beacon on this same page.
+   *
+   * @param array $form
+   *   The complete form.
+   * @param \Drupal\Core\Form\FormStateInterface $form_state
+   *   The current form state.
+   */
+  public static function retireLegacySubmit(array &$form, FormStateInterface $form_state): void {
+    // phpcs:ignore DrupalPractice.Objects.GlobalDrupal.GlobalDrupal
+    \Drupal::service('ys_beacon.legacy_ai_engine')->disable();
+    // phpcs:ignore DrupalPractice.Objects.GlobalDrupal.GlobalDrupal
+    \Drupal::messenger()->addStatus(t('The legacy AI Engine chat widget, embedding pipeline, and AI metadata fields are now switched off. Visitors now see Beacon on this site.'));
   }
 
   /**
@@ -367,10 +443,32 @@ class BeaconPlatformAdminSetting extends PlatformAdminSettingBase {
     // (rebuildTracker() re-enumerates datasources rather than only re-flagging,
     // issue #1383).
     $this->indexManager->pinSearchUrl();
-    $index = $this->loadBeaconIndex();
-    if ($created || !($index && $index->status())) {
-      $this->setIndexStatus(TRUE);
-      $this->loadBeaconIndex()?->rebuildTracker();
+
+    // Every decision below reads the override-free index. The runtime
+    // override forces the index status off while Beacon is unauthorized or
+    // chat is off, so the override-resolved status answers a different
+    // question than "is this index enabled in stored config" - and the
+    // override resolved during this request's form build (while Beacon was
+    // still off) is cached, so it keeps reporting disabled even after the
+    // save above.
+    $index = $this->loadBeaconIndexOverrideFree();
+    if ($index && !$index->status()) {
+      $index->setStatus(TRUE)->save();
+    }
+
+    // Queue the site's content whenever the index is not tracking anything
+    // yet: a freshly provisioned index, or one whose tracker was never
+    // enumerated. This is decided on the tracker rather than on the index
+    // status flag because search_api.index.ys_beacon ships status: true, so
+    // that flag already reads "enabled" on a site that has never indexed a
+    // thing - which left such a site with an enabled index tracking zero
+    // items and "Index now" permanently disabled
+    // (yalesites-org/YaleSites-Internal#1459). An index that already tracks
+    // content is left alone, so a routine re-save never re-enumerates it
+    // (rebuildTracker() re-enumerates datasources rather than only
+    // re-flagging, issue #1383).
+    if ($index && ($created || $this->trackedItemCount($index) === 0)) {
+      $index->rebuildTracker();
     }
     return TRUE;
   }
@@ -378,17 +476,69 @@ class BeaconPlatformAdminSetting extends PlatformAdminSettingBase {
   /**
    * Persists the Beacon index enabled/disabled status override-free.
    *
-   * Loads the index override-free so the runtime status/read-only overrides
-   * layered on by YsBeaconConfigOverrides are never baked into the synced
-   * search_api.index config.
-   *
    * @param bool $status
    *   The index status to persist.
    */
   protected function setIndexStatus(bool $status): void {
-    $index = $this->entityTypeManager->getStorage('search_api_index')->loadOverrideFree($this->searchIndexId());
-    if ($index instanceof IndexInterface) {
-      $index->setStatus($status)->save();
+    $this->loadBeaconIndexOverrideFree()?->setStatus($status)->save();
+  }
+
+  /**
+   * Whether Beacon would serve this site the moment ai_engine is retired.
+   *
+   * All three conditions are what the render path requires: authorized, the
+   * chat toggle on, and an index configured (without one the search index is
+   * forced off, so answers would be ungrounded). Until they hold, retiring the
+   * legacy chatbot would leave the site with no assistant at all, so the
+   * cutover button is withheld.
+   *
+   * @param \Drupal\Core\Config\Config $settings
+   *   The ys_beacon.settings config, read override-free so it reflects the
+   *   stored state rather than the runtime-forced one.
+   *
+   * @return bool
+   *   TRUE when Beacon is ready to take over from the legacy chatbot.
+   */
+  protected function beaconReadyToTakeOver(Config $settings): bool {
+    return (bool) $settings->get(BeaconAuthorization::FLAG)
+      && (bool) $settings->get('enable_chat')
+      && (string) $settings->get('azure_index_name') !== '';
+  }
+
+  /**
+   * Loads the Beacon index override-free, for write-side decisions.
+   *
+   * Reads and writes the stored configuration rather than the
+   * runtime-resolved view, so the status/read-only overrides layered on by
+   * YsBeaconConfigOverrides are neither mistaken for stored state nor baked
+   * into the synced search_api.index config.
+   *
+   * @return \Drupal\search_api\IndexInterface|null
+   *   The index entity, or NULL when it does not exist.
+   */
+  protected function loadBeaconIndexOverrideFree(): ?IndexInterface {
+    $index = $this->entityTypeManager->getStorage('search_api_index')
+      ->loadOverrideFree($this->searchIndexId());
+    return $index instanceof IndexInterface ? $index : NULL;
+  }
+
+  /**
+   * The number of items the index's tracker knows about.
+   *
+   * @param \Drupal\search_api\IndexInterface $index
+   *   The Beacon index.
+   *
+   * @return int
+   *   The tracked item count, or 0 when the tracker cannot be read - so an
+   *   unreadable tracker errs towards seeding rather than silently leaving a
+   *   site indexing nothing, which is the failure this count exists to prevent.
+   */
+  protected function trackedItemCount(IndexInterface $index): int {
+    try {
+      return (int) $index->getTrackerInstance()->getTotalItemsCount();
+    }
+    catch (\Throwable $e) {
+      return 0;
     }
   }
 

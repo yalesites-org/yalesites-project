@@ -18,8 +18,19 @@ window for two reasons:
 2. **No two chat widgets.** Beacon and the legacy `ai_engine_chat` widget must
    never render together. While both modules are installed, Beacon yields to
    the legacy widget when the legacy chat is enabled (see
-   `ys_beacon_legacy_chat_active()`), so sites migrate one at a time without a
+   `ys_beacon_legacy_chat_active()`, which delegates to
+   `LegacyAiEngine::chatActive()`), so sites migrate one at a time without a
    double widget.
+
+Per-site cutover happens **before** any of the removal work below: a platform
+admin brings Beacon up and then retires `ai_engine` from the Beacon (AI Chat)
+section of the Platform Admin Settings page, one site at a time. The "Turn off
+legacy AI Engine" button there clears all four legacy enable flags in one click
+(`LegacyAiEngine::disable()`), and only appears once Beacon can actually take
+over. See "Cutting a site over from the legacy `ai_engine` chatbot" in the module
+README for the full procedure and for why the deploy deliberately does not do it
+(yalesites-org/YaleSites-Internal#1459). The steps below are the later,
+platform-wide code removal once every site is over.
 
 ## Hard prerequisite
 
@@ -36,9 +47,14 @@ Unlike the original ticket draft (which described a `ys_ai` that *extended*
 (`ys_beacon.settings`). The remaining couplings are runtime coexistence
 guards and shared metadata identifiers:
 
+- `ys_beacon/src/Service/LegacyAiEngine.php` — the whole service exists only to
+  read and switch off the `ai_engine_*` enable flags; it goes away entirely,
+  along with its `ys_beacon.legacy_ai_engine` service definition, its unit test,
+  and the "Turn off legacy AI Engine" control in
+  `BeaconPlatformAdminSetting::buildSettings()` / `::retireLegacySubmit()`.
 - `ys_beacon.module`
-  - `ys_beacon_legacy_chat_active()` — reads `ai_engine_chat.settings:enable`
-    and `moduleExists('ai_engine_chat')`.
+  - `ys_beacon_legacy_chat_active()` — the procedural wrapper over
+    `LegacyAiEngine::chatActive()`.
   - `ys_beacon_page_attachments_alter()` — merges
     `ai_engine_chat.settings` cache tags and suppresses the Beacon widget when
     the legacy chat is active.
@@ -47,8 +63,6 @@ guards and shared metadata identifiers:
   - `ys_beacon_metatag_groups_alter()` — `unset($definitions['ai_engine'])`,
     which exists only to silence Metatag's tagless-group error while
     `ai_engine_metadata` is still installed.
-- `ys_beacon/src/Form/YsBeaconSettings.php` — validation that blocks enabling
-  Beacon chat while the legacy `ai_engine_chat` widget is on.
 - `ys_beacon/src/Plugin/metatag/Tag/*` — `AiDescription`, `AiTags`,
   `AiDisableIndexing` intentionally reuse the legacy `ai_engine_metadata`
   plugin IDs so editor metadata carries over. These IDs can stay; only the
@@ -58,23 +72,30 @@ guards and shared metadata identifiers:
 ## Removal steps (follow-up release)
 
 1. **Confirm the metadata migration ran everywhere** (prerequisite above).
-2. **Remove the coexistence guards in `ys_beacon`:**
+2. **Confirm every site is cut over** — no site still has an `ai_engine_*`
+   enable flag on, so no site is relying on the assisted-cutover control that
+   step 3 deletes.
+3. **Remove the coexistence guards in `ys_beacon`:**
+   - Delete the `LegacyAiEngine` service, its service definition, its unit test,
+     and the "Turn off legacy AI Engine" control and `retireLegacySubmit()`
+     handler in `BeaconPlatformAdminSetting`.
    - Delete `ys_beacon_legacy_chat_active()` and its callers' guards in
      `ys_beacon_page_attachments_alter()` and `ys_beacon_page_bottom()`.
+   - Remove the legacy-chat guard in
+     `BeaconPlatformAdminSetting::validateSettings()`.
    - Drop the legacy-chat cache-tag merge in `ys_beacon_page_attachments_alter()`.
-   - Remove the "legacy chat must be off" validation in `YsBeaconSettings.php`.
    - Remove `ys_beacon_metatag_groups_alter()` (no longer needed once the
      empty `ai_engine` metatag group is gone with the module).
-3. **Purge dormant legacy data.** Add a deploy/update hook to purge the
+4. **Purge dormant legacy data.** Add a deploy/update hook to purge the
    `ai_engine` metatag-group values left inert in `field_metatags` by the
    migration. Verify on a migrated node before and after.
-4. **Uninstall and remove the modules:** `ai_engine`, `ai_engine_chat`,
+5. **Uninstall and remove the modules:** `ai_engine`, `ai_engine_chat`,
    `ai_engine_embedding`, `ai_engine_feed`, `ai_engine_metadata` per the
    project's contrib-removal process (composer remove + config export).
-5. **Clean config.** Remove the `ai_engine*` entry from
+6. **Clean config.** Remove the `ai_engine*` entry from
    `config_ignore.settings.yml` and any exported config that still references
    `ai_engine*`.
-6. **Verify end to end** with `ai_engine` gone: Beacon chat answers with
+7. **Verify end to end** with `ai_engine` gone: Beacon chat answers with
    citations, content indexes into Azure AI Search, the Beacon settings and
    system-instructions screens work, and editor AI metadata is intact.
 

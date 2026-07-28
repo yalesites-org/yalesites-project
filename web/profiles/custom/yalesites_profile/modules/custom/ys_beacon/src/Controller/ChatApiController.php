@@ -158,7 +158,13 @@ class ChatApiController extends ControllerBase {
    */
   public function conversation(Request $request): Response {
     $settings = $this->config('ys_beacon.settings');
-    if (!$settings->get('enable_chat')) {
+    // A site with no index configured has its search index forced off, so
+    // retrieval returns nothing and every answer would be an ungrounded,
+    // uncited guess. Refuse rather than guess; the widget is not rendered in
+    // that state either. The chat toggle alone does not cover this - the config
+    // override folds platform authorization into enable_chat, never the index
+    // (yalesites-org/YaleSites-Internal#1459).
+    if (!$settings->get('enable_chat') || !$settings->get('azure_index_name')) {
       return new JsonResponse(['error' => 'The chat service is not enabled.'], 403);
     }
 

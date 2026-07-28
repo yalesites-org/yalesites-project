@@ -18,6 +18,7 @@ use Drupal\Tests\UnitTestCase;
 use Drupal\ys_beacon\Form\YsBeaconSettings;
 use Drupal\ys_beacon\Plugin\PlatformAdminSetting\BeaconPlatformAdminSetting;
 use Drupal\ys_beacon\Service\BeaconIndexManager;
+use Drupal\ys_beacon\Service\LegacyAiEngine;
 use Psr\Log\LoggerInterface;
 use Symfony\Component\DependencyInjection\ContainerInterface;
 
@@ -25,16 +26,12 @@ use Symfony\Component\DependencyInjection\ContainerInterface;
  * Tests the Beacon platform admin setting plugin.
  *
  * The Beacon (AI Chat) section on the Platform Admin Settings page: the
- * authorization flag, the Enable chat widget toggle, and the Re-index / Index
- * now buttons. The buttons reuse the site settings form's handlers verbatim
- * through the class resolver, so this test asserts the delegation and the
- * render state (read-only guard, empty-queue disable) rather than re-testing
- * the shared tracker-rebuild / batch paths (covered by IndexNowFormTest).
- *
- * The validateSettings() legacy-chat guard's positive branch calls the
- * procedural ys_beacon_legacy_chat_active() and is verified manually on Lando;
- * the negative branch (nothing to validate when the toggle is off) is covered
- * here.
+ * authorization flag, the Enable chat widget toggle, the assisted ai_engine
+ * cutover control, and the Re-index / Index now buttons. The indexing buttons
+ * reuse the site settings form's handlers verbatim through the class resolver,
+ * so this test asserts the delegation and the render state (read-only guard,
+ * empty-queue disable) rather than re-testing the shared tracker-rebuild /
+ * batch paths (covered by IndexNowFormTest).
  *
  * @group ys_beacon
  * @coversDefaultClass \Drupal\ys_beacon\Plugin\PlatformAdminSetting\BeaconPlatformAdminSetting
@@ -48,6 +45,7 @@ class BeaconPlatformAdminSettingTest extends UnitTestCase {
     ConfigFactoryInterface $config_factory,
     ?EntityTypeManagerInterface $entity_type_manager = NULL,
     ?BeaconIndexManager $index_manager = NULL,
+    ?LegacyAiEngine $legacy_ai_engine = NULL,
     ?MessengerInterface $messenger = NULL,
     ?LoggerInterface $logger = NULL,
   ): BeaconPlatformAdminSetting {
@@ -59,11 +57,32 @@ class BeaconPlatformAdminSettingTest extends UnitTestCase {
       $this->createMock(AccountInterface::class),
       $entity_type_manager ?? $this->createMock(EntityTypeManagerInterface::class),
       $index_manager ?? $this->createMock(BeaconIndexManager::class),
+      // A bare mock reports the legacy stack as retired (bool return defaults
+      // to FALSE), which is the state most of these tests care about.
+      $legacy_ai_engine ?? $this->createMock(LegacyAiEngine::class),
       $messenger ?? $this->createMock(MessengerInterface::class),
       $logger ?? $this->createMock(LoggerInterface::class),
     );
     $plugin->setStringTranslation($this->getStringTranslationStub());
     return $plugin;
+  }
+
+  /**
+   * A legacy ai_engine service double with the given active state.
+   *
+   * @param bool $active
+   *   Whether any part of the legacy stack is still switched on.
+   * @param bool $chat_active
+   *   Whether the legacy chat widget specifically is rendering.
+   *
+   * @return \Drupal\ys_beacon\Service\LegacyAiEngine
+   *   The service double.
+   */
+  private function legacyAiEngine(bool $active, bool $chat_active = FALSE): LegacyAiEngine {
+    $legacy = $this->createMock(LegacyAiEngine::class);
+    $legacy->method('isActive')->willReturn($active);
+    $legacy->method('chatActive')->willReturn($chat_active);
+    return $legacy;
   }
 
   /**
@@ -78,15 +97,23 @@ class BeaconPlatformAdminSettingTest extends UnitTestCase {
   }
 
   /**
-   * An entity type manager returning $index for both load paths.
+   * An entity type manager stubbing both search_api_index load paths.
    *
-   * Stubs both the override-free load (setIndexStatus) and the regular load
-   * (tracker rebuild) to return $index.
+   * @param \Drupal\search_api\IndexInterface $index
+   *   The entity load() returns, and loadOverrideFree() too unless
+   *   $override_free is given.
+   * @param \Drupal\search_api\IndexInterface|null $override_free
+   *   The entity loadOverrideFree() returns, when it must differ. Models the
+   *   real divergence: the override-resolved load() serves a cached
+   *   status-disabled index while the stored config says otherwise.
+   *
+   * @return \Drupal\Core\Entity\EntityTypeManagerInterface
+   *   The entity type manager.
    */
-  private function entityTypeManagerWithWritableIndex(IndexInterface $index): EntityTypeManagerInterface {
+  private function entityTypeManagerWithWritableIndex(IndexInterface $index, ?IndexInterface $override_free = NULL): EntityTypeManagerInterface {
     $storage = $this->createMock(ConfigEntityStorageInterface::class);
     $storage->method('load')->with('ys_beacon')->willReturn($index);
-    $storage->method('loadOverrideFree')->with('ys_beacon')->willReturn($index);
+    $storage->method('loadOverrideFree')->with('ys_beacon')->willReturn($override_free ?? $index);
     $entity_type_manager = $this->createMock(EntityTypeManagerInterface::class);
     $entity_type_manager->method('getStorage')->with('search_api_index')->willReturn($storage);
     return $entity_type_manager;
@@ -327,6 +354,115 @@ class BeaconPlatformAdminSettingTest extends UnitTestCase {
   }
 
   /**
+   * Enabling decides from stored config, not the runtime-overridden view.
+   *
+   * The override forces the index status off while Beacon is unauthorized or
+   * chat is off, and that resolved value stays cached from the form build - so
+   * it still reports disabled after the save. Deciding from it would make the
+   * outcome depend on a stale cache entry, so the write path reads the
+   * override-free index and never acts on the overridden one
+   * (yalesites-org/YaleSites-Internal#1459).
+   *
+   * @covers ::submitSettings
+   * @covers ::enableIndex
+   * @covers ::loadBeaconIndexOverrideFree
+   */
+  public function testEnableDecidesFromStoredConfigNotOverriddenView(): void {
+    $settings = [
+      'enable_chat' => FALSE,
+      'read_only' => FALSE,
+      'azure_index_name' => 'my-index',
+      'search_index_id' => 'ys_beacon',
+    ];
+    $config = $this->createMock(Config::class);
+    $config->method('get')->willReturnCallback(fn (string $key) => $settings[$key] ?? NULL);
+    $config->method('set')->willReturnSelf();
+    $config->method('save')->willReturnSelf();
+
+    $factory = $this->createMock(ConfigFactoryInterface::class);
+    $factory->method('getEditable')->with('ys_beacon.settings')->willReturn($config);
+    $factory->method('get')->with('ys_beacon.settings')->willReturn($config);
+
+    // The override-resolved load reports the index disabled. Nothing on the
+    // write path may act on it.
+    $stale = $this->indexMock(FALSE, FALSE, 0);
+    $stale->expects($this->never())->method('setStatus');
+    $stale->expects($this->never())->method('rebuildTracker');
+
+    // Stored config: disabled and tracking nothing, so it is enabled and
+    // seeded.
+    $stored = $this->indexMock(FALSE, FALSE, 0);
+    $stored->expects($this->once())->method('setStatus')->with(TRUE)->willReturnSelf();
+    $stored->expects($this->once())->method('save');
+    $stored->expects($this->once())->method('rebuildTracker');
+
+    $index_manager = $this->createMock(BeaconIndexManager::class);
+    $index_manager->method('indexExists')->with('my-index')->willReturn(TRUE);
+
+    $plugin = $this->plugin(
+      $factory,
+      $this->entityTypeManagerWithWritableIndex($stale, $stored),
+      $index_manager
+    );
+
+    $form_state = new FormState();
+    $form_state->setValue(['ys_beacon', 'platform_authorized'], 1);
+    $form_state->setValue(['ys_beacon', 'enable_chat'], 1);
+    $form = [];
+    $plugin->submitSettings($form, $form_state);
+  }
+
+  /**
+   * An already-enabled index that tracks nothing is still seeded.
+   *
+   * Search_api.index.ys_beacon ships status: true, so on a site that has
+   * never indexed anything the status flag already reads "enabled" and cannot
+   * stand in for "already running". Gating the seed on it left such a site
+   * with an enabled index tracking zero items and "Index now" permanently
+   * disabled (yalesites-org/YaleSites-Internal#1459).
+   *
+   * @covers ::submitSettings
+   * @covers ::enableIndex
+   * @covers ::trackedItemCount
+   */
+  public function testEnabledButUntrackedIndexIsStillSeeded(): void {
+    $settings = [
+      'enable_chat' => FALSE,
+      'read_only' => FALSE,
+      'azure_index_name' => 'my-index',
+      'search_index_id' => 'ys_beacon',
+    ];
+    $config = $this->createMock(Config::class);
+    $config->method('get')->willReturnCallback(fn (string $key) => $settings[$key] ?? NULL);
+    $config->method('set')->willReturnSelf();
+    $config->method('save')->willReturnSelf();
+
+    $factory = $this->createMock(ConfigFactoryInterface::class);
+    $factory->method('getEditable')->with('ys_beacon.settings')->willReturn($config);
+    $factory->method('get')->with('ys_beacon.settings')->willReturn($config);
+
+    // Already enabled (the shipped default) but nothing tracked yet.
+    $index = $this->indexMock(FALSE, TRUE, 0);
+    $index->expects($this->never())->method('setStatus');
+    $index->expects($this->once())->method('rebuildTracker');
+
+    $index_manager = $this->createMock(BeaconIndexManager::class);
+    $index_manager->method('indexExists')->with('my-index')->willReturn(TRUE);
+
+    $plugin = $this->plugin(
+      $factory,
+      $this->entityTypeManagerWithWritableIndex($index),
+      $index_manager
+    );
+
+    $form_state = new FormState();
+    $form_state->setValue(['ys_beacon', 'platform_authorized'], 1);
+    $form_state->setValue(['ys_beacon', 'enable_chat'], 1);
+    $form = [];
+    $plugin->submitSettings($form, $form_state);
+  }
+
+  /**
    * A first enable provisions the missing index and queues content.
    *
    * @covers ::submitSettings
@@ -364,7 +500,7 @@ class BeaconPlatformAdminSettingTest extends UnitTestCase {
     $messenger->expects($this->once())->method('addStatus');
     $messenger->expects($this->never())->method('addWarning');
 
-    $plugin = $this->plugin($factory, $entity_type_manager, $index_manager, $messenger);
+    $plugin = $this->plugin($factory, $entity_type_manager, $index_manager, messenger: $messenger);
 
     $form_state = new FormState();
     $form_state->setValue(['ys_beacon', 'platform_authorized'], 1);
@@ -417,7 +553,7 @@ class BeaconPlatformAdminSettingTest extends UnitTestCase {
     $messenger->expects($this->never())->method('addStatus');
     $messenger->expects($this->never())->method('addWarning');
 
-    $plugin = $this->plugin($factory, $entity_type_manager, $index_manager, $messenger);
+    $plugin = $this->plugin($factory, $entity_type_manager, $index_manager, messenger: $messenger);
 
     $form_state = new FormState();
     $form_state->setValue(['ys_beacon', 'platform_authorized'], 1);
@@ -472,7 +608,7 @@ class BeaconPlatformAdminSettingTest extends UnitTestCase {
     $logger = $this->createMock(LoggerInterface::class);
     $logger->expects($this->once())->method('error');
 
-    $plugin = $this->plugin($factory, $entity_type_manager, $index_manager, $messenger, $logger);
+    $plugin = $this->plugin($factory, $entity_type_manager, $index_manager, messenger: $messenger, logger: $logger);
 
     $form_state = new FormState();
     $form_state->setValue(['ys_beacon', 'platform_authorized'], 1);
@@ -529,7 +665,7 @@ class BeaconPlatformAdminSettingTest extends UnitTestCase {
     $logger = $this->createMock(LoggerInterface::class);
     $logger->expects($this->once())->method('error');
 
-    $plugin = $this->plugin($factory, $entity_type_manager, $index_manager, $messenger, $logger);
+    $plugin = $this->plugin($factory, $entity_type_manager, $index_manager, messenger: $messenger, logger: $logger);
 
     $form_state = new FormState();
     $form_state->setValue(['ys_beacon', 'platform_authorized'], 1);
@@ -582,7 +718,7 @@ class BeaconPlatformAdminSettingTest extends UnitTestCase {
     $messenger->expects($this->once())->method('addStatus');
     $messenger->expects($this->never())->method('addWarning');
 
-    $plugin = $this->plugin($factory, $entity_type_manager, $index_manager, $messenger);
+    $plugin = $this->plugin($factory, $entity_type_manager, $index_manager, messenger: $messenger);
 
     $form_state = new FormState();
     $form_state->setValue(['ys_beacon', 'platform_authorized'], 1);
@@ -617,9 +753,9 @@ class BeaconPlatformAdminSettingTest extends UnitTestCase {
     $factory->method('getEditable')->with('ys_beacon.settings')->willReturn($config);
     $factory->method('get')->with('ys_beacon.settings')->willReturn($config);
 
-    $index = $this->createMock(IndexInterface::class);
-    $index->method('status')->willReturn(TRUE);
-    // Already enabled and healthy: never re-status and never re-queue.
+    // Already enabled AND already tracking content: never re-status and never
+    // re-queue, so a routine re-save cannot re-enumerate an indexed site.
+    $index = $this->indexMock(FALSE, TRUE, 0, 51, 51);
     $index->expects($this->never())->method('setStatus');
     $index->expects($this->never())->method('rebuildTracker');
     $entity_type_manager = $this->entityTypeManagerWithWritableIndex($index);
@@ -633,7 +769,7 @@ class BeaconPlatformAdminSettingTest extends UnitTestCase {
     $messenger->expects($this->never())->method('addStatus');
     $messenger->expects($this->never())->method('addWarning');
 
-    $plugin = $this->plugin($factory, $entity_type_manager, $index_manager, $messenger);
+    $plugin = $this->plugin($factory, $entity_type_manager, $index_manager, messenger: $messenger);
 
     $form_state = new FormState();
     $form_state->setValue(['ys_beacon', 'platform_authorized'], 1);
@@ -795,7 +931,7 @@ class BeaconPlatformAdminSettingTest extends UnitTestCase {
     $logger = $this->createMock(LoggerInterface::class);
     $logger->expects($this->once())->method('error');
 
-    $plugin = $this->plugin($factory, $entity_type_manager, $index_manager, $messenger, $logger);
+    $plugin = $this->plugin($factory, $entity_type_manager, $index_manager, messenger: $messenger, logger: $logger);
 
     $form_state = new FormState();
     $form_state->setValue(['ys_beacon', 'platform_authorized'], 1);
@@ -857,16 +993,21 @@ class BeaconPlatformAdminSettingTest extends UnitTestCase {
   }
 
   /**
-   * Validation is skipped when the toggle is off.
+   * Enabling Beacon chat is never blocked, even with the legacy widget live.
+   *
+   * Bringing Beacon up first is the safe order: only one widget can render (the
+   * render guards stand Beacon down while the legacy chat is live), so enabling
+   * it here provisions the index and queues content while visitors keep the
+   * legacy chatbot. Blocking it forced the reverse, unsafe order
+   * (yalesites-org/YaleSites-Internal#1459).
    *
    * @covers ::validateSettings
    */
-  public function testValidateSkipsWhenToggleOff(): void {
+  public function testValidateNeverBlocksEnable(): void {
     $factory = $this->getConfigFactoryStub(['ys_beacon.settings' => []]);
-    $plugin = $this->plugin($factory);
+    $plugin = $this->plugin($factory, legacy_ai_engine: $this->legacyAiEngine(TRUE, TRUE));
 
     $form_state = $this->createMock(FormStateInterface::class);
-    $form_state->method('getValue')->with(['ys_beacon', 'enable_chat'])->willReturn(0);
     $form_state->expects($this->never())->method('setErrorByName');
 
     $form = [];
@@ -874,21 +1015,128 @@ class BeaconPlatformAdminSettingTest extends UnitTestCase {
   }
 
   /**
-   * The Re-index button delegates to the site form's reindexAll() handler.
+   * The assisted-cutover control is hidden once ai_engine is fully retired.
    *
-   * @covers ::reindexAllSubmit
+   * Nothing left to turn off means no button, so the section does not carry a
+   * dead control on the vast majority of sites.
+   *
+   * @covers ::buildSettings
    */
-  public function testReindexAllSubmitDelegates(): void {
+  public function testLegacyCutoverControlHiddenWhenRetired(): void {
+    $factory = $this->getConfigFactoryStub(['ys_beacon.settings' => ['search_index_id' => 'ys_beacon']]);
+    $plugin = $this->plugin(
+      $factory,
+      $this->entityTypeManagerWithIndex($this->indexMock(FALSE, TRUE, 0)),
+      NULL,
+      $this->legacyAiEngine(FALSE)
+    );
+
+    $form = $plugin->buildSettings([], new FormState());
+
+    $this->assertArrayNotHasKey('legacy', $form);
+  }
+
+  /**
+   * The cutover button appears once Beacon is ready to take over.
+   *
+   * @covers ::buildSettings
+   * @covers ::beaconReadyToTakeOver
+   */
+  public function testCutoverButtonShownWhenBeaconReady(): void {
+    $factory = $this->getConfigFactoryStub([
+      'ys_beacon.settings' => [
+        'platform_authorized' => TRUE,
+        'enable_chat' => TRUE,
+        'azure_index_name' => 'my-index',
+        'search_index_id' => 'ys_beacon',
+      ],
+    ]);
+    $plugin = $this->plugin(
+      $factory,
+      $this->entityTypeManagerWithIndex($this->indexMock(FALSE, TRUE, 0)),
+      legacy_ai_engine: $this->legacyAiEngine(TRUE, TRUE)
+    );
+
+    $form = $plugin->buildSettings([], new FormState());
+
+    $this->assertSame('submit', $form['legacy']['retire']['#type']);
+    $this->assertSame(
+      [[BeaconPlatformAdminSetting::class, 'retireLegacySubmit']],
+      $form['legacy']['retire']['#submit']
+    );
+    // Retiring must not depend on the rest of the page validating.
+    $this->assertSame([], $form['legacy']['retire']['#limit_validation_errors']);
+  }
+
+  /**
+   * The cutover button is withheld until Beacon can actually serve.
+   *
+   * This is the safety property of the reordered flow: retiring the legacy
+   * chatbot before Beacon is authorized, enabled, and pointed at an index would
+   * leave the site with no assistant at all if provisioning then failed
+   * (yalesites-org/YaleSites-Internal#1459). The notice itself still shows.
+   *
+   * @dataProvider providerNotReadyToTakeOver
+   *
+   * @covers ::buildSettings
+   * @covers ::beaconReadyToTakeOver
+   */
+  public function testCutoverButtonWithheldUntilBeaconReady(array $settings): void {
+    $factory = $this->getConfigFactoryStub([
+      'ys_beacon.settings' => $settings + ['search_index_id' => 'ys_beacon'],
+    ]);
+    $plugin = $this->plugin(
+      $factory,
+      $this->entityTypeManagerWithIndex($this->indexMock(FALSE, TRUE, 0)),
+      legacy_ai_engine: $this->legacyAiEngine(TRUE, TRUE)
+    );
+
+    $form = $plugin->buildSettings([], new FormState());
+
+    $this->assertArrayNotHasKey('retire', $form['legacy']);
+    $this->assertArrayHasKey('notice', $form['legacy']);
+  }
+
+  /**
+   * Data provider: each way Beacon can fall short of ready to take over.
+   */
+  public static function providerNotReadyToTakeOver(): array {
+    $ready = [
+      'platform_authorized' => TRUE,
+      'enable_chat' => TRUE,
+      'azure_index_name' => 'my-index',
+    ];
+    return [
+      'unauthorized' => [['platform_authorized' => FALSE] + $ready],
+      'chat off' => [['enable_chat' => FALSE] + $ready],
+      'no index configured' => [['azure_index_name' => ''] + $ready],
+      'nothing configured' => [[]],
+    ];
+  }
+
+  /**
+   * The cutover button turns the whole legacy stack off.
+   *
+   * @covers ::retireLegacySubmit
+   */
+  public function testRetireLegacySubmitDisablesLegacyStack(): void {
+    $legacy = $this->createMock(LegacyAiEngine::class);
+    $legacy->expects($this->once())->method('disable');
+
+    $messenger = $this->createMock(MessengerInterface::class);
+    $messenger->expects($this->once())->method('addStatus');
+
+    $container = $this->createMock(ContainerInterface::class);
+    $container->method('get')->willReturnCallback(fn ($id) => match ($id) {
+      'ys_beacon.legacy_ai_engine' => $legacy,
+      'messenger' => $messenger,
+      'string_translation' => $this->getStringTranslationStub(),
+    });
+    \Drupal::setContainer($container);
+
     $form = [];
     $form_state = $this->createMock(FormStateInterface::class);
-
-    $settings_form = $this->createMock(YsBeaconSettings::class);
-    $settings_form->expects($this->once())->method('reindexAll');
-    $settings_form->expects($this->never())->method('indexNow');
-
-    $this->setContainerWithResolver($settings_form);
-
-    BeaconPlatformAdminSetting::reindexAllSubmit($form, $form_state);
+    BeaconPlatformAdminSetting::retireLegacySubmit($form, $form_state);
   }
 
   /**
