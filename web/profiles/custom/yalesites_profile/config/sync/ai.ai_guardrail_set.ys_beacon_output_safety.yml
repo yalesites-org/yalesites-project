@@ -1,0 +1,18 @@
+uuid: cd1b5803-0647-458b-93e5-66b6e6b26ee1
+langcode: en
+status: true
+dependencies:
+  config:
+    - ai.ai_guardrail.ys_beacon_output_safety
+  enforced:
+    module:
+      - ys_beacon
+id: ys_beacon_output_safety
+label: 'Beacon output safety'
+description: 'Platform-wide Beacon output guardrails, applied to every AI request via ai.settings global_guardrails.'
+stop_threshold: 1.0
+pre_generate_guardrails:
+  plugin_id: {  }
+post_generate_guardrails:
+  plugin_id:
+    - ys_beacon_output_safety
