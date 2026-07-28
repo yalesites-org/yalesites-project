@@ -7,6 +7,7 @@ namespace Drupal\Tests\ys_ai_tester\Unit;
 use Drupal\Core\Database\Connection;
 use Drupal\Core\Datetime\DateFormatterInterface;
 use Drupal\Tests\UnitTestCase;
+use Drupal\ys_ai_tester\AnswerBackendRegistry;
 use Drupal\ys_ai_tester\Controller\AiTesterController;
 use Drupal\ys_ai_tester\RunComparator;
 use Symfony\Component\DependencyInjection\ContainerBuilder;
@@ -34,14 +35,28 @@ class AiTesterCompareRenderTest extends UnitTestCase {
   /**
    * A side entry as produced by RunComparator::side().
    */
-  protected function side(string $answer, int $cited, int $retrieved, bool $empty): array {
+  protected function side(string $answer, int $cited, int $retrieved, bool $empty, string $error = ''): array {
     return [
+      'error' => $error,
       'answer' => $answer,
       'citations' => [],
       'len' => mb_strlen($answer),
       'cited' => $cited,
       'retrieved' => $retrieved,
       'empty' => $empty,
+    ];
+  }
+
+  /**
+   * A run meta entry as produced by RunComparator::metaArray().
+   */
+  protected function runMeta(int $id, string $file, string $backend = 'beacon'): array {
+    return [
+      'id' => $id,
+      'created' => $id * 1000,
+      'source_filename' => $file,
+      'status' => 'complete',
+      'backend' => $backend,
     ];
   }
 
@@ -55,10 +70,16 @@ class AiTesterCompareRenderTest extends UnitTestCase {
     $date_formatter = $this->createMock(DateFormatterInterface::class);
     $date_formatter->method('format')->willReturn('2026-06-20');
 
+    $registry = $this->createMock(AnswerBackendRegistry::class);
+    $registry->method('labelFor')->willReturnCallback(
+      static fn (string $id): string => ucfirst($id)
+    );
+
     return new AiTesterController(
       $this->createMock(Connection::class),
       $date_formatter,
       $comparator,
+      $registry,
     );
   }
 
@@ -71,8 +92,8 @@ class AiTesterCompareRenderTest extends UnitTestCase {
    */
   public function testCompareRendersEveryPairState(): void {
     $data = [
-      'run_a' => ['id' => 2, 'created' => 1000, 'source_filename' => 'a.yml', 'status' => 'complete'],
-      'run_b' => ['id' => 3, 'created' => 2000, 'source_filename' => 'b.yml', 'status' => 'complete'],
+      'run_a' => $this->runMeta(2, 'a.yml'),
+      'run_b' => $this->runMeta(3, 'b.yml'),
       'pairs' => [
         [
           'question' => 'What is Yale?',
@@ -142,8 +163,8 @@ class AiTesterCompareRenderTest extends UnitTestCase {
    */
   public function testCompareUniqueSourcesAreNewWindowLinks(): void {
     $data = [
-      'run_a' => ['id' => 2, 'created' => 1000, 'source_filename' => 'a.yml', 'status' => 'complete'],
-      'run_b' => ['id' => 3, 'created' => 2000, 'source_filename' => 'b.yml', 'status' => 'complete'],
+      'run_a' => $this->runMeta(2, 'a.yml'),
+      'run_b' => $this->runMeta(3, 'b.yml'),
       'pairs' => [
         [
           'question' => 'What is Yale?',
@@ -220,6 +241,92 @@ class AiTesterCompareRenderTest extends UnitTestCase {
     $fallback = $cell['#items'][1]['link'];
     $this->assertArrayNotHasKey('#type', $fallback);
     $this->assertArrayHasKey('#markup', $fallback);
+  }
+
+  /**
+   * Builds a minimal one-pair comparison over the two given backends.
+   *
+   * @param string $backend_a
+   *   Run A's backend id.
+   * @param string $backend_b
+   *   Run B's backend id.
+   * @param array $side_b
+   *   Run B's side entry.
+   *
+   * @return array
+   *   A comparison structure ready to hand to the stubbed comparator.
+   */
+  protected function comparisonOf(string $backend_a, string $backend_b, array $side_b): array {
+    return [
+      'run_a' => $this->runMeta(2, 'a.txt', $backend_a),
+      'run_b' => $this->runMeta(3, 'a.txt', $backend_b),
+      'pairs' => [
+        [
+          'question' => 'What are the office hours?',
+          'status' => 'differs',
+          'a' => $this->side('Beacon answer.', 1, 1, FALSE),
+          'b' => $side_b,
+          'len_delta' => 0,
+          'citation_overlap' => ['both' => [], 'only_a' => [], 'only_b' => []],
+        ],
+      ],
+      'summary' => [
+        'total_compared' => 1,
+        'differ' => 1,
+        'identical' => 0,
+        'only_a' => 0,
+        'only_b' => 0,
+      ],
+    ];
+  }
+
+  /**
+   * Comparing two assistants warns that answers are expected to differ.
+   *
+   * @covers ::compare
+   * @covers ::crossAssistantCaveat
+   */
+  public function testCrossAssistantComparisonShowsCaveat(): void {
+    $data = $this->comparisonOf('beacon', 'legacy', $this->side('Legacy answer.', 1, 1, FALSE));
+
+    $build = $this->controllerReturning($data)->compare(2, 3);
+
+    $this->assertArrayHasKey('#markup', $build['caveat']);
+    $caveat = (string) $build['caveat']['#markup'];
+    $this->assertStringContainsString('different assistants', $caveat);
+    $this->assertStringContainsString('not a regression', $caveat);
+    $this->assertStringContainsString('Beacon', $caveat);
+    $this->assertStringContainsString('Legacy', $caveat);
+  }
+
+  /**
+   * Comparing two runs of one assistant shows no caveat at all.
+   *
+   * @covers ::compare
+   * @covers ::crossAssistantCaveat
+   */
+  public function testSameAssistantComparisonHasNoCaveat(): void {
+    $data = $this->comparisonOf('beacon', 'beacon', $this->side('Second answer.', 1, 1, FALSE));
+
+    $build = $this->controllerReturning($data)->compare(2, 3);
+
+    $this->assertSame([], $build['caveat']);
+  }
+
+  /**
+   * A recorded error is reported instead of reading as an empty answer.
+   *
+   * @covers ::sideCell
+   */
+  public function testErroredSideReportsTheError(): void {
+    $errored = $this->side('', 0, 0, TRUE, 'cURL error 28: Operation timed out');
+    $data = $this->comparisonOf('beacon', 'legacy', $errored);
+
+    $build = $this->controllerReturning($data)->compare(2, 3);
+    $meta = (string) $build['results']['#rows'][0][3]['data']['meta']['#markup'];
+
+    $this->assertStringContainsString('Operation timed out', $meta);
+    $this->assertStringNotContainsString('Empty answer', $meta);
   }
 
 }

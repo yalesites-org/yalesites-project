@@ -163,6 +163,9 @@ class RunComparator {
       'cited' => $cited,
       'retrieved' => count($citations),
       'empty' => trim($answer) === '',
+      // Distinguishes "the assistant failed on this question" from "the
+      // assistant genuinely answered with nothing".
+      'error' => (string) ($result['error'] ?? ''),
     ];
   }
 
@@ -219,6 +222,9 @@ class RunComparator {
       'created' => (int) $meta['created'],
       'source_filename' => (string) $meta['source_filename'],
       'status' => (string) $meta['status'],
+      // Which assistant answered this side. Runs recorded before the tester
+      // supported more than one read back as Beacon.
+      'backend' => (string) ($meta['backend'] ?? AnswerBackendInterface::DEFAULT_ID),
     ];
   }
 
@@ -227,7 +233,7 @@ class RunComparator {
    */
   protected function loadRun(int $run_id): array {
     $row = $this->database->query(
-      'SELECT id, created, source_filename, status FROM {ys_ai_tester_run} WHERE id = :id',
+      'SELECT id, created, source_filename, status, backend FROM {ys_ai_tester_run} WHERE id = :id',
       [':id' => $run_id]
     )->fetchAssoc();
 
@@ -242,7 +248,7 @@ class RunComparator {
    */
   protected function loadResults(int $run_id): array {
     $rows = $this->database->query(
-      'SELECT question, answer, citations FROM {ys_ai_tester_result} WHERE run_id = :run_id ORDER BY delta ASC',
+      'SELECT question, answer, citations, error FROM {ys_ai_tester_result} WHERE run_id = :run_id ORDER BY delta ASC',
       [':run_id' => $run_id]
     )->fetchAll();
 
@@ -252,6 +258,7 @@ class RunComparator {
         'question' => $row->question,
         'answer' => $row->answer,
         'citations' => json_decode($row->citations ?? '', TRUE) ?: [],
+        'error' => (string) ($row->error ?? ''),
       ];
     }
     return $results;

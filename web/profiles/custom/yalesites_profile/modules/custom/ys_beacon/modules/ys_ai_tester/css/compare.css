@@ -13,6 +13,16 @@
   font-weight: 600;
 }
 
+/* Shown only when the two runs were answered by different assistants, so a
+   high "differs" count is not misread as a regression. */
+.ys-compare-caveat {
+  margin-block-end: 1rem;
+  padding: 0.75rem 1rem;
+  border-inline-start: 4px solid var(--gin-color-warning, #e5a611);
+  background: var(--gin-color-warning-light, #fdf3da);
+  color: var(--gin-color-text, #1b1b1d);
+}
+
 .ys-compare-meta {
   display: flex;
   flex-wrap: wrap;

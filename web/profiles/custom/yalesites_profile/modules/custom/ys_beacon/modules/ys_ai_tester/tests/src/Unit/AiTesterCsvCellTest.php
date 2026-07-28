@@ -7,6 +7,7 @@ namespace Drupal\Tests\ys_ai_tester\Unit;
 use Drupal\Core\Database\Connection;
 use Drupal\Core\Datetime\DateFormatterInterface;
 use Drupal\Tests\UnitTestCase;
+use Drupal\ys_ai_tester\AnswerBackendRegistry;
 use Drupal\ys_ai_tester\Controller\AiTesterController;
 use Drupal\ys_ai_tester\RunComparator;
 
@@ -27,6 +28,7 @@ class AiTesterCsvCellTest extends UnitTestCase {
       $this->createMock(Connection::class),
       $this->createMock(DateFormatterInterface::class),
       $this->createMock(RunComparator::class),
+      $this->createMock(AnswerBackendRegistry::class),
     );
     $method = new \ReflectionMethod($controller, 'csvCell');
     $method->setAccessible(TRUE);

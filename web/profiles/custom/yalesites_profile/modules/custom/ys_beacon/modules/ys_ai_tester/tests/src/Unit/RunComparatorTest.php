@@ -273,4 +273,38 @@ class RunComparatorTest extends UnitTestCase {
     $this->assertSame('run7.yml', $out['run_a']['source_filename']);
   }
 
+  /**
+   * The comparison exposes which assistant answered each side.
+   *
+   * @covers ::compareResults
+   */
+  public function testRunMetaExposesTheBackend(): void {
+    $out = $this->comparator->compareResults(
+      ['backend' => 'beacon'] + $this->meta(7),
+      ['backend' => 'legacy'] + $this->meta(9),
+      [$this->result('Q1', 'x')],
+      [$this->result('Q1', 'y')],
+    );
+
+    $this->assertSame('beacon', $out['run_a']['backend']);
+    $this->assertSame('legacy', $out['run_b']['backend']);
+  }
+
+  /**
+   * A run stored before backends existed reads back as Beacon.
+   *
+   * @covers ::compareResults
+   */
+  public function testRunMetaBackendDefaultsToBeacon(): void {
+    $out = $this->comparator->compareResults(
+      $this->meta(1),
+      $this->meta(2),
+      [$this->result('Q1', 'x')],
+      [$this->result('Q1', 'x')],
+    );
+
+    $this->assertSame('beacon', $out['run_a']['backend']);
+    $this->assertSame('beacon', $out['run_b']['backend']);
+  }
+
 }

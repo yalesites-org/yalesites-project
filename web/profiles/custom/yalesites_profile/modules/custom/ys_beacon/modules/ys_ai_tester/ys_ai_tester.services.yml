@@ -3,3 +3,20 @@ services:
     class: Drupal\ys_ai_tester\RunComparator
     arguments:
       - '@database'
+
+  # Collects every tagged assistant. A backend disappears with the module that
+  # provides it, so uninstalling a backend submodule removes the option without
+  # the tester core ever referencing that submodule.
+  ys_ai_tester.answer_backend_registry:
+    class: Drupal\ys_ai_tester\AnswerBackendRegistry
+    arguments:
+      - !tagged_iterator ys_ai_tester.answer_backend
+
+  # Beacon carries the highest priority so it sorts first and becomes Run A when
+  # a submission is run against every assistant at once.
+  ys_ai_tester.backend.beacon:
+    class: Drupal\ys_ai_tester\Backend\BeaconAnswerBackend
+    arguments:
+      - '@ys_beacon.beacon_answer'
+    tags:
+      - { name: ys_ai_tester.answer_backend, priority: 100 }

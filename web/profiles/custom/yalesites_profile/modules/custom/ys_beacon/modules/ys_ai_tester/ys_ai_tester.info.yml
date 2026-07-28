@@ -1,6 +1,6 @@
 name: YS AI Tester
 type: module
-description: 'Batch test the Beacon AI assistant against a YAML list of questions and review the answers and source citations.'
+description: 'Batch test an AI assistant against a plain-text list of questions and review the answers and source citations.'
 core_version_requirement: ^10 || ^11
 package: YaleSites
 dependencies:

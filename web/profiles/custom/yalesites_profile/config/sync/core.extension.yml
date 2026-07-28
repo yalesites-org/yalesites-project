@@ -158,6 +158,7 @@ module:
   ys_ai: 0
   ys_ai_system_instructions: 0
   ys_ai_tester: 0
+  ys_ai_tester_legacy: 0
   ys_alert: 0
   ys_beacon: 0
   ys_beacon_portkey: 0

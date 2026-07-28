@@ -12,6 +12,7 @@ use Drupal\Core\Database\Connection;
 use Drupal\Core\Datetime\DateFormatterInterface;
 use Drupal\Core\Render\Markup;
 use Drupal\Core\Url;
+use Drupal\ys_ai_tester\AnswerBackendRegistry;
 use Drupal\ys_ai_tester\RunComparator;
 use Symfony\Component\DependencyInjection\ContainerInterface;
 use Symfony\Component\HttpFoundation\JsonResponse;
@@ -32,11 +33,14 @@ class AiTesterController extends ControllerBase {
    *   The date formatter.
    * @param \Drupal\ys_ai_tester\RunComparator $runComparator
    *   The run comparator.
+   * @param \Drupal\ys_ai_tester\AnswerBackendRegistry $backendRegistry
+   *   The answer backend registry, used to label a run's assistant.
    */
   public function __construct(
     protected Connection $database,
     protected DateFormatterInterface $dateFormatter,
     protected RunComparator $runComparator,
+    protected AnswerBackendRegistry $backendRegistry,
   ) {}
 
   /**
@@ -47,6 +51,7 @@ class AiTesterController extends ControllerBase {
       $container->get('database'),
       $container->get('date.formatter'),
       $container->get('ys_ai_tester.run_comparator'),
+      $container->get('ys_ai_tester.answer_backend_registry'),
     );
   }
 
@@ -54,7 +59,7 @@ class AiTesterController extends ControllerBase {
    * Renders the detail page for a single tester run.
    */
   public function run(int $run_id): array {
-    $run = $this->loadRunOr404($run_id, 'id, created, source_filename, status');
+    $run = $this->loadRunOr404($run_id, 'id, created, source_filename, status, backend');
 
     $results = $this->database->query(
       'SELECT * FROM {ys_ai_tester_result} WHERE run_id = :run_id ORDER BY delta ASC',
@@ -63,9 +68,17 @@ class AiTesterController extends ControllerBase {
 
     $rows = [];
     foreach ($results as $result) {
+      $error = (string) ($result->error ?? '');
       $rows[] = [
         ['data' => $result->question, 'class' => ['views-field', 'views-field-question']],
-        ['data' => $result->answer, 'class' => ['views-field', 'views-field-answer']],
+        [
+          // A recorded error is shown in place of the blank answer it would
+          // otherwise leave behind, so a failure is not read as a real answer.
+          'data' => $error !== ''
+            ? ['#markup' => $this->t('<em>Error: @msg</em>', ['@msg' => $error])]
+            : $result->answer,
+          'class' => ['views-field', 'views-field-answer'],
+        ],
         [
           'data' => $this->buildCitationsCell($this->decodeCitations($result->citations)),
           'class' => ['views-field', 'views-field-citations', 'priority-low'],
@@ -79,11 +92,12 @@ class AiTesterController extends ControllerBase {
       '#type' => 'container',
       'meta' => [
         '#markup' => $this->t(
-          '<p><strong>Run #@id</strong> — @date — File: @file — Status: @status</p>',
+          '<p><strong>Run #@id</strong> — @date — File: @file — Assistant: @backend — Status: @status</p>',
           [
             '@id' => $run->id,
             '@date' => $this->dateFormatter->format($run->created, 'medium'),
             '@file' => $run->source_filename,
+            '@backend' => $this->backendRegistry->labelFor((string) $run->backend),
             '@status' => $run->status,
           ]
         ),
@@ -226,6 +240,9 @@ class AiTesterController extends ControllerBase {
       $output[] = [
         'question' => $result->question,
         'answer' => $result->answer,
+        // Exported so a failed question is not read as an assistant that
+        // answered nothing — the export is the artefact people quote.
+        'error' => (string) ($result->error ?? ''),
         'citations' => $this->decodeCitations($result->citations),
       ];
     }
@@ -269,6 +286,7 @@ class AiTesterController extends ControllerBase {
       $rows[] = [
         'question' => (string) $result->question,
         'answer' => (string) $result->answer,
+        'error' => (string) ($result->error ?? ''),
         'sources' => $this->joinSourceUrls($sources),
       ];
     }
@@ -291,7 +309,7 @@ class AiTesterController extends ControllerBase {
    */
   protected function loadResultRows(int $run_id): array {
     return $this->database->query(
-      'SELECT question, answer, citations FROM {ys_ai_tester_result}
+      'SELECT question, answer, citations, error FROM {ys_ai_tester_result}
        WHERE run_id = :run_id ORDER BY delta ASC',
       [':run_id' => $run_id]
     )->fetchAll();
@@ -305,18 +323,20 @@ class AiTesterController extends ControllerBase {
    * injection. Multiline answers are quoted by fputcsv and stay in one cell.
    *
    * @param array $rows
-   *   Result rows, each with 'question', 'answer', and 'sources' strings.
+   *   Result rows, each with 'question', 'answer', 'error', and 'sources'
+   *   strings.
    *
    * @return string
    *   The CSV file body, including the leading BOM.
    */
   protected function buildResultsCsv(array $rows): string {
     $handle = fopen('php://temp', 'r+');
-    fputcsv($handle, ['Question', 'Answer', 'Sources']);
+    fputcsv($handle, ['Question', 'Answer', 'Error', 'Sources']);
     foreach ($rows as $row) {
       fputcsv($handle, array_map([$this, 'csvCell'], [
         $row['question'],
         $row['answer'],
+        $row['error'] ?? '',
         $row['sources'],
       ]));
     }
@@ -354,6 +374,7 @@ class AiTesterController extends ControllerBase {
           '@b' => $summary['only_b'],
         ]
       ), 'p'),
+      'caveat' => $this->crossAssistantCaveat($data),
       'meta' => [
         '#type' => 'container',
         '#attributes' => ['class' => ['ys-compare-meta']],
@@ -437,15 +458,45 @@ class AiTesterController extends ControllerBase {
    */
   protected function runMetaBlock(string|MarkupInterface $label, array $meta): array {
     return $this->wrap('ys-compare-meta__run', $this->t(
-      '<strong>@label — Run #@id</strong><br>@date<br>File: @file<br>Status: @status',
+      '<strong>@label — Run #@id</strong><br>@date<br>File: @file<br>Assistant: @backend<br>Status: @status',
       [
         '@label' => $label,
         '@id' => $meta['id'],
         '@date' => $this->dateFormatter->format($meta['created'], 'medium'),
         '@file' => $meta['source_filename'],
+        '@backend' => $this->backendRegistry->labelFor($meta['backend']),
         '@status' => $meta['status'],
       ]
     ));
+  }
+
+  /**
+   * Builds the caveat shown when the two runs used different assistants.
+   *
+   * Two assistants differ in content set, index, system prompt, retrieval and
+   * model, so a high "differs" count is the expected outcome of the comparison
+   * rather than evidence that one of them regressed. Saying so on the page
+   * stops the number being quoted as a defect count.
+   *
+   * @param array $data
+   *   The comparison structure from the run comparator.
+   *
+   * @return array
+   *   A #markup render element, or an empty array when both runs used the same
+   *   assistant and no caveat is warranted.
+   */
+  protected function crossAssistantCaveat(array $data): array {
+    if ($data['run_a']['backend'] === $data['run_b']['backend']) {
+      return [];
+    }
+
+    return $this->wrap('ys-compare-caveat', $this->t(
+      'These runs were answered by different assistants (@a vs @b). They use a different content set, index, system prompt, retrieval strategy and model, so answers are expected to differ — a high "differs" count here is not a regression in either assistant.',
+      [
+        '@a' => $this->backendRegistry->labelFor($data['run_a']['backend']),
+        '@b' => $this->backendRegistry->labelFor($data['run_b']['backend']),
+      ]
+    ), 'p');
   }
 
   /**
@@ -502,7 +553,15 @@ class AiTesterController extends ControllerBase {
       'answer' => $this->wrap('ys-diff ys-diff--' . $direction, $answer_html),
     ];
 
-    if ($side['empty']) {
+    if ($side['error'] !== '') {
+      // A failure and a genuinely empty answer look identical in the answer
+      // column, so the recorded error is what the meta line reports.
+      $cell['meta'] = $this->wrap(
+        'ys-compare-side-meta ys-compare-side-meta--empty',
+        $this->t('Error: @msg', ['@msg' => $side['error']])
+      );
+    }
+    elseif ($side['empty']) {
       $cell['meta'] = $this->wrap(
         'ys-compare-side-meta ys-compare-side-meta--empty',
         $this->t('Empty answer')
@@ -582,6 +641,7 @@ class AiTesterController extends ControllerBase {
     $handle = fopen('php://temp', 'r+');
     fputcsv($handle, [
       'question', 'status', 'answer_a', 'answer_b',
+      'error_a', 'error_b',
       'cited_a', 'cited_b', 'len_a', 'len_b',
       'shared_sources', 'only_a_sources', 'only_b_sources',
     ]);
@@ -595,6 +655,8 @@ class AiTesterController extends ControllerBase {
         $pair['status'],
         $a['answer'] ?? '',
         $b['answer'] ?? '',
+        (string) ($a['error'] ?? ''),
+        (string) ($b['error'] ?? ''),
         (string) ($a['cited'] ?? ''),
         (string) ($b['cited'] ?? ''),
         (string) ($a['len'] ?? ''),

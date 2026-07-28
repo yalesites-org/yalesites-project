@@ -11,15 +11,22 @@ use Drupal\Core\Form\FormBase;
 use Drupal\Core\Form\FormStateInterface;
 use Drupal\Core\Link;
 use Drupal\Core\Session\AccountProxyInterface;
+use Drupal\Core\StringTranslation\TranslatableMarkup;
 use Drupal\Core\Url;
 use Drupal\ys_ai_tester\AiTesterBatch;
+use Drupal\ys_ai_tester\AnswerBackendInterface;
+use Drupal\ys_ai_tester\AnswerBackendRegistry;
 use Symfony\Component\DependencyInjection\ContainerInterface;
 
 /**
- * Form for batch testing the Beacon assistant with a list of questions.
+ * Form for batch testing an AI assistant with a list of questions.
  *
  * Questions are supplied one per line, either as an uploaded plain-text file or
  * typed directly into a textarea (one input or the other, never both).
+ *
+ * When more than one assistant is available the run can target either one, or
+ * both at once — which records two runs over an identical question list and
+ * opens the existing side-by-side comparison.
  */
 class AiTesterForm extends FormBase {
 
@@ -27,6 +34,13 @@ class AiTesterForm extends FormBase {
    * Maximum allowed size, in bytes, for an uploaded questions file.
    */
   const MAX_UPLOAD_BYTES = 262144;
+
+  /**
+   * Selector value meaning "run this list against every assistant".
+   *
+   * Prefixed so it cannot collide with a backend id.
+   */
+  const RUN_ALL = '__all';
 
   /**
    * Constructs the AI Tester form.
@@ -39,12 +53,15 @@ class AiTesterForm extends FormBase {
    *   The date formatter.
    * @param \Drupal\Component\Datetime\TimeInterface $time
    *   The time service.
+   * @param \Drupal\ys_ai_tester\AnswerBackendRegistry $backendRegistry
+   *   The answer backend registry.
    */
   public function __construct(
     protected Connection $database,
     protected AccountProxyInterface $currentUser,
     protected DateFormatterInterface $dateFormatter,
     protected TimeInterface $time,
+    protected AnswerBackendRegistry $backendRegistry,
   ) {}
 
   /**
@@ -56,7 +73,60 @@ class AiTesterForm extends FormBase {
       $container->get('current_user'),
       $container->get('date.formatter'),
       $container->get('datetime.time'),
+      $container->get('ys_ai_tester.answer_backend_registry'),
     );
+  }
+
+  /**
+   * Builds the assistant selector options for the available backends.
+   *
+   * @param array $available_labels
+   *   Labels keyed by backend id, as returned by the registry.
+   *
+   * @return array
+   *   The radio options, or an empty array when there is nothing to choose
+   *   between and no selector should be rendered at all.
+   */
+  public static function backendChoices(array $available_labels): array {
+    // One assistant is not a choice: the form must look exactly as it did
+    // before more than one backend existed — no selector, no warning.
+    if (count($available_labels) < 2) {
+      return [];
+    }
+
+    $choices = $available_labels;
+    // The comparison view takes exactly two runs, so running "both" is only a
+    // coherent option when exactly two assistants are available.
+    if (count($available_labels) === 2) {
+      $choices[self::RUN_ALL] = new TranslatableMarkup('Both — run the same questions against each assistant and compare');
+    }
+
+    return $choices;
+  }
+
+  /**
+   * Resolves which assistants a submission runs against.
+   *
+   * @param string $choice
+   *   The submitted selector value, which may be empty (no selector rendered)
+   *   or stale (a backend that has since become unavailable).
+   * @param string[] $available_ids
+   *   The backend ids that can answer right now.
+   *
+   * @return string[]
+   *   One backend id per run to create, in creation order.
+   */
+  public static function resolveRunBackends(string $choice, array $available_ids): array {
+    if ($choice === self::RUN_ALL && $available_ids !== []) {
+      return $available_ids;
+    }
+
+    // Anything unrecognised — an empty value, or a backend that went away
+    // between rendering and submitting — falls back to the default assistant
+    // rather than running something the user did not ask for.
+    return in_array($choice, $available_ids, TRUE)
+      ? [$choice]
+      : [AnswerBackendInterface::DEFAULT_ID];
   }
 
   /**
@@ -113,9 +183,28 @@ class AiTesterForm extends FormBase {
    * {@inheritdoc}
    */
   public function buildForm(array $form, FormStateInterface $form_state): array {
+    $choices = self::backendChoices($this->backendRegistry->availableOptions());
+
+    // Naming Beacon in the intro would contradict the selector, so the
+    // assistant is a placeholder — one sentence to translate, and the guidance
+    // below it cannot drift between the two wordings.
     $form['intro'] = [
-      '#markup' => '<p>' . $this->t('Run a list of questions through the Beacon assistant, one question per line. Either upload a plain-text file or type the questions below — use one or the other, not both.') . '</p>',
+      '#markup' => '<p>' . $this->t('Run a list of questions through @assistant, one question per line. Either upload a plain-text file or type the questions below — use one or the other, not both.', [
+        '@assistant' => $choices
+          ? $this->t('an AI assistant')
+          : $this->t('the Beacon assistant'),
+      ]) . '</p>',
     ];
+
+    if ($choices) {
+      $form['backend'] = [
+        '#type' => 'radios',
+        '#title' => $this->t('Assistant'),
+        '#options' => $choices,
+        '#default_value' => AnswerBackendInterface::DEFAULT_ID,
+        '#description' => $this->t('Which assistant answers this run. Running both records two runs over the same question list and opens the comparison view.'),
+      ];
+    }
 
     $form['questions_file'] = [
       '#type' => 'file',
@@ -178,8 +267,11 @@ class AiTesterForm extends FormBase {
    */
   protected function buildHistoryTable(): array {
     $query = $this->database->select('ys_ai_tester_run', 'r')
-      ->fields('r', ['id', 'created', 'uid', 'source_filename', 'question_count', 'status'])
+      ->fields('r', ['id', 'created', 'uid', 'source_filename', 'question_count', 'status', 'backend'])
       ->orderBy('r.created', 'DESC')
+      // Both runs of a "run both" submission share a request timestamp, so id
+      // breaks the tie and keeps the pair's order stable across renders.
+      ->orderBy('r.id', 'DESC')
       ->range(0, 50);
     $query->leftJoin('users_field_data', 'u', 'r.uid = u.uid');
     $query->addField('u', 'name');
@@ -208,6 +300,9 @@ class AiTesterForm extends FormBase {
         'date' => $this->dateFormatter->format($row->created, 'short'),
         'user' => $row->name ?? $this->t('Unknown'),
         'file' => $row->source_filename,
+        // Runs recorded before the tester supported more than one assistant
+        // read back as Beacon via the column default.
+        'backend' => $this->backendRegistry->labelFor((string) $row->backend),
         'questions' => $row->question_count,
         'status' => $row->status,
         'actions' => ['data' => $actions],
@@ -224,6 +319,7 @@ class AiTesterForm extends FormBase {
         'date' => $this->t('Date'),
         'user' => $this->t('User'),
         'file' => $this->t('File'),
+        'backend' => $this->t('Assistant'),
         'questions' => $this->t('Questions'),
         'status' => $this->t('Status'),
         'actions' => $this->t('Actions'),
@@ -302,8 +398,69 @@ class AiTesterForm extends FormBase {
    */
   public function submitForm(array &$form, FormStateInterface $form_state): void {
     $questions = $form_state->get('questions');
+    $backends = self::resolveRunBackends(
+      (string) $form_state->getValue('backend'),
+      $this->backendRegistry->availableIds(),
+    );
 
-    $run_id = $this->database->insert('ys_ai_tester_run')
+    // Each assistant gets its own run over the identical question list, so the
+    // two are directly comparable and either can be re-run on its own.
+    $run_ids = [];
+    foreach ($backends as $backend_id) {
+      $run_id = $this->insertRun($form_state, count($questions), $backend_id);
+      $run_ids[] = $run_id;
+
+      $operations = [];
+      foreach ($questions as $delta => $question) {
+        $operations[] = [
+          [AiTesterBatch::class, 'processQuestion'],
+          [$run_id, $question, $delta, $backend_id],
+        ];
+      }
+
+      // One batch SET per run, not one set for both. Each set carries its own
+      // results array, so finished() records the status of the run it actually
+      // belongs to, and one assistant's failure cannot mark the other
+      // assistant's run failed. A single shared set would leave the first run
+      // stuck at 'processing' forever, because every operation overwrites the
+      // same results['run_id'].
+      batch_set([
+        'title' => $this->t('Running AI tests (@assistant)', [
+          '@assistant' => $this->backendRegistry->labelFor($backend_id),
+        ]),
+        'operations' => $operations,
+        'finished' => [AiTesterBatch::class, 'finished'],
+        'progress_message' => $this->t('Processed @current of @total questions.'),
+      ]);
+    }
+
+    // Two runs over one list exist to be read side by side, so the batch lands
+    // on the comparison rather than back on this form. The form's redirect is
+    // what the batch honours once every operation has completed.
+    if (count($run_ids) === 2) {
+      sort($run_ids);
+      $form_state->setRedirect('ys_ai_tester.compare', [
+        'run_a' => $run_ids[0],
+        'run_b' => $run_ids[1],
+      ]);
+    }
+  }
+
+  /**
+   * Inserts one run row and returns its id.
+   *
+   * @param \Drupal\Core\Form\FormStateInterface $form_state
+   *   The form state carrying the validated question source.
+   * @param int $question_count
+   *   How many questions the run covers.
+   * @param string $backend_id
+   *   The assistant answering this run.
+   *
+   * @return int
+   *   The new run id.
+   */
+  protected function insertRun(FormStateInterface $form_state, int $question_count, string $backend_id): int {
+    return (int) $this->database->insert('ys_ai_tester_run')
       ->fields([
         'uid' => $this->currentUser->id(),
         'created' => $this->time->getRequestTime(),
@@ -311,24 +468,10 @@ class AiTesterForm extends FormBase {
         'source_content' => $form_state->get('source_content'),
         'source_run_id' => 0,
         'status' => 'processing',
-        'question_count' => count($questions),
+        'question_count' => $question_count,
+        'backend' => $backend_id,
       ])
       ->execute();
-
-    $operations = [];
-    foreach ($questions as $delta => $question) {
-      $operations[] = [
-        [AiTesterBatch::class, 'processQuestion'],
-        [(int) $run_id, $question, $delta],
-      ];
-    }
-
-    batch_set([
-      'title' => $this->t('Running AI tests'),
-      'operations' => $operations,
-      'finished' => [AiTesterBatch::class, 'finished'],
-      'progress_message' => $this->t('Processed @current of @total questions.'),
-    ]);
   }
 
   /**

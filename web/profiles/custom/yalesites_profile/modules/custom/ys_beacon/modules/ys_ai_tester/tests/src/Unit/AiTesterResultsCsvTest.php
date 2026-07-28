@@ -7,6 +7,7 @@ namespace Drupal\Tests\ys_ai_tester\Unit;
 use Drupal\Core\Database\Connection;
 use Drupal\Core\Datetime\DateFormatterInterface;
 use Drupal\Tests\UnitTestCase;
+use Drupal\ys_ai_tester\AnswerBackendRegistry;
 use Drupal\ys_ai_tester\Controller\AiTesterController;
 use Drupal\ys_ai_tester\RunComparator;
 
@@ -27,6 +28,7 @@ class AiTesterResultsCsvTest extends UnitTestCase {
       $this->createMock(Connection::class),
       $this->createMock(DateFormatterInterface::class),
       $this->createMock(RunComparator::class),
+      $this->createMock(AnswerBackendRegistry::class),
     );
     $method = new \ReflectionMethod($controller, 'buildResultsCsv');
     $method->setAccessible(TRUE);
@@ -44,9 +46,30 @@ class AiTesterResultsCsvTest extends UnitTestCase {
   /**
    * @covers ::buildResultsCsv
    */
-  public function testHasQuestionAnswerSourcesHeader(): void {
+  public function testHasQuestionAnswerErrorSourcesHeader(): void {
     $csv = $this->buildResultsCsv([]);
-    $this->assertStringContainsString('Question,Answer,Sources', $csv);
+    $this->assertStringContainsString('Question,Answer,Error,Sources', $csv);
+  }
+
+  /**
+   * A failed question exports its error, not just a blank answer.
+   *
+   * The download is the artefact people quote as comparison evidence, so an
+   * empty Answer cell must be distinguishable from an assistant that failed.
+   *
+   * @covers ::buildResultsCsv
+   */
+  public function testExportsTheRecordedError(): void {
+    $csv = $this->buildResultsCsv([
+      [
+        'question' => 'Q',
+        'answer' => '',
+        'error' => 'cURL error 28: Operation timed out',
+        'sources' => '',
+      ],
+    ]);
+
+    $this->assertStringContainsString('cURL error 28: Operation timed out', $csv);
   }
 
   /**

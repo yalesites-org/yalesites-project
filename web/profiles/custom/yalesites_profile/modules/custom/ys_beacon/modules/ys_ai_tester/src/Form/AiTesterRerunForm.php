@@ -11,6 +11,8 @@ use Drupal\Core\Form\FormStateInterface;
 use Drupal\Core\Session\AccountProxyInterface;
 use Drupal\Core\Url;
 use Drupal\ys_ai_tester\AiTesterBatch;
+use Drupal\ys_ai_tester\AnswerBackendInterface;
+use Drupal\ys_ai_tester\AnswerBackendRegistry;
 use Symfony\Component\DependencyInjection\ContainerInterface;
 use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
 
@@ -46,11 +48,14 @@ class AiTesterRerunForm extends ConfirmFormBase {
    *   The current user.
    * @param \Drupal\Component\Datetime\TimeInterface $time
    *   The time service.
+   * @param \Drupal\ys_ai_tester\AnswerBackendRegistry $backendRegistry
+   *   The answer backend registry.
    */
   public function __construct(
     protected Connection $database,
     protected AccountProxyInterface $currentUser,
     protected TimeInterface $time,
+    protected AnswerBackendRegistry $backendRegistry,
   ) {}
 
   /**
@@ -61,6 +66,7 @@ class AiTesterRerunForm extends ConfirmFormBase {
       $container->get('database'),
       $container->get('current_user'),
       $container->get('datetime.time'),
+      $container->get('ys_ai_tester.answer_backend_registry'),
     );
   }
 
@@ -78,12 +84,19 @@ class AiTesterRerunForm extends ConfirmFormBase {
    *   The status of the run being re-run.
    * @param int $in_flight_count
    *   How many reruns of that run are already processing.
+   * @param bool $backend_available
+   *   Whether the assistant that answered the run can still answer.
    *
    * @return string|null
-   *   'source_processing' or 'already_running' when the rerun must be refused,
-   *   or NULL when it may proceed.
+   *   'backend_unavailable', 'source_processing' or 'already_running' when the
+   *   rerun must be refused, or NULL when it may proceed.
    */
-  public static function isBlocked(?string $source_status, int $in_flight_count): ?string {
+  public static function isBlocked(?string $source_status, int $in_flight_count, bool $backend_available): ?string {
+    // Checked first because it is the most fundamental refusal: there is no
+    // assistant left to answer, so the run's own state cannot make it runnable.
+    if (!$backend_available) {
+      return 'backend_unavailable';
+    }
     if ($source_status === 'processing') {
       return 'source_processing';
     }
@@ -107,9 +120,33 @@ class AiTesterRerunForm extends ConfirmFormBase {
    * {@inheritdoc}
    */
   public function getDescription(): \Stringable|string {
-    return $this->t('This runs the same questions through Beacon again and records them as a new run. Run #@id is kept so you can compare the old and new answers. This may take a while.', [
+    return $this->t('This runs the same questions through @backend again and records them as a new run. Run #@id is kept so you can compare the old and new answers. This may take a while.', [
+      '@backend' => $this->backendRegistry->labelFor($this->backendId()),
       '@id' => $this->runId,
     ]);
+  }
+
+  /**
+   * Returns the id of the assistant that answered the run being re-run.
+   *
+   * A rerun always targets the same assistant as its source run, so the two are
+   * comparable.
+   *
+   * @return string
+   *   The stored backend id.
+   */
+  protected function backendId(): string {
+    return (string) ($this->run->backend ?? AnswerBackendInterface::DEFAULT_ID);
+  }
+
+  /**
+   * Returns whether the run's assistant can still answer questions.
+   *
+   * @return bool
+   *   TRUE when the assistant is registered and available.
+   */
+  protected function backendIsAvailable(): bool {
+    return $this->backendRegistry->getAvailable($this->backendId()) !== NULL;
   }
 
   /**
@@ -131,10 +168,14 @@ class AiTesterRerunForm extends ConfirmFormBase {
    */
   public function buildForm(array $form, FormStateInterface $form_state, ?int $run_id = NULL): array {
     $this->runId = (int) $run_id;
-    $this->run = $this->loadRun($this->runId);
+    $this->loadRun($this->runId);
     $form_state->set('rerun_run_id', $this->runId);
 
-    $blocked = self::isBlocked($this->run->status, $this->countInFlight($this->runId));
+    $blocked = self::isBlocked(
+      $this->run->status,
+      $this->countInFlight($this->runId),
+      $this->backendIsAvailable(),
+    );
     if ($blocked !== NULL) {
       $this->messenger()->addWarning($this->blockedMessage($blocked));
       return [
@@ -156,12 +197,19 @@ class AiTesterRerunForm extends ConfirmFormBase {
   public function submitForm(array &$form, FormStateInterface $form_state): void {
     $run_id = (int) $form_state->get('rerun_run_id');
     $this->runId = $run_id;
+    // Reloaded rather than reused from buildForm() because this is a fresh
+    // request: the status read here is what the guard below acts on.
     $run = $this->loadRun($run_id);
+    $backend_id = $this->backendId();
 
     // Re-check the guard at the point of mutation. This is what actually
     // stops a double-fire: a reload or a second tab reaching submit finds the
     // first rerun already processing and is refused.
-    $blocked = self::isBlocked($run->status, $this->countInFlight($run_id));
+    $blocked = self::isBlocked(
+      $run->status,
+      $this->countInFlight($run_id),
+      $this->backendIsAvailable(),
+    );
     if ($blocked !== NULL) {
       $this->messenger()->addWarning($this->blockedMessage($blocked));
       $form_state->setRedirect('ys_ai_tester.tester');
@@ -184,6 +232,9 @@ class AiTesterRerunForm extends ConfirmFormBase {
         'source_run_id' => $run_id,
         'status' => 'processing',
         'question_count' => count($questions),
+        // A rerun targets the same assistant as its source, so the old and new
+        // answers are a like-for-like comparison.
+        'backend' => $backend_id,
       ])
       ->execute();
 
@@ -191,7 +242,7 @@ class AiTesterRerunForm extends ConfirmFormBase {
     foreach ($questions as $delta => $question) {
       $operations[] = [
         [AiTesterBatch::class, 'processQuestion'],
-        [(int) $new_run_id, $question, $delta],
+        [(int) $new_run_id, $question, $delta, $backend_id],
       ];
     }
 
@@ -223,16 +274,21 @@ class AiTesterRerunForm extends ConfirmFormBase {
 
   /**
    * Loads a run row for re-running, or throws a 404.
+   *
+   * Also caches it on the form, so backendId() and the blocked messages read
+   * the same row the caller is working with rather than querying again.
    */
   protected function loadRun(int $run_id): object {
     $run = $this->database->query(
-      'SELECT id, source_filename, source_content, source_run_id, status, question_count FROM {ys_ai_tester_run} WHERE id = :id',
+      'SELECT id, source_filename, source_content, source_run_id, status, question_count, backend FROM {ys_ai_tester_run} WHERE id = :id',
       [':id' => $run_id]
     )->fetchObject();
 
     if (!$run) {
       throw new NotFoundHttpException();
     }
+
+    $this->run = $run;
     return $run;
   }
 
@@ -243,6 +299,10 @@ class AiTesterRerunForm extends ConfirmFormBase {
     return match ($reason) {
       'source_processing' => $this->t('Run #@id is still processing. Wait until it finishes before re-running it.', ['@id' => $this->runId]),
       'already_running' => $this->t('A rerun of run #@id is already in progress. Wait for it to finish.', ['@id' => $this->runId]),
+      'backend_unavailable' => $this->t('Run #@id was answered by @backend, which is no longer available on this site. The run can still be viewed and compared, but it cannot be re-run.', [
+        '@id' => $this->runId,
+        '@backend' => $this->backendRegistry->labelFor($this->backendId()),
+      ]),
       default => $this->t('This run cannot be re-run right now.'),
     };
   }

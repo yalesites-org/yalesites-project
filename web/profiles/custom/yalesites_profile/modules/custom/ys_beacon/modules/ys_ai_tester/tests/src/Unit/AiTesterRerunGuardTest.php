@@ -20,21 +20,37 @@ class AiTesterRerunGuardTest extends UnitTestCase {
    * @covers ::isBlocked
    * @dataProvider provideGuardCases
    */
-  public function testIsBlocked(?string $source_status, int $in_flight, ?string $expected): void {
-    $this->assertSame($expected, AiTesterRerunForm::isBlocked($source_status, $in_flight));
+  public function testIsBlocked(
+    ?string $source_status,
+    int $in_flight,
+    bool $backend_available,
+    ?string $expected,
+  ): void {
+    $this->assertSame(
+      $expected,
+      AiTesterRerunForm::isBlocked($source_status, $in_flight, $backend_available)
+    );
   }
 
   /**
-   * Source status + in-flight rerun count and the resolved block reason.
+   * Source status, in-flight rerun count, backend availability, block reason.
+   *
+   * A run whose assistant is gone is refused rather than attempted: a stored
+   * legacy run stays viewable and comparable after the legacy option becomes
+   * unavailable, but re-running it is refused gracefully rather than erroring
+   * part-way through a batch.
    */
   public static function provideGuardCases(): array {
     return [
-      'complete run, none in flight, allowed' => ['complete', 0, NULL],
-      'failed run may be re-run' => ['failed', 0, NULL],
-      'source still processing is blocked' => ['processing', 0, 'source_processing'],
-      'existing in-flight rerun is blocked' => ['complete', 1, 'already_running'],
-      'multiple in-flight reruns blocked' => ['complete', 3, 'already_running'],
-      'processing source takes precedence over in-flight' => ['processing', 2, 'source_processing'],
+      'complete run, none in flight, allowed' => ['complete', 0, TRUE, NULL],
+      'failed run may be re-run' => ['failed', 0, TRUE, NULL],
+      'source still processing is blocked' => ['processing', 0, TRUE, 'source_processing'],
+      'existing in-flight rerun is blocked' => ['complete', 1, TRUE, 'already_running'],
+      'multiple in-flight reruns blocked' => ['complete', 3, TRUE, 'already_running'],
+      'processing source takes precedence over in-flight' => ['processing', 2, TRUE, 'source_processing'],
+      'unavailable backend blocks a clean rerun' => ['complete', 0, FALSE, 'backend_unavailable'],
+      'unavailable backend outranks a processing source' => ['processing', 0, FALSE, 'backend_unavailable'],
+      'unavailable backend outranks an in-flight rerun' => ['complete', 2, FALSE, 'backend_unavailable'],
     ];
   }
 
