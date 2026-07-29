@@ -291,25 +291,24 @@
   /*
    * Preview occupies the right half. It spans the control rows (rather than
    * owning a single row) so its height never forces one tall grid row that
-   * would gap the left column; align-self: stretch fills that full span so
-   * the card stage below can center itself within it. No sticky positioning —
-   * it scrolls with the form instead of floating pinned to the corner.
+   * would gap the left column. No sticky positioning — it scrolls with the
+   * form instead of floating pinned to the corner.
+   *
+   * align-self must stay `start`, not `stretch`: the stage (.vb-preview-
+   * wrapper__stage) is a dashed-border box that centers the card inside
+   * itself, so stretching the wrapper over the full 20-row span made that
+   * visible box grow to the height of the whole left column with the
+   * fixed-size card floating in the middle of it. Every `#states` field a
+   * filter checkbox reveals grew the left column further, so the dashed box
+   * grew with it and read as a large empty panel next to the controls.
+   * Sizing to content keeps the dashed box wrapped around the card.
    */
   .views-basic--entity-view-mode:has(> .details-wrapper > .vb-preview-wrapper) > .details-wrapper > .vb-preview-wrapper {
     display: flex;
     flex-direction: column;
     grid-column: 2;
     grid-row: 1 / span 20;
-    align-self: stretch;
+    align-self: start;
     margin-top: 0;
-  }
-
-  /*
-   * The card stage grows to fill the stretched column and centers the card
-   * within it, so the mockup sits centered in the right half rather than
-   * pinned to the top (the header/label above it stays top-aligned).
-   */
-  .views-basic--entity-view-mode:has(> .details-wrapper > .vb-preview-wrapper) > .details-wrapper > .vb-preview-wrapper > .vb-preview-wrapper__stage {
-    flex: 1;
   }
 }
