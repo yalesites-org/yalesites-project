@@ -446,4 +446,70 @@ class GuardrailTelemetryTest extends KernelTestBase {
     $this->assertSame([], $report['days']);
   }
 
+  /**
+   * The chart series is continuous, chronological and zero-filled.
+   *
+   * @covers ::getDailySeries
+   */
+  public function testDailySeriesFillsQuietDaysWithZero(): void {
+    $this->telemetryOn('2026-07-26')->recordTurn();
+    $this->telemetryOn('2026-07-28')->recordTurn();
+    $this->telemetryOn('2026-07-28')->recordTurn();
+
+    $series = $this->telemetryOn('2026-07-28')
+      ->getDailySeries(GuardrailTelemetry::EVENT_TURNS, 3);
+
+    $this->assertSame([
+      '2026-07-26' => 1,
+      '2026-07-27' => 0,
+      '2026-07-28' => 2,
+    ], $series);
+  }
+
+  /**
+   * The series reads one event type and ignores breakdown keys.
+   *
+   * @covers ::getDailySeries
+   */
+  public function testDailySeriesIsolatesTheRequestedEvent(): void {
+    $telemetry = $this->telemetryOn('2026-07-28');
+    $telemetry->recordTurn();
+    $telemetry->recordRefusal();
+    $telemetry->recordInjectionPattern('jailbreak');
+
+    $series = $telemetry->getDailySeries(GuardrailTelemetry::EVENT_TURNS, 1);
+    $this->assertSame(['2026-07-28' => 1], $series);
+
+    $refusals = $telemetry->getDailySeries(GuardrailTelemetry::EVENT_REFUSAL, 1);
+    $this->assertSame(['2026-07-28' => 1], $refusals);
+  }
+
+  /**
+   * A bucket dated ahead of today does not lengthen the series.
+   *
+   * @covers ::getDailySeries
+   */
+  public function testDailySeriesIgnoresBucketsAheadOfToday(): void {
+    $this->telemetryOn('2026-08-05')->recordTurn();
+
+    $series = $this->telemetryOn('2026-07-28')
+      ->getDailySeries(GuardrailTelemetry::EVENT_TURNS, 2);
+
+    $this->assertSame(['2026-07-27' => 0, '2026-07-28' => 0], $series);
+  }
+
+  /**
+   * The series degrades to zeros when the store is unavailable.
+   *
+   * @covers ::getDailySeries
+   */
+  public function testDailySeriesDegradesSafelyWithoutTheTable(): void {
+    $this->database->schema()->dropTable(GuardrailTelemetry::TABLE);
+
+    $series = $this->telemetryOn('2026-07-28')
+      ->getDailySeries(GuardrailTelemetry::EVENT_TURNS, 2);
+
+    $this->assertSame(['2026-07-27' => 0, '2026-07-28' => 0], $series);
+  }
+
 }

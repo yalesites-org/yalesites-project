@@ -13,6 +13,7 @@ use Drupal\ai\Service\HostnameFilter;
 use Drupal\ys_beacon\Service\GuardrailSignalDetector;
 use Drupal\ys_beacon\Service\GuardrailTelemetry;
 use Drupal\ys_beacon\Service\RagRetriever;
+use Drupal\ys_beacon\Service\SuspectTurnLog;
 use Drupal\ys_beacon\Service\SystemPromptBuilder;
 use Psr\Log\LoggerInterface;
 use Symfony\Component\DependencyInjection\ContainerInterface;
@@ -149,6 +150,13 @@ class ChatApiController extends ControllerBase {
   protected GuardrailSignalDetector $signalDetector;
 
   /**
+   * The log of turns flagged as suspected injection attempts.
+   *
+   * @var \Drupal\ys_beacon\Service\SuspectTurnLog
+   */
+  protected SuspectTurnLog $suspectTurnLog;
+
+  /**
    * {@inheritdoc}
    */
   public static function create(ContainerInterface $container) {
@@ -162,6 +170,7 @@ class ChatApiController extends ControllerBase {
     $instance->hostnameFilter = $container->get('ai.hostname_filter_service');
     $instance->telemetry = $container->get('ys_beacon.guardrail_telemetry');
     $instance->signalDetector = $container->get('ys_beacon.guardrail_signal_detector');
+    $instance->suspectTurnLog = $container->get('ys_beacon.suspect_turn_log');
     return $instance;
   }
 
@@ -262,7 +271,17 @@ class ChatApiController extends ControllerBase {
     // citations payload alive for the life of the response.
     $has_citations = $citations !== [];
 
-    $response = new StreamedResponse(function () use ($defaults, $messages, $streaming, $tool_line, $response_id, $model_id, $has_citations) {
+    // A turn whose question matched an injection pattern is kept in full for
+    // review; every other turn keeps nothing. The question is carried into the
+    // closure only in that case, and the answer buffer below is sized the same
+    // way, so an ordinary turn accumulates exactly the refusal sample it always
+    // did and no question or answer text outlives the request.
+    $suspect_question = $injection !== NULL ? $question : '';
+    $capture_length = $injection !== NULL
+      ? SuspectTurnLog::MAX_TEXT_LENGTH
+      : GuardrailSignalDetector::REFUSAL_SAMPLE_LENGTH;
+
+    $response = new StreamedResponse(function () use ($defaults, $messages, $streaming, $tool_line, $response_id, $model_id, $has_citations, $injection, $suspect_question, $capture_length) {
       $emit = static function (string $line): void {
         echo $line;
         if (ob_get_level() > 0) {
@@ -277,9 +296,11 @@ class ChatApiController extends ControllerBase {
       // answer has been streamed - so counting can never delay the visible
       // answer, and a turn that failed part-way is still counted.
       $chat_input = NULL;
-      // Only the opening of the answer is accumulated, and only for long
-      // enough to classify it as a refusal. It is never stored or logged.
-      $opening = '';
+      // The answer is accumulated only up to $capture_length: the refusal
+      // sample on an ordinary turn, which is never stored or logged, and the
+      // clamped review copy on a turn already flagged as a suspected injection
+      // attempt.
+      $captured = '';
 
       try {
         $provider = $this->aiProvider->createInstance($defaults['provider_id']);
@@ -299,7 +320,7 @@ class ChatApiController extends ControllerBase {
         // The AI module's output filter blocks the links the model returns
         // (its allow-list is empty = block-all), so disable it for this
         // response. See withOutputFilteringDisabled() for the safety rationale.
-        $this->withOutputFilteringDisabled(function () use ($provider, $chat_input, $model_id, $emit, $response_id, &$opening) {
+        $this->withOutputFilteringDisabled(function () use ($provider, $chat_input, $model_id, $emit, $response_id, $capture_length, &$captured) {
           $output = $provider->chat($chat_input, $model_id, ['ys_beacon']);
           $normalized = $output->getNormalized();
 
@@ -309,8 +330,8 @@ class ChatApiController extends ControllerBase {
               if ($delta === '') {
                 continue;
               }
-              if (mb_strlen($opening) < GuardrailSignalDetector::REFUSAL_SAMPLE_LENGTH) {
-                $opening .= $delta;
+              if (mb_strlen($captured) < $capture_length) {
+                $captured .= $delta;
               }
               $emit($this->envelope($response_id, $model_id, [
                 ['role' => 'assistant', 'content' => $delta],
@@ -319,7 +340,7 @@ class ChatApiController extends ControllerBase {
           }
           else {
             $text = $normalized->getText();
-            $opening = mb_substr($text, 0, GuardrailSignalDetector::REFUSAL_SAMPLE_LENGTH);
+            $captured = mb_substr($text, 0, $capture_length);
             $emit($this->envelope($response_id, $model_id, [
               ['role' => 'assistant', 'content' => $text],
             ]));
@@ -338,8 +359,21 @@ class ChatApiController extends ControllerBase {
         // arriving here is both unexpected and unloggable - swallow it. An
         // escaping throw would also put the answer opening into the logged
         // backtrace as a stack argument, which the privacy constraint forbids.
+        // Guarded separately, and the flagged write goes first. Reading the
+        // guardrail results off the input evaluates two contrib getters in this
+        // frame (see ::recordTurnTelemetry), so a throw from either would
+        // otherwise be swallowed here and silently take the flagged-turn write
+        // with it - leaving the injection counter incremented, the text
+        // dropped, and nothing logged anywhere to say so.
         try {
-          $this->recordTurnTelemetry($has_citations, $opening, $chat_input);
+          if ($injection !== NULL) {
+            $this->suspectTurnLog->record($injection, $suspect_question, $captured);
+          }
+        }
+        catch (\Throwable) {
+        }
+        try {
+          $this->recordTurnTelemetry($has_citations, $captured, $chat_input);
         }
         catch (\Throwable) {
         }
@@ -366,14 +400,15 @@ class ChatApiController extends ControllerBase {
    *
    * @param bool $has_citations
    *   Whether retrieval produced any citations for the turn.
-   * @param string $opening
-   *   The opening of the answer, inspected for a refusal. Empty when the turn
-   *   failed before the model produced anything.
+   * @param string $answer
+   *   The captured answer text. Only its opening is inspected, by isRefusal();
+   *   a flagged turn passes a longer buffer, which makes no difference here.
+   *   Empty when the turn failed before the model produced anything.
    * @param \Drupal\ai\OperationType\Chat\ChatInput|null $chat_input
    *   The input the model was called with, carrying the turn's guardrail
    *   results, or NULL if the call was never made.
    */
-  protected function recordTurnTelemetry(bool $has_citations, string $opening, ?ChatInput $chat_input): void {
+  protected function recordTurnTelemetry(bool $has_citations, string $answer, ?ChatInput $chat_input): void {
     // The denominator: recorded for every turn that reached the model, so the
     // other counters can be read as rates rather than raw volumes.
     $this->telemetry->recordTurn();
@@ -382,7 +417,7 @@ class ChatApiController extends ControllerBase {
       $this->telemetry->recordZeroCitations();
     }
 
-    if ($this->signalDetector->isRefusal($opening)) {
+    if ($this->signalDetector->isRefusal($answer)) {
       $this->telemetry->recordRefusal();
     }
 

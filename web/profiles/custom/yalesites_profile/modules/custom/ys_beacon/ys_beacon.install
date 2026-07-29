@@ -7,6 +7,7 @@
 
 use Drupal\ys_beacon\Controller\ChatApiController;
 use Drupal\ys_beacon\Service\GuardrailTelemetry;
+use Drupal\ys_beacon\Service\SuspectTurnLog;
 use Drupal\Core\Database\Connection;
 
 /**
@@ -98,6 +99,46 @@ function ys_beacon_schema() {
     // concurrency: it turns a racing insert into a constraint violation that
     // Merge recovers from with an atomic increment instead of a lost count.
     'primary key' => ['bucket_date', 'event_key'],
+  ];
+
+  $schema[SuspectTurnLog::TABLE] = [
+    'description' => 'Chat turns whose question matched a known prompt-injection pattern, kept with their text so a suspected attack can be reviewed. Unlike the counter table above this DOES hold question and answer text; it is pruned after SuspectTurnLog::RETENTION_DAYS days and readable only with the "view ys beacon guardrail telemetry" permission.',
+    'fields' => [
+      'id' => [
+        'type' => 'serial',
+        'not null' => TRUE,
+        'description' => 'Primary key.',
+      ],
+      'created' => [
+        'type' => 'int',
+        'not null' => TRUE,
+        'default' => 0,
+        'description' => 'Unix timestamp the turn was served, used to order and to expire rows.',
+      ],
+      'pattern' => [
+        'type' => 'varchar',
+        'length' => 64,
+        'not null' => TRUE,
+        'default' => '',
+        'description' => 'Name of the GuardrailSignalDetector injection pattern the question matched.',
+      ],
+      'question' => [
+        'type' => 'text',
+        'not null' => FALSE,
+        'description' => 'The question as asked, clamped to SuspectTurnLog::MAX_TEXT_LENGTH characters.',
+      ],
+      'answer' => [
+        'type' => 'text',
+        'not null' => FALSE,
+        'description' => 'The answer as served, clamped to SuspectTurnLog::MAX_TEXT_LENGTH characters. Empty when the turn failed before the model answered.',
+      ],
+    ],
+    'primary key' => ['id'],
+    // Every read, the per-day write quota and the retention prune all filter on
+    // created, so it carries the only index this table needs.
+    'indexes' => [
+      'created' => ['created'],
+    ],
   ];
 
   return $schema;
@@ -651,4 +692,20 @@ function ys_beacon_update_10016() {
     return;
   }
   $schema->createTable(GuardrailTelemetry::TABLE, ys_beacon_schema()[GuardrailTelemetry::TABLE]);
+}
+
+/**
+ * Creates the flagged-turn table for suspected injection attempts.
+ *
+ * Unlike the counter table, this one holds the question and the answer of a
+ * flagged turn - see SuspectTurnLog for the retention, clamping and per-day
+ * bounds, and README.md for what the report page discloses about it. Requested
+ * in the review of yalesites-org/YaleSites-Internal#1469.
+ */
+function ys_beacon_update_10017() {
+  $schema = \Drupal::database()->schema();
+  if ($schema->tableExists(SuspectTurnLog::TABLE)) {
+    return;
+  }
+  $schema->createTable(SuspectTurnLog::TABLE, ys_beacon_schema()[SuspectTurnLog::TABLE]);
 }

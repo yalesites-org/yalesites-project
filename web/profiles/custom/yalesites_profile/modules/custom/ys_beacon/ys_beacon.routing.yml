@@ -75,5 +75,21 @@ ys_beacon.telemetry:
     _controller: '\Drupal\ys_beacon\Controller\TelemetryController::report'
     _title: 'Beacon guardrail telemetry'
   requirements:
-    _permission: 'manage ys beacon settings'
+    # Deliberately its own permission rather than 'manage ys beacon settings',
+    # which site admins also hold: this report exposes the question and answer
+    # of turns flagged as suspected injection attempts, so it is granted to
+    # platform_admin only (user 1 bypasses permission checks). Re-scoping it
+    # later is a change to who holds this one permission and nothing else.
+    _permission: 'view ys beacon guardrail telemetry'
+    _ys_beacon_authorized: 'TRUE'
+
+# Raw JSON export. Provisional - see "Removing the JSON export" in README.md for
+# the three things to delete if it is dropped.
+ys_beacon.telemetry_export:
+  path: '/admin/config/yalesites/ys-beacon/telemetry/export'
+  defaults:
+    _controller: '\Drupal\ys_beacon\Controller\TelemetryController::export'
+    _title: 'Export Beacon guardrail telemetry'
+  requirements:
+    _permission: 'view ys beacon guardrail telemetry'
     _ys_beacon_authorized: 'TRUE'

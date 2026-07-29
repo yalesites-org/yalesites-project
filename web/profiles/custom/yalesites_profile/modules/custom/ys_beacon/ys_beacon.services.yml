@@ -107,6 +107,13 @@ services:
       - '@datetime.time'
       - '@logger.channel.ys_beacon'
 
+  ys_beacon.suspect_turn_log:
+    class: Drupal\ys_beacon\Service\SuspectTurnLog
+    arguments:
+      - '@database'
+      - '@datetime.time'
+      - '@logger.channel.ys_beacon'
+
   ys_beacon.authorization:
     class: Drupal\ys_beacon\BeaconAuthorization
     arguments:

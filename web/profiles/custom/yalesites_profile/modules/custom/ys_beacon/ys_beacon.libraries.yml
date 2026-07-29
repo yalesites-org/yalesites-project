@@ -13,6 +13,11 @@ chat_button:
   css:
     theme:
       css/chat_button.css: {}
+telemetry:
+  version: VERSION
+  css:
+    theme:
+      css/telemetry.css: {}
 system_instructions:
   version: VERSION
   js:

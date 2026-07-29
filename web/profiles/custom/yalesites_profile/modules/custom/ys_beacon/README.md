@@ -363,12 +363,25 @@ Tester_).
 
 ## Guardrail telemetry
 
-Guardrail behaviour is measurable without storing conversations. `GuardrailTelemetry`
-keeps **aggregate counters only**, bucketed per UTC day, readable at
-`/admin/config/yalesites/ys-beacon/telemetry` (permission: _Manage ys beacon
-settings_, plus platform authorization). The same "what is and is not recorded"
-summary below is rendered on that page, so the platform's "conversations are not
-saved" claim can be checked from the interface rather than taken on trust.
+`GuardrailTelemetry` keeps **aggregate counters only**, bucketed per UTC day,
+readable at `/admin/config/yalesites/ys-beacon/telemetry` (permission: _View
+Beacon guardrail telemetry_, plus platform authorization). The same "what is and
+is not recorded" summary below is rendered on that page, so what the platform
+does and does not keep can be checked from the interface rather than taken on
+trust.
+
+There is **one** store that holds conversation text, and it is deliberately not
+this one: a turn whose question matches a known injection pattern is kept in full
+by `SuspectTurnLog` (see [Flagged turns](#flagged-turns-suspected-injection-attempts)
+below). Ordinary turns are counted and nothing else.
+
+The report page is gated on its **own** permission, `view ys beacon guardrail
+telemetry`, rather than the broader `manage ys beacon settings` that site admins
+also hold. It is granted to `platform_admin` only in
+`config/sync/user.role.platform_admin.yml`; user 1 reaches it because user 1
+bypasses permission checks. It carries `restrict access: true`. Re-scoping who
+can read the telemetry later is therefore a change to the grants on this single
+permission and nothing else.
 
 **Recorded** — a count, per day, for each event type, plus dimensioned breakdown
 rows:
@@ -392,10 +405,13 @@ argument or a bounded identifier — `recordTurn()`, `recordRefusal()`,
 conversation text in even by accident, which matters because the most likely
 future caller is a streaming guardrail that has the offending text in hand.
 
-**Not recorded** — questions, answers, user names, IP addresses, session ids, or
-any sample of conversation text, hashed or redacted or otherwise. The
-`ys_beacon_telemetry` table has three columns (`bucket_date`, `event_key`,
-`event_count`); there is no column a transcript could be written into. The
+**Not recorded in the counters** — questions, answers, user names, IP addresses,
+session ids, or any sample of conversation text, hashed or redacted or otherwise.
+The `ys_beacon_telemetry` table has three columns (`bucket_date`, `event_key`,
+`event_count`); there is no column a transcript could be written into. (Question
+and answer text of a *flagged* turn is kept in the separate
+`ys_beacon_suspect_turn` table — see below. No user name, session id or IP address
+is recorded there either.) The
 refusal check keeps only the first 400 characters of an answer while classifying
 it, and stores nothing — though that bound is a false-positive control for
 Beacon's own copy, not a privacy boundary in itself, since the AI module's
@@ -459,6 +475,94 @@ than choices here:
 - **`zero_citations` currently means "the index matched nothing."** With
   `score_threshold` shipping at `0.0`, `RagRetriever` applies no score filter at
   all, so raising that threshold later would change what this metric counts.
+
+### Flagged turns (suspected injection attempts)
+
+The counters answer "how often", not "what happened". Five `ignore_instructions`
+hits say nothing about what was actually attempted or how the model replied, so
+`SuspectTurnLog` keeps the **whole turn** when a question matches a
+`GuardrailSignalDetector` injection pattern: the time, the pattern name, the
+question and the answer, in `ys_beacon_suspect_turn`.
+
+This is the only place Beacon persists conversation text, so it is bounded and
+each bound is stated on the report page rather than left to the schema:
+
+| Bound | Value | Why |
+| --- | --- | --- |
+| Retention | 90 days (`SuspectTurnLog::RETENTION_DAYS`) | Pruned on write, like the counters — no cron hook needed. Reads also filter on the window, so an expired row is never shown even before a write prunes it. |
+| Text clamp | 2000 characters each (`MAX_TEXT_LENGTH`) | Enough to review an attempt; stops one turn writing an unbounded row. |
+| Rows per pattern per UTC day | 60 (`MAX_ROWS_PER_PATTERN_PER_DAY`) | The chat endpoint is public and unauthenticated. Per **pattern**, not per day overall: a single day-wide quota is steerable by the attacker it exists to record — 200 throwaway `ignore_instructions` hits would fill it and silently drop every later flagged turn, including a novel attack under another pattern. At quota the pattern's oldest row for the day is evicted, so what survives is the most recent attempts rather than whichever the attacker submitted first. |
+
+The per-day quota means a sustained campaign is **sampled** here. The aggregate
+`injection_pattern` counters are not capped, so the campaign is still fully
+visible in the counts — the page says so where it lists the flagged turns.
+
+Expect the counts to exceed the rows for a second reason too: `injection_pattern`
+is counted as soon as the question is parsed, but the row is written after the
+answer has streamed, so a flagged turn that is refused earlier (no chat provider
+configured, conversation too long) is counted without being logged. The text
+clamp is enforced on write by `SuspectTurnLog`, not by the controller's buffer,
+which may overshoot by one streamed chunk.
+
+The report lists the 50 most recent flagged turns, with question and answer
+**shortened to 300 characters each for display** (`TelemetryController::EXCERPT_LENGTH`)
+and an ellipsis when shortened. Storage clamps at 2000, which is right for
+reviewing an attempt but wrong for a table cell — a question padded to the clamp
+is one row tall enough to push every other flagged turn off the screen, which
+defeats the point of listing them. The note under the table states both limits,
+and the JSON export carries the full stored text.
+
+Two deliberate design points:
+
+- **It is a separate class, not a method on `GuardrailTelemetry`.** That service's
+  guarantee — no caller can hand it conversation text even by accident — is worth
+  keeping intact, so the capability that breaks the rule lives behind its own
+  name, table and permission instead of widening the counters' API.
+- **An ordinary turn accumulates nothing extra.** `ChatApiController` sizes its
+  answer buffer from the injection check: a flagged turn buffers up to
+  `MAX_TEXT_LENGTH`, every other turn buffers exactly the 400-character refusal
+  sample it always did, and the question is only carried into the streamed
+  closure when the turn is flagged.
+
+**Only injection-pattern hits are logged.** A guardrail stop is not, for two
+reasons that are properties of the current system rather than preferences: no
+guardrail set is configured for Beacon yet (so `guardrail_stop` reads zero), and
+streaming-phase stops are invisible to callers at all (see the known limits
+above). Extending the trigger later is one added call at the same site in
+`ChatApiController::conversation()`'s `finally` block.
+
+### Chat-turn distribution chart
+
+The report renders turns per UTC day across the full 90-day retention window
+(`GuardrailTelemetry::getDailySeries()`), so a spike or a quiet spell is visible
+without reading the by-day table. The series is zero-filled: a day with no turns
+is a data point, and dropping it would make the x-axis lie about the window.
+
+Bars are scaled to the busiest day rather than an absolute, so a quiet period is
+still readable, and any non-zero day is floored at 1% so it never renders as an
+empty column. Each bar carries its own date and count as real text in a
+`visually-hidden` span, which is what makes the chart readable with a screen
+reader — there is no `aria-label` summary standing in for the data. Markup lives
+in `templates/ys-beacon-telemetry-chart.html.twig`; the bar height is passed as a
+CSS custom property so `css/telemetry.css` keeps control of presentation.
+
+### Removing the JSON export
+
+The export button is **provisional** — it was added at the reviewer's request with
+the explicit expectation that it may be dropped. It is self-contained. To remove
+it, delete these three things and nothing else:
+
+1. The `ys_beacon.telemetry_export` route in `ys_beacon.routing.yml`.
+2. `TelemetryController::export()`.
+3. The `$build['export']` link in `TelemetryController::report()`.
+
+Nothing else references it: no library, no config, no schema, no test fixture
+outside `TelemetryControllerTest`. The export reports its own limits in the
+payload (`flagged_turns.truncated`, `max_rows_per_export`) rather than silently
+truncating, and is capped at `SuspectTurnLog::MAX_EXPORT_ROWS` rows so a response
+cannot grow unbounded. Because it carries flagged-turn text it is gated on the
+same platform-admin-only permission as the page and sent `Cache-Control:
+no-store`.
 
 ## System instruction layers
 

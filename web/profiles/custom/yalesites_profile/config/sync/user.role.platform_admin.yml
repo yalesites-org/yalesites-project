@@ -545,6 +545,7 @@ permissions:
   - 'view the administration theme'
   - 'view unpublished paragraphs'
   - 'view vocabulary labels'
+  - 'view ys beacon guardrail telemetry'
   - 'yalesites manage alerts'
   - 'yalesites manage campus groups'
   - 'yalesites manage integrations'

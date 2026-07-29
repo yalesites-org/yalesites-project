@@ -1,0 +1,42 @@
+{#
+/**
+ * @file
+ * Distribution of Beacon chat turns per UTC day.
+ *
+ * Each bar carries its own date and count as real text inside a
+ * visually-hidden span, so the chart is readable with a screen reader without
+ * aria-label duplication and without a parallel data table. The bar height is
+ * passed as a CSS custom property rather than a width/height declaration so the
+ * stylesheet keeps control of the presentation.
+ *
+ * Available variables:
+ * - bars: list of days, oldest first, each with date, count and percent.
+ * - max: the busiest day's count, which the bars are scaled against.
+ * - days: how many days the chart covers.
+ * - total: chat turns across the whole window.
+ */
+#}
+<figure class="ys-beacon-chart">
+  <figcaption class="ys-beacon-chart__caption">
+    {{ 'Chat turns per day'|t }}
+    <span class="ys-beacon-chart__summary">
+      {{ '@total turns over @days days, busiest day @max.'|t({'@total': total, '@days': days, '@max': max}) }}
+    </span>
+  </figcaption>
+
+  {% if max > 0 %}
+    <ol class="ys-beacon-chart__bars">
+      {% for bar in bars %}
+        <li class="ys-beacon-chart__bar" style="--ys-beacon-chart-bar-height: {{ bar.percent }}%">
+          <span class="visually-hidden">{{ '@date: @count turns'|t({'@date': bar.date, '@count': bar.count}) }}</span>
+        </li>
+      {% endfor %}
+    </ol>
+    <p class="ys-beacon-chart__axis">
+      <span>{{ (bars|first).date }}</span>
+      <span>{{ (bars|last).date }}</span>
+    </p>
+  {% else %}
+    <p>{{ 'No chat turns recorded yet.'|t }}</p>
+  {% endif %}
+</figure>

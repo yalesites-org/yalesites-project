@@ -294,6 +294,55 @@ class GuardrailTelemetry {
   }
 
   /**
+   * Reads one event's count for every day in a window, oldest day first.
+   *
+   * Unlike ::getReport(), days with no events are present with a count of 0:
+   * this feeds the distribution chart, where a quiet day is a data point and a
+   * gap would misread as a shorter window. Lives here rather than in the
+   * controller because the day-bucket vocabulary is this class's to own.
+   *
+   * @param string $event
+   *   One of the self::EVENT_* constants.
+   * @param int $days
+   *   How many days back to read, including today.
+   *
+   * @return int[]
+   *   Count keyed by bucket date, chronological, one entry per day.
+   */
+  public function getDailySeries(string $event, int $days = self::RETENTION_DAYS): array {
+    $days = max($days, 1);
+
+    $series = [];
+    for ($ago = $days - 1; $ago >= 0; $ago--) {
+      $series[$this->dateDaysAgo($ago)] = 0;
+    }
+
+    try {
+      $rows = $this->database->select(self::TABLE, 't')
+        ->fields('t', ['bucket_date', 'event_count'])
+        ->condition('event_key', $event)
+        ->condition('bucket_date', $this->dateDaysAgo($days - 1), '>=')
+        ->execute();
+
+      foreach ($rows as $row) {
+        // Guarded rather than assigned blindly: a row dated ahead of today
+        // (a clock change, a restored database) must not add a key outside the
+        // window and lengthen the chart.
+        if (isset($series[$row->bucket_date])) {
+          $series[$row->bucket_date] = (int) $row->event_count;
+        }
+      }
+    }
+    catch (\Throwable $e) {
+      $this->warn('Beacon guardrail telemetry series could not be read: @message', [
+        '@message' => $e->getMessage(),
+      ]);
+    }
+
+    return $series;
+  }
+
+  /**
    * Records one occurrence of an event.
    *
    * The event's own total is incremented once, plus one row per dimension, so
