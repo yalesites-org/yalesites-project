@@ -77,23 +77,49 @@ cutover cleanup. The check is made at runtime instead.
 Removal is designed to be a clean, one-way door. Beacon-only testing keeps
 working at every step.
 
-1. **Uninstall the module.**
+Uninstalling removes the feature outright: the backend is registered through the
+`ys_ai_tester.answer_backend` service tag, so the option disappears with the
+service, and the tester core never references this module.
 
-   ```
-   drush pm:uninstall ys_ai_tester_legacy
-   ```
+Runs already recorded against the legacy assistant stay viewable and comparable —
+the run history and comparison view fall back to showing the stored backend id
+when no service can be asked for a label. Only the creation of new legacy runs
+stops, and re-running a stored legacy run is refused with an explanatory message
+rather than erroring mid-batch.
 
-   This alone removes the feature: the backend was registered through the
-   `ys_ai_tester.answer_backend` service tag, so the option disappears with the
-   service. The tester core never references this module.
+**Do the removal across two releases, and do not delete the code and the
+`core.extension.yml` line in the same one.** The platform removes modules through
+`drush deploy`, not by running `drush pm:uninstall` on each site by hand.
+`config:import` has to *uninstall* this module, which needs its code present to
+resolve `getPath()` — with the directory already gone it throws
+`UnknownExtensionException`, and installing any other module in that same import
+rebuilds the module list from active `core.extension` and trips the same error.
+This is not hypothetical: it is what happened to `ys_servicenow` (YaleSites-Internal
+issue #1372, PRs #1360 then #1364). The tell at `updatedb` bootstrap is the
+requirements warning "marked as installed in the core.extension configuration, but
+it is missing".
 
-   Runs already recorded against the legacy assistant stay viewable and
-   comparable — the run history and comparison view fall back to showing the
-   stored backend id when no service can be asked for a label. Only the creation
-   of new legacy runs stops, and re-running a stored legacy run is refused with an
-   explanatory message rather than erroring mid-batch.
+1. **Release N — drop the config, keep the code.** Delete the
+   `ys_ai_tester_legacy: 0` line from
+   `web/profiles/custom/yalesites_profile/config/sync/core.extension.yml` and
+   leave this directory in place. On deploy, `config:import` uninstalls the module
+   cleanly — the code is present and there is no `hook_uninstall` or installed
+   config to clean up. Afterwards, confirm the module is gone from each site's
+   **active** `core.extension`; a green deploy on its own is not proof, because an
+   import with no module-install step will not trip the crash while the stale
+   entry survives.
 
-2. **Delete the module directory** and this README.
+2. **Release N+1 — delete the code.** Delete this module directory and this
+   README. No other file changes; `ys_ai_tester` and `ys_beacon` should stay
+   green.
+
+   If waiting a release is unacceptable, the single-release alternative is the
+   `ys_servicenow` pattern: add a `hook_update_N` to `ys_ai_tester` that strips
+   the module from active `core.extension` and cleans its `system.schema`
+   key_value entry, then delete the directory in the same commit. `updatedb` runs
+   before `config:import` in `drush deploy`, so it clears in time. Note a
+   `hook_update_N` runs once — a site whose schema has already advanced past it
+   needs the removal re-issued under a fresh, higher number.
 
 3. **Optionally drop the `backend` column** from `ys_ai_tester_run` with one
    update hook in `ys_ai_tester`, once nobody needs to tell historical legacy runs
