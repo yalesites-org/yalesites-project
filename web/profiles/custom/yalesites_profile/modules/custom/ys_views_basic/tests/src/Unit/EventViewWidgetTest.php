@@ -64,6 +64,7 @@ class EventViewWidgetTest extends UnitTestCase {
       [],
       $this->manager,
       $this->entityTypeManager,
+      $this->getConfigFactoryStub(['ys_core.site' => ['font_pairing' => 'yalenew']]),
     );
     $widget->setStringTranslation($this->getStringTranslationStub());
     return $widget;

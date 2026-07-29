@@ -40,6 +40,7 @@ class PageViewWidgetTest extends UnitTestCase {
       [],
       $this->createMock(ViewsBasicManager::class),
       $entity_type_manager,
+      $this->getConfigFactoryStub(['ys_core.site' => ['font_pairing' => 'yalenew']]),
     );
     $widget->setStringTranslation($this->getStringTranslationStub());
     return $widget;

@@ -9,6 +9,7 @@ use Drupal\Core\Form\FormStateInterface;
 use Drupal\Core\Routing\RouteMatchInterface;
 use Drupal\Tests\UnitTestCase;
 use Drupal\taxonomy\TermStorageInterface;
+use Drupal\views\ViewExecutableFactory;
 use Drupal\ys_views_basic\ViewsBasicManager;
 
 /**
@@ -68,6 +69,13 @@ class ViewsBasicManagerTest extends UnitTestCase {
   protected $cacheTagsInvalidator;
 
   /**
+   * The view executable factory mock.
+   *
+   * @var \Drupal\views\ViewExecutableFactory|\PHPUnit\Framework\MockObject\MockObject
+   */
+  protected $viewExecutableFactory;
+
+  /**
    * The manager under test.
    *
    * @var \Drupal\ys_views_basic\ViewsBasicManager
@@ -93,12 +101,14 @@ class ViewsBasicManagerTest extends UnitTestCase {
     $this->entityDisplayRepository = $this->createMock(EntityDisplayRepository::class);
     $this->routeMatch = $this->createMock(RouteMatchInterface::class);
     $this->cacheTagsInvalidator = $this->createMock(CacheTagsInvalidatorInterface::class);
+    $this->viewExecutableFactory = $this->createMock(ViewExecutableFactory::class);
 
     $this->manager = new ViewsBasicManager(
       $this->entityTypeManager,
       $this->entityDisplayRepository,
       $this->routeMatch,
-      $this->cacheTagsInvalidator
+      $this->cacheTagsInvalidator,
+      $this->viewExecutableFactory
     );
   }
 
@@ -157,6 +167,7 @@ class ViewsBasicManagerTest extends UnitTestCase {
         ['entity_display.repository', 1, $this->entityDisplayRepository],
         ['current_route_match', 1, $this->routeMatch],
         ['cache_tags.invalidator', 1, $this->cacheTagsInvalidator],
+        ['views.executable', 1, $this->viewExecutableFactory],
       ]);
 
     $manager = ViewsBasicManager::create($container);
