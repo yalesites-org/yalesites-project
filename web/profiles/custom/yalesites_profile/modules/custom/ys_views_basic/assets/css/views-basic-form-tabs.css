@@ -150,3 +150,22 @@
   width: 100%;
   flex-flow: row wrap;
 }
+
+/*
+ * Restore the dark color-scheme on form controls so the browser paints its
+ * native widgets (the number-input stepper arrows, most visibly) for a dark
+ * background.
+ *
+ * Gin does this itself with `.gin--dark-mode .form-element { color-scheme:
+ * dark }`, but that rule cannot reach a Layout Builder block form for two
+ * compounding reasons: a Layout Builder page renders in the front-end theme,
+ * so Gin's stylesheet is not loaded here at all (only gin_lb's), and gin_lb
+ * renames `form-element` to `glb-form-element` (its src/classes.json rename
+ * list) so even a loaded copy of the rule would not match. gin_lb ships no
+ * color-scheme declaration of its own, so the control keeps the default light
+ * scheme while gin_lb paints it a dark background — and Safari/WebKit then
+ * draws the "Skip the first results" / "Items" stepper arrows dark-on-dark.
+ */
+.gin--dark-mode .layout-builder-configure-block .glb-form-element {
+  color-scheme: dark;
+}
