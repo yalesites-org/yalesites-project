@@ -6,7 +6,31 @@
  * core #type => table so Gin styles the grid. Only the diff highlight colors and
  * the status badges need bespoke rules, expressed with Gin CSS custom properties
  * and safe literal fallbacks.
+ *
+ * Colors that sit on a surface of our own are pinned to literals rather than
+ * taken from Gin's text tokens. Gin flips those tokens for dark mode, so pairing
+ * one with a background that does not flip silently destroys the contrast — that
+ * is what rendered the caveat copy at 1.02:1. Dark mode is signalled by
+ * `html.gin--dark-mode`, which Gin sets for its `auto` setting too. Every pair
+ * below was measured against WCAG 2.1 AA (4.5:1) in both modes and the resulting
+ * ratio is recorded beside it.
  */
+
+.ys-compare {
+  /* One source of truth for the diff colors, so the highlights and the legend
+     swatches cannot drift apart and dark mode is a single override block. */
+  --ys-diff-removed-bg: #fde2e2;
+  --ys-diff-removed-fg: #8f1a1a; /* 7.4:1. */
+  --ys-diff-added-bg: #e6f4ea;
+  --ys-diff-added-fg: #14663f; /* 6.2:1. */
+}
+
+html.gin--dark-mode .ys-compare {
+  --ys-diff-removed-bg: #4a1f1f;
+  --ys-diff-removed-fg: #ffb3b3; /* 8.3:1. */
+  --ys-diff-added-bg: #12351f;
+  --ys-diff-added-fg: #9be3b4; /* 9.1:1. */
+}
 
 .ys-compare-summary {
   margin-block-end: 1rem;
@@ -20,7 +44,14 @@
   padding: 0.75rem 1rem;
   border-inline-start: 4px solid var(--gin-color-warning, #e5a611);
   background: var(--gin-color-warning-light, #fdf3da);
-  color: var(--gin-color-text, #1b1b1d);
+  color: #1b1b1d; /* 11.3:1 on Gin's warning-light. */
+}
+
+/* Dark mode keeps the warning accent but moves to a dark surface, the way Gin
+   renders its own messages, so the copy can stay light. */
+html.gin--dark-mode .ys-compare-caveat {
+  background: #3a2f10;
+  color: #f5e6b8; /* 10.7:1. */
 }
 
 .ys-compare-meta {
@@ -38,6 +69,49 @@
   background: var(--gin-bg-layer2, #fff);
 }
 
+/* Explains what the highlighting in the answer columns means. The highlights
+   are deliberately not individually focusable: a paragraph-length answer
+   produces dozens of changed-word spans, and turning each into a tab stop would
+   cost keyboard users far more than a per-word tooltip would give them, so the
+   explanation is made once for the whole table. */
+.ys-compare-help {
+  max-width: 60rem;
+  margin-block-end: 0.5rem;
+}
+
+.ys-compare-legend {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 1rem;
+  margin-block-end: 1rem;
+  font-size: 0.8125rem;
+}
+
+.ys-compare-legend__item {
+  display: flex;
+  align-items: center;
+  gap: 0.375rem;
+}
+
+/* The swatch only repeats a highlight color, so it is decorative and hidden
+   from assistive technology; the adjacent text carries the meaning. */
+.ys-compare-legend__swatch {
+  display: inline-block;
+  width: 1.5rem;
+  height: 0.875rem;
+  border-radius: 2px;
+}
+
+.ys-compare-legend__swatch--removed {
+  border: 1px solid var(--ys-diff-removed-fg);
+  background: var(--ys-diff-removed-bg);
+}
+
+.ys-compare-legend__swatch--added {
+  border: 1px solid var(--ys-diff-added-fg);
+  background: var(--ys-diff-added-bg);
+}
+
 /* Word-level diff: core WordLevelDiff marks changed words with .diffchange in
    both columns; the directional wrapper colors removals (Run A) and additions
    (Run B). */
@@ -46,15 +120,16 @@
   word-break: break-word;
 }
 
+/* No line-through here: striking the text out made the very words a reviewer
+   needs to read the hardest to read. The background carries the signal alone. */
 .ys-diff--removed .diffchange {
-  background: var(--gin-color-danger-lightest, #fce8e8);
-  color: var(--gin-color-danger, #d72222);
-  text-decoration: line-through;
+  background: var(--ys-diff-removed-bg);
+  color: var(--ys-diff-removed-fg);
 }
 
 .ys-diff--added .diffchange {
-  background: #e6f4ea;
-  color: #18794e;
+  background: var(--ys-diff-added-bg);
+  color: var(--ys-diff-added-fg);
 }
 
 .ys-compare-side-meta {
@@ -78,7 +153,8 @@
   color: var(--gin-color-text-light, #595c5e);
 }
 
-/* Status badges. */
+/* Status badges. Light chips with dark text in both modes: the backgrounds are
+   pinned rather than themed, so one value per badge passes AA in both. */
 .ys-compare-badge {
   display: inline-block;
   padding: 0.125rem 0.5rem;
@@ -90,16 +166,59 @@
 
 .ys-compare-badge--identical {
   background: #e6f4ea;
-  color: #18794e;
+  color: #14663f; /* 6.2:1. */
 }
 
 .ys-compare-badge--differs {
-  background: var(--gin-color-warning-light, #fdf3da);
-  color: #7a5b1e;
+  background: #efcf64;
+  color: #5a4114; /* 6.2:1. */
 }
 
 .ys-compare-badge--only_a,
 .ys-compare-badge--only_b {
-  background: var(--gin-color-primary-light, #e7e9fb);
-  color: var(--gin-color-primary, #2d2eff);
+  background: #e7ecfb;
+  color: #24418f; /* 8.0:1. */
+}
+
+/* Export-to-Clarity modal. */
+.ys-compare-export__prompt {
+  width: 100%;
+  min-height: 14rem;
+  font-family: var(--gin-font-mono, monospace);
+  font-size: 0.8125rem;
+}
+
+.ys-compare-export__actions {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.5rem;
+  margin-block-start: 1rem;
+}
+
+.ys-compare-export__status {
+  font-size: 0.8125rem;
+  font-weight: 600;
+}
+
+/* The comparison is a four-column side-by-side table of paragraph-length
+   answers with no usable small-screen layout, so below the breakpoint the whole
+   view is replaced by an explanation. 768px matches the breakpoint the sibling
+   ys_beacon admin stylesheets already use. Scoped to the compare view only —
+   the rest of the AI Tester stays usable at small widths. */
+.ys-compare-mobile-notice {
+  display: none;
+}
+
+@media (max-width: 768px) {
+  .ys-compare > *:not(.ys-compare-mobile-notice) {
+    display: none;
+  }
+
+  .ys-compare-mobile-notice {
+    display: block;
+    padding: 1rem;
+    border-inline-start: 4px solid var(--gin-color-primary, #2d2eff);
+    background: var(--gin-bg-layer2, #fff);
+  }
 }

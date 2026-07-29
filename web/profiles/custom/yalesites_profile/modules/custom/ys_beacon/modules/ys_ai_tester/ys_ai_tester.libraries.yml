@@ -3,3 +3,12 @@ compare:
   css:
     theme:
       css/compare.css: {}
+
+compare_export:
+  version: VERSION
+  js:
+    js/compare-export.js: {}
+  dependencies:
+    - core/drupal
+    - core/drupal.announce
+    - core/once

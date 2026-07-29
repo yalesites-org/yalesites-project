@@ -1,0 +1,52 @@
+{#
+/**
+ * @file
+ * Export-a-comparison-to-Clarity modal for the AI Tester compare view.
+ *
+ * The research prompt lives in this template rather than in PHP because it is
+ * several paragraphs of editorial copy that Product refines independently of the
+ * code. It is deliberately not wrapped in {% trans %}: it is text the reviewer
+ * pastes into an English-language analysis tool, not interface chrome. The short
+ * interface strings around it are translated as usual.
+ *
+ * Available variables:
+ * - question_count: How many questions the export covers.
+ * - run_a, run_b: The two run ids.
+ * - label_a, label_b: The assistant that answered each run.
+ * - prompt_id: The textarea's id, which the copy button targets.
+ * - download: Render element for the primary "download JSON" action.
+ * - copy: Render element for the secondary "copy prompt" action.
+ */
+#}
+<div class="ys-compare-export">
+  <p>
+    {% trans %}Download the comparison as a JSON file, then upload that file to Clarity and paste the prompt below alongside it. Clarity will analyse themes across the two runs and summarise where the assistants agree and differ.{% endtrans %}
+  </p>
+  <p>
+    <a href="https://ai-chat.yale.edu/" target="_blank" rel="noopener noreferrer">
+      {% trans %}Open Clarity (opens in new window){% endtrans %}
+    </a>
+  </p>
+
+  <label for="{{ prompt_id }}">
+    <strong>{% trans %}Research prompt to paste into Clarity{% endtrans %}</strong>
+  </label>
+  <textarea id="{{ prompt_id }}" class="ys-compare-export__prompt form-textarea" rows="14" readonly>
+I'm reviewing an A/B comparison from Yale's YaleSites platform. We're migrating our website AI chat assistant from a legacy tool called `ai_engine` (hosted on Azure, "chat with your data") to a new in-house assistant called Beacon (built in Drupal, using retrieval-augmented generation over our search index). Beacon and legacy ai_engine use different content sets, indexes, system prompts, retrieval strategies, and models — so some differences between their answers are expected and not necessarily a regression.
+
+Attached is a JSON export of one comparison covering {{ question_count }} question(s). Run A (run #{{ run_a }}) was answered by {{ label_a }}, and Run B (run #{{ run_b }}) was answered by {{ label_b }}. Each entry carries both sides' answer text and citations; where a question was only asked in one of the two runs, the other side is absent rather than empty.
+
+Please analyze the data and:
+
+1. Identify themes in where and why the two runs' answers differ (e.g. topics where one assistant consistently gives more complete or accurate answers).
+2. Compare citation quality and overlap between the two runs — does one cite more relevant or more complete sources than the other?
+3. Assess overall answer quality for each run — accuracy, completeness, clarity — and flag any questions where one assistant's answer looks notably worse.
+4. Summarize your findings in a way a non-technical stakeholder could use to sign off on (or raise concerns about) the Beacon cutover.
+</textarea>
+
+  <div class="ys-compare-export__actions">
+    {{ download }}
+    {{ copy }}
+    <span class="ys-compare-export__status" data-ys-copy-status></span>
+  </div>
+</div>

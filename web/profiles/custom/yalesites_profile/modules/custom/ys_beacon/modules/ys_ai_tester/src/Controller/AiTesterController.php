@@ -6,6 +6,7 @@ namespace Drupal\ys_ai_tester\Controller;
 
 use Drupal\Component\Diff\WordLevelDiff;
 use Drupal\Component\Render\MarkupInterface;
+use Drupal\Component\Serialization\Json;
 use Drupal\Component\Utility\Html;
 use Drupal\Core\Controller\ControllerBase;
 use Drupal\Core\Database\Connection;
@@ -363,7 +364,25 @@ class AiTesterController extends ControllerBase {
 
     return [
       '#type' => 'container',
-      '#attached' => ['library' => ['ys_ai_tester/compare']],
+      // The class is load-bearing: the stylesheet scopes the diff colors to it
+      // and, below the mobile breakpoint, hides every child except the notice.
+      '#attributes' => ['class' => ['ys-compare']],
+      '#attached' => [
+        'library' => [
+          'ys_ai_tester/compare',
+          // Supplies the modal the export button opens, including its focus
+          // trap and Escape handling.
+          'core/drupal.dialog.ajax',
+        ],
+      ],
+      // Only rendered below the mobile breakpoint, where the four-column
+      // comparison table has no workable layout.
+      'mobile_notice' => [
+        '#type' => 'html_tag',
+        '#tag' => 'p',
+        '#attributes' => ['class' => ['ys-compare-mobile-notice']],
+        '#value' => $this->t('This run comparison is a wide side-by-side table and is not designed for small screens. Please open it on a laptop, a desktop, or a larger screen to compare these runs.'),
+      ],
       'summary' => $this->wrap('ys-compare-summary', $this->t(
         '@total compared · @differ differ · @identical identical · @a only in Run A · @b only in Run B',
         [
@@ -381,6 +400,13 @@ class AiTesterController extends ControllerBase {
         'a' => $this->runMetaBlock($this->t('Run A'), $data['run_a']),
         'b' => $this->runMetaBlock($this->t('Run B'), $data['run_b']),
       ],
+      'help' => $this->diffHelp(),
+      'legend' => [
+        '#type' => 'container',
+        '#attributes' => ['class' => ['ys-compare-legend']],
+        'only_a' => $this->legendItem('removed', $this->t('Only in Run A')),
+        'only_b' => $this->legendItem('added', $this->t('Only in Run B')),
+      ],
       'downloads' => [
         '#type' => 'container',
         'json' => [
@@ -395,6 +421,17 @@ class AiTesterController extends ControllerBase {
           '#title' => $this->t('Download CSV'),
           '#url' => Url::fromRoute('ys_ai_tester.compare_csv', ['run_a' => $run_a, 'run_b' => $run_b]),
           '#attributes' => $link_attrs,
+        ],
+        'export_separator' => ['#markup' => ' '],
+        'export' => [
+          '#type' => 'link',
+          '#title' => $this->t('Export for Clarity'),
+          '#url' => Url::fromRoute('ys_ai_tester.compare_export', ['run_a' => $run_a, 'run_b' => $run_b]),
+          '#attributes' => [
+            'class' => ['button', 'button--primary', 'use-ajax'],
+            'data-dialog-type' => 'modal',
+            'data-dialog-options' => Json::encode(['width' => 760]),
+          ],
         ],
       ],
       'results' => [
@@ -468,6 +505,112 @@ class AiTesterController extends ControllerBase {
         '@status' => $meta['status'],
       ]
     ));
+  }
+
+  /**
+   * Builds the paragraph explaining what the answer highlighting means.
+   *
+   * The highlights are not individually focusable and carry no per-word
+   * tooltip. A paragraph-length answer produces dozens of changed-word spans,
+   * so making each one a tab stop would cost a keyboard user far more than the
+   * repeated tooltip would tell them; the explanation is given once here and
+   * reinforced by the legend beside it.
+   *
+   * @return array
+   *   An html_tag render element.
+   */
+  protected function diffHelp(): array {
+    return [
+      '#type' => 'html_tag',
+      '#tag' => 'p',
+      '#attributes' => ['class' => ['ys-compare-help']],
+      '#value' => $this->t('Highlighted words are the parts of an answer that do not appear in the other run: a highlight in Run A is wording missing from Run B, and a highlight in Run B is wording missing from Run A. Wording the two runs share is left unhighlighted.'),
+    ];
+  }
+
+  /**
+   * Builds one legend entry for a diff highlight direction.
+   *
+   * @param string $direction
+   *   The diff direction, 'removed' (Run A) or 'added' (Run B).
+   * @param string|\Drupal\Component\Render\MarkupInterface $label
+   *   The entry label.
+   *
+   * @return array
+   *   A container render element holding a swatch and its label.
+   */
+  protected function legendItem(string $direction, string|MarkupInterface $label): array {
+    return [
+      '#type' => 'container',
+      '#attributes' => ['class' => ['ys-compare-legend__item']],
+      'swatch' => [
+        '#type' => 'html_tag',
+        '#tag' => 'span',
+        '#value' => '',
+        '#attributes' => [
+          'class' => [
+            'ys-compare-legend__swatch',
+            'ys-compare-legend__swatch--' . $direction,
+          ],
+          // The swatch only restates the adjacent label's color, so announcing
+          // it would add nothing but noise.
+          'aria-hidden' => 'true',
+        ],
+      ],
+      'label' => ['#plain_text' => $label],
+    ];
+  }
+
+  /**
+   * Builds the modal offering the comparison as a Clarity research package.
+   *
+   * The download reuses the existing comparison JSON route rather than adding a
+   * second export path, so the file a reviewer uploads to Clarity is the same
+   * artefact the compare view already offers.
+   *
+   * @param int $run_a
+   *   The first run id.
+   * @param int $run_b
+   *   The second run id.
+   *
+   * @return array
+   *   The modal's render array.
+   */
+  public function compareExport(int $run_a, int $run_b): array {
+    $data = $this->runComparator->compare($run_a, $run_b);
+    $prompt_id = 'ys-compare-clarity-prompt';
+
+    return [
+      '#theme' => 'ys_ai_tester_clarity_export',
+      '#attached' => ['library' => ['ys_ai_tester/compare_export']],
+      '#question_count' => count($data['pairs']),
+      '#run_a' => $data['run_a']['id'],
+      '#run_b' => $data['run_b']['id'],
+      '#label_a' => $this->backendRegistry->labelFor($data['run_a']['backend']),
+      '#label_b' => $this->backendRegistry->labelFor($data['run_b']['backend']),
+      '#prompt_id' => $prompt_id,
+      '#download' => [
+        '#type' => 'link',
+        '#title' => $this->t('Download comparison JSON'),
+        '#url' => Url::fromRoute('ys_ai_tester.compare_json', [
+          'run_a' => $run_a,
+          'run_b' => $run_b,
+        ]),
+        '#attributes' => ['class' => ['button', 'button--primary']],
+      ],
+      '#copy' => [
+        '#type' => 'html_tag',
+        '#tag' => 'button',
+        '#value' => $this->t('Copy prompt'),
+        '#attributes' => [
+          // Explicitly not a submit button: inside the dialog it must never
+          // navigate or post.
+          'type' => 'button',
+          'class' => ['button'],
+          'data-ys-copy-target' => $prompt_id,
+        ],
+      ],
+    ];
   }
 
   /**

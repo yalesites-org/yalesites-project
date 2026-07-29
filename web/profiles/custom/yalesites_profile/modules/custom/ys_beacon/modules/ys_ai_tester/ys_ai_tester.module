@@ -1,0 +1,26 @@
+<?php
+
+/**
+ * @file
+ * Contains ys_ai_tester.module functions.
+ */
+
+/**
+ * Implements hook_theme().
+ */
+function ys_ai_tester_theme(): array {
+  return [
+    'ys_ai_tester_clarity_export' => [
+      'variables' => [
+        'question_count' => 0,
+        'run_a' => 0,
+        'run_b' => 0,
+        'label_a' => '',
+        'label_b' => '',
+        'prompt_id' => '',
+        'download' => NULL,
+        'copy' => NULL,
+      ],
+    ],
+  ];
+}
