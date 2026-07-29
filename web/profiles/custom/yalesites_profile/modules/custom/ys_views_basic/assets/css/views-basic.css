@@ -304,3 +304,78 @@
   width: 100%;
   flex-flow: row wrap;
 }
+
+/*
+ * Exposed filter rows (#1337).
+ *
+ * ViewsBasicWidgetBase::buildExposedFilterAccordion() pairs each filter's
+ * checkbox with the settings that configure it, so each filter is one bordered
+ * row: the checkbox is the header, and any settings sit in an accordion body
+ * below it. Filters with no settings (search, audience, year) get
+ * .vb-filter-row without .vb-filter-row--has-settings and render as a header
+ * only, so they carry no chevron.
+ *
+ * Disclosure is driven straight off the header checkbox with :has() rather than
+ * a JS widget: the settings are only meaningful while their filter is on, so
+ * checked/unchecked is exactly the open/closed state. The controls are also
+ * disabled while unchecked, via #states in the widget, so a collapsed row
+ * cannot submit a value.
+ */
+.vb-filter-rows {
+  border: 0;
+  padding: 0;
+  margin: 0;
+}
+
+.vb-filter-row {
+  border: 1px solid var(--gin-border-color, #d4d4d4);
+  border-radius: 4px;
+  margin-bottom: 0.5rem;
+}
+
+/* The checkbox row itself; padding lives here so the body can sit flush. */
+.vb-filter-row > .form-item,
+.vb-filter-row > .form-type--checkbox,
+.vb-filter-row > .js-form-type-checkbox {
+  margin: 0;
+  padding: 0.75rem;
+}
+
+/* Chevron indicator, shown only where there is something to disclose. */
+.vb-filter-row--has-settings > .form-item,
+.vb-filter-row--has-settings > .form-type--checkbox,
+.vb-filter-row--has-settings > .js-form-type-checkbox {
+  position: relative;
+}
+
+.vb-filter-row--has-settings > .form-item::after,
+.vb-filter-row--has-settings > .form-type--checkbox::after,
+.vb-filter-row--has-settings > .js-form-type-checkbox::after {
+  content: "";
+  position: absolute;
+  top: 50%;
+  right: 1rem;
+  width: 0.5rem;
+  height: 0.5rem;
+  margin-top: -0.35rem;
+  border-right: 2px solid var(--gin-color-text, #545560);
+  border-bottom: 2px solid var(--gin-color-text, #545560);
+  transform: rotate(45deg);
+}
+
+.vb-filter-row--has-settings:has(input[type="checkbox"]:checked) > .form-item::after,
+.vb-filter-row--has-settings:has(input[type="checkbox"]:checked) > .form-type--checkbox::after,
+.vb-filter-row--has-settings:has(input[type="checkbox"]:checked) > .js-form-type-checkbox::after {
+  margin-top: -0.15rem;
+  transform: rotate(225deg);
+}
+
+.vb-filter-row__body {
+  border-top: 1px solid var(--gin-border-color, #d4d4d4);
+  padding: 0.75rem;
+}
+
+/* Collapsed while the filter is switched off. */
+.vb-filter-row--has-settings:not(:has(input[type="checkbox"]:checked)) .vb-filter-row__body {
+  display: none;
+}

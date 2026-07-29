@@ -12,6 +12,7 @@ use Drupal\Core\Field\FieldItemListInterface;
 use Drupal\Core\Field\WidgetBase;
 use Drupal\Core\Form\FormStateInterface;
 use Drupal\Core\Plugin\ContainerFactoryPluginInterface;
+use Drupal\Core\Render\Element;
 use Drupal\ys_views_basic\ViewsBasicManager;
 use Symfony\Component\DependencyInjection\ContainerInterface;
 
@@ -39,6 +40,20 @@ use Symfony\Component\DependencyInjection\ContainerInterface;
  *   JSON shape, so this base must not assume a uniform stored-JSON schema.
  */
 abstract class ViewsBasicWidgetBase extends WidgetBase implements ContainerFactoryPluginInterface {
+
+  /**
+   * Settings that belong in each exposed filter's accordion body.
+   *
+   * Keyed by the filter's checkbox key, listing the sibling elements built by
+   * ::buildExposedFilterControls() that configure that filter.
+   * ::buildExposedFilterAccordion() uses this to pair them into one row. A
+   * filter absent from this map (search, audience, year) has no settings, so it
+   * renders as a header-only row.
+   */
+  protected const EXPOSED_FILTER_SETTINGS = [
+    'show_category_filter' => ['category_filter_label', 'category_included_terms'],
+    'show_custom_vocab_filter' => ['custom_vocab_included_terms'],
+  ];
 
   /**
    * The views basic manager service.
@@ -373,6 +388,23 @@ abstract class ViewsBasicWidgetBase extends WidgetBase implements ContainerFacto
     $terms_include = $form_state->getValue($formSelectors['massage_terms_include_array']) ?? NULL;
     $terms_exclude = $form_state->getValue($formSelectors['massage_terms_exclude_array']) ?? NULL;
 
+    // The exposed filters, their settings and the per-result field options were
+    // all relocated by the #after_build passes, so look them up by key rather
+    // than at a fixed depth.
+    $built = static::flattenBuiltElements($selection['entity_and_view_mode'] ?? []);
+
+    // Rebuild the #type checkboxes contract these params used to carry: only
+    // enabled filters present, each keyed by itself. This matters beyond
+    // tidiness — ViewsBasicManager tests several of these with isset() rather
+    // than truthiness, so a disabled filter has to be absent, not 0, or its
+    // filter would never be removed from the view.
+    $exposed_filter_options = [];
+    foreach (array_keys($this->getExposedFilterOptions()) as $option_key) {
+      if (!empty($built[$option_key]['#value'])) {
+        $exposed_filter_options[$option_key] = $option_key;
+      }
+    }
+
     foreach ($values as &$value) {
       $paramData = [
         'view_mode' => $this->getViewMode(),
@@ -381,13 +413,13 @@ abstract class ViewsBasicWidgetBase extends WidgetBase implements ContainerFacto
           'terms_include' => $terms_include,
           'terms_exclude' => $terms_exclude,
         ],
-        'field_options' => $selection['entity_and_view_mode']['field_options']['#value'],
+        'field_options' => $built['field_options']['#value'],
         'event_field_options' => [],
         'post_field_options' => [],
-        'exposed_filter_options' => $selection['entity_and_view_mode']['exposed_filter_options']['#value'],
-        'category_filter_label' => $selection['entity_and_view_mode']['category_filter_label']['#value'],
-        'category_included_terms' => $selection['entity_and_view_mode']['category_included_terms']['#value'],
-        'custom_vocab_included_terms' => $selection['entity_and_view_mode']['custom_vocab_included_terms']['#value'],
+        'exposed_filter_options' => $exposed_filter_options,
+        'category_filter_label' => $built['category_filter_label']['#value'] ?? NULL,
+        'category_included_terms' => $built['category_included_terms']['#value'] ?? NULL,
+        'custom_vocab_included_terms' => $built['custom_vocab_included_terms']['#value'] ?? NULL,
         'operator' => $selection['filter_and_sort']['term_operator']['#value'],
         'sort_by' => $form_state->getValue($formSelectors['sort_by_array']),
         'display' => $form_state->getValue($formSelectors['display_array']),
@@ -486,6 +518,18 @@ abstract class ViewsBasicWidgetBase extends WidgetBase implements ContainerFacto
       ];
     }
 
+    // Gather the exposed filters into per-filter rows once the group's subtree
+    // is fully built — see ::buildExposedFilterAccordion() for why this cannot
+    // be a #process.
+    $form['group_user_selection']['entity_and_view_mode']['#after_build'][] = [
+      static::class,
+      'buildExposedFilterAccordion',
+    ];
+    $form['group_user_selection']['entity_and_view_mode']['#after_build'][] = [
+      static::class,
+      'groupFieldDisplayRow',
+    ];
+
     // entity_specific holds optional per-type controls (e.g. the event time
     // period); keep it a plain container so it does not render an empty box.
     $form['group_user_selection']['entity_specific'] = [
@@ -553,20 +597,40 @@ abstract class ViewsBasicWidgetBase extends WidgetBase implements ContainerFacto
     $params = $items[$delta]->params;
     $custom_vocab_label = $this->customVocabularyLabel();
 
+    // Individual checkboxes rather than one #type checkboxes: each filter has
+    // to own the settings that configure it so buildExposedFilterAccordion()
+    // can pair the two into a single row (#1337). The child keys are the same
+    // option keys as before, so the generated input names — and therefore the
+    // #states selectors getFormSelectors() builds from them — are unchanged.
+    $enabled = array_values(array_filter(
+      (array) ($params ? $this->viewsBasicManager->getDefaultParamValue('exposed_filter_options', $params) : [])
+    ));
+
     $form['group_user_selection']['entity_and_view_mode']['exposed_filter_options'] = [
-      '#type' => 'checkboxes',
-      '#options' => $this->getExposedFilterOptions(),
+      '#type' => 'fieldset',
       '#title' => $this->t('Exposed Filter Options'),
       '#tree' => TRUE,
-      '#default_value' => $params ? $this->viewsBasicManager->getDefaultParamValue('exposed_filter_options', $params) : [],
+      '#attributes' => ['class' => ['vb-filter-rows']],
     ];
+    foreach ($this->getExposedFilterOptions() as $option_key => $option_label) {
+      $form['group_user_selection']['entity_and_view_mode']['exposed_filter_options'][$option_key] = [
+        '#type' => 'checkbox',
+        '#title' => $option_label,
+        // Stored as a [key => key] map, but tolerate a plain list too.
+        '#default_value' => in_array($option_key, $enabled, TRUE),
+      ];
+    }
 
+    // The settings below are disabled while their filter is switched off
+    // (#1337) rather than hidden by #states. The accordion collapses the body
+    // in CSS off the same checkbox, so the disabled state is what stops a
+    // collapsed row from still submitting a value.
     $form['group_user_selection']['entity_and_view_mode']['category_filter_label'] = [
       '#type' => 'textfield',
       '#title' => $this->t('Category Filter Label'),
       '#description' => $this->t("Enter a custom label for the <strong>Category Filter</strong>. This label will be displayed to users as the filter's name. If left blank, the default label <strong>Category</strong> will be used."),
       '#default_value' => $params ? $this->viewsBasicManager->getDefaultParamValue('category_filter_label', $params) : NULL,
-      '#states' => ['visible' => [$formSelectors['show_category_filter_selector'] => ['checked' => TRUE]]],
+      '#states' => ['disabled' => [$formSelectors['show_category_filter_selector'] => ['checked' => FALSE]]],
     ];
 
     $form['group_user_selection']['entity_and_view_mode']['category_included_terms'] = [
@@ -578,7 +642,7 @@ abstract class ViewsBasicWidgetBase extends WidgetBase implements ContainerFacto
       '#validated' => 'true',
       '#prefix' => '<div id="edit-category-included-terms">',
       '#suffix' => '</div>',
-      '#states' => ['visible' => [$formSelectors['show_category_filter_selector'] => ['checked' => TRUE]]],
+      '#states' => ['disabled' => [$formSelectors['show_category_filter_selector'] => ['checked' => FALSE]]],
     ];
 
     $form['group_user_selection']['entity_and_view_mode']['custom_vocab_included_terms'] = [
@@ -590,8 +654,153 @@ abstract class ViewsBasicWidgetBase extends WidgetBase implements ContainerFacto
       '#validated' => 'true',
       '#prefix' => '<div id="edit-custom-vocab-included-terms">',
       '#suffix' => '</div>',
-      '#states' => ['visible' => [$formSelectors['show_custom_vocab_filter_selector'] => ['checked' => TRUE]]],
+      '#states' => ['disabled' => [$formSelectors['show_custom_vocab_filter_selector'] => ['checked' => FALSE]]],
     ];
+  }
+
+  /**
+   * Pairs each exposed filter checkbox with its settings into one row.
+   *
+   * Runs as an #after_build on the "Field display & filters" group, which is
+   * the only point where the move is safe: FormBuilder assigns a child's
+   * #parents while recursing into it, so relocating an element in a #process
+   * would rename its input, whereas by #after_build every #parents is already
+   * fixed and survives the move. Submitted values, and the #states selectors
+   * that address these inputs by name, are therefore unaffected — only the
+   * render tree changes.
+   *
+   * Filters with no settings (search, audience, year) become a header-only
+   * row; the rest get a body their header can disclose.
+   *
+   * @param array $element
+   *   The entity_and_view_mode group, after its subtree has been built.
+   * @param \Drupal\Core\Form\FormStateInterface $form_state
+   *   The current state of the form.
+   *
+   * @return array
+   *   The group with each filter gathered into its own row.
+   */
+  public static function buildExposedFilterAccordion(array $element, FormStateInterface $form_state): array {
+    if (!isset($element['exposed_filter_options'])) {
+      return $element;
+    }
+
+    $weight = 0;
+    foreach (Element::children($element['exposed_filter_options']) as $filter_key) {
+      $checkbox = $element['exposed_filter_options'][$filter_key];
+      // Anything already wrapped is a row from a previous pass, not a filter.
+      if (($checkbox['#type'] ?? NULL) !== 'checkbox') {
+        continue;
+      }
+
+      // The header must sort above the body, and the settings elements carry
+      // weights from where they were originally built, so both get an explicit
+      // one here rather than relying on array order.
+      $checkbox['#weight'] = 0;
+      $row = [
+        '#type' => 'container',
+        '#attributes' => ['class' => ['vb-filter-row']],
+        '#weight' => $weight++,
+        $filter_key => $checkbox,
+      ];
+      unset($element['exposed_filter_options'][$filter_key]);
+
+      $body = [];
+      $body_weight = 0;
+      foreach (static::EXPOSED_FILTER_SETTINGS[$filter_key] ?? [] as $setting_key) {
+        if (isset($element[$setting_key])) {
+          $body[$setting_key] = $element[$setting_key];
+          $body[$setting_key]['#weight'] = $body_weight++;
+          unset($element[$setting_key]);
+        }
+      }
+      if ($body) {
+        $row['settings'] = [
+          '#type' => 'container',
+          '#attributes' => ['class' => ['vb-filter-row__body']],
+          '#weight' => 1,
+        ] + $body;
+        $row['#attributes']['class'][] = 'vb-filter-row--has-settings';
+      }
+
+      $element['exposed_filter_options'][$filter_key . '__row'] = $row;
+    }
+
+    return $element;
+  }
+
+  /**
+   * Puts the per-result field options and the preview on one grid row.
+   *
+   * Splits the tab into two rows (#1337): the field-display checkboxes beside
+   * the preview, then the exposed filters full width below. Keeping the preview
+   * next to a row whose height is stable is what stops it stretching — the
+   * exposed filters grow as their settings are disclosed, and they are no
+   * longer in the same row.
+   *
+   * Runs as an #after_build for the same reason as
+   * ::buildExposedFilterAccordion(): every #parents is fixed by this point, so
+   * the move cannot rename an input.
+   *
+   * @param array $element
+   *   The entity_and_view_mode group, after its subtree has been built.
+   * @param \Drupal\Core\Form\FormStateInterface $form_state
+   *   The current state of the form.
+   *
+   * @return array
+   *   The group with a display row wrapping the field options and preview.
+   */
+  public static function groupFieldDisplayRow(array $element, FormStateInterface $form_state): array {
+    $row_keys = ['field_options', 'event_field_options', 'post_field_options', 'preview'];
+    $row = [];
+    foreach ($row_keys as $key) {
+      if (isset($element[$key])) {
+        $row[$key] = $element[$key];
+        unset($element[$key]);
+      }
+    }
+    if (!$row) {
+      return $element;
+    }
+
+    $element['display_row'] = [
+      '#type' => 'container',
+      '#attributes' => ['class' => ['vb-display-row']],
+      '#weight' => -10,
+    ] + $row;
+
+    return $element;
+  }
+
+  /**
+   * Flattens a built subtree to a key => element map of its value elements.
+   *
+   * MassageFormValues() reads submitted values off the built elements, so it
+   * has to find them wherever ::buildExposedFilterAccordion() and
+   * ::groupFieldDisplayRow() moved them.
+   *
+   * @param array $element
+   *   A built form element.
+   *
+   * @return array
+   *   Every value element in the subtree, keyed by its own element key.
+   */
+  protected static function flattenBuiltElements(array $element): array {
+    $flat = [];
+    foreach (Element::children($element) as $key) {
+      $child = $element[$key];
+      // Descend through structural wrappers (container, fieldset, details) but
+      // stop at anything carrying #input, so a value element that builds child
+      // elements of its own is returned whole rather than descended into:
+      // field_options is a #type checkboxes whose per-option children would
+      // otherwise shadow it, and its own #value is what gets stored.
+      if (empty($child['#input']) && Element::children($child)) {
+        $flat += static::flattenBuiltElements($child);
+        continue;
+      }
+      $flat[$key] = $child;
+    }
+    return $flat;
   }
 
   /**

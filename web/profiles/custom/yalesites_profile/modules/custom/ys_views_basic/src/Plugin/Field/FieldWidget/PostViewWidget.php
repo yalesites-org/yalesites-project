@@ -67,7 +67,9 @@ class PostViewWidget extends ViewsBasicWidgetBase {
    * {@inheritdoc}
    */
   protected function massageEntitySpecificParams(array &$paramData, array $form, FormStateInterface $form_state): void {
-    $paramData['post_field_options'] = $form['group_user_selection']['entity_and_view_mode']['post_field_options']['#value'];
+    // Looked up by key: groupFieldDisplayRow() moves this into the display row.
+    $built = static::flattenBuiltElements($form['group_user_selection']['entity_and_view_mode'] ?? []);
+    $paramData['post_field_options'] = $built['post_field_options']['#value'] ?? [];
   }
 
 }

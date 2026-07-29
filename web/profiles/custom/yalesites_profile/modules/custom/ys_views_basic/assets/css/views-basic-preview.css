@@ -261,54 +261,51 @@
 
 /*
  * Two-column layout for the "Field display & filters" tab on the block-create
- * form (#1318): the field controls stack in a left column while the live
- * preview sits in the right. Anchored with :has() to the tab that actually
- * carries a preview, so it only takes effect on the create form (the preview
- * is not built when reconfiguring an existing block), and gated behind a
- * container query so the single-column stack is kept where two columns will
- * not fit — e.g. the narrow (~460px) Layout Builder off-canvas tray. This rule
- * is layout only (no colors), so it needs no separate dark-mode handling; the
- * preview card's own colors are pinned to light mode above.
+ * form (#1318, revised for #1337).
+ *
+ * Only the per-result field options sit beside the preview, in the display row
+ * that ViewsBasicWidgetBase::groupFieldDisplayRow() builds; the exposed filters
+ * are a separate full-width row below and are deliberately outside this grid.
+ * That separation is the fix for the empty-panel bug: the preview's column can
+ * only ever be as tall as a row of checkboxes, so disclosing a filter's
+ * settings — which used to grow the shared left column and stretch the dashed
+ * preview stage with it — no longer affects the preview at all.
+ *
+ * Anchored with :has() to a display row that actually carries a preview, so it
+ * only takes effect on the create form (the preview is not built when
+ * reconfiguring an existing block), and gated behind a container query so the
+ * single-column stack is kept where two columns will not fit — e.g. the narrow
+ * (~460px) Layout Builder off-canvas tray. Layout only (no colors), so it needs
+ * no dark-mode handling; the preview card's colors are pinned to light above.
  */
-.views-basic--entity-view-mode:has(> .details-wrapper > .vb-preview-wrapper) {
+.views-basic--entity-view-mode:has(.vb-display-row > .vb-preview-wrapper) {
   container-type: inline-size;
 }
 
 @container (min-width: 40rem) {
-  .views-basic--entity-view-mode:has(> .details-wrapper > .vb-preview-wrapper) > .details-wrapper {
+  .vb-display-row:has(> .vb-preview-wrapper) {
     display: grid;
     grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
     gap: 0 1.5rem;
     align-items: start;
   }
 
-  /* Field controls flow down the left column. */
-  .views-basic--entity-view-mode:has(> .details-wrapper > .vb-preview-wrapper) > .details-wrapper > * {
+  /* Field controls stack down the left column. */
+  .vb-display-row:has(> .vb-preview-wrapper) > * {
     grid-column: 1;
     min-width: 0;
   }
 
   /*
-   * Preview occupies the right half. It spans the control rows (rather than
-   * owning a single row) so its height never forces one tall grid row that
-   * would gap the left column. No sticky positioning — it scrolls with the
-   * form instead of floating pinned to the corner.
-   *
-   * align-self must stay `start`, not `stretch`: the stage (.vb-preview-
-   * wrapper__stage) is a dashed-border box that centers the card inside
-   * itself, so stretching the wrapper over the full 20-row span made that
-   * visible box grow to the height of the whole left column with the
-   * fixed-size card floating in the middle of it. Every `#states` field a
-   * filter checkbox reveals grew the left column further, so the dashed box
-   * grew with it and read as a large empty panel next to the controls.
-   * Sizing to content keeps the dashed box wrapped around the card.
+   * Preview occupies the right half, spanning the control rows rather than
+   * owning one so its height never forces a single tall row that would gap the
+   * left column. align-items: start above keeps it sized to its content, so
+   * the dashed stage stays wrapped around the card. No sticky positioning — it
+   * scrolls with the form instead of floating pinned to the corner.
    */
-  .views-basic--entity-view-mode:has(> .details-wrapper > .vb-preview-wrapper) > .details-wrapper > .vb-preview-wrapper {
-    display: flex;
-    flex-direction: column;
+  .vb-display-row > .vb-preview-wrapper {
     grid-column: 2;
     grid-row: 1 / span 20;
-    align-self: start;
     margin-top: 0;
   }
 }

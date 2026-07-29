@@ -86,7 +86,9 @@ class EventViewWidget extends ViewsBasicWidgetBase {
    */
   protected function massageEntitySpecificParams(array &$paramData, array $form, FormStateInterface $form_state): void {
     $selection = $form['group_user_selection'];
-    $paramData['event_field_options'] = $selection['entity_and_view_mode']['event_field_options']['#value'];
+    // Looked up by key: groupFieldDisplayRow() moves this into the display row.
+    $built = static::flattenBuiltElements($selection['entity_and_view_mode'] ?? []);
+    $paramData['event_field_options'] = $built['event_field_options']['#value'] ?? [];
     $paramData['filters']['event_time_period'] = $selection['options']['event_time_period']['#value'];
   }
 
