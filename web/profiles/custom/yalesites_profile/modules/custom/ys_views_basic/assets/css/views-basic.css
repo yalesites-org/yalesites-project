@@ -95,7 +95,19 @@
 }
 
 .views-basic--group-user-selection .grouped-items .fieldset__wrapper {
+  margin: 0;
   border-top: 0.15rem solid var(--color-gray-500);
+}
+
+/*
+ * gin_lb wraps every "grouped-items" details group's body in
+ * .glb-claro-details__wrapper and sets !important left/right padding on it,
+ * which is the actual source of the 24px side gap around these sections
+ * (fieldset__wrapper's own margin, zeroed above, is a separate box).
+ */
+.views-basic--group-user-selection .grouped-items .glb-claro-details__wrapper {
+  padding-left: 0 !important;
+  padding-right: 0 !important;
 }
 
 .views-basic--group-user-selection .glb-fieldset__label,
@@ -327,17 +339,35 @@
   margin: 0;
 }
 
+/*
+ * Claro's @media (min-width: 48em) rule sets left/right margin on
+ * .fieldset__wrapper (via --space-l), which is what actually pushes this
+ * fieldset's rows in from the sides; the unqualified rule above only zeroes
+ * .fieldset__wrapper under a different ancestor scope, so it misses this one.
+ */
+.vb-filter-rows > .fieldset__wrapper {
+  margin-left: 0 !important;
+  margin-right: 0 !important;
+}
+
 .vb-filter-row {
   border: 1px solid var(--gin-border-color, #d4d4d4);
   border-radius: 4px;
   margin-bottom: 0.5rem;
 }
 
-/* The checkbox row itself; padding lives here so the body can sit flush. */
+/*
+ * The checkbox row itself; padding lives here so the body can sit flush.
+ * gin_lb adds its own "glb-" prefixed classes alongside Drupal's standard
+ * ones and sets !important margin on .glb-form-item, so it has to be zeroed
+ * out here too, with matching !important, or it leaks through.
+ */
 .vb-filter-row > .form-item,
 .vb-filter-row > .form-type--checkbox,
-.vb-filter-row > .js-form-type-checkbox {
-  margin: 0;
+.vb-filter-row > .js-form-type-checkbox,
+.vb-filter-row > .glb-form-item,
+.vb-filter-row > .glb-form-type--checkbox {
+  margin: 0 !important;
   padding: 0.75rem;
 }
 
