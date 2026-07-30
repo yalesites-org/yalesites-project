@@ -226,7 +226,7 @@ class ChatApiController extends ControllerBase {
       $this->telemetry->recordInjectionPattern($injection);
     }
 
-    $defaults = $this->aiProvider->getDefaultProviderForOperationType('chat');
+    $defaults = $this->chatDefaults();
     if (empty($defaults['provider_id']) || empty($defaults['model_id'])) {
       $this->logger->error('Beacon chat is enabled but no default chat provider is configured.');
       return new JsonResponse(['error' => 'The chat service is not configured.'], 503);
@@ -271,17 +271,22 @@ class ChatApiController extends ControllerBase {
     // citations payload alive for the life of the response.
     $has_citations = $citations !== [];
 
-    // A turn whose question matched an injection pattern is kept in full for
-    // review; every other turn keeps nothing. The question is carried into the
-    // closure only in that case, and the answer buffer below is sized the same
-    // way, so an ordinary turn accumulates exactly the refusal sample it always
-    // did and no question or answer text outlives the request.
-    $suspect_question = $injection !== NULL ? $question : '';
+    // The answer buffer is sized from the injection check: a flagged turn keeps
+    // a clamped review copy, every other turn keeps exactly the refusal sample
+    // it always did. A guardrail stop is not knowable until after the answer
+    // has streamed, so a turn kept for a stop alone carries only that shorter
+    // sample - stated on the report page rather than left a surprise.
+    //
+    // The question itself is carried in unconditionally because a stop is not
+    // predictable. That is not a new exposure: $tool_line already embeds the
+    // question for the closure to emit, so it was in scope for every turn
+    // regardless. What still holds is that nothing is *stored* for an ordinary
+    // turn.
     $capture_length = $injection !== NULL
       ? SuspectTurnLog::MAX_TEXT_LENGTH
       : GuardrailSignalDetector::REFUSAL_SAMPLE_LENGTH;
 
-    $response = new StreamedResponse(function () use ($defaults, $messages, $streaming, $tool_line, $response_id, $model_id, $has_citations, $injection, $suspect_question, $capture_length) {
+    $response = new StreamedResponse(function () use ($defaults, $messages, $streaming, $tool_line, $response_id, $model_id, $has_citations, $injection, $question, $capture_length) {
       $emit = static function (string $line): void {
         echo $line;
         if (ob_get_level() > 0) {
@@ -303,10 +308,7 @@ class ChatApiController extends ControllerBase {
       $captured = '';
 
       try {
-        $provider = $this->aiProvider->createInstance($defaults['provider_id']);
-        if ($streaming) {
-          $provider->streamedOutput(TRUE);
-        }
+        $provider = $this->chatProvider($defaults['provider_id'], $streaming);
         // Held in a variable so the turn's guardrail results can be read back
         // off it below: the AI module's provider proxy passes this very object
         // (not a copy) to its pre- and post-generate events, and its guardrail
@@ -359,23 +361,31 @@ class ChatApiController extends ControllerBase {
         // arriving here is both unexpected and unloggable - swallow it. An
         // escaping throw would also put the answer opening into the logged
         // backtrace as a stack argument, which the privacy constraint forbids.
-        // Guarded separately, and the flagged write goes first. Reading the
+        //
+        // Each write is guarded on its own, and the injection-flagged write
+        // goes FIRST because it needs nothing from contrib. Reading the
         // guardrail results off the input evaluates two contrib getters in this
-        // frame (see ::recordTurnTelemetry), so a throw from either would
-        // otherwise be swallowed here and silently take the flagged-turn write
-        // with it - leaving the injection counter incremented, the text
-        // dropped, and nothing logged anywhere to say so.
+        // frame (see ::recordTurnTelemetry), so a throw from either must not
+        // take the flagged-turn write with it - which would leave the injection
+        // counter incremented, the text dropped, and nothing logged to say so.
+        $logged = $injection !== NULL
+          && $this->logSuspectTurn($injection, $question, $captured);
+
+        $stops = 0;
         try {
-          if ($injection !== NULL) {
-            $this->suspectTurnLog->record($injection, $suspect_question, $captured);
-          }
+          $stops = $this->recordTurnTelemetry($has_citations, $captured, $chat_input);
         }
         catch (\Throwable) {
         }
-        try {
-          $this->recordTurnTelemetry($has_citations, $captured, $chat_input);
-        }
-        catch (\Throwable) {
+
+        // A turn a guardrail stopped is worth keeping too - the platform
+        // actively blocked it - but only if this turn was not already kept for
+        // its injection pattern, so a turn is never stored twice. It comes
+        // after the counters because the stop count is only knowable by reading
+        // the guardrail results off the input, which is what the guarded call
+        // above does.
+        if (!$logged && $stops > 0) {
+          $this->logSuspectTurn(SuspectTurnLog::REASON_GUARDRAIL_STOP, $question, $captured);
         }
       }
     });
@@ -384,6 +394,77 @@ class ChatApiController extends ControllerBase {
     $response->headers->set('Cache-Control', 'no-cache, private');
     $response->headers->set('X-Accel-Buffering', 'no');
     return $response;
+  }
+
+  /**
+   * Resolves the site's default chat provider and model.
+   *
+   * Extracted as the only ::conversation() touchpoint on the AI module's
+   * provider manager before the stream, so a test can substitute the answer.
+   * AiProviderPluginManager is declared final, so it cannot be mocked, and both
+   * touchpoints sitting inline is what previously kept the streamed path out of
+   * unit-test reach.
+   *
+   * @return array|null
+   *   The provider defaults, as
+   *   AiProviderPluginManager::getDefaultProviderForOperationType() returns.
+   */
+  protected function chatDefaults(): ?array {
+    return $this->aiProvider->getDefaultProviderForOperationType('chat');
+  }
+
+  /**
+   * Builds the provider for a turn, in streaming mode when configured.
+   *
+   * The companion seam to ::chatDefaults(), and the only provider touchpoint
+   * inside the streamed closure. Returns object rather than ProviderProxy
+   * because that class answers through __call and implements no interface, so a
+   * test double only has to expose the methods actually used.
+   *
+   * @param string $provider_id
+   *   The provider plugin id from ::chatDefaults().
+   * @param bool $streaming
+   *   Whether to ask the provider to stream its output.
+   *
+   * @return object
+   *   The provider.
+   */
+  protected function chatProvider(string $provider_id, bool $streaming): object {
+    $provider = $this->aiProvider->createInstance($provider_id);
+    if ($streaming) {
+      $provider->streamedOutput(TRUE);
+    }
+
+    return $provider;
+  }
+
+  /**
+   * Stores a flagged turn, absorbing any failure.
+   *
+   * SuspectTurnLog already swallows its own errors; this exists so the caller
+   * can guard each write independently without three try blocks inline, and so
+   * a failure is visible to the caller as FALSE rather than as an exception on
+   * a chat turn that must not fail.
+   *
+   * @param string $reason
+   *   Why the turn was flagged: an injection pattern name, or
+   *   SuspectTurnLog::REASON_GUARDRAIL_STOP.
+   * @param string $question
+   *   The question as asked.
+   * @param string $answer
+   *   The captured answer text, which may be empty or a short sample.
+   *
+   * @return bool
+   *   TRUE if the write was attempted without throwing.
+   */
+  private function logSuspectTurn(string $reason, string $question, string $answer): bool {
+    try {
+      $this->suspectTurnLog->record($reason, $question, $answer);
+      return TRUE;
+    }
+    catch (\Throwable) {
+      return FALSE;
+    }
   }
 
   /**
@@ -407,8 +488,13 @@ class ChatApiController extends ControllerBase {
    * @param \Drupal\ai\OperationType\Chat\ChatInput|null $chat_input
    *   The input the model was called with, carrying the turn's guardrail
    *   results, or NULL if the call was never made.
+   *
+   * @return int
+   *   How many guardrail stops the turn recorded. Returned so the caller can
+   *   decide whether the turn is worth keeping in full, without parsing the
+   *   contrib guardrail results a second time.
    */
-  protected function recordTurnTelemetry(bool $has_citations, string $answer, ?ChatInput $chat_input): void {
+  protected function recordTurnTelemetry(bool $has_citations, string $answer, ?ChatInput $chat_input): int {
     // The denominator: recorded for every turn that reached the model, so the
     // other counters can be read as rates rather than raw volumes.
     $this->telemetry->recordTurn();
@@ -421,12 +507,14 @@ class ChatApiController extends ControllerBase {
       $this->telemetry->recordRefusal();
     }
 
-    if ($chat_input !== NULL) {
-      $this->telemetry->recordGuardrailResults(
-        $chat_input->getAllGuardrailResults(),
-        array_keys($chat_input->getGuardrailSets())
-      );
+    if ($chat_input === NULL) {
+      return 0;
     }
+
+    return $this->telemetry->recordGuardrailResults(
+      $chat_input->getAllGuardrailResults(),
+      array_keys($chat_input->getGuardrailSets())
+    );
   }
 
   /**

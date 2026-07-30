@@ -102,7 +102,7 @@ function ys_beacon_schema() {
   ];
 
   $schema[SuspectTurnLog::TABLE] = [
-    'description' => 'Chat turns whose question matched a known prompt-injection pattern, kept with their text so a suspected attack can be reviewed. Unlike the counter table above this DOES hold question and answer text; it is pruned after SuspectTurnLog::RETENTION_DAYS days and readable only with the "view ys beacon guardrail telemetry" permission.',
+    'description' => 'Chat turns flagged as suspicious - the question matched a known prompt-injection pattern, or a guardrail stopped the turn - kept with their text so a suspected attack can be reviewed. Unlike the counter table above this DOES hold question and answer text; it is pruned after SuspectTurnLog::RETENTION_DAYS days and readable only with the "view ys beacon guardrail telemetry" permission.',
     'fields' => [
       'id' => [
         'type' => 'serial',
@@ -120,7 +120,7 @@ function ys_beacon_schema() {
         'length' => 64,
         'not null' => TRUE,
         'default' => '',
-        'description' => 'Name of the GuardrailSignalDetector injection pattern the question matched.',
+        'description' => 'Why the turn was kept: the GuardrailSignalDetector injection pattern the question matched, or SuspectTurnLog::REASON_GUARDRAIL_STOP when a guardrail stopped it.',
       ],
       'question' => [
         'type' => 'text',

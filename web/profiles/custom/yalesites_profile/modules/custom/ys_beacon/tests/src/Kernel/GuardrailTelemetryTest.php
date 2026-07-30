@@ -447,6 +447,27 @@ class GuardrailTelemetryTest extends KernelTestBase {
   }
 
   /**
+   * The stop count is returned, so a caller need not re-parse the results.
+   *
+   * The chat controller uses this to decide whether a turn is worth keeping in
+   * full, so a wrong count would silently store the wrong turns.
+   *
+   * @covers ::recordGuardrailResults
+   */
+  public function testReturnsTheNumberOfStopsCounted(): void {
+    $telemetry = $this->telemetryOn('2026-07-28');
+
+    $this->assertSame(0, $telemetry->recordGuardrailResults([], []));
+    $this->assertSame(0, $telemetry->recordGuardrailResults([
+      'pre_generate' => [$this->guardrailResult(FALSE)],
+    ], ['set_a']));
+    $this->assertSame(2, $telemetry->recordGuardrailResults([
+      'pre_generate' => [$this->guardrailResult(TRUE), $this->guardrailResult(FALSE)],
+      'post_generate' => [$this->guardrailResult(TRUE, 'Beacon output safety')],
+    ], ['set_a']));
+  }
+
+  /**
    * The chart series is continuous, chronological and zero-filled.
    *
    * @covers ::getDailySeries

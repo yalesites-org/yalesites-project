@@ -206,8 +206,15 @@ class GuardrailTelemetry {
    *   \Drupal\ai\OperationType\InputInterface::getAllGuardrailResults().
    * @param string[] $set_ids
    *   Ids of the guardrail sets that were active for the turn.
+   *
+   * @return int
+   *   How many stops were counted. Returned so a caller can act on the fact
+   *   that the turn was stopped without re-parsing the contrib results; a
+   *   partial count is returned if reading them fails part-way.
    */
-  public function recordGuardrailResults(array $results_by_mode, array $set_ids): void {
+  public function recordGuardrailResults(array $results_by_mode, array $set_ids): int {
+    $stops = 0;
+
     // A guardrail plugin's label() is third-party code running on the response
     // path, so treat it as able to fail without taking the turn with it.
     try {
@@ -230,6 +237,7 @@ class GuardrailTelemetry {
             'plugin.' . $result->getGuardrailLabel(),
             'set.' . $set,
           ]);
+          $stops++;
         }
       }
     }
@@ -238,6 +246,8 @@ class GuardrailTelemetry {
         '@message' => $e->getMessage(),
       ]);
     }
+
+    return $stops;
   }
 
   /**

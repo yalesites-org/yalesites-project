@@ -169,6 +169,16 @@ class TelemetryController extends ControllerBase {
       '#empty' => $this->t('No events recorded yet.'),
     ];
 
+    // Said where the confusion actually happens. A UTC day begins at 8pm the
+    // previous evening in Eastern Daylight Time, so from 8pm until midnight an
+    // Eastern reader sees the newest row dated tomorrow and reasonably wonders
+    // whether the clock is wrong.
+    $build['days_note'] = [
+      '#type' => 'html_tag',
+      '#tag' => 'p',
+      '#value' => $this->t('Days are UTC, not Eastern time. A UTC day starts at 8pm the previous evening in Eastern Daylight Time (7pm in Eastern Standard Time), so activity late in a Yale evening is counted under the next date shown here. This is deliberate: UTC days do not shift with the site timezone and are not distorted by the 23-hour and 25-hour days that daylight saving produces.'),
+    ];
+
     $build['flagged'] = $this->buildFlaggedTurns();
 
     $build['privacy'] = [
@@ -300,7 +310,7 @@ class TelemetryController extends ControllerBase {
    *   A render array.
    */
   protected function buildFlaggedTurns(): array {
-    $turns = $this->suspectTurnLog->getRecent();
+    $turns = $this->suspectTurnLog->getPage();
     $stored = $this->suspectTurnLog->countStored();
 
     $rows = [];
@@ -326,7 +336,7 @@ class TelemetryController extends ControllerBase {
       '#caption' => $this->t('Flagged turns (suspected injection attempts)'),
       '#header' => [
         $this->t('Recorded (UTC)'),
-        $this->t('Pattern'),
+        $this->t('Why kept'),
         $this->t('Question'),
         $this->t('Answer'),
       ],
@@ -335,23 +345,20 @@ class TelemetryController extends ControllerBase {
       '#attributes' => ['class' => ['ys-beacon-flagged-turns']],
     ];
 
-    // Both limits are said out loud whenever there is anything to list: a short
-    // list must never be mistaken for a quiet period, and a shortened cell must
-    // never be mistaken for the whole question.
+    // Both limits are said out loud whenever there is anything to list: the
+    // total held must be visible so one page is never mistaken for the whole
+    // store, and a shortened cell must not be mistaken for the whole question.
     if ($rows !== []) {
       $build['note'] = [
         '#type' => 'html_tag',
         '#tag' => 'p',
-        '#value' => $stored > count($rows)
-          ? $this->t('Showing the @shown most recent of @stored flagged turns held, each shortened to @chars characters. The JSON export has the rest, and the full stored text.', [
-            '@shown' => count($rows),
-            '@stored' => $stored,
-            '@chars' => self::EXCERPT_LENGTH,
-          ])
-          : $this->t('Question and answer are shortened to @chars characters here. The JSON export has the full stored text.', [
-            '@chars' => self::EXCERPT_LENGTH,
-          ]),
+        '#value' => $this->t('@stored flagged turns held, @shown on this page, each shortened to @chars characters for display. The JSON export has the full stored text.', [
+          '@stored' => $stored,
+          '@shown' => count($rows),
+          '@chars' => self::EXCERPT_LENGTH,
+        ]),
       ];
+      $build['pager'] = ['#type' => 'pager'];
     }
 
     return $build;
@@ -404,7 +411,7 @@ class TelemetryController extends ControllerBase {
     return [
       $this->t('This is an operational safety report, not analytics. It exists to show whether guardrails and refusals are working and whether Beacon is being probed - it is not a measure of usage or engagement, and it should not be read as one or used for reporting on either.'),
       $this->t('Recorded for every turn: one count per event type per day, plus counts broken down by guardrail mode, guardrail label, guardrail set and injection-pattern name. "Chat turns" is the denominator, so the other counts can be read as rates rather than raw volumes. No question or answer text is kept for an ordinary turn.'),
-      $this->t('Recorded for a flagged turn only: when a question matches a known prompt-injection pattern, that turn is kept in full - the time, the pattern name, the question and the answer - so a suspected attack can be reviewed. This is the single exception to Beacon not storing conversations, it is readable only with the permission gating this page, and each text is clamped to @chars characters.', [
+      $this->t('Recorded for a flagged turn only: when a question matches a known prompt-injection pattern, or a guardrail stops the turn, that turn is kept in full - the time, the reason, the question and the answer - so a suspected attack can be reviewed. This is the single exception to Beacon not storing conversations, it is readable only with the permission gating this page, and each text is clamped to @chars characters. A turn kept for a guardrail stop alone keeps only the opening of the answer, because a stop is not knowable until after the answer has streamed.', [
         '@chars' => SuspectTurnLog::MAX_TEXT_LENGTH,
       ]),
       $this->t('Flagged turns are deleted after @days days. About @cap are kept per pattern per UTC day, keeping the most recent, so a sustained campaign is sampled here while the counts above stay complete.', [

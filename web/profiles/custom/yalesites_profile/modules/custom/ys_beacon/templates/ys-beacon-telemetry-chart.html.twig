@@ -27,8 +27,16 @@
   {% if max > 0 %}
     <ol class="ys-beacon-chart__bars">
       {% for bar in bars %}
-        <li class="ys-beacon-chart__bar" style="--ys-beacon-chart-bar-height: {{ bar.percent }}%">
-          <span class="visually-hidden">{{ '@date: @count turns'|t({'@date': bar.date, '@count': bar.count}) }}</span>
+        {% set bar_label = '@date: @count turns'|t({'@date': bar.date, '@count': bar.count}) %}
+        {#
+          The same text twice, on purpose. The visually-hidden span is what makes
+          the figures available to assistive technology and is the authoritative
+          copy; title adds a hover tooltip for sighted mouse users, who otherwise
+          could read the shape but not the numbers. Nothing is exclusive to the
+          tooltip, so its known weaknesses - no touch, no keyboard - cost nothing.
+        #}
+        <li class="ys-beacon-chart__bar" style="--ys-beacon-chart-bar-height: {{ bar.percent }}%" title="{{ bar_label }}">
+          <span class="visually-hidden">{{ bar_label }}</span>
         </li>
       {% endfor %}
     </ol>

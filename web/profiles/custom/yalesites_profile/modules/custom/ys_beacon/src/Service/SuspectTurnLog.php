@@ -4,10 +4,11 @@ namespace Drupal\ys_beacon\Service;
 
 use Drupal\Component\Datetime\TimeInterface;
 use Drupal\Core\Database\Connection;
+use Drupal\Core\Database\Query\PagerSelectExtender;
 use Psr\Log\LoggerInterface;
 
 /**
- * Stores the text of chat turns flagged as suspected injection attempts.
+ * Stores the text of chat turns flagged as suspicious.
  *
  * This is the one place in Beacon that persists conversation text, and it is
  * deliberately a separate class from GuardrailTelemetry rather than a method on
@@ -16,10 +17,10 @@ use Psr\Log\LoggerInterface;
  * breaks that rule lives behind its own name, its own table and its own
  * permission instead of widening the counters' API.
  *
- * Only turns whose question matched a GuardrailSignalDetector injection pattern
- * are recorded. An ordinary turn is not stored, is not accumulated in memory
- * beyond the refusal sample the counters already needed, and leaves no row
- * here.
+ * Two kinds of turn are recorded: one whose question matched a
+ * GuardrailSignalDetector injection pattern, and one a guardrail stopped. An
+ * ordinary turn is not stored, is not accumulated in memory beyond the refusal
+ * sample the counters already needed, and leaves no row here.
  *
  * Requested in the review of yalesites-org/YaleSites-Internal#1469 so a
  * suspected attack can be read back and understood, which the aggregate
@@ -46,6 +47,18 @@ class SuspectTurnLog {
    * The table holding the flagged turns.
    */
   public const TABLE = 'ys_beacon_suspect_turn';
+
+  /**
+   * Reason value for a turn kept because a guardrail stopped it.
+   *
+   * Stored in the same column as a detector pattern name, so the column holds
+   * "why this turn was kept" rather than only a pattern. It is a fixed value
+   * rather than the stopping plugin's label: labels are free text from admin
+   * config, and the per-pattern quota keys on this column, so an editable label
+   * would mean an editable quota bucket. The stopping plugin, mode and set are
+   * already broken out in the aggregate counters.
+   */
+  public const REASON_GUARDRAIL_STOP = 'guardrail_stop';
 
   /**
    * How many days a flagged turn is kept before it is pruned.
@@ -129,17 +142,21 @@ class SuspectTurnLog {
   }
 
   /**
-   * Records a turn whose question matched an injection pattern.
+   * Records a flagged turn, with the reason it was kept.
    *
-   * @param string $pattern
-   *   The matching pattern name from GuardrailSignalDetector.
+   * @param string $reason
+   *   Why the turn was kept: an injection pattern name from
+   *   GuardrailSignalDetector, or self::REASON_GUARDRAIL_STOP. Stored in the
+   *   column still named `pattern`, which is left alone rather than migrated
+   *   for a rename.
    * @param string $question
    *   The question as asked. Clamped before storage.
    * @param string $answer
    *   The answer as served, or as much of it as the controller captured. May be
-   *   empty when the turn failed before the model produced anything.
+   *   empty when the turn failed before the model produced anything, and only
+   *   the shorter refusal sample for a turn kept for a guardrail stop alone.
    */
-  public function record(string $pattern, string $question, string $answer): void {
+  public function record(string $reason, string $question, string $answer): void {
     try {
       // Expiry runs before the quota check, not after the insert: the quota
       // returns early below, and a saturated day - a campaign in progress - is
@@ -150,7 +167,7 @@ class SuspectTurnLog {
         $this->prune();
       }
 
-      $pattern = mb_substr($pattern, 0, self::MAX_PATTERN_LENGTH);
+      $reason = mb_substr($reason, 0, self::MAX_PATTERN_LENGTH);
 
       // At quota, the pattern's oldest row for the day is evicted rather than
       // the new turn dropped, so what is kept is always the most RECENT
@@ -158,8 +175,8 @@ class SuspectTurnLog {
       // turns survive: pre-fill the quota with junk and every later attempt
       // that day goes unrecorded. The loop tolerates overshoot from concurrent
       // writers, and stops if there is nothing left to evict so it cannot spin.
-      while ($this->countToday($pattern) >= self::MAX_ROWS_PER_PATTERN_PER_DAY) {
-        if (!$this->evictOldestToday($pattern)) {
+      while ($this->countToday($reason) >= self::MAX_ROWS_PER_PATTERN_PER_DAY) {
+        if (!$this->evictOldestToday($reason)) {
           return;
         }
       }
@@ -167,7 +184,7 @@ class SuspectTurnLog {
       $this->database->insert(self::TABLE)
         ->fields([
           'created' => $this->time->getRequestTime(),
-          'pattern' => $pattern,
+          'pattern' => $reason,
           'question' => $this->clamp($question),
           'answer' => $this->clamp($answer),
         ])
@@ -229,6 +246,45 @@ class SuspectTurnLog {
     }
     catch (\Throwable $e) {
       $this->warn('Beacon flagged-turn log could not be read: @message', [
+        '@message' => $e->getMessage(),
+      ]);
+
+      return [];
+    }
+  }
+
+  /**
+   * Reads one page of flagged turns, newest first.
+   *
+   * The report pages rather than showing a fixed most-recent slice: the quota
+   * allows roughly 60 rows per pattern per day, so a bot probing for a week can
+   * leave far more than one screenful, and an operator reviewing an incident
+   * needs to reach the older ones without falling back to the JSON export.
+   * Each page still reads a bounded number of rows, so the page load does not
+   * grow with the size of the store.
+   *
+   * @param int $per_page
+   *   How many rows one page holds.
+   *
+   * @return array[]
+   *   Each row as an array with created, pattern, question and answer keys.
+   *   Empty when the store is unreadable.
+   */
+  public function getPage(int $per_page = self::DEFAULT_LIST_LIMIT): array {
+    try {
+      $rows = $this->database->select(self::TABLE, 's')
+        ->extend(PagerSelectExtender::class)
+        ->limit(max($per_page, 1))
+        ->fields('s', ['created', 'pattern', 'question', 'answer'])
+        ->condition('created', $this->retentionCutoff(), '>=')
+        ->orderBy('created', 'DESC')
+        ->orderBy('id', 'DESC')
+        ->execute();
+
+      return array_map(static fn($row) => (array) $row, $rows->fetchAll());
+    }
+    catch (\Throwable $e) {
+      $this->warn('Beacon flagged-turn log page could not be read: @message', [
         '@message' => $e->getMessage(),
       ]);
 

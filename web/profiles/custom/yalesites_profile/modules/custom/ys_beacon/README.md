@@ -504,13 +504,23 @@ configured, conversation too long) is counted without being logged. The text
 clamp is enforced on write by `SuspectTurnLog`, not by the controller's buffer,
 which may overshoot by one streamed chunk.
 
-The report lists the 50 most recent flagged turns, with question and answer
-**shortened to 300 characters each for display** (`TelemetryController::EXCERPT_LENGTH`)
-and an ellipsis when shortened. Storage clamps at 2000, which is right for
-reviewing an attempt but wrong for a table cell — a question padded to the clamp
-is one row tall enough to push every other flagged turn off the screen, which
-defeats the point of listing them. The note under the table states both limits,
-and the JSON export carries the full stored text.
+The report **pages** through flagged turns, 50 to a page (`SuspectTurnLog::getPage()`
+with a standard Drupal pager), with question and answer **shortened to 300
+characters each for display** (`TelemetryController::EXCERPT_LENGTH`) and an
+ellipsis when shortened. Two separate reasons for the two limits:
+
+- **Paging**, because the quota allows roughly 60 rows per pattern per day, so a
+  bot probing for a week can leave far more than one screenful. Each page reads a
+  bounded number of rows, so page load does not grow with the store — and unlike a
+  fixed "50 most recent" slice, older turns stay reachable in the interface rather
+  than only in the export.
+- **Shortening**, because storage clamps at 2000 characters, which is right for
+  reviewing an attempt but wrong for a table cell: a question padded to the clamp
+  is one row tall enough to push every other flagged turn off the screen.
+
+The note under the table states the total held, how many are on the page, and the
+display limit. The JSON export carries the full stored text and does **not**
+paginate — it takes a bounded slice (`MAX_EXPORT_ROWS`) and declares truncation.
 
 Two deliberate design points:
 
@@ -542,7 +552,20 @@ Bars are scaled to the busiest day rather than an absolute, so a quiet period is
 still readable, and any non-zero day is floored at 1% so it never renders as an
 empty column. Each bar carries its own date and count as real text in a
 `visually-hidden` span, which is what makes the chart readable with a screen
-reader — there is no `aria-label` summary standing in for the data. Markup lives
+reader — there is no `aria-label` summary standing in for the data. The same text
+is repeated in a `title` attribute so a sighted mouse user can hover a bar for the
+exact number; without it, assistive technology had the figures and a sighted
+reader had only the shape. Nothing is exclusive to the tooltip, so its known
+weaknesses (no touch, no keyboard) cost nothing.
+
+**Days are UTC, and the report says so in three places** — the column header, a
+note under the by-day table, and the disclosure list. This matters at Yale
+specifically: a UTC day starts at 8pm the previous evening in EDT (7pm in EST), so
+between 8pm and midnight an Eastern reader sees the newest row dated *tomorrow*
+and reasonably suspects a clock bug. It is not one. UTC is deliberate — buckets do
+not shift when the site timezone changes and are not distorted by the 23-hour and
+25-hour days daylight saving produces. `gmdate()` is used throughout, so the
+server's and the site's timezone are both irrelevant. Markup lives
 in `templates/ys-beacon-telemetry-chart.html.twig`; the bar height is passed as a
 CSS custom property so `css/telemetry.css` keeps control of presentation.
 
