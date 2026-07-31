@@ -315,6 +315,7 @@ abstract class ViewsBasicWidgetBase extends WidgetBase implements ContainerFacto
     $this->buildHiddenParamsField($element, $items, $delta);
 
     $form['#attached']['library'][] = 'ys_views_basic/ys_views_basic';
+    $form['#attached']['library'][] = 'ys_views_basic/term_operator';
     if ($is_create_form) {
       $form['#attached']['library'][] = 'ys_views_basic/ys_views_basic_preview';
     }
@@ -393,6 +394,16 @@ abstract class ViewsBasicWidgetBase extends WidgetBase implements ContainerFacto
     // than at a fixed depth.
     $built = static::flattenBuiltElements($selection['entity_and_view_mode'] ?? []);
 
+    // The include/exclude operator radios are similarly one level deeper than
+    // their #value: buildTermOperator() nests each inside a #type container
+    // used purely for layout/CSS, so look these up by key too. This reads
+    // the actual submitted value, not a stored default: buildTermOperator()
+    // disables an empty operator via a plain #attributes flag rather than
+    // Form API's #disabled, specifically so a value picked while the
+    // JS-enabled control was live still gets saved (see that method's
+    // docblock for why #disabled itself would have silently discarded it).
+    $filter_and_sort = static::flattenBuiltElements($selection['filter_and_sort'] ?? []);
+
     // Rebuild the #type checkboxes contract these params used to carry: only
     // enabled filters present, each keyed by itself. This matters beyond
     // tidiness — ViewsBasicManager tests several of these with isset() rather
@@ -420,7 +431,14 @@ abstract class ViewsBasicWidgetBase extends WidgetBase implements ContainerFacto
         'category_filter_label' => $built['category_filter_label']['#value'] ?? NULL,
         'category_included_terms' => $built['category_included_terms']['#value'] ?? NULL,
         'custom_vocab_included_terms' => $built['custom_vocab_included_terms']['#value'] ?? NULL,
-        'operator' => $selection['filter_and_sort']['term_operator']['#value'],
+        // Split include/exclude operators (#1316): a shared operator applied
+        // both, so "All" made includes stricter and excludes *looser* at the
+        // same time (exclude only hid a node tagged with every excluded
+        // term, not any). No legacy 'operator' key is written; blocks saved
+        // before this change keep working via getDefaultParamValue()'s
+        // fallback on read.
+        'include_operator' => $filter_and_sort['include_operator']['#value'],
+        'exclude_operator' => $filter_and_sort['exclude_operator']['#value'],
         'sort_by' => $form_state->getValue($formSelectors['sort_by_array']),
         'display' => $form_state->getValue($formSelectors['display_array']),
         'limit' => (int) $form_state->getValue($formSelectors['limit_array']),
@@ -609,6 +627,10 @@ abstract class ViewsBasicWidgetBase extends WidgetBase implements ContainerFacto
     $form['group_user_selection']['entity_and_view_mode']['exposed_filter_options'] = [
       '#type' => 'fieldset',
       '#title' => $this->t('Exposed Filter Options'),
+      '#description' => $this->t('Add filter controls that visitors can use on the published page to narrow the results themselves.'),
+      // Fieldset's default #description_display is 'after', rendering below
+      // every filter row instead of introducing them.
+      '#description_display' => 'before',
       '#tree' => TRUE,
       '#attributes' => ['class' => ['vb-filter-rows']],
     ];
@@ -738,6 +760,15 @@ abstract class ViewsBasicWidgetBase extends WidgetBase implements ContainerFacto
    * exposed filters grow as their settings are disclosed, and they are no
    * longer in the same row.
    *
+   * The field_options, event_field_options and post_field_options groups (each
+   * built separately — the last two only by the per-type widgets) are gathered
+   * into one "Result content" fieldset here rather than at build time, so the
+   * per-type widgets keep writing their sibling groups exactly as before; only
+   * the render tree changes. flattenBuiltElements() already descends through
+   * any structural wrapper, so massageFormValues() and
+   * massageEntitySpecificParams() find these values whether they sit at the
+   * top level or inside this fieldset.
+   *
    * Runs as an #after_build for the same reason as
    * ::buildExposedFilterAccordion(): every #parents is fixed by this point, so
    * the move cannot rename an input.
@@ -751,13 +782,31 @@ abstract class ViewsBasicWidgetBase extends WidgetBase implements ContainerFacto
    *   The group with a display row wrapping the field options and preview.
    */
   public static function groupFieldDisplayRow(array $element, FormStateInterface $form_state): array {
-    $row_keys = ['field_options', 'event_field_options', 'post_field_options', 'preview'];
-    $row = [];
-    foreach ($row_keys as $key) {
+    $field_option_keys = ['field_options', 'event_field_options', 'post_field_options'];
+    $field_options = [];
+    foreach ($field_option_keys as $key) {
       if (isset($element[$key])) {
-        $row[$key] = $element[$key];
+        $field_options[$key] = $element[$key];
         unset($element[$key]);
       }
+    }
+
+    $row = [];
+    if ($field_options) {
+      $row['result_content'] = [
+        '#type' => 'fieldset',
+        '#title' => t('Result content'),
+        '#description' => t("Choose which details appear on each result. These settings don't change which content the list pulls in."),
+        // Fieldset's default #description_display is 'after', rendering
+        // below field_options/event_field_options/post_field_options instead
+        // of introducing them.
+        '#description_display' => 'before',
+        '#attributes' => ['class' => ['vb-result-content']],
+      ] + $field_options;
+    }
+    if (isset($element['preview'])) {
+      $row['preview'] = $element['preview'];
+      unset($element['preview']);
     }
     if (!$row) {
       return $element;
@@ -804,7 +853,42 @@ abstract class ViewsBasicWidgetBase extends WidgetBase implements ContainerFacto
   }
 
   /**
-   * Builds the include/exclude term selects and the term operator.
+   * Returns the vocabularies whose terms populate this widget's tag selects.
+   *
+   * Scoped per content type (#1316 spec) rather than every vocabulary on the
+   * site: this widget's own category vocabulary (::getCategoryVocabulary(),
+   * already profile-aware — "affiliation" rather than "profile_category"),
+   * plus the three vocabularies every content type shares.
+   *
+   * @return string[]
+   *   Vocabulary machine names, in the order they should group in the select.
+   */
+  protected function getTagVocabularies(): array {
+    return [
+      $this->getCategoryVocabulary(),
+      'tags',
+      'audience',
+      'custom_vocab',
+    ];
+  }
+
+  /**
+   * Builds the include/exclude term selects and their per-list operators.
+   *
+   * Each multi-select gets its own operator control directly beneath it
+   * (#1316), rather than the one shared "Match content tagged with" control
+   * this replaces. A shared operator was a correctness bug, not just an
+   * unclear label: ViewsBasicManager::setupView() joins both lists with the
+   * same operator, so choosing "All" made includes stricter and excludes
+   * *looser* at the same time — a node was only hidden if it carried every
+   * excluded term, not any one of them. Splitting the operator is what makes
+   * "any vs. all" answerable per list; the widget's own disable-on-empty
+   * behavior (views-basic-term-operator.js) then keeps each one disabled
+   * until its list has something to apply it to.
+   *
+   * The include and exclude lists work identically (any vs. all), so the
+   * worked example lives once, in a shared intro above both, rather than
+   * repeated near-verbatim in each select's own #description.
    *
    * @param array $form
    *   The form array, passed by reference.
@@ -815,41 +899,133 @@ abstract class ViewsBasicWidgetBase extends WidgetBase implements ContainerFacto
    */
   protected function buildTermIncludeExclude(array &$form, FieldItemListInterface $items, int $delta): void {
     $params = $items[$delta]->params;
-    $tags = $this->viewsBasicManager->getAllTags();
+    $tags = $this->viewsBasicManager->getTagsForVocabularies($this->getTagVocabularies());
 
+    $form['group_user_selection']['filter_and_sort']['tag_filters_intro'] = [
+      '#type' => 'container',
+      '#attributes' => ['class' => ['vb-tag-filters-intro']],
+      'heading' => [
+        '#markup' => '<h3 class="vb-tag-filters-intro__heading">' . $this->t('Tag filters') . '</h3>',
+      ],
+      'help' => [
+        '#markup' => '<p class="vb-tag-filters-intro__help">' . $this->t('Choose which tags narrow this list. Example: with Undergraduate and Admissions selected, "any" matches content tagged with either one; "all" matches only content tagged with both.') . '</p>',
+      ],
+    ];
+
+    $include_terms = $params ? $this->viewsBasicManager->getDefaultParamValue('terms_include', $params) : [];
     $form['group_user_selection']['filter_and_sort']['terms_include'] = [
       '#title' => $this->t('Only show content tagged'),
-      '#description' => $this->t('Limit results to content using any of these tags or categories.'),
       '#type' => 'select',
       '#options' => $tags,
       '#chosen' => TRUE,
       '#multiple' => TRUE,
-      '#tags' => TRUE,
-      '#target_type' => 'taxonomy_term',
-      '#default_value' => $params ? $this->viewsBasicManager->getDefaultParamValue('terms_include', $params) : [],
+      '#default_value' => $include_terms,
     ];
+    $form['group_user_selection']['filter_and_sort']['include_operator_wrapper'] = $this->buildTermOperator(
+      'include',
+      $this->t('Show content tagged with'),
+      $this->t('of these'),
+      $params ? $this->viewsBasicManager->getDefaultParamValue('include_operator', $params) : '+',
+      empty($include_terms),
+    );
+
+    $exclude_terms = $params ? $this->viewsBasicManager->getDefaultParamValue('terms_exclude', $params) : [];
     $form['group_user_selection']['filter_and_sort']['terms_exclude'] = [
       '#title' => $this->t('Hide content tagged'),
-      '#description' => $this->t('Remove results using any of these tags or categories.'),
       '#type' => 'select',
       '#options' => $tags,
       '#chosen' => TRUE,
       '#multiple' => TRUE,
-      '#tags' => TRUE,
-      '#target_type' => 'taxonomy_term',
-      '#default_value' => $params ? $this->viewsBasicManager->getDefaultParamValue('terms_exclude', $params) : [],
+      '#default_value' => $exclude_terms,
     ];
-    $form['group_user_selection']['filter_and_sort']['term_operator'] = [
-      '#type' => 'radios',
-      '#title' => $this->t('Match content tagged with'),
-      '#description' => $this->t('"Any" shows content with at least one selected term; "All" requires every selected term.'),
-      // "+" is OR and "," is AND.
-      '#options' => [
-        '+' => $this->t('Any of the selected terms'),
-        ',' => $this->t('All of the selected terms'),
+    $form['group_user_selection']['filter_and_sort']['exclude_operator_wrapper'] = $this->buildTermOperator(
+      'exclude',
+      $this->t('Hide content tagged with'),
+      $this->t('of these'),
+      $params ? $this->viewsBasicManager->getDefaultParamValue('exclude_operator', $params) : '+',
+      empty($exclude_terms),
+    );
+  }
+
+  /**
+   * Builds one include/exclude operator control: a segmented Any/All pair.
+   *
+   * Rendered as a two-segment button pair via CSS on top of plain #type
+   * radios — not <button> elements or a JS-driven widget. <button> would
+   * submit the form; real radios keep native arrow-key navigation between
+   * the two segments and are announced by screen readers as a radio group
+   * for free, and the control still degrades to plain radios without JS.
+   * views-basic-term-operator.css visually hides the native input and
+   * styles its sibling <label> as one half of the joined control; it also
+   * opts this group out of the icon-card treatment the shared
+   * .glb-form-type--radio styling (views-basic-form-tabs.css) applies to
+   * every other radio group in this tab context, since "any vs. all" is a
+   * logical relationship an icon cannot represent.
+   *
+   * The control is always rendered — never hidden — and disabled instead
+   * when its paired multi-select is empty, since the setting is genuinely
+   * meaningless against an empty list. That disabling is done via a plain
+   * `disabled` HTML attribute in #attributes, deliberately NOT the Form API
+   * #disabled property, on FormBuilder::doBuildForm()'s own documented
+   * advice: "#disabled [...] results in user input being ignored regardless
+   * of [...] whether JavaScript is used to change the control's attributes
+   * [...] If one still decides to use JavaScript to affect when a control is
+   * enabled, then it is best [...] for the control to be enabled in the
+   * HTML, and disabled by JavaScript." #disabled would have been correct for
+   * a control that should stay inert forever; this one is enabled by
+   * views-basic-term-operator.js the moment its paired select gets a value.
+   * A brand-new, unsaved block has no stored terms yet, so this method
+   * recomputes $disabled as TRUE on every rebuild including the one at final
+   * submit — if that had used #disabled, Drupal would silently discard
+   * whatever the user actually picked in the JS-enabled control and fall
+   * back to #default_value on every single new-block save, independent of
+   * what was clicked. The plain #attributes disabled flag only affects
+   * rendering, not submission, so the real submitted value is what
+   * massageFormValues() reads.
+   *
+   * The sentence text ("Show content tagged with [Any|All] of these")
+   * wraps the segmented control rather than sitting in a separate title or
+   * description, so #title is kept but visually hidden — the accessible
+   * name screen readers need still has to exist even though nothing
+   * renders for it.
+   *
+   * @param string $variant
+   *   Either 'include' or 'exclude', for the CSS/JS pairing hook and the
+   *   massageFormValues() key.
+   * @param \Drupal\Core\StringTranslation\TranslatableMarkup $prefix
+   *   The sentence fragment shown (and used as the accessible name) before
+   *   the segmented control, e.g. "Show content tagged with".
+   * @param \Drupal\Core\StringTranslation\TranslatableMarkup $suffix
+   *   The sentence fragment shown after the segmented control, e.g.
+   *   "of these".
+   * @param string $default_value
+   *   The stored or default operator value ("+" or ",").
+   * @param bool $disabled
+   *   TRUE when the paired multi-select currently has no value.
+   *
+   * @return array
+   *   The container render array wrapping the operator radios.
+   */
+  protected function buildTermOperator(string $variant, $prefix, $suffix, string $default_value, bool $disabled): array {
+    return [
+      '#type' => 'container',
+      '#attributes' => [
+        'class' => ["vb-term-operator", "vb-term-operator--$variant"],
       ],
-      '#default_value' => $params ? $this->viewsBasicManager->getDefaultParamValue('operator', $params) : '+',
-      '#attributes' => ['class' => ['term-operator-item']],
+      "{$variant}_operator" => [
+        '#type' => 'radios',
+        '#title' => $prefix,
+        '#title_display' => 'invisible',
+        // "+" is OR and "," is AND.
+        '#options' => [
+          '+' => $this->t('Any'),
+          ',' => $this->t('All'),
+        ],
+        '#default_value' => $default_value,
+        '#attributes' => $disabled ? ['disabled' => 'disabled'] : [],
+        '#prefix' => '<span class="vb-term-operator__text vb-term-operator__text--prefix">' . $prefix . '</span>',
+        '#suffix' => '<span class="vb-term-operator__text vb-term-operator__text--suffix">' . $suffix . '</span>',
+      ],
     ];
   }
 

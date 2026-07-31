@@ -1,0 +1,296 @@
+/**
+ * @file
+ * Styling for the include/exclude term-operator segmented control (#1316).
+ *
+ * A two-segment Any/All button pair built on plain #type radios: the native
+ * <input> is visually hidden (the standard clip-to-1px technique, not
+ * display:none, so it stays focusable and keyboard-operable) and its
+ * sibling <label> is styled as one half of the joined control. This isn't
+ * decoration for its own sake — it's what fixes a real rendering bug.
+ *
+ * Root cause of that bug: atomic's own input.twig
+ * (component-library-twig/components/01-atoms/forms/_input.twig) adds class
+ * "form-item__textfield" to every <input> it renders, radios and checkboxes
+ * included, and _yds-text-field.css styles that class with an unconditional
+ * border, padding and white background meant for actual text fields
+ * (`.form-item__textfield{border:...;padding:...}` — no `input[type=text]`
+ * scoping). That squares off what should be a native circular radio control
+ * — exactly the broken "white circle / blue square" rendering this replaces.
+ * Fighting that property-by-property (as the icon-card treatment further
+ * down this tab already does, and as an earlier version of this file also
+ * tried) means chasing every property that leaks through; visually hiding
+ * the input sidesteps it entirely; the label carries the whole visual.
+ *
+ * The label wrap-onto-its-own-line bug from an earlier version of this file
+ * was self-inflicted: `display: block` on the label starts it on a new line
+ * after the (still inline) input that precedes it in the DOM, regardless of
+ * the input's own width. Not an issue here since the input is hidden and
+ * the label is the only visible element.
+ *
+ * #type radios with a #title (even title_display 'invisible') gets wrapped
+ * in a real <fieldset> by CompositeFormElementTrait::preRenderComposite
+ * FormElement() — browser default fieldset border/padding/min-width is
+ * reset below since nothing here wants that chrome.
+ *
+ * "Any vs. all" is a logical relationship, not something an icon can
+ * represent, so the icon-card "card" treatment (views-basic-form-tabs.css)
+ * meant for pickers like Event Time Period would only add decoration
+ * without meaning here — this file opts back out of it via the ancestor
+ * .vb-term-operator class, using !important throughout to win against that
+ * treatment's own !important rules regardless of specificity, matching the
+ * rest of this tab context's established pattern (see
+ * views-basic-form-tabs.css's file-level comment for why).
+ */
+
+/*
+ * Shared intro above both term lists (#1316): a section heading plus the one
+ * worked example that used to be repeated, near-verbatim, in each select's
+ * own #description.
+ */
+.vb-tag-filters-intro {
+  margin-top: 0.5rem;
+}
+
+.vb-tag-filters-intro__heading {
+  margin: 0 0 0.25rem !important;
+  color: var(--gin-color-text) !important;
+  font-size: 1.125rem !important;
+  font-weight: 700 !important;
+}
+
+.vb-tag-filters-intro__help {
+  margin: 0 0 1rem !important;
+
+  /*
+   * --gin-color-text-light reads fine for a small disabled-tag chip
+   * elsewhere in this tab, but is too low-contrast for a full line of body
+   * copy against the dark-mode layer background — use the same full-
+   * strength text color the operator's own inline sentence text uses
+   * (.vb-term-operator__text below) instead.
+   */
+  color: var(--gin-color-text) !important;
+}
+
+/*
+ * "Only show content tagged" / "Hide content tagged": styled bigger, more
+ * like a sub-heading, now that they're each the only label introducing their
+ * list (the shared intro above covers the explanation both used to repeat).
+ * Targeted by the stable, non-random-suffixed structural class Drupal
+ * derives from the field's #name (see the entity-type radio labels further
+ * up this tab context, in views-basic.css, for the same pattern) rather
+ * than the element's own #id, which carries a per-dialog-instance random
+ * suffix and can't be relied on in CSS.
+ */
+.layout-builder-configure-block
+  .horizontal-tabs-panes
+  .form-item-settings-block-form-group-user-selection-filter-and-sort-terms-include
+  label,
+.layout-builder-configure-block
+  .horizontal-tabs-panes
+  .form-item-settings-block-form-group-user-selection-filter-and-sort-terms-exclude
+  label {
+  font-size: 1.0625rem !important;
+  font-weight: 700 !important;
+}
+
+.vb-term-operator {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  column-gap: 0.5rem;
+  row-gap: 0.25rem;
+  margin-top: 0.5rem;
+}
+
+.vb-term-operator__text {
+  color: var(--gin-color-text);
+}
+
+.vb-term-operator fieldset {
+  margin: 0 !important;
+  padding: 0 !important;
+  border: 0 !important;
+  min-width: 0 !important;
+}
+
+.vb-term-operator .fieldset-wrapper {
+  margin: 0 !important;
+}
+
+/* Visually hide the native radio input; the label carries the visual. */
+.layout-builder-configure-block
+  .horizontal-tabs-panes
+  .vb-term-operator
+  input.form-radio {
+  position: absolute !important;
+  overflow: hidden !important;
+  clip: rect(0 0 0 0) !important;
+  clip-path: inset(50%) !important;
+  width: 1px !important;
+  height: 1px !important;
+  margin: -1px !important;
+  padding: 0 !important;
+  border: 0 !important;
+}
+
+.layout-builder-configure-block
+  .horizontal-tabs-panes
+  .vb-term-operator
+  .form-boolean-group {
+  display: flex !important;
+  flex-flow: row nowrap !important;
+  width: auto !important;
+  gap: 0 !important;
+}
+
+.layout-builder-configure-block
+  .horizontal-tabs-panes
+  .vb-term-operator
+  .glb-form-type--radio,
+.layout-builder-configure-block
+  .horizontal-tabs-panes
+  .vb-term-operator
+  .form-type--radio {
+  position: relative;
+}
+
+/*
+ * The joined segment: shared 1px border, no gap between segments — the
+ * second segment pulls 1px left to sit flush against the first rather than
+ * doubling the border weight between them.
+ *
+ * min-height 2rem (32px) rather than the 44px first shipped: 32px is the
+ * floor this control was scoped to (44px was "better," not required) and
+ * the visual height next to the rest of this tab's compact fields mattered
+ * more here. Still clears the 24×24 WCAG 2.5.8 floor with room to spare.
+ */
+.layout-builder-configure-block
+  .horizontal-tabs-panes
+  .vb-term-operator
+  .glb-form-type--radio
+  label,
+.layout-builder-configure-block
+  .horizontal-tabs-panes
+  .vb-term-operator
+  .form-type--radio
+  label {
+  display: inline-flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  flex: none !important;
+  gap: 0 !important;
+  width: auto !important;
+  min-width: 0;
+  height: auto !important;
+  min-height: 2rem;
+  max-width: none !important;
+  max-height: none !important;
+  margin: 0 !important;
+  padding: 0.25rem 0.5rem !important;
+  border: 1px solid var(--gin-border-color, #d3d4d9) !important;
+  border-radius: 0 !important;
+  color: var(--gin-color-text) !important;
+  background: var(--gin-bg-layer, #fff) !important;
+  font-weight: 400;
+  text-align: center !important;
+  cursor: pointer;
+}
+
+.layout-builder-configure-block
+  .horizontal-tabs-panes
+  .vb-term-operator
+  .glb-form-type--radio:first-child
+  label,
+.layout-builder-configure-block
+  .horizontal-tabs-panes
+  .vb-term-operator
+  .form-type--radio:first-child
+  label {
+  border-start-start-radius: 6px !important;
+  border-end-start-radius: 6px !important;
+}
+
+.layout-builder-configure-block
+  .horizontal-tabs-panes
+  .vb-term-operator
+  .glb-form-type--radio:last-child
+  label,
+.layout-builder-configure-block
+  .horizontal-tabs-panes
+  .vb-term-operator
+  .form-type--radio:last-child
+  label {
+  margin-inline-start: -1px !important;
+  border-start-end-radius: 6px !important;
+  border-end-end-radius: 6px !important;
+}
+
+/* Selected state: fill + weight change, not color alone (WCAG 1.4.1). */
+.layout-builder-configure-block
+  .horizontal-tabs-panes
+  .vb-term-operator
+  input.form-radio:checked
+  + label {
+  position: relative;
+  z-index: 1;
+  border-color: var(--gin-color-primary) !important;
+  background: var(--gin-color-primary) !important;
+  color: #fff !important;
+  font-weight: 700;
+}
+
+/* Visible focus ring on the whole segment — the real input is what receives
+ * keyboard focus, so :focus-visible has to be read off it and painted onto
+ * the sibling label. */
+.layout-builder-configure-block
+  .horizontal-tabs-panes
+  .vb-term-operator
+  input.form-radio:focus-visible
+  + label {
+  position: relative;
+  z-index: 2;
+  outline: 2px solid var(--gin-color-primary);
+  outline-offset: 2px;
+}
+
+/* Disabled while the paired multi-select is empty. Dimmed, not hidden, and
+ * still above 3:1 contrast against the layer background — showing this
+ * rather than hiding it only works if people can still tell it's there. */
+.layout-builder-configure-block
+  .horizontal-tabs-panes
+  .vb-term-operator
+  input.form-radio:disabled
+  + label {
+  border-color: var(--gin-border-color, #d3d4d9) !important;
+  background: var(--gin-bg-layer, #fff) !important;
+  color: var(--gin-color-text-light, #6b7280) !important;
+  cursor: not-allowed;
+}
+
+.layout-builder-configure-block
+  .horizontal-tabs-panes
+  .vb-term-operator
+  input.form-radio:disabled:checked
+  + label {
+  border-color: var(--gin-color-text-light, #6b7280) !important;
+  background: var(--gin-bg-item-hover, #f3f4f9) !important;
+  color: var(--gin-color-text-light, #6b7280) !important;
+}
+
+/*
+ * Hover only for enabled, UNCHECKED segments — the ", :checked" in :not() is
+ * what makes that true; an earlier version of this rule was missing it, so
+ * hovering the already-selected segment swapped its fill from the checked
+ * blue to this hover color, then back the instant the mouse left, reading
+ * as an inconsistent "active" state that depended on cursor position. This
+ * is ordered last purely to satisfy stylelint's ascending-specificity
+ * convention (this selector is more specific than the single-pseudo-class
+ * rules above), so source order doesn't reflect precedence here.
+ */
+.layout-builder-configure-block
+  .horizontal-tabs-panes
+  .vb-term-operator
+  input.form-radio:not(:disabled, :checked)
+  + label:hover {
+  background: var(--gin-bg-item-hover, #f3f4f9) !important;
+}

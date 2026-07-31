@@ -23,3 +23,13 @@ listing_form_tabs:
     theme:
       assets/css/views-basic-form-tabs.css: {}
 
+term_operator:
+  css:
+    theme:
+      assets/css/views-basic-term-operator.css: {}
+  js:
+    assets/js/views-basic-term-operator.js: {}
+  dependencies:
+    - core/once
+    - core/jquery
+
