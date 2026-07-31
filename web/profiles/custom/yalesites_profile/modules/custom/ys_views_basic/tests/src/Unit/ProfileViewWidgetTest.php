@@ -74,6 +74,18 @@ class ProfileViewWidgetTest extends UnitTestCase {
   }
 
   /**
+   * Profiles scope their tag selects to affiliation/tags/audience/custom_vocab.
+   *
+   * @covers \Drupal\ys_views_basic\Plugin\Field\FieldWidget\ViewsBasicWidgetBase::getTagVocabularies
+   */
+  public function testTagVocabulariesScopedToAffiliation() {
+    $this->assertSame(
+      ['affiliation', 'tags', 'audience', 'custom_vocab'],
+      $this->invoke($this->widget('profile_card'), 'getTagVocabularies')
+    );
+  }
+
+  /**
    * The profile-only directory mode resolves and disables the thumbnail.
    *
    * @covers \Drupal\ys_views_basic\Plugin\Field\FieldWidget\ViewsBasicWidgetBase::getViewMode

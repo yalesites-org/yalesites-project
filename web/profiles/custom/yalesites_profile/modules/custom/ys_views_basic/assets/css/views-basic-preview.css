@@ -199,6 +199,27 @@
   color: var(--gin-color-text-light, #555);
 }
 
+/*
+ * Family/weight/line-height match the real reference-card snippet
+ * (body-default-condensed mixin, _yds-reference-card.scss) — no
+ * clamp/truncation: the real card has none either (text_default formatter,
+ * no max length on the field), so the teaser just wraps like this. Font
+ * stays Mallory Compact regardless of data-font-pairing, matching the real
+ * component (unlike the title).
+ *
+ * Size is a fixed 0.875rem rather than the real component's fluid
+ * clamp(1.0625rem, calc(0.36vw + 0.9314rem), 1.25rem): that clamp scales
+ * with viewport width, which only makes sense at the real card's full-page
+ * scale. Inside this compact, fixed-width (max-width: 22rem) mockup box it
+ * just renders large and stretches the vw term meaninglessly, so a smaller,
+ * fixed size reads better here without claiming a false pixel match.
+ */
+.vb-preview__teaser {
+  margin: 0.5rem 0 0;
+  font: 400 0.875rem/1.4 "Mallory Compact", sans-serif;
+  color: var(--gin-color-text, inherit);
+}
+
 .vb-preview__calendar {
   display: inline-block;
   margin-top: 0.5rem;
@@ -263,9 +284,10 @@
  * Two-column layout for the "Field display & filters" tab on the block-create
  * form (#1318, revised for #1337).
  *
- * Only the per-result field options sit beside the preview, in the display row
- * that ViewsBasicWidgetBase::groupFieldDisplayRow() builds; the exposed filters
- * are a separate full-width row below and are deliberately outside this grid.
+ * Only the "Result content" fieldset (the per-result field options) sits
+ * beside the preview, in the display row that
+ * ViewsBasicWidgetBase::groupFieldDisplayRow() builds; the exposed filters are
+ * a separate full-width row below and are deliberately outside this grid.
  * That separation is the fix for the empty-panel bug: the preview's column can
  * only ever be as tall as a row of checkboxes, so disclosing a filter's
  * settings — which used to grow the shared left column and stretch the dashed
@@ -307,5 +329,24 @@
     grid-column: 2;
     grid-row: 1 / span 20;
     margin-top: 0;
+  }
+
+  /*
+   * Without this, the "Preview" label sits flush against the tab strip's
+   * bottom edge, because margin-top: 0 above removes the stacked-layout
+   * offset (.vb-preview-wrapper's own margin-top: 1rem) entirely once the
+   * preview moves into this grid row. Restore an offset here instead, sized
+   * to land the label's baseline level with the "Result content" legend
+   * that starts the left column: gin_lb's stylesheet positions a fieldset's
+   * <legend> 20px from the top of its border
+   * (`fieldset:not(.fieldgroup) > legend { top: 20px }`, gin_lb.css), on top
+   * of the ~4px of its own padding-top the pane wrapper already adds
+   * (`.glb-claro-details__wrapper`, gin_lb.css) — roughly 1.5rem in total.
+   * Scoped to this container query so the single-column fallback (where the
+   * preview stacks below the controls, not beside them) keeps its own
+   * smaller, already-correct margin-top instead of gaining this offset too.
+   */
+  .vb-display-row > .vb-preview-wrapper .vb-preview-wrapper__header {
+    padding-top: 1.5rem;
   }
 }

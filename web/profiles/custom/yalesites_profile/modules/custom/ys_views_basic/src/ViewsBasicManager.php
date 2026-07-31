@@ -578,8 +578,7 @@ class ViewsBasicManager extends ControllerBase implements ContainerInjectionInte
       }
     }
 
-    // Set operator: "+" is "OR" and "," is "AND".
-    $operator = $paramsDecoded['operator'] ?? '+';
+    [$includeOperator, $excludeOperator] = $this->resolveTermOperators($paramsDecoded);
 
     // Fix for older setting terms for nodes not saved with the new storage.
     if (isset($termsIncludeArray[0]) && is_array($termsIncludeArray[0])) {
@@ -595,8 +594,8 @@ class ViewsBasicManager extends ControllerBase implements ContainerInjectionInte
       $termsExcludeArray = $termsExcludeArrayFixed;
     }
     // End fix.
-    $termsInclude = (count($termsIncludeArray) != 0) ? implode($operator, $termsIncludeArray) : 'all';
-    $termsExclude = (count($termsExcludeArray) != 0) ? implode($operator, $termsExcludeArray) : NULL;
+    $termsInclude = (count($termsIncludeArray) != 0) ? implode($includeOperator, $termsIncludeArray) : 'all';
+    $termsExclude = (count($termsExcludeArray) != 0) ? implode($excludeOperator, $termsExcludeArray) : NULL;
 
     if ($paramsDecoded['display'] == 'all') {
       $itemsLimit = 0;
@@ -1064,6 +1063,13 @@ class ViewsBasicManager extends ControllerBase implements ContainerInjectionInte
         $defaultParam = (empty($paramsDecoded['operator'])) ? '+' : $paramsDecoded['operator'];
         break;
 
+      // Falls back to the legacy shared 'operator' key, then '+', for a
+      // block saved before the include/exclude split (#1316).
+      case 'include_operator':
+      case 'exclude_operator':
+        $defaultParam = $paramsDecoded[$type] ?? ($paramsDecoded['operator'] ?? '+');
+        break;
+
       case 'limit':
         $defaultParam = (empty($paramsDecoded['limit'])) ? 10 : (int) $paramsDecoded['limit'];
         break;
@@ -1125,6 +1131,30 @@ class ViewsBasicManager extends ControllerBase implements ContainerInjectionInte
         break;
     }
     return $defaultParam;
+  }
+
+  /**
+   * Resolves the include/exclude term operators from decoded stored params.
+   *
+   * Split independently (#1316): a single shared operator applied to both
+   * lists made "All" stricter for includes but looser for excludes at the
+   * same time — implode() joining the exclude list with "," (AND) only
+   * excludes a node that carries every excluded term, not any one of them.
+   * A block saved before the split carries only the legacy 'operator' key,
+   * which this applies to both lists as before (no migration, per #1316).
+   *
+   * @param array $paramsDecoded
+   *   The decoded stored params.
+   *
+   * @return array
+   *   [$includeOperator, $excludeOperator], each "+" (OR) or "," (AND).
+   */
+  public function resolveTermOperators(array $paramsDecoded): array {
+    $legacyOperator = $paramsDecoded['operator'] ?? '+';
+    return [
+      $paramsDecoded['include_operator'] ?? $legacyOperator,
+      $paramsDecoded['exclude_operator'] ?? $legacyOperator,
+    ];
   }
 
   /**
@@ -1204,6 +1234,42 @@ class ViewsBasicManager extends ControllerBase implements ContainerInjectionInte
     }
     asort($tagList);
     return $tagList;
+  }
+
+  /**
+   * Returns terms from the given vocabularies, grouped by vocabulary.
+   *
+   * Built for a select's #options as optgroups (#1316): each vocabulary's own
+   * label groups its terms, so a per-content-type widget can scope its tag
+   * selects to the handful of vocabularies relevant to that content type
+   * instead of getAllTags()'s flat, unscoped dump of every vocabulary on the
+   * site. Terms are sorted alphabetically within their group; groups appear
+   * in the order $vocabulary_ids lists them.
+   *
+   * @param string[] $vocabulary_ids
+   *   The vocabulary machine names to include, in display order.
+   *
+   * @return array
+   *   An array keyed by vocabulary label, each value a tid => term name map.
+   */
+  public function getTagsForVocabularies(array $vocabulary_ids): array {
+    $vocabulary_storage = $this->entityTypeManager->getStorage('taxonomy_vocabulary');
+    $grouped = [];
+
+    foreach ($vocabulary_ids as $vid) {
+      $vocabulary = $vocabulary_storage->load($vid);
+      if (!$vocabulary) {
+        continue;
+      }
+      $tagList = [];
+      foreach ($this->termStorage->loadTree($vid) as $term) {
+        $tagList[$term->tid] = $term->name;
+      }
+      asort($tagList);
+      $grouped[$vocabulary->label()] = $tagList;
+    }
+
+    return $grouped;
   }
 
   /**

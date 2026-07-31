@@ -57,7 +57,7 @@ class EventViewWidget extends ViewsBasicWidgetBase {
       '#options' => [
         'hide_add_to_calendar' => $this->t('Hide Add to Calendar link'),
       ],
-      '#title' => $this->t('Event Field Display Options'),
+      '#title' => $this->t('Event options'),
       '#tree' => TRUE,
       '#default_value' => $params ? $this->viewsBasicManager->getDefaultParamValue('event_field_options', $params) : [],
     ];

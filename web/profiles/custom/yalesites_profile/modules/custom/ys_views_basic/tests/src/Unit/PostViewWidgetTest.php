@@ -116,6 +116,18 @@ class PostViewWidgetTest extends UnitTestCase {
   }
 
   /**
+   * Posts scope their tag selects to post_category/tags/audience/custom_vocab.
+   *
+   * @covers \Drupal\ys_views_basic\Plugin\Field\FieldWidget\ViewsBasicWidgetBase::getTagVocabularies
+   */
+  public function testTagVocabulariesScopedToPost() {
+    $this->assertSame(
+      ['post_category', 'tags', 'audience', 'custom_vocab'],
+      $this->invoke($this->widget('post_card'), 'getTagVocabularies')
+    );
+  }
+
+  /**
    * The post eyebrow option is added with no #states gating.
    *
    * @covers ::buildEntitySpecificOptions

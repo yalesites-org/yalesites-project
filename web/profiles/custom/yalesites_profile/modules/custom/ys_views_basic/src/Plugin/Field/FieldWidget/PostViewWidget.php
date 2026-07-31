@@ -44,7 +44,7 @@ class PostViewWidget extends ViewsBasicWidgetBase {
       '#options' => [
         'show_eyebrow' => $this->t('Show post teaser lead-in'),
       ],
-      '#title' => $this->t('Post Field Display Options'),
+      '#title' => $this->t('Post options'),
       '#tree' => TRUE,
       '#default_value' => $items[$delta]->params
         ? $this->viewsBasicManager->getDefaultParamValue('post_field_options', $items[$delta]->params)

@@ -183,6 +183,47 @@ class ExposedFilterAccordionTest extends UnitTestCase {
   }
 
   /**
+   * Include/exclude operators are found through their hide/reveal wrapper.
+   *
+   * BuildTermOperator() nests each operator radios one level inside a #type
+   * container (the hide/reveal hook — #type radios has nowhere of its own to
+   * put it; see that method's docblock), and each radios keeps its own
+   * globally-unique key ('include_operator'/'exclude_operator') rather than
+   * a generic one, specifically so the two do not collide when flattened
+   * from the same 'filter_and_sort' subtree — this is what
+   * massageFormValues() relies on to read them independently (#1316).
+   *
+   * @covers ::flattenBuiltElements
+   */
+  public function testFlattenFindsIndependentTermOperators() {
+    $filter_and_sort = [
+      'include_operator_wrapper' => [
+        '#type' => 'container',
+        '#attributes' => ['hidden' => 'hidden'],
+        'include_operator' => [
+          '#type' => 'radios',
+          '#input' => TRUE,
+          '#value' => ',',
+        ],
+      ],
+      'exclude_operator_wrapper' => [
+        '#type' => 'container',
+        '#attributes' => ['hidden' => 'hidden'],
+        'exclude_operator' => [
+          '#type' => 'radios',
+          '#input' => TRUE,
+          '#value' => '+',
+        ],
+      ],
+    ];
+
+    $flat = $this->invokeStatic('flattenBuiltElements', [$filter_and_sort]);
+
+    $this->assertSame(',', $flat['include_operator']['#value']);
+    $this->assertSame('+', $flat['exclude_operator']['#value']);
+  }
+
+  /**
    * A #type checkboxes is returned whole, not descended into.
    *
    * Its per-option children share their parent's option keys, so descending
@@ -212,13 +253,43 @@ class ExposedFilterAccordionTest extends UnitTestCase {
     $result = EventViewWidget::groupFieldDisplayRow($group, $form_state);
 
     $this->assertArrayHasKey('display_row', $result);
-    $this->assertArrayHasKey('field_options', $result['display_row']);
+    $this->assertArrayHasKey('result_content', $result['display_row']);
+    $this->assertArrayHasKey('field_options', $result['display_row']['result_content']);
     $this->assertArrayHasKey('preview', $result['display_row']);
     $this->assertArrayNotHasKey('field_options', $result);
     $this->assertArrayNotHasKey('preview', $result);
     // Exposed filters stay out of that row so they cannot stretch the preview.
     $this->assertArrayHasKey('exposed_filter_options', $result);
     $this->assertArrayNotHasKey('exposed_filter_options', $result['display_row']);
+  }
+
+  /**
+   * The event/post field options join field_options in the row.
+   *
+   * @covers ::groupFieldDisplayRow
+   */
+  public function testEntitySpecificFieldOptionsJoinResultContent() {
+    $form_state = $this->createMock(FormStateInterface::class);
+    $group = $this->group();
+    $group['event_field_options'] = [
+      '#type' => 'checkboxes',
+      '#input' => TRUE,
+      '#value' => ['hide_add_to_calendar' => 'hide_add_to_calendar'],
+    ];
+
+    $result = EventViewWidget::groupFieldDisplayRow($group, $form_state);
+
+    $this->assertArrayHasKey('result_content', $result['display_row']);
+    $this->assertArrayHasKey('field_options', $result['display_row']['result_content']);
+    $this->assertArrayHasKey('event_field_options', $result['display_row']['result_content']);
+    $this->assertArrayNotHasKey('event_field_options', $result);
+
+    // Values are still findable through the extra fieldset layer.
+    $flat = $this->invokeStatic('flattenBuiltElements', [$result]);
+    $this->assertSame(
+      ['hide_add_to_calendar' => 'hide_add_to_calendar'],
+      $flat['event_field_options']['#value']
+    );
   }
 
 }

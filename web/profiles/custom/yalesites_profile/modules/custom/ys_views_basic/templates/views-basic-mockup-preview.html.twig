@@ -13,7 +13,8 @@
  * - content_type: The listing content type machine name (post/event/page/
  *   profile); gates which parts render and feeds data-content-type.
  * - view_mode: The node view mode; feeds data-view-mode for the CSS layout
- *   variants (list_item/condensed/directory).
+ *   variants (list_item/condensed/directory) and gates the teaser text, which
+ *   the real card/list_item view modes render but condensed/directory hide.
  * - image_src: Placeholder teaser image src (a 1x1 transparent GIF).
  * - font_pairing: The site's configured Font Pairing (ys_core.site:
  *   font_pairing — yalenew/mallory/yalenew-oldstyle); feeds data-font-pairing
@@ -36,6 +37,9 @@
         {% if content_type == 'profile' %}<span class="vb-preview__meta">{{ 'Job Title'|t }}</span>{% endif %}
         <span class="vb-preview__category">{{ 'Category A | Category B'|t }}</span>
         <span class="vb-preview__tags">{{ 'Tag A | Tag B'|t }}</span>
+        {% if view_mode in ['card', 'list_item'] %}
+          <p class="vb-preview__teaser">{{ 'This is example teaser text that shows how a longer summary will wrap onto multiple lines within the card.'|t }}</p>
+        {% endif %}
         {% if content_type == 'event' %}<a class="vb-preview__calendar" href="#">{{ 'Add to Calendar'|t }}</a>{% endif %}
       </div>
     </div>
