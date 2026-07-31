@@ -26,11 +26,32 @@
   border-radius: unset;
 }
 
+/*
+ * Chosen sets its container's width as an inline style computed from the
+ * underlying select's own rendered width at init time
+ * (`this.container.width(this.container_width())`, chosen.jquery.js) —
+ * whatever narrow width the native select happened to render at, not the
+ * width available in the field. An inline style needs !important to
+ * override from a stylesheet; stretch it to fill the field instead.
+ */
+.layout-builder-configure-block .horizontal-tabs-panes .chosen-container {
+  width: 100% !important;
+}
+
 /* Chosen dropdown selected color contrast fix */
 
 /* ******************************************* */
+
+/*
+ * Was `color: var(--gin-bg-layer)` — the dark background-layer color used
+ * as a text color, which happened not to matter while .chosen-drop still had
+ * Chosen's own default white background (dark-on-light was still legible by
+ * accident). Once the rule below gives the dropdown a real dark background
+ * to match, that same dark value as the text color goes dark-on-dark and
+ * every unhighlighted option disappears. Use the actual text color instead.
+ */
 .gin--dark-mode .chosen-container .chosen-results {
-  color: var(--gin-bg-layer);
+  color: var(--gin-color-text);
 }
 
 .gin--dark-mode .chosen-container-multi .chosen-drop .result-selected {
@@ -39,6 +60,64 @@
 }
 
 /* ************ Contrast fix end ************ */
+
+/*
+ * The fixes above only cover the results list text and the already-selected
+ * row; the rest of Chosen's own CSS (chosen.css, web/libraries/chosen) still
+ * ships light-mode colors (white dropdown, white input box, light-grey
+ * pills) with nothing to invert them. On the real Gin admin theme this
+ * mostly goes unnoticed because Gin's own chosen.css component override
+ * (web/themes/contrib/gin) only touches container layout and single-select
+ * text color, not these dark-mode cases either — but a Layout Builder block
+ * form renders in the front-end theme (see views-basic-form-tabs.css), so
+ * even that partial coverage isn't present here; only gin_lb's stylesheet
+ * loads, and it does not fill this gap. Extend the same manual, targeted
+ * approach as the fix above rather than trying to reskin Chosen wholesale.
+ */
+.gin--dark-mode .chosen-container .chosen-drop {
+  border-color: var(--gin-border-color);
+  background-color: var(--gin-bg-layer);
+}
+
+.gin--dark-mode .chosen-container-multi .chosen-choices {
+  border-color: var(--gin-border-color);
+  background-color: var(--gin-bg-input, var(--gin-bg-layer));
+}
+
+.gin--dark-mode .chosen-container .chosen-results li.no-results {
+  color: var(--gin-color-text-light);
+  background-color: var(--gin-bg-app);
+}
+
+/*
+ * The selected-term "chip": light-grey-on-dark-text by default. Was
+ * --gin-bg-app (the darkest, page-chrome layer) on a --gin-border-color
+ * border — background-color: var(--gin-bg-input, var(--gin-bg-layer)) above
+ * is what the surrounding field itself uses, and --gin-border-color sits
+ * close enough to that value that the pill's border read as invisible
+ * against its own field. --gin-bg-item-hover is a lighter, already-defined
+ * "elevated surface" tone (used elsewhere in this tab for hover states) —
+ * closer to the field's own background than --gin-bg-app was, so the pill
+ * reads as a distinct object sitting on the field rather than a
+ * darker cutout. --gin-color-text-light (a first attempt at the border) was
+ * still too close to the new background to read as a real edge; the border
+ * now matches --gin-color-text (the same near-white the pill's own label
+ * text uses) for a clean, clearly visible outline.
+ */
+.gin--dark-mode .chosen-container-multi .chosen-choices li.search-choice {
+  border-color: var(--gin-color-text);
+  background-color: var(--gin-bg-item-hover);
+  color: var(--gin-color-text);
+}
+
+.gin--dark-mode
+  .chosen-container-multi
+  .chosen-choices
+  li.search-choice-disabled {
+  border-color: var(--gin-color-text-light);
+  background-color: var(--gin-bg-app);
+  color: var(--gin-color-text-light);
+}
 
 /* visually hide the inputs */
 
@@ -322,10 +401,18 @@
  *
  * ViewsBasicWidgetBase::buildExposedFilterAccordion() pairs each filter's
  * checkbox with the settings that configure it, so each filter is one bordered
- * row: the checkbox is the header, and any settings sit in an accordion body
- * below it. Filters with no settings (search, audience, year) get
- * .vb-filter-row without .vb-filter-row--has-settings and render as a header
- * only, so they carry no chevron.
+ * row: the checkbox is the header, and any settings sit in a body below it.
+ * Filters with no settings (search, audience, year) get .vb-filter-row
+ * without .vb-filter-row--has-settings and render as a header only — the
+ * same bordered treatment as every other row, deliberately: five identical
+ * rows where some expand and some don't is what a chevron would promise, and
+ * three of them breaking that promise is what made this look broken.
+ *
+ * There is no chevron. The toggle checkbox is already the disclosure
+ * control — checking "Category" is what reveals its settings — so a
+ * separate chevron icon would be a second affordance for the same action.
+ * .vb-filter-row__body's own indent + left rule is what marks a disclosed
+ * body as belonging to the toggle above it instead.
  *
  * Disclosure is driven straight off the header checkbox with :has() rather than
  * a JS widget: the settings are only meaningful while their filter is on, so
@@ -371,38 +458,19 @@
   padding: 0.75rem;
 }
 
-/* Chevron indicator, shown only where there is something to disclose. */
-.vb-filter-row--has-settings > .form-item,
-.vb-filter-row--has-settings > .form-type--checkbox,
-.vb-filter-row--has-settings > .js-form-type-checkbox {
-  position: relative;
-}
-
-.vb-filter-row--has-settings > .form-item::after,
-.vb-filter-row--has-settings > .form-type--checkbox::after,
-.vb-filter-row--has-settings > .js-form-type-checkbox::after {
-  content: "";
-  position: absolute;
-  top: 50%;
-  right: 1rem;
-  width: 0.5rem;
-  height: 0.5rem;
-  margin-top: -0.35rem;
-  border-right: 2px solid var(--gin-color-text, #545560);
-  border-bottom: 2px solid var(--gin-color-text, #545560);
-  transform: rotate(45deg);
-}
-
-.vb-filter-row--has-settings:has(input[type="checkbox"]:checked) > .form-item::after,
-.vb-filter-row--has-settings:has(input[type="checkbox"]:checked) > .form-type--checkbox::after,
-.vb-filter-row--has-settings:has(input[type="checkbox"]:checked) > .js-form-type-checkbox::after {
-  margin-top: -0.15rem;
-  transform: rotate(225deg);
-}
-
+/*
+ * Indent + left rule marks the body as subordinate to the toggle above it,
+ * rather than a chevron promising an expansion (removed — see file header).
+ * margin-left (not padding) is what puts daylight between the row's own
+ * left border and this border-left, so the rule reads as a distinct nested
+ * marker instead of overlapping the row's edge; border-top stays unindented
+ * (spanning the full row) to keep separating the header from the body.
+ */
 .vb-filter-row__body {
-  border-top: 1px solid var(--gin-border-color, #d4d4d4);
+  margin-left: 1rem;
   padding: 0.75rem;
+  border-top: 1px solid var(--gin-border-color, #d4d4d4);
+  border-left: 2px solid var(--gin-border-color, #d4d4d4);
 }
 
 /* Collapsed while the filter is switched off. */
