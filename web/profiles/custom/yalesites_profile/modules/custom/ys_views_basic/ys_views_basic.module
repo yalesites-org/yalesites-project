@@ -345,11 +345,53 @@ function _ys_views_basic_listing_form_tabs(array $element, FormStateInterface $f
     '#weight' => 0,
     '#open' => TRUE,
   ];
-  foreach (['field_heading', 'field_heading_links', 'field_padding_options'] as $field) {
+  // Explicit weights guarantee heading, then links, then padding options,
+  // regardless of whatever weights each bundle's own form display happens
+  // to have configured for these three fields.
+  $field_weights = [
+    'field_heading' => 0,
+    'field_heading_links' => 1,
+    'field_padding_options' => 2,
+  ];
+  foreach ($field_weights as $field => $weight) {
     if (isset($element[$field])) {
       $element[$general][$field] = $element[$field];
+      $element[$general][$field]['#weight'] = $weight;
       unset($element[$field]);
     }
+  }
+
+  // Links is up to 3 optional rows most blocks never touch — collapsed by
+  // default so it doesn't dominate the General tab on first paint. The
+  // field's own build array keeps its #parents (set at widget-build time),
+  // so nesting it one level deeper here doesn't change where its submitted
+  // value is read from, same as the physical move above.
+  if (isset($element[$general]['field_heading_links'])) {
+    $links_field = $element[$general]['field_heading_links'];
+    // WidgetBase::form() wraps every field in an outer #type container (the
+    // 'field--name-...' classified wrapper) with the actual multi-value
+    // build nested one level deeper under its own 'widget' key — #title
+    // lives on that inner array, not the outer container this variable
+    // starts out as. Setting #title on the wrong (outer) level here doesn't
+    // error, it just silently does nothing, leaving the field's own table
+    // heading printed as normal.
+    $title = $links_field['widget']['#title'] ?? t('Links');
+    // The field's own multi-value table already prints this as a heading;
+    // avoid showing it twice once the details summary carries it instead.
+    if (isset($links_field['widget']['#title'])) {
+      $links_field['widget']['#title'] = '';
+    }
+    $element[$general]['field_heading_links'] = [
+      '#type' => 'details',
+      '#title' => $title,
+      '#open' => FALSE,
+      '#weight' => $field_weights['field_heading_links'],
+      // Styling hook for views-basic-form-tabs.css: this nested details
+      // doesn't need the tab-pane-edge padding gin_lb puts on every
+      // .glb-claro-details__wrapper, since it isn't a tab-bar-level pane.
+      '#attributes' => ['class' => ['vb-heading-links-details']],
+      'widget' => $links_field,
+    ];
   }
 
   // The remaining three tabs are the widget's existing inner details groups.

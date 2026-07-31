@@ -84,6 +84,23 @@
 }
 
 /*
+ * The Links field on the General tab (#1318 item 1) is itself wrapped in a
+ * <details> for a collapsed-by-default default state, which means it also
+ * picks up the same gin_lb .glb-claro-details__wrapper padding-inline the
+ * rule above already has to fight — but this one isn't a tab-bar-level pane
+ * that needs an inset gutter from the panel edge; it's a plain sub-section
+ * that should sit flush like every other field in this tab. Zero it out
+ * specifically for this nested details rather than the pane-level one above.
+ */
+.layout-builder-configure-block
+  .horizontal-tabs-panes
+  .vb-heading-links-details
+  .glb-claro-details__wrapper {
+  padding-left: 0 !important;
+  padding-right: 0 !important;
+}
+
+/*
  * The pane itself (not just its inner wrapper above) also carries
  * .glb-claro-details, so it inherits that same class's `margin-left:
  * -1.25em !important` (gin_lb.css) — meant to compensate the tab buttons'
@@ -168,4 +185,25 @@
  */
 .gin--dark-mode .layout-builder-configure-block .glb-form-element {
   color-scheme: dark;
+}
+
+/*
+ * Remove the Reusable toggle's stray inset padding.
+ *
+ * atomic/css/layout-builder.css carries a rule (originally meant to pad the
+ * standalone reusable-block edit form, per its own comment) that also
+ * matches `.form-item-reusable` and its next sibling wherever
+ * `.layout-builder-configure-block` appears — which includes this tab
+ * layout, since that class is Drupal's own base-form-ID class for both
+ * ConfigureBlockFormBase forms, not something this module adds. That rule
+ * cannot be edited directly (it lives in contrib), so cancel its
+ * padding here instead; `div[data-drupal-selector="edit-block-form"]`, the
+ * selector actually meant for the standalone edit form, is left alone.
+ * Logical properties so this holds in RTL too. `!important` to outrank the
+ * contrib rule regardless of stylesheet load order, matching this file's
+ * existing overrides for the same reason.
+ */
+.layout-builder-configure-block .form-item-reusable,
+.layout-builder-configure-block .form-item-reusable + .form-type--textfield {
+  padding-inline: 0 !important;
 }
