@@ -71,7 +71,15 @@ html.gin--dark-mode .ys-qtabs__tab:hover {
   background: var(--gin-bg-layer2, #3b3b3f);
 }
 
-.ys-qtabs__tab:focus-visible {
+/* The leading `.ys-qtabs` is load-bearing, not redundant — do not simplify it
+   away. Gin ships `.page-wrapper :focus { outline: none }`, which is also
+   (0,2,0), and theme CSS loads after module CSS, so at equal specificity Gin
+   wins and the outline silently never paints. The extra class takes this to
+   (0,3,0) so it does. Gin substitutes a box-shadow ring, but in light mode that
+   ring is rgba(0,0,0,.4) and composites to only 2.77:1 against the selected
+   tab's own background; this outline measures 4.22:1 light / 7.17:1 dark, so it
+   is what actually carries focus visibility. Both are drawn — no conflict. */
+.ys-qtabs .ys-qtabs__tab:focus-visible {
   outline: 2px solid var(--gin-color-primary, #2d2eff);
   outline-offset: 1px;
 }
@@ -135,7 +143,8 @@ html.gin--dark-mode .ys-qtabs__panel {
   background: var(--gin-bg-layer, #2a2a2d);
 }
 
-.ys-qtabs__panel:focus-visible {
+/* Same specificity guard as the tab's focus ring above. */
+.ys-qtabs .ys-qtabs__panel:focus-visible {
   outline: 2px solid var(--gin-color-primary, #2d2eff);
   outline-offset: 2px;
 }

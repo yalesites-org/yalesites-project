@@ -180,6 +180,44 @@ class AiTesterForm extends FormBase {
   }
 
   /**
+   * Builds the accessible label for one history row's select checkbox.
+   *
+   * Core's tableselect leaves a row checkbox with an empty label unless the
+   * option row carries a 'title' key (Tableselect::processTableselect()), and
+   * an unlabelled checkbox is a WCAG 2.1 SC 4.1.2 failure — which is what
+   * every row of this table shipped. Picking runs to compare is the whole
+   * purpose of the table, so the checkbox has to say which run it selects.
+   *
+   * Core renders the result as "Update <label>". The verb is core's, shared by
+   * every admin tableselect in Drupal, and it is left alone deliberately: the
+   * alternative is hand-building the checkbox child, which also drops core's
+   * '#default_value' handling and so loses a selection whenever the form
+   * rebuilds after a validation error.
+   *
+   * @param int|string $id
+   *   The run id.
+   * @param string $file
+   *   The run's source filename.
+   * @param string $date
+   *   The already-formatted run date.
+   *
+   * @return \Drupal\Core\StringTranslation\TranslatableMarkup
+   *   The label naming the run.
+   */
+  public static function historyRowLabel(int|string $id, string $file, string $date): TranslatableMarkup {
+    // The id leads because both halves of a "run both" submission share a
+    // source file and a request timestamp; it is the only part that always
+    // tells them apart. "Run #@id" matches how every other surface in the
+    // module names a run (runMetaBlock(), the rerun form), so a screen reader
+    // user hears one vocabulary rather than two spellings of the same thing.
+    return new TranslatableMarkup('Run #@id, @file, @date', [
+      '@id' => $id,
+      '@file' => $file,
+      '@date' => $date,
+    ]);
+  }
+
+  /**
    * {@inheritdoc}
    */
   public function buildForm(array $form, FormStateInterface $form_state): array {
@@ -296,8 +334,18 @@ class AiTesterForm extends FormBase {
         )->toRenderable();
       }
 
+      $date = $this->dateFormatter->format($row->created, 'short');
+
       $options[$row->id] = [
-        'date' => $this->dateFormatter->format($row->created, 'short'),
+        // Not a column: '#header' has no 'title' key, and
+        // preRenderTableselect() only emits cells for header keys, so this
+        // renders nothing. It exists to give the checkbox an accessible name.
+        'title' => [
+          'data' => [
+            '#title' => self::historyRowLabel($row->id, (string) $row->source_filename, $date),
+          ],
+        ],
+        'date' => $date,
         'user' => $row->name ?? $this->t('Unknown'),
         'file' => $row->source_filename,
         // Runs recorded before the tester supported more than one assistant
