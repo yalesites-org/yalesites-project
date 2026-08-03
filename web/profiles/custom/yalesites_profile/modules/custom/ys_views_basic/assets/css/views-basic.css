@@ -230,6 +230,15 @@
   border-color: var(--gin-color-primary);
 }
 
+/*
+ * Selected-state color for the entity-type icon-radio cards (Pages/Profiles/
+ * Events/Posts below, plus the general checked/hover rule further down). The
+ * attribute-selector chain here already out-specifies the base card
+ * treatment's `color: var(--gin-color-text);` (views-basic--group-user-
+ * selection block above), which isn't !important, so no !important is
+ * needed to win.
+ */
+
 /* Pages */
 .form-item-settings-block-form-group-user-selection-entity-and-view-mode-entity-types
   input[value="page"][checked="checked"]
@@ -237,7 +246,7 @@
 #drupal-off-canvas-wrapper .form-item-settings-block-form-group-user-selection-entity-and-view-mode-entity-types
   input[value="page"][checked="checked"]
   + label {
-  color: var(--gin-color-primary) !important;
+  color: var(--gin-color-primary);
   border-color: var(--gin-color-primary);
 }
 
@@ -248,7 +257,7 @@
 #drupal-off-canvas-wrapper .form-item-settings-block-form-group-user-selection-entity-and-view-mode-entity-types
   input[value="profile"][checked="checked"]
   + label {
-    color: var(--gin-color-primary) !important;
+    color: var(--gin-color-primary);
     border-color: var(--gin-color-primary);
 }
 
@@ -259,7 +268,7 @@
 #drupal-off-canvas-wrapper .form-item-settings-block-form-group-user-selection-entity-and-view-mode-entity-types
   input[value="event"][checked="checked"]
   + label {
-    color: var(--gin-color-primary) !important;
+    color: var(--gin-color-primary);
     border-color: var(--gin-color-primary);
 }
 
@@ -269,7 +278,7 @@
 #drupal-off-canvas-wrapper .form-item-settings-block-form-group-user-selection-entity-and-view-mode-entity-types
   input[value="post"][checked="checked"]
   + label {
-    color: var(--gin-color-primary) !important;
+    color: var(--gin-color-primary);
     border-color: var(--gin-color-primary);
 }
 
@@ -315,7 +324,7 @@
   .glb-form-type--radio:hover
   input[checked="checked"]
   + label {
-    color: var(--gin-color-primary) !important;
+    color: var(--gin-color-primary);
     border-color: var(--gin-color-primary);
 }
 
@@ -431,10 +440,12 @@
  * .fieldset__wrapper (via --space-l), which is what actually pushes this
  * fieldset's rows in from the sides; the unqualified rule above only zeroes
  * .fieldset__wrapper under a different ancestor scope, so it misses this one.
+ * Claro's rule isn't !important and this selector already out-specifies it
+ * (two classes vs. one), so no !important needed here either.
  */
 .vb-filter-rows > .fieldset__wrapper {
-  margin-left: 0 !important;
-  margin-right: 0 !important;
+  margin-left: 0;
+  margin-right: 0;
 }
 
 .vb-filter-row {

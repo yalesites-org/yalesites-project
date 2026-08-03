@@ -157,7 +157,13 @@
   margin-bottom: 0.75rem;
 }
 
-.layout-builder-configure-block .horizontal-tabs-panes .grouped-items img {
+/*
+ * Excludes .vb-preview__image (views-basic-preview.css): that image needs to
+ * fill its container width rather than shrink to its natural size, so it
+ * opts out of this icon-radio sizing rule instead of the two fighting via
+ * !important.
+ */
+.layout-builder-configure-block .horizontal-tabs-panes .grouped-items img:not(.vb-preview__image) {
   width: auto;
 }
 

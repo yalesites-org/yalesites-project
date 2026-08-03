@@ -52,14 +52,20 @@
 }
 
 .vb-tag-filters-intro__heading {
-  margin: 0 0 0.25rem !important;
-  color: var(--gin-color-text) !important;
-  font-size: 1.125rem !important;
-  font-weight: 700 !important;
+  margin: 0 0 0.25rem;
+  color: var(--gin-color-text);
+  font-size: 1.125rem;
+  font-weight: 700;
 }
 
-.vb-tag-filters-intro__help {
-  margin: 0 0 1rem !important;
+/*
+ * Qualified with the .vb-tag-filters-intro ancestor (rather than left as a
+ * bare class) to outrank gin_lb's `.ui-dialog p { margin: 1em 0; }` on
+ * specificity — same technique as .vb-preview-wrapper__header
+ * .vb-preview-wrapper__label in views-basic-preview.css.
+ */
+.vb-tag-filters-intro .vb-tag-filters-intro__help {
+  margin: 0 0 1rem;
 
   /*
    * --gin-color-text-light reads fine for a small disabled-tag chip
@@ -68,7 +74,7 @@
    * strength text color the operator's own inline sentence text uses
    * (.vb-term-operator__text below) instead.
    */
-  color: var(--gin-color-text) !important;
+  color: var(--gin-color-text);
 }
 
 /*
@@ -106,15 +112,21 @@
   color: var(--gin-color-text);
 }
 
-.vb-term-operator fieldset {
-  margin: 0 !important;
-  padding: 0 !important;
-  border: 0 !important;
-  min-width: 0 !important;
+/*
+ * Full ancestor chain (matching the rest of this file) rather than !important:
+ * gin_lb's `fieldset:not(.fieldgroup)` rule isn't itself !important, so the
+ * extra specificity from .layout-builder-configure-block .horizontal-tabs-panes
+ * is enough to win outright.
+ */
+.layout-builder-configure-block .horizontal-tabs-panes .vb-term-operator fieldset {
+  margin: 0;
+  padding: 0;
+  border: 0;
+  min-width: 0;
 }
 
-.vb-term-operator .fieldset-wrapper {
-  margin: 0 !important;
+.layout-builder-configure-block .horizontal-tabs-panes .vb-term-operator .fieldset-wrapper {
+  margin: 0;
 }
 
 /* Visually hide the native radio input; the label carries the visual. */

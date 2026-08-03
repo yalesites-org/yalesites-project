@@ -104,17 +104,16 @@
 }
 
 /*
- * width: 100% needs !important here: the preview panel lives inside
- * .grouped-items (ViewsBasicWidgetBase's styling hook, see views-basic.css),
- * and views-basic-form-tabs.css sets `.grouped-items img { width: auto; }` to
- * keep the Display Type tab's icon-radio images from stretching. That rule
- * outweighs this one on specificity and also matches this placeholder image,
- * collapsing it to the 1x1 GIF's natural size (aspect-ratio alone can't
- * rescue it once width resolves to ~1px).
+ * The preview panel lives inside .grouped-items (ViewsBasicWidgetBase's
+ * styling hook, see views-basic.css), and views-basic-form-tabs.css sets
+ * `.grouped-items img { width: auto; }` to keep the Display Type tab's
+ * icon-radio images from stretching. That rule excludes .vb-preview__image
+ * explicitly, so this placeholder image can keep filling its container width
+ * instead of collapsing to the 1x1 GIF's natural size.
  */
 .vb-preview__image {
   display: block;
-  width: 100% !important;
+  width: 100%;
   aspect-ratio: 3 / 2;
   height: auto;
   /* Matches the real reference-card's image-to-content gap (--size-spacing-4). */
