@@ -32,7 +32,7 @@ ys_ai_tester.compare_export:
   path: '/admin/config/yalesites/ys-beacon/tester/compare/{run_a}/{run_b}/export'
   defaults:
     _controller: '\Drupal\ys_ai_tester\Controller\AiTesterController::compareExport'
-    _title: 'Export comparison for Clarity'
+    _title: 'Export comparison for AI analysis'
   requirements:
     _permission: 'use ys ai tester'
     _ys_beacon_authorized: 'TRUE'

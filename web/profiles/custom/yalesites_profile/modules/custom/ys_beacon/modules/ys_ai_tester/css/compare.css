@@ -181,7 +181,7 @@ html.gin--dark-mode .ys-compare-caveat {
   color: #24418f; /* 8.0:1. */
 }
 
-/* Export-to-Clarity modal. */
+/* AI-analysis export modal. */
 .ys-compare-export__prompt {
   width: 100%;
   min-height: 14rem;

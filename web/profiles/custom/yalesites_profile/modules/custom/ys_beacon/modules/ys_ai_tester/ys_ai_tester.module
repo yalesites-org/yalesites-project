@@ -10,7 +10,7 @@
  */
 function ys_ai_tester_theme(): array {
   return [
-    'ys_ai_tester_clarity_export' => [
+    'ys_ai_tester_ai_export' => [
       'variables' => [
         'question_count' => 0,
         'run_a' => 0,

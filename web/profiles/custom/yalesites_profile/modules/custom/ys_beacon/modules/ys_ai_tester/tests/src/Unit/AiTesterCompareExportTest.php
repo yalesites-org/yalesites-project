@@ -13,7 +13,7 @@ use Drupal\ys_ai_tester\RunComparator;
 use Symfony\Component\DependencyInjection\ContainerBuilder;
 
 /**
- * Tests the compare view's readability aids and its Clarity export modal.
+ * Tests the compare view's readability aids and its AI-analysis export modal.
  *
  * @coversDefaultClass \Drupal\ys_ai_tester\Controller\AiTesterController
  *
@@ -178,14 +178,18 @@ class AiTesterCompareExportTest extends UnitTestCase {
   }
 
   /**
-   * The export button opens the Clarity modal as a Drupal core dialog.
+   * The export button opens the modal as a Drupal core dialog.
+   *
+   * The label names no particular assistant: the export is a package for any
+   * LLM, not a Clarity-specific upload.
    *
    * @covers ::compare
    */
-  public function testCompareHasClarityExportButton(): void {
+  public function testCompareHasAiExportButton(): void {
     $build = $this->controllerReturning($this->comparison())->compare(7, 9);
     $export = $build['downloads']['export'];
 
+    $this->assertSame('Export for AI analysis', (string) $export['#title']);
     $this->assertSame(
       'ys_ai_tester.compare_export',
       $export['#url']->getRouteName()
@@ -226,7 +230,7 @@ class AiTesterCompareExportTest extends UnitTestCase {
   public function testExportModalPromptCarriesRunContext(): void {
     $build = $this->controllerReturning($this->comparison())->compareExport(7, 9);
 
-    $this->assertSame('ys_ai_tester_clarity_export', $build['#theme']);
+    $this->assertSame('ys_ai_tester_ai_export', $build['#theme']);
     $this->assertSame(2, $build['#question_count']);
     $this->assertSame(7, $build['#run_a']);
     $this->assertSame(9, $build['#run_b']);
@@ -255,6 +259,123 @@ class AiTesterCompareExportTest extends UnitTestCase {
     $this->assertContains(
       'ys_ai_tester/compare_export',
       $build['#attached']['library']
+    );
+  }
+
+  /**
+   * A comparison carrying one retrieved source per side, with full page text.
+   *
+   * Mirrors what CitationFormatter::format() stores: 'content' is the whole
+   * retrieved chunk and 'excerpt' is its first 300 characters, so the two
+   * overlap and 'content' is unbounded in the length of the indexed page.
+   *
+   * @return array
+   *   The comparison structure.
+   */
+  protected function comparisonWithCitations(): array {
+    $data = $this->comparison();
+    $long = str_repeat('Indexed page body. ', 400);
+    $citation = [
+      'number' => 1,
+      'title' => 'Library hours',
+      'url' => 'https://example.yale.edu/hours',
+      'content' => $long,
+      'excerpt' => mb_substr($long, 0, 300),
+      'cited' => TRUE,
+    ];
+
+    $data['pairs'][0]['a']['citations'] = [$citation];
+    $data['pairs'][0]['b']['citations'] = [$citation];
+    return $data;
+  }
+
+  /**
+   * The JSON export drops each source's full text but keeps its excerpt.
+   *
+   * The download doubles as the file a reviewer hands to an LLM, so its size is
+   * a token budget. Every citation stored 'content' (the entire retrieved
+   * chunk, unbounded in page length) alongside 'excerpt' (that same text's
+   * first 300 characters), which made the payload grow with how long the
+   * indexed pages happen to be while adding no category of information the
+   * excerpt does not already carry. Dropping 'content' bounds each source at
+   * its excerpt. Nothing reads the field: the compare view never rendered it
+   * and the CSV never emitted it.
+   *
+   * @covers ::downloadComparisonJson
+   */
+  public function testComparisonJsonDropsFullSourceTextKeepingExcerpt(): void {
+    $controller = $this->controllerReturning($this->comparisonWithCitations());
+
+    $payload = json_decode(
+      (string) $controller->downloadComparisonJson(7, 9)->getContent(),
+      TRUE
+    );
+
+    foreach (['a', 'b'] as $side) {
+      $citation = $payload['pairs'][0][$side]['citations'][0];
+      $this->assertArrayNotHasKey('content', $citation);
+      // Everything the analysis prompt asks about survives.
+      $this->assertSame(300, mb_strlen($citation['excerpt']));
+      $this->assertSame('Library hours', $citation['title']);
+      $this->assertSame('https://example.yale.edu/hours', $citation['url']);
+      $this->assertSame(1, $citation['number']);
+      $this->assertTrue($citation['cited']);
+    }
+  }
+
+  /**
+   * A side that was not asked in one run stays null through the export.
+   *
+   * The prompt tells the model an absent side means "not asked in this run", so
+   * stripping citations must not turn a null side into an empty object.
+   *
+   * @covers ::downloadComparisonJson
+   */
+  public function testComparisonJsonKeepsAnUnpairedSideNull(): void {
+    $data = $this->comparisonWithCitations();
+    $data['pairs'][0]['b'] = NULL;
+    $data['pairs'][0]['status'] = 'only_a';
+
+    $payload = json_decode(
+      (string) $this->controllerReturning($data)
+        ->downloadComparisonJson(7, 9)
+        ->getContent(),
+      TRUE
+    );
+
+    $this->assertNull($payload['pairs'][0]['b']);
+    $this->assertArrayNotHasKey(
+      'content',
+      $payload['pairs'][0]['a']['citations'][0]
+    );
+  }
+
+  /**
+   * The run meta and summary blocks survive the citation stripping untouched.
+   *
+   * @covers ::downloadComparisonJson
+   */
+  public function testComparisonJsonKeepsRunMetaAndSummary(): void {
+    $payload = json_decode(
+      (string) $this->controllerReturning($this->comparisonWithCitations())
+        ->downloadComparisonJson(7, 9)
+        ->getContent(),
+      TRUE
+    );
+
+    $this->assertSame(7, $payload['run_a']['id']);
+    $this->assertSame('beacon', $payload['run_a']['backend']);
+    $this->assertSame('legacy', $payload['run_b']['backend']);
+    $this->assertSame(2, $payload['summary']['total_compared']);
+    $this->assertSame(1, $payload['summary']['differ']);
+    // The question text and per-side answers are the point of the export.
+    $this->assertSame(
+      'What are the library hours?',
+      $payload['pairs'][0]['question']
+    );
+    $this->assertSame(
+      'Open until 11:45 p.m.',
+      $payload['pairs'][0]['a']['answer']
     );
   }
 

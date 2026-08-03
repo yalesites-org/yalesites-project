@@ -1,6 +1,6 @@
 /**
  * @file
- * Copies the Clarity research prompt out of the comparison export modal.
+ * Copies the research prompt out of the comparison export modal.
  */
 
 ((Drupal, once) => {

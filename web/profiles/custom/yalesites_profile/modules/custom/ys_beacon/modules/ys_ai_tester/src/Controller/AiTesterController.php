@@ -422,7 +422,7 @@ class AiTesterController extends ControllerBase {
         'export_separator' => ['#markup' => ' '],
         'export' => [
           '#type' => 'link',
-          '#title' => $this->t('Export for Clarity'),
+          '#title' => $this->t('Export for AI analysis'),
           '#url' => Url::fromRoute('ys_ai_tester.compare_export', ['run_a' => $run_a, 'run_b' => $run_b]),
           '#attributes' => [
             'class' => ['button', 'button--primary', 'use-ajax'],
@@ -545,11 +545,18 @@ class AiTesterController extends ControllerBase {
   }
 
   /**
-   * Builds the modal offering the comparison as a Clarity research package.
+   * Builds the modal offering the comparison as an LLM analysis package.
+   *
+   * Deliberately names no particular assistant. Clarity was the original
+   * target, but it cannot ingest a comparison of any real size, so the modal
+   * ships the prompt and the file for whichever assistant the reviewer uses and
+   * offers Clarity as one destination rather than the only one. The exported
+   * data is public site content, so a general-purpose assistant is a sanctioned
+   * choice.
    *
    * The download reuses the existing comparison JSON route rather than adding a
-   * second export path, so the file a reviewer uploads to Clarity is the same
-   * artefact the compare view already offers.
+   * second export path, so the file a reviewer attaches is the same artefact
+   * the compare view already offers.
    *
    * @param int $run_a
    *   The first run id.
@@ -561,10 +568,10 @@ class AiTesterController extends ControllerBase {
    */
   public function compareExport(int $run_a, int $run_b): array {
     $data = $this->runComparator->compare($run_a, $run_b);
-    $prompt_id = 'ys-compare-clarity-prompt';
+    $prompt_id = 'ys-compare-ai-prompt';
 
     return [
-      '#theme' => 'ys_ai_tester_clarity_export',
+      '#theme' => 'ys_ai_tester_ai_export',
       '#attached' => ['library' => ['ys_ai_tester/compare_export']],
       '#question_count' => count($data['pairs']),
       '#run_a' => $data['run_a']['id'],
@@ -837,6 +844,10 @@ class AiTesterController extends ControllerBase {
 
   /**
    * Returns the run comparison as a downloadable JSON file.
+   *
+   * This file doubles as the analysis package a reviewer hands to an LLM, so
+   * its size is a token budget rather than a detail. See withoutSourceText()
+   * for what is left out of it and why.
    */
   public function downloadComparisonJson(int $run_a, int $run_b): JsonResponse {
     $data = $this->runComparator->compare($run_a, $run_b);
@@ -845,13 +856,49 @@ class AiTesterController extends ControllerBase {
       'run_a' => $data['run_a'],
       'run_b' => $data['run_b'],
       'summary' => $data['summary'],
-      'pairs' => $data['pairs'],
+      'pairs' => array_map([$this, 'withoutSourceText'], $data['pairs']),
     ]);
     $response->headers->set(
       'Content-Disposition',
       'attachment; filename="compare-' . $run_a . '-' . $run_b . '.json"'
     );
     return $response;
+  }
+
+  /**
+   * Strips every retrieved source's full text from one comparison pair.
+   *
+   * CitationFormatter::format() stores both 'content' — the entire retrieved
+   * chunk — and 'excerpt', that same text's first 300 characters. Exporting
+   * both made the file grow with however long the indexed pages happened to be,
+   * multiplied by up to top_k (default 5) sources per question per side, while
+   * adding no category of information the excerpt does not already carry. That
+   * is what put the download beyond what an LLM will accept in one go.
+   *
+   * Dropping 'content' bounds every source at its excerpt, so the export scales
+   * with the number of questions instead of the length of the site's pages.
+   * Nothing reads the field: the compare view never rendered it and the CSV
+   * never emitted it. The stored citation keeps it, so this narrows the export
+   * only.
+   *
+   * @param array $pair
+   *   One comparison pair from the run comparator.
+   *
+   * @return array
+   *   The pair with 'content' removed from every citation on both sides.
+   */
+  protected function withoutSourceText(array $pair): array {
+    foreach (['a', 'b'] as $key) {
+      // A question asked in only one run has a null side, which must stay null:
+      // the prompt reads an absent side as "not asked in this run".
+      if (!isset($pair[$key]['citations'])) {
+        continue;
+      }
+      foreach (array_keys($pair[$key]['citations']) as $index) {
+        unset($pair[$key]['citations'][$index]['content']);
+      }
+    }
+    return $pair;
   }
 
   /**
