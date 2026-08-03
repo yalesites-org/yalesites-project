@@ -1,0 +1,10 @@
+ys_layouts_block_detach:
+  title: 'Make non-reusable'
+  route_name: 'ys_layouts.detach_reusable_block'
+  group: 'layout_builder_block'
+  weight: 5
+  options:
+    attributes:
+      class: ['use-ajax']
+      data-dialog-type: dialog
+      data-dialog-renderer: off_canvas

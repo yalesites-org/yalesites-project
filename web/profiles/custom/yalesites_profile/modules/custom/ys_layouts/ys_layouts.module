@@ -10,6 +10,7 @@ use Drupal\Core\Entity\FieldableEntityInterface;
 use Drupal\Core\Form\FormStateInterface;
 use Drupal\Core\Plugin\Context\Context;
 use Drupal\Core\Plugin\Context\EntityContextDefinition;
+use Drupal\ys_layouts\Render\DetachContextualOperations;
 
 /**
  * Add template files.
@@ -232,6 +233,76 @@ function ys_layouts_form_alter(&$form, $form_state, $form_id) {
       $form['info']['#title'] = t('Reusable Block title');
       $form['info']['#description'] = t('Add a short, descriptive title to easily find and reuse the Reusable Block. Defaults to Administrative label if no title is provided.');
     }
+  }
+}
+
+/**
+ * Implements hook_form_FORM_ID_alter() for 'ys_layouts_detach_reusable_block'.
+ *
+ * Gin_lb only themes a hardcoded set of Layout Builder form IDs (see
+ * \Drupal\gin_lb\Service\ContextValidator::$formIds); our custom "Make
+ * non-reusable" confirm form is not in it, so its off-canvas dialog otherwise
+ * falls back to the front-end (atomic) theme - rendering the primary button as
+ * dark text on a blue background (a WCAG AA contrast failure) with cramped
+ * spacing. Opt the form into gin_lb's theming so it matches core's Remove/Move
+ * confirm dialogs, mirroring what gin_lb's own FormAlter does for a recognized
+ * form.
+ */
+function ys_layouts_form_ys_layouts_detach_reusable_block_alter(&$form, FormStateInterface $form_state, $form_id) {
+  if (!\Drupal::moduleHandler()->moduleExists('gin_lb')) {
+    return;
+  }
+  /** @var \Drupal\gin_lb\Service\ContextValidatorInterface $context_validator */
+  $context_validator = \Drupal::service('gin_lb.context_validator');
+  // gin_lb only restyles when a non-Gin default theme is active (its whole
+  // purpose is to bring Gin's look to the front-end-themed off-canvas).
+  if (!$context_validator->isValidTheme()) {
+    return;
+  }
+  $form['#gin_lb_form'] = TRUE;
+  $form['#attributes']['class'][] = 'glb-form';
+  // Propagate the flag to child elements after build so their theme hooks pick
+  // up gin_lb's suggestions (e.g. the primary submit button gets glb-button).
+  $form['#after_build'][] = [
+    'Drupal\gin_lb\HookHandler\FormAlter',
+    'afterBuildAttachGinLbForm',
+  ];
+  // Give the confirm form the same off-canvas "canvas-form" layout gin_lb
+  // applies to core's Remove/Move confirm dialogs (see FormAlter::alter,
+  // layout_builder_remove_block branch): the canvas-form class spaces the body
+  // below the header, and the description/actions containers align with it -
+  // otherwise the description sits cramped against the header.
+  $form['#attributes']['class'][] = 'canvas-form';
+  if (isset($form['description'])) {
+    $form['description']['#type'] = 'container';
+    $form['description']['#attributes']['class'][] = 'canvas-form__settings';
+  }
+  if (isset($form['actions'])) {
+    $form['actions']['#attributes']['class'][] = 'canvas-form__actions';
+  }
+  // gin_lb's confirm-dialog top spacing is keyed to core's own remove form IDs,
+  // so extend the same padding to this form's off-canvas dialog.
+  $form['#attached']['library'][] = 'ys_layouts/detach_reusable_block';
+}
+
+/**
+ * Implements hook_element_info_alter().
+ *
+ * Registers the "Make non-reusable" action in Layout Builder's contextual link
+ * metadata. Without this, adding the action never changes the contextual link
+ * id, so browsers keep replaying the previously cached menu out of
+ * sessionStorage and never ask the server for the new link.
+ *
+ * @see \Drupal\ys_layouts\Render\DetachContextualOperations
+ */
+function ys_layouts_element_info_alter(array &$info) {
+  if (isset($info['layout_builder'])) {
+    // Appended so it runs after Layout Builder's own pre_render has built the
+    // sections, and before the theme layer derives the contextual link id.
+    $info['layout_builder']['#pre_render'][] = [
+      DetachContextualOperations::class,
+      'addDetachOperation',
+    ];
   }
 }
 
