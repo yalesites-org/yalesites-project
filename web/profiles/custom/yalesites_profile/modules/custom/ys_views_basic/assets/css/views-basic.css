@@ -119,6 +119,41 @@
   color: var(--gin-color-text-light);
 }
 
+/*
+ * Sticky vocabulary headers in the include/exclude tag dropdowns.
+ *
+ * Both selects group their #options by vocabulary (ViewsBasicManager::
+ * getTagsForVocabularies()), which Drupal renders as <optgroup>. Chosen
+ * (chosen.jquery.js's results_build()) flattens each optgroup into a plain
+ * `li.group-result` header immediately before that vocabulary's
+ * `li.active-result` term rows, all as siblings inside one scrollable
+ * `ul.chosen-results` — not nested per group. That's exactly the shape
+ * position: sticky needs: pinning each `li.group-result` to the top of that
+ * scroll container makes it stick through its own vocabulary's terms and get
+ * pushed off only when the next vocabulary's header reaches it, with no JS,
+ * so only one header is ever stuck at a time.
+ *
+ * An explicit background (matching .chosen-drop's own, light or dark) is
+ * what keeps term rows from showing through as they scroll underneath the
+ * stuck header instead of behind it.
+ */
+.layout-builder-configure-block
+  .horizontal-tabs-panes
+  .form-item-settings-block-form-group-user-selection-filter-and-sort-terms-include
+  .chosen-results
+  li.group-result,
+.layout-builder-configure-block
+  .horizontal-tabs-panes
+  .form-item-settings-block-form-group-user-selection-filter-and-sort-terms-exclude
+  .chosen-results
+  li.group-result {
+  position: sticky;
+  top: 0;
+  z-index: 1;
+  background: var(--gin-bg-layer, #fff);
+  border-bottom: 1px solid var(--gin-border-color, #d3d4d9);
+}
+
 /* visually hide the inputs */
 
 .views-basic--group-user-selection .grouped-items .glb-form-type--radio,
