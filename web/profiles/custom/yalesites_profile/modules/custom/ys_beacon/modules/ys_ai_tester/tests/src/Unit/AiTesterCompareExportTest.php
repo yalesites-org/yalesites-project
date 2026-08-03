@@ -137,7 +137,7 @@ class AiTesterCompareExportTest extends UnitTestCase {
     $this->assertStringContainsString('Highlighted', $help);
     $this->assertStringContainsString('other run', $help);
 
-    // The legend names both directions so the colors are not the only cue.
+    // The legend names both runs so the colors are not the only cue.
     $legend = $build['legend'];
     $this->assertStringContainsString(
       'Run A',

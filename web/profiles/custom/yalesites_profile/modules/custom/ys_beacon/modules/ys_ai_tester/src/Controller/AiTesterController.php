@@ -401,8 +401,8 @@ class AiTesterController extends ControllerBase {
       'legend' => [
         '#type' => 'container',
         '#attributes' => ['class' => ['ys-compare-legend']],
-        'only_a' => $this->legendItem('removed', $this->t('Only in Run A')),
-        'only_b' => $this->legendItem('added', $this->t('Only in Run B')),
+        'only_a' => $this->legendItem('a', $this->t('Only in Run A')),
+        'only_b' => $this->legendItem('b', $this->t('Only in Run B')),
       ],
       'downloads' => [
         '#type' => 'container',
@@ -512,17 +512,18 @@ class AiTesterController extends ControllerBase {
   }
 
   /**
-   * Builds one legend entry for a diff highlight direction.
+   * Builds one legend entry for a run's highlight color.
    *
-   * @param string $direction
-   *   The diff direction, 'removed' (Run A) or 'added' (Run B).
+   * @param string $side
+   *   The run the color belongs to, 'a' or 'b'. Must match the key sideCell()
+   *   puts on the answer wrapper, or the swatch advertises the wrong run.
    * @param string|\Drupal\Component\Render\MarkupInterface $label
    *   The entry label.
    *
    * @return array
    *   A container render element holding a swatch and its label.
    */
-  protected function legendItem(string $direction, string|MarkupInterface $label): array {
+  protected function legendItem(string $side, string|MarkupInterface $label): array {
     return [
       '#type' => 'container',
       '#attributes' => ['class' => ['ys-compare-legend__item']],
@@ -533,7 +534,7 @@ class AiTesterController extends ControllerBase {
         '#attributes' => [
           'class' => [
             'ys-compare-legend__swatch',
-            'ys-compare-legend__swatch--' . $direction,
+            'ys-compare-legend__swatch--' . $side,
           ],
           // The swatch only restates the adjacent label's color, so announcing
           // it would add nothing but noise.
@@ -703,7 +704,7 @@ class AiTesterController extends ControllerBase {
    *
    * A word-level diff only makes sense when both runs answered the question.
    * Answers are escaped before diffing because the diff accumulator emits its
-   * word groups unescaped; the directional CSS class colors the changes.
+   * word groups unescaped; the per-run CSS class colors the changes.
    *
    * @param array $pair
    *   The question pair.
@@ -773,13 +774,14 @@ class AiTesterController extends ControllerBase {
       );
     }
 
-    $direction = $key === 'a' ? 'removed' : 'added';
     // $diff_html is built from already-escaped answer text plus the diff's own
     // static <span>/<br> markup; the escaped answer is the only fallback.
     $answer_html = $diff_html ?? Html::escape($side['answer']);
 
     $cell = [
-      'answer' => $this->wrap('ys-diff ys-diff--' . $direction, $answer_html),
+      // Keyed by run, so the stylesheet paints this column in its own run's
+      // color; legendItem() must be given the same key.
+      'answer' => $this->wrap('ys-diff ys-diff--' . $key, $answer_html),
     ];
 
     if ($side['error'] !== '') {

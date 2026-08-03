@@ -18,19 +18,23 @@
  */
 
 .ys-compare {
-  /* One source of truth for the diff colors, so the highlights and the legend
-     swatches cannot drift apart and dark mode is a single override block. */
-  --ys-diff-removed-bg: #fde2e2;
-  --ys-diff-removed-fg: #8f1a1a; /* 7.4:1. */
-  --ys-diff-added-bg: #e6f4ea;
-  --ys-diff-added-fg: #14663f; /* 6.2:1. */
+  /* One source of truth for the highlight colors, so the highlights and the
+     legend swatches cannot drift apart and dark mode is a single override
+     block. Keyed by run — a highlight identifies the run it sits in, Run A
+     green and Run B red — rather than by diff direction: a word missing from
+     the other run is neither an addition nor a removal, and neither run is the
+     baseline the other is measured against. */
+  --ys-diff-a-bg: #e6f4ea;
+  --ys-diff-a-fg: #14663f; /* 6.2:1. */
+  --ys-diff-b-bg: #fde2e2;
+  --ys-diff-b-fg: #8f1a1a; /* 7.4:1. */
 }
 
 html.gin--dark-mode .ys-compare {
-  --ys-diff-removed-bg: #4a1f1f;
-  --ys-diff-removed-fg: #ffb3b3; /* 8.3:1. */
-  --ys-diff-added-bg: #12351f;
-  --ys-diff-added-fg: #9be3b4; /* 9.1:1. */
+  --ys-diff-a-bg: #12351f;
+  --ys-diff-a-fg: #9be3b4; /* 9.0:1. */
+  --ys-diff-b-bg: #4a1f1f;
+  --ys-diff-b-fg: #ffb3b3; /* 8.2:1. */
 }
 
 .ys-compare-summary {
@@ -103,34 +107,35 @@ html.gin--dark-mode .ys-compare-caveat {
   border-radius: 2px;
 }
 
-.ys-compare-legend__swatch--removed {
-  border: 1px solid var(--ys-diff-removed-fg);
-  background: var(--ys-diff-removed-bg);
+.ys-compare-legend__swatch--a {
+  border: 1px solid var(--ys-diff-a-fg);
+  background: var(--ys-diff-a-bg);
 }
 
-.ys-compare-legend__swatch--added {
-  border: 1px solid var(--ys-diff-added-fg);
-  background: var(--ys-diff-added-bg);
+.ys-compare-legend__swatch--b {
+  border: 1px solid var(--ys-diff-b-fg);
+  background: var(--ys-diff-b-bg);
 }
 
 /* Word-level diff: core WordLevelDiff marks changed words with .diffchange in
-   both columns; the directional wrapper colors removals (Run A) and additions
-   (Run B). */
+   both columns; the wrapper colors each column by the run it belongs to. */
 .ys-diff {
   white-space: pre-wrap;
   word-break: break-word;
 }
 
 /* No line-through here: striking the text out made the very words a reviewer
-   needs to read the hardest to read. The background carries the signal alone. */
-.ys-diff--removed .diffchange {
-  background: var(--ys-diff-removed-bg);
-  color: var(--ys-diff-removed-fg);
+   needs to read the hardest to read. The background carries the signal alone.
+   Color is never the only cue either — a highlight's run is already given by
+   which column it is in, and named in the legend beside the matching swatch. */
+.ys-diff--a .diffchange {
+  background: var(--ys-diff-a-bg);
+  color: var(--ys-diff-a-fg);
 }
 
-.ys-diff--added .diffchange {
-  background: var(--ys-diff-added-bg);
-  color: var(--ys-diff-added-fg);
+.ys-diff--b .diffchange {
+  background: var(--ys-diff-b-bg);
+  color: var(--ys-diff-b-fg);
 }
 
 .ys-compare-side-meta {

@@ -269,6 +269,46 @@ class AiTesterCompareRenderTest extends UnitTestCase {
   }
 
   /**
+   * The highlight colors are keyed to the run, and the legend agrees.
+   *
+   * Run A renders green and Run B red, so the colors identify the run rather
+   * than a diff direction — there is no "removed" side any more. Two things
+   * have to stay in step for that to read correctly: the wrapper class on each
+   * answer, which is what binds a side to its color pair in compare.css, and
+   * the legend swatch, which advertises that pair beside the matching label.
+   * Let those drift and the legend confidently names the wrong run.
+   *
+   * @covers ::sideCell
+   * @covers ::compare
+   * @covers ::legendItem
+   */
+  public function testHighlightColorsAreKeyedToTheRunAndMatchTheLegend(): void {
+    $data = $this->comparisonOf('beacon', 'legacy', $this->side('Legacy answer.', 1, 1, FALSE));
+
+    $build = $this->controllerReturning($data)->compare(2, 3);
+    $sides = $build['results']['#panels'][0]['sides'];
+
+    $this->assertStringContainsString(
+      'ys-diff--a',
+      (string) $sides[0]['content']['answer']['#markup']
+    );
+    $this->assertStringContainsString(
+      'ys-diff--b',
+      (string) $sides[1]['content']['answer']['#markup']
+    );
+
+    $legend = $build['legend'];
+    $this->assertContains(
+      'ys-compare-legend__swatch--a',
+      $legend['only_a']['swatch']['#attributes']['class']
+    );
+    $this->assertContains(
+      'ys-compare-legend__swatch--b',
+      $legend['only_b']['swatch']['#attributes']['class']
+    );
+  }
+
+  /**
    * The compare view renders unique sources as new-window citation links.
    *
    * @covers ::sideCell
