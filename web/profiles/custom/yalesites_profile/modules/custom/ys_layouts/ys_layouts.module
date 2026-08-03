@@ -10,6 +10,7 @@ use Drupal\Core\Entity\FieldableEntityInterface;
 use Drupal\Core\Form\FormStateInterface;
 use Drupal\Core\Plugin\Context\Context;
 use Drupal\Core\Plugin\Context\EntityContextDefinition;
+use Drupal\ys_layouts\CloneBlockLinkBuilder;
 use Drupal\ys_layouts\Render\DetachContextualOperations;
 
 /**
@@ -288,20 +289,27 @@ function ys_layouts_form_ys_layouts_detach_reusable_block_alter(&$form, FormStat
 /**
  * Implements hook_element_info_alter().
  *
- * Registers the "Make non-reusable" action in Layout Builder's contextual link
- * metadata. Without this, adding the action never changes the contextual link
- * id, so browsers keep replaying the previously cached menu out of
- * sessionStorage and never ask the server for the new link.
+ * Registers the "Make non-reusable" and "Clone" actions in Layout Builder's
+ * contextual link metadata. Without this, adding an action never changes the
+ * contextual link id, so browsers keep replaying the previously cached menu out
+ * of sessionStorage and never ask the server for the new link.
+ *
+ * "Clone" is attached to inline blocks only (issue #190).
  *
  * @see \Drupal\ys_layouts\Render\DetachContextualOperations
+ * @see \Drupal\ys_layouts\CloneBlockLinkBuilder
  */
 function ys_layouts_element_info_alter(array &$info) {
   if (isset($info['layout_builder'])) {
-    // Appended so it runs after Layout Builder's own pre_render has built the
+    // Appended so they run after Layout Builder's own pre_render has built the
     // sections, and before the theme layer derives the contextual link id.
     $info['layout_builder']['#pre_render'][] = [
       DetachContextualOperations::class,
       'addDetachOperation',
+    ];
+    $info['layout_builder']['#pre_render'][] = [
+      CloneBlockLinkBuilder::class,
+      'preRender',
     ];
   }
 }
@@ -449,5 +457,23 @@ function ys_layouts_preprocess_layout__page_meta(&$variables) {
         }
       }
     }
+  }
+}
+
+/**
+ * Implements hook_contextual_links_plugins_alter().
+ *
+ * Keeps "Remove" the last action in a Layout Builder block's contextual menu,
+ * and trims "block" from its label to match "Clone" (issue #190).
+ *
+ * Core ships no weight on Configure/Move/Remove, so every link sorts equal and
+ * the order falls out of which group was attached first — which put the "Clone"
+ * link this module adds after the destructive "Remove". Weighting Remove past
+ * Clone makes that order explicit instead of incidental.
+ */
+function ys_layouts_contextual_links_plugins_alter(array &$contextual_links) {
+  if (isset($contextual_links['layout_builder_block_remove'])) {
+    $contextual_links['layout_builder_block_remove']['title'] = t('Remove');
+    $contextual_links['layout_builder_block_remove']['weight'] = 10;
   }
 }
