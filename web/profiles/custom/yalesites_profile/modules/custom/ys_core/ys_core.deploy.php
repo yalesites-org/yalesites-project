@@ -200,3 +200,114 @@ function ys_core_deploy_10006() {
 
   return t('Populated DCN Types vocabulary with @count terms.', ['@count' => $created]);
 }
+
+/**
+ * Implements hook_deploy_NAME().
+ *
+ * Backfills field_icon on In-Line Message blocks that predate the field.
+ *
+ * Before issue #697 the component hardcoded its icon, so every In-Line Message
+ * rendered 'circle-info' (the 'circle-exclamation' branch keyed off
+ * inline_message__type, which atomic never passes, so it only ever fired for
+ * the bare component in Storybook). Now that the icon is an editor-chosen
+ * field, an empty value renders no icon at all — so without this backfill every
+ * block created before the field existed would silently lose its icon.
+ *
+ * Drupal applies a field's default value only when an entity is created, never
+ * retroactively, hence the explicit pass over existing blocks.
+ *
+ * Runs after config import so field_icon is guaranteed to exist; an update hook
+ * would fire before the field config lands and quietly match nothing.
+ *
+ * Every empty value at this point predates the field — the field ships in this
+ * same deploy, so no editor has yet had the chance to choose "- None -" — which
+ * is why an empty value can safely be treated as "never set" rather than as a
+ * deliberate text-only choice.
+ *
+ * Every revision is visited, not just the latest. Layout Builder renders the
+ * revision a node revision pins (InlineBlock::getEntity() calls
+ * loadRevision($configuration['block_revision_id'])), and
+ * layout_builder__layout is itself revisionable — so a page with an unsaved
+ * draft pins one block revision on the draft and an older one on the published
+ * revision. Backfilling only the latest would write to the draft's revision and
+ * leave the live page iconless; reverting a node would resurrect an untouched
+ * revision for the same reason.
+ *
+ * Batched via the Sandbox API rather than ys_core_set_block_field_defaults():
+ * that helper walks every block of a bundle in one pass, which is exactly what
+ * timed out on sites with thousands of blocks and why ys_core_update_10006 and
+ * 10007 were converted to sandboxes (commit a6fad6354). In-Line Message is a
+ * Layout Builder inline block, so its count scales with pages.
+ */
+function ys_core_deploy_10007(&$sandbox) {
+  $block_storage = \Drupal::entityTypeManager()->getStorage('block_content');
+
+  if (!isset($sandbox['processed'])) {
+    $field_definitions = \Drupal::service('entity_field.manager')
+      ->getFieldDefinitions('block_content', 'inline_message');
+    if (!isset($field_definitions['field_icon'])) {
+      $sandbox['#finished'] = 1;
+      return t('In-Line Message has no icon field; skipping.');
+    }
+
+    $sandbox['processed'] = 0;
+    $sandbox['backfilled'] = 0;
+    $sandbox['total'] = $block_storage->getQuery()
+      ->accessCheck(FALSE)
+      ->allRevisions()
+      ->condition('type', 'inline_message')
+      ->count()
+      ->execute();
+
+    if ($sandbox['total'] == 0) {
+      $sandbox['#finished'] = 1;
+      return t('No In-Line Message blocks found.');
+    }
+  }
+
+  // Paged over every revision rather than filtered to the empty ones: this
+  // pass fills those values in, so a filtered result set would shrink
+  // underneath the offset and skip revisions. Sorting on revision_id keeps the
+  // window stable, since neither it nor the bundle is touched here.
+  // An allRevisions() query returns revision_id => entity_id.
+  $result = $block_storage->getQuery()
+    ->accessCheck(FALSE)
+    ->allRevisions()
+    ->condition('type', 'inline_message')
+    ->sort('revision_id')
+    ->range($sandbox['processed'], 50)
+    ->execute();
+
+  foreach (array_keys($result) as $revision_id) {
+    $sandbox['processed']++;
+
+    $block = $block_storage->loadRevision($revision_id);
+    if (!$block || !$block->get('field_icon')->isEmpty()) {
+      continue;
+    }
+
+    // The historical value the component hardcoded — deliberately a constant
+    // rather than a read of the field's current default, so a later change to
+    // that default cannot retroactively rewrite what these blocks used to show.
+    $block->set('field_icon', 'circle-info');
+    // Saving a loaded revision updates that revision in place rather than
+    // creating a new one, so the id a layout pins to stays valid.
+    $block->save();
+    $sandbox['backfilled']++;
+  }
+
+  // An empty page means the count shrank under us; stop rather than spin.
+  $sandbox['#finished'] = (empty($result) || $sandbox['processed'] >= $sandbox['total'])
+    ? 1
+    : $sandbox['processed'] / $sandbox['total'];
+
+  if ($sandbox['#finished'] < 1) {
+    return NULL;
+  }
+
+  if ($sandbox['backfilled'] === 0) {
+    return t('No In-Line Message blocks needed an icon backfill.');
+  }
+
+  return t('Backfilled the default icon on @count In-Line Message block revision(s).', ['@count' => $sandbox['backfilled']]);
+}
