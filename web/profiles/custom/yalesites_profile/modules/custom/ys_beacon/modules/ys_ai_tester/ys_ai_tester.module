@@ -22,5 +22,18 @@ function ys_ai_tester_theme(): array {
         'copy' => NULL,
       ],
     ],
+    // One tab per question, each revealing a panel of per-run answer columns.
+    // 'columns' drives the panel grid class. Only the compare view renders
+    // these today, and only ever at two columns; see
+    // AiTesterController::questionTabs() for what one column would take.
+    'ys_ai_tester_question_tabs' => [
+      'variables' => [
+        'tabs' => [],
+        'panels' => [],
+        'columns' => 2,
+        'tablist_label' => '',
+        'empty' => '',
+      ],
+    ],
   ];
 }

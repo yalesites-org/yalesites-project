@@ -85,7 +85,9 @@ class AiTesterCompareRenderTest extends UnitTestCase {
 
   /**
    * @covers ::compare
-   * @covers ::comparisonRow
+   * @covers ::questionTabs
+   * @covers ::pairDiffs
+   * @covers ::sidePanel
    * @covers ::sideCell
    * @covers ::runMetaBlock
    * @covers ::statusLabel
@@ -150,9 +152,120 @@ class AiTesterCompareRenderTest extends UnitTestCase {
     $this->assertArrayHasKey('downloads', $build);
     $this->assertArrayHasKey('results', $build);
     $this->assertArrayHasKey('#markup', $build['meta']['a']);
-    $this->assertCount(4, $build['results']['#rows']);
-    // Each row has the four columns: status, question, run A, run B.
-    $this->assertCount(4, $build['results']['#rows'][0]);
+
+    // One tab and one panel per question pair, each panel holding both runs.
+    $tabs = $build['results'];
+    $this->assertSame('ys_ai_tester_question_tabs', $tabs['#theme']);
+    $this->assertCount(4, $tabs['#tabs']);
+    $this->assertCount(4, $tabs['#panels']);
+    $this->assertSame(2, $tabs['#columns']);
+    $this->assertCount(2, $tabs['#panels'][0]['sides']);
+  }
+
+  /**
+   * Every tab points at its own panel and back again.
+   *
+   * The ARIA wiring the template emits is only correct if these ids pair up:
+   * aria-controls comes from the tab's panel_id and aria-labelledby from the
+   * panel's tab_id, so a mismatch here silently breaks the tab list for screen
+   * reader and keyboard users without changing how it looks.
+   *
+   * @covers ::questionTabs
+   */
+  public function testEachTabIsPairedWithItsOwnPanel(): void {
+    $data = $this->comparisonOf('beacon', 'legacy', $this->side('Legacy answer.', 1, 1, FALSE));
+    $data['pairs'][] = [
+      'question' => 'A second question?',
+      'status' => 'identical',
+      'a' => $this->side('Same.', 0, 0, FALSE),
+      'b' => $this->side('Same.', 0, 0, FALSE),
+      'len_delta' => 0,
+      'citation_overlap' => ['both' => [], 'only_a' => [], 'only_b' => []],
+    ];
+
+    $tabs = $this->controllerReturning($data)->compare(2, 3)['results'];
+
+    $this->assertCount(2, $tabs['#tabs']);
+    foreach ($tabs['#tabs'] as $i => $tab) {
+      $panel = $tabs['#panels'][$i];
+      $this->assertSame($tab['panel_id'], $panel['id']);
+      $this->assertSame($tab['id'], $panel['tab_id']);
+    }
+
+    // Ids must be unique across the list, or aria-controls resolves to the
+    // wrong panel.
+    $ids = array_column($tabs['#tabs'], 'id');
+    $this->assertSame($ids, array_unique($ids));
+    $panel_ids = array_column($tabs['#panels'], 'id');
+    $this->assertSame($panel_ids, array_unique($panel_ids));
+  }
+
+  /**
+   * The status the table's Status column carried now rides on the tab.
+   *
+   * @covers ::questionTabs
+   * @covers ::statusLabel
+   */
+  public function testTabCarriesStatusAsVisibleText(): void {
+    $data = $this->comparisonOf('beacon', 'legacy', $this->side('Legacy answer.', 1, 1, FALSE));
+
+    $tab = $this->controllerReturning($data)->compare(2, 3)['results']['#tabs'][0];
+
+    // The machine name drives the badge modifier class; the label is the text
+    // that keeps the meaning off colour alone.
+    $this->assertSame('differs', $tab['status']);
+    $this->assertSame('Differs', (string) $tab['status_label']);
+    $this->assertStringContainsString('Question 1', (string) $tab['number']);
+  }
+
+  /**
+   * A comparison with no pairs still carries its empty message.
+   *
+   * The four-column table this replaced got its empty state free from #empty.
+   * The tabs template renders that message itself, so nothing but a test keeps
+   * an empty comparison from rendering as a blank page.
+   *
+   * @covers ::compare
+   * @covers ::questionTabs
+   */
+  public function testEmptyComparisonKeepsItsEmptyMessage(): void {
+    $data = [
+      'run_a' => $this->runMeta(2, 'a.txt'),
+      'run_b' => $this->runMeta(3, 'b.txt'),
+      'pairs' => [],
+      'summary' => [
+        'total_compared' => 0,
+        'differ' => 0,
+        'identical' => 0,
+        'only_a' => 0,
+        'only_b' => 0,
+      ],
+    ];
+
+    $tabs = $this->controllerReturning($data)->compare(2, 3)['results'];
+
+    $this->assertSame([], $tabs['#tabs']);
+    $this->assertSame([], $tabs['#panels']);
+    $this->assertStringContainsString('Neither run has any results', (string) $tabs['#empty']);
+  }
+
+  /**
+   * A long question is truncated for the tab but kept whole in the panel.
+   *
+   * @covers ::questionTabs
+   */
+  public function testLongQuestionIsTruncatedOnlyOnTheTab(): void {
+    $question = 'What are the office hours for the registrar during reading period and final examinations?';
+    $data = $this->comparisonOf('beacon', 'legacy', $this->side('Legacy answer.', 1, 1, FALSE));
+    $data['pairs'][0]['question'] = $question;
+
+    $tabs = $this->controllerReturning($data)->compare(2, 3)['results'];
+
+    $preview = $tabs['#tabs'][0]['preview'];
+    $this->assertNotSame($question, $preview);
+    $this->assertLessThanOrEqual(60, mb_strlen($preview));
+    // The panel keeps the full question; only the tab preview is shortened.
+    $this->assertSame($question, $tabs['#panels'][0]['question']);
   }
 
   /**
@@ -192,9 +305,9 @@ class AiTesterCompareRenderTest extends UnitTestCase {
     ];
 
     $build = $this->controllerReturning($data)->compare(2, 3);
-    // Row 0, column index 2 is Run A's side cell; its 'unique' element lists
-    // the sources only Run A retrieved.
-    $unique = $build['results']['#rows'][0][2]['data']['unique'];
+    // Panel 0 side 0 is Run A's column; its 'unique' element lists the sources
+    // only Run A retrieved.
+    $unique = $build['results']['#panels'][0]['sides'][0]['content']['unique'];
 
     // The http(s) source becomes a link that opens in a new window, hardened
     // with rel and carrying the visually-hidden a11y cue.
@@ -323,7 +436,8 @@ class AiTesterCompareRenderTest extends UnitTestCase {
     $data = $this->comparisonOf('beacon', 'legacy', $errored);
 
     $build = $this->controllerReturning($data)->compare(2, 3);
-    $meta = (string) $build['results']['#rows'][0][3]['data']['meta']['#markup'];
+    // Panel 0 side 1 is Run B's column, the side carrying the recorded error.
+    $meta = (string) $build['results']['#panels'][0]['sides'][1]['content']['meta']['#markup'];
 
     $this->assertStringContainsString('Operation timed out', $meta);
     $this->assertStringNotContainsString('Empty answer', $meta);

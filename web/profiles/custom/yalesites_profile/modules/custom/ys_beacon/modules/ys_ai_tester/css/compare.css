@@ -2,10 +2,11 @@
  * @file
  * AI Tester run comparison styling.
  *
- * Layered on the ys_admin_theme (base theme Gin): the comparison itself uses a
- * core #type => table so Gin styles the grid. Only the diff highlight colors and
- * the status badges need bespoke rules, expressed with Gin CSS custom properties
- * and safe literal fallbacks.
+ * Layered on the ys_admin_theme (base theme Gin). The comparison itself is the
+ * question-tabs widget (see question-tabs.css); what lives here is the material
+ * around and inside it — the diff highlight colors, the status badges the tabs
+ * reuse, the header blocks, the export modal and the small-screen notice —
+ * expressed with Gin CSS custom properties and safe literal fallbacks.
  *
  * Colors that sit on a surface of our own are pinned to literals rather than
  * taken from Gin's text tokens. Gin flips those tokens for dark mode, so pairing
@@ -73,7 +74,7 @@ html.gin--dark-mode .ys-compare-caveat {
    are deliberately not individually focusable: a paragraph-length answer
    produces dozens of changed-word spans, and turning each into a tab stop would
    cost keyboard users far more than a per-word tooltip would give them, so the
-   explanation is made once for the whole table. */
+   explanation is made once, above the tabs, for the whole comparison. */
 .ys-compare-help {
   max-width: 60rem;
   margin-block-end: 0.5rem;
@@ -201,11 +202,13 @@ html.gin--dark-mode .ys-compare-caveat {
   font-weight: 600;
 }
 
-/* The comparison is a four-column side-by-side table of paragraph-length
-   answers with no usable small-screen layout, so below the breakpoint the whole
-   view is replaced by an explanation. 768px matches the breakpoint the sibling
-   ys_beacon admin stylesheets already use. Scoped to the compare view only —
-   the rest of the AI Tester stays usable at small widths. */
+/* The comparison sets a tab list beside two columns of paragraph-length answers
+   and has no usable small-screen layout, so below the breakpoint the whole view
+   is replaced by an explanation. 768px matches the breakpoint the sibling
+   ys_beacon admin stylesheets already use. The selector is deliberately generic
+   (every direct child but the notice), so it keeps covering the comparison
+   whatever it is built from. Scoped to the compare view only — the rest of the
+   AI Tester stays usable at small widths. */
 .ys-compare-mobile-notice {
   display: none;
 }

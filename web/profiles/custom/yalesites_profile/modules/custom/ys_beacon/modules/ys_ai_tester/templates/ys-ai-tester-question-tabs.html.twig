@@ -1,0 +1,82 @@
+{#
+/**
+ * @file
+ * Vertical question tabs with one answer panel per run.
+ *
+ * Replaces the four-column comparison table: one tab per question down the left,
+ * that question's answers side by side on the right. The tabs are hand-rolled
+ * rather than core's #type => vertical_tabs, which is built for form 'details'
+ * groups and cannot produce the tablist/tabpanel pairing this needs.
+ *
+ * Two accessibility decisions are load-bearing and must survive edits here:
+ *
+ * - No panel carries 'hidden' in the rendered markup. js/question-tabs.js adds it
+ *   on attach, so with JavaScript unavailable the view degrades to a readable
+ *   stacked list of every question instead of a blank right-hand column.
+ * - Each tab's status is a visible text badge, not colour alone: the table this
+ *   replaces had a Status column, and losing it would leave "differs" carried
+ *   only by a chip colour.
+ *
+ * Available variables:
+ * - tabs: List of tabs, each with:
+ *   - id: The tab's own DOM id, referenced by its panel's aria-labelledby.
+ *   - panel_id: The id of the panel this tab controls.
+ *   - number: The question's position, already translated ("Question 3").
+ *   - preview: A truncated copy of the question text.
+ *   - status: The pair status machine name, used as a badge modifier class.
+ *   - status_label: The human-readable status.
+ * - panels: List of panels, each with:
+ *   - id: The panel's DOM id, matching its tab's aria-controls.
+ *   - tab_id: The controlling tab's id.
+ *   - question: The full question text.
+ *   - sides: List of per-run columns, each with heading, meta and content.
+ * - columns: How many run columns each panel holds (2 when comparing).
+ * - tablist_label: The accessible name for the tab list.
+ * - empty: Message shown when neither run produced any results.
+ */
+#}
+{% if tabs is empty %}
+  <p class="ys-qtabs__empty">{{ empty }}</p>
+{% else %}
+  <div class="ys-qtabs" data-ys-qtabs>
+    <div class="ys-qtabs__list" role="tablist" aria-orientation="vertical" aria-label="{{ tablist_label }}">
+      {% for tab in tabs %}
+        <button type="button"
+                class="ys-qtabs__tab"
+                role="tab"
+                id="{{ tab.id }}"
+                aria-controls="{{ tab.panel_id }}"
+                aria-selected="{{ loop.first ? 'true' : 'false' }}"
+                tabindex="{{ loop.first ? '0' : '-1' }}">
+          <span class="ys-qtabs__tab-number">{{ tab.number }}</span>
+          <span class="ys-qtabs__tab-preview">{{ tab.preview }}</span>
+          <span class="ys-compare-badge ys-compare-badge--{{ tab.status }}">{{ tab.status_label }}</span>
+        </button>
+      {% endfor %}
+    </div>
+
+    <div class="ys-qtabs__panels">
+      {% for panel in panels %}
+        <div class="ys-qtabs__panel"
+             role="tabpanel"
+             id="{{ panel.id }}"
+             aria-labelledby="{{ panel.tab_id }}"
+             tabindex="0">
+          {# h2/h3, not h3/h4: the route title is the page's only h1 and the
+             compare build emits no h2 of its own, so starting at h3 would skip
+             a level for anyone navigating by heading. #}
+          <h2 class="ys-qtabs__question">{{ panel.question }}</h2>
+          <div class="ys-qtabs__sides ys-qtabs__sides--cols-{{ columns }}">
+            {% for side in panel.sides %}
+              <div class="ys-qtabs__side">
+                <h3 class="ys-qtabs__side-heading">{{ side.heading }}</h3>
+                <p class="ys-qtabs__side-meta">{{ side.meta }}</p>
+                {{ side.content }}
+              </div>
+            {% endfor %}
+          </div>
+        </div>
+      {% endfor %}
+    </div>
+  </div>
+{% endif %}

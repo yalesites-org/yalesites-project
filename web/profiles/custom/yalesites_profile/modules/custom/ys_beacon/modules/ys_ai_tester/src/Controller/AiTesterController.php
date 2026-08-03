@@ -8,6 +8,7 @@ use Drupal\Component\Diff\WordLevelDiff;
 use Drupal\Component\Render\MarkupInterface;
 use Drupal\Component\Serialization\Json;
 use Drupal\Component\Utility\Html;
+use Drupal\Component\Utility\Unicode;
 use Drupal\Core\Controller\ControllerBase;
 use Drupal\Core\Database\Connection;
 use Drupal\Core\Datetime\DateFormatterInterface;
@@ -357,11 +358,6 @@ class AiTesterController extends ControllerBase {
 
     $link_attrs = ['class' => ['button', 'button--link', 'button--link-purpose']];
 
-    $rows = [];
-    foreach ($data['pairs'] as $pair) {
-      $rows[] = $this->comparisonRow($pair);
-    }
-
     return [
       '#type' => 'container',
       // The class is load-bearing: the stylesheet scopes the diff colors to it
@@ -370,18 +366,19 @@ class AiTesterController extends ControllerBase {
       '#attached' => [
         'library' => [
           'ys_ai_tester/compare',
+          // The question tabs attach their own library; see questionTabs().
           // Supplies the modal the export button opens, including its focus
           // trap and Escape handling.
           'core/drupal.dialog.ajax',
         ],
       ],
-      // Only rendered below the mobile breakpoint, where the four-column
-      // comparison table has no workable layout.
+      // Only rendered below the mobile breakpoint, where the side-by-side
+      // comparison has no workable layout.
       'mobile_notice' => [
         '#type' => 'html_tag',
         '#tag' => 'p',
         '#attributes' => ['class' => ['ys-compare-mobile-notice']],
-        '#value' => $this->t('This run comparison is a wide side-by-side table and is not designed for small screens. Please open it on a laptop, a desktop, or a larger screen to compare these runs.'),
+        '#value' => $this->t('This run comparison is a wide side-by-side view and is not designed for small screens. Please open it on a laptop, a desktop, or a larger screen to compare these runs.'),
       ],
       'summary' => $this->wrap('ys-compare-summary', $this->t(
         '@total compared · @differ differ · @identical identical · @a only in Run A · @b only in Run B',
@@ -434,21 +431,7 @@ class AiTesterController extends ControllerBase {
           ],
         ],
       ],
-      'results' => [
-        '#type' => 'table',
-        '#responsive' => TRUE,
-        '#header' => [
-          $this->t('Status'),
-          $this->t('Question'),
-          $this->t('Run A'),
-          $this->t('Run B'),
-        ],
-        '#rows' => $rows,
-        '#empty' => $this->t('Neither run has any results.'),
-        '#attributes' => ['class' => ['table', 'cols-4']],
-        '#prefix' => '<div class="table-wrapper">',
-        '#suffix' => '</div>',
-      ],
+      'results' => $this->questionTabs($data),
       'back' => [
         '#type' => 'link',
         '#title' => $this->t('Back to tester'),
@@ -643,34 +626,130 @@ class AiTesterController extends ControllerBase {
   }
 
   /**
-   * Builds one comparison table row for a question pair.
+   * Builds the question tabs and their per-run answer panels.
+   *
+   * One tab per question down the left, that question's answers side by side on
+   * the right. This replaced a four-column table: the table's Status column had
+   * nowhere to go in the new layout, so the status travels on the tab as a
+   * visible badge rather than being dropped or left to colour alone.
+   *
+   * Renders two columns, which is all this view can produce: compare() works
+   * from a two-sided pairing (run_a/run_b). Reusing the tabs at one column for
+   * the single-run detail view needs run() converted off its own table first,
+   * and a one-column rule adding to the stylesheet, so that is left to the
+   * change that does it rather than half-built here.
+   *
+   * @param array $data
+   *   The comparison as returned by RunComparator::compare().
+   *
+   * @return array
+   *   A ys_ai_tester_question_tabs render element.
    */
-  protected function comparisonRow(array $pair): array {
-    $status = $pair['status'];
-    $badge = $this->wrap(
-      'ys-compare-badge ys-compare-badge--' . $status,
-      $this->statusLabel($status),
-      'span'
-    );
+  protected function questionTabs(array $data): array {
+    $tabs = [];
+    $panels = [];
 
-    // A word-level diff only makes sense when both runs answered the question.
-    // Answers are escaped before diffing because the diff accumulator emits its
-    // word groups unescaped; the directional CSS class colors the changes.
-    $diff_a = $diff_b = NULL;
-    if ($pair['a'] !== NULL && $pair['b'] !== NULL) {
-      $diff = new WordLevelDiff(
-        explode("\n", Html::escape($pair['a']['answer'])),
-        explode("\n", Html::escape($pair['b']['answer'])),
-      );
-      $diff_a = implode('<br>', $diff->orig());
-      $diff_b = implode('<br>', $diff->closing());
+    foreach (array_values($data['pairs']) as $index => $pair) {
+      $number = $index + 1;
+      $tab_id = 'ys-qtab-' . $number;
+      $panel_id = 'ys-qpanel-' . $number;
+
+      $tabs[] = [
+        'id' => $tab_id,
+        'panel_id' => $panel_id,
+        'number' => $this->t('Question @number', ['@number' => $number]),
+        // Word-safe so the preview does not break mid-word, and ellipsised
+        // so it reads as truncated rather than as a shorter question.
+        'preview' => Unicode::truncate($pair['question'], 60, TRUE, TRUE),
+        'status' => $pair['status'],
+        'status_label' => $this->statusLabel($pair['status']),
+      ];
+
+      [$diff_a, $diff_b] = $this->pairDiffs($pair);
+
+      $panels[] = [
+        'id' => $panel_id,
+        'tab_id' => $tab_id,
+        'question' => $pair['question'],
+        'sides' => [
+          $this->sidePanel($this->t('Run A'), $data['run_a'], $this->sideCell($pair, 'a', $diff_a)),
+          $this->sidePanel($this->t('Run B'), $data['run_b'], $this->sideCell($pair, 'b', $diff_b)),
+        ],
+      ];
     }
 
     return [
-      ['data' => $badge],
-      ['data' => ['#markup' => Html::escape($pair['question'])]],
-      ['data' => $this->sideCell($pair, 'a', $diff_a)],
-      ['data' => $this->sideCell($pair, 'b', $diff_b)],
+      '#theme' => 'ys_ai_tester_question_tabs',
+      // The tabs are inert without their behavior, so the element carries its
+      // own library rather than relying on whatever route embedded it.
+      '#attached' => ['library' => ['ys_ai_tester/question_tabs']],
+      '#tabs' => $tabs,
+      '#panels' => $panels,
+      '#columns' => 2,
+      '#tablist_label' => $this->t('Questions'),
+      '#empty' => $this->t('Neither run has any results.'),
+    ];
+  }
+
+  /**
+   * Builds the word-level diff for both sides of a question pair.
+   *
+   * A word-level diff only makes sense when both runs answered the question.
+   * Answers are escaped before diffing because the diff accumulator emits its
+   * word groups unescaped; the directional CSS class colors the changes.
+   *
+   * @param array $pair
+   *   The question pair.
+   *
+   * @return array
+   *   Run A's and Run B's diffed answer HTML, each NULL when only one run
+   *   answered and there is nothing to diff against.
+   */
+  protected function pairDiffs(array $pair): array {
+    if ($pair['a'] === NULL || $pair['b'] === NULL) {
+      return [NULL, NULL];
+    }
+
+    $diff = new WordLevelDiff(
+      explode("\n", Html::escape($pair['a']['answer'])),
+      explode("\n", Html::escape($pair['b']['answer'])),
+    );
+
+    return [
+      implode('<br>', $diff->orig()),
+      implode('<br>', $diff->closing()),
+    ];
+  }
+
+  /**
+   * Builds one run's column inside a question panel.
+   *
+   * The heading names the run's source file, and the meta line keeps the run id
+   * and the assistant that answered it: a cross-assistant comparison is the
+   * point of the compare view, so which assistant produced a column cannot be
+   * left to the header blocks alone.
+   *
+   * @param string|\Drupal\Component\Render\MarkupInterface $label
+   *   The run label (a t() "Run A").
+   * @param array $meta
+   *   The run meta: id, created, source_filename, status, backend.
+   * @param array $content
+   *   The already-built answer cell for this run.
+   *
+   * @return array
+   *   A heading/meta/content structure for the tabs template.
+   */
+  protected function sidePanel(string|MarkupInterface $label, array $meta, array $content): array {
+    return [
+      'heading' => $this->t('@label: @file', [
+        '@label' => $label,
+        '@file' => $meta['source_filename'],
+      ]),
+      'meta' => $this->t('Run #@id · @backend', [
+        '@id' => $meta['id'],
+        '@backend' => $this->backendRegistry->labelFor($meta['backend']),
+      ]),
+      'content' => $content,
     ];
   }
 
