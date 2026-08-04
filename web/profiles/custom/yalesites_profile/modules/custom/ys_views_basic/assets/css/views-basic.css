@@ -27,15 +27,13 @@
 .layout-builder-configure-block {
   /*
    * 14 distinct vertical gaps were measured across the form's four tabs with
-   * no shared system behind them. Six steps on a 4px grid, each tied to the
-   * relationship it spaces rather than a generic "small/medium/large" name,
-   * so a rule reads at its call site (e.g. var(--vb-space-option) for two
-   * related checkboxes) instead of requiring a lookup.
+   * no shared system behind them. These steps sit on a 4px grid, each named
+   * for the relationship it spaces rather than a generic
+   * "small/medium/large", so a rule reads at its call site (e.g.
+   * var(--vb-space-option) for two related checkboxes) instead of requiring a
+   * lookup.
    */
-  --vb-space-label-control: 0.25rem; /* 4px: label -> its own control */
-  --vb-space-control-help: 0.375rem; /* 6px: control -> its own help text */
   --vb-space-option: 0.5rem; /* 8px: option -> sibling option */
-  --vb-space-legend-option: 0.75rem; /* 12px: legend -> first option */
   --vb-space-control-subcontrol: 1rem; /* 16px: control -> dependent sub-control */
   --vb-space-field: 1.5rem; /* 24px: field -> unrelated field */
   --vb-space-group: 2.5rem; /* 40px: group -> group */
@@ -52,7 +50,6 @@
   line-height: 1.5;
   --vb-font-help: 13px;
   --vb-font-label: 14px;
-  --vb-font-body: 16px;
   --vb-font-heading: 18px;
   --vb-line-heading: 1.25;
   --vb-line-label: 1.35;
@@ -626,8 +623,8 @@
  * The Tag filters intro is the one piece of running text in this form long
  * enough (it includes a full worked example) that 62ch reads as narrow and
  * unbalanced against the width of this tab, rather than as a readability
- * win — widened on request after seeing it rendered, rather than dropping
- * the cap outright.
+ * win — so it gets a wider cap of its own rather than dropping the cap
+ * outright.
  */
 .layout-builder-configure-block .vb-tag-filters-intro__help {
   max-width: 90ch;
@@ -752,12 +749,9 @@
 /*
  * Space between the "Highlight pinned items" row and "Sort by" above it
  * (#1481) — margin-top on the row itself, separating it from the field
- * before it, not padding inside its own border (two earlier attempts
- * targeted padding — inside the checkbox's own gin_lb-rendered item, then
- * inside this row container — before establishing the actual ask was space
- * above the row, not inside it). .vb-filter-row's base rule
- * (views-basic.css, "Filter rows (#1337)" section) only sets margin-bottom,
- * so there was nothing separating this row from the field above it.
+ * before it, not padding inside its own border. .vb-filter-row's base rule
+ * ("Filter rows (#1337)" section above) only sets margin-bottom, so there was
+ * nothing separating this row from the field above it.
  */
 .vb-filter-row--pinned {
   margin-top: var(--vb-space-group, 2.5rem);

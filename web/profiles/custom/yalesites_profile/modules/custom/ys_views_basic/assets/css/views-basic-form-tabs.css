@@ -230,11 +230,12 @@
  * Reduce the Header links field's footprint (#1481): URL and Link text
  * stacked full-width each, three times, made this the tallest thing on the
  * General tab for a field most blocks never touch. Side by side halves each
- * row's height with no interactivity added — true progressive disclosure
- * (starting collapsed, revealing rows via a button) was considered and
- * intentionally not built; it would mean new JS behavior and edge cases
- * (e.g. a saved block with links in row 2/3 but not row 1) out of scope for
- * a CSS pass.
+ * row's height with no interactivity added; collapsing the rows behind a
+ * button would need new JS and its own edge cases (e.g. a saved block with
+ * links in row 2/3 but not row 1), out of scope for a CSS pass.
+ *
+ * .fieldset__wrapper is correct unprefixed here: glb-fieldset__wrapper is not
+ * in gin_lb/src/classes.json, so glb_classes() leaves this one alone.
  */
 .heading-links-widget__row .fieldset__wrapper {
   display: grid;

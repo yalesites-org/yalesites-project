@@ -973,9 +973,8 @@ abstract class ViewsBasicWidgetBase extends WidgetBase implements ContainerFacto
     // The header must sort above the body: pin_label carries whatever weight
     // it had from where it was originally built (::buildPinnedControls()),
     // so both children get an explicit weight here rather than relying on
-    // array order — the exact mistake this method's own first version made,
-    // which put "Pinned-item label" above "Highlight pinned items" instead
-    // of below it. Matches ::buildExposedFilterAccordion()'s technique.
+    // array order, which would otherwise put "Pinned-item label" above
+    // "Highlight pinned items". Matches ::buildExposedFilterAccordion().
     $checkbox = $element['pinned_to_top'];
     $checkbox['#weight'] = 0;
     $row = [
@@ -984,12 +983,10 @@ abstract class ViewsBasicWidgetBase extends WidgetBase implements ContainerFacto
       // for why every top-level child of this group needs an explicit weight.
       '#weight' => 3,
       // vb-filter-row--pinned (#1481): a dedicated styling hook on the row
-      // container itself, not the checkbox's own gin_lb-rendered item —
-      // overriding gin_lb's internal checkbox-toggle padding directly proved
-      // unreliable (still no visible effect after !important at higher
-      // specificity than confirmed-working rules elsewhere in this file), so
-      // extra top spacing is added to this container, which this module
-      // fully controls, instead.
+      // container this module fully controls, not the checkbox's own
+      // gin_lb-rendered item — gin_lb's internal checkbox-toggle padding
+      // resisted overriding even with !important at higher specificity than
+      // rules confirmed working elsewhere in this file.
       '#attributes' => ['class' => ['vb-filter-row', 'vb-filter-row--pinned']],
       'pinned_to_top' => $checkbox,
     ];
@@ -1316,16 +1313,11 @@ abstract class ViewsBasicWidgetBase extends WidgetBase implements ContainerFacto
         'pager' => $this->t('Pagination after'),
       ],
     ];
-    // The "Limit to [n] items" single-row composition from the #1481 spec is
-    // NOT implemented here: views-basic.js live-swaps this field's title
-    // between "Items" and "Items per Page" as the site builder changes
-    // "display" client-side (no form rebuild), and doing that safely against
-    // a #field_prefix/#field_suffix layout needs the real rendered DOM (gin_lb
-    // markup isn't vendored in this checkout) to confirm the JS keeps that
-    // toggle correct rather than leaving a stale "Limit to" prefix showing
-    // under "Pagination after". Flagged as a follow-up needing browser QA;
-    // the #required/#states fix below (the actual functional bug) is not
-    // blocked on that.
+    // Kept as a plain title rather than the #1481 spec's single-row
+    // "Limit to [n] items" composition: views-basic.js live-swaps this title
+    // between "Items" and "Items per Page" client-side with no form rebuild,
+    // which a #field_prefix/#field_suffix layout would leave showing a stale
+    // "Limit to" prefix under "Pagination after".
     $form['group_user_selection']['options']['limit'] = [
       '#title' => $displayValue === 'pager' ? $this->t('Items per Page') : $this->t('Items'),
       '#type' => 'number',
@@ -1345,13 +1337,9 @@ abstract class ViewsBasicWidgetBase extends WidgetBase implements ContainerFacto
       '#suffix' => '</div>',
     ];
     $form['group_user_selection']['options']['offset'] = [
-      // The "Skip the first [n] results" single-row composition from the
-      // #1481 spec was tried here via #field_prefix/#field_suffix and
-      // reverted: gin_lb renders the prefix/suffix and the (invisible)
-      // title stacked on separate lines rather than inline around the
-      // input, confirmed live rather than guessed — the same class of
-      // rendering risk flagged for the "limit" field below. Plain title,
-      // matching the rest of this form's fields.
+      // Plain title rather than the #1481 spec's single-row composition:
+      // gin_lb renders #field_prefix/#field_suffix and the (invisible) title
+      // stacked on separate lines rather than inline around the input.
       '#title' => $this->t('Skip the first results'),
       '#description' => $this->t('Hide the first results that match — for example, enter 1 to omit the single newest item.'),
       '#type' => 'number',

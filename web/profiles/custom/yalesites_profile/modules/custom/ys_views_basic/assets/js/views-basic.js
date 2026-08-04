@@ -1,4 +1,3 @@
-/* global once, jQuery */
 ((Drupal, once, $) => {
   // Drupal.behaviors.X = {} is the required registration pattern for a
   // Drupal behavior; there is no alternative API that avoids assigning onto
@@ -69,10 +68,9 @@
         const updateLimitElement = () => {
           const { value } = displayElement;
 
-          // Change the title
+          // Change the title. "all" hides the field entirely via #states, so
+          // it needs no label and falls through to the default.
           switch (value) {
-            case "all":
-              break;
             case "limit":
               limitLabel.textContent = "Items";
               break;

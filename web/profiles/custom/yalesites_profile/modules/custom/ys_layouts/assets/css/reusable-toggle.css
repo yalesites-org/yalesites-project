@@ -32,6 +32,32 @@
   padding: 0.75rem;
 }
 
+/*
+ * The "cannot be changed after saving" notice, styled here rather than with
+ * core's .messages/.messages--warning classes, whose appearance varied by
+ * route: in the off-canvas modal (the normal editor path) gin_lb namespaces
+ * messages to .glb-messages* and the notice's raw #prefix/#suffix markup
+ * never passes through the glb_classes() renamer, so the bare classes
+ * resolved to nothing — transparent background, plain body text. On the
+ * full-page /layout_builder/add route Gin's admin CSS styles them as a dark
+ * box instead. Owning the styling in the library that emits the markup keeps
+ * it identical on both.
+ *
+ * Amber hue is Claro's own warning colour (--messages--warning-color,
+ * core/themes/claro/css/components/messages.css); #453b00 on #fdf8e3 is
+ * 10.4:1, clearing WCAG AA and AAA.
+ */
+.ys-toggle-row__warning {
+  margin: 0 0.75rem 0.75rem;
+  padding: 0.5rem 0.75rem;
+  color: #453b00;
+  border-left: 4px solid #e0ac00;
+  border-radius: 2px;
+  background-color: #fdf8e3;
+  font-size: 0.875rem;
+  line-height: 1.5;
+}
+
 .ys-toggle-row__body {
   margin-left: 1rem;
   padding: 0.75rem;

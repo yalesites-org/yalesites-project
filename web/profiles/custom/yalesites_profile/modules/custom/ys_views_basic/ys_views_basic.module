@@ -285,9 +285,9 @@ function ys_views_basic_form_alter(array &$form, FormStateInterface $form_state,
   // the General tab. Weights place them below the content fields within it.
   // 'reusable' before 'info' (#1481): ys_layouts_form_alter() wraps these two
   // in a toggle/disclosure row (reusable is the header, info the dependent
-  // body, via #prefix/#suffix) and needs them adjacent in that order — this
-  // overwrites the weights that hook already set, so it has to keep the same
-  // relative order or the row's HTML ends up malformed.
+  // body, via #prefix/#suffix) and needs them adjacent in that order, so
+  // these weights have to keep that relative order or the row's HTML ends up
+  // malformed.
   foreach (['reusable' => 20, 'info' => 21] as $key => $weight) {
     if (isset($form[$key])) {
       $form[$key]['#group'] = 'group_listing_general';

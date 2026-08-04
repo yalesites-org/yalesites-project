@@ -242,27 +242,30 @@ function ys_layouts_form_alter(&$form, $form_state, $form_id) {
       // original top-level keys to attach them to the listing-block General
       // tab via #group — nesting them here would break that.
       //
-      // This relies on 'reusable' rendering immediately before 'info' with
-      // nothing else between them, which the explicit #weight pair below
-      // guarantees relative to each other but not relative to every other
-      // field Drupal core or another module might add to this form — worth a
-      // visual check on a non-listing block, since every listing-block
-      // verification this ticket did was against the ys_views_basic tab
-      // layout, which sets its own explicit weights for these two fields
-      // and was checked directly.
-      $form['reusable']['#weight'] = -10;
+      // This relies on 'reusable' rendering immediately before 'info'. No
+      // #weight is set here: ConfigureBlockFormBase::doBuildForm() declares
+      // the two adjacently in that order with no weights, so array order
+      // already holds, and weighting them here would hoist both above
+      // $form['settings'] — the block's own content fields — on every block
+      // type. ys_views_basic_form_alter() sets its own weights for the
+      // listing-block General tab and keeps the same relative order.
       $form['reusable']['#prefix'] = '<div class="ys-toggle-row ys-toggle-row--has-settings">';
       // Split into its own visually distinct warning (#1481): it's the only
       // irreversible decision on this form and used to trail as plain help
-      // text easy to skim past. Drupal's own "messages--warning" styling
-      // (core/themes/*/css/components/messages.css) is used rather than a new
-      // custom class, since it renders consistently across every admin theme
-      // context this form can appear in.
-      $form['reusable']['#suffix'] = '<div role="note" class="messages messages--warning">' . t('This setting cannot be changed after saving.') . '</div>';
+      // text easy to skim past. Styled from this module's own
+      // reusable-toggle.css rather than borrowing core's "messages
+      // messages--warning", whose rendering here depends on which route built
+      // the form: in the off-canvas modal (the normal editor path) gin_lb
+      // namespaces messages to .glb-messages* (gin_lb/src/classes.json) and
+      // raw #prefix/#suffix markup never passes through the glb_classes()
+      // renamer, so the bare classes resolve to nothing — transparent
+      // background, plain body text. On the full-page /layout_builder/add
+      // route Gin's admin CSS is present and styles them as a dark box
+      // instead. Owning the styling keeps it identical on both.
+      $form['reusable']['#suffix'] = '<div role="note" class="ys-toggle-row__warning">' . t('This setting cannot be changed after saving.') . '</div>';
 
       $form['info']['#title'] = t('Reusable Block title');
       $form['info']['#description'] = t('Add a short, descriptive title to easily find and reuse the Reusable Block. Defaults to Administrative label if no title is provided.');
-      $form['info']['#weight'] = -9;
       $form['info']['#prefix'] = '<div class="ys-toggle-row__body">';
       $form['info']['#suffix'] = '</div></div>';
       // Disabled (not hidden) while unchecked, matching the same pattern as
