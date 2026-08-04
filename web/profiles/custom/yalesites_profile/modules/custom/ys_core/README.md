@@ -74,10 +74,5 @@ during the staged cleanup tracked in yalesites-org/YaleSites-Internal#579.
   offers it, but `config/install/ys_core.social_links.yml` does not list it, so a
   freshly installed site has no `bluesky` key until an editor saves the Footer
   Settings form.
-- **`config/facts_figures_icons.yml` is unused.** `FactsAndFiguresIconManager` reads
-  the component library manifest at
-  `themes/contrib/atomic/node_modules/@yalesites-org/component-library-twig/components/02-molecules/facts-and-figures/facts-and-figures-icons.yml`.
-  Nothing reads the in-module file, and its structure is not compatible with what the
-  service expects.
 - **`seo.google_analytics_id`** is present in both `config/install` and the profile's
   `config/sync` but is read and written by nothing; Google Tag Manager replaced it.
