@@ -76,10 +76,11 @@ ys_beacon.telemetry:
     _title: 'Beacon guardrail telemetry'
   requirements:
     # Deliberately its own permission rather than 'manage ys beacon settings',
-    # which site admins also hold: this report exposes the question and answer
-    # of turns flagged as suspected injection attempts, so it is granted to
-    # platform_admin only (user 1 bypasses permission checks). Re-scoping it
-    # later is a change to who holds this one permission and nothing else.
+    # which site admins also hold: this report shows when a site was probed and
+    # under which injection pattern, which is operational security detail even
+    # though no conversation text is kept. Granted to platform_admin only (user
+    # 1 bypasses permission checks). Re-scoping it later is a change to who
+    # holds this one permission and nothing else.
     _permission: 'view ys beacon guardrail telemetry'
     _ys_beacon_authorized: 'TRUE'
 

@@ -50,12 +50,3 @@
   margin: var(--gin-spacing-s, 12px) 0 0;
   color: var(--gin-color-text-light, #545560);
 }
-
-/* Flagged turns hold up to 2000 characters of conversation text, so the cells
-   wrap and preserve the author's line breaks instead of forcing a wide table. */
-.ys-beacon-flagged-turns td:nth-child(3),
-.ys-beacon-flagged-turns td:nth-child(4) {
-  max-width: 28rem;
-  white-space: pre-wrap;
-  overflow-wrap: anywhere;
-}

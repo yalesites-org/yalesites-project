@@ -271,22 +271,17 @@ class ChatApiController extends ControllerBase {
     // citations payload alive for the life of the response.
     $has_citations = $citations !== [];
 
-    // The answer buffer is sized from the injection check: a flagged turn keeps
-    // a clamped review copy, every other turn keeps exactly the refusal sample
-    // it always did. A guardrail stop is not knowable until after the answer
-    // has streamed, so a turn kept for a stop alone carries only that shorter
-    // sample - stated on the report page rather than left a surprise.
-    //
-    // The question itself is carried in unconditionally because a stop is not
-    // predictable. That is not a new exposure: $tool_line already embeds the
-    // question for the closure to emit, so it was in scope for every turn
-    // regardless. What still holds is that nothing is *stored* for an ordinary
-    // turn.
-    $capture_length = $injection !== NULL
-      ? SuspectTurnLog::MAX_TEXT_LENGTH
-      : GuardrailSignalDetector::REFUSAL_SAMPLE_LENGTH;
-
-    $response = new StreamedResponse(function () use ($defaults, $messages, $streaming, $tool_line, $response_id, $model_id, $has_citations, $injection, $question, $capture_length) {
+    // What holds is that nothing below STORES the question. It is still in
+    // scope: $tool_line embeds it as the turn's "intent" for the closure to
+    // emit, because the widget requires it echoed back, so it reaches the
+    // closure on every turn exactly as it always did. What changed is that it
+    // is no longer carried in separately for the flagged-turn store, which now
+    // takes only a reason, and every turn buffers just the refusal sample the
+    // counters classify from (GuardrailSignalDetector::REFUSAL_SAMPLE_LENGTH).
+    // The capture list is still worth reading as an audit surface - it is why
+    // $has_citations is a bool rather than the whole citations payload - but
+    // read $tool_line's contents too rather than only the variable names.
+    $response = new StreamedResponse(function () use ($defaults, $messages, $streaming, $tool_line, $response_id, $model_id, $has_citations, $injection) {
       $emit = static function (string $line): void {
         echo $line;
         if (ob_get_level() > 0) {
@@ -301,10 +296,8 @@ class ChatApiController extends ControllerBase {
       // answer has been streamed - so counting can never delay the visible
       // answer, and a turn that failed part-way is still counted.
       $chat_input = NULL;
-      // The answer is accumulated only up to $capture_length: the refusal
-      // sample on an ordinary turn, which is never stored or logged, and the
-      // clamped review copy on a turn already flagged as a suspected injection
-      // attempt.
+      // The answer is accumulated only up to the refusal sample the counters
+      // classify from, which is never stored or logged.
       $captured = '';
 
       try {
@@ -322,7 +315,7 @@ class ChatApiController extends ControllerBase {
         // The AI module's output filter blocks the links the model returns
         // (its allow-list is empty = block-all), so disable it for this
         // response. See withOutputFilteringDisabled() for the safety rationale.
-        $this->withOutputFilteringDisabled(function () use ($provider, $chat_input, $model_id, $emit, $response_id, $capture_length, &$captured) {
+        $this->withOutputFilteringDisabled(function () use ($provider, $chat_input, $model_id, $emit, $response_id, &$captured) {
           $output = $provider->chat($chat_input, $model_id, ['ys_beacon']);
           $normalized = $output->getNormalized();
 
@@ -332,7 +325,7 @@ class ChatApiController extends ControllerBase {
               if ($delta === '') {
                 continue;
               }
-              if (mb_strlen($captured) < $capture_length) {
+              if (mb_strlen($captured) < GuardrailSignalDetector::REFUSAL_SAMPLE_LENGTH) {
                 $captured .= $delta;
               }
               $emit($this->envelope($response_id, $model_id, [
@@ -342,7 +335,7 @@ class ChatApiController extends ControllerBase {
           }
           else {
             $text = $normalized->getText();
-            $captured = mb_substr($text, 0, $capture_length);
+            $captured = mb_substr($text, 0, GuardrailSignalDetector::REFUSAL_SAMPLE_LENGTH);
             $emit($this->envelope($response_id, $model_id, [
               ['role' => 'assistant', 'content' => $text],
             ]));
@@ -367,9 +360,10 @@ class ChatApiController extends ControllerBase {
         // guardrail results off the input evaluates two contrib getters in this
         // frame (see ::recordTurnTelemetry), so a throw from either must not
         // take the flagged-turn write with it - which would leave the injection
-        // counter incremented, the text dropped, and nothing logged to say so.
+        // counter incremented, no row recorded for the attempt, and nothing
+        // logged to say so.
         $logged = $injection !== NULL
-          && $this->logSuspectTurn($injection, $question, $captured);
+          && $this->logSuspectTurn($injection);
 
         $stops = 0;
         try {
@@ -385,7 +379,7 @@ class ChatApiController extends ControllerBase {
         // the guardrail results off the input, which is what the guarded call
         // above does.
         if (!$logged && $stops > 0) {
-          $this->logSuspectTurn(SuspectTurnLog::REASON_GUARDRAIL_STOP, $question, $captured);
+          $this->logSuspectTurn(SuspectTurnLog::REASON_GUARDRAIL_STOP);
         }
       }
     });
@@ -439,27 +433,27 @@ class ChatApiController extends ControllerBase {
   }
 
   /**
-   * Stores a flagged turn, absorbing any failure.
+   * Records that a turn was flagged, absorbing any failure.
    *
-   * SuspectTurnLog already swallows its own errors; this exists so the caller
-   * can guard each write independently without three try blocks inline, and so
-   * a failure is visible to the caller as FALSE rather than as an exception on
-   * a chat turn that must not fail.
+   * SuspectTurnLog already swallows its own errors, so this is deliberate
+   * defence in depth rather than the only guard: it keeps each write's failure
+   * from reaching the sibling write, and reports one as FALSE rather than as an
+   * exception on a chat turn that must not fail. It therefore returns TRUE for
+   * every failure mode the callee currently absorbs.
+   *
+   * The reason is all that is passed, and all that is stored: the flagged-turn
+   * log keeps no question or answer text.
    *
    * @param string $reason
    *   Why the turn was flagged: an injection pattern name, or
    *   SuspectTurnLog::REASON_GUARDRAIL_STOP.
-   * @param string $question
-   *   The question as asked.
-   * @param string $answer
-   *   The captured answer text, which may be empty or a short sample.
    *
    * @return bool
    *   TRUE if the write was attempted without throwing.
    */
-  private function logSuspectTurn(string $reason, string $question, string $answer): bool {
+  private function logSuspectTurn(string $reason): bool {
     try {
-      $this->suspectTurnLog->record($reason, $question, $answer);
+      $this->suspectTurnLog->record($reason);
       return TRUE;
     }
     catch (\Throwable) {
@@ -482,9 +476,9 @@ class ChatApiController extends ControllerBase {
    * @param bool $has_citations
    *   Whether retrieval produced any citations for the turn.
    * @param string $answer
-   *   The captured answer text. Only its opening is inspected, by isRefusal();
-   *   a flagged turn passes a longer buffer, which makes no difference here.
-   *   Empty when the turn failed before the model produced anything.
+   *   The captured answer text, at most the refusal sample. Only its opening is
+   *   inspected, by isRefusal(). Empty when the turn failed before the model
+   *   produced anything.
    * @param \Drupal\ai\OperationType\Chat\ChatInput|null $chat_input
    *   The input the model was called with, carrying the turn's guardrail
    *   results, or NULL if the call was never made.

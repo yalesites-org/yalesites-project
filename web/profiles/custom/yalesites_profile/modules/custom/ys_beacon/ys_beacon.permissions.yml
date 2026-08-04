@@ -6,5 +6,5 @@ manage ys beacon system instructions:
   description: 'Create, view, and revert versions of the Beacon system instructions.'
 view ys beacon guardrail telemetry:
   title: 'View Beacon guardrail telemetry'
-  description: 'Read the Beacon guardrail telemetry report, including the recorded question and answer of turns flagged as suspected prompt-injection attempts, and export it.'
+  description: 'Read and export the Beacon guardrail telemetry report: counts of refusals, guardrail stops and prompt-injection pattern hits, and when each flagged turn happened. No question or answer text is recorded or shown.'
   restrict access: true

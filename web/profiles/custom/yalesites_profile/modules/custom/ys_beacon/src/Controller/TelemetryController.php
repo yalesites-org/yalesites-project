@@ -17,13 +17,13 @@ use Symfony\Component\HttpFoundation\Response;
  * The page is the admin-visible half of
  * yalesites-org/YaleSites-Internal#1469: counts of refusals, guardrail stops,
  * uncited answers and injection-pattern hits, a distribution of chat turns over
- * the retention window, and the recorded text of turns flagged as suspected
- * injection attempts.
+ * the retention window, and a list of when turns were flagged as suspected
+ * injection attempts and why.
  *
  * It also states plainly what is and is not recorded. That statement is the
  * point of the page as much as the numbers are: Beacon tells users their
- * conversations are not saved, and the one exception to that - a flagged turn -
- * has to be visible here rather than discoverable only by reading the schema.
+ * conversations are not saved, so the page has to show that nothing it reports
+ * on contradicts that, rather than leaving it to be checked against the schema.
  *
  * Reaching any of this needs "view ys beacon guardrail telemetry", which is
  * granted to platform_admin alone (user 1 bypasses permission checks). It is
@@ -39,17 +39,6 @@ class TelemetryController extends ControllerBase {
    * a reader is not left wondering whether older data exists.
    */
   protected const CHART_DAYS = GuardrailTelemetry::RETENTION_DAYS;
-
-  /**
-   * How much of a flagged turn's text the table shows.
-   *
-   * Storage clamps at 2000 characters, which is right for reviewing an attempt
-   * but wrong for a table cell: a question padded to the clamp is a single row
-   * tall enough to push every other flagged turn off the screen, which defeats
-   * the point of listing them. The table shows an excerpt and says so; the JSON
-   * export carries the full stored text.
-   */
-  protected const EXCERPT_LENGTH = 300;
 
   /**
    * The guardrail telemetry recorder.
@@ -202,9 +191,11 @@ class TelemetryController extends ControllerBase {
    * Provisional, at the reviewer's request - see "Removing the JSON export" in
    * README.md for the three things to delete if it is dropped.
    *
-   * The export carries the flagged turns' question and answer text, so it is
-   * gated on the same platform-admin-only permission as the report page and
-   * marked no-store.
+   * The export carries no conversation text - the flagged-turn rows are a
+   * timestamp and a reason. It stays gated on the same platform-admin-only
+   * permission as the report page and marked no-store: when a site was probed,
+   * and under which pattern, is still operational security detail rather than
+   * something to serve openly.
    *
    * @return \Symfony\Component\HttpFoundation\Response
    *   The JSON download.
@@ -217,11 +208,11 @@ class TelemetryController extends ControllerBase {
 
     $rows = [];
     foreach ($flagged as $turn) {
+      // Named key by key rather than spreading the row, so the payload's shape
+      // is decided here rather than inherited from whatever the query returned.
       $rows[] = [
         'recorded' => gmdate('c', (int) $turn['created']),
         'pattern' => $turn['pattern'],
-        'question' => $turn['question'],
-        'answer' => $turn['answer'],
       ];
     }
 
@@ -240,20 +231,23 @@ class TelemetryController extends ControllerBase {
         // read as a complete one.
         'truncated' => $stored > count($rows),
         'max_rows_per_export' => SuspectTurnLog::MAX_EXPORT_ROWS,
-        'text_clamped_to_characters' => SuspectTurnLog::MAX_TEXT_LENGTH,
         'rows' => $rows,
       ],
     ];
 
-    // Slashes stay escaped: unescaping them buys nothing here and would emit a
-    // literal </script> from stored text, which is a gratuitous weakening even
-    // behind an attachment disposition and nosniff.
+    // Slashes stay escaped. Nothing in this payload is visitor-supplied any
+    // more - the values are integers, ISO dates, guardrail labels and detector
+    // pattern names - so this is no longer load-bearing; it is left as the safe
+    // default rather than relaxed, since the encoder's input would widen again
+    // if this report ever carried free text.
     $json = json_encode($data, JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE);
 
     // Failing loudly matters more than serving something. An empty "{}" would
     // download as a valid file that reads as "nothing was recorded" - a silent
     // total truncation, and the one misreading the truncated flag exists to
-    // prevent. Malformed UTF-8 in stored text is the likely trigger.
+    // prevent. With no free text in the payload an encode failure is now
+    // unlikely rather than expected, which is a reason to report it, not to
+    // assume it cannot happen.
     if ($json === FALSE) {
       $this->getLogger('ys_beacon')->error('Beacon telemetry export could not be encoded: @error', [
         '@error' => json_last_error_msg(),
@@ -322,8 +316,6 @@ class TelemetryController extends ControllerBase {
         // while the chart kept it on this one.
         $this->dateFormatter->format((int) $turn['created'], 'custom', 'Y-m-d H:i', 'UTC') . ' UTC',
         $turn['pattern'],
-        $this->excerpt((string) $turn['question']),
-        $this->excerpt((string) $turn['answer']),
       ];
     }
 
@@ -337,49 +329,27 @@ class TelemetryController extends ControllerBase {
       '#header' => [
         $this->t('Recorded (UTC)'),
         $this->t('Why kept'),
-        $this->t('Question'),
-        $this->t('Answer'),
       ],
       '#rows' => $rows,
       '#empty' => $this->t('No turns have been flagged as suspected injection attempts.'),
       '#attributes' => ['class' => ['ys-beacon-flagged-turns']],
     ];
 
-    // Both limits are said out loud whenever there is anything to list: the
-    // total held must be visible so one page is never mistaken for the whole
-    // store, and a shortened cell must not be mistaken for the whole question.
+    // The total held is said out loud whenever there is anything to list, so
+    // one page is never mistaken for the whole store.
     if ($rows !== []) {
       $build['note'] = [
         '#type' => 'html_tag',
         '#tag' => 'p',
-        '#value' => $this->t('@stored flagged turns held, @shown on this page, each shortened to @chars characters for display. The JSON export has the full stored text.', [
+        '#value' => $this->t('@stored flagged turns held, @shown on this page.', [
           '@stored' => $stored,
           '@shown' => count($rows),
-          '@chars' => self::EXCERPT_LENGTH,
         ]),
       ];
       $build['pager'] = ['#type' => 'pager'];
     }
 
     return $build;
-  }
-
-  /**
-   * Shortens stored text for display in the table.
-   *
-   * @param string $text
-   *   The stored text.
-   *
-   * @return string
-   *   At most self::EXCERPT_LENGTH characters, with an ellipsis when shortened
-   *   so a truncated cell is never mistaken for the whole thing.
-   */
-  protected function excerpt(string $text): string {
-    if (mb_strlen($text) <= self::EXCERPT_LENGTH) {
-      return $text;
-    }
-
-    return mb_substr($text, 0, self::EXCERPT_LENGTH) . '…';
   }
 
   /**
@@ -410,15 +380,14 @@ class TelemetryController extends ControllerBase {
   protected function privacyStatements(): array {
     return [
       $this->t('This is an operational safety report, not analytics. It exists to show whether guardrails and refusals are working and whether Beacon is being probed - it is not a measure of usage or engagement, and it should not be read as one or used for reporting on either.'),
-      $this->t('Recorded for every turn: one count per event type per day, plus counts broken down by guardrail mode, guardrail label, guardrail set and injection-pattern name. "Chat turns" is the denominator, so the other counts can be read as rates rather than raw volumes. No question or answer text is kept for an ordinary turn.'),
-      $this->t('Recorded for a flagged turn only: when a question matches a known prompt-injection pattern, or a guardrail stops the turn, that turn is kept in full - the time, the reason, the question and the answer - so a suspected attack can be reviewed. This is the single exception to Beacon not storing conversations, it is readable only with the permission gating this page, and each text is clamped to @chars characters. A turn kept for a guardrail stop alone keeps only the opening of the answer, because a stop is not knowable until after the answer has streamed.', [
-        '@chars' => SuspectTurnLog::MAX_TEXT_LENGTH,
-      ]),
+      $this->t('No question or answer text is stored, anywhere, for any turn. Neither table has a column one could be written into: the counters hold a date, an event name and a number, and a flagged turn holds a timestamp and the reason it was flagged. Beacon telling visitors their conversations are not saved is therefore true without exception.'),
+      $this->t('Recorded for every turn: one count per event type per day, plus counts broken down by guardrail mode, guardrail label, guardrail set and injection-pattern name. "Chat turns" is the denominator, so the other counts can be read as rates rather than raw volumes.'),
+      $this->t('Recorded for a flagged turn: when a question matches a known prompt-injection pattern, or a guardrail stops the turn, the time and the reason are kept so the shape of a suspected attack can be read at a finer grain than the daily counts - that Beacon was probed and under which pattern.'),
       $this->t('Flagged turns are deleted after @days days. About @cap are kept per pattern per UTC day, keeping the most recent, so a sustained campaign is sampled here while the counts above stay complete.', [
         '@days' => SuspectTurnLog::RETENTION_DAYS,
         '@cap' => SuspectTurnLog::MAX_ROWS_PER_PATTERN_PER_DAY,
       ]),
-      $this->t('Not recorded in this table: user names, account or session identifiers, or IP addresses. Two caveats rather than a bare claim of anonymity - a question is whatever the visitor typed, so it can contain personal information on its own; and the recorded time could be lined up against server access logs by someone who has them, which would identify the visitor.'),
+      $this->t('Not recorded in this table: user names, account or session identifiers, or IP addresses. One caveat rather than a bare claim of anonymity - the recorded time could be lined up against server access logs by someone who has them, which would identify the visitor who made a flagged request.'),
       $this->t('Model refusals are detected with a heuristic over the opening of the answer, so the count indicates a trend rather than an exact tally.'),
       $this->t('Guardrail stops read zero until a guardrail set is configured for Beacon. Stops applied while the answer is streaming are counted only if the guardrail plugin reports them itself: the AI module evaluates those inside the stream and does not report them back to the caller. Stops applied before or after generation are always counted.'),
       $this->t('Injection-pattern hits are counted before a turn is refused for a missing provider or an over-long conversation, but NOT for requests the rate limiter rejects — the question has not been read at that point. During a sustained campaign the true number of attempts is therefore higher than the count shown.'),

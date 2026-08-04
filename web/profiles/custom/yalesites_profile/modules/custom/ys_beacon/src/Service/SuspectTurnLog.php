@@ -5,38 +5,37 @@ namespace Drupal\ys_beacon\Service;
 use Drupal\Component\Datetime\TimeInterface;
 use Drupal\Core\Database\Connection;
 use Drupal\Core\Database\Query\PagerSelectExtender;
+use Drupal\Core\Database\Query\SelectInterface;
 use Psr\Log\LoggerInterface;
 
 /**
- * Stores the text of chat turns flagged as suspicious.
+ * Records when a chat turn was flagged as suspicious, and why.
  *
- * This is the one place in Beacon that persists conversation text, and it is
- * deliberately a separate class from GuardrailTelemetry rather than a method on
- * it. GuardrailTelemetry's guarantee - that no caller can hand it a question or
- * an answer even by accident - is worth keeping intact, so the capability that
- * breaks that rule lives behind its own name, its own table and its own
- * permission instead of widening the counters' API.
+ * A row is the fact of a flagged turn - its timestamp and the reason it was
+ * kept - and nothing more. Two kinds of turn are recorded: one whose question
+ * matched a GuardrailSignalDetector injection pattern, and one a guardrail
+ * stopped. An ordinary turn leaves no row here.
  *
- * Two kinds of turn are recorded: one whose question matched a
- * GuardrailSignalDetector injection pattern, and one a guardrail stopped. An
- * ordinary turn is not stored, is not accumulated in memory beyond the refusal
- * sample the counters already needed, and leaves no row here.
+ * **No conversation text is stored.** Like the counter table, this table has no
+ * column a question or an answer could be written into, and ::record() accepts
+ * no argument that could carry one. Storing the real question and answer is
+ * being reconsidered under its own ticket - see "Flagged turns" in README.md
+ * for that history and what the report page discloses.
  *
- * Requested in the review of yalesites-org/YaleSites-Internal#1469 so a
- * suspected attack can be read back and understood, which the aggregate
- * counters cannot support: a count of five "ignore_instructions" hits says
- * nothing about what was actually attempted or how the model answered.
+ * It stays a separate class from GuardrailTelemetry rather than folding back
+ * into it: the two answer different questions (per-event timestamps here,
+ * per-day totals there), they are bounded differently, and the ticket that
+ * revisits storing text will land here rather than widening the counters' API.
  *
- * Three bounds keep a public, unauthenticated endpoint from turning this into a
+ * Two bounds keep a public, unauthenticated endpoint from turning this into a
  * storage-exhaustion surface, and each is stated on the report page rather than
  * left implicit:
  * - rows expire after self::RETENTION_DAYS days, pruned on write and on cron;
- * - each question and answer is clamped to self::MAX_TEXT_LENGTH characters;
  * - at most self::MAX_ROWS_PER_PATTERN_PER_DAY rows are kept per pattern per
  *   UTC day, evicting that pattern's oldest so the newest attempts survive.
  *
  * The aggregate injection counters are NOT capped, so a campaign stays fully
- * visible in the counts even when this text log is only sampling it.
+ * visible in the counts even when this log is only sampling it.
  *
  * Like the counters, every operation degrades quietly: a chat turn must never
  * fail, or slow down, because this store could not be written.
@@ -66,17 +65,6 @@ class SuspectTurnLog {
   public const RETENTION_DAYS = 90;
 
   /**
-   * Maximum stored characters of a question or an answer.
-   *
-   * Enough to see what was attempted and how the model responded, without
-   * letting one turn write an unbounded row. Must not be lower than
-   * GuardrailSignalDetector::REFUSAL_SAMPLE_LENGTH, because the chat controller
-   * uses this length as the accumulation cap for a flagged turn and still has
-   * to be able to classify a refusal from the same buffer.
-   */
-  public const MAX_TEXT_LENGTH = 2000;
-
-  /**
    * Roughly how many flagged turns are stored per pattern per UTC day.
    *
    * Deliberately per PATTERN, not per day overall. A single day-wide quota is
@@ -97,9 +85,13 @@ class SuspectTurnLog {
   public const MAX_ROWS_PER_PATTERN_PER_DAY = 60;
 
   /**
-   * Maximum stored pattern-name length, matching the column width.
+   * Maximum stored reason length, matching the column width.
+   *
+   * Public only so the test asserting the clamp can reference it instead of
+   * restating 64 - unlike RETENTION_DAYS and MAX_ROWS_PER_PATTERN_PER_DAY,
+   * which are public because the report page discloses their real values.
    */
-  protected const MAX_PATTERN_LENGTH = 64;
+  public const MAX_PATTERN_LENGTH = 64;
 
   /**
    * How many flagged turns the report lists by default.
@@ -109,11 +101,8 @@ class SuspectTurnLog {
   /**
    * Hard row ceiling for one export, so a response cannot grow unbounded.
    *
-   * Sized in bytes, not rows: MAX_TEXT_LENGTH counts CHARACTERS, so a question
-   * padded with four-byte characters is 8KB and a row up to ~16KB. The export
-   * holds the rows, a mapped copy, and the encoded string in memory at once, so
-   * the ceiling is deliberately well under what an attacker could otherwise
-   * inflate a single admin request to. The payload reports when it truncates.
+   * The export declares it when it truncates rather than silently returning a
+   * partial file.
    */
   public const MAX_EXPORT_ROWS = 500;
 
@@ -142,21 +131,19 @@ class SuspectTurnLog {
   }
 
   /**
-   * Records a flagged turn, with the reason it was kept.
+   * Records that a turn was flagged, and the reason it was kept.
+   *
+   * Takes the reason and nothing else, so no caller can hand this store
+   * conversation text even by accident - the same closed-API property
+   * GuardrailTelemetry has.
    *
    * @param string $reason
    *   Why the turn was kept: an injection pattern name from
    *   GuardrailSignalDetector, or self::REASON_GUARDRAIL_STOP. Stored in the
-   *   column still named `pattern`, which is left alone rather than migrated
-   *   for a rename.
-   * @param string $question
-   *   The question as asked. Clamped before storage.
-   * @param string $answer
-   *   The answer as served, or as much of it as the controller captured. May be
-   *   empty when the turn failed before the model produced anything, and only
-   *   the shorter refusal sample for a turn kept for a guardrail stop alone.
+   *   column named `pattern`, which is left alone rather than migrated for a
+   *   rename.
    */
-  public function record(string $reason, string $question, string $answer): void {
+  public function record(string $reason): void {
     try {
       // Expiry runs before the quota check, not after the insert: the quota
       // returns early below, and a saturated day - a campaign in progress - is
@@ -185,19 +172,22 @@ class SuspectTurnLog {
         ->fields([
           'created' => $this->time->getRequestTime(),
           'pattern' => $reason,
-          'question' => $this->clamp($question),
-          'answer' => $this->clamp($answer),
         ])
         ->execute();
     }
     catch (\Throwable $e) {
-      // Deliberately NOT $e->getMessage(): Drupal's database layer appends the
+      // Deliberately NOT $e->getMessage(), and deliberately not relaxed now
+      // that the text columns are gone. Drupal's database layer appends the
       // failing statement's bound arguments to its exception message
-      // (\Drupal\Core\Database\ExceptionHandler::handleExecutionException), and
-      // for this table those arguments are the question and the answer. Logging
-      // the message would copy conversation text into dblog, which is readable
-      // with "access site reports" - a far weaker permission than the one
-      // gating this store. The class of the failure is enough to diagnose it.
+      // (\Drupal\Core\Database\ExceptionHandler::handleExecutionException), so
+      // whatever this insert binds can reach dblog - which is readable with
+      // "access site reports", a far weaker permission than the one gating this
+      // store. Today it binds only a timestamp and a clamped reason, so the
+      // message would be harmless; but this is the write most likely to carry
+      // visitor-supplied text again (see the class docblock - storing it is
+      // being reconsidered under its own ticket), and a guard that only holds
+      // while a column is absent is the kind that fails silently when the
+      // column returns. The class of the failure is enough to diagnose it.
       $this->warn('Beacon could not record a flagged chat turn (@type).', [
         '@type' => get_class($e),
       ]);
@@ -229,20 +219,14 @@ class SuspectTurnLog {
    *   How many rows to return.
    *
    * @return array[]
-   *   Each row as an array with created, pattern, question and answer keys.
-   *   Empty when the store is unreadable.
+   *   Each row as an array with created and pattern keys. Empty when the store
+   *   is unreadable.
    */
   public function getRecent(int $limit = self::DEFAULT_LIST_LIMIT): array {
     try {
-      $rows = $this->database->select(self::TABLE, 's')
-        ->fields('s', ['created', 'pattern', 'question', 'answer'])
-        ->condition('created', $this->retentionCutoff(), '>=')
-        ->orderBy('created', 'DESC')
-        ->orderBy('id', 'DESC')
-        ->range(0, max($limit, 0))
-        ->execute();
-
-      return array_map(static fn($row) => (array) $row, $rows->fetchAll());
+      return $this->readRows(
+        $this->database->select(self::TABLE, 's')->range(0, max($limit, 0))
+      );
     }
     catch (\Throwable $e) {
       $this->warn('Beacon flagged-turn log could not be read: @message', [
@@ -267,21 +251,16 @@ class SuspectTurnLog {
    *   How many rows one page holds.
    *
    * @return array[]
-   *   Each row as an array with created, pattern, question and answer keys.
-   *   Empty when the store is unreadable.
+   *   Each row as an array with created and pattern keys. Empty when the store
+   *   is unreadable.
    */
   public function getPage(int $per_page = self::DEFAULT_LIST_LIMIT): array {
     try {
-      $rows = $this->database->select(self::TABLE, 's')
-        ->extend(PagerSelectExtender::class)
-        ->limit(max($per_page, 1))
-        ->fields('s', ['created', 'pattern', 'question', 'answer'])
-        ->condition('created', $this->retentionCutoff(), '>=')
-        ->orderBy('created', 'DESC')
-        ->orderBy('id', 'DESC')
-        ->execute();
-
-      return array_map(static fn($row) => (array) $row, $rows->fetchAll());
+      return $this->readRows(
+        $this->database->select(self::TABLE, 's')
+          ->extend(PagerSelectExtender::class)
+          ->limit(max($per_page, 1))
+      );
     }
     catch (\Throwable $e) {
       $this->warn('Beacon flagged-turn log page could not be read: @message', [
@@ -290,6 +269,32 @@ class SuspectTurnLog {
 
       return [];
     }
+  }
+
+  /**
+   * Applies the shared read shape to a query and returns its rows.
+   *
+   * The two public readers differ only in how they limit - a range versus a
+   * pager - so the columns, the retention filter and the newest-first ordering
+   * live here. Keeping them in one place is what stops the two from drifting:
+   * the column list in particular is a privacy boundary, and it was previously
+   * spelled out twice.
+   *
+   * @param \Drupal\Core\Database\Query\SelectInterface $query
+   *   The query to shape, already limited by the caller.
+   *
+   * @return array[]
+   *   Each row as an array with created and pattern keys.
+   */
+  protected function readRows(SelectInterface $query): array {
+    $rows = $query
+      ->fields('s', ['created', 'pattern'])
+      ->condition('created', $this->retentionCutoff(), '>=')
+      ->orderBy('created', 'DESC')
+      ->orderBy('id', 'DESC')
+      ->execute();
+
+    return array_map(static fn($row) => (array) $row, $rows->fetchAll());
   }
 
   /**
@@ -402,19 +407,6 @@ class SuspectTurnLog {
    */
   protected function retentionCutoff(): int {
     return $this->time->getRequestTime() - (self::RETENTION_DAYS * 86400);
-  }
-
-  /**
-   * Clamps stored text to the column's usable length.
-   *
-   * @param string $text
-   *   The text to clamp.
-   *
-   * @return string
-   *   At most self::MAX_TEXT_LENGTH characters.
-   */
-  protected function clamp(string $text): string {
-    return mb_substr($text, 0, self::MAX_TEXT_LENGTH);
   }
 
   /**

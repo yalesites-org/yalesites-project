@@ -102,7 +102,7 @@ function ys_beacon_schema() {
   ];
 
   $schema[SuspectTurnLog::TABLE] = [
-    'description' => 'Chat turns flagged as suspicious - the question matched a known prompt-injection pattern, or a guardrail stopped the turn - kept with their text so a suspected attack can be reviewed. Unlike the counter table above this DOES hold question and answer text; it is pruned after SuspectTurnLog::RETENTION_DAYS days and readable only with the "view ys beacon guardrail telemetry" permission.',
+    'description' => 'When a chat turn was flagged as suspicious - the question matched a known prompt-injection pattern, or a guardrail stopped the turn - and why. Counters and reasons only: like the table above, there is no column a question or an answer could be written into. Pruned after SuspectTurnLog::RETENTION_DAYS days and readable only with the "view ys beacon guardrail telemetry" permission.',
     'fields' => [
       'id' => [
         'type' => 'serial',
@@ -121,16 +121,6 @@ function ys_beacon_schema() {
         'not null' => TRUE,
         'default' => '',
         'description' => 'Why the turn was kept: the GuardrailSignalDetector injection pattern the question matched, or SuspectTurnLog::REASON_GUARDRAIL_STOP when a guardrail stopped it.',
-      ],
-      'question' => [
-        'type' => 'text',
-        'not null' => FALSE,
-        'description' => 'The question as asked, clamped to SuspectTurnLog::MAX_TEXT_LENGTH characters.',
-      ],
-      'answer' => [
-        'type' => 'text',
-        'not null' => FALSE,
-        'description' => 'The answer as served, clamped to SuspectTurnLog::MAX_TEXT_LENGTH characters. Empty when the turn failed before the model answered.',
       ],
     ],
     'primary key' => ['id'],
@@ -697,10 +687,19 @@ function ys_beacon_update_10016() {
 /**
  * Creates the flagged-turn table for suspected injection attempts.
  *
- * Unlike the counter table, this one holds the question and the answer of a
- * flagged turn - see SuspectTurnLog for the retention, clamping and per-day
- * bounds, and README.md for what the report page discloses about it. Requested
- * in the review of yalesites-org/YaleSites-Internal#1469.
+ * Records when a turn was flagged and why - see SuspectTurnLog for the
+ * retention and per-day bounds, and README.md for what the report page
+ * discloses. Requested in the review of
+ * yalesites-org/YaleSites-Internal#1469.
+ *
+ * Note that this creates the table from the CURRENT ys_beacon_schema(), so what
+ * it produces tracks that definition rather than being frozen at the shape it
+ * first shipped. An earlier version of this branch created two further columns
+ * (question, answer) which have since been removed, so an environment that ran
+ * that version holds a table this definition no longer describes;
+ * ys_beacon_update_10018() below is what converges it. This hook is not edited
+ * to freeze the old field list because doing so would only re-create columns
+ * that 10018 immediately drops again.
  */
 function ys_beacon_update_10017() {
   $schema = \Drupal::database()->schema();
@@ -708,4 +707,41 @@ function ys_beacon_update_10017() {
     return;
   }
   $schema->createTable(SuspectTurnLog::TABLE, ys_beacon_schema()[SuspectTurnLog::TABLE]);
+}
+
+/**
+ * Drops the flagged-turn question and answer columns, and their contents.
+ *
+ * Beacon no longer records what was asked or answered on a flagged turn: the
+ * decision to keep that text is being reconsidered under its own ticket, so the
+ * capability is removed rather than left switched on (reviewed on PR #1417 for
+ * yalesites-org/YaleSites-Internal#1469). Update 10017 created these columns,
+ * so any site that ran it - a multidev, or a local checkout of this branch - is
+ * holding both the columns and whatever text was captured while they existed.
+ * Dropping the columns removes that text from the live table, which is the
+ * point: leaving them in place and merely stopping writes would keep the
+ * already-stored questions and answers readable through any future query.
+ *
+ * Two residues this hook cannot reach, stated so they are not assumed handled:
+ * a database backup or multidev snapshot taken while the columns existed still
+ * contains the captured text, and an INSTANT column drop (the MySQL 8.0.29+
+ * default) removes the column from the data dictionary without immediately
+ * rewriting existing row bytes. Both need filesystem or backup access to read,
+ * so neither is reachable over the web - but "the text is gone" is true of what
+ * the application can query, not of every copy that ever existed.
+ *
+ * Guarded on the table and on each column so it is safe to re-run and safe on a
+ * site that installed ys_beacon fresh after this change (which gets the current
+ * hook_schema() and so never had the columns).
+ */
+function ys_beacon_update_10018() {
+  $schema = \Drupal::database()->schema();
+  if (!$schema->tableExists(SuspectTurnLog::TABLE)) {
+    return;
+  }
+  foreach (['question', 'answer'] as $field) {
+    if ($schema->fieldExists(SuspectTurnLog::TABLE, $field)) {
+      $schema->dropField(SuspectTurnLog::TABLE, $field);
+    }
+  }
 }
