@@ -149,9 +149,14 @@ html.gin--dark-mode .ys-qtabs__panel {
   outline-offset: 2px;
 }
 
+/* The panel's headline: it is the question both answers below it are answering,
+   so it has to outrank the .ys-qtabs__side-heading per-run headings beneath it
+   (0.9375rem). Deliberately 1.5rem, which is Gin's h3 step rather than the
+   1.75rem it gives an h2 — this heading opens a panel, it is not the page
+   title. */
 .ys-qtabs__question {
   margin-block: 0 1rem;
-  font-size: 1rem;
+  font-size: 1.5rem;
 }
 
 .ys-qtabs__sides {

@@ -21,20 +21,28 @@
   /* One source of truth for the highlight colors, so the highlights and the
      legend swatches cannot drift apart and dark mode is a single override
      block. Keyed by run — a highlight identifies the run it sits in, Run A
-     green and Run B red — rather than by diff direction: a word missing from
+     green and Run B blue — rather than by diff direction: a word missing from
      the other run is neither an addition nor a removal, and neither run is the
-     baseline the other is measured against. */
+     baseline the other is measured against — and so neither of them is red.
+     Red would read as "this answer is wrong" when both answers are valid.
+
+     Run B's blue is held off the #e7ecfb that the only_a/only_b badges and the
+     selected question tab both use, so one hue does not have to mean both
+     "Run B" and "answered by one run only". The two blues are close, though, so
+     what really separates them is shape and place — an inline run of words
+     inside an answer versus a chip in the tab rail — plus the label beside
+     each. Hue is not doing that work alone. */
   --ys-diff-a-bg: #e6f4ea;
   --ys-diff-a-fg: #14663f; /* 6.2:1. */
-  --ys-diff-b-bg: #fde2e2;
-  --ys-diff-b-fg: #8f1a1a; /* 7.4:1. */
+  --ys-diff-b-bg: #dbe8fb;
+  --ys-diff-b-fg: #0f4c8a; /* 7.0:1. */
 }
 
 html.gin--dark-mode .ys-compare {
   --ys-diff-a-bg: #12351f;
   --ys-diff-a-fg: #9be3b4; /* 9.0:1. */
-  --ys-diff-b-bg: #4a1f1f;
-  --ys-diff-b-fg: #ffb3b3; /* 8.2:1. */
+  --ys-diff-b-bg: #12294a;
+  --ys-diff-b-fg: #a9cff5; /* 9.0:1. */
 }
 
 .ys-compare-summary {

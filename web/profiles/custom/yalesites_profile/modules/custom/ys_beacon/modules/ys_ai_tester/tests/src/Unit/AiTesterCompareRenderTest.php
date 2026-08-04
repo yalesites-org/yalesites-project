@@ -271,7 +271,7 @@ class AiTesterCompareRenderTest extends UnitTestCase {
   /**
    * The highlight colors are keyed to the run, and the legend agrees.
    *
-   * Run A renders green and Run B red, so the colors identify the run rather
+   * Run A renders green and Run B blue, so the colors identify the run rather
    * than a diff direction — there is no "removed" side any more. Two things
    * have to stay in step for that to read correctly: the wrapper class on each
    * answer, which is what binds a side to its color pair in compare.css, and
