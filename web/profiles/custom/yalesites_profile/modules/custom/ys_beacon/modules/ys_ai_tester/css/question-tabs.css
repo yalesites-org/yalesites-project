@@ -45,22 +45,11 @@
   border: 1px solid var(--gin-border-color-table, #d4d4d8);
   border-radius: 4px;
   background: var(--gin-bg-layer, #fff);
-  /* `scroll` rather than `auto`, plus a stable gutter: on the platforms that draw
-     classic scrollbars — Windows, Linux, and macOS with "Show scroll bars" set to
-     always — the scrollbar is then present whether or not the list currently
-     overflows, and adding a question never shifts the tabs sideways.
-
-     Deliberately the platform's own scrollbar. Custom scrollbar-color and
-     ::-webkit-scrollbar rules were tried and removed: neither made a thumb appear
-     where one was not already drawn, and per spec an overlay scrollbar's gutter
-     is always zero, so scrollbar-gutter cannot reserve space there either
-     (measured: 0px reserved on macOS Chromium, thumb not painted while idle).
-     No CSS changes that — it is an OS-level behaviour.
-
-     So the affordance cannot rest on the scrollbar. That is what this container's
-     border and background are for: a tab clipped by the max-height above reads as
-     content continuing only if there is an edge for it to be clipped against.
-     That cue, and the "Question N of M" panel heading, work on every platform. */
+  /* `scroll` rather than `auto`, plus a stable gutter, so the scrollbar's space is
+     reserved whether or not the list currently overflows and adding a question
+     never shifts the tabs sideways. The scrollbar is made permanently visible by
+     the @supports blocks below — see the note there, the mechanism is fussier
+     than it looks. */
   overflow-y: scroll;
   scrollbar-gutter: stable;
 }
@@ -68,6 +57,59 @@
 html.gin--dark-mode .ys-qtabs__list {
   border-color: var(--gin-border-color-table, #43454a);
   background: var(--gin-bg-layer, #2a2a2d);
+}
+
+/* Making the scrollbar permanently visible, which the platform default is not:
+   macOS draws overlay scrollbars that fade out while idle, so a rail holding 19
+   questions looked like a rail holding the 6 you could see.
+
+   Styling ::-webkit-scrollbar is what opts Chromium and Safari out of overlay
+   scrollbars onto a custom one that is painted at rest. Confirmed by layout
+   rather than by eye: with these rules present the rail reserves a 12px gutter
+   (offsetWidth - clientWidth), and with them absent it reserves 0.
+
+   The @supports split is load-bearing, not decoration. Chromium ignores every
+   ::-webkit-scrollbar pseudo-element as soon as `scrollbar-color` is specified on
+   the element — even to `auto` — so declaring both together silently disables the
+   custom scrollbar and hands the overlay one back. Firefox implements
+   scrollbar-color and has no ::-webkit-scrollbar, so keying on
+   `selector(::-webkit-scrollbar)` gives each engine exactly the one it supports
+   and neither sees the other.
+
+   Thumb against track is a UI component boundary, so it is measured against WCAG
+   2.1 AA 1.4.11 (3:1) rather than the 4.5:1 the text pairs in this file use. */
+@supports selector(::-webkit-scrollbar) {
+  .ys-qtabs__list::-webkit-scrollbar {
+    width: 0.75rem;
+  }
+
+  .ys-qtabs__list::-webkit-scrollbar-track {
+    border-radius: 4px;
+    background: #e4e5e7;
+  }
+
+  .ys-qtabs__list::-webkit-scrollbar-thumb {
+    border-radius: 4px;
+    background: #6b6e70; /* 4.1:1 on its track. */
+  }
+
+  html.gin--dark-mode .ys-qtabs__list::-webkit-scrollbar-track {
+    background: #2f2f33;
+  }
+
+  html.gin--dark-mode .ys-qtabs__list::-webkit-scrollbar-thumb {
+    background: #8c9094; /* 4.2:1 on its track. */
+  }
+}
+
+@supports not selector(::-webkit-scrollbar) {
+  .ys-qtabs__list {
+    scrollbar-color: #6b6e70 #e4e5e7;
+  }
+
+  html.gin--dark-mode .ys-qtabs__list {
+    scrollbar-color: #8c9094 #2f2f33;
+  }
 }
 
 .ys-qtabs__tab {

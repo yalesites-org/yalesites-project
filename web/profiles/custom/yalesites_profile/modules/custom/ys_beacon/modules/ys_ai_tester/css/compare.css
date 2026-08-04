@@ -211,11 +211,20 @@ html.gin--dark-mode .ys-compare-side-meta--empty {
   color: #5a4114; /* 6.2:1. */
 }
 
-/* Answered by one run only. */
+/* Answered by one run only, or - on a source inside the panel's Sources list -
+   retrieved by one run only. Same chip because it is the same statement about
+   the same two runs, one about the answer and one about a source. */
 .ys-compare-badge--only_a,
-.ys-compare-badge--only_b {
+.ys-compare-badge--only_b,
+.ys-compare-badge--only_here {
   background: #e7ecfb;
   color: #24418f; /* 8.0:1. */
+}
+
+/* Sits after a source's cited/not-cited flag rather than on its own line, so it
+   needs the gap the flag's leading em dash gives the text before it. */
+.ys-compare-badge--only_here {
+  margin-inline-start: 0.375rem;
 }
 
 /* The only red left in the AI Tester, and the one place it is the right message:

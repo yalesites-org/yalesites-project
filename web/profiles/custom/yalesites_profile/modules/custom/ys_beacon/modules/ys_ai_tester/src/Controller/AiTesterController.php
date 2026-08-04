@@ -122,11 +122,15 @@ class AiTesterController extends ControllerBase {
    *
    * @param array $citations
    *   The normalized citation list stored for a result.
+   * @param array $only_here_urls
+   *   URLs, as array keys, that no other run in this comparison retrieved. Each
+   *   matching source is marked in place. Empty for the single-run view, which
+   *   has nothing to be unique against.
    *
    * @return array
    *   An item-list render array, or a fallback markup when there are none.
    */
-  protected function buildCitationsCell(array $citations): array {
+  protected function buildCitationsCell(array $citations, array $only_here_urls = []): array {
     if (!$citations) {
       return ['#markup' => $this->t('No sources retrieved.')];
     }
@@ -135,24 +139,75 @@ class AiTesterController extends ControllerBase {
     foreach ($citations as $citation) {
       $title = (string) ($citation['title'] ?? $this->t('Untitled'));
       $url = $citation['url'] ?? NULL;
+      // Every retrieved source is listed, cited or not: what the assistant had
+      // available but did not use is as diagnostic as what it quoted.
       $flag = !empty($citation['cited'])
         ? $this->t('cited')
         : $this->t('retrieved, not cited');
 
       // The title links to its source when a URL is present; the cited flag
       // lets a tester evaluate citation quality at a glance.
-      $items[] = [
+      $item = [
         'link' => $this->citationLink($title, $url),
         'flag' => ['#markup' => ' — <em>' . $flag . '</em>'],
-        'url' => ($url !== NULL && $url !== '')
-          ? ['#markup' => '<br><small>' . htmlspecialchars($url, ENT_QUOTES) . '</small>']
-          : [],
       ];
+
+      if ($url !== NULL && $url !== '' && isset($only_here_urls[$url])) {
+        $item['only_here'] = [
+          '#type' => 'html_tag',
+          '#tag' => 'span',
+          '#attributes' => [
+            'class' => ['ys-compare-badge', 'ys-compare-badge--only_here'],
+          ],
+          '#value' => $this->t('only in this run'),
+        ];
+      }
+
+      $item['url'] = ($url !== NULL && $url !== '')
+        ? ['#markup' => '<br><small>' . htmlspecialchars($url, ENT_QUOTES) . '</small>']
+        : [];
+
+      $items[] = $item;
     }
 
     return [
       '#theme' => 'item_list',
       '#items' => $items,
+    ];
+  }
+
+  /**
+   * Builds a panel side's "Sources" block: heading plus the citation list.
+   *
+   * Shared by both views so a run's sources read the same whichever page you
+   * opened. The comparison additionally marks the sources no other run
+   * retrieved, which is what its old "Sources only here:" line said — this says
+   * it inside the full list instead, so what a run retrieved and what was
+   * unique to it are visible at once rather than one or the other.
+   *
+   * @param array $citations
+   *   Every source retrieved for this side.
+   * @param array $only_here_urls
+   *   URLs, as array keys, that no other run retrieved.
+   * @param string $heading_tag
+   *   The heading element to use. The comparison nests this under a per-run h3
+   *   so it passes h4; the single-run panel has no such heading and passes h3.
+   *   Getting this wrong skips a heading level.
+   *
+   * @return array
+   *   A container render element.
+   */
+  protected function sourcesBlock(array $citations, array $only_here_urls, string $heading_tag): array {
+    return [
+      '#type' => 'container',
+      '#attributes' => ['class' => ['ys-qtabs__sources']],
+      'heading' => [
+        '#type' => 'html_tag',
+        '#tag' => $heading_tag,
+        '#attributes' => ['class' => ['ys-qtabs__sources-heading']],
+        '#value' => $this->t('Sources'),
+      ],
+      'list' => $this->buildCitationsCell($citations, $only_here_urls),
     ];
   }
 
@@ -818,20 +873,14 @@ class AiTesterController extends ControllerBase {
       $side['meta'] = $this->errorOrEmptyMeta($error);
     }
 
-    // Every retrieved source, flagged for whether it was cited. This is the
-    // run view's own information — the comparison lists only the sources
-    // unique to one side — so it survives the move out of the table.
-    $side['sources'] = [
-      '#type' => 'container',
-      '#attributes' => ['class' => ['ys-qtabs__sources']],
-      'heading' => [
-        '#type' => 'html_tag',
-        '#tag' => 'h3',
-        '#attributes' => ['class' => ['ys-qtabs__sources-heading']],
-        '#value' => $this->t('Sources'),
-      ],
-      'list' => $this->buildCitationsCell($this->decodeCitations($result->citations)),
-    ];
+    // Every retrieved source, flagged for whether it was cited. No only-here
+    // marking: a single run has no other run to be unique against. h3 because
+    // this panel renders no per-run heading above it.
+    $side['sources'] = $this->sourcesBlock(
+      $this->decodeCitations($result->citations),
+      [],
+      'h3'
+    );
 
     return $side;
   }
@@ -982,24 +1031,21 @@ class AiTesterController extends ControllerBase {
       ));
     }
 
-    $unique = $pair['citation_overlap'][$key === 'a' ? 'only_a' : 'only_b'];
-    if ($unique) {
-      // Each unique source renders as a new-window link (falling back to text
-      // when non-linkable) so a reviewer can open a source without losing the
-      // comparison; a comma joins them into the "Sources only here:" line.
-      $cell['unique'] = [
-        '#type' => 'container',
-        '#attributes' => ['class' => ['ys-compare-unique']],
-        'label' => ['#markup' => $this->t('Sources only here:') . ' '],
-      ];
-      foreach (array_values($unique) as $i => $source) {
-        if ($i > 0) {
-          $cell['unique']['sep_' . $i] = ['#markup' => ', '];
-        }
-        $title = trim($source['title']) !== '' ? $source['title'] : $source['url'];
-        $cell['unique']['link_' . $i] = $this->citationLink($title, $source['url']);
+    // Every source this run retrieved, cited or not, with the ones no other run
+    // retrieved marked in place. This replaced a "Sources only here:" line that
+    // named the unique sources and nothing else: it answered "what did only
+    // this run see" but never "what did this run work with", and a retrieved
+    // document the assistant declined to use is one of the more useful things
+    // the comparison can show.
+    $only_here = [];
+    foreach ($pair['citation_overlap'][$key === 'a' ? 'only_a' : 'only_b'] as $source) {
+      $url = (string) ($source['url'] ?? '');
+      if ($url !== '') {
+        $only_here[$url] = TRUE;
       }
     }
+    // h4: this sits under the per-run h3 the comparison's panels render.
+    $cell['sources'] = $this->sourcesBlock($side['citations'], $only_here, 'h4');
 
     return $cell;
   }

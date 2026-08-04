@@ -35,11 +35,11 @@ class AiTesterCompareRenderTest extends UnitTestCase {
   /**
    * A side entry as produced by RunComparator::side().
    */
-  protected function side(string $answer, int $cited, int $retrieved, bool $empty, string $error = ''): array {
+  protected function side(string $answer, int $cited, int $retrieved, bool $empty, string $error = '', array $citations = []): array {
     return [
       'error' => $error,
       'answer' => $answer,
-      'citations' => [],
+      'citations' => $citations,
       'len' => mb_strlen($answer),
       'cited' => $cited,
       'retrieved' => $retrieved,
@@ -341,12 +341,25 @@ class AiTesterCompareRenderTest extends UnitTestCase {
   }
 
   /**
-   * The compare view renders unique sources as new-window citation links.
+   * A compare panel lists every source a run retrieved, not only unique ones.
+   *
+   * The previous "Sources only here:" line named the run-unique sources and
+   * nothing else, so it could not answer what the run actually had to work with
+   * or which retrieved documents the assistant declined to use. Both are now in
+   * one list: every source, each flagged cited or not, with the run-unique ones
+   * marked in place.
    *
    * @covers ::sideCell
+   * @covers ::sourcesBlock
+   * @covers ::buildCitationsCell
    * @covers ::citationLink
    */
-  public function testCompareUniqueSourcesAreNewWindowLinks(): void {
+  public function testComparePanelListsEverySourceAndMarksRunUniqueOnes(): void {
+    $citations_a = [
+      ['title' => 'About A', 'url' => 'https://a.example', 'cited' => TRUE],
+      ['title' => 'Sneaky', 'url' => 'javascript:alert(1)', 'cited' => FALSE],
+      ['title' => 'Shared', 'url' => 'https://shared.example', 'cited' => FALSE],
+    ];
     $data = [
       'run_a' => $this->runMeta(2, 'a.yml'),
       'run_b' => $this->runMeta(3, 'b.yml'),
@@ -354,11 +367,11 @@ class AiTesterCompareRenderTest extends UnitTestCase {
         [
           'question' => 'What is Yale?',
           'status' => 'differs',
-          'a' => $this->side('Yale is a university.', 1, 2, FALSE),
+          'a' => $this->side('Yale is a university.', 1, 3, FALSE, '', $citations_a),
           'b' => $this->side('Yale is a private university.', 2, 2, FALSE),
           'len_delta' => 7,
           'citation_overlap' => [
-            'both' => [],
+            'both' => [['url' => 'https://shared.example', 'title' => 'Shared']],
             'only_a' => [
               ['url' => 'https://a.example', 'title' => 'About A'],
               ['url' => 'javascript:alert(1)', 'title' => 'Sneaky'],
@@ -377,13 +390,20 @@ class AiTesterCompareRenderTest extends UnitTestCase {
     ];
 
     $build = $this->controllerReturning($data)->compare(2, 3);
-    // Panel 0 side 0 is Run A's column; its 'unique' element lists the sources
-    // only Run A retrieved.
-    $unique = $build['results']['#panels'][0]['sides'][0]['content']['unique'];
+    // Panel 0 side 0 is Run A's column.
+    $sources = $build['results']['#panels'][0]['sides'][0]['content']['sources'];
+
+    // Nested under the panel's per-run h3, so this is an h4 — an h3 here would
+    // repeat that level rather than sit inside it.
+    $this->assertSame('h4', $sources['heading']['#tag']);
+
+    // All three retrieved sources, not just the two unique to Run A.
+    $items = $sources['list']['#items'];
+    $this->assertCount(3, $items);
 
     // The http(s) source becomes a link that opens in a new window, hardened
     // with rel and carrying the visually-hidden a11y cue.
-    $link = $unique['link_0'];
+    $link = $items[0]['link'];
     $this->assertSame('link', $link['#type']);
     $this->assertSame('_blank', $link['#attributes']['target']);
     $this->assertSame('noopener noreferrer', $link['#attributes']['rel']);
@@ -393,11 +413,38 @@ class AiTesterCompareRenderTest extends UnitTestCase {
     $this->assertStringContainsString('visually-hidden', $title);
     $this->assertStringContainsString('opens in new window', $title);
 
+    // A retrieved-but-unused document says so, rather than being left out.
+    $this->assertSame(' — <em>cited</em>', $items[0]['flag']['#markup']);
+    $this->assertSame(' — <em>retrieved, not cited</em>', $items[2]['flag']['#markup']);
+
+    // Run-unique sources are marked; the one both runs retrieved is not.
+    $this->assertArrayHasKey('only_here', $items[0]);
+    $this->assertArrayHasKey('only_here', $items[1]);
+    $this->assertArrayNotHasKey('only_here', $items[2]);
+    $this->assertContains(
+      'ys-compare-badge--only_here',
+      $items[0]['only_here']['#attributes']['class']
+    );
+
     // A non-http(s) URL never renders as a live link — it degrades to text.
-    $sneaky = $unique['link_1'];
+    $sneaky = $items[1]['link'];
     $this->assertArrayNotHasKey('#type', $sneaky);
     $this->assertArrayHasKey('#markup', $sneaky);
     $this->assertStringNotContainsString('<a', (string) $sneaky['#markup']);
+  }
+
+  /**
+   * A side that retrieved nothing says so rather than rendering an empty list.
+   *
+   * @covers ::sideCell
+   * @covers ::sourcesBlock
+   */
+  public function testComparePanelWithNoSourcesSaysSo(): void {
+    $data = $this->comparisonOf('beacon', 'legacy', $this->side('Legacy answer.', 0, 0, FALSE));
+
+    $sources = $this->controllerReturning($data)->compare(2, 3)['results']['#panels'][0]['sides'][1]['content']['sources'];
+
+    $this->assertStringContainsString('No sources retrieved', (string) $sources['list']['#markup']);
   }
 
   /**
