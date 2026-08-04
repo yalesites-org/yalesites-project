@@ -159,19 +159,17 @@ html.gin--dark-mode .ys-qtabs__panel {
   font-size: 1.5rem;
 }
 
-.ys-qtabs__sides {
-  display: grid;
-  gap: 1.5rem;
-}
-
-/* Only --cols-2 exists because only the compare view renders these tabs, and it
-   is always two-sided. A one-column rule belongs to the change that converts the
-   single-run view, not here where nothing would exercise it.
+/* Two columns unconditionally: only the compare view renders these tabs, and a
+   comparison is always two-sided. The count is not parameterised because a
+   single-run view would need run() converted off its own table first, so the
+   one-column rule belongs to the change that does it.
 
    minmax(0, 1fr) rather than 1fr: a long unbroken answer would otherwise force
    the column wider than its share and overflow the panel. */
-.ys-qtabs__sides--cols-2 {
+.ys-qtabs__sides {
+  display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 1.5rem;
 }
 
 .ys-qtabs__side-heading {
@@ -206,7 +204,7 @@ html.gin--dark-mode .ys-qtabs__empty {
     grid-template-columns: minmax(0, 10rem) minmax(0, 1fr);
   }
 
-  .ys-qtabs__sides--cols-2 {
+  .ys-qtabs__sides {
     grid-template-columns: minmax(0, 1fr);
   }
 }

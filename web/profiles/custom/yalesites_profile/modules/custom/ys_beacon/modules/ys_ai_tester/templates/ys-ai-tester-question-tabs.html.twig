@@ -30,7 +30,6 @@
  *   - tab_id: The controlling tab's id.
  *   - question: The full question text.
  *   - sides: List of per-run columns, each with heading, meta and content.
- * - columns: How many run columns each panel holds (2 when comparing).
  * - tablist_label: The accessible name for the tab list.
  * - empty: Message shown when neither run produced any results.
  */
@@ -66,7 +65,7 @@
              compare build emits no h2 of its own, so starting at h3 would skip
              a level for anyone navigating by heading. #}
           <h2 class="ys-qtabs__question">{{ panel.question }}</h2>
-          <div class="ys-qtabs__sides ys-qtabs__sides--cols-{{ columns }}">
+          <div class="ys-qtabs__sides">
             {% for side in panel.sides %}
               <div class="ys-qtabs__side">
                 <h3 class="ys-qtabs__side-heading">{{ side.heading }}</h3>

@@ -158,8 +158,11 @@ class AiTesterCompareRenderTest extends UnitTestCase {
     $this->assertSame('ys_ai_tester_question_tabs', $tabs['#theme']);
     $this->assertCount(4, $tabs['#tabs']);
     $this->assertCount(4, $tabs['#panels']);
-    $this->assertSame(2, $tabs['#columns']);
     $this->assertCount(2, $tabs['#panels'][0]['sides']);
+    // The panel width is not configurable. The two-column grid lives in the
+    // stylesheet, so a '#columns' variable would be a knob with one caller and
+    // one legal value; the side count above is what actually pins the layout.
+    $this->assertArrayNotHasKey('#columns', $tabs);
   }
 
   /**

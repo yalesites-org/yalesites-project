@@ -641,11 +641,11 @@ class AiTesterController extends ControllerBase {
    * nowhere to go in the new layout, so the status travels on the tab as a
    * visible badge rather than being dropped or left to colour alone.
    *
-   * Renders two columns, which is all this view can produce: compare() works
-   * from a two-sided pairing (run_a/run_b). Reusing the tabs at one column for
-   * the single-run detail view needs run() converted off its own table first,
-   * and a one-column rule adding to the stylesheet, so that is left to the
-   * change that does it rather than half-built here.
+   * Always two columns, which is all this view can produce: compare() works
+   * from a two-sided pairing (run_a/run_b). The count is fixed in the
+   * stylesheet rather than passed in, because reusing the tabs at one column
+   * for the single-run detail view needs run() converted off its own table
+   * first — so the one-column rule belongs to the change that does it.
    *
    * @param array $data
    *   The comparison as returned by RunComparator::compare().
@@ -693,7 +693,6 @@ class AiTesterController extends ControllerBase {
       '#attached' => ['library' => ['ys_ai_tester/question_tabs']],
       '#tabs' => $tabs,
       '#panels' => $panels,
-      '#columns' => 2,
       '#tablist_label' => $this->t('Questions'),
       '#empty' => $this->t('Neither run has any results.'),
     ];
