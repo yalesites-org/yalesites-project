@@ -95,7 +95,12 @@ class YsIntegrationsController extends SystemController {
     foreach ($integrations as $id => $integration) {
       if ($integration) {
         $plugin = $this->integrationPluginManager->createInstance($id);
-        $output['#content'][$id] = $plugin->build();
+        // A plugin with nothing to show returns an empty build. The theme
+        // wraps every entry in an admin-item, so keeping those would render
+        // blank cards.
+        if ($build = $plugin->build()) {
+          $output['#content'][$id] = $build;
+        }
       }
     }
 
