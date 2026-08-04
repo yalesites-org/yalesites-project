@@ -1,6 +1,9 @@
 /**
  * @file
- * Vertical question tabs on the AI Tester comparison view.
+ * Vertical question tabs on the AI Tester comparison and single-run views.
+ *
+ * Both views render the same tabs widget, so this behavior runs on both pages
+ * and nothing in it may assume a panel holds two answer columns.
  */
 
 ((Drupal, once) => {

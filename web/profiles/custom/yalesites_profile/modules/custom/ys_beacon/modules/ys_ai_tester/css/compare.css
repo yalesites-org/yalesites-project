@@ -146,6 +146,10 @@ html.gin--dark-mode .ys-compare-caveat {
   color: var(--ys-diff-b-fg);
 }
 
+/* Shared with the single-run view, despite the `compare-` prefix: runSide() uses
+   these for a question that failed or came back blank. Do NOT scope them under
+   `.ys-compare` to tighten specificity — that would silently drop the styling
+   from the run page, which has no such wrapper. */
 .ys-compare-side-meta {
   margin-block-start: 0.5rem;
   font-size: 0.8125rem;
@@ -155,6 +159,17 @@ html.gin--dark-mode .ys-compare-caveat {
 .ys-compare-side-meta--empty {
   color: var(--gin-color-danger, #d72222);
   font-weight: 600;
+}
+
+/* Gin's danger token flips for dark mode, but only to rgb(206, 96, 96), which is
+   3.7:1 on --gin-bg-layer dark — below AA. This is the same trap the caveat copy
+   fell into, arrived at from the other side: the token moves, just not far
+   enough. Pinned for dark mode at 8.5:1, in the same lightness family as this
+   file's dark diff colors. Light mode is left on the token, where it resolves to
+   rgb(204, 61, 61) for 4.9:1 and passes — that is the tightest measured pair in
+   this file, so pinning it too is worth doing if Gin's palette ever moves. */
+html.gin--dark-mode .ys-compare-side-meta--empty {
+  color: #f4b8b8; /* 8.5:1 on --gin-bg-layer dark. */
 }
 
 .ys-compare-unique {
@@ -168,7 +183,11 @@ html.gin--dark-mode .ys-compare-caveat {
 }
 
 /* Status badges. Light chips with dark text in both modes: the backgrounds are
-   pinned rather than themed, so one value per badge passes AA in both. */
+   pinned rather than themed, so one value per badge passes AA in both. Two
+   vocabularies share these rules, because one badge in one template renders
+   both: identical/differs/only_a/only_b are comparison pair states, and
+   answered/empty/error are single-run result states. Grouped by what the chip is
+   telling you rather than by which view it came from. */
 .ys-compare-badge {
   display: inline-block;
   padding: 0.125rem 0.5rem;
@@ -178,20 +197,36 @@ html.gin--dark-mode .ys-compare-caveat {
   white-space: nowrap;
 }
 
-.ys-compare-badge--identical {
+/* Nothing to look at: the two runs agree, or the question got an answer. */
+.ys-compare-badge--identical,
+.ys-compare-badge--answered {
   background: #e6f4ea;
   color: #14663f; /* 6.2:1. */
 }
 
-.ys-compare-badge--differs {
+/* Worth a look: the answers differ, or one came back blank. */
+.ys-compare-badge--differs,
+.ys-compare-badge--empty {
   background: #efcf64;
   color: #5a4114; /* 6.2:1. */
 }
 
+/* Answered by one run only. */
 .ys-compare-badge--only_a,
 .ys-compare-badge--only_b {
   background: #e7ecfb;
   color: #24418f; /* 8.0:1. */
+}
+
+/* The only red left in the AI Tester, and the one place it is the right message:
+   the backend recorded an error instead of answering. Red was dropped from the
+   diff palette because there a highlight marked one of two valid answers, not a
+   fault — a failed question genuinely is one. Same pair .ys-compare-side-meta
+   --empty already uses Gin's danger colour for, pinned so it passes AA on a
+   chip. */
+.ys-compare-badge--error {
+  background: #fde2e2;
+  color: #8f1a1a; /* 7.4:1. */
 }
 
 /* AI-analysis export modal. */

@@ -68,26 +68,6 @@ class AiTesterController extends ControllerBase {
       [':run_id' => $run_id]
     )->fetchAll();
 
-    $rows = [];
-    foreach ($results as $result) {
-      $error = (string) ($result->error ?? '');
-      $rows[] = [
-        ['data' => $result->question, 'class' => ['views-field', 'views-field-question']],
-        [
-          // A recorded error is shown in place of the blank answer it would
-          // otherwise leave behind, so a failure is not read as a real answer.
-          'data' => $error !== ''
-            ? ['#markup' => $this->t('<em>Error: @msg</em>', ['@msg' => $error])]
-            : $result->answer,
-          'class' => ['views-field', 'views-field-answer'],
-        ],
-        [
-          'data' => $this->buildCitationsCell($this->decodeCitations($result->citations)),
-          'class' => ['views-field', 'views-field-citations', 'priority-low'],
-        ],
-      ];
-    }
-
     $link_attrs = ['class' => ['button', 'button--link', 'button--link-purpose']];
 
     return [
@@ -127,20 +107,7 @@ class AiTesterController extends ControllerBase {
           '#attributes' => $link_attrs,
         ],
       ],
-      'results' => [
-        '#type' => 'table',
-        '#responsive' => TRUE,
-        '#header' => [
-          ['data' => $this->t('Question'), 'class' => ['views-field', 'views-field-question']],
-          ['data' => $this->t('Answer'), 'class' => ['views-field', 'views-field-answer']],
-          ['data' => $this->t('Sources'), 'class' => ['views-field', 'views-field-citations', 'priority-low']],
-        ],
-        '#rows' => $rows,
-        '#empty' => $this->t('No results yet — batch may still be processing.'),
-        '#attributes' => ['class' => ['table', 'cols-3']],
-        '#prefix' => '<div class="table-wrapper">',
-        '#suffix' => '</div>',
-      ],
+      'results' => $this->runQuestionTabs($results),
       'back' => [
         '#type' => 'link',
         '#title' => $this->t('Back to tester'),
@@ -641,11 +608,9 @@ class AiTesterController extends ControllerBase {
    * nowhere to go in the new layout, so the status travels on the tab as a
    * visible badge rather than being dropped or left to colour alone.
    *
-   * Always two columns, which is all this view can produce: compare() works
-   * from a two-sided pairing (run_a/run_b). The count is fixed in the
-   * stylesheet rather than passed in, because reusing the tabs at one column
-   * for the single-run detail view needs run() converted off its own table
-   * first — so the one-column rule belongs to the change that does it.
+   * Two sides, which is all this view can produce: compare() works from a
+   * two-sided pairing (run_a/run_b). The panel grid takes its column count from
+   * however many sides it gets, so nothing here states "two" a second time.
    *
    * @param array $data
    *   The comparison as returned by RunComparator::compare().
@@ -656,29 +621,18 @@ class AiTesterController extends ControllerBase {
   protected function questionTabs(array $data): array {
     $tabs = [];
     $panels = [];
+    $total = count($data['pairs']);
 
     foreach (array_values($data['pairs']) as $index => $pair) {
-      $number = $index + 1;
-      $tab_id = 'ys-qtab-' . $number;
-      $panel_id = 'ys-qpanel-' . $number;
-
-      $tabs[] = [
-        'id' => $tab_id,
-        'panel_id' => $panel_id,
-        'number' => $this->t('Question @number', ['@number' => $number]),
-        // Word-safe so the preview does not break mid-word, and ellipsised
-        // so it reads as truncated rather than as a shorter question.
-        'preview' => Unicode::truncate($pair['question'], 60, TRUE, TRUE),
-        'status' => $pair['status'],
-        'status_label' => $this->statusLabel($pair['status']),
-      ];
+      $tab = $this->questionTab($index + 1, $pair['question'], $pair['status']);
+      $tabs[] = $tab;
 
       [$diff_a, $diff_b] = $this->pairDiffs($pair);
 
       $panels[] = [
-        'id' => $panel_id,
-        'tab_id' => $tab_id,
-        'question' => $pair['question'],
+        'id' => $tab['panel_id'],
+        'tab_id' => $tab['id'],
+        'heading' => $this->questionHeading($index + 1, $total, $pair['question']),
         'sides' => [
           $this->sidePanel($this->t('Run A'), $data['run_a'], $this->sideCell($pair, 'a', $diff_a)),
           $this->sidePanel($this->t('Run B'), $data['run_b'], $this->sideCell($pair, 'b', $diff_b)),
@@ -686,6 +640,145 @@ class AiTesterController extends ControllerBase {
       ];
     }
 
+    return $this->questionTabsElement($tabs, $panels, $this->t('Neither run has any results.'));
+  }
+
+  /**
+   * Builds the question tabs and single answer panel for one run.
+   *
+   * The same widget the comparison uses, handed one side instead of two, so the
+   * two views of a run's answers share a tab rail, a panel and a stylesheet
+   * rather than looking like different features. It replaced a
+   * Question/Answer/Sources table whose three columns could not give a
+   * paragraph-length answer usable width.
+   *
+   * @param array $results
+   *   Result rows for the run, in delta order, each with question, answer,
+   *   citations and error properties.
+   *
+   * @return array
+   *   A ys_ai_tester_question_tabs render element.
+   */
+  protected function runQuestionTabs(array $results): array {
+    $tabs = [];
+    $panels = [];
+    $total = count($results);
+
+    foreach (array_values($results) as $index => $result) {
+      $question = (string) $result->question;
+      $answer = (string) ($result->answer ?? '');
+      $error = (string) ($result->error ?? '');
+      // Trimmed to match RunComparator::side(): a whitespace-only answer counts
+      // as empty in the comparison, so it has to count as empty here too or one
+      // result reads differently depending on which page you opened it on.
+      $empty = trim($answer) === '';
+
+      $tab = $this->questionTab($index + 1, $question, $this->resultStatus($empty, $error));
+      $tabs[] = $tab;
+
+      $panels[] = [
+        'id' => $tab['panel_id'],
+        'tab_id' => $tab['id'],
+        'heading' => $this->questionHeading($index + 1, $total, $question),
+        // One side, so the panel grid gives the answer the full width. The
+        // comparison labels each of its columns because a reader has to tell
+        // them apart; a single run has nothing to disambiguate and the page
+        // header already names the run, its file and its assistant, so the
+        // heading and meta line are left off rather than repeated per panel.
+        'sides' => [
+          [
+            'heading' => NULL,
+            'meta' => NULL,
+            'content' => $this->runSide($result, $answer, $empty, $error),
+          ],
+        ],
+      ];
+    }
+
+    return $this->questionTabsElement(
+      $tabs,
+      $panels,
+      $this->t('No results yet — batch may still be processing.')
+    );
+  }
+
+  /**
+   * Builds one question tab, and the ids pairing it to its panel.
+   *
+   * Shared by both views so the tab shape and the aria-controls/aria-labelledby
+   * id pair are decided once. The template wires the ARIA from these values, so
+   * a caller inventing its own would break the tab list for keyboard and screen
+   * reader users without changing how it looks.
+   *
+   * @param int $number
+   *   The question's position, counted from one.
+   * @param string $question
+   *   The full question text.
+   * @param string $status
+   *   The status machine name, used both as a badge modifier class and as the
+   *   key into statusLabel().
+   *
+   * @return array
+   *   A tab entry for the tabs template.
+   */
+  protected function questionTab(int $number, string $question, string $status): array {
+    return [
+      'id' => 'ys-qtab-' . $number,
+      'panel_id' => 'ys-qpanel-' . $number,
+      'number' => $this->t('Question @number', ['@number' => $number]),
+      // Word-safe so the preview does not break mid-word, and ellipsised
+      // so it reads as truncated rather than as a shorter question.
+      'preview' => Unicode::truncate($question, 60, TRUE, TRUE),
+      'status' => $status,
+      'status_label' => $this->statusLabel($status),
+    ];
+  }
+
+  /**
+   * Builds a panel's headline: which question this is, then the question.
+   *
+   * The position is carried in the heading rather than left to the tab rail:
+   * the rail scrolls once a run has more questions than fit it, so "Question 4
+   * of 19" is the only place saying how far through the set an open panel is.
+   * One t() string rather than concatenation in the template, so a translator
+   * can reorder the whole sentence.
+   *
+   * @param int $number
+   *   The question's position, counted from one.
+   * @param int $total
+   *   How many questions the run or comparison has.
+   * @param string $question
+   *   The full, untruncated question text.
+   *
+   * @return \Drupal\Component\Render\MarkupInterface|string
+   *   The panel heading text.
+   */
+  protected function questionHeading(int $number, int $total, string $question): string|MarkupInterface {
+    return $this->t('Question @number of @total: @question', [
+      '@number' => $number,
+      '@total' => $total,
+      '@question' => $question,
+    ]);
+  }
+
+  /**
+   * Wraps built tabs and panels in the tabs render element.
+   *
+   * Keeps the library attachment and the tab list's accessible name in one
+   * place for both callers — those are exactly the details that drift when a
+   * second view builds the same widget.
+   *
+   * @param array $tabs
+   *   The tab entries.
+   * @param array $panels
+   *   The panel entries, index-aligned with $tabs.
+   * @param string|\Drupal\Component\Render\MarkupInterface $empty
+   *   The message shown when there are no questions to show.
+   *
+   * @return array
+   *   A ys_ai_tester_question_tabs render element.
+   */
+  protected function questionTabsElement(array $tabs, array $panels, string|MarkupInterface $empty): array {
     return [
       '#theme' => 'ys_ai_tester_question_tabs',
       // The tabs are inert without their behavior, so the element carries its
@@ -694,8 +787,100 @@ class AiTesterController extends ControllerBase {
       '#tabs' => $tabs,
       '#panels' => $panels,
       '#tablist_label' => $this->t('Questions'),
-      '#empty' => $this->t('Neither run has any results.'),
+      '#empty' => $empty,
     ];
+  }
+
+  /**
+   * Builds the answer, its meta line and its sources for one run's question.
+   *
+   * @param object $result
+   *   The result row, read for its stored citations.
+   * @param string $answer
+   *   The recorded answer, empty when the backend returned nothing.
+   * @param bool $empty
+   *   Whether the answer is blank once trimmed.
+   * @param string $error
+   *   The recorded error, empty when the question succeeded.
+   *
+   * @return array
+   *   The panel side's content: answer, an optional meta line, and sources.
+   */
+  protected function runSide(object $result, string $answer, bool $empty, string $error): array {
+    $side = [
+      // Escaped here rather than downstream: this builds a markup string, so
+      // unlike the table cell it replaces nothing else will escape a backend's
+      // answer on the way to the page.
+      'answer' => $this->wrap('ys-qtabs__answer', Html::escape($answer)),
+    ];
+
+    if ($error !== '' || $empty) {
+      $side['meta'] = $this->errorOrEmptyMeta($error);
+    }
+
+    // Every retrieved source, flagged for whether it was cited. This is the
+    // run view's own information — the comparison lists only the sources
+    // unique to one side — so it survives the move out of the table.
+    $side['sources'] = [
+      '#type' => 'container',
+      '#attributes' => ['class' => ['ys-qtabs__sources']],
+      'heading' => [
+        '#type' => 'html_tag',
+        '#tag' => 'h3',
+        '#attributes' => ['class' => ['ys-qtabs__sources-heading']],
+        '#value' => $this->t('Sources'),
+      ],
+      'list' => $this->buildCitationsCell($this->decodeCitations($result->citations)),
+    ];
+
+    return $side;
+  }
+
+  /**
+   * Classifies one run result for its tab badge.
+   *
+   * The comparison's badge carries a pair status. A single run has no pair, so
+   * the badge reports the one thing worth scanning a long question list for:
+   * which questions did not come back with an answer.
+   *
+   * @param bool $empty
+   *   Whether the answer is blank once trimmed.
+   * @param string $error
+   *   The recorded error.
+   *
+   * @return string
+   *   One of 'error', 'empty' or 'answered'.
+   */
+  protected function resultStatus(bool $empty, string $error): string {
+    if ($error !== '') {
+      return 'error';
+    }
+
+    return $empty ? 'empty' : 'answered';
+  }
+
+  /**
+   * Builds the meta line for a side that failed or came back blank.
+   *
+   * Shared by both views so the two pages cannot describe the same failed
+   * question differently. An error takes precedence over emptiness: a failure
+   * and a genuinely blank answer look identical in the answer column, and the
+   * recorded error is the more useful of the two things to say.
+   *
+   * @param string $error
+   *   The recorded error, empty when the question merely returned nothing.
+   *
+   * @return array
+   *   A #markup render element.
+   */
+  protected function errorOrEmptyMeta(string $error): array {
+    $class = 'ys-compare-side-meta ys-compare-side-meta--empty';
+
+    if ($error !== '') {
+      return $this->wrap($class, $this->t('Error: @msg', ['@msg' => $error]));
+    }
+
+    return $this->wrap($class, $this->t('Empty answer'));
   }
 
   /**
@@ -783,19 +968,8 @@ class AiTesterController extends ControllerBase {
       'answer' => $this->wrap('ys-diff ys-diff--' . $key, $answer_html),
     ];
 
-    if ($side['error'] !== '') {
-      // A failure and a genuinely empty answer look identical in the answer
-      // column, so the recorded error is what the meta line reports.
-      $cell['meta'] = $this->wrap(
-        'ys-compare-side-meta ys-compare-side-meta--empty',
-        $this->t('Error: @msg', ['@msg' => $side['error']])
-      );
-    }
-    elseif ($side['empty']) {
-      $cell['meta'] = $this->wrap(
-        'ys-compare-side-meta ys-compare-side-meta--empty',
-        $this->t('Empty answer')
-      );
+    if ($side['error'] !== '' || $side['empty']) {
+      $cell['meta'] = $this->errorOrEmptyMeta($side['error']);
     }
     else {
       $cell['meta'] = $this->wrap('ys-compare-side-meta', $this->t(
@@ -831,7 +1005,11 @@ class AiTesterController extends ControllerBase {
   }
 
   /**
-   * Returns the human-readable label for a pair status.
+   * Returns the human-readable label for a question's status badge.
+   *
+   * Both vocabularies live here: the first four are comparison pair states, the
+   * last three are single-run result states. One map, because the badge that
+   * renders them is one element in one template.
    */
   protected function statusLabel(string $status): string {
     return match ($status) {
@@ -839,6 +1017,9 @@ class AiTesterController extends ControllerBase {
       'differs' => (string) $this->t('Differs'),
       'only_a' => (string) $this->t('Only in Run A'),
       'only_b' => (string) $this->t('Only in Run B'),
+      'answered' => (string) $this->t('Answered'),
+      'empty' => (string) $this->t('No answer'),
+      'error' => (string) $this->t('Error'),
       default => $status,
     };
   }

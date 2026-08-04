@@ -23,8 +23,10 @@ function ys_ai_tester_theme(): array {
       ],
     ],
     // One tab per question, each revealing a panel of per-run answer columns.
-    // The panel grid is fixed at two columns in the stylesheet: only the
-    // compare view renders these, and a comparison is always two-sided.
+    // Rendered by both AI Tester views: the comparison passes two sides per
+    // panel and the single-run detail view passes one. The panel grid derives
+    // its column count from however many sides it is given, so the count is
+    // neither a variable here nor a literal in the stylesheet.
     'ys_ai_tester_question_tabs' => [
       'variables' => [
         'tabs' => [],

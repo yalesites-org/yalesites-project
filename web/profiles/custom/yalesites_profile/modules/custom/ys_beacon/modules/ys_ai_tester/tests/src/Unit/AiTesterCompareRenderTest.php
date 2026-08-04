@@ -267,8 +267,37 @@ class AiTesterCompareRenderTest extends UnitTestCase {
     $preview = $tabs['#tabs'][0]['preview'];
     $this->assertNotSame($question, $preview);
     $this->assertLessThanOrEqual(60, mb_strlen($preview));
-    // The panel keeps the full question; only the tab preview is shortened.
-    $this->assertSame($question, $tabs['#panels'][0]['question']);
+    // The panel heading keeps the full question; only the tab preview is
+    // shortened.
+    $this->assertStringContainsString($question, (string) $tabs['#panels'][0]['heading']);
+  }
+
+  /**
+   * The panel heading says which question this is out of how many.
+   *
+   * The tab rail scrolls once a comparison has more questions than fit it, so
+   * the heading is the only place that says how far through the set the open
+   * panel is.
+   *
+   * @covers ::questionTabs
+   * @covers ::questionHeading
+   */
+  public function testPanelHeadingCountsThePositionInTheSet(): void {
+    $data = $this->comparisonOf('beacon', 'legacy', $this->side('Legacy answer.', 1, 1, FALSE));
+    $data['pairs'][] = [
+      'question' => 'A second question?',
+      'status' => 'identical',
+      'a' => $this->side('Same.', 0, 0, FALSE),
+      'b' => $this->side('Same.', 0, 0, FALSE),
+      'len_delta' => 0,
+      'citation_overlap' => ['both' => [], 'only_a' => [], 'only_b' => []],
+    ];
+
+    $panels = $this->controllerReturning($data)->compare(2, 3)['results']['#panels'];
+
+    $this->assertStringContainsString('Question 1 of 2', (string) $panels[0]['heading']);
+    $this->assertStringContainsString('Question 2 of 2', (string) $panels[1]['heading']);
+    $this->assertStringContainsString('A second question?', (string) $panels[1]['heading']);
   }
 
   /**
