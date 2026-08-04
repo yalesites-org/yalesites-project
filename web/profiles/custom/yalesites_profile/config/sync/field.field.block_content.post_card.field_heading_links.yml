@@ -13,7 +13,7 @@ field_name: field_heading_links
 entity_type: block_content
 bundle: post_card
 label: Links
-description: ''
+description: 'Optional. Add up to three links below the list — for example, ''View all news.'''
 required: false
 translatable: false
 default_value: {  }

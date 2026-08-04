@@ -99,13 +99,24 @@
   font-weight: 700 !important;
 }
 
+/*
+ * Spacing (#1481): was 36px above (0.5rem here, plus whatever margin the
+ * preceding multi-select itself carried) and 56px below (no margin-bottom
+ * here at all — the gap to the next field was entirely that field's own
+ * margin-top). Margin-based spacing between two independently-positioned
+ * elements read as arbitrary regardless of the exact values used — see
+ * ::groupTermOperatorRows() (ViewsBasicWidgetBase.php) for why this now
+ * wraps with its own term select in one .vb-term-group container instead,
+ * with padding (below) doing the outer spacing and only the tight,
+ * belongs-to-this-select gap left as margin-top here.
+ */
 .vb-term-operator {
   display: flex;
   flex-wrap: wrap;
   align-items: center;
   column-gap: 0.5rem;
   row-gap: 0.25rem;
-  margin-top: 0.5rem;
+  margin-top: var(--vb-space-control-subcontrol, 1rem);
 }
 
 .vb-term-operator__text {

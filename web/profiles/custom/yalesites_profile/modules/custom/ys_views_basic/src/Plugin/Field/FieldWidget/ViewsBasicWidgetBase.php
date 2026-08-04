@@ -311,7 +311,7 @@ abstract class ViewsBasicWidgetBase extends WidgetBase implements ContainerFacto
     $this->buildTermIncludeExclude($form, $items, $delta);
     $this->buildSortControl($form, $items, $delta);
     $this->buildPinnedControls($form, $items, $delta, $formSelectors);
-    $this->buildDisplayControls($form, $items, $delta);
+    $this->buildDisplayControls($form, $items, $delta, $formSelectors);
     $this->buildHiddenParamsField($element, $items, $delta);
 
     $form['#attached']['library'][] = 'ys_views_basic/ys_views_basic';
@@ -481,10 +481,27 @@ abstract class ViewsBasicWidgetBase extends WidgetBase implements ContainerFacto
    */
   protected function getExposedFilterOptions(): array {
     return [
-      'show_search_filter' => $this->t('Show Search (results based on the content title only)'),
+      'show_search_filter' => $this->t('Show Search'),
       'show_category_filter' => $this->t('Show Category'),
       'show_custom_vocab_filter' => $this->t('Show @vocab', ['@vocab' => $this->customVocabularyLabel()]),
       'show_audience_filter' => $this->t('Show Audience'),
+    ];
+  }
+
+  /**
+   * Returns per-option help text for the exposed filter checkboxes.
+   *
+   * Keyed the same as ::getExposedFilterOptions(). A filter absent from this
+   * map renders with no #description, matching the previous behavior for
+   * every option except search (#1481: the search option's explanation used
+   * to be crammed into its label instead of a proper #description).
+   *
+   * @return \Drupal\Core\StringTranslation\TranslatableMarkup[]
+   *   Help text keyed by exposed-filter machine name.
+   */
+  protected function getExposedFilterDescriptions(): array {
+    return [
+      'show_search_filter' => $this->t('Matches titles only — not body text, tags, or categories.'),
     ];
   }
 
@@ -512,7 +529,9 @@ abstract class ViewsBasicWidgetBase extends WidgetBase implements ContainerFacto
     // profile) adds nothing to it.
     $details = [
       'entity_and_view_mode' => [
-        'title' => $this->t('Field display & filters'),
+        // Renamed from "Field display & filters" (#1481): "Field display"
+        // and "Display options" (the next tab) read as the same tab twice.
+        'title' => $this->t('Results & filters'),
         'open' => TRUE,
         'classes' => ['views-basic--entity-view-mode'],
       ],
@@ -522,6 +541,11 @@ abstract class ViewsBasicWidgetBase extends WidgetBase implements ContainerFacto
         'classes' => [],
       ],
       'options' => [
+        // Reverted back to "Display options" (#1481): "How many items"
+        // undersold what's actually here (Event Time Period, skip-the-first,
+        // include-current-page) — the collision this was meant to fix is
+        // gone now that the other tab is "Results & filters" instead of
+        // "Field display & filters".
         'title' => $this->t('Display options'),
         'open' => FALSE,
         'classes' => [],
@@ -546,6 +570,19 @@ abstract class ViewsBasicWidgetBase extends WidgetBase implements ContainerFacto
     $form['group_user_selection']['entity_and_view_mode']['#after_build'][] = [
       static::class,
       'groupFieldDisplayRow',
+    ];
+
+    // Pair each include/exclude term select with its own operator control
+    // into one padded unit (#1481) — see ::groupTermOperatorRows() for why.
+    $form['group_user_selection']['filter_and_sort']['#after_build'][] = [
+      static::class,
+      'groupTermOperatorRows',
+    ];
+    // Give "Highlight pinned items" the same toggle/disclosure row as the
+    // exposed filters (#1481) — see ::groupPinnedRow() for why.
+    $form['group_user_selection']['filter_and_sort']['#after_build'][] = [
+      static::class,
+      'groupPinnedRow',
     ];
 
     // entity_specific holds optional per-type controls (e.g. the event time
@@ -576,9 +613,12 @@ abstract class ViewsBasicWidgetBase extends WidgetBase implements ContainerFacto
       'show_tags' => $this->t('Show Tags'),
     ];
     if (ViewsBasicManager::bundleSupportsThumbnail($this->getBundle())) {
-      $options['show_thumbnail'] = $this->t('Show Teaser Image');
+      $options['show_thumbnail'] = $this->t('Show thumbnail image');
     }
-    // Title for the field-display group of options (#1317).
+    // Title for the field-display group of options (#1317). Kept for the
+    // accessible name but rendered invisible (#1481): the wrapping "Result
+    // content" fieldset legend (::groupFieldDisplayRow()) already says this,
+    // so a visible title here duplicated it as two headings 32px apart.
     $field_options_title = $this->t('Show on each result');
 
     // Default to the saved field options, falling back to showing the teaser
@@ -594,6 +634,7 @@ abstract class ViewsBasicWidgetBase extends WidgetBase implements ContainerFacto
       '#type' => 'checkboxes',
       '#options' => $options,
       '#title' => $field_options_title,
+      '#title_display' => 'invisible',
       '#tree' => TRUE,
       '#default_value' => is_array($saved) ? $saved : [],
     ];
@@ -626,18 +667,26 @@ abstract class ViewsBasicWidgetBase extends WidgetBase implements ContainerFacto
 
     $form['group_user_selection']['entity_and_view_mode']['exposed_filter_options'] = [
       '#type' => 'fieldset',
-      '#title' => $this->t('Exposed Filter Options'),
-      '#description' => $this->t('Add filter controls that visitors can use on the published page to narrow the results themselves.'),
-      // Fieldset's default #description_display is 'after', rendering below
-      // every filter row instead of introducing them.
-      '#description_display' => 'before',
+      // Renamed from "Exposed Filter Options" (#1481) — "Exposed" is Views'
+      // own internal term, not editor-facing vocabulary.
+      '#title' => $this->t('Filters for visitors'),
       '#tree' => TRUE,
       '#attributes' => ['class' => ['vb-filter-rows']],
+      // gin_lb ignores #description_display: 'before' on a fieldset (always
+      // renders it after every filter row), so the intro is a #markup child
+      // with a negative #weight instead — the same pattern
+      // ::buildTermIncludeExclude() uses for tag_filters_intro (#1481).
+      'exposed_filter_options_intro' => [
+        '#weight' => -10,
+        '#markup' => '<p class="vb-fieldset-intro">' . $this->t('Add filter controls that visitors can use on the published page to narrow the results themselves.') . '</p>',
+      ],
     ];
+    $descriptions = $this->getExposedFilterDescriptions();
     foreach ($this->getExposedFilterOptions() as $option_key => $option_label) {
       $form['group_user_selection']['entity_and_view_mode']['exposed_filter_options'][$option_key] = [
         '#type' => 'checkbox',
         '#title' => $option_label,
+        '#description' => $descriptions[$option_key] ?? NULL,
         // Stored as a [key => key] map, but tolerate a plain list too.
         '#default_value' => in_array($option_key, $enabled, TRUE),
       ];
@@ -657,9 +706,11 @@ abstract class ViewsBasicWidgetBase extends WidgetBase implements ContainerFacto
 
     $form['group_user_selection']['entity_and_view_mode']['category_included_terms'] = [
       '#type' => 'select',
-      '#title' => $this->t('Filter by Category Parent Term'),
+      // Renamed from "Filter by Category Parent Term" (#1481) — "Parent
+      // Term" is taxonomy-internal vocabulary.
+      '#title' => $this->t('Limit choices to'),
       '#description' => $this->t("Select a parent term to show content tagged with that term's sub-items. This ignores content tagged as the parent term and any other parent terms in the vocabulary."),
-      '#options' => $this->viewsBasicManager->getTaxonomyParents($this->getCategoryVocabulary()),
+      '#options' => $this->viewsBasicManager->getTaxonomyParents($this->getCategoryVocabulary(), (string) $this->t('All categories')),
       '#default_value' => $params ? $this->viewsBasicManager->getDefaultParamValue('category_included_terms', $params) : NULL,
       '#validated' => 'true',
       '#prefix' => '<div id="edit-category-included-terms">',
@@ -796,12 +847,17 @@ abstract class ViewsBasicWidgetBase extends WidgetBase implements ContainerFacto
       $row['result_content'] = [
         '#type' => 'fieldset',
         '#title' => t('Result content'),
-        '#description' => t("Choose which details appear on each result. These settings don't change which content the list pulls in."),
-        // Fieldset's default #description_display is 'after', rendering
-        // below field_options/event_field_options/post_field_options instead
-        // of introducing them.
-        '#description_display' => 'before',
         '#attributes' => ['class' => ['vb-result-content']],
+        // gin_lb ignores #description_display: 'before' on a fieldset
+        // (always renders it after field_options/event_field_options/
+        // post_field_options instead of introducing them), so the intro is a
+        // #markup child with a negative #weight instead — the same pattern
+        // ViewsBasicWidgetBase::buildTermIncludeExclude() uses for
+        // tag_filters_intro (#1481).
+        'result_content_intro' => [
+          '#weight' => -10,
+          '#markup' => '<p class="vb-fieldset-intro">' . t("Choose which details appear on each result. These settings don't change which content the list pulls in.") . '</p>',
+        ],
       ] + $field_options;
     }
     if (isset($element['preview'])) {
@@ -822,11 +878,142 @@ abstract class ViewsBasicWidgetBase extends WidgetBase implements ContainerFacto
   }
 
   /**
+   * Pairs each include/exclude term select with its own operator control.
+   *
+   * The "Any/All" operator control (::buildTermOperator()) already groups its
+   * own prefix/suffix text and radios into one flex row, but that row was
+   * still a sibling of the term select it modifies, spaced from it (and from
+   * the next, unrelated field) by plain margin — margin that doesn't collapse
+   * inside this form's flex/grid containers (#1481, the same root cause
+   * ::buildDisplayControls() and the general one-sided-margin CSS rule work
+   * around elsewhere), so the gap above and below read as arbitrarily large
+   * rather than as "this operator belongs to the select above it." Wrapping
+   * the pair in one container and padding *that* — rather than margining the
+   * two pieces apart — is what makes them read as one settled unit instead of
+   * two independently-spaced fields that happen to be near each other.
+   *
+   * Runs as an #after_build on "Tags, sorting & pinned" for the same reason
+   * as ::buildExposedFilterAccordion()/::groupFieldDisplayRow(): every
+   * #parents is already fixed by this point, so gathering these into a
+   * wrapping container does not rename their inputs.
+   *
+   * unset() + reassign moves include_group/exclude_group to the end of
+   * $element's array, same as the other row-grouping methods — which is why
+   * they (and every other top-level child of this group: tag_filters_intro,
+   * ::buildSortControl()'s sort_by, ::groupPinnedRow()'s pinned_to_top_row)
+   * carry an explicit #weight rather than relying on array order to hold
+   * after the reshuffle.
+   *
+   * @param array $element
+   *   The filter_and_sort group, after its subtree has been built.
+   * @param \Drupal\Core\Form\FormStateInterface $form_state
+   *   The current state of the form.
+   *
+   * @return array
+   *   The group with each select+operator pair wrapped in one container.
+   */
+  public static function groupTermOperatorRows(array $element, FormStateInterface $form_state): array {
+    $pairs = [
+      'include_group' => ['terms_include', 'include_operator_wrapper', 0],
+      'exclude_group' => ['terms_exclude', 'exclude_operator_wrapper', 1],
+    ];
+    foreach ($pairs as $group_key => $pair) {
+      [$select_key, $operator_key, $weight] = $pair;
+      $group = [
+        '#type' => 'container',
+        '#weight' => $weight,
+        '#attributes' => ['class' => ['vb-term-group']],
+      ];
+      foreach ([$select_key, $operator_key] as $child_key) {
+        if (isset($element[$child_key])) {
+          $group[$child_key] = $element[$child_key];
+          unset($element[$child_key]);
+        }
+      }
+      if (Element::children($group)) {
+        $element[$group_key] = $group;
+      }
+    }
+    return $element;
+  }
+
+  /**
+   * Wraps "Highlight pinned items" and its label field into one filter row.
+   *
+   * Gives this checkbox and its one dependent field the same bordered,
+   * disclosure-on-check row treatment as the exposed filters
+   * (::buildExposedFilterAccordion(), Show Category/Show Custom Vocab)
+   * rather than a plain checkbox with a #states-toggled sibling field —
+   * "toggle turns on, row expands" is the established shape in this form for
+   * a checkbox with a dependent field, and this is the one other place that
+   * shape occurs (#1481). ::buildPinnedControls() pairs pin_label's own
+   * #states with this: 'disabled' (not 'visible'/'required'), matching
+   * category_filter_label — the row's CSS collapses the body via :has() the
+   * same way, so 'disabled' is what stops a collapsed row from still
+   * submitting a value; see ::buildExposedFilterControls()'s docblock for why
+   * that has to be a plain #attributes flag done at the field level, not
+   * #states plumbed through here.
+   *
+   * Runs as an #after_build on "Tags, sorting & pinned" for the same reason
+   * as ::buildExposedFilterAccordion(): every #parents is already fixed by
+   * this point, so wrapping these does not rename their inputs.
+   *
+   * @param array $element
+   *   The filter_and_sort group, after its subtree has been built.
+   * @param \Drupal\Core\Form\FormStateInterface $form_state
+   *   The current state of the form.
+   *
+   * @return array
+   *   The group with pinned_to_top and pin_label wrapped in one row.
+   */
+  public static function groupPinnedRow(array $element, FormStateInterface $form_state): array {
+    if (!isset($element['pinned_to_top'])) {
+      return $element;
+    }
+    // The header must sort above the body: pin_label carries whatever weight
+    // it had from where it was originally built (::buildPinnedControls()),
+    // so both children get an explicit weight here rather than relying on
+    // array order, which would otherwise put "Pinned-item label" above
+    // "Highlight pinned items". Matches ::buildExposedFilterAccordion().
+    $checkbox = $element['pinned_to_top'];
+    $checkbox['#weight'] = 0;
+    $row = [
+      '#type' => 'container',
+      // After sort_by (weight 2) — see ::groupTermOperatorRows()'s docblock
+      // for why every top-level child of this group needs an explicit weight.
+      '#weight' => 3,
+      // vb-filter-row--pinned (#1481): a dedicated styling hook on the row
+      // container this module fully controls, not the checkbox's own
+      // gin_lb-rendered item — gin_lb's internal checkbox-toggle padding
+      // resisted overriding even with !important at higher specificity than
+      // rules confirmed working elsewhere in this file.
+      '#attributes' => ['class' => ['vb-filter-row', 'vb-filter-row--pinned']],
+      'pinned_to_top' => $checkbox,
+    ];
+    unset($element['pinned_to_top']);
+    if (isset($element['pin_label'])) {
+      $pin_label = $element['pin_label'];
+      $pin_label['#weight'] = 0;
+      $row['settings'] = [
+        '#type' => 'container',
+        '#weight' => 1,
+        '#attributes' => ['class' => ['vb-filter-row__body']],
+        'pin_label' => $pin_label,
+      ];
+      $row['#attributes']['class'][] = 'vb-filter-row--has-settings';
+      unset($element['pin_label']);
+    }
+    $element['pinned_to_top_row'] = $row;
+    return $element;
+  }
+
+  /**
    * Flattens a built subtree to a key => element map of its value elements.
    *
    * MassageFormValues() reads submitted values off the built elements, so it
-   * has to find them wherever ::buildExposedFilterAccordion() and
-   * ::groupFieldDisplayRow() moved them.
+   * has to find them wherever ::buildExposedFilterAccordion(),
+   * ::groupFieldDisplayRow(), ::groupTermOperatorRows() and
+   * ::groupPinnedRow() moved them.
    *
    * @param array $element
    *   A built form element.
@@ -903,6 +1090,12 @@ abstract class ViewsBasicWidgetBase extends WidgetBase implements ContainerFacto
 
     $form['group_user_selection']['filter_and_sort']['tag_filters_intro'] = [
       '#type' => 'container',
+      // Explicit weight (#1481): ::groupTermOperatorRows() reshuffles this
+      // group's array order (its unset()+reassign of include_group/
+      // exclude_group appends them at the end), so every top-level child of
+      // this group now needs an explicit weight rather than relying on
+      // array-insertion order to hold after that reshuffle.
+      '#weight' => -10,
       '#attributes' => ['class' => ['vb-tag-filters-intro']],
       'heading' => [
         '#markup' => '<h3 class="vb-tag-filters-intro__heading">' . $this->t('Tag filters') . '</h3>',
@@ -1043,8 +1236,10 @@ abstract class ViewsBasicWidgetBase extends WidgetBase implements ContainerFacto
     $params = $items[$delta]->params;
     $form['group_user_selection']['filter_and_sort']['sort_by'] = [
       '#type' => 'select',
+      // Explicit weight (#1481) — see ::groupTermOperatorRows()'s docblock.
+      '#weight' => 2,
       '#options' => $this->viewsBasicManager->sortByList($this->getContentType()),
-      '#title' => $this->t('Sorting by'),
+      '#title' => $this->t('Sort by'),
       '#tree' => TRUE,
       '#default_value' => $params ? $this->viewsBasicManager->getDefaultParamValue('sort_by', $params) : NULL,
       '#validated' => 'true',
@@ -1079,9 +1274,14 @@ abstract class ViewsBasicWidgetBase extends WidgetBase implements ContainerFacto
       '#title' => $this->t('Pinned-item label'),
       '#description' => $this->t('Text shown on each pinned item (for example "Featured").'),
       '#default_value' => $pin_label,
+      // Disabled (not visible/required) while its checkbox is off (#1481),
+      // matching category_filter_label: ::groupPinnedRow() wraps this pair
+      // into the same bordered/disclosure row as the exposed filters, whose
+      // CSS collapses the body via :has() off the checkbox rather than
+      // #states visibility, so 'disabled' is what stops a collapsed row from
+      // still submitting a value — see that method's docblock.
       '#states' => [
-        'visible' => [$formSelectors['pinned_to_top_selector'] => ['checked' => TRUE]],
-        'required' => [$formSelectors['pinned_to_top_selector'] => ['checked' => TRUE]],
+        'disabled' => [$formSelectors['pinned_to_top_selector'] => ['checked' => FALSE]],
       ],
     ];
   }
@@ -1095,8 +1295,10 @@ abstract class ViewsBasicWidgetBase extends WidgetBase implements ContainerFacto
    *   The field items.
    * @param int $delta
    *   The field delta.
+   * @param array $formSelectors
+   *   The resolved form selectors for #states.
    */
-  protected function buildDisplayControls(array &$form, FieldItemListInterface $items, int $delta): void {
+  protected function buildDisplayControls(array &$form, FieldItemListInterface $items, int $delta, array $formSelectors): void {
     $params = $items[$delta]->params;
     $displayValue = $params ? $this->viewsBasicManager->getDefaultParamValue('display', $params) : 'all';
 
@@ -1111,16 +1313,33 @@ abstract class ViewsBasicWidgetBase extends WidgetBase implements ContainerFacto
         'pager' => $this->t('Pagination after'),
       ],
     ];
+    // Kept as a plain title rather than the #1481 spec's single-row
+    // "Limit to [n] items" composition: views-basic.js live-swaps this title
+    // between "Items" and "Items per Page" client-side with no form rebuild,
+    // which a #field_prefix/#field_suffix layout would leave showing a stale
+    // "Limit to" prefix under "Pagination after".
     $form['group_user_selection']['options']['limit'] = [
       '#title' => $displayValue === 'pager' ? $this->t('Items per Page') : $this->t('Items'),
       '#type' => 'number',
       '#default_value' => $params ? $this->viewsBasicManager->getDefaultParamValue('limit', $params) : 10,
       '#min' => 1,
+      // #required paired with #states 'visible'/'required' (#1481), matching
+      // ::buildPinnedControls()'s pin_label pattern: this field used to carry
+      // '#required' => TRUE unconditionally while views-basic.js hid it with
+      // inline `display: none` whenever "display" was "all" — a required
+      // field a site builder could never see or fill in.
       '#required' => TRUE,
+      '#states' => [
+        'visible' => [$formSelectors['display_ajax'] => ['!value' => 'all']],
+        'required' => [$formSelectors['display_ajax'] => ['!value' => 'all']],
+      ],
       '#prefix' => '<div id="edit-limit">',
       '#suffix' => '</div>',
     ];
     $form['group_user_selection']['options']['offset'] = [
+      // Plain title rather than the #1481 spec's single-row composition:
+      // gin_lb renders #field_prefix/#field_suffix and the (invisible) title
+      // stacked on separate lines rather than inline around the input.
       '#title' => $this->t('Skip the first results'),
       '#description' => $this->t('Hide the first results that match — for example, enter 1 to omit the single newest item.'),
       '#type' => 'number',
@@ -1168,7 +1387,10 @@ abstract class ViewsBasicWidgetBase extends WidgetBase implements ContainerFacto
   protected function customVocabularyLabel(): string {
     if ($this->customVocabularyLabel === NULL) {
       $vocabulary = $this->entityTypeManager->getStorage('taxonomy_vocabulary')->load('custom_vocab');
-      $this->customVocabularyLabel = $vocabulary ? $vocabulary->label() : (string) $this->t('Custom Vocab');
+      // Fallback renamed from "Custom Vocab" (#1481) — editor-facing text
+      // should not read as a Drupal machine name even when the vocabulary is
+      // missing.
+      $this->customVocabularyLabel = $vocabulary ? $vocabulary->label() : (string) $this->t('Custom tags');
     }
     return $this->customVocabularyLabel;
   }

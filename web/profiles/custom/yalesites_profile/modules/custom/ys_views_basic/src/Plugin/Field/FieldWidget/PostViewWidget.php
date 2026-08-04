@@ -41,6 +41,14 @@ class PostViewWidget extends ViewsBasicWidgetBase {
   protected function buildEntitySpecificOptions(array &$form, FieldItemListInterface $items, int $delta): void {
     $form['group_user_selection']['entity_and_view_mode']['post_field_options'] = [
       '#type' => 'checkboxes',
+      // Styling hook (#1481) — see
+      // EventViewWidget::buildEntitySpecificOptions() for why this needs
+      // the fieldset's between-groups gap rather than the
+      // tighter sibling-option gap, and why #prefix/#suffix rather than
+      // #attributes (which lands on the <input> itself for this element
+      // type, not a wrapper).
+      '#prefix' => '<div class="vb-result-content__subsection">',
+      '#suffix' => '</div>',
       '#options' => [
         'show_eyebrow' => $this->t('Show post teaser lead-in'),
       ],

@@ -54,6 +54,19 @@ class EventViewWidget extends ViewsBasicWidgetBase {
 
     $form['group_user_selection']['entity_and_view_mode']['event_field_options'] = [
       '#type' => 'checkboxes',
+      // Styling hook (#1481): this joins field_options in the same "Result
+      // content" fieldset (::groupFieldDisplayRow()), but is a distinct
+      // entity-specific subsection under its own visible "Event options"
+      // title, not another sibling option of the shared checkboxes above it
+      // — it needs the fieldset's between-groups gap, not the tighter
+      // sibling-option gap the shared checkboxes get. Plain #prefix/#suffix
+      // rather than #attributes: on a #type checkboxes element, #attributes
+      // lands on each individual <input> (confirmed against the real
+      // rendered markup), not a wrapping element, which put 40px of
+      // margin-top on the checkbox itself — detaching it from its own label
+      // — instead of before the whole subsection.
+      '#prefix' => '<div class="vb-result-content__subsection">',
+      '#suffix' => '</div>',
       '#options' => [
         'hide_add_to_calendar' => $this->t('Hide Add to Calendar link'),
       ],

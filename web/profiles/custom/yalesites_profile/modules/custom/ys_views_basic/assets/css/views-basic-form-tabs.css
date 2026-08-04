@@ -112,6 +112,18 @@
 }
 
 /*
+ * The Links field's own nested <details> (.vb-heading-links-details, styling
+ * hook above) also carries gin_lb's .glb-claro-details class, so it inherits
+ * the same -1.25em margin-left as the tab panes above — but this element
+ * isn't a pane matched by that rule, so the offset went unzeroed, shifting
+ * the whole Links table left of every other field on the General tab
+ * (#1481, confirmed against the real rendered margin rather than guessed).
+ */
+.layout-builder-configure-block .horizontal-tabs-panes .vb-heading-links-details {
+  margin: 0 !important;
+}
+
+/*
  * Restore the icon-radio "card" styling (e.g. Event Time Period) for
  * controls that now live inside the tab bar. ViewsBasicWidgetBase's
  * initSelectionContainers() puts the styling hook class
@@ -212,4 +224,31 @@
 .layout-builder-configure-block .form-item-reusable,
 .layout-builder-configure-block .form-item-reusable + .form-type--textfield {
   padding-inline: 0 !important;
+}
+
+/*
+ * Reduce the Header links field's footprint (#1481): URL and Link text
+ * stacked full-width each, three times, made this the tallest thing on the
+ * General tab for a field most blocks never touch. Side by side halves each
+ * row's height with no interactivity added; collapsing the rows behind a
+ * button would need new JS and its own edge cases (e.g. a saved block with
+ * links in row 2/3 but not row 1), out of scope for a CSS pass.
+ *
+ * .fieldset__wrapper is correct unprefixed here: glb-fieldset__wrapper is not
+ * in gin_lb/src/classes.json, so glb_classes() leaves this one alone.
+ */
+.heading-links-widget__row .fieldset__wrapper {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 0 1rem;
+  align-items: start;
+}
+
+/*
+ * Tighten the gap between the three rows themselves — Claro/gin_lb's default
+ * multi-value table spacing was sized for full-width stacked rows, wider
+ * than this side-by-side layout needs.
+ */
+.heading-links-widget__row {
+  margin-bottom: 0.5rem !important;
 }
