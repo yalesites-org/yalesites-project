@@ -13,7 +13,7 @@ field_name: field_heading
 entity_type: block_content
 bundle: post_list_item
 label: 'View Heading'
-description: ''
+description: 'Shown above the list on your page. Leave blank for no heading.'
 required: false
 translatable: true
 default_value: {  }

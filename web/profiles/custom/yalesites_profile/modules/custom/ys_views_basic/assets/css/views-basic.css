@@ -7,6 +7,57 @@
   --size-spacing-5: 1rem;
 }
 
+/*
+ * Spacing/type scale (#1481), defined on .layout-builder-configure-block
+ * rather than .views-basic--group-user-selection: that class sits on
+ * group_user_selection, the widget's own outer container, but
+ * _ys_views_basic_listing_form_tabs() re-parents its three tab-group children
+ * (entity_and_view_mode/filter_and_sort/options — i.e. every tab except
+ * General) into the horizontal-tabs bar via #group, which moves their
+ * rendered markup out from under that container entirely (see that
+ * function's own docblock, and the "Restore the icon-radio card styling"
+ * comment further down this file for the same trap). Custom properties don't
+ * cascade across that move, so a definition scoped to
+ * .views-basic--group-user-selection silently stopped applying to the very
+ * fieldsets these variables were written for.
+ * .layout-builder-configure-block is Drupal's own base-form-ID class for the
+ * whole block-configure form (General tab included), so it is unaffected by
+ * which container the #group relocation leaves the tab content under.
+ */
+.layout-builder-configure-block {
+  /*
+   * 14 distinct vertical gaps were measured across the form's four tabs with
+   * no shared system behind them. Six steps on a 4px grid, each tied to the
+   * relationship it spaces rather than a generic "small/medium/large" name,
+   * so a rule reads at its call site (e.g. var(--vb-space-option) for two
+   * related checkboxes) instead of requiring a lookup.
+   */
+  --vb-space-label-control: 0.25rem; /* 4px: label -> its own control */
+  --vb-space-control-help: 0.375rem; /* 6px: control -> its own help text */
+  --vb-space-option: 0.5rem; /* 8px: option -> sibling option */
+  --vb-space-legend-option: 0.75rem; /* 12px: legend -> first option */
+  --vb-space-control-subcontrol: 1rem; /* 16px: control -> dependent sub-control */
+  --vb-space-field: 1.5rem; /* 24px: field -> unrelated field */
+  --vb-space-group: 2.5rem; /* 40px: group -> group */
+
+  /*
+   * The modal renders in the front-end theme (see views-basic-form-tabs.css),
+   * which sets a fixed-px line-height that every wrapped element inherits —
+   * body text was rendering at line-height: 16px on font-size: 16px (ratio
+   * 1.0), squeezing wrapped lines together. A unitless line-height here
+   * restores normal leading; --vb-font-label/--vb-font-heading below round
+   * the existing 1.125 type-scale ratio to whole pixels (was 14.224px /
+   * 12.64px) without changing the ratio itself.
+   */
+  line-height: 1.5;
+  --vb-font-help: 13px;
+  --vb-font-label: 14px;
+  --vb-font-body: 16px;
+  --vb-font-heading: 18px;
+  --vb-line-heading: 1.25;
+  --vb-line-label: 1.35;
+}
+
 /* General styles */
 .views-basic--params {
   display: none;
@@ -522,4 +573,192 @@
 /* Collapsed while the filter is switched off. */
 .vb-filter-row--has-settings:not(:has(input[type="checkbox"]:checked)) .vb-filter-row__body {
   display: none;
+}
+
+/*
+ * UX pass (#1481): typography scale, spacing scale, and structural fixes on
+ * top of the tab/grouping work above. See the custom-property block at the
+ * top of this file for the scale values these rules apply.
+ */
+
+/*
+ * Round type scale to whole pixels; unitless line-height per element role.
+ * Scoped to .layout-builder-configure-block, not
+ * .views-basic--group-user-selection — see the custom-property block at the
+ * top of this file for why.
+ */
+.layout-builder-configure-block .glb-fieldset__label,
+.layout-builder-configure-block .fieldset__label,
+.layout-builder-configure-block legend {
+  font-size: var(--vb-font-heading);
+  line-height: var(--vb-line-heading);
+}
+
+.layout-builder-configure-block .glb-form-item__label,
+.layout-builder-configure-block .form-item__label {
+  font-size: var(--vb-font-label) !important;
+  line-height: var(--vb-line-label);
+}
+
+.layout-builder-configure-block .glb-form-item__description,
+.layout-builder-configure-block .form-item__description,
+.layout-builder-configure-block .description {
+  font-size: var(--vb-font-help);
+  line-height: 1.5;
+}
+
+/*
+ * Cap running text at 62ch. Help text was already capped at 520px
+ * (gin_lb), but this fieldset's own intro/description paragraphs (the
+ * #markup elements ::buildTermIncludeExclude(), ::buildExposedFilterControls()
+ * and ::groupFieldDisplayRow() build — see .vb-fieldset-intro below) and the
+ * "General" tab's field help text were rendering at the full pane width
+ * (roughly 130-160 characters per line at 1231px).
+ */
+.layout-builder-configure-block .glb-form-item__description,
+.layout-builder-configure-block .form-item__description,
+.layout-builder-configure-block .description,
+.layout-builder-configure-block .vb-fieldset-intro {
+  max-width: 62ch;
+}
+
+/*
+ * The Tag filters intro is the one piece of running text in this form long
+ * enough (it includes a full worked example) that 62ch reads as narrow and
+ * unbalanced against the width of this tab, rather than as a readability
+ * win — widened on request after seeing it rendered, rather than dropping
+ * the cap outright.
+ */
+.layout-builder-configure-block .vb-tag-filters-intro__help {
+  max-width: 90ch;
+}
+
+/*
+ * One-sided field margins. Claro sets both margin-top and margin-bottom
+ * (commonly to the same value) on every .glb-form-item and relies on margin
+ * collapse between adjacent siblings — collapse that never happens inside
+ * this form's flex containers (.vb-display-row, .vb-filter-row), so the same
+ * rule renders as the intended gap in some places and double that in others.
+ * Author the gap on margin-bottom only; the more specific .vb-result-content
+ * and .vb-filter-row rules (above/below) override this value for their own
+ * tighter, related-option spacing. Scoped to .grouped-items — the class
+ * ::initSelectionContainers() puts directly on each of the three tab-group
+ * details elements, which (unlike the .views-basic--group-user-selection
+ * ancestor) survives the #group relocation since it travels with the moved
+ * element itself. Does not reach the General tab, whose fields
+ * (field_heading, reusable, etc.) are standard single-field widgets outside
+ * this class.
+ */
+.grouped-items .glb-form-item,
+.grouped-items .form-item {
+  margin-top: 0 !important;
+  margin-bottom: var(--vb-space-field) !important;
+}
+
+.grouped-items .glb-form-item:last-child,
+.grouped-items .form-item:last-child {
+  margin-bottom: 0 !important;
+}
+
+/*
+ * Sibling checkboxes within "Result content" (#1481): Show Categories / Show
+ * Tags / Show thumbnail image previously sat 32px apart — wider than the
+ * 24px used between two unrelated fields — so three related options read as
+ * three separate sections. Matches the general one-sided-margin rule's own
+ * selector specificity (three classes) so this, coming later in the
+ * cascade, actually overrides it — two classes alone would lose to that
+ * rule's higher specificity regardless of source order.
+ */
+.grouped-items .vb-result-content .glb-form-item,
+.grouped-items .vb-result-content .form-item {
+  margin-top: 0 !important;
+  margin-bottom: var(--vb-space-option) !important;
+}
+
+.grouped-items .vb-result-content .glb-form-item:last-child,
+.grouped-items .vb-result-content .form-item:last-child {
+  margin-bottom: 0 !important;
+}
+
+/*
+ * Entity-specific subsections within "Result content" (#1481) — Event
+ * options / Post options (EventViewWidget/PostViewWidget's own
+ * #attributes) are a distinct titled group joining the shared field_options
+ * checkboxes in the same fieldset, not another sibling option of them, so
+ * they get the fieldset's between-groups gap instead of the tighter
+ * sibling-option gap above.
+ */
+.grouped-items .vb-result-content .vb-result-content__subsection {
+  margin-top: var(--vb-space-group) !important;
+}
+
+/*
+ * Term-select + operator "unit" (#1481): ::groupTermOperatorRows() wraps
+ * each term select with its own Any/All operator in one .vb-term-group
+ * container. Padding on that container — not margin between the select and
+ * the operator, or between the container and whatever follows — is what
+ * makes the pair read as one settled block instead of two independently
+ * spaced fields; see that method's docblock for the full rationale.
+ * .vb-term-operator's own margin-top (views-basic-term-operator.css) still
+ * does the tight, belongs-to-this-select gap between the two.
+ */
+.grouped-items .vb-term-group {
+  padding-bottom: var(--vb-space-field);
+}
+
+.grouped-items .vb-term-group:last-child {
+  padding-bottom: 0;
+}
+
+.grouped-items .vb-term-group .glb-form-item,
+.grouped-items .vb-term-group .form-item {
+  margin-bottom: 0 !important;
+}
+
+/*
+ * Fieldset intro paragraphs (#1481): the #markup elements
+ * ::buildTermIncludeExclude() (tag_filters_intro), ::buildExposedFilterControls()
+ * (exposed_filter_options_intro) and ::groupFieldDisplayRow() (result_content_intro)
+ * all build to introduce a fieldset's contents above it — see each method's
+ * docblock for why #description/#description_display couldn't be used
+ * instead (gin_lb ignores 'before' on a fieldset).
+ */
+.layout-builder-configure-block .vb-fieldset-intro {
+  margin: 0 0 var(--vb-space-field);
+  color: var(--gin-color-text);
+}
+
+/*
+ * The general one-sided-margin rule above (.grouped-items .glb-form-item)
+ * ties in specificity with the pre-existing ".vb-filter-row > .glb-form-item"
+ * zeroing (views-basic.css, "Filter rows (#1337)" section) and comes later
+ * in the file, so it was winning — but only for a row with no settings body:
+ * :last-child counts DOM siblings regardless of visibility, so a checkbox
+ * with a display:none .vb-filter-row__body sibling (Show Category, Show
+ * Custom Vocab) doesn't match :last-child and keeps the general rule's 24px
+ * margin-bottom, while a checkbox with no body sibling at all (Show Search,
+ * Show Audience, Show Year) does match :last-child and gets 0 — the same
+ * checkbox item rendering two different heights depending on whether its
+ * filter happens to have settings (confirmed against the real rendered
+ * markup, #1481). Three classes here outranks both two-class rules
+ * regardless of :last-child or source order, so every row is the same
+ * height as its header content, whether or not it has a body.
+ */
+.grouped-items .vb-filter-row > .glb-form-item,
+.grouped-items .vb-filter-row > .form-item {
+  margin: 0 !important;
+}
+
+/*
+ * Space between the "Highlight pinned items" row and "Sort by" above it
+ * (#1481) — margin-top on the row itself, separating it from the field
+ * before it, not padding inside its own border (two earlier attempts
+ * targeted padding — inside the checkbox's own gin_lb-rendered item, then
+ * inside this row container — before establishing the actual ask was space
+ * above the row, not inside it). .vb-filter-row's base rule
+ * (views-basic.css, "Filter rows (#1337)" section) only sets margin-bottom,
+ * so there was nothing separating this row from the field above it.
+ */
+.vb-filter-row--pinned {
+  margin-top: var(--vb-space-group, 2.5rem);
 }

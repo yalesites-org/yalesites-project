@@ -237,12 +237,14 @@ function ys_views_basic_node_view(array &$build, NodeInterface $node, EntityView
  * Implements hook_form_alter().
  *
  * Unifies the listing-block authoring form (Layout Builder add/update block)
- * into a single horizontal tab bar: General | Field display & filters |
+ * into a single horizontal tab bar: General | Results & filters |
  * Tags, sorting & pinned | Display options.
  *
  * The last three tabs are the field widget's own inner "details" groups
  * (ViewsBasicWidgetBase::initSelectionContainers()); "General" collects the
- * outer block fields (heading, heading links, padding, admin title, reusable).
+ * outer block fields (heading, heading links, padding, admin title, reusable,
+ * and — as of #1481 — the block's Title/label fields, with the redundant
+ * "Block description" item hidden below).
  * Because the widget groups live inside the field_view_params widget,
  * field_group (which is driven by form-display config) cannot reach them, so
  * the grouping is done here with core's #group mechanism instead.
@@ -250,11 +252,11 @@ function ys_views_basic_node_view(array &$build, NodeInterface $node, EntityView
  * The tab set and the General group are built in a #process callback appended
  * to the content-block subform, because the block fields do not exist until
  * that subform's own #process (InlineBlock::processBlockForm()) has run. The
- * root-level reusable/admin-title fields are attached to the General group
- * here in the alter — before form processing begins — so their #group is set
- * before their own #process runs, regardless of the order in which the form
- * tree is processed. ys_layouts_form_alter() relabels those two fields; this
- * hook only groups them, so the two do not conflict.
+ * root-level reusable/admin-title/label fields are attached to the General
+ * group here in the alter — before form processing begins — so their #group
+ * is set before their own #process runs, regardless of the order in which the
+ * form tree is processed. ys_layouts_form_alter() relabels the reusable/info
+ * pair; this hook only groups them, so the two do not conflict.
  */
 function ys_views_basic_form_alter(array &$form, FormStateInterface $form_state, string $form_id): void {
   if ($form_id !== 'layout_builder_add_block' && $form_id !== 'layout_builder_update_block') {
@@ -281,11 +283,36 @@ function ys_views_basic_form_alter(array &$form, FormStateInterface $form_state,
 
   // Attach the root-level reusable/admin-title fields (inline-block only) to
   // the General tab. Weights place them below the content fields within it.
-  foreach (['info' => 20, 'reusable' => 21] as $key => $weight) {
+  // 'reusable' before 'info' (#1481): ys_layouts_form_alter() wraps these two
+  // in a toggle/disclosure row (reusable is the header, info the dependent
+  // body, via #prefix/#suffix) and needs them adjacent in that order — this
+  // overwrites the weights that hook already set, so it has to keep the same
+  // relative order or the row's HTML ends up malformed.
+  foreach (['reusable' => 20, 'info' => 21] as $key => $weight) {
     if (isset($form[$key])) {
       $form[$key]['#group'] = 'group_listing_general';
       $form[$key]['#weight'] = $weight;
     }
+  }
+
+  // Move the block "Title" (label/label_display) fields into the General tab
+  // too (#1481): unlike info/reusable above, these live one level deeper, at
+  // $form['settings']['label'] and $form['settings']['label_display'] — the
+  // visible "Administrative label" field is not $form['info']. #group works
+  // the same way on these (plain textfield/checkbox render elements, not
+  // field-widget wrappers), so no physical move is needed, only #group.
+  foreach (['label' => 22, 'label_display' => 23] as $key => $weight) {
+    if (isset($form['settings'][$key])) {
+      $form['settings'][$key]['#group'] = 'group_listing_general';
+      $form['settings'][$key]['#weight'] = $weight;
+    }
+  }
+
+  // Hide the static "Block description" item (#1481): it restates the block
+  // type the editor just picked in the block picker (e.g. "Posts - Card Grid
+  // View"), duplicating the value the label field above now prefills.
+  if (isset($form['settings']['admin_label'])) {
+    $form['settings']['admin_label']['#access'] = FALSE;
   }
 
   $block_form['#process'][] = '_ys_views_basic_listing_form_tabs';
@@ -375,7 +402,13 @@ function _ys_views_basic_listing_form_tabs(array $element, FormStateInterface $f
     // starts out as. Setting #title on the wrong (outer) level here doesn't
     // error, it just silently does nothing, leaving the field's own table
     // heading printed as normal.
-    $title = $links_field['widget']['#title'] ?? t('Links');
+    // "Header links" rather than the field's own shared config label ("Links",
+    // field.field.block_content.*.field_heading_links.yml) — that label is
+    // used platform-wide across every block type this field appears on, not
+    // just listing blocks, so it's overridden here rather than renamed in
+    // config (#1481, same scope reasoning as leaving "Administrative label"
+    // alone in ys_layouts_form_alter()).
+    $title = t('Header links');
     // The field's own multi-value table already prints this as a heading;
     // avoid showing it twice once the details summary carries it instead.
     if (isset($links_field['widget']['#title'])) {

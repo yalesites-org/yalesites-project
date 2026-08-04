@@ -20,6 +20,6 @@ default_value:
 default_value_callback: ''
 settings:
   markup:
-    value: "<p>View is a reference component that can pull from your content types to create a dynamic view on your webpage.</p>\r\n"
+    value: "<p>This block builds a list of Pages automatically. Choose which pages appear and how each one looks — the list updates itself as content is published.</p>\r\n"
     format: basic_html
 field_type: markup

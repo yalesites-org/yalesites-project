@@ -227,10 +227,53 @@ function ys_layouts_form_alter(&$form, $form_state, $form_id) {
   if ($form_id == 'layout_builder_update_block' || $form_id == 'layout_builder_add_block') {
     if (isset($form['reusable'])) {
       $form['reusable']['#title'] = t('Reusable Block');
-      $form['reusable']['#description'] = t("Create reusable content with Reusable Blocks. Changes made to a Reusable Block's content are reflected anywhere the Block is used. This setting cannot be changed after saving.");
+      $form['reusable']['#description'] = t("Create reusable content with Reusable Blocks. Changes made to a Reusable Block's content are reflected anywhere the Block is used.");
+
+      // "Make block reusable" + its dependent "Reusable Block title" field
+      // (#1481) get the same toggle/disclosure row treatment as "Show
+      // Category" and the other exposed filters on the listing-block form
+      // (ys_views_basic's buildExposedFilterAccordion()) — the same
+      // "checkbox turns on, dependent field appears" shape, generalized to
+      // every block type via a shared component (assets/css/reusable-
+      // toggle.css) rather than copied. Built with #prefix/#suffix instead of
+      // nesting 'info' inside 'reusable' in the render tree: this hook runs
+      // before ys_views_basic_form_alter() (alphabetical hook order), which
+      // still needs $form['info'] and $form['reusable'] addressable at their
+      // original top-level keys to attach them to the listing-block General
+      // tab via #group — nesting them here would break that.
+      //
+      // This relies on 'reusable' rendering immediately before 'info' with
+      // nothing else between them, which the explicit #weight pair below
+      // guarantees relative to each other but not relative to every other
+      // field Drupal core or another module might add to this form — worth a
+      // visual check on a non-listing block, since every listing-block
+      // verification this ticket did was against the ys_views_basic tab
+      // layout, which sets its own explicit weights for these two fields
+      // and was checked directly.
+      $form['reusable']['#weight'] = -10;
+      $form['reusable']['#prefix'] = '<div class="ys-toggle-row ys-toggle-row--has-settings">';
+      // Split into its own visually distinct warning (#1481): it's the only
+      // irreversible decision on this form and used to trail as plain help
+      // text easy to skim past. Drupal's own "messages--warning" styling
+      // (core/themes/*/css/components/messages.css) is used rather than a new
+      // custom class, since it renders consistently across every admin theme
+      // context this form can appear in.
+      $form['reusable']['#suffix'] = '<div role="note" class="messages messages--warning">' . t('This setting cannot be changed after saving.') . '</div>';
 
       $form['info']['#title'] = t('Reusable Block title');
       $form['info']['#description'] = t('Add a short, descriptive title to easily find and reuse the Reusable Block. Defaults to Administrative label if no title is provided.');
+      $form['info']['#weight'] = -9;
+      $form['info']['#prefix'] = '<div class="ys-toggle-row__body">';
+      $form['info']['#suffix'] = '</div></div>';
+      // Disabled (not hidden) while unchecked, matching the same pattern as
+      // category_filter_label/pin_label: the row's CSS collapses the body
+      // via :has() off the checkbox, so 'disabled' is what stops a collapsed
+      // row from still submitting a value.
+      $form['info']['#states'] = [
+        'disabled' => [':input[name="reusable"]' => ['checked' => FALSE]],
+      ];
+
+      $form['#attached']['library'][] = 'ys_layouts/reusable_toggle';
     }
   }
 }
