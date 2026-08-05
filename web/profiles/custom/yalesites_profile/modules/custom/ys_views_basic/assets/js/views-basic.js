@@ -119,6 +119,38 @@
       );
       updateVisibility();
 
+      // Each exposed-filter row discloses its settings body with a pure-CSS
+      // :has() rule (views-basic.css), so revealing it grows the form without
+      // firing anything the surrounding dialog can react to.
+      //
+      // Adding a block goes through layout_builder_browser, which opens the
+      // form in a jQuery UI modal (#layout-builder-modal) sized and positioned
+      // once, when it opens. Growing its content therefore pushes the dialog
+      // past the bottom of the viewport, and that overflow is unreachable
+      // because the modal locks body scroll. Core's dialog.position.js binds
+      // the recompute to the `resize.dialogResize` window namespace and
+      // triggers it itself on open, so re-triggering that is what makes the
+      // dialog re-measure and re-centre.
+      //
+      // Configuring an existing block uses the off-canvas renderer instead,
+      // which is unaffected: its panel height is derived from the viewport
+      // rather than from content, so it scrolls internally and can never be
+      // pushed below the fold. It is created with autoResize: FALSE, so
+      // nothing is bound to this namespace there and the trigger is a harmless
+      // no-op.
+      //
+      // Keyed on the row class rather than on field names, so every disclosing
+      // row is covered, including the pinned-items row. (#1299 QA)
+      once(
+        "vb-filter-row-dialog-resize",
+        '.vb-filter-row--has-settings input[type="checkbox"]',
+        context
+      ).forEach((toggle) => {
+        toggle.addEventListener("change", () => {
+          $(window).trigger("resize.dialogResize");
+        });
+      });
+
       // Handle Enter key submission in event calendar filter form search field.
       const searchFields = once(
         "event-calendar-search-enter",

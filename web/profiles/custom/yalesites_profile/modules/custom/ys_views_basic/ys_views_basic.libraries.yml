@@ -5,7 +5,9 @@ ys_views_basic:
   js:
     assets/js/views-basic.js: {}
   dependencies:
+    - core/drupal
     - core/once
+    - core/jquery
 
 ys_views_basic_preview:
   css:
