@@ -5,9 +5,9 @@
  * Install and update functions for the ys_beacon module.
  */
 
-use Drupal\ys_beacon\Controller\ChatApiController;
 use Drupal\ys_beacon\Service\GuardrailTelemetry;
 use Drupal\ys_beacon\Service\SuspectTurnLog;
+use Drupal\Core\Config\FileStorage;
 use Drupal\Core\Database\Connection;
 
 /**
@@ -162,6 +162,10 @@ function ys_beacon_schema() {
  * cannot do it (yalesites-org/YaleSites-Internal#1459).
  */
 function ys_beacon_install() {
+  // Seed the shipped defaults before anything else, so the legacy copy below
+  // overlays them instead of writing into a config object that never existed.
+  _ys_beacon_seed_settings();
+
   $settings = \Drupal::configFactory()->getEditable('ys_beacon.settings');
   $changed = FALSE;
 
@@ -221,6 +225,35 @@ function ys_beacon_install() {
   // copy). The helper no-ops when versions already exist, so migrations and
   // existing installs are never overwritten.
   _ys_beacon_seed_default_instructions($database);
+}
+
+/**
+ * Seeds ys_beacon.settings from the shipped defaults when it does not exist.
+ *
+ * Ys_beacon.settings is config_ignored, so it is deliberately absent from
+ * config/sync. That matters on the install path this module actually takes on a
+ * first-time site: ys_beacon is listed in core.extension, so config:import is
+ * what installs it, and a module installed mid-import gets its default config
+ * from the SYNC storage rather than from its own config/install directory
+ * (ConfigInstaller::installDefaultConfig() branches on isSyncing()). Nothing
+ * named ys_beacon.* exists in sync, so without this the settings object is
+ * never created at all, and every key without a runtime fallback silently reads
+ * NULL - turning streaming off and hiding the AI metadata fields, both of which
+ * ship on.
+ *
+ * Reading the shipped file directly sidesteps that, and is the same approach
+ * _ys_beacon_portkey_seed_settings() already takes for the same reason.
+ */
+function _ys_beacon_seed_settings(): void {
+  $config = \Drupal::configFactory()->getEditable('ys_beacon.settings');
+  // Never clobber an existing configuration; this only fills in an absent one.
+  if (!$config->isNew()) {
+    return;
+  }
+  $path = \Drupal::service('extension.list.module')->getPath('ys_beacon') . '/config/install';
+  if ($data = (new FileStorage($path))->read('ys_beacon.settings')) {
+    $config->setData($data)->save();
+  }
 }
 
 /**
@@ -305,443 +338,24 @@ EOT;
 }
 
 /**
- * Set the configurable Search API index and server machine names.
+ * Implements hook_update_last_removed().
  *
- * The chatbot's Search API index and server were previously hardcoded as the
- * literal "ys_beacon"; they are now read from ys_beacon.settings so a second
- * index can be added by configuration. Populate the defaults on existing sites
- * so exported config is explicit; runtime already falls back to "ys_beacon".
+ * Updates 10001-10018 have been removed. They existed only to migrate
+ * development environments while this module was being built on an unmerged
+ * branch: ys_beacon has never shipped, so no production, test or live site has
+ * ever had it installed, and a site receiving it for the first time gets its
+ * schema version set straight to the newest update by
+ * ModuleInstaller::install() - meaning not one of those hooks would ever have
+ * run there. Everything they did is expressed in hook_schema() and
+ * hook_install() (with the shipped config/install defaults), which is the state
+ * a first-time install lands in directly.
+ *
+ * Declaring the highest removed number is what keeps that safe rather than
+ * silent: a database still parked below it - only ever a local checkout or a
+ * multidev of this branch - is refused with a clear error instead of quietly
+ * skipping the migrations it still needs. Reset such a database from a fresh
+ * pull instead.
  */
-function ys_beacon_update_10001() {
-  $settings = \Drupal::configFactory()->getEditable('ys_beacon.settings');
-  $changed = FALSE;
-  foreach (['search_index_id', 'search_server_id'] as $key) {
-    if (!$settings->get($key)) {
-      $settings->set($key, 'ys_beacon');
-      $changed = TRUE;
-    }
-  }
-  if ($changed) {
-    $settings->save();
-  }
-}
-
-/**
- * Force the floating chat button icon to the canonical "sparkles" mark.
- *
- * The icon is no longer site-configurable; every YaleSites site shows the same
- * icon. Set fa-sparkles whenever the Beacon settings exist, covering both a
- * legacy "chat" selection and sites that never stored the value at all.
- */
-function ys_beacon_update_10002() {
-  $settings = \Drupal::configFactory()->getEditable('ys_beacon.settings');
-  // Only touch sites that actually have Beacon settings; never create the
-  // config object here.
-  if ($settings->isNew()) {
-    return;
-  }
-  $settings->set('floating_button_icon', 'fa-sparkles')->save();
-}
-
-/**
- * Authorize Beacon on sites already using it so no live site loses it.
- *
- * The platform_authorized flag gates every Beacon surface and ships off by
- * default, so a platform admin must authorize each site. Sites already running
- * Beacon (chat enabled, or the ys_beacon integration turned on) must keep it,
- * so authorize them here. This runs in the updatedb phase before config:import;
- * ys_beacon.settings is config_ignored, so the per-site value survives the
- * import.
- *
- * This only ever reaches a site that ALREADY had ys_beacon installed, which
- * today means a development or multidev site. A site receiving Beacon for the
- * first time installs the module from the core.extension diff, and installing a
- * module sets its schema version straight to the newest update
- * (ModuleInstaller::install()), so no ys_beacon update hook runs there at all.
- * That is why platform_authorized was never toggled on for migrated sites
- * (yalesites-org/YaleSites-Internal#1459). It is now correct by design rather
- * than back-filled: a first-time site stays unauthorized until a platform admin
- * authorizes it on the Platform Admin Settings page, which is what the flag is
- * for.
- */
-function ys_beacon_update_10004() {
-  $settings = \Drupal::configFactory()->getEditable('ys_beacon.settings');
-  // Only act on sites that actually have Beacon settings; never create the
-  // config object here.
-  if ($settings->isNew()) {
-    return;
-  }
-  $in_use = (bool) $settings->get('enable_chat')
-    || (bool) \Drupal::config('ys_integrations.integration_settings')->get('ys_beacon');
-  $settings->set('platform_authorized', $in_use)->save();
-}
-
-/**
- * Seed the Beacon index read-only flag on existing sites.
- *
- * The new ys_beacon.settings:read_only flag lets a site borrow another site's
- * Azure collection and query it without ever writing to it. It ships off, so
- * seed the explicit FALSE on existing sites for explicit exported config;
- * runtime already treats an absent value as not-read-only. This runs in the
- * updatedb phase before config:import; ys_beacon.settings is config_ignored,
- * so a per-site read-only value set later survives the import.
- */
-function ys_beacon_update_10005() {
-  $settings = \Drupal::configFactory()->getEditable('ys_beacon.settings');
-  // Only touch sites that actually have Beacon settings; never create the
-  // config object here.
-  if ($settings->isNew()) {
-    return;
-  }
-  if ($settings->get('read_only') === NULL) {
-    $settings->set('read_only', FALSE)->save();
-  }
-}
-
-/**
- * Persist the per-site index connection into the real search_api config.
- *
- * The Azure index name and read-only flag were previously applied only as
- * runtime config overrides. They are now written onto search_api.server
- * (backend_config database_name) and search_api.index (read_only), with those
- * keys config-ignored so they survive import, and the overrides removed.
- * Backfill existing sites from their saved ys_beacon.settings so removing the
- * overrides never leaves the search server pointing at an empty database. This
- * runs in the updatedb phase before config:import; the config-ignore entries
- * added in the same deploy then keep the written values through the import.
- */
-function ys_beacon_update_10006() {
-  $settings = \Drupal::config('ys_beacon.settings');
-  $index_name = (string) $settings->get('azure_index_name');
-  // An unconfigured site has nothing to propagate; its server database stays
-  // empty and the index stays disabled by the status override.
-  if ($index_name === '') {
-    return;
-  }
-  \Drupal::service('ys_beacon.index_manager')
-    ->propagateConnection($index_name, (bool) $settings->get('read_only'));
-}
-
-/**
- * Recreate the Beacon Azure index with the site_id schema and reindex.
- *
- * Issue yalesites-org/YaleSites-Internal#1392 adds a retrievable site_id field
- * and site-namespaces every document so multiple sites can share one Azure
- * collection. An index provisioned before this change has no site_id field and
- * un-namespaced documents, so writes fail on the unknown field and site-scoped
- * reads match none of the old documents. Azure never modifies an index in
- * place, so drop and recreate it with the current schema and queue a full
- * reindex. Only a site that owns a provisioned, writable index is touched; a
- * site that provisions fresh after this deploy, or a read-only borrower, is
- * left alone.
- *
- * A failure is allowed to abort the update rather than be swallowed. This runs
- * in the updatedb phase, before config:import switches the server to the
- * beacon_azure_ai_search provider, so aborting here leaves the site on its
- * previous provider - still working against the old index - and Drupal re-runs
- * this update on the next deploy. Recreating the index only once Azure is
- * reachable keeps the schema change and the provider switch effectively
- * atomic, so the new provider is never pointed at an un-migrated index.
- * reprovision() checks indexExists() before any destructive delete, so a plain
- * outage aborts without having touched the index. The queued reindex runs
- * afterwards on cron, once config:import has activated the new provider.
- */
-function ys_beacon_update_10007() {
-  $settings = \Drupal::config('ys_beacon.settings');
-  // Only a site that owns a writable, provisioned index has one of its own to
-  // recreate. A read-only borrower must never write to the collection it reads.
-  if ((string) $settings->get('azure_index_name') === '' || (bool) $settings->get('read_only')) {
-    return;
-  }
-  \Drupal::service('ys_beacon.index_manager')->reprovision();
-}
-
-/**
- * Recreate the Beacon Azure index with the citation-field schema and reindex.
- *
- * Merging the cross-site citation work (yalesites-org/YaleSites-Internal#1391)
- * adds retrievable citation_title and citation_url fields so a site querying a
- * shared collection can cite content whose Drupal entity does not exist
- * locally. Azure never modifies an index in place, so an index provisioned by
- * the earlier site_id migration (update 10007) must be dropped and recreated
- * with the current schema and fully reindexed. Only a site that owns a
- * provisioned, writable index is touched; a fresh provision or a read-only
- * borrower is left alone.
- *
- * As with the site_id migration, a failure aborts the update rather than being
- * swallowed: reprovision() checks indexExists() before any destructive delete,
- * so a plain outage aborts without having touched the index and Drupal re-runs
- * the update on the next deploy. The queued reindex runs afterwards on cron.
- */
-function ys_beacon_update_10009() {
-  $settings = \Drupal::config('ys_beacon.settings');
-  // Only a site that owns a writable, provisioned index has one of its own to
-  // recreate. A read-only borrower must never write to the collection it reads.
-  if ((string) $settings->get('azure_index_name') === '' || (bool) $settings->get('read_only')) {
-    return;
-  }
-  \Drupal::service('ys_beacon.index_manager')->reprovision();
-}
-
-/**
- * Recreate the Beacon Azure index with the updated_at schema and reindex.
- *
- * Issue yalesites-org/YaleSites-Internal#1434 adds a typed updated_at
- * (Edm.DateTimeOffset, filterable + sortable) field recording when each chunk
- * was last written to the index, so chunks can be sorted and filtered by index
- * freshness in the Azure portal. Azure never modifies an index in place, so an
- * index provisioned by the earlier citation-field migration (update 10009) must
- * be dropped and recreated with the current schema and fully reindexed, which
- * also stamps updated_at onto every existing chunk. Only a site that owns a
- * provisioned, writable index is touched; a fresh provision or a read-only
- * borrower is left alone.
- *
- * As with the earlier schema migrations, a failure aborts the update rather
- * than being swallowed: reprovision() checks indexExists() before any
- * destructive delete, so a plain outage aborts without having touched the index
- * and Drupal re-runs the update on the next deploy. The queued reindex runs
- * afterwards on cron.
- */
-function ys_beacon_update_10010() {
-  $settings = \Drupal::config('ys_beacon.settings');
-  // Only a site that owns a writable, provisioned index has one of its own to
-  // recreate. A read-only borrower must never write to the collection it reads.
-  if ((string) $settings->get('azure_index_name') === '' || (bool) $settings->get('read_only')) {
-    return;
-  }
-  \Drupal::service('ys_beacon.index_manager')->reprovision();
-}
-
-/**
- * Recreate the Beacon Azure index with searchable citation/content fields.
- *
- * Issue yalesites-org/YaleSites-Internal#1439 makes the content,
- * citation_title, and citation_url fields queryable for debugging in the
- * Azure portal: content becomes searchable, and citation_title and
- * citation_url become searchable, filterable, and sortable (previously all
- * three were retrievable-only). This is portal-only inspection and does not
- * affect DrupalAI retrieval, which is a pure vector search. Azure cannot
- * change a field's searchable/filterable/sortable attributes in place, so an
- * index provisioned by the earlier updated_at migration (update 10010) must
- * be dropped and recreated with the current schema and fully reindexed. Only
- * a site that owns a provisioned, writable index is touched; a fresh
- * provision or a read-only borrower is left alone.
- *
- * As with the earlier schema migrations, a failure aborts the update rather
- * than being swallowed: reprovision() checks indexExists() before any
- * destructive delete, so a plain outage aborts without having touched the
- * index and Drupal re-runs the update on the next deploy. The queued reindex
- * runs on cron.
- */
-function ys_beacon_update_10011() {
-  $settings = \Drupal::config('ys_beacon.settings');
-  // Only a site that owns a writable, provisioned index has one of its own to
-  // recreate. A read-only borrower must never write to the collection it reads.
-  if ((string) $settings->get('azure_index_name') === '' || (bool) $settings->get('read_only')) {
-    return;
-  }
-  \Drupal::service('ys_beacon.index_manager')->reprovision();
-}
-
-/**
- * Pin the resolved Azure AI Search endpoint for existing provisioned sites.
- *
- * Issue yalesites-org/YaleSites-Internal#1440 makes a site pin its resolved
- * endpoint once it owns an index, so a later change to the shared Pantheon
- * secret only moves sites that have not created an index yet. That guarantee
- * only holds for the current fleet if existing sites are pinned before the
- * secret is ever repointed, so backfill them here. Only a site that owns a
- * writable, provisioned index is pinned; a read-only borrower or a site with no
- * index keeps resolving the endpoint from the secret. pinSearchUrl() is a pure
- * config operation (no Azure round-trip), so it is safe in the updatedb phase;
- * it writes the pin onto the search server's connection url, which is
- * config-ignored and so survives the config:import later in the same deploy.
- */
-function ys_beacon_update_10012() {
-  $settings = \Drupal::config('ys_beacon.settings');
-  if ((string) $settings->get('azure_index_name') === '' || (bool) $settings->get('read_only')) {
-    return;
-  }
-  // A site that owns a writable index should have a resolvable endpoint to pin.
-  // If it does not, surface it rather than leave the site silently unpinned and
-  // so vulnerable to a later Pantheon-secret repoint.
-  if (!\Drupal::service('ys_beacon.index_manager')->pinSearchUrl()) {
-    \Drupal::logger('ys_beacon')->warning('Beacon endpoint pin backfill: site owns the writable index "@name" but its Azure AI Search endpoint did not resolve, so it was left unpinned. It will keep resolving the endpoint from the Pantheon secret.', ['@name' => $settings->get('azure_index_name')]);
-  }
-}
-
-/**
- * Migrate legacy VDB-config endpoint pins onto the search server connection.
- *
- * Beacon now resolves and pins a site's Azure AI Search endpoint on the search
- * server's connection URL - the field an admin edits in the Vector Database
- * Configuration form - instead of the VDB provider settings
- * (yalesites-org/YaleSites-Internal#1440, #1448). Sites provisioned before this
- * change carry their pin on ai_vdb_provider_azure_ai_search.settings:url; copy
- * it onto the server URL when the server has none of its own (an endpoint an
- * admin has since set is left untouched), then clear the now-unused VDB-config
- * value. Runs in the updatedb phase, and the server URL is config-ignored, so
- * the migrated pin survives the config:import later in the same deploy.
- */
-function ys_beacon_update_10013() {
-  $vdb = \Drupal::configFactory()->getEditable('ai_vdb_provider_azure_ai_search.settings');
-  $pinned = (string) $vdb->get('url');
-  if ($pinned === '') {
-    return;
-  }
-  $server_id = \Drupal::config('ys_beacon.settings')->get('search_server_id') ?: 'ys_beacon';
-  $server = \Drupal::entityTypeManager()->getStorage('search_api_server')->loadOverrideFree($server_id);
-  if ($server) {
-    $backend_config = $server->get('backend_config');
-    if ((string) ($backend_config['database_settings']['url'] ?? '') === '') {
-      $backend_config['database_settings']['url'] = $pinned;
-      $server->set('backend_config', $backend_config)->save();
-    }
-  }
-  // The VDB-config URL is no longer read at runtime; clear the decommissioned
-  // pin so the two stores cannot drift.
-  $vdb->set('url', '')->save();
-}
-
-/**
- * Seed the model context window on existing sites.
- *
- * The new ys_beacon.settings:model_context_window bounds how much conversation
- * history is sent to the model so long chats degrade gracefully. Beacon
- * settings are config_ignored, so the config/install default never reaches an
- * already-installed site via config:import; seed it here when absent. Runtime
- * already falls back to ChatApiController::DEFAULT_CONTEXT_WINDOW, so this only
- * makes the value explicit and editable in the administration form.
- */
-function ys_beacon_update_10014() {
-  $settings = \Drupal::configFactory()->getEditable('ys_beacon.settings');
-  // Only touch sites that actually have Beacon settings; never create the
-  // config object here.
-  if ($settings->isNew()) {
-    return;
-  }
-  if ($settings->get('model_context_window') === NULL) {
-    $settings->set('model_context_window', ChatApiController::DEFAULT_CONTEXT_WINDOW)->save();
-  }
-}
-
-/**
- * Fail closed on sites left mid-migration by the removed auto-cutover.
- *
- * The deleted BeaconMigration set ys_beacon.settings:enable_chat = TRUE
- * before provisioning the Azure index and returned early when provisioning
- * failed, leaving a deliberate holding state - chat marked on,
- * azure_index_name still empty - that hook_cron() retried until it healed.
- * Removing the auto-cutover (yalesites-org/YaleSites-Internal#1459) also
- * removes that retry, so any site already parked in that state would keep
- * enable_chat = TRUE with no index and nothing to heal it. That is not merely
- * cosmetic: the runtime override forces the search INDEX off when no index name
- * is set, but it only forces enable_chat off for an UNAUTHORIZED site - so an
- * authorized site parked here advertises a chat widget whose retrieval returns
- * nothing, making every reply an ungrounded, uncited guess. The widget attach,
- * the floating button, and the conversation endpoint now all refuse to serve
- * without an index name; this hook clears the stored flag so it agrees.
- *
- * Fail closed instead: clear enable_chat so the stored state matches what the
- * site actually serves, and log it. A platform admin then enables Beacon
- * deliberately from the Platform Admin Settings page, which is the only path
- * that provisions the index and reports failures. This matches the rule the
- * settings form already enforces for a fresh enable it cannot verify.
- *
- * Only sites that already have ys_beacon installed reach this - a first-time
- * site runs no update hook - which is exactly where the holding state can
- * exist.
- */
-function ys_beacon_update_10015() {
-  $settings = \Drupal::configFactory()->getEditable('ys_beacon.settings');
-  // Only touch sites that actually have Beacon settings; never create the
-  // config object here.
-  if ($settings->isNew()) {
-    return;
-  }
-  // A read-only borrower legitimately has no index of its own to provision.
-  if (!$settings->get('enable_chat')
-    || (string) $settings->get('azure_index_name') !== ''
-    || (bool) $settings->get('read_only')) {
-    return;
-  }
-  $settings->set('enable_chat', FALSE)->save();
-  \Drupal::logger('ys_beacon')->warning('Beacon chat was marked enabled with no search index configured - a holding state left by the removed automatic ai_engine cutover. The flag has been cleared so it matches what the site serves; enable Beacon from the Platform Admin Settings page to provision the index.');
-}
-
-/**
- * Creates the guardrail telemetry counter table.
- *
- * New sites get the table from hook_schema(); existing sites need it created
- * here. Guardrail telemetry records aggregate counts only - the table has no
- * column for question or answer text (yalesites-org/YaleSites-Internal#1469).
- */
-function ys_beacon_update_10016() {
-  $schema = \Drupal::database()->schema();
-  if ($schema->tableExists(GuardrailTelemetry::TABLE)) {
-    return;
-  }
-  $schema->createTable(GuardrailTelemetry::TABLE, ys_beacon_schema()[GuardrailTelemetry::TABLE]);
-}
-
-/**
- * Creates the flagged-turn table for suspected injection attempts.
- *
- * Records when a turn was flagged and why - see SuspectTurnLog for the
- * retention and per-day bounds, and README.md for what the report page
- * discloses. Requested in the review of
- * yalesites-org/YaleSites-Internal#1469.
- *
- * Note that this creates the table from the CURRENT ys_beacon_schema(), so what
- * it produces tracks that definition rather than being frozen at the shape it
- * first shipped. An earlier version of this branch created two further columns
- * (question, answer) which have since been removed, so an environment that ran
- * that version holds a table this definition no longer describes;
- * ys_beacon_update_10018() below is what converges it. This hook is not edited
- * to freeze the old field list because doing so would only re-create columns
- * that 10018 immediately drops again.
- */
-function ys_beacon_update_10017() {
-  $schema = \Drupal::database()->schema();
-  if ($schema->tableExists(SuspectTurnLog::TABLE)) {
-    return;
-  }
-  $schema->createTable(SuspectTurnLog::TABLE, ys_beacon_schema()[SuspectTurnLog::TABLE]);
-}
-
-/**
- * Drops the flagged-turn question and answer columns, and their contents.
- *
- * Beacon no longer records what was asked or answered on a flagged turn: the
- * decision to keep that text is being reconsidered under its own ticket, so the
- * capability is removed rather than left switched on (reviewed on PR #1417 for
- * yalesites-org/YaleSites-Internal#1469). Update 10017 created these columns,
- * so any site that ran it - a multidev, or a local checkout of this branch - is
- * holding both the columns and whatever text was captured while they existed.
- * Dropping the columns removes that text from the live table, which is the
- * point: leaving them in place and merely stopping writes would keep the
- * already-stored questions and answers readable through any future query.
- *
- * Two residues this hook cannot reach, stated so they are not assumed handled:
- * a database backup or multidev snapshot taken while the columns existed still
- * contains the captured text, and an INSTANT column drop (the MySQL 8.0.29+
- * default) removes the column from the data dictionary without immediately
- * rewriting existing row bytes. Both need filesystem or backup access to read,
- * so neither is reachable over the web - but "the text is gone" is true of what
- * the application can query, not of every copy that ever existed.
- *
- * Guarded on the table and on each column so it is safe to re-run and safe on a
- * site that installed ys_beacon fresh after this change (which gets the current
- * hook_schema() and so never had the columns).
- */
-function ys_beacon_update_10018() {
-  $schema = \Drupal::database()->schema();
-  if (!$schema->tableExists(SuspectTurnLog::TABLE)) {
-    return;
-  }
-  foreach (['question', 'answer'] as $field) {
-    if ($schema->fieldExists(SuspectTurnLog::TABLE, $field)) {
-      $schema->dropField(SuspectTurnLog::TABLE, $field);
-    }
-  }
+function ys_beacon_update_last_removed() {
+  return 10018;
 }

@@ -21,8 +21,8 @@ streaming: true
 # window long conversations so they degrade gracefully. Defaults to Claude
 # Haiku's 200k window; update it in the Beacon administration form when the
 # routed model changes. Keep in sync with
-# ChatApiController::DEFAULT_CONTEXT_WINDOW (the runtime fallback) and the
-# ys_beacon_update_10014() backfill.
+# ChatApiController::DEFAULT_CONTEXT_WINDOW, the runtime fallback used when this
+# value is absent.
 model_context_window: 200000
 instructions_max_length: 4000
 instructions_warning_threshold: 3500
