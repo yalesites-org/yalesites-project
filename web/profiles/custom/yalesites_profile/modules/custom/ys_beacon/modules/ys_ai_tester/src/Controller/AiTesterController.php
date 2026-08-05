@@ -164,7 +164,7 @@ class AiTesterController extends ControllerBase {
       }
 
       $item['url'] = ($url !== NULL && $url !== '')
-        ? ['#markup' => '<br><small>' . htmlspecialchars($url, ENT_QUOTES) . '</small>']
+        ? ['#markup' => '<br><small>' . Html::escape($url) . '</small>']
         : [];
 
       $items[] = $item;
@@ -234,13 +234,13 @@ class AiTesterController extends ControllerBase {
   protected function citationLink(string $title, ?string $url): array {
     $scheme = $url !== NULL ? strtolower((string) parse_url($url, PHP_URL_SCHEME)) : '';
     if (!in_array($scheme, ['http', 'https'], TRUE)) {
-      return ['#markup' => htmlspecialchars($title, ENT_QUOTES)];
+      return ['#markup' => Html::escape($title)];
     }
 
     return [
       '#type' => 'link',
       '#title' => Markup::create(
-        htmlspecialchars($title, ENT_QUOTES)
+        Html::escape($title)
         . '<span class="visually-hidden"> ' . $this->t('(opens in new window)') . '</span>'
       ),
       '#url' => Url::fromUri($url),
@@ -354,15 +354,43 @@ class AiTesterController extends ControllerBase {
    *   The CSV file body, including the leading BOM.
    */
   protected function buildResultsCsv(array $rows): string {
-    $handle = fopen('php://temp', 'r+');
-    fputcsv($handle, ['Question', 'Answer', 'Error', 'Sources']);
-    foreach ($rows as $row) {
-      fputcsv($handle, array_map([$this, 'csvCell'], [
+    return $this->buildCsv(
+      ['Question', 'Answer', 'Error', 'Sources'],
+      array_map(static fn (array $row): array => [
         $row['question'],
         $row['answer'],
         $row['error'] ?? '',
         $row['sources'],
-      ]));
+      ], $rows)
+    );
+  }
+
+  /**
+   * Writes a header and rows into a hardened, Excel-safe CSV body.
+   *
+   * Prepends a UTF-8 BOM so Excel renders non-ASCII characters correctly rather
+   * than as mojibake, and runs every cell through csvCell() to neutralize
+   * spreadsheet formula injection. Multiline answers are quoted by fputcsv and
+   * stay in one cell.
+   *
+   * Both CSV exports go through here. They previously each carried their own
+   * copy of this loop, and had already drifted: the comparison export was
+   * missing the BOM, so an answer containing a curly quote or an em dash -
+   * which assistant answers routinely do - opened as mojibake in Excel.
+   *
+   * @param array $header
+   *   The header row, written verbatim; these are code-controlled literals.
+   * @param array $rows
+   *   Rows of already-ordered cell values.
+   *
+   * @return string
+   *   The CSV file body, including the leading BOM.
+   */
+  protected function buildCsv(array $header, array $rows): string {
+    $handle = fopen('php://temp', 'r+');
+    fputcsv($handle, $header);
+    foreach ($rows as $row) {
+      fputcsv($handle, array_map([$this, 'csvCell'], $row));
     }
     rewind($handle);
     $csv = stream_get_contents($handle);
@@ -1135,19 +1163,12 @@ class AiTesterController extends ControllerBase {
   public function downloadComparisonCsv(int $run_a, int $run_b): Response {
     $data = $this->runComparator->compare($run_a, $run_b);
 
-    $handle = fopen('php://temp', 'r+');
-    fputcsv($handle, [
-      'question', 'status', 'answer_a', 'answer_b',
-      'error_a', 'error_b',
-      'cited_a', 'cited_b', 'len_a', 'len_b',
-      'shared_sources', 'only_a_sources', 'only_b_sources',
-    ]);
-
+    $rows = [];
     foreach ($data['pairs'] as $pair) {
       $a = $pair['a'];
       $b = $pair['b'];
       $overlap = $pair['citation_overlap'];
-      fputcsv($handle, array_map([$this, 'csvCell'], [
+      $rows[] = [
         $pair['question'],
         $pair['status'],
         $a['answer'] ?? '',
@@ -1161,15 +1182,19 @@ class AiTesterController extends ControllerBase {
         $this->joinSourceUrls($overlap['both']),
         $this->joinSourceUrls($overlap['only_a']),
         $this->joinSourceUrls($overlap['only_b']),
-      ]));
+      ];
     }
 
-    rewind($handle);
-    $csv = stream_get_contents($handle);
-    fclose($handle);
-
-    $response = new Response($csv);
+    $response = new Response($this->buildCsv([
+      'question', 'status', 'answer_a', 'answer_b',
+      'error_a', 'error_b',
+      'cited_a', 'cited_b', 'len_a', 'len_b',
+      'shared_sources', 'only_a_sources', 'only_b_sources',
+    ], $rows));
     $response->headers->set('Content-Type', 'text/csv; charset=utf-8');
+    // Matches the other two file responses on this controller; without it a
+    // browser may sniff the body and treat it as something other than CSV.
+    $response->headers->set('X-Content-Type-Options', 'nosniff');
     $response->headers->set(
       'Content-Disposition',
       'attachment; filename="compare-' . $run_a . '-' . $run_b . '.csv"'
