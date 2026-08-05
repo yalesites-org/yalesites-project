@@ -4,15 +4,14 @@ namespace Drupal\ys_beacon\Plugin\PlatformAdminSetting;
 
 use Drupal\Core\Config\Config;
 use Drupal\Core\Config\ConfigFactoryInterface;
-use Drupal\Core\Entity\EntityTypeManagerInterface;
 use Drupal\Core\Form\FormStateInterface;
 use Drupal\Core\Messenger\MessengerInterface;
 use Drupal\Core\Session\AccountInterface;
 use Drupal\Core\StringTranslation\TranslatableMarkup;
-use Drupal\search_api\IndexInterface;
 use Drupal\ys_beacon\BeaconAuthorization;
 use Drupal\ys_beacon\Form\YsBeaconSettings;
 use Drupal\ys_beacon\Service\BeaconIndexManager;
+use Drupal\ys_beacon\Service\BeaconIndexStatus;
 use Drupal\ys_beacon\Service\LegacyAiEngine;
 use Drupal\ys_core\Attribute\PlatformAdminSetting;
 use Drupal\ys_core\PlatformAdminSettingBase;
@@ -62,11 +61,11 @@ use Symfony\Component\DependencyInjection\ContainerInterface;
 class BeaconPlatformAdminSetting extends PlatformAdminSettingBase {
 
   /**
-   * The entity type manager.
+   * The Beacon index status reader.
    *
-   * @var \Drupal\Core\Entity\EntityTypeManagerInterface
+   * @var \Drupal\ys_beacon\Service\BeaconIndexStatus
    */
-  protected EntityTypeManagerInterface $entityTypeManager;
+  protected BeaconIndexStatus $indexStatus;
 
   /**
    * The Beacon index manager.
@@ -102,8 +101,8 @@ class BeaconPlatformAdminSetting extends PlatformAdminSettingBase {
    *   The config factory.
    * @param \Drupal\Core\Session\AccountInterface $current_user
    *   The current user.
-   * @param \Drupal\Core\Entity\EntityTypeManagerInterface $entity_type_manager
-   *   The entity type manager.
+   * @param \Drupal\ys_beacon\Service\BeaconIndexStatus $index_status
+   *   The Beacon index status reader.
    * @param \Drupal\ys_beacon\Service\BeaconIndexManager $index_manager
    *   The Beacon index manager.
    * @param \Drupal\ys_beacon\Service\LegacyAiEngine $legacy_ai_engine
@@ -119,14 +118,14 @@ class BeaconPlatformAdminSetting extends PlatformAdminSettingBase {
     $plugin_definition,
     ConfigFactoryInterface $config_factory,
     AccountInterface $current_user,
-    EntityTypeManagerInterface $entity_type_manager,
+    BeaconIndexStatus $index_status,
     BeaconIndexManager $index_manager,
     LegacyAiEngine $legacy_ai_engine,
     MessengerInterface $messenger,
     LoggerInterface $logger,
   ) {
     parent::__construct($configuration, $plugin_id, $plugin_definition, $config_factory, $current_user);
-    $this->entityTypeManager = $entity_type_manager;
+    $this->indexStatus = $index_status;
     $this->indexManager = $index_manager;
     $this->legacyAiEngine = $legacy_ai_engine;
     $this->messenger = $messenger;
@@ -143,7 +142,7 @@ class BeaconPlatformAdminSetting extends PlatformAdminSettingBase {
       $plugin_definition,
       $container->get('config.factory'),
       $container->get('current_user'),
-      $container->get('entity_type.manager'),
+      $container->get('ys_beacon.index_status'),
       $container->get('ys_beacon.index_manager'),
       $container->get('ys_beacon.legacy_ai_engine'),
       $container->get('messenger'),
@@ -212,13 +211,12 @@ class BeaconPlatformAdminSetting extends PlatformAdminSettingBase {
     $form['indexing'] = [
       '#type' => 'container',
     ];
-    $index = $this->loadBeaconIndex();
-    if ($index && $index->isReadOnly()) {
+    if ($this->indexStatus->isReadOnly()) {
       // A borrowing site's content indexing is owned by the site it borrows
       // from, so the local indexing controls are hidden and replaced with a
       // short explanatory note, matching the site settings form.
       $form['indexing']['read_only_notice'] = [
-        '#markup' => '<p>' . $this->t('This site uses a shared, read-only index; content indexing is managed by the owning site.') . '</p>',
+        '#markup' => '<p>' . $this->indexStatus->readOnlyNotice() . '</p>',
       ];
     }
     else {
@@ -226,7 +224,7 @@ class BeaconPlatformAdminSetting extends PlatformAdminSettingBase {
       // admins can tell whether indexing succeeded, mirroring the read-only
       // status the per-site settings form shows site admins.
       $form['indexing']['status'] = [
-        '#markup' => '<p>' . $this->indexStatusSummary($index) . '</p>',
+        '#markup' => '<p>' . $this->indexStatus->summary() . '</p>',
       ];
       $form['indexing']['reindex'] = [
         '#type' => 'submit',
@@ -247,7 +245,7 @@ class BeaconPlatformAdminSetting extends PlatformAdminSettingBase {
         '#limit_validation_errors' => [],
         // Disabled unless the index is enabled and has items waiting, mirroring
         // Search API's own "Index now" and the site settings form.
-        '#disabled' => $this->indexRemainingItems($index) < 1,
+        '#disabled' => $this->indexStatus->remainingItems() < 1,
       ];
     }
 
@@ -451,7 +449,7 @@ class BeaconPlatformAdminSetting extends PlatformAdminSettingBase {
     // override resolved during this request's form build (while Beacon was
     // still off) is cached, so it keeps reporting disabled even after the
     // save above.
-    $index = $this->loadBeaconIndexOverrideFree();
+    $index = $this->indexStatus->loadOverrideFree();
     if ($index && !$index->status()) {
       $index->setStatus(TRUE)->save();
     }
@@ -467,7 +465,7 @@ class BeaconPlatformAdminSetting extends PlatformAdminSettingBase {
     // content is left alone, so a routine re-save never re-enumerates it
     // (rebuildTracker() re-enumerates datasources rather than only
     // re-flagging, issue #1383).
-    if ($index && ($created || $this->trackedItemCount($index) === 0)) {
+    if ($index && ($created || $this->indexStatus->trackedItems($index) === 0)) {
       $index->rebuildTracker();
     }
     return TRUE;
@@ -480,7 +478,7 @@ class BeaconPlatformAdminSetting extends PlatformAdminSettingBase {
    *   The index status to persist.
    */
   protected function setIndexStatus(bool $status): void {
-    $this->loadBeaconIndexOverrideFree()?->setStatus($status)->save();
+    $this->indexStatus->loadOverrideFree()?->setStatus($status)->save();
   }
 
   /**
@@ -503,116 +501,6 @@ class BeaconPlatformAdminSetting extends PlatformAdminSettingBase {
     return (bool) $settings->get(BeaconAuthorization::FLAG)
       && (bool) $settings->get('enable_chat')
       && (string) $settings->get('azure_index_name') !== '';
-  }
-
-  /**
-   * Loads the Beacon index override-free, for write-side decisions.
-   *
-   * Reads and writes the stored configuration rather than the
-   * runtime-resolved view, so the status/read-only overrides layered on by
-   * YsBeaconConfigOverrides are neither mistaken for stored state nor baked
-   * into the synced search_api.index config.
-   *
-   * @return \Drupal\search_api\IndexInterface|null
-   *   The index entity, or NULL when it does not exist.
-   */
-  protected function loadBeaconIndexOverrideFree(): ?IndexInterface {
-    $index = $this->entityTypeManager->getStorage('search_api_index')
-      ->loadOverrideFree($this->searchIndexId());
-    return $index instanceof IndexInterface ? $index : NULL;
-  }
-
-  /**
-   * The number of items the index's tracker knows about.
-   *
-   * @param \Drupal\search_api\IndexInterface $index
-   *   The Beacon index.
-   *
-   * @return int
-   *   The tracked item count, or 0 when the tracker cannot be read - so an
-   *   unreadable tracker errs towards seeding rather than silently leaving a
-   *   site indexing nothing, which is the failure this count exists to prevent.
-   */
-  protected function trackedItemCount(IndexInterface $index): int {
-    try {
-      return (int) $index->getTrackerInstance()->getTotalItemsCount();
-    }
-    catch (\Throwable $e) {
-      return 0;
-    }
-  }
-
-  /**
-   * Loads the Search API index backing the Beacon chatbot.
-   *
-   * @return \Drupal\search_api\IndexInterface|null
-   *   The index entity, or NULL when it does not exist.
-   */
-  protected function loadBeaconIndex(): ?IndexInterface {
-    return $this->entityTypeManager->getStorage('search_api_index')->load($this->searchIndexId());
-  }
-
-  /**
-   * Builds a short indexing status summary for the platform admin display.
-   *
-   * Mirrors the per-site settings form's read-only status (via
-   * BeaconIndexingControlsTrait::indexStatusSummary()) so platform admins see
-   * the same "@indexed of @total items indexed" count next to the indexing
-   * controls. Kept as a parallel copy because this plugin extends
-   * PlatformAdminSettingBase, not the ConfigFormBase the trait requires.
-   *
-   * @param \Drupal\search_api\IndexInterface|null $index
-   *   The Beacon index, or NULL when it does not exist.
-   *
-   * @return string
-   *   The status text.
-   */
-  protected function indexStatusSummary(?IndexInterface $index): string {
-    if (!$index || !$index->status()) {
-      return (string) $this->t('The Beacon index is currently disabled. It enables automatically once the chat widget is turned on.');
-    }
-    try {
-      $tracker = $index->getTrackerInstance();
-      return (string) $this->t('@indexed of @total items indexed.', [
-        '@indexed' => $tracker->getIndexedItemsCount(),
-        '@total' => $tracker->getTotalItemsCount(),
-      ]);
-    }
-    catch (\Throwable $e) {
-      return (string) $this->t('Index status unavailable.');
-    }
-  }
-
-  /**
-   * Counts tracked items not yet indexed into the Beacon vector database.
-   *
-   * @param \Drupal\search_api\IndexInterface|null $index
-   *   The Beacon index, or NULL when it does not exist.
-   *
-   * @return int
-   *   The remaining item count, or 0 when the index is missing, disabled, or
-   *   unavailable.
-   */
-  protected function indexRemainingItems(?IndexInterface $index): int {
-    if (!$index || !$index->status()) {
-      return 0;
-    }
-    try {
-      return (int) $index->getTrackerInstance()->getRemainingItemsCount();
-    }
-    catch (\Throwable $e) {
-      return 0;
-    }
-  }
-
-  /**
-   * The Search API index machine name backing the chatbot.
-   *
-   * @return string
-   *   The index machine name.
-   */
-  protected function searchIndexId(): string {
-    return $this->configFactory->get(BeaconAuthorization::CONFIG_NAME)->get('search_index_id') ?: 'ys_beacon';
   }
 
 }

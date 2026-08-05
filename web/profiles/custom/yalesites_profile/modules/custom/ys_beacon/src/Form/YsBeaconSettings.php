@@ -43,12 +43,12 @@ class YsBeaconSettings extends ConfigFormBase {
    */
   public static function create(ContainerInterface $container) {
     $instance = parent::create($container);
-    // The entity type manager and indexing batch helper back the shared
-    // indexing trait: the Platform Admin Settings page delegates its "Re-index
-    // all content" / "Index now" buttons to a class-resolved instance of this
-    // form, so the wiring must stay even though this form no longer renders
-    // those controls.
-    $instance->entityTypeManager = $container->get('entity_type.manager');
+    // The index status reader and indexing batch helper back the shared
+    // indexing trait: the Platform Admin Settings page delegates its
+    // "Re-index all content" / "Index now" buttons to a class-resolved instance
+    // of this form, so the wiring must stay even though this form no longer
+    // renders those controls.
+    $instance->indexStatus = $container->get('ys_beacon.index_status');
     $instance->indexingBatchHelper = $container->get('search_api.indexing_batch_helper');
     return $instance;
   }
@@ -90,7 +90,7 @@ class YsBeaconSettings extends ConfigFormBase {
     $form['beacon_status']['index_status'] = [
       '#type' => 'item',
       '#title' => $this->t('Content index'),
-      '#markup' => $this->indexStatusMarkup(),
+      '#markup' => $this->indexStatus->statusMarkup(),
     ];
 
     $form['floating_button'] = [

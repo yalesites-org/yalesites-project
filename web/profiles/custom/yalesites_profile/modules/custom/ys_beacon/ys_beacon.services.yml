@@ -57,6 +57,12 @@ services:
       - '@logger.channel.ys_beacon'
       - '@entity_type.manager'
 
+  ys_beacon.index_status:
+    class: Drupal\ys_beacon\Service\BeaconIndexStatus
+    arguments:
+      - '@entity_type.manager'
+      - '@config.factory'
+
   ys_beacon.legacy_ai_engine:
     class: Drupal\ys_beacon\Service\LegacyAiEngine
     arguments:

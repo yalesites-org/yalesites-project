@@ -15,6 +15,7 @@ use Drupal\search_api\Utility\IndexingBatchHelperInterface;
 use Drupal\Tests\UnitTestCase;
 use Drupal\ys_beacon\Form\YsBeaconAdminSettings;
 use Drupal\ys_beacon\Service\BeaconIndexManager;
+use Drupal\ys_beacon\Service\BeaconIndexStatus;
 
 /**
  * Tests the Beacon administration settings form.
@@ -89,12 +90,19 @@ class YsBeaconAdminSettingsTest extends UnitTestCase {
     $entity_type_manager = $this->createMock(EntityTypeManagerInterface::class);
     $entity_type_manager->method('getStorage')->with('search_api_index')->willReturn($storage);
 
-    $form = (new \ReflectionClass(YsBeaconAdminSettings::class))->newInstanceWithoutConstructor();
-    $this->setProtected($form, 'entityTypeManager', $entity_type_manager);
-    $this->setProtected($form, 'indexingBatchHelper', $helper ?? $this->createMock(IndexingBatchHelperInterface::class));
-    $this->setProtected($form, 'configFactory', $this->getConfigFactoryStub([
+    $config_factory = $this->getConfigFactoryStub([
       'ys_beacon.settings' => ['search_index_id' => 'ys_beacon'],
-    ]));
+    ]);
+    // The shared indexing trait reads the index through BeaconIndexStatus. The
+    // real service is used over the mocked storage above, so the load-and-guard
+    // logic the controls depend on is still exercised here.
+    $index_status = new BeaconIndexStatus($entity_type_manager, $config_factory);
+    $index_status->setStringTranslation($this->getStringTranslationStub());
+
+    $form = (new \ReflectionClass(YsBeaconAdminSettings::class))->newInstanceWithoutConstructor();
+    $this->setProtected($form, 'indexStatus', $index_status);
+    $this->setProtected($form, 'indexingBatchHelper', $helper ?? $this->createMock(IndexingBatchHelperInterface::class));
+    $this->setProtected($form, 'configFactory', $config_factory);
     $this->setProtected($form, 'messenger', $messenger ?? $this->createMock(MessengerInterface::class));
     $this->setProtected($form, 'stringTranslation', $this->getStringTranslationStub());
 

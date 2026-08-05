@@ -12,17 +12,18 @@ use Drupal\search_api\Tracker\TrackerInterface;
 use Drupal\search_api\Utility\IndexingBatchHelperInterface;
 use Drupal\Tests\UnitTestCase;
 use Drupal\ys_beacon\Form\YsBeaconSettings;
+use Drupal\ys_beacon\Service\BeaconIndexStatus;
 
 /**
  * Tests the "Index now" button state and submit handler on the Beacon form.
  *
- * Covers the decision logic without standing up a full search_api tracked
- * index (no existing test builds one; doing so needs a datasource plus real
- * content). The button's `#disabled` flag is wired to
- * `indexRemainingItems() < 1`, so asserting that helper across the
- * missing/disabled/error/has-items states fully exercises the enable/disable
- * rule. The end-to-end button render and post-batch redirect are verified
- * manually on Lando per the spec.
+ * Covers the submit handlers' decision logic without standing up a full
+ * search_api tracked index (no existing test builds one; doing so needs a
+ * datasource plus real content). The reads these handlers guard on - the
+ * remaining-item count and the status wording that also drives the button's
+ * `#disabled` flag - belong to BeaconIndexStatus and are covered by
+ * BeaconIndexStatusTest. The end-to-end button render and post-batch redirect
+ * are verified manually on Lando per the spec.
  *
  * @group ys_beacon
  * @coversDefaultClass \Drupal\ys_beacon\Form\YsBeaconSettings
@@ -43,21 +44,40 @@ class IndexNowFormTest extends UnitTestCase {
    *   The form with its protected dependencies populated.
    */
   private function buildForm(?IndexInterface $index, ?IndexingBatchHelperInterface $helper = NULL, ?MessengerInterface $messenger = NULL): YsBeaconSettings {
+    $form = (new \ReflectionClass(YsBeaconSettings::class))->newInstanceWithoutConstructor();
+    $this->setProtected($form, 'indexStatus', $this->buildIndexStatus($index));
+    $this->setProtected($form, 'indexingBatchHelper', $helper ?? $this->createMock(IndexingBatchHelperInterface::class));
+    $this->setProtected($form, 'messenger', $messenger ?? $this->createMock(MessengerInterface::class));
+    $this->setProtected($form, 'stringTranslation', $this->getStringTranslationStub());
+
+    return $form;
+  }
+
+  /**
+   * Builds a real index status reader over a mocked index storage.
+   *
+   * The real service is used rather than a mock so these tests still exercise
+   * the load-and-guard logic the handlers depend on; only the storage beneath
+   * it is faked.
+   *
+   * @param \Drupal\search_api\IndexInterface|null $index
+   *   The index that storage->load('ys_beacon') should return, or NULL.
+   *
+   * @return \Drupal\ys_beacon\Service\BeaconIndexStatus
+   *   The index status reader.
+   */
+  private function buildIndexStatus(?IndexInterface $index): BeaconIndexStatus {
     $storage = $this->createMock(EntityStorageInterface::class);
     $storage->method('load')->with('ys_beacon')->willReturn($index);
     $entity_type_manager = $this->createMock(EntityTypeManagerInterface::class);
     $entity_type_manager->method('getStorage')->with('search_api_index')->willReturn($storage);
 
-    $form = (new \ReflectionClass(YsBeaconSettings::class))->newInstanceWithoutConstructor();
-    $this->setProtected($form, 'entityTypeManager', $entity_type_manager);
-    $this->setProtected($form, 'indexingBatchHelper', $helper ?? $this->createMock(IndexingBatchHelperInterface::class));
-    $this->setProtected($form, 'configFactory', $this->getConfigFactoryStub([
+    $status = new BeaconIndexStatus($entity_type_manager, $this->getConfigFactoryStub([
       'ys_beacon.settings' => ['search_index_id' => 'ys_beacon'],
     ]));
-    $this->setProtected($form, 'messenger', $messenger ?? $this->createMock(MessengerInterface::class));
-    $this->setProtected($form, 'stringTranslation', $this->getStringTranslationStub());
+    $status->setStringTranslation($this->getStringTranslationStub());
 
-    return $form;
+    return $status;
   }
 
   /**
@@ -67,15 +87,6 @@ class IndexNowFormTest extends UnitTestCase {
     $reflection = new \ReflectionProperty($object, $property);
     $reflection->setAccessible(TRUE);
     $reflection->setValue($object, $value);
-  }
-
-  /**
-   * Invokes a protected method on the form.
-   */
-  private function invoke(YsBeaconSettings $form, string $method, array $args = []): mixed {
-    $reflection = new \ReflectionMethod(YsBeaconSettings::class, $method);
-    $reflection->setAccessible(TRUE);
-    return $reflection->invokeArgs($form, $args);
   }
 
   /**
@@ -104,49 +115,6 @@ class IndexNowFormTest extends UnitTestCase {
       $index->method('getTrackerInstance')->willReturn($tracker);
     }
     return $index;
-  }
-
-  /**
-   * No index means nothing to index, so the button stays disabled.
-   *
-   * @covers ::indexRemainingItems
-   */
-  public function testRemainingItemsIsZeroWhenIndexMissing(): void {
-    $form = $this->buildForm(NULL);
-    $this->assertSame(0, $this->invoke($form, 'indexRemainingItems'));
-  }
-
-  /**
-   * A disabled index reports zero remaining without touching the tracker.
-   *
-   * @covers ::indexRemainingItems
-   */
-  public function testRemainingItemsIsZeroWhenIndexDisabled(): void {
-    $index = $this->createMock(IndexInterface::class);
-    $index->method('status')->willReturn(FALSE);
-    $index->expects($this->never())->method('getTrackerInstance');
-    $form = $this->buildForm($index);
-    $this->assertSame(0, $this->invoke($form, 'indexRemainingItems'));
-  }
-
-  /**
-   * An enabled index returns the tracker's remaining count.
-   *
-   * @covers ::indexRemainingItems
-   */
-  public function testRemainingItemsReturnsTrackerCount(): void {
-    $form = $this->buildForm($this->indexMock(TRUE, 7));
-    $this->assertSame(7, $this->invoke($form, 'indexRemainingItems'));
-  }
-
-  /**
-   * A tracker error degrades to zero rather than crashing the form.
-   *
-   * @covers ::indexRemainingItems
-   */
-  public function testRemainingItemsIsZeroOnTrackerError(): void {
-    $form = $this->buildForm($this->indexMock(TRUE, NULL));
-    $this->assertSame(0, $this->invoke($form, 'indexRemainingItems'));
   }
 
   /**
@@ -314,40 +282,6 @@ class IndexNowFormTest extends UnitTestCase {
     $form = $this->buildForm($index, $helper, $messenger);
     $form_array = [];
     $form->indexNow($form_array, $this->createMock(FormStateInterface::class));
-  }
-
-  /**
-   * The read-only status shows item counts for a writable, enabled index.
-   *
-   * @covers ::indexStatusMarkup
-   */
-  public function testIndexStatusMarkupShowsCountsWhenEnabled(): void {
-    $form = $this->buildForm($this->indexMock(TRUE, 5));
-    $this->assertStringContainsString('items indexed', $this->invoke($form, 'indexStatusMarkup'));
-  }
-
-  /**
-   * A disabled index reports the disabled status rather than item counts.
-   *
-   * @covers ::indexStatusMarkup
-   */
-  public function testIndexStatusMarkupShowsDisabledStatus(): void {
-    $index = $this->createMock(IndexInterface::class);
-    $index->method('status')->willReturn(FALSE);
-    $form = $this->buildForm($index);
-    $this->assertStringContainsString('disabled', strtolower($this->invoke($form, 'indexStatusMarkup')));
-  }
-
-  /**
-   * A read-only borrow shows the shared-collection notice, not item counts.
-   *
-   * @covers ::indexStatusMarkup
-   */
-  public function testIndexStatusMarkupShowsReadOnlyNotice(): void {
-    $index = $this->createMock(IndexInterface::class);
-    $index->method('isReadOnly')->willReturn(TRUE);
-    $form = $this->buildForm($index);
-    $this->assertStringContainsString('read-only', strtolower($this->invoke($form, 'indexStatusMarkup')));
   }
 
   /**
