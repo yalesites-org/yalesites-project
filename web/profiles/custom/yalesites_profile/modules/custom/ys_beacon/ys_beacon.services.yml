@@ -97,6 +97,23 @@ services:
       - '@account_switcher'
       - '@ys_beacon.entity_citation_resolver'
 
+  ys_beacon.guardrail_signal_detector:
+    class: Drupal\ys_beacon\Service\GuardrailSignalDetector
+
+  ys_beacon.guardrail_telemetry:
+    class: Drupal\ys_beacon\Service\GuardrailTelemetry
+    arguments:
+      - '@database'
+      - '@datetime.time'
+      - '@logger.channel.ys_beacon'
+
+  ys_beacon.suspect_turn_log:
+    class: Drupal\ys_beacon\Service\SuspectTurnLog
+    arguments:
+      - '@database'
+      - '@datetime.time'
+      - '@logger.channel.ys_beacon'
+
   ys_beacon.authorization:
     class: Drupal\ys_beacon\BeaconAuthorization
     arguments:

@@ -361,6 +361,243 @@ Reach it from the integrations dashboard or
 `/admin/config/yalesites/ys-beacon/tester` (permission: _Use YaleSites AI
 Tester_).
 
+## Guardrail telemetry
+
+`GuardrailTelemetry` keeps **aggregate counters only**, bucketed per UTC day,
+readable at `/admin/config/yalesites/ys-beacon/telemetry` (permission: _View
+Beacon guardrail telemetry_, plus platform authorization). The same "what is and
+is not recorded" summary below is rendered on that page, so what the platform
+does and does not keep can be checked from the interface rather than taken on
+trust.
+
+**No Beacon store holds conversation text.** Neither this table nor the
+flagged-turn table below has a column a question or an answer could be written
+into. `SuspectTurnLog` records *that* a turn was flagged and *why* (see
+[Flagged turns](#flagged-turns-suspected-injection-attempts) below); ordinary
+turns are counted and nothing else.
+
+The report page is gated on its **own** permission, `view ys beacon guardrail
+telemetry`, rather than the broader `manage ys beacon settings` that site admins
+also hold. It is granted to `platform_admin` only in
+`config/sync/user.role.platform_admin.yml`; user 1 reaches it because user 1
+bypasses permission checks. It carries `restrict access: true`. Re-scoping who
+can read the telemetry later is therefore a change to the grants on this single
+permission and nothing else.
+
+**Recorded** — a count, per day, for each event type, plus dimensioned breakdown
+rows:
+
+| Event | Counted when | Breakdowns |
+| --- | --- | --- |
+| `turns` | a turn reached the model — the denominator for the rest | — |
+| `refusal` | the answer's opening reads as a declined request | — |
+| `guardrail_stop` | a guardrail returned a stop (per stopping guardrail, so one turn can contribute more than one) | `mode.<pre\|during\|post>`, `plugin.<label>`, `set.<id>` |
+| `zero_citations` | retrieval returned no citations | — |
+| `injection_pattern` | the question matched a known injection pattern | `pattern.<name>` |
+
+`turns` exists so the others can be read as rates: without a denominator, a rise
+in refusals cannot be told apart from a rise in traffic.
+
+The recording API is **closed on purpose**. Every public method takes either no
+argument or a bounded identifier — `recordTurn()`, `recordRefusal()`,
+`recordZeroCitations()`, `recordInjectionPattern($pattern_name)`,
+`recordStreamingStop($plugin_label)`, `recordGuardrailResults($results, $set_ids)`
+— and the key-assembling `record()` is protected. A caller therefore cannot pass
+conversation text in even by accident, which matters because the most likely
+future caller is a streaming guardrail that has the offending text in hand.
+
+**Not recorded in the counters** — questions, answers, user names, IP addresses,
+session ids, or any sample of conversation text, hashed or redacted or otherwise.
+The `ys_beacon_telemetry` table has three columns (`bucket_date`, `event_key`,
+`event_count`); there is no column a transcript could be written into. (The
+separate `ys_beacon_suspect_turn` table — see below — holds no conversation text
+either, and no user name, session id or IP address.) The
+refusal check keeps only the first 400 characters of an answer while classifying
+it, and stores nothing — though that bound is a false-positive control for
+Beacon's own copy, not a privacy boundary in itself, since the AI module's
+streamed iterator already accumulates the whole answer in memory for the
+duration of the request. `GuardrailSignalDetector` is a separate,
+dependency-free class precisely so the component that reads question and answer
+text has no way to persist any of it.
+
+Most counters are written **after the answer has been streamed**, so recording
+cannot delay the visible answer. The exception is `injection_pattern`, recorded as
+soon as the question is parsed so an attempt still counts on a turn that is
+refused later — one bounded `preg_match` ahead of a retrieval that makes a remote
+call. Every read and write degrades quietly: if the table is missing or
+unavailable the turn continues and a warning goes to the `ys_beacon` channel,
+through a guard that tolerates the logger failing too (logging writes to the same
+database the counters do, so one outage takes both).
+
+Storage is a keyed table rather than State because State's read-modify-write is
+not atomic — concurrent turns on this public, unauthenticated endpoint would
+silently lose increments — and because every state write invalidates the whole
+state cache. Each increment tries an `UPDATE ... SET event_count = event_count + 1`
+first, so the ordinary case is one atomic statement; if no row exists yet it
+inserts, and the composite primary key turns a racing insert into a constraint
+violation that is folded back into an increment (MySQL/MariaDB — on PostgreSQL a
+failed statement aborts the surrounding transaction, which this platform does not
+use). Buckets older than 90 days are pruned when a new day's first row is
+inserted, so no cron hook is needed.
+
+Known limits. The first three are properties of the contrib `ai` module rather
+than choices here:
+
+- **Streaming-phase guardrail stops are only counted if the plugin reports
+  them.** A guardrail implementing `StreamableGuardrailInterface` is evaluated
+  inside `StreamedChatMessageIterator::processStreamingGuardrails()`, which never
+  calls `addGuardrailResult()`, so the stop is invisible to callers.
+  `AiGuardrailModeEnum::DuringGenerate` is declared in contrib and otherwise
+  never used. **Beacon ships `streaming: true`, so this is the normal path, not
+  an edge case:** a streaming guardrail must call
+  `GuardrailTelemetry::recordStreamingStop($this->label())` from inside its own
+  `processStreamedBuffer()`, or its stops will read as zero.
+- **`guardrail_stop` reads zero until a guardrail set is configured for Beacon.**
+  As of this change `ai.settings.global_guardrails` is empty and there is no
+  `ai.ai_guardrail*` config in `config/sync`, so no guardrail runs on a chat turn
+  at all. The counter is in place for when one is configured; the other three
+  event types are live immediately.
+- **"By plugin" means by plugin label.** `GuardrailResultInterface` exposes no
+  plugin id, so two `ai_guardrail` entities sharing a plugin are
+  indistinguishable.
+- **"By set" is attributed only when one set is active.** Contrib discards the
+  result-to-set association, so with several sets active the set is recorded as
+  `ambiguous` rather than credited to each.
+- **Refusal detection is a heuristic** over the answer's opening; the pattern
+  list lives in one constant in `GuardrailSignalDetector`.
+- **`injection_pattern` undercounts a sustained campaign.** Requests the flood
+  limiter rejects (30 per 5 minutes per IP) are not counted, because the question
+  has not been parsed at that point and parsing it before rate limiting would
+  invert the protection. A scripted burst therefore shows a smaller uptick than
+  the true number of attempts. Detection is also a fixed pattern list, and
+  `preg_match()` returning `FALSE` at PHP's `pcre.backtrack_limit` is treated as
+  "no match", so a sufficiently padded question can pass unflagged.
+- **`zero_citations` currently means "the index matched nothing."** With
+  `score_threshold` shipping at `0.0`, `RagRetriever` applies no score filter at
+  all, so raising that threshold later would change what this metric counts.
+
+### Flagged turns (suspected injection attempts)
+
+The daily counters answer "how often on which day". `SuspectTurnLog` adds *when*,
+to the second, and *why*: a row in `ys_beacon_suspect_turn` is a timestamp plus a
+reason — the `GuardrailSignalDetector` pattern the question matched, or
+`SuspectTurnLog::REASON_GUARDRAIL_STOP` when a guardrail stopped the turn. That
+is enough to see the shape of a probe (a burst at 03:00, one pattern tried
+repeatedly, several patterns in sequence) at a finer grain than a per-day count.
+
+**No conversation text is stored.** The table has no `question` or `answer`
+column, and `record()` takes only the reason, so no caller can hand it
+conversation text even by accident — the same closed-API property
+`GuardrailTelemetry` has.
+
+> This store originally kept the question and the answer of each flagged turn,
+> and that was **reversed on review** (PR #1417): the decision to store real
+> conversation text is being reconsidered under its own ticket, so the capability
+> was removed rather than left switched on. `ys_beacon_update_10018()` drops the
+> two columns — and with them any text captured while they existed — on a site
+> that already ran `ys_beacon_update_10017()`. Stopping the writes without
+> dropping the columns would have left the already-captured text readable, so the
+> hook is the point of the change rather than tidy-up.
+
+Two bounds, each stated on the report page rather than left to the schema:
+
+| Bound | Value | Why |
+| --- | --- | --- |
+| Retention | 90 days (`SuspectTurnLog::RETENTION_DAYS`) | Pruned on write, and on cron so a site that stops being probed does not keep its last rows forever. Reads also filter on the window, so an expired row is never shown even before a write prunes it. |
+| Rows per pattern per UTC day | 60 (`MAX_ROWS_PER_PATTERN_PER_DAY`) | The chat endpoint is public and unauthenticated. Per **pattern**, not per day overall: a single day-wide quota is steerable by the attacker it exists to record — 200 throwaway `ignore_instructions` hits would fill it and silently drop every later flagged turn, including a novel attack under another pattern. At quota the pattern's oldest row for the day is evicted, so what survives is the most recent attempts rather than whichever the attacker submitted first. |
+
+The per-day quota means a sustained campaign is **sampled** here. The aggregate
+`injection_pattern` counters are not capped, so the campaign is still fully
+visible in the counts — the page says so where it lists the flagged turns.
+
+Expect the counts to exceed the rows for a second reason too: `injection_pattern`
+is counted as soon as the question is parsed, but the row is written after the
+answer has streamed, so a flagged turn that is refused earlier (no chat provider
+configured, conversation too long) is counted without being logged.
+
+The report **pages** through flagged turns, 50 to a page
+(`SuspectTurnLog::getPage()` with a standard Drupal pager), because the quota
+allows roughly 60 rows per pattern per day and a bot probing for a week can leave
+far more than one screenful. Each page reads a bounded number of rows, so page
+load does not grow with the store — and unlike a fixed "50 most recent" slice,
+older turns stay reachable in the interface rather than only in the export. The
+note under the table states the total held, how many are on the page, and that no
+question or answer is recorded. The JSON export does **not** paginate — it takes a
+bounded slice (`MAX_EXPORT_ROWS`) and declares truncation.
+
+Two deliberate design points:
+
+- **It is a separate class, not a method on `GuardrailTelemetry`.** The two answer
+  different questions — per-event timestamps here, per-day totals there — they are
+  bounded differently, and the ticket that revisits storing text will land here
+  rather than widening the counters' API.
+- **The column list lives in one place.** `getRecent()` and `getPage()` differ
+  only in how they limit, so the fields, the retention filter and the ordering
+  are shared in `readRows()` — the column list is a privacy boundary and was
+  previously spelled out twice.
+
+**Injection-pattern hits and pre/post-generate guardrail stops are logged.** A
+turn that is both is kept once, under its pattern, so one turn never takes two
+rows of the quota. Pre- and post-generate stops are reported to callers by
+contrib's `GuardrailsEventSubscriber`, so they reach this log via the stop count
+`recordGuardrailResults()` returns.
+
+**A streaming-phase stop raises the counter but produces no flagged-turn row.**
+`recordStreamingStop()` writes to the counter table only — `GuardrailTelemetry`
+holds no reference to `SuspectTurnLog` — and the flagged-turn row is written from
+the stop count read off the turn's `ChatInput`, which a plugin calling
+`recordStreamingStop()` itself never touches. Since Beacon ships with streaming
+on, expect `guardrail_stop` counters from a streaming guardrail with no
+corresponding rows in the list below. Closing that would mean giving the plugin a
+way to flag the turn as well as count it.
+
+### Chat-turn distribution chart
+
+The report renders turns per UTC day across the full 90-day retention window
+(`GuardrailTelemetry::getDailySeries()`), so a spike or a quiet spell is visible
+without reading the by-day table. The series is zero-filled: a day with no turns
+is a data point, and dropping it would make the x-axis lie about the window.
+
+Bars are scaled to the busiest day rather than an absolute, so a quiet period is
+still readable, and any non-zero day is floored at 1% so it never renders as an
+empty column. Each bar carries its own date and count as real text in a
+`visually-hidden` span, which is what makes the chart readable with a screen
+reader — there is no `aria-label` summary standing in for the data. The same text
+is repeated in a `title` attribute so a sighted mouse user can hover a bar for the
+exact number; without it, assistive technology had the figures and a sighted
+reader had only the shape. Nothing is exclusive to the tooltip, so its known
+weaknesses (no touch, no keyboard) cost nothing.
+
+**Days are UTC, and the report says so in three places** — the column header, a
+note under the by-day table, and the disclosure list. This matters at Yale
+specifically: a UTC day starts at 8pm the previous evening in EDT (7pm in EST), so
+between 8pm and midnight an Eastern reader sees the newest row dated *tomorrow*
+and reasonably suspects a clock bug. It is not one. UTC is deliberate — buckets do
+not shift when the site timezone changes and are not distorted by the 23-hour and
+25-hour days daylight saving produces. `gmdate()` is used throughout, so the
+server's and the site's timezone are both irrelevant. Markup lives
+in `templates/ys-beacon-telemetry-chart.html.twig`; the bar height is passed as a
+CSS custom property so `css/telemetry.css` keeps control of presentation.
+
+### Removing the JSON export
+
+The export button is **provisional** — it was added at the reviewer's request with
+the explicit expectation that it may be dropped. It is self-contained. To remove
+it, delete these three things and nothing else:
+
+1. The `ys_beacon.telemetry_export` route in `ys_beacon.routing.yml`.
+2. `TelemetryController::export()`.
+3. The `$build['export']` link in `TelemetryController::report()`.
+
+Nothing else references it: no library, no config, no schema, no test fixture
+outside `TelemetryControllerTest`. The export reports its own limits in the
+payload (`flagged_turns.truncated`, `max_rows_per_export`) rather than silently
+truncating, and is capped at `SuspectTurnLog::MAX_EXPORT_ROWS` rows so a response
+cannot grow unbounded. It carries no conversation text, but *when* a site was
+probed and under *which* pattern is still operational security detail, so it stays
+gated on the same platform-admin-only permission as the page and sent
+`Cache-Control: no-store`.
+
 ## System instruction layers
 
 `SystemPromptBuilder::build()` assembles the chat system prompt from three

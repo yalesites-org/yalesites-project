@@ -1,0 +1,52 @@
+/**
+ * @file
+ * Scoped styling for the Beacon guardrail telemetry report.
+ *
+ * Colour, spacing and weight come from Gin's own custom properties so the report
+ * tracks the admin theme rather than restating its palette. Each property used
+ * here was confirmed present in the contrib Gin build; every rule is scoped to a
+ * ys-beacon-* class and nothing here styles a Gin or Claro selector.
+ */
+
+.ys-beacon-chart {
+  margin: var(--gin-spacing-l, 24px) 0;
+}
+
+.ys-beacon-chart__caption {
+  display: block;
+  margin-bottom: var(--gin-spacing-s, 12px);
+  font-weight: var(--gin-font-weight-semibold, 600);
+}
+
+.ys-beacon-chart__summary {
+  display: block;
+  font-weight: var(--gin-font-weight-normal, 400);
+  color: var(--gin-color-text-light, #545560);
+}
+
+.ys-beacon-chart__bars {
+  display: flex;
+  align-items: flex-end;
+  gap: 1px;
+  height: 8rem;
+  margin: 0;
+  padding: var(--gin-spacing-s, 12px);
+  list-style: none;
+  background-color: var(--gin-bg-layer2, #f3f4f7);
+}
+
+.ys-beacon-chart__bar {
+  flex: 1 1 0;
+  min-width: 2px;
+  /* A day with no turns still occupies its slot, so the x-axis stays a
+     continuous timeline instead of collapsing quiet days out of the chart. */
+  height: var(--ys-beacon-chart-bar-height, 0);
+  background-color: var(--gin-color-primary, #0071b8);
+}
+
+.ys-beacon-chart__axis {
+  display: flex;
+  justify-content: space-between;
+  margin: var(--gin-spacing-s, 12px) 0 0;
+  color: var(--gin-color-text-light, #545560);
+}

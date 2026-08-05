@@ -26,6 +26,14 @@ function ys_beacon_theme() {
         'icon_class' => NULL,
       ],
     ],
+    'ys_beacon_telemetry_chart' => [
+      'variables' => [
+        'bars' => [],
+        'max' => 0,
+        'days' => 0,
+        'total' => 0,
+      ],
+    ],
   ];
 }
 
@@ -314,4 +322,17 @@ function _ys_beacon_media_source_fid(MediaInterface $media): ?string {
   catch (\Throwable $e) {
     return NULL;
   }
+}
+
+/**
+ * Implements hook_cron().
+ *
+ * Expires flagged turns past their retention window. SuspectTurnLog also prunes
+ * when it records, but a site where no further injection attempt is ever made
+ * would otherwise keep its last rows indefinitely - and the report page tells
+ * administrators that flagged turns are deleted after 90 days, so something has
+ * to make that true without depending on new traffic.
+ */
+function ys_beacon_cron() {
+  \Drupal::service('ys_beacon.suspect_turn_log')->pruneExpired();
 }
