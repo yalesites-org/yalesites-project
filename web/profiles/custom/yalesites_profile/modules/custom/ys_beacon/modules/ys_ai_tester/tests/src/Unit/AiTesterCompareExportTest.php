@@ -181,7 +181,7 @@ class AiTesterCompareExportTest extends UnitTestCase {
    * The export button opens the modal as a Drupal core dialog.
    *
    * The label names no particular assistant: the export is a package for any
-   * LLM, not a Clarity-specific upload.
+   * LLM, not an upload aimed at one named tool.
    *
    * @covers ::compare
    */
@@ -259,6 +259,31 @@ class AiTesterCompareExportTest extends UnitTestCase {
     $this->assertContains(
       'ys_ai_tester/compare_export',
       $build['#attached']['library']
+    );
+  }
+
+  /**
+   * The modal's visible copy points at no one named assistant.
+   *
+   * The export is a package for whichever assistant the reviewer already uses,
+   * and naming a single destination misleads when a comparison of any real size
+   * can exceed what that one tool ingests in a conversation. Asserted against
+   * the template source because the copy lives in Twig, and case-sensitively on
+   * purpose: 'clarity' as the plain English word for answer quality stays in
+   * the prompt's quality criteria.
+   */
+  public function testExportModalCopyNamesNoParticularAssistant(): void {
+    $template = dirname(__DIR__, 3)
+      . '/templates/ys-ai-tester-ai-export.html.twig';
+    $this->assertFileExists($template);
+    $source = file_get_contents($template);
+
+    $this->assertStringNotContainsString('Clarity', $source);
+    $this->assertStringNotContainsString('ai-chat.yale.edu', $source);
+    // The generic sentence that stands in the named tool's place.
+    $this->assertStringContainsString(
+      'any assistant approved for work use',
+      $source
     );
   }
 

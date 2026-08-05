@@ -3,11 +3,13 @@
  * @file
  * Export-a-comparison-for-AI-analysis modal for the AI Tester compare view.
  *
- * The prompt names no particular assistant. Clarity was the original target,
- * but it cannot ingest a comparison of any real size, so the modal offers it as
- * one destination rather than the only one and the prompt is written for any
- * LLM. The exported data is public site content, so a general-purpose assistant
- * is a sanctioned choice.
+ * Neither the prompt nor the copy around it names a particular assistant. What
+ * a tool ingests in one conversation varies, and a comparison of any real size
+ * can exceed it, so naming a single destination would send reviewers to
+ * something that may not take the file. The modal ships the prompt and the file
+ * for whichever assistant the reviewer already uses; the exported data is
+ * public site content, so any assistant approved for work use is a sanctioned
+ * choice.
  *
  * The prompt lives in this template rather than in PHP because it is several
  * paragraphs of editorial copy that Product refines independently of the code.
@@ -33,10 +35,7 @@
     {% trans %}Download the comparison as a JSON file, then attach it to an AI assistant along with the prompt below. The prompt tells the assistant what the two runs are and how the file is structured, so it can report where the assistants agree and differ.{% endtrans %}
   </p>
   <p>
-    {% trans %}The export carries published site content only, so any assistant approved for work use is a reasonable choice. Yale's own Clarity is one option, though a comparison of any size may exceed what it accepts in a single conversation.{% endtrans %}
-    <a href="https://ai-chat.yale.edu/" target="_blank" rel="noopener noreferrer">
-      {% trans %}Open Clarity (opens in new window){% endtrans %}
-    </a>
+    {% trans %}The export carries published site content only, so any assistant approved for work use is a reasonable choice. A comparison of any real size may exceed what a single conversation accepts, so pick one that takes a file attachment of this length.{% endtrans %}
   </p>
 
   <label for="{{ prompt_id }}">

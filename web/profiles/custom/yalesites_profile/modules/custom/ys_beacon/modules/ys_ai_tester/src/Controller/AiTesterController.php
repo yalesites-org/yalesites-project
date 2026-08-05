@@ -570,12 +570,12 @@ class AiTesterController extends ControllerBase {
   /**
    * Builds the modal offering the comparison as an LLM analysis package.
    *
-   * Deliberately names no particular assistant. Clarity was the original
-   * target, but it cannot ingest a comparison of any real size, so the modal
-   * ships the prompt and the file for whichever assistant the reviewer uses and
-   * offers Clarity as one destination rather than the only one. The exported
-   * data is public site content, so a general-purpose assistant is a sanctioned
-   * choice.
+   * Deliberately names no particular assistant. What a tool ingests in one
+   * conversation varies, and a comparison of any real size can exceed it, so
+   * the modal ships the prompt and the file for whichever assistant the
+   * reviewer already uses rather than pointing at a single destination that may
+   * not take the file. The exported data is public site content, so any
+   * assistant approved for work use is a sanctioned choice.
    *
    * The download reuses the existing comparison JSON route rather than adding a
    * second export path, so the file a reviewer attaches is the same artefact
