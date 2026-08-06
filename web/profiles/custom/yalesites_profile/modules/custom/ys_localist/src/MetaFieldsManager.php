@@ -214,7 +214,10 @@ class MetaFieldsManager implements ContainerFactoryPluginInterface {
     $ticketCost = $node->field_ticket_cost->first() ? $node->field_ticket_cost->first()->getValue()['value'] : NULL;
     $costButtonText = $ticketCost ? 'Buy Tickets' : 'Register';
     $storedDescription = $node->field_event_description->first() ? $node->field_event_description->first()->getValue()['value'] : NULL;
-    $description = $this->stripEmptyParagraphs($storedDescription);
+    // Only Localist's own import fills in field_localist_id, so this leaves
+    // a manually-authored event's description untouched even if an editor's
+    // own empty paragraph happens to match the filler shape.
+    $description = $localistId ? $this->stripEmptyParagraphs($storedDescription) : $storedDescription;
     $room = $node->field_event_room->first() ? $node->field_event_room->first()->getValue()['value'] : NULL;
     $externalEventWebsiteUrl = ($node->field_event_cta->first()) ? Url::fromUri($node->field_event_cta->first()->getValue()['uri'])->toString() : NULL;
     $externalEventWebsiteTitle = ($node->field_event_cta->first()) ? $node->field_event_cta->first()->getValue()['title'] : NULL;
