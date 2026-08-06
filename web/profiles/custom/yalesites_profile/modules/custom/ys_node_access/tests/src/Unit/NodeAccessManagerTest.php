@@ -27,11 +27,17 @@ class NodeAccessManagerTest extends UnitTestCase {
    * @covers ::YS_NODE_ACCESS_REALM
    * @covers ::YS_NODE_ACCESS_GRANT_ID_PUBLIC
    * @covers ::YS_NODE_ACCESS_GRANT_ID_PRIVATE
+   * @covers ::YS_NODE_ACCESS_UNPUBLISHED_REALM
+   * @covers ::YS_NODE_ACCESS_GRANT_ID_UNPUBLISHED_ANY
+   * @covers ::YS_NODE_ACCESS_UNPUBLISHED_OWNER_REALM
    */
   public function testConstants() {
     $this->assertSame('ys_node_access', NodeAccessManager::YS_NODE_ACCESS_REALM);
     $this->assertSame(0, NodeAccessManager::YS_NODE_ACCESS_GRANT_ID_PUBLIC);
     $this->assertSame(1, NodeAccessManager::YS_NODE_ACCESS_GRANT_ID_PRIVATE);
+    $this->assertSame('ys_node_access_unpublished', NodeAccessManager::YS_NODE_ACCESS_UNPUBLISHED_REALM);
+    $this->assertSame(0, NodeAccessManager::YS_NODE_ACCESS_GRANT_ID_UNPUBLISHED_ANY);
+    $this->assertSame('ys_node_access_unpublished_owner', NodeAccessManager::YS_NODE_ACCESS_UNPUBLISHED_OWNER_REALM);
   }
 
 }
