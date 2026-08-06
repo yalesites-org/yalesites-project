@@ -34,6 +34,21 @@ function ys_node_access_node_grants($account, $op) {
       ];
     }
 
+    // Mirror Drupal core's unpublished-content permissions here too -- see
+    // the fuller rationale in ys_node_access_node_access_records() below.
+    if ($account->isAuthenticated()) {
+      if ($account->hasPermission('view any unpublished content')) {
+        $grants[$nodeAccessManager::YS_NODE_ACCESS_UNPUBLISHED_REALM] = [
+          $nodeAccessManager::YS_NODE_ACCESS_GRANT_ID_UNPUBLISHED_ANY,
+        ];
+      }
+      if ($account->hasPermission('view own unpublished content')) {
+        $grants[$nodeAccessManager::YS_NODE_ACCESS_UNPUBLISHED_OWNER_REALM] = [
+          $account->id(),
+        ];
+      }
+    }
+
     return $grants;
   }
 }
@@ -45,18 +60,28 @@ function ys_node_access_node_access_records($node) {
 
   $nodeAccessManager = new NodeAccessManager();
 
-  // Unpublished nodes are left to Drupal core's unpublished-content access
-  // (the owner with "view own unpublished content", or "view any unpublished
-  // content"). This module only CAS-gates published pages, so it must not
-  // hand out a view grant for a draft. A grant_view = 0 record keeps this
-  // realm's record set non-empty -- so core does not add its default public
-  // "all" grant -- while granting nobody view access.
+  // Unpublished nodes are gated by Drupal core's unpublished-content
+  // permissions, not by field_login_required -- a draft is not live yet, so
+  // CAS gating does not apply. Core's own default-grant fallback
+  // (NodeAccessControlHandler::acquireGrants()) only fires for published
+  // nodes, so it cannot be relied on here: this module must grant view
+  // access itself to the node's owner and to "view any unpublished content"
+  // holders, matching hook_node_grants() above, or every node-access-gated
+  // listing (admin/content, "Manage <type>") hides the node from everyone.
   if (!$node->isPublished()) {
     return [
       [
-        'realm' => $nodeAccessManager::YS_NODE_ACCESS_REALM,
-        'gid' => $nodeAccessManager::YS_NODE_ACCESS_GRANT_ID_PRIVATE,
-        'grant_view' => 0,
+        'realm' => $nodeAccessManager::YS_NODE_ACCESS_UNPUBLISHED_REALM,
+        'gid' => $nodeAccessManager::YS_NODE_ACCESS_GRANT_ID_UNPUBLISHED_ANY,
+        'grant_view' => 1,
+        'grant_update' => 0,
+        'grant_delete' => 0,
+        'priority' => 0,
+      ],
+      [
+        'realm' => $nodeAccessManager::YS_NODE_ACCESS_UNPUBLISHED_OWNER_REALM,
+        'gid' => $node->getOwnerId(),
+        'grant_view' => 1,
         'grant_update' => 0,
         'grant_delete' => 0,
         'priority' => 0,

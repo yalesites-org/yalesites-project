@@ -9,6 +9,7 @@ use Drupal\Core\DependencyInjection\ContainerBuilder;
 use Drupal\Core\Session\AccountInterface;
 use Drupal\Core\Url;
 use Drupal\Tests\UnitTestCase;
+use Drupal\ys_ai\BeaconSupersession;
 use Drupal\ys_ai\Plugin\ys_integrations\AiIntegrationPlugin;
 
 /**
@@ -76,12 +77,14 @@ class AiIntegrationPluginTest extends UnitTestCase {
   /**
    * Builds the plugin under test with the given plugin definition.
    */
-  protected function createPlugin(array $plugin_definition = []): AiIntegrationPlugin {
+  protected function createPlugin(array $plugin_definition = [], bool $superseded = FALSE): AiIntegrationPlugin {
     $plugin_definition += [
       'label' => 'AI',
       'description' => 'Provides integration with the AI engine.',
     ];
-    $plugin = new AiIntegrationPlugin($this->configFactory, $plugin_definition, $this->currentUser);
+    $supersession = $this->createMock(BeaconSupersession::class);
+    $supersession->method('isSuperseded')->willReturn($superseded);
+    $plugin = new AiIntegrationPlugin($this->configFactory, $plugin_definition, $this->currentUser, $supersession);
     $plugin->setStringTranslation($this->getStringTranslationStub());
     return $plugin;
   }
@@ -110,6 +113,39 @@ class AiIntegrationPluginTest extends UnitTestCase {
       ->willReturn($this->mockChatConfig(NULL));
 
     $this->assertFalse($this->createPlugin()->isTurnedOn());
+  }
+
+  /**
+   * IsTurnedOn() is false once Beacon supersedes the legacy AI surfaces.
+   *
+   * The legacy Azure URL is left populated by the assisted cutover, so a site
+   * that has moved to Beacon still satisfies the old test; supersession has to
+   * win over it.
+   *
+   * @covers ::isTurnedOn
+   */
+  public function testIsTurnedOffWhenSupersededDespiteAzureConfigured(): void {
+    $this->configFactory->method('get')
+      ->with('ai_engine_chat.settings')
+      ->willReturn($this->mockChatConfig('https://example.azure.com'));
+
+    $this->assertFalse($this->createPlugin([], TRUE)->isTurnedOn());
+  }
+
+  /**
+   * Build() renders no card at all once superseded.
+   *
+   * Not even the "This integration is not configured." card, which would still
+   * advertise a retired integration on the Integrations page.
+   *
+   * @covers ::build
+   */
+  public function testBuildRendersNothingWhenSuperseded(): void {
+    $this->configFactory->method('get')
+      ->with('ai_engine_chat.settings')
+      ->willReturn($this->mockChatConfig('https://example.azure.com'));
+
+    $this->assertSame([], $this->createPlugin([], TRUE)->build());
   }
 
   /**

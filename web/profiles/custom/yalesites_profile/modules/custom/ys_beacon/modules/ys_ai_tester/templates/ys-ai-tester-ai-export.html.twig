@@ -1,0 +1,80 @@
+{#
+/**
+ * @file
+ * Export-a-comparison-for-AI-analysis modal for the AI Tester compare view.
+ *
+ * Neither the prompt nor the copy around it names a particular assistant. What
+ * a tool ingests in one conversation varies, and a comparison of any real size
+ * can exceed it, so naming a single destination would send reviewers to
+ * something that may not take the file. The modal ships the prompt and the file
+ * for whichever assistant the reviewer already uses; the exported data is
+ * public site content, so any assistant approved for work use is a sanctioned
+ * choice.
+ *
+ * The prompt lives in this template rather than in PHP because it is several
+ * paragraphs of editorial copy that Product refines independently of the code.
+ * It is deliberately not wrapped in {% trans %}: it is text the reviewer pastes
+ * into an English-language analysis tool, not interface chrome. The short
+ * interface strings around it are translated as usual.
+ *
+ * The structure section is not decoration — an assistant handed the file with no
+ * schema guesses at what the fields mean, and 'excerpt' in particular reads as a
+ * whole source unless it is named as a 300-character sample.
+ *
+ * Available variables:
+ * - question_count: How many questions the export covers.
+ * - run_a, run_b: The two run ids.
+ * - label_a, label_b: The assistant that answered each run.
+ * - prompt_id: The textarea's id, which the copy button targets.
+ * - download: Render element for the primary "download JSON" action.
+ * - copy: Render element for the secondary "copy prompt" action.
+ */
+#}
+<div class="ys-compare-export">
+  <p>
+    {% trans %}Download the comparison as a JSON file, then attach it to an AI assistant along with the prompt below. The prompt tells the assistant what the two runs are and how the file is structured, so it can report where the assistants agree and differ.{% endtrans %}
+  </p>
+  <p>
+    {% trans %}The export carries published site content only, so any assistant approved for work use is a reasonable choice. A comparison of any real size may exceed what a single conversation accepts, so pick one that takes a file attachment of this length.{% endtrans %}
+  </p>
+
+  <label for="{{ prompt_id }}">
+    <strong>{% trans %}Research prompt to send alongside the file{% endtrans %}</strong>
+  </label>
+  <textarea id="{{ prompt_id }}" class="ys-compare-export__prompt form-textarea" rows="20" readonly>
+I'm reviewing an A/B comparison from Yale's YaleSites platform. We're migrating our website AI chat assistant from a legacy tool called `ai_engine` (hosted on Azure, "chat with your data") to a new in-house assistant called Beacon (built in Drupal, using retrieval-augmented generation over our search index). Beacon and legacy ai_engine use different content sets, indexes, system prompts, retrieval strategies, and models — so some differences between their answers are expected and not necessarily a regression.
+
+Attached is a JSON export of one comparison covering {{ question_count }} question(s). Run A (run #{{ run_a }}) was answered by {{ label_a }}, and Run B (run #{{ run_b }}) was answered by {{ label_b }}.
+
+How the file is structured:
+
+- `run_a` and `run_b`: metadata for each run — `id`, `created` (Unix timestamp), `source_filename`, `status`, and `backend` (which assistant answered it).
+- `summary`: counts across the whole comparison — `total_compared`, `differ`, `identical`, `only_a`, `only_b`.
+- `pairs`: one entry per question, each containing:
+  - `question`: the question text, the same on both sides.
+  - `status`: one of `identical`, `differs`, `only_a`, `only_b`.
+  - `a` and `b`: that question's result for Run A and Run B, or `null` when the question was not asked in that run. Each side has `answer` (the answer text), `citations`, `len` (answer length in characters), `cited` (how many sources the answer referenced), `retrieved` (how many sources were retrieved), `empty`, and `error` (non-empty only when that side failed to answer).
+    - `citations`: one entry per retrieved source, nested inside each side rather than on the question — `number`, `title`, `url`, `excerpt`, and `cited`.
+  - `len_delta`: Run B's answer length minus Run A's, and `0` when the question was asked in only one run.
+  - `citation_overlap`: `both`, `only_a` and `only_b`, each a list of `{url, title}`, partitioning the two sides' sources by URL.
+
+Three things to keep in mind while reading it:
+
+- `excerpt` is the first 300 characters of a source, not the whole page. Judge a source by its title, URL and that sample, and do not assume you have its full text.
+- `cited` false means the source was retrieved but the answer never referenced it. That is normal retrieval behaviour, not a fault on its own.
+- Answer text may contain inline `[docN]` markers. Those are the assistant's own references to its retrieved sources; treat them as citation references rather than prose, and do not rely on a marker's number as an index into `citations`.
+
+Please analyze the data and:
+
+1. Identify themes in where and why the two runs' answers differ (e.g. topics where one assistant consistently gives more complete or accurate answers).
+2. Compare citation quality and overlap between the two runs — does one cite more relevant or more complete sources than the other?
+3. Assess overall answer quality for each run — accuracy, completeness, clarity — and flag any questions where one assistant's answer looks notably worse.
+4. Summarize your findings in a way a non-technical stakeholder could use to sign off on (or raise concerns about) the Beacon cutover.
+</textarea>
+
+  <div class="ys-compare-export__actions">
+    {{ download }}
+    {{ copy }}
+    <span class="ys-compare-export__status" data-ys-copy-status></span>
+  </div>
+</div>

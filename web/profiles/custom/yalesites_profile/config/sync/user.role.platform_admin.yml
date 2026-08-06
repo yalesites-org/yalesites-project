@@ -91,6 +91,7 @@ dependencies:
     - workflows.workflow.editorial
     - workflows.workflow.events
   module:
+    - ai
     - block
     - block_content
     - book
@@ -120,7 +121,9 @@ dependencies:
     - webform
     - ys_ai
     - ys_ai_system_instructions
+    - ys_ai_tester
     - ys_alert
+    - ys_beacon
     - ys_campus_groups
     - ys_core
     - ys_integrations
@@ -147,6 +150,8 @@ permissions:
   - 'access webform overview'
   - 'add any content to books'
   - 'add content to books'
+  - 'administer ai'
+  - 'administer ai providers'
   - 'administer block content'
   - 'administer block types'
   - 'administer blocks'
@@ -154,6 +159,7 @@ permissions:
   - 'administer coffee'
   - 'administer google_tag_container'
   - 'administer main menu items'
+  - 'administer platform admin settings'
   - 'administer redirects'
   - 'administer users'
   - 'administer utility-drop-button-navigation menu items'
@@ -485,6 +491,8 @@ permissions:
   - 'manage editoria11y results'
   - 'manage media thumbnails settings'
   - 'manage ys ai system instructions'
+  - 'manage ys beacon settings'
+  - 'manage ys beacon system instructions'
   - 'mark as hidden in editoria11y'
   - 'mark as ok in editoria11y'
   - 'override all authored by option'
@@ -561,6 +569,7 @@ permissions:
   - 'use events transition restore'
   - 'use events transition restore_to_draft'
   - 'use moderation sidebar'
+  - 'use ys ai tester'
   - 'view all media revisions'
   - 'view all revisions'
   - 'view any accordion block content history'
@@ -627,6 +636,7 @@ permissions:
   - 'view the administration theme'
   - 'view unpublished paragraphs'
   - 'view vocabulary labels'
+  - 'view ys beacon guardrail telemetry'
   - 'yalesites manage alerts'
   - 'yalesites manage campus groups'
   - 'yalesites manage integrations'

@@ -1,0 +1,13 @@
+prompt_logging: false
+prompt_logging_tags: ''
+default_providers:
+  chat:
+    provider_id: portkey
+    model_id: gpt-4o
+  embeddings:
+    provider_id: portkey
+    model_id: text-embedding-3-small
+request_timeout: 120
+allowed_hosts: {  }
+allowed_hosts_rewrite_links: false
+global_guardrails: {  }

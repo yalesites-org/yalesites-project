@@ -46,6 +46,14 @@ ys_core.admin_views_settings:
     _title: 'Search Settings'
   requirements:
     _permission: 'yalesites manage settings'
+# Platform-admin-only settings form.
+ys_core.platform_admin_settings:
+  path: '/admin/yalesites/platform-admin-settings'
+  defaults:
+    _form: '\Drupal\ys_core\Form\PlatformAdminSettingsForm'
+    _title: 'Platform Admin Settings'
+  requirements:
+    _permission: 'administer platform admin settings'
 # Dashboard settings form.
 ys_core.admin_dashboard_settings:
   path: '/admin/yalesites/dashboard-settings'
