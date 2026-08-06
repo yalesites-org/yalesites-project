@@ -1,0 +1,9 @@
+name: YaleSites Beacon Portkey Provider
+type: module
+description: 'Portkey AI gateway provider for the Drupal AI module. Routes chat and embeddings through Portkey.'
+package: YaleSites
+core_version_requirement: ^10 || ^11
+configure: ys_beacon_portkey.settings_form
+dependencies:
+  - ai:ai
+  - key:key

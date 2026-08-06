@@ -1,0 +1,42 @@
+<?php
+
+/**
+ * @file
+ * Install and update hooks for the Portkey AI provider.
+ */
+
+use Drupal\Core\Config\FileStorage;
+
+/**
+ * Seeds ys_beacon_portkey.settings from shipped defaults when unconfigured.
+ *
+ * On sites where the module was already enabled, config/install does not
+ * re-run, and config_ignore (ys_beacon*) keeps config import from ever creating
+ * it, so the provider can be left with no api_key pointer and fail to load its
+ * key. The shipped config/install file is the single source of truth here.
+ */
+function _ys_beacon_portkey_seed_settings(): void {
+  $config = \Drupal::configFactory()->getEditable('ys_beacon_portkey.settings');
+  // Only seed an unconfigured provider; never clobber a populated config.
+  if ($config->get('api_key')) {
+    return;
+  }
+  $path = \Drupal::service('extension.list.module')->getPath('ys_beacon_portkey') . '/config/install';
+  if ($data = (new FileStorage($path))->read('ys_beacon_portkey.settings')) {
+    $config->setData($data)->save();
+  }
+}
+
+/**
+ * Implements hook_install().
+ */
+function ys_beacon_portkey_install(): void {
+  _ys_beacon_portkey_seed_settings();
+}
+
+/**
+ * Seed Portkey provider settings on sites where the module was already enabled.
+ */
+function ys_beacon_portkey_update_10001(): void {
+  _ys_beacon_portkey_seed_settings();
+}

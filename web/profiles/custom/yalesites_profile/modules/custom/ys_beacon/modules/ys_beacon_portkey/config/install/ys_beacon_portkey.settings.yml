@@ -1,0 +1,9 @@
+api_key: portkey_llm_api_key
+embeddings_api_key: portkey_embedding_api_key
+host: 'https://api.portkey.ai/v1'
+virtual_key: ''
+config_id: ''
+chat_models:
+  - 'gpt-4o'
+embeddings_models:
+  - 'text-embedding-3-small'

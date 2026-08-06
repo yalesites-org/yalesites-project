@@ -64,6 +64,13 @@ ys_core.admin_google_tag_settings:
   route_name: entity.google_tag_container.single_form
   title: "Google Tag Settings"
   weight: 30
+# Platform-admin-only settings form.
+ys_core.platform_admin_settings:
+  description: "Platform-admin-only settings, such as authorizing integrations per site."
+  parent: ys_core.admin_yalesites
+  route_name: ys_core.platform_admin_settings
+  title: "Platform Admin Settings"
+  weight: 35
 # Menu interface
 ys_core.menu_interface:
   description: "Manage menus"

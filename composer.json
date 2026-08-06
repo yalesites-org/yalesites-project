@@ -33,6 +33,7 @@
     "drupal/core-recommended": "10.6.13",
     "drush/drush": "^13",
     "league/commonmark": "^2.0",
+    "league/html-to-markdown": "^5.1",
     "pantheon-systems/drupal-integrations": "^10",
     "yalesites-org/yalesites_profile": "*"
   },
@@ -105,6 +106,11 @@
     "composer-exit-on-patch-failure": true,
     "patchLevel": {
       "drupal/core": "-p2"
+    },
+    "patches": {
+      "drupal/ai_vdb_provider_azure_ai_search": {
+        "Throw on a rejected document upload instead of reporting a silent success (YaleSites-Internal#1392)": "patches/ai_vdb_provider_azure_ai_search/insert-throws-on-failed-write.patch"
+      }
     }
   },
   "config": {
