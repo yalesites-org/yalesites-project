@@ -14,10 +14,15 @@ use Drupal\ys_localist\MetaFieldsManager;
  * See MetaFieldsManager::stripEmptyParagraphs() for why the description needs
  * cleaning at all (yalesites-org/YaleSites-Internal#986).
  *
- * The fixtures are shaped after real payloads from
- * events.yale.edu/api/2/events, sampled while diagnosing the issue: 11 of 15
- * descriptions carried an empty paragraph, and all 15 styled text with
- * <b>/<i>/<u> while none used <strong>/<em>.
+ * Most fixtures here are synthetic. testStripsFillerFromRealFixture() is the
+ * exception: it pins the actual stored value of field_event_description on
+ * node 109, read directly off the pr-1426 Pantheon multidev. A census of all
+ * 41 event nodes there (38 with a description) found 14 empty filler
+ * paragraphs across 6 nodes, in exactly two shapes - 7 bare <p>&nbsp;</p> and
+ * 7 <p style="text-align:start">&nbsp;</p> - and zero of the nested-span or
+ * bare-<br>-only shapes covered in testLeavesNonBareEmptyParagraphsAlone.
+ * That attributed shape is exactly what the original contrib-delegating
+ * implementation missed: its regex only ever matched a bare <p>.
  *
  * @coversDefaultClass \Drupal\ys_localist\MetaFieldsManager
  *
@@ -57,6 +62,18 @@ class MetaFieldsManagerTest extends UnitTestCase {
       'nbsp filler between paragraphs' => [
         "<p>First.</p>\n\n<p>&nbsp;</p>\n\n<p>Second.</p>",
         "<p>First.</p>\n\n\n\n<p>Second.</p>",
+      ],
+      'attributed nbsp filler between paragraphs' => [
+        "<p>First.</p>\n\n<p style=\"text-align:start\">&nbsp;</p>\n\n<p>Second.</p>",
+        "<p>First.</p>\n\n\n\n<p>Second.</p>",
+      ],
+      'numeric character reference filler' => [
+        '<p>First.</p><p>&#160;</p><p>Second.</p>',
+        '<p>First.</p><p>Second.</p>',
+      ],
+      'literal non-breaking space filler' => [
+        "<p>First.</p><p>\u{00A0}</p><p>Second.</p>",
+        '<p>First.</p><p>Second.</p>',
       ],
       'genuinely empty paragraph' => [
         '<p>First.</p><p></p><p>Second.</p>',
@@ -125,13 +142,22 @@ class MetaFieldsManagerTest extends UnitTestCase {
   }
 
   /**
-   * Preformatted content is left alone, because whitespace matters there.
+   * Preformatted content is not protected; measured to not matter today.
+   *
+   * The contrib implementation this replaced skipped over <pre>, <code>,
+   * <script> and <iframe> content specifically so a filler-shaped <p> quoted
+   * inside one of those tags would not be touched. A plain regex has no such
+   * awareness and strips it anywhere it appears - including here. That
+   * trade-off was accepted after measuring all 38 real event descriptions on
+   * the pr-1426 multidev: none contain any of those four tags, so nothing
+   * real is affected today. If that ever changes, this test is where it
+   * becomes visible.
    *
    * @covers ::stripEmptyParagraphs
    */
-  public function testLeavesPreformattedContentAlone(): void {
-    $description = "<pre><p>&nbsp;</p></pre>";
-    $this->assertSame($description, $this->metaFieldsManager->stripEmptyParagraphs($description));
+  public function testDoesNotProtectPreformattedContent(): void {
+    $description = '<pre><p>&nbsp;</p></pre>';
+    $this->assertSame('<pre></pre>', $this->metaFieldsManager->stripEmptyParagraphs($description));
   }
 
   /**
@@ -159,24 +185,66 @@ class MetaFieldsManagerTest extends UnitTestCase {
   }
 
   /**
-   * Only bare empty paragraphs are stripped, which is the shared definition.
+   * The exact stored description of a real event, byte for byte.
    *
-   * These variants are deliberately left alone: the point of delegating to
-   * improve_line_breaks is that Localist descriptions and editor-authored rich
-   * text agree on what an empty paragraph is, and widening the pattern here
-   * would break that. None of these shapes appears in the sampled live
-   * payloads - 51 empty paragraphs, all of them bare - so this documents the
-   * boundary rather than papering over it. If Localist ever starts emitting
-   * one of these, this test is where it becomes visible.
+   * Read from field_event_description on node 109 of the pr-1426 Pantheon
+   * multidev. Both empty paragraphs here carry a text-align style - the
+   * shape the original contrib-delegating implementation never matched,
+   * because getEventData() sees this value before anything downstream
+   * strips the style attribute at render time.
+   *
+   * @covers ::stripEmptyParagraphs
+   */
+  public function testStripsFillerFromRealFixture(): void {
+    $p1 = '<p style="text-align:start"><span style="font-size:11pt"><span><span><span><span style="font-style:normal"><span><span><span style="text-decoration:none"><b><span>DCP | 1995 | Directed by Todd Haynes | USA | 119 minutes | English </span></b></span></span></span></span></span></span></span></span></p>';
+    $p2 = '<p style="text-align:start"><span style="font-size:11pt"><span><span><span><span style="font-style:normal"><span><span><span style="text-decoration:none"><span><span><span>Free admission. No registration required.</span></span></span></span></span></span></span></span></span></span></span></p>';
+    $filler = '<p style="text-align:start">&nbsp;</p>';
+    $p4 = '<p style="text-align:start"><span style="font-size:11pt"><span><span><span><span style="font-style:normal"><span><span><span style="text-decoration:none"><span><span>A mysterious illness alienates Carol White (Julianne Moore) from her suburban enclave in the<i> </i>San Fernando Valley. Is the culprit industrial pollution or perhaps her own psyche? After medical professionals offer no clarity about her worsening symptoms, she seeks solace and protection through alternative means. SAFE exemplifies an ambivalence found throughout Todd Haynes&rsquo; filmography, especially in his most recent feature, MAY DECEMBER (2023), which also stars Julianne Moore. In a 1996 issue of BFI&rsquo;s <i>Sight and Sound</i>, Haynes clarifies that the film alludes to the AIDS epidemic, but themes of ecological disaster and the allure of New Age healing will strike viewers today as prescient. SAFE sidesteps heavy-handed messages, instead prompting us to consider how illness and industrial pollution are bound up with identity and belonging, within and beyond the suburbs of California.</span></span></span></span></span></span></span></span></span></span></p>';
+    $p6 = '<p><b style="font-style:normal; text-align:start; text-decoration:none"><span style="font-size:11pt"><span><span><span>Cinema of Contamination </span></span></span></span></b><span style="font-size:11pt; text-align:start"><span style="font-style:normal"><span><span><span style="text-decoration:none"><span><span><span>stages contact, confrontations, and entanglements with enigmatic toxins and landscapes. Spanning suburban California, the Andean mountain range, a forbidden zone, and a poisonous forest, the series examines how to make meaning within ecological collapse and in the aftermath of dictatorship and war.</span></span></span></span></span></span></span></span></p>';
+
+    $description = $p1 . "\n\n" . $p2 . "\n\n" . $filler . "\n\n" . $p4 . "\n\n" . $filler . "\n\n" . $p6 . "\n";
+    $expected = $p1 . "\n\n" . $p2 . "\n\n\n\n" . $p4 . "\n\n\n\n" . $p6 . "\n";
+
+    // Pin the fixture to the exact byte count read off the multidev so a
+    // transcription slip here is loud, not silently self-consistent.
+    $this->assertSame(2510, strlen($description), 'Fixture must match the real stored value byte for byte.');
+
+    $output = $this->metaFieldsManager->stripEmptyParagraphs($description);
+
+    $this->assertSame($expected, $output);
+    $this->assertLessThan(strlen($description), strlen($output));
+
+    // Confirm no tag other than the two filler <p> elements was touched.
+    $tags = ['<p', '<b', '<i', '<span', '<a ', '<br'];
+    foreach ($tags as $tag) {
+      $before = substr_count($description, $tag);
+      $after = substr_count($output, $tag);
+      if ($tag === '<p') {
+        $this->assertSame($before - 2, $after, "Expected exactly 2 fewer '$tag' after stripping.");
+      }
+      else {
+        $this->assertSame($before, $after, "'$tag' count must not change.");
+      }
+    }
+  }
+
+  /**
+   * Nested or non-whitespace filler is left alone; only blank content is.
+   *
+   * "Blank" means whitespace and the three ways of writing a non-breaking
+   * space (@see stripEmptyParagraphs()) - not any element, however trivial.
+   * A <span> wrapping the filler, or a lone <br>, do not count, even though
+   * both render as an empty-looking paragraph. Real data on the pr-1426
+   * multidev never contains either shape (zero nested-filler paragraphs
+   * across all 38 real descriptions), so this documents an intentional
+   * boundary rather than a gap being papered over.
    *
    * @covers ::stripEmptyParagraphs
    */
   public function testLeavesNonBareEmptyParagraphsAlone(): void {
     $variants = [
-      '<p style="text-align:center">&nbsp;</p>',
       '<p><span>&nbsp;</span></p>',
       '<p><br /></p>',
-      '<p>&#160;</p>',
     ];
 
     foreach ($variants as $variant) {
@@ -185,21 +253,23 @@ class MetaFieldsManagerTest extends UnitTestCase {
   }
 
   /**
-   * A clean-up failure returns the description rather than discarding it.
+   * Invalid UTF-8 elsewhere in the description no longer loses content.
    *
-   * Invalid UTF-8 makes the delegate's preg_replace() return NULL, which it
-   * concatenates as '' - so without the guard a single bad byte would wipe an
-   * entire event description and return an empty string, not NULL, with no
-   * error anywhere. Not reachable through the importer today (the Localist JSON
-   * parser rejects invalid UTF-8), but silent total content loss is the wrong
-   * failure mode to leave in place.
+   * The contrib delegate this replaced matched with the /u modifier and
+   * appended its result to the description, so a single invalid byte made
+   * preg_replace() return NULL, which concatenated as '' and silently wiped
+   * the entire description. This implementation never uses /u - the pattern
+   * needs no Unicode-aware matching, since its one non-ASCII case (a literal
+   * U+00A0) is matched by its UTF-8 bytes directly - so preg_replace() has no
+   * such failure mode, and the guard that worked around it was removed.
    *
    * @covers ::stripEmptyParagraphs
    */
-  public function testKeepsTheDescriptionWhenCleanUpFails(): void {
+  public function testStripsFillerEvenWithInvalidUtf8Bytes(): void {
     $invalidUtf8 = "<p>Yale\x92s event</p>\n<p>&nbsp;</p>\n<p>Second paragraph.</p>";
+    $expected = "<p>Yale\x92s event</p>\n\n<p>Second paragraph.</p>";
 
-    $this->assertSame($invalidUtf8, $this->metaFieldsManager->stripEmptyParagraphs($invalidUtf8));
+    $this->assertSame($expected, $this->metaFieldsManager->stripEmptyParagraphs($invalidUtf8));
   }
 
 }

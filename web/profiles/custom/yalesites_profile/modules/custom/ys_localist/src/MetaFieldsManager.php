@@ -7,7 +7,6 @@ use Drupal\Core\Entity\EntityTypeManager;
 use Drupal\Core\Plugin\ContainerFactoryPluginInterface;
 use Drupal\Core\Url;
 use Drupal\calendar_link\Twig\CalendarLinkTwigExtension;
-use Drupal\improve_line_breaks_filter\TextReplacement;
 use Drupal\node\NodeInterface;
 use Symfony\Component\DependencyInjection\ContainerInterface;
 
@@ -143,20 +142,42 @@ class MetaFieldsManager implements ContainerFactoryPluginInterface {
   /**
    * Removes Localist's empty filler paragraphs from an event description.
    *
-   * Localist pads descriptions with empty paragraphs, usually <p>&nbsp;</p>,
-   * and they reach the page verbatim: the event page prints this description
-   * as a plain string instead of rendering the field, so no text format and
-   * none of the platform's filters ever run on it. Each one shows up as an
-   * extra blank line. Reusing improve_line_breaks' own replacement, rather
-   * than filtering the description through a text format, keeps the <b>, <i>
-   * and <u> tags Localist emits and basic_html does not allow.
+   * Localist's editor pads descriptions with empty paragraphs between real
+   * ones, and they reach the page verbatim: the event page prints this
+   * description as a plain string instead of rendering the field, so no text
+   * format and none of the platform's filters ever run on it. Each one shows
+   * up as an extra blank line.
+   *
+   * This used to delegate to improve_line_breaks_filter's own replacement,
+   * the same one the platform applies to editor-authored rich text sitewide.
+   * That turned out to be a no-op on real Localist data: its pattern
+   * (/<p>(&nbsp;|\s)*<\/p>/ui) only matches a bare <p> with no attributes,
+   * and Localist's editor attaches a text-align style to essentially
+   * everything it emits, including its filler paragraphs, e.g.
+   * <p style="text-align:start">&nbsp;</p>. Matching an optional attribute
+   * list ourselves is a small enough addition that writing the pattern
+   * directly is simpler than working around contrib's shape - and keeps the
+   * <b>, <i> and <u> tags Localist emits and basic_html does not allow,
+   * which is why this still isn't done by filtering through a text format.
+   *
+   * "Blank" covers plain whitespace and every way Localist can represent a
+   * non-breaking space: the HTML entity (&nbsp;), its numeric character
+   * reference (&#160;), and the literal UTF-8 character (U+00A0). Only the
+   * entity form appears in real data; the other two are the same concept and
+   * cost nothing to also handle.
+   *
+   * Trade-off accepted: contrib's version skipped over <pre>, <code>,
+   * <script> and <iframe> content, so an empty-looking <p> quoted inside one
+   * of those tags would not be touched. A plain regex does not make that
+   * distinction. Measured against all 38 real event descriptions on the
+   * pr-1426 Pantheon multidev: zero contain any of those four tags, so this
+   * does not affect real data today.
    *
    * @param string|null $description
    *   The description as stored by the Localist migration.
    *
    * @return string|null
-   *   The description without empty paragraphs, NULL if there was none, or the
-   *   description unchanged if the clean-up could not run.
+   *   The description without empty paragraphs, or NULL if there was none.
    *
    * @see https://github.com/yalesites-org/YaleSites-Internal/issues/986
    */
@@ -165,18 +186,14 @@ class MetaFieldsManager implements ContainerFactoryPluginInterface {
       return NULL;
     }
 
-    // The delegate matches with the /u modifier and appends the result to its
-    // output, so on invalid UTF-8 preg_replace() returns NULL, that NULL is
-    // concatenated as '', and the whole description disappears with nothing
-    // logged. Leave such a description alone instead. This should not be
-    // reachable through the importer - the Localist JSON parser rejects
-    // invalid UTF-8 - but silent total content loss is the wrong failure mode
-    // to leave sitting behind a public method.
-    if (!mb_check_encoding($description, 'UTF-8')) {
-      return $description;
-    }
-
-    return (new TextReplacement())->processImproveLineBreaks($description, TRUE);
+    // No /u modifier, so the only non-ASCII byte sequence in the pattern -
+    // the UTF-8 encoding of U+00A0 - is matched byte-for-byte rather than as
+    // a Unicode code point. That means invalid UTF-8 elsewhere in the
+    // description cannot make preg_replace() fail the way it could with the
+    // contrib delegate this replaced, so no encoding guard is needed here.
+    $nonBreakingSpace = "\xC2\xA0";
+    $blank = '(?:\s|&nbsp;|&#160;|' . $nonBreakingSpace . ')*';
+    return preg_replace('/<p(?:\s+[^>]*)?>' . $blank . '<\/p>/i', '', $description);
   }
 
   /**

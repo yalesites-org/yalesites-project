@@ -5,7 +5,6 @@ package: YaleSites
 core_version_requirement: ^10
 dependencies:
   - drupal:migrate
-  - improve_line_breaks_filter:improve_line_breaks_filter
   - migrate_plus:migrate_plus
   - migrate_tools:migrate_tools
   - ys_core
