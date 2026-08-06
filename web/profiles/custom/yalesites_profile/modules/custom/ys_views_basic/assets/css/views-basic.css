@@ -86,6 +86,36 @@
   width: 100% !important;
 }
 
+/*
+ * WHY EVERY .gin--dark-mode .chosen-* RULE BELOW IS QUALIFIED WITH
+ * .layout-builder-configure-block — the qualifier is load-bearing, not cosmetic.
+ *
+ * This stylesheet is not admin-only. TWO front-end surfaces attach
+ * ys_views_basic/ys_views_basic for its JS, and both pull this CSS with it:
+ * atomic's listing scaffold template
+ * (templates/views/views-view--views-basic-scaffold.html.twig) and
+ * EventCalendarFilterForm::buildForm(). Check both before concluding this
+ * qualifier is unnecessary and removing it.
+ *
+ * gin_toolbar renders on the front end for any user with
+ * toolbar access, and it injects the #gin-setting-darkmode payload that Gin's
+ * init.js reads to put .gin--dark-mode on <html> — on the front end, not just
+ * on admin routes. So an unqualified `.gin--dark-mode .chosen-*` rule repaints
+ * the public listing filters in Gin's admin dark palette for every logged-in
+ * editor whose Gin colour mode is dark, while anonymous visitors see the
+ * correct light theme (yalesites-org/yalesites-project#1299 QA).
+ *
+ * .layout-builder-configure-block is the block-configure form's own wrapper and
+ * is present in both the layout_builder_browser modal and the off-canvas
+ * configure panel, so it confines these rules to the authoring form they were
+ * written for. Any future dark-mode `.chosen-*` rule here needs the same
+ * qualifier — or, like the .views-basic--group-user-selection rule further
+ * down, a widget container class that cannot match a front-end page.
+ *
+ * This applies to every dark-mode rule from here to the search-choice-disabled
+ * rule below, which is past the "Contrast fix end" marker.
+ */
+
 /* Chosen dropdown selected color contrast fix */
 
 /* ******************************************* */
@@ -98,11 +128,18 @@
  * to match, that same dark value as the text color goes dark-on-dark and
  * every unhighlighted option disappears. Use the actual text color instead.
  */
-.gin--dark-mode .chosen-container .chosen-results {
+.gin--dark-mode
+  .layout-builder-configure-block
+  .chosen-container
+  .chosen-results {
   color: var(--gin-color-text);
 }
 
-.gin--dark-mode .chosen-container-multi .chosen-drop .result-selected {
+.gin--dark-mode
+  .layout-builder-configure-block
+  .chosen-container-multi
+  .chosen-drop
+  .result-selected {
   color: var(--gin-color-focus);
   background-color: var(--gin-bg-layer);
 }
@@ -122,17 +159,24 @@
  * loads, and it does not fill this gap. Extend the same manual, targeted
  * approach as the fix above rather than trying to reskin Chosen wholesale.
  */
-.gin--dark-mode .chosen-container .chosen-drop {
+.gin--dark-mode .layout-builder-configure-block .chosen-container .chosen-drop {
   border-color: var(--gin-border-color);
   background-color: var(--gin-bg-layer);
 }
 
-.gin--dark-mode .chosen-container-multi .chosen-choices {
+.gin--dark-mode
+  .layout-builder-configure-block
+  .chosen-container-multi
+  .chosen-choices {
   border-color: var(--gin-border-color);
   background-color: var(--gin-bg-input, var(--gin-bg-layer));
 }
 
-.gin--dark-mode .chosen-container .chosen-results li.no-results {
+.gin--dark-mode
+  .layout-builder-configure-block
+  .chosen-container
+  .chosen-results
+  li.no-results {
   color: var(--gin-color-text-light);
   background-color: var(--gin-bg-app);
 }
@@ -152,13 +196,18 @@
  * now matches --gin-color-text (the same near-white the pill's own label
  * text uses) for a clean, clearly visible outline.
  */
-.gin--dark-mode .chosen-container-multi .chosen-choices li.search-choice {
+.gin--dark-mode
+  .layout-builder-configure-block
+  .chosen-container-multi
+  .chosen-choices
+  li.search-choice {
   border-color: var(--gin-color-text);
   background-color: var(--gin-bg-item-hover);
   color: var(--gin-color-text);
 }
 
 .gin--dark-mode
+  .layout-builder-configure-block
   .chosen-container-multi
   .chosen-choices
   li.search-choice-disabled {
