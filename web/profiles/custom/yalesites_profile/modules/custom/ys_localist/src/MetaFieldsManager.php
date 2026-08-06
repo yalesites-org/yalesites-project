@@ -7,6 +7,7 @@ use Drupal\Core\Entity\EntityTypeManager;
 use Drupal\Core\Plugin\ContainerFactoryPluginInterface;
 use Drupal\Core\Url;
 use Drupal\calendar_link\Twig\CalendarLinkTwigExtension;
+use Drupal\improve_line_breaks_filter\TextReplacement;
 use Drupal\node\NodeInterface;
 use Symfony\Component\DependencyInjection\ContainerInterface;
 
@@ -140,6 +141,45 @@ class MetaFieldsManager implements ContainerFactoryPluginInterface {
   }
 
   /**
+   * Removes Localist's empty filler paragraphs from an event description.
+   *
+   * Localist pads descriptions with empty paragraphs, usually <p>&nbsp;</p>,
+   * and they reach the page verbatim: the event page prints this description
+   * as a plain string instead of rendering the field, so no text format and
+   * none of the platform's filters ever run on it. Each one shows up as an
+   * extra blank line. Reusing improve_line_breaks' own replacement, rather
+   * than filtering the description through a text format, keeps the <b>, <i>
+   * and <u> tags Localist emits and basic_html does not allow.
+   *
+   * @param string|null $description
+   *   The description as stored by the Localist migration.
+   *
+   * @return string|null
+   *   The description without empty paragraphs, NULL if there was none, or the
+   *   description unchanged if the clean-up could not run.
+   *
+   * @see https://github.com/yalesites-org/YaleSites-Internal/issues/986
+   */
+  public function stripEmptyParagraphs(?string $description): ?string {
+    if ($description === NULL) {
+      return NULL;
+    }
+
+    // The delegate matches with the /u modifier and appends the result to its
+    // output, so on invalid UTF-8 preg_replace() returns NULL, that NULL is
+    // concatenated as '', and the whole description disappears with nothing
+    // logged. Leave such a description alone instead. This should not be
+    // reachable through the importer - the Localist JSON parser rejects
+    // invalid UTF-8 - but silent total content loss is the wrong failure mode
+    // to leave sitting behind a public method.
+    if (!mb_check_encoding($description, 'UTF-8')) {
+      return $description;
+    }
+
+    return (new TextReplacement())->processImproveLineBreaks($description, TRUE);
+  }
+
+  /**
    * Gets event all fields.
    */
   public function getEventData($node) {
@@ -156,7 +196,8 @@ class MetaFieldsManager implements ContainerFactoryPluginInterface {
     $ticketLink = $node->field_ticket_registration_url->first() ? $node->field_ticket_registration_url->first()->getValue()['uri'] : NULL;
     $ticketCost = $node->field_ticket_cost->first() ? $node->field_ticket_cost->first()->getValue()['value'] : NULL;
     $costButtonText = $ticketCost ? 'Buy Tickets' : 'Register';
-    $description = $node->field_event_description->first() ? $node->field_event_description->first()->getValue()['value'] : NULL;
+    $storedDescription = $node->field_event_description->first() ? $node->field_event_description->first()->getValue()['value'] : NULL;
+    $description = $this->stripEmptyParagraphs($storedDescription);
     $room = $node->field_event_room->first() ? $node->field_event_room->first()->getValue()['value'] : NULL;
     $externalEventWebsiteUrl = ($node->field_event_cta->first()) ? Url::fromUri($node->field_event_cta->first()->getValue()['uri'])->toString() : NULL;
     $externalEventWebsiteTitle = ($node->field_event_cta->first()) ? $node->field_event_cta->first()->getValue()['title'] : NULL;
