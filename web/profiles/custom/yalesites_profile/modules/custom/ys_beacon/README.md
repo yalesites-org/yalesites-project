@@ -493,11 +493,11 @@ conversation text even by accident — the same closed-API property
 > This store originally kept the question and the answer of each flagged turn,
 > and that was **reversed on review** (PR #1417): the decision to store real
 > conversation text is being reconsidered under its own ticket, so the capability
-> was removed rather than left switched on. `ys_beacon_update_10018()` drops the
-> two columns — and with them any text captured while they existed — on a site
-> that already ran `ys_beacon_update_10017()`. Stopping the writes without
-> dropping the columns would have left the already-captured text readable, so the
-> hook is the point of the change rather than tidy-up.
+> was removed rather than left switched on. The shipped `hook_schema()` defines
+> no such columns, so a site installing Beacon never creates them and has no
+> captured text to remove. A local checkout or multidev that ran an interim
+> revision of this branch may still hold them; reset that database from a fresh
+> pull rather than relying on an update hook, which is why none remains here.
 
 Two bounds, each stated on the report page rather than left to the schema:
 

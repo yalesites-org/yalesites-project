@@ -18,6 +18,7 @@ use Drupal\Tests\UnitTestCase;
 use Drupal\ys_beacon\Form\YsBeaconSettings;
 use Drupal\ys_beacon\Plugin\PlatformAdminSetting\BeaconPlatformAdminSetting;
 use Drupal\ys_beacon\Service\BeaconIndexManager;
+use Drupal\ys_beacon\Service\BeaconIndexStatus;
 use Drupal\ys_beacon\Service\LegacyAiEngine;
 use Psr\Log\LoggerInterface;
 use Symfony\Component\DependencyInjection\ContainerInterface;
@@ -55,7 +56,10 @@ class BeaconPlatformAdminSettingTest extends UnitTestCase {
       [],
       $config_factory,
       $this->createMock(AccountInterface::class),
-      $entity_type_manager ?? $this->createMock(EntityTypeManagerInterface::class),
+      // The plugin reads the index through BeaconIndexStatus now. The real
+      // service is used over the caller's mocked storage, so these tests
+      // still exercise the load-and-guard logic instead of stubbing answers.
+      $this->indexStatus($entity_type_manager ?? $this->createMock(EntityTypeManagerInterface::class), $config_factory),
       $index_manager ?? $this->createMock(BeaconIndexManager::class),
       // A bare mock reports the legacy stack as retired (bool return defaults
       // to FALSE), which is the state most of these tests care about.
@@ -65,6 +69,23 @@ class BeaconPlatformAdminSettingTest extends UnitTestCase {
     );
     $plugin->setStringTranslation($this->getStringTranslationStub());
     return $plugin;
+  }
+
+  /**
+   * Builds the real index status reader over a caller-supplied storage mock.
+   *
+   * @param \Drupal\Core\Entity\EntityTypeManagerInterface $entity_type_manager
+   *   The entity type manager whose search_api_index storage is stubbed.
+   * @param \Drupal\Core\Config\ConfigFactoryInterface $config_factory
+   *   The config factory the service resolves the index id from.
+   *
+   * @return \Drupal\ys_beacon\Service\BeaconIndexStatus
+   *   The index status reader.
+   */
+  private function indexStatus(EntityTypeManagerInterface $entity_type_manager, ConfigFactoryInterface $config_factory): BeaconIndexStatus {
+    $status = new BeaconIndexStatus($entity_type_manager, $config_factory);
+    $status->setStringTranslation($this->getStringTranslationStub());
+    return $status;
   }
 
   /**
@@ -203,7 +224,6 @@ class BeaconPlatformAdminSettingTest extends UnitTestCase {
    * The "Index now" button is disabled when nothing is queued.
    *
    * @covers ::buildSettings
-   * @covers ::indexRemainingItems
    */
   public function testIndexNowDisabledWhenQueueEmpty(): void {
     $factory = $this->getConfigFactoryStub(['ys_beacon.settings' => ['search_index_id' => 'ys_beacon']]);
@@ -240,7 +260,6 @@ class BeaconPlatformAdminSettingTest extends UnitTestCase {
    * Re-index / Index now buttons.
    *
    * @covers ::buildSettings
-   * @covers ::indexStatusSummary
    */
   public function testIndexStatusShowsCountWhenWritable(): void {
     $factory = $this->getConfigFactoryStub(['ys_beacon.settings' => ['search_index_id' => 'ys_beacon']]);
@@ -256,7 +275,6 @@ class BeaconPlatformAdminSettingTest extends UnitTestCase {
    * A disabled index shows the "index disabled" note instead of a count.
    *
    * @covers ::buildSettings
-   * @covers ::indexStatusSummary
    */
   public function testIndexStatusShowsDisabledMessageWhenIndexDisabled(): void {
     $factory = $this->getConfigFactoryStub(['ys_beacon.settings' => ['search_index_id' => 'ys_beacon']]);
@@ -365,7 +383,6 @@ class BeaconPlatformAdminSettingTest extends UnitTestCase {
    *
    * @covers ::submitSettings
    * @covers ::enableIndex
-   * @covers ::loadBeaconIndexOverrideFree
    */
   public function testEnableDecidesFromStoredConfigNotOverriddenView(): void {
     $settings = [
@@ -423,7 +440,6 @@ class BeaconPlatformAdminSettingTest extends UnitTestCase {
    *
    * @covers ::submitSettings
    * @covers ::enableIndex
-   * @covers ::trackedItemCount
    */
   public function testEnabledButUntrackedIndexIsStillSeeded(): void {
     $settings = [

@@ -45,7 +45,7 @@ class YsBeaconAdminSettings extends ConfigFormBase {
   public static function create(ContainerInterface $container) {
     $instance = parent::create($container);
     $instance->indexManager = $container->get('ys_beacon.index_manager');
-    $instance->entityTypeManager = $container->get('entity_type.manager');
+    $instance->indexStatus = $container->get('ys_beacon.index_status');
     $instance->indexingBatchHelper = $container->get('search_api.indexing_batch_helper');
     return $instance;
   }
