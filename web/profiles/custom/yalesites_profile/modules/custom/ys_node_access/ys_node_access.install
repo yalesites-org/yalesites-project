@@ -25,3 +25,14 @@ function ys_node_access_install() {
 function ys_node_access_update_10001() {
   node_access_rebuild();
 }
+
+/**
+ * Rebuild node access grants after the unpublished-listing-visibility fix.
+ *
+ * See ys_node_access_node_access_records() for why the #10001 all-zero
+ * record needed replacing. Rebuild so already-unpublished nodes get the
+ * corrected grant rows, not just nodes saved after this deploy.
+ */
+function ys_node_access_update_10002() {
+  node_access_rebuild();
+}
