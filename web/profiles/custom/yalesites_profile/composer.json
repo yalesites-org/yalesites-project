@@ -116,7 +116,7 @@
     "jjj/chosen": "2.2.1",
     "smalot/pdfparser": "2.11.0",
     "yalesites-org/ai_engine": "1.2.18",
-    "yalesites-org/atomic": "1.79.0",
+    "yalesites-org/atomic": "1.80.0",
     "yalesites-org/yale_cas": "v1.3.0"
   },
   "minimum-stability": "dev",
