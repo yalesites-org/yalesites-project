@@ -187,29 +187,63 @@ function ys_beacon_metatag_groups_alter(&$definitions) {
 /**
  * Implements hook_config_ignore_ignored_alter().
  *
- * The per-site Azure index (database) name persisted onto the Beacon search
- * server is config-ignored so a provisioned site keeps it across deploys
- * (yalesites-org/YaleSites-Internal#1387). config_ignore's simple mode applies
- * that ignore to create as well as update, so on a brand-new site - where the
- * server is created, not updated - the incoming database_name key is stripped.
- * ai_search's NewServerEventSubscriber then reaches the vector-database backend
- * with a null name and aborts the whole config import with a TypeError
- * (yalesites-org/YaleSites-Internal#1393).
+ * Registers the Search API keys holding per-site Beacon values as
+ * config-ignored on every direction and operation except import-create.
+ * BeaconIndexManager::propagateConnection() and ::pinSearchUrl() write the
+ * site's own Azure index name, endpoint and read-only flag onto the shared
+ * Search API config, so all three must survive config import on a provisioned
+ * site and must never be exported.
  *
- * Scope that ignore away from create on import (the deploy path) by dropping
- * it from that one operation, so a fresh import keeps the shipped empty default
- * (a harmless present value). The import-update ignore still protects a
- * provisioned site's persisted name on every later deploy, and the export
- * ignores are left untouched so the per-site name never leaks into synced
- * config.
+ * These ignores are added here rather than listed in config_ignore.settings so
+ * they exist only while ys_beacon does. config_ignore transforms the import
+ * storage from the synced settings list before any module is installed, so an
+ * entry in that list also applies to a site that has never had Beacon. There
+ * the server config is created, not updated, and config_ignore's create
+ * handling unsets an ignored key outright rather than blanking it
+ * (ConfigIgnoreEventSubscriber::ignoreParts()). ai_search's
+ * NewServerEventSubscriber then reads the missing database_name as NULL and
+ * aborts the whole config import with a TypeError, which is what broke the
+ * platform-wide deploy (yalesites-org/YaleSites-Internal#1393). An earlier fix
+ * scoped the entry away from import-create in this same hook, but the hook
+ * cannot run on the sites that hit the bug: ys_beacon is not installed yet when
+ * the transform happens.
+ *
+ * Skipping import-create is still required for the case where Beacon is
+ * installed but the server config is absent, so a fresh import keeps the
+ * shipped empty default - a present, harmless value. Import-update keeps a
+ * provisioned site's persisted values across every later deploy
+ * (yalesites-org/YaleSites-Internal#1387).
+ *
+ * Every operation is needed, not just update: the pinned endpoint URL is absent
+ * from synced config entirely, so on import it is a delete-shaped key that
+ * survives via the delete list, and on export it is a create-shaped one that
+ * the export-create entry strips. Dropping either would silently lose a site's
+ * endpoint or leak it into synced config.
  */
 function ys_beacon_config_ignore_ignored_alter(ConfigIgnoreConfig $ignored) {
-  $entry = 'search_api.server.ys_beacon:'
-    . 'backend_config.database_settings.database_name';
-  $create = $ignored->getList('import', 'create');
-  if (in_array($entry, $create, TRUE)) {
-    $create = array_values(array_diff($create, [$entry]));
-    $ignored->setList('import', 'create', $create);
+  // Both machine names are configurable (ys_beacon.settings:search_server_id
+  // and :search_index_id), so resolve them the way every other consumer does
+  // rather than hardcoding the defaults. Raw storage is read rather than the
+  // config factory because this runs during the import storage transformation,
+  // where YsBeaconConfigOverrides is resolving overrides off the same object.
+  $settings = \Drupal::service('config.storage')->read('ys_beacon.settings') ?: [];
+  $server = 'search_api.server.' . (($settings['search_server_id'] ?? '') ?: 'ys_beacon');
+  $index = 'search_api.index.' . (($settings['search_index_id'] ?? '') ?: 'ys_beacon');
+
+  $per_site_keys = [
+    $server . ':backend_config.database_settings.database_name',
+    $server . ':backend_config.database_settings.url',
+    $index . ':read_only',
+  ];
+
+  foreach (['import', 'export'] as $direction) {
+    foreach (['create', 'update', 'delete'] as $operation) {
+      if ($direction === 'import' && $operation === 'create') {
+        continue;
+      }
+      $list = array_merge($ignored->getList($direction, $operation), $per_site_keys);
+      $ignored->setList($direction, $operation, array_values(array_unique($list)));
+    }
   }
 }
 
