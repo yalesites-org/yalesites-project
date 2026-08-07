@@ -41,11 +41,20 @@ Entity save -> Search API tracking -> ys_beacon index (ai_search backend)
 Visitor -> React widget -> POST /api/ys-beacon/v1/conversation
                  - RagRetriever: vector query, chunked results -> citations
                  - SystemPromptBuilder: site system instructions + [docN] sources
+                 - ToolCallHandler: attaches the allow-listed LLM tools
                  - Portkey chat completion, streamed as NDJSON
+                 - if the model asked for a tool: run it, then call Portkey a
+                   second time (no tools) and stream that answer instead
 ```
 
 Submodule `ys_beacon_portkey` provides the `portkey` AI provider plugin
 (OpenAI-compatible, with `x-portkey-*` headers) used for both operations.
+
+The model can call a small set of ys_beacon-owned tools mid-conversation - today
+just one, returning the current date and time, so answers can depend on "now".
+See [docs/AI_FUNCTION_CALL_TOOLS.md](docs/AI_FUNCTION_CALL_TOOLS.md) for how to
+add another; which tools the model may call is an explicit allow-list on the
+`ys_beacon.tool_call_handler` service, not everything registered on the site.
 
 ## Per-site configuration
 

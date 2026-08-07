@@ -21,6 +21,7 @@ class BeaconAnswerService {
     protected AiProviderPluginManager $aiProvider,
     protected RagRetriever $ragRetriever,
     protected SystemPromptBuilder $promptBuilder,
+    protected ToolCallHandler $toolCallHandler,
   ) {
   }
 
@@ -38,7 +39,7 @@ class BeaconAnswerService {
    *   When no default chat provider is configured.
    */
   public function answer(string $question): array {
-    $defaults = $this->aiProvider->getDefaultProviderForOperationType('chat');
+    $defaults = $this->chatDefaults();
     if (empty($defaults['provider_id']) || empty($defaults['model_id'])) {
       throw new \RuntimeException('No default chat provider is configured.');
     }
@@ -49,13 +50,54 @@ class BeaconAnswerService {
       new ChatMessage('user', $question),
     ];
 
-    $provider = $this->aiProvider->createInstance($defaults['provider_id']);
-    $output = $provider->chat(new ChatInput($messages), $defaults['model_id'], ['ys_beacon']);
+    $provider = $this->chatProvider($defaults['provider_id']);
+    $chat_input = new ChatInput($messages);
+    $this->toolCallHandler->attachTools($chat_input);
+
+    $output = $provider->chat($chat_input, $defaults['model_id'], ['ys_beacon']);
+    $normalized = $output->getNormalized();
+
+    $follow_up_input = $this->toolCallHandler->followUpInput($normalized, $messages);
+    if ($follow_up_input) {
+      $output = $provider->chat($follow_up_input, $defaults['model_id'], ['ys_beacon']);
+      $normalized = $output->getNormalized();
+    }
 
     return [
-      'answer' => (string) $output->getNormalized()->getText(),
+      'answer' => (string) $normalized->getText(),
       'citations' => $citations,
     ];
+  }
+
+  /**
+   * Resolves the site's default chat provider and model.
+   *
+   * Extracted as the only touchpoint on the AI module's provider manager
+   * before the call, so a test can substitute the answer.
+   * AiProviderPluginManager is declared final and cannot be mocked.
+   *
+   * @return array|null
+   *   The provider defaults, as
+   *   AiProviderPluginManager::getDefaultProviderForOperationType() returns.
+   */
+  protected function chatDefaults(): ?array {
+    return $this->aiProvider->getDefaultProviderForOperationType('chat');
+  }
+
+  /**
+   * Builds the provider for a turn.
+   *
+   * The companion seam to ::chatDefaults(), and the only other provider
+   * touchpoint.
+   *
+   * @param string $provider_id
+   *   The provider plugin id from ::chatDefaults().
+   *
+   * @return object
+   *   The provider.
+   */
+  protected function chatProvider(string $provider_id): object {
+    return $this->aiProvider->createInstance($provider_id);
   }
 
 }
