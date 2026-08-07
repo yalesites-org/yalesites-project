@@ -212,14 +212,28 @@ function ys_beacon_metatag_groups_alter(&$definitions) {
  * installed but the server config is absent, so a fresh import keeps the
  * shipped empty default - a present, harmless value. Import-update keeps a
  * provisioned site's persisted values across every later deploy
- * (yalesites-org/YaleSites-Internal#1387), and the export ignores keep them out
- * of synced config.
+ * (yalesites-org/YaleSites-Internal#1387).
+ *
+ * Every operation is needed, not just update: the pinned endpoint URL is absent
+ * from synced config entirely, so on import it is a delete-shaped key that
+ * survives via the delete list, and on export it is a create-shaped one that
+ * the export-create entry strips. Dropping either would silently lose a site's
+ * endpoint or leak it into synced config.
  */
 function ys_beacon_config_ignore_ignored_alter(ConfigIgnoreConfig $ignored) {
+  // Both machine names are configurable (ys_beacon.settings:search_server_id
+  // and :search_index_id), so resolve them the way every other consumer does
+  // rather than hardcoding the defaults. Raw storage is read rather than the
+  // config factory because this runs during the import storage transformation,
+  // where YsBeaconConfigOverrides is resolving overrides off the same object.
+  $settings = \Drupal::service('config.storage')->read('ys_beacon.settings') ?: [];
+  $server = 'search_api.server.' . (($settings['search_server_id'] ?? '') ?: 'ys_beacon');
+  $index = 'search_api.index.' . (($settings['search_index_id'] ?? '') ?: 'ys_beacon');
+
   $per_site_keys = [
-    'search_api.server.ys_beacon:backend_config.database_settings.database_name',
-    'search_api.server.ys_beacon:backend_config.database_settings.url',
-    'search_api.index.ys_beacon:read_only',
+    $server . ':backend_config.database_settings.database_name',
+    $server . ':backend_config.database_settings.url',
+    $index . ':read_only',
   ];
 
   foreach (['import', 'export'] as $direction) {

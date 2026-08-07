@@ -4,7 +4,9 @@ namespace Drupal\Tests\ys_beacon\Kernel;
 
 use Drupal\Component\Serialization\Yaml;
 use Drupal\config_ignore\ConfigIgnoreConfig;
+use Drupal\config_ignore\EventSubscriber\ConfigIgnoreEventSubscriber;
 use Drupal\Core\Config\MemoryStorage;
+use Drupal\Core\Config\StorageInterface;
 use Drupal\KernelTests\KernelTestBase;
 
 /**
@@ -126,6 +128,95 @@ class BeaconConfigIgnoreCreateScopeTest extends KernelTestBase {
         $this->assertContains('ys_beacon*', $list, $message);
       }
     }
+  }
+
+  /**
+   * A provisioned site keeps its own values through import, and repeatedly.
+   *
+   * This is the requirement the ignores exist for, and asserting the hook's
+   * list membership does not prove it: the endpoint URL is absent from synced
+   * config, so it survives as a delete-shaped key via the delete list rather
+   * than the update list. Run config_ignore's own key-merging routine to lock
+   * the behaviour rather than the list.
+   */
+  public function testWarmImportKeepsProvisionedValues(): void {
+    $sync_server = $this->shippedConfig('search_api.server.ys_beacon');
+    $active_server = $sync_server;
+    $active_server['backend_config']['database_settings']['database_name'] = 'yalesite-foo';
+    $active_server['backend_config']['database_settings']['url'] = 'https://foo.search.windows.net';
+
+    $sync_index = $this->shippedConfig('search_api.index.ys_beacon');
+    $active_index = ['read_only' => TRUE] + $sync_index;
+
+    // Twice over, feeding each result back in as the next deploy's active
+    // config: the values have to stick beyond a single import.
+    foreach ([1, 2] as $deploy) {
+      $active_server = $this->applyIgnores('search_api.server.ys_beacon', 'import', $sync_server, $active_server);
+      $active_index = $this->applyIgnores('search_api.index.ys_beacon', 'import', $sync_index, $active_index);
+
+      $settings = $active_server['backend_config']['database_settings'];
+      $this->assertSame('yalesite-foo', $settings['database_name'], "deploy $deploy");
+      $this->assertSame('https://foo.search.windows.net', $settings['url'], "deploy $deploy");
+      $this->assertTrue($active_index['read_only'], "deploy $deploy");
+    }
+  }
+
+  /**
+   * Export never writes a site's own values back into synced config.
+   */
+  public function testExportDropsProvisionedValues(): void {
+    $sync_server = $this->shippedConfig('search_api.server.ys_beacon');
+    $active_server = $sync_server;
+    $active_server['backend_config']['database_settings']['database_name'] = 'yalesite-foo';
+    $active_server['backend_config']['database_settings']['url'] = 'https://foo.search.windows.net';
+
+    // On export the destination is synced config, so the roles are reversed:
+    // the active values are the incoming ones being filtered.
+    $exported = $this->applyIgnores('search_api.server.ys_beacon', 'export', $active_server, $sync_server);
+
+    $settings = $exported['backend_config']['database_settings'];
+    $this->assertSame('', $settings['database_name'], 'The per-site index name never reaches synced config.');
+    $this->assertArrayNotHasKey('url', $settings, 'The pinned endpoint never reaches synced config.');
+  }
+
+  /**
+   * Runs config_ignore's own key merging for one config object.
+   *
+   * Mirrors what ConfigIgnoreEventSubscriber::transformStorage() does for a
+   * config object that exists on both sides, so the assertions above exercise
+   * the real contrib algorithm rather than a restatement of the hook.
+   *
+   * @param string $name
+   *   The config object name.
+   * @param string $direction
+   *   Either import or export.
+   * @param array $incoming
+   *   The data being transformed.
+   * @param array $destination
+   *   The data being transformed towards.
+   *
+   * @return array
+   *   The transformed data.
+   */
+  private function applyIgnores(string $name, string $direction, array $incoming, array $destination): array {
+    $ignored = new ConfigIgnoreConfig(
+      'simple',
+      $this->shippedConfig('config_ignore.settings')['ignored_config_entities'],
+    );
+    ys_beacon_config_ignore_ignored_alter($ignored);
+
+    $parts = [];
+    foreach (['create', 'update', 'delete'] as $operation) {
+      $match = $ignored->isIgnored(StorageInterface::DEFAULT_COLLECTION, $name, $direction, $operation);
+      $parts[$operation] = is_array($match) ? $match : [];
+    }
+
+    $ignore_parts = new \ReflectionMethod(ConfigIgnoreEventSubscriber::class, 'ignoreParts');
+    $ignore_parts->setAccessible(TRUE);
+    $args = [&$incoming, $destination, $parts];
+    $ignore_parts->invokeArgs(NULL, $args);
+
+    return $incoming;
   }
 
   /**
