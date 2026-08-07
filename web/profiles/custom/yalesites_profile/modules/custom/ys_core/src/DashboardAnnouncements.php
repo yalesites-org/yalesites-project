@@ -25,8 +25,10 @@ use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
  * The feed follows the JSON Feed 1.1 spec. The YaleSites platform team
  * publishes announcements on yalesites.yale.edu and exposes them as a JSON
  * feed; each downstream site points
- * `ys_core.dashboard_settings:announcements_feed_url` at that endpoint. When no
- * URL is configured the dashboard simply omits the announcements section.
+ * `ys_core.dashboard_settings:announcements_feed_url` at that endpoint (via
+ * the "Dashboard Announcements Feed" section of the Platform Admin Settings
+ * page). When no URL is configured the dashboard falls back to the
+ * production feed.
  *
  * @see https://www.jsonfeed.org/version/1.1/
  */
@@ -54,9 +56,10 @@ class DashboardAnnouncements {
    * The canonical platform announcements feed URL.
    *
    * Used when `ys_core.dashboard_settings:announcements_feed_url` is empty,
-   * which is the default. The config key exists as a per-site override (set
-   * via drush, e.g. for staging environments) and is intentionally not
-   * exposed in the dashboard settings form.
+   * which is the default. The config key exists as a per-site override,
+   * settable by a platform admin on the "Dashboard Announcements Feed"
+   * section of the Platform Admin Settings page (e.g. to point an RC/test
+   * site's dashboard at a specific feed).
    */
   const PLATFORM_FEED_URL = 'https://yalesites.yale.edu/api/dashboard-announcements';
 
@@ -94,6 +97,19 @@ class DashboardAnnouncements {
   }
 
   /**
+   * Returns the feed URL actually in effect for this site.
+   *
+   * The configured override when set, otherwise the production platform
+   * feed. Shared by the fetch path and by the Platform Admin Settings
+   * "Dashboard Announcements Feed" field, so both agree on what "no
+   * override configured" resolves to.
+   */
+  public function getEffectiveFeedUrl(): string {
+    $feed_url = $this->configFactory->get('ys_core.dashboard_settings')->get('announcements_feed_url');
+    return trim((string) $feed_url) ?: self::PLATFORM_FEED_URL;
+  }
+
+  /**
    * Returns announcements to display on the dashboard.
    *
    * @return array
@@ -108,7 +124,7 @@ class DashboardAnnouncements {
     if ($config->get('announcements_enabled') === FALSE) {
       return [];
     }
-    $feed_url = trim((string) $config->get('announcements_feed_url')) ?: self::PLATFORM_FEED_URL;
+    $feed_url = $this->getEffectiveFeedUrl();
 
     $store = $this->keyValueExpirable->get(self::STORE_COLLECTION);
     $cached = $store->get(self::STORE_KEY);

@@ -7,7 +7,7 @@ ys_core.dashboard_settings:
       label: 'Show platform announcements on the dashboard'
     announcements_feed_url:
       type: string
-      label: 'Announcements feed URL override (set via drush; falls back to the platform feed when empty)'
+      label: 'Announcements feed URL override (platform admin only; falls back to the platform feed when empty)'
     announcements_limit:
       type: integer
       label: 'Maximum number of announcements to display'
