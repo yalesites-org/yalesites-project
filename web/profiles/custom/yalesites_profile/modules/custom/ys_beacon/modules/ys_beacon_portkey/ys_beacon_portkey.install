@@ -15,16 +15,18 @@ use Drupal\Core\Config\FileStorage;
  * it, so the provider can be left with no api_key pointer and fail to load its
  * key. The shipped config/install file is the single source of truth here.
  */
-function _ys_beacon_portkey_seed_settings(): void {
+function _ys_beacon_portkey_seed_settings(): bool {
   $config = \Drupal::configFactory()->getEditable('ys_beacon_portkey.settings');
   // Only seed an unconfigured provider; never clobber a populated config.
   if ($config->get('api_key')) {
-    return;
+    return FALSE;
   }
   $path = \Drupal::service('extension.list.module')->getPath('ys_beacon_portkey') . '/config/install';
   if ($data = (new FileStorage($path))->read('ys_beacon_portkey.settings')) {
     $config->setData($data)->save();
+    return TRUE;
   }
+  return FALSE;
 }
 
 /**
