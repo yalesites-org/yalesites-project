@@ -2,10 +2,14 @@
 
 namespace Drupal\Tests\ys_book\Kernel;
 
+use Drupal\Core\Form\FormState;
+use Drupal\Core\Routing\RouteObjectInterface;
 use Drupal\KernelTests\KernelTestBase;
 use Drupal\Tests\user\Traits\UserCreationTrait;
 use Drupal\node\Entity\Node;
 use Drupal\node\Entity\NodeType;
+use Symfony\Component\HttpFoundation\Request;
+use Symfony\Component\Routing\Route;
 
 /**
  * Tests that saving a node twice in one request keeps one collection link.
@@ -46,8 +50,17 @@ class BookLinkRepeatSaveTest extends KernelTestBase {
     'node',
     'book',
     'custom_book_block',
+    'quick_node_clone',
     'ys_book',
   ];
+
+  /**
+   * The route the page clone form is served from.
+   *
+   * Ys_book_entity_prepare_form() matches on this name, so a rename in contrib
+   * would silently stop the clearing from happening.
+   */
+  private const CLONE_ROUTE = 'quick_node_clone.node.quick_clone';
 
   /**
    * {@inheritdoc}
@@ -67,10 +80,91 @@ class BookLinkRepeatSaveTest extends KernelTestBase {
     $this->container->get('module_handler')->loadInclude('ys_book', 'install');
     ys_book_update_10001();
 
+    // Needed so the clone route can be looked up by name.
+    $this->container->get('router.builder')->rebuild();
+
     NodeType::create(['type' => 'page', 'name' => 'Page'])->save();
+
+    // YaleSites puts Content Collections on the page type; contrib book
+    // defaults to its own 'book' type. BookNodeOutlineAccessCheck branches on
+    // this, and book_node_prepare_form() bails out early when it denies, so
+    // the wrong value here would quietly stop exercising the real path.
+    $this->config('book.settings')
+      ->set('allowed_types', ['page'])
+      ->set('child_type', 'page')
+      ->save();
+
+    // Consume uid 1 so the account under test is an ordinary user. Uid 1
+    // bypasses every permission check, which would let these tests pass
+    // through a route no real editor takes.
+    $this->createUser();
 
     $this->container->get('current_user')
       ->setAccount($this->createUser(['administer book outlines', 'access content']));
+  }
+
+  /**
+   * Runs the real prepare-form hooks for a node, on a given route.
+   *
+   * Replicates EntityForm::prepareInvokeAll() (EntityForm.php:129-130), which
+   * invokes entity_prepare_form and then node_prepare_form, and puts a request
+   * for the route on the stack so ys_book_entity_prepare_form()'s route check
+   * sees what it would see in a real request. That makes the resulting
+   * $node->book the genuine article rather than a hand-built approximation.
+   *
+   * @param \Drupal\node\Entity\Node $node
+   *   The node the form is being built for.
+   * @param string $route_name
+   *   The route to pretend we are on.
+   * @param string $operation
+   *   The form operation, e.g. 'quick_clone' or 'default'.
+   */
+  private function runPrepareFormHooks(Node $node, string $route_name, string $operation): void {
+    $request = Request::create('/test-form-route');
+    $request->attributes->set(RouteObjectInterface::ROUTE_NAME, $route_name);
+    $request->attributes->set(RouteObjectInterface::ROUTE_OBJECT, new Route('/test-form-route'));
+    $this->container->get('request_stack')->push($request);
+
+    $form_state = new FormState();
+    $module_handler = $this->container->get('module_handler');
+    foreach (['entity_prepare_form', 'node_prepare_form'] as $hook) {
+      $module_handler->invokeAllWith(
+        $hook,
+        function (callable $implementation) use ($node, $operation, $form_state) {
+          $implementation($node, $operation, $form_state);
+        }
+      );
+    }
+
+    $this->container->get('request_stack')->pop();
+  }
+
+  /**
+   * Builds a collection root with one child, the way an editor would.
+   *
+   * Mirrors steps 1 and 2 of the reported reproduction: a page made into a
+   * collection, then a page nested under it.
+   *
+   * @return \Drupal\node\Entity\Node[]
+   *   The root and the child, both reloaded so book_node_load() has populated
+   *   their book property exactly as it would be on a real edit form.
+   */
+  private function createRootAndChild(): array {
+    $root = $this->createCollectionRoot('Book Parent');
+    $bid = (int) $root->id();
+
+    $child = Node::create([
+      'type' => 'page',
+      'title' => 'Child Original',
+      'status' => 1,
+      'book' => $this->postedBookValues(['bid' => $bid, 'pid' => $bid]),
+    ]);
+    $child->save();
+
+    $storage = $this->container->get('entity_type.manager')->getStorage('node');
+    $storage->resetCache();
+
+    return [$storage->load($root->id()), $storage->load($child->id())];
   }
 
   /**
@@ -408,6 +502,126 @@ class BookLinkRepeatSaveTest extends KernelTestBase {
     $this->assertSame($bid, (int) $row['p1'], 'The path starts at the collection root.');
     $this->assertSame((int) $child->id(), (int) $row['p2'], 'Then its parent.');
     $this->assertSame((int) $grandchild->id(), (int) $row['p3'], 'Then itself.');
+  }
+
+  /**
+   * The clone route still exists under the name ys_book matches on.
+   *
+   * Ys_book_entity_prepare_form() only clears the stale collection data when
+   * the route name matches exactly. If contrib renamed the route, the clearing
+   * would silently stop happening and #1068 would regress with no other signal.
+   */
+  public function testCloneRouteStillExists(): void {
+    $route = $this->container->get('router.route_provider')
+      ->getRouteByName(self::CLONE_ROUTE);
+
+    $this->assertSame(
+      '/clone/{node}/quick_clone',
+      $route->getPath(),
+      'The page clone route is still where ys_book expects it.'
+    );
+  }
+
+  /**
+   * The real clone form leaves original_bid empty. This is the precondition.
+   *
+   * Every other test here builds the posted book array from
+   * BookManager::getLinkDefaults(). This one proves that is what the actual
+   * hook chain produces on the clone route: ys_book_entity_prepare_form()
+   * clears $node->book, so book_node_prepare_form() takes its getLinkDefaults()
+   * branch (original_bid => 0) instead of its else branch, which would have set
+   * original_bid to the real bid and made the duplicate INSERT impossible.
+   *
+   * If this ever fails, the simulation in the other tests has drifted from
+   * reality and they are no longer guarding anything.
+   */
+  public function testCloneFormPrepareHooksLeaveOriginalBidEmpty(): void {
+    [, $child] = $this->createRootAndChild();
+
+    $clone = $child->createDuplicate();
+    $this->runPrepareFormHooks($clone, self::CLONE_ROUTE, 'quick_clone');
+
+    $this->assertTrue($clone->isNew(), 'The clone is a genuinely new entity.');
+    $this->assertEmpty(
+      $clone->book['original_bid'],
+      'The clone form posts an empty original_bid -- the condition behind #1490.'
+    );
+    $this->assertSame(
+      'new',
+      $clone->book['nid'],
+      'The clone form posts nid "new", not the original node ID. The ticket '
+      . 'claimed the clone shares the original ID; it does not.'
+    );
+  }
+
+  /**
+   * An ordinary edit form is left alone: original_bid keeps the real value.
+   *
+   * Guards the other side of ys_book_entity_prepare_form()'s route check. If
+   * the clearing ever leaked onto the normal node edit form, every save of an
+   * existing collection member would start looking like a fresh insert.
+   */
+  public function testOrdinaryEditFormKeepsOriginalBid(): void {
+    [$root, $child] = $this->createRootAndChild();
+
+    $this->runPrepareFormHooks($child, 'entity.node.edit_form', 'default');
+
+    $this->assertSame(
+      (int) $root->id(),
+      (int) $child->book['original_bid'],
+      'Editing an existing collection member keeps its real original_bid.'
+    );
+  }
+
+  /**
+   * End to end over the reported reproduction steps.
+   *
+   * 1. Create a page and make it a collection root.
+   * 2. Create a page and nest it under that root.
+   * 3. Clone the child.
+   * 4. During the clone, nest it under the same root.
+   * 5. Save.
+   *
+   * Unlike the other tests this feeds on the book array the real prepare-form
+   * hooks produce, so the whole chain is exercised: our clearing, contrib's
+   * defaults, and the repeat save. The clone form itself cannot be driven here
+   * because BrowserTestBase does not run in this environment, so the double
+   * save is still stood in for.
+   */
+  public function testReportedReproductionStepsSaveCleanly(): void {
+    [$root, $child] = $this->createRootAndChild();
+    $bid = (int) $root->id();
+
+    // Step 3: clone the child.
+    $clone = $child->createDuplicate();
+    $this->runPrepareFormHooks($clone, self::CLONE_ROUTE, 'quick_clone');
+
+    // Step 4: the editor picks the same collection as the original. Only bid
+    // and pid come from the editor; the rest of the book array is posted back
+    // as the hidden values the form was built with.
+    $clone->book['bid'] = $bid;
+    $clone->book['pid'] = $bid;
+
+    // Step 5: save, then save again the way Quick Node Clone does.
+    $clone->setTitle('Clone of Child Original');
+    $clone->save();
+    $this->saveAgainAsQuickNodeClone($clone);
+
+    $row = $this->bookRow((int) $clone->id());
+    $this->assertNotNull($row, 'The clone joined the collection.');
+    $this->assertSame($bid, (int) $row['bid'], 'It is in the same collection as the original.');
+    $this->assertSame($bid, (int) $row['pid'], 'It is nested under the same parent.');
+    $this->assertSame(2, (int) $row['depth']);
+    $this->assertSame(
+      3,
+      $this->bookRowCount(),
+      'Root, original child and clone -- no duplicated or orphaned rows.'
+    );
+
+    // The original is untouched.
+    $original = $this->bookRow((int) $child->id());
+    $this->assertSame($bid, (int) $original['bid'], 'The original page kept its place.');
+    $this->assertSame(2, (int) $original['depth']);
   }
 
 }
