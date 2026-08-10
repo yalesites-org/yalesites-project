@@ -6,6 +6,8 @@
  */
 
 use Drupal\Component\Utility\Xss;
+use Drupal\Core\Cache\Cache;
+use Drupal\Core\Entity\Sql\SqlContentEntityStorage;
 use Drupal\taxonomy\Entity\Term;
 
 /**
@@ -1457,5 +1459,220 @@ function ys_core_update_10018() {
   return t('Uninstalled @module (cleaned: @what).', [
     '@module' => $module,
     '@what' => implode(', ', $cleaned),
+  ]);
+}
+
+/**
+ * Repairs one link URI that Drupal would render double-encoded.
+ *
+ * Before the Linkit widget started decoding URIs on save (issue #683, applied
+ * as patches/contrib/linkit/3436733-5.patch), a file name containing a space
+ * was stored still percent-encoded, e.g.
+ * "internal:/sites/default/files/My%20File.pdf". Drupal percent-encodes the
+ * path again when it builds the href, in
+ * UnroutedUrlAssembler::buildLocalUrl(), so "%20" becomes "%2520" and the link
+ * 404s. Only a re-save repaired it, which is why nothing self-healed.
+ *
+ * Only the path of an "internal:" or "base:" URI is affected. Url::fromUri()
+ * splits the query and fragment off before that encoding happens - the query
+ * is decoded and rebuilt by UrlHelper::buildQuery(), the fragment is appended
+ * verbatim - and buildExternalUrl() returns external URIs untouched. So this
+ * only ever rewrites the path, and only for those two schemes.
+ *
+ * A value is repaired only when its stored path is exactly the canonical
+ * percent-encoding of its decoded form and decoding leaves no percent behind.
+ * That is what "encoded one time too many" looks like, and requiring it keeps
+ * two kinds of value safe: a path that merely contains a percent (a file named
+ * "100% off.pdf"), and one encoded more than twice, which a second run would
+ * otherwise decode again.
+ *
+ * @param string $uri
+ *   The stored link URI.
+ *
+ * @return string|null
+ *   The repaired URI, or NULL when the URI must be left as it is.
+ */
+function ys_core_repair_double_encoded_link_uri($uri) {
+  if (!is_string($uri) || !preg_match('#^(internal|base):(.*)$#s', $uri, $matches)) {
+    return NULL;
+  }
+  [, $scheme, $remainder] = $matches;
+
+  // Keep the query and fragment byte for byte; they never double-encode.
+  $path_length = strcspn($remainder, '?#');
+  $path = substr($remainder, 0, $path_length);
+  $suffix = substr($remainder, $path_length);
+
+  $decoded = rawurldecode($path);
+  // Nothing is encoded, so nothing renders double-encoded.
+  if ($decoded === $path) {
+    return NULL;
+  }
+  // A percent survives decoding, so what the value means is ambiguous.
+  if (str_contains($decoded, '%')) {
+    return NULL;
+  }
+  // Re-encoding has to reproduce the stored path exactly, mirroring how core
+  // builds the href. Anything else is not a cleanly double-encoded value.
+  if (str_replace('%2F', '/', rawurlencode($decoded)) !== $path) {
+    return NULL;
+  }
+
+  return $scheme . ':' . $decoded . $suffix;
+}
+
+/**
+ * Repairs every stored link URI that Drupal would render double-encoded.
+ *
+ * Writes the field tables directly instead of loading and saving entities. A
+ * save would create a new revision, move the "changed" timestamp (polluting
+ * the Authoring Dashboard's latest edits) and, for the non-reusable inline
+ * blocks that hold most of the affected data, leave the parent node's layout
+ * still pointing at the old block revision.
+ *
+ * Both the field data table and the field revision table are rewritten:
+ * Layout Builder renders an inline block from a specific revision id
+ * (InlineBlock::getEntity() calls loadRevision()), so correcting the data
+ * table alone would not change what a visitor sees.
+ *
+ * Every link field on the site is covered, discovered from the field map, so
+ * a site with link fields this platform does not ship is repaired too. There
+ * is no batching: this scans a handful of small field tables with one LIKE
+ * each and rewrites only the rows that match.
+ *
+ * @param bool $dry_run
+ *   When TRUE, report what would change without writing anything.
+ *
+ * @return array
+ *   A report keyed 'repaired', 'left_alone', 'changes', 'left_alone_uris',
+ *   'tables' and 'skipped_tables'.
+ */
+function ys_core_repair_double_encoded_link_uris($dry_run = FALSE) {
+  $database = \Drupal::database();
+  $schema = $database->schema();
+  $entity_type_manager = \Drupal::entityTypeManager();
+  $entity_field_manager = \Drupal::service('entity_field.manager');
+
+  $report = [
+    'repaired' => 0,
+    'left_alone' => 0,
+    'changes' => [],
+    'left_alone_uris' => [],
+    'tables' => 0,
+    'skipped_tables' => [],
+  ];
+  $affected = [];
+
+  foreach ($entity_field_manager->getFieldMapByFieldType('link') as $entity_type_id => $fields) {
+    $storage = $entity_type_manager->getStorage($entity_type_id);
+    if (!$storage instanceof SqlContentEntityStorage) {
+      continue;
+    }
+    $table_mapping = $storage->getTableMapping();
+    $storage_definitions = $entity_field_manager->getFieldStorageDefinitions($entity_type_id);
+
+    foreach (array_keys($fields) as $field_name) {
+      // A field the entity type stores itself has no table to rewrite, and
+      // asking for its column would throw and abort the whole update.
+      if (!isset($storage_definitions[$field_name]) || $storage_definitions[$field_name]->hasCustomStorage()) {
+        continue;
+      }
+      $column = $table_mapping->getFieldColumnName($storage_definitions[$field_name], 'uri');
+
+      // Returns the field's data table and, for a revisionable entity type,
+      // its revision table.
+      foreach ($table_mapping->getAllFieldTableNames($field_name) as $table) {
+        // Only dedicated field tables are handled, which are the ones with a
+        // delta column. A field stored in a shared table is reported rather
+        // than guessed at.
+        if (!$schema->tableExists($table) || !$schema->fieldExists($table, $column) || !$schema->fieldExists($table, 'delta')) {
+          $report['skipped_tables'][] = $table;
+          continue;
+        }
+        $report['tables']++;
+
+        $rows = $database->select($table, 'f')
+          ->fields('f', ['entity_id', 'revision_id', 'delta', 'langcode', $column])
+          ->condition($column, '%' . $database->escapeLike('%') . '%', 'LIKE')
+          ->execute();
+
+        foreach ($rows as $row) {
+          $stored = $row->{$column};
+          $repaired = ys_core_repair_double_encoded_link_uri($stored);
+          if ($repaired === NULL) {
+            $report['left_alone']++;
+            $report['left_alone_uris'][$stored] = $stored;
+            continue;
+          }
+
+          if (!$dry_run) {
+            $database->update($table)
+              ->fields([$column => $repaired])
+              ->condition('entity_id', $row->entity_id)
+              ->condition('revision_id', $row->revision_id)
+              ->condition('delta', $row->delta)
+              ->condition('langcode', $row->langcode)
+              ->execute();
+          }
+
+          $report['repaired']++;
+          $report['changes'][] = sprintf('%s [entity %s, revision %s, delta %s]: %s => %s', $table, $row->entity_id, $row->revision_id, $row->delta, $stored, $repaired);
+          $affected[$entity_type_id][$row->entity_id] = $row->entity_id;
+        }
+      }
+    }
+  }
+
+  $report['left_alone_uris'] = array_values($report['left_alone_uris']);
+  $report['skipped_tables'] = array_values(array_unique($report['skipped_tables']));
+
+  if (!$dry_run && $affected) {
+    $tags = [];
+    foreach ($affected as $entity_type_id => $ids) {
+      // The rows were written underneath the entity storage cache, which keys
+      // its entries by entity id rather than by a per-entity cache tag.
+      $entity_type_manager->getStorage($entity_type_id)->resetCache(array_values($ids));
+      foreach ($ids as $id) {
+        $tags[] = $entity_type_id . ':' . $id;
+      }
+    }
+    // Flushes the render and page caches holding the corrected links, which
+    // pick up the entity's cache tag through EntityViewBuilder::view().
+    Cache::invalidateTags($tags);
+  }
+
+  return $report;
+}
+
+/**
+ * Repairs document links stored double-encoded before issue #683.
+ */
+function ys_core_update_10019() {
+  $report = ys_core_repair_double_encoded_link_uris();
+  $logger = \Drupal::logger('ys_core');
+
+  foreach ($report['changes'] as $change) {
+    $logger->notice('Repaired double-encoded link URI: @change', ['@change' => $change]);
+  }
+  if ($report['left_alone_uris']) {
+    $logger->warning('Left @count link URI(s) containing a percent character untouched; re-save the content to repair them: @uris', [
+      '@count' => count($report['left_alone_uris']),
+      '@uris' => implode(', ', $report['left_alone_uris']),
+    ]);
+  }
+  if ($report['skipped_tables']) {
+    // Link fields kept in shared table storage, such as the menu link content
+    // base field, are outside what this repairs; say so rather than implying
+    // every link on the site was covered.
+    $logger->notice('Skipped @count link table(s) that do not use dedicated field storage, so any double-encoded values there are unchanged: @tables', [
+      '@count' => count($report['skipped_tables']),
+      '@tables' => implode(', ', $report['skipped_tables']),
+    ]);
+  }
+
+  return t('Repaired @repaired double-encoded link URI(s) across @tables field table(s); left @left_alone value(s) untouched.', [
+    '@repaired' => $report['repaired'],
+    '@tables' => $report['tables'],
+    '@left_alone' => $report['left_alone'],
   ]);
 }
