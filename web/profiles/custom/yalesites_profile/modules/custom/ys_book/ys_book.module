@@ -213,7 +213,10 @@ function ys_book_form_alter(&$form, FormStateInterface $form_state, $form_id) {
       $form['actions']['delete']['#title'] = t('Remove from collection outline');
     }
 
-    // Add cache invalidation submit handler.
+    // Add cache invalidation submit handler. Unlike the remove confirm
+    // form below, this is an entity form whose button already carries its
+    // own handlers (EntityForm::actions() sets ::submitForm and ::save),
+    // so appending here runs after them instead of replacing them.
     $form['actions']['submit']['#submit'][] = '_ys_book_outline_form_submit';
   }
 }
@@ -232,8 +235,13 @@ function ys_book_form_book_remove_form_alter(&$form, FormStateInterface $form_st
     $form['description']['#markup'] = t("Remove '%title' from the collection? You can add it back later using the Content Collection tab in Manage Settings.", ['%title' => $node->label()]);
   }
 
-  // Add cache invalidation submit handler.
-  $form['actions']['submit']['#submit'][] = '_ys_book_remove_form_submit';
+  // Add cache invalidation submit handler at the form level, never on the
+  // confirm button. When the clicked button carries its own #submit array,
+  // FormBuilder::doBuildForm() passes it to setSubmitHandlers(), which
+  // replaces the form's handlers instead of adding to them. ConfirmFormBase
+  // builds this button without a #submit, so attaching one here would
+  // discard BookRemoveForm::submitForm() and the removal would never run.
+  $form['#submit'][] = '_ys_book_remove_form_submit';
 }
 
 /**
@@ -593,7 +601,15 @@ function _ys_book_remove_form_submit($form, FormStateInterface $form_state) {
   if (isset($build_info['args'][0]) && $build_info['args'][0] instanceof NodeInterface) {
     $node = $build_info['args'][0];
     if (!empty($node->book['bid'])) {
-      _ys_book_invalidate_collection_nav_cache($node->book['bid']);
+      // BookRemoveForm::submitForm() has already deleted this node's outline
+      // row by the time this runs, so the node is no longer a member of the
+      // collection and _ys_book_get_all_book_nids() will not return it. Add
+      // it explicitly: the form redirects the editor straight to this page,
+      // which must re-render without the collection navigation.
+      $bid = (int) $node->book['bid'];
+      $nids = _ys_book_get_all_book_nids($bid);
+      $nids[] = $node->id();
+      _ys_book_invalidate_collection_nav_cache($bid, $nids);
     }
   }
 }
