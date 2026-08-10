@@ -150,6 +150,9 @@
       "drupal/gin": {
         "fix description toggle for CKEditor fields https://www.drupal.org/project/gin/issues/3316265": "patches/contrib/gin/3316265-mr-227.patch"
       },
+      "drupal/gin_lb": {
+        "Pass the field table header cell an Attribute object so Claro can preprocess it instead of fatalling https://www.drupal.org/project/gin_lb/issues/3387157": "patches/contrib/gin_lb/3387157-mr-73.patch"
+      },
       "drupal/layout_builder_browser": {
         "Add grouping of reusable blocks (3409153) and add fallback images (3408935) - can't use both patches from d.o would cause merge conflict, combined patch": "patches/contrib/layout_builder_browser/3408935-and-3409153-9.patch"
       },
