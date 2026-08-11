@@ -12,7 +12,7 @@ field_name: field_style_width
 entity_type: block_content
 bundle: grand_hero
 label: 'Banner Width'
-description: ''
+description: 'On the published page, Full Width only looks different from Contained in browser windows wider than 2400 pixels, such as a maximized window on a 2560-pixel-wide or 4K display. On narrower screens both options fill the same width, so seeing no difference is expected. The Layout Builder preview always shows a difference because of the editing frame.'
 required: true
 translatable: false
 default_value: {  }
