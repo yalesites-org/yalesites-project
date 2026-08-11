@@ -213,7 +213,10 @@ function ys_book_form_alter(&$form, FormStateInterface $form_state, $form_id) {
       $form['actions']['delete']['#title'] = t('Remove from collection outline');
     }
 
-    // Add cache invalidation submit handler.
+    // Add cache invalidation submit handler. Unlike the remove confirm
+    // form below, this is an entity form whose button already carries its
+    // own handlers (EntityForm::actions() sets ::submitForm and ::save),
+    // so appending here runs after them instead of replacing them.
     $form['actions']['submit']['#submit'][] = '_ys_book_outline_form_submit';
   }
 }
@@ -232,8 +235,13 @@ function ys_book_form_book_remove_form_alter(&$form, FormStateInterface $form_st
     $form['description']['#markup'] = t("Remove '%title' from the collection? You can add it back later using the Content Collection tab in Manage Settings.", ['%title' => $node->label()]);
   }
 
-  // Add cache invalidation submit handler.
-  $form['actions']['submit']['#submit'][] = '_ys_book_remove_form_submit';
+  // Add cache invalidation submit handler at the form level, never on the
+  // confirm button. When the clicked button carries its own #submit array,
+  // FormBuilder::doBuildForm() passes it to setSubmitHandlers(), which
+  // replaces the form's handlers instead of adding to them. ConfirmFormBase
+  // builds this button without a #submit, so attaching one here would
+  // discard BookRemoveForm::submitForm() and the removal would never run.
+  $form['#submit'][] = '_ys_book_remove_form_submit';
 }
 
 /**
@@ -593,7 +601,15 @@ function _ys_book_remove_form_submit($form, FormStateInterface $form_state) {
   if (isset($build_info['args'][0]) && $build_info['args'][0] instanceof NodeInterface) {
     $node = $build_info['args'][0];
     if (!empty($node->book['bid'])) {
-      _ys_book_invalidate_collection_nav_cache($node->book['bid']);
+      // BookRemoveForm::submitForm() has already deleted this node's outline
+      // row by the time this runs, so the node is no longer a member of the
+      // collection and _ys_book_get_all_book_nids() will not return it. Add
+      // it explicitly: the form redirects the editor straight to this page,
+      // which must re-render without the collection navigation.
+      $bid = (int) $node->book['bid'];
+      $nids = _ys_book_get_all_book_nids($bid);
+      $nids[] = $node->id();
+      _ys_book_invalidate_collection_nav_cache($bid, $nids);
     }
   }
 }
@@ -610,10 +626,14 @@ function _ys_book_admin_edit_submit($form, FormStateInterface $form_state) {
 /**
  * Implements hook_ENTITY_TYPE_presave() for node entities.
  *
- * Prevents nested navigation position conflicts by automatically resetting
- * the navigation position to default when a node is nested under another book.
+ * Keeps a node saved more than once in one request from re-inserting its
+ * collection link, and prevents nested navigation position conflicts by
+ * automatically resetting the navigation position to default when a node is
+ * nested under another book.
  */
 function ys_book_node_presave($node) {
+  _ys_book_keep_existing_collection_link($node);
+
   // Only process nodes that have the navigation position field.
   if (!$node->hasField('field_collection_nav_position')) {
     return;
@@ -636,20 +656,49 @@ function ys_book_node_presave($node) {
   // Check if this node is a book root (bid == nid) or a child (bid != nid).
   $is_book_root = ($node->book['bid'] === 'new') || ($node->book['bid'] == $node->id());
 
-  \Drupal::logger('ys_book')->notice('Presave: bid=@bid, bid_type=@bid_type, nid=@nid, nav=@nav, is_new=@new, is_root=@root, book_keys=@keys', [
-    '@bid' => $node->book['bid'] ?? 'unset',
-    '@bid_type' => gettype($node->book['bid'] ?? NULL),
-    '@nid' => $node->id() ?? 'NULL',
-    '@nav' => $nav_position,
-    '@new' => $node->isNew() ? 'yes' : 'no',
-    '@root' => $is_book_root ? 'yes' : 'no',
-    '@keys' => implode(',', array_keys($node->book ?? [])),
-  ]);
-
   if (!$is_book_root) {
     // This node is a child in a book but has a non-default nav position.
     // Reset to the default.
     $node->set('field_collection_nav_position', 'in_content');
+  }
+}
+
+/**
+ * Points a repeat save at the collection link the first save already wrote.
+ *
+ * Quick Node Clone saves a cloned node twice in one request: once to get a
+ * node ID, then again to attach the Layout Builder blocks that need it. Both
+ * saves carry the book values the clone form posted, and those contain
+ * original_bid = 0 -- ys_book_entity_prepare_form() clears $node->book on the
+ * clone route, which sends book_node_prepare_form() down its
+ * BookManager::getLinkDefaults() branch and past its own original_bid
+ * correction.
+ *
+ * BookManager::updateOutline() reads an empty original_bid as "this outline
+ * link is new" on every pass, so the second save tries to INSERT the {book}
+ * row the first save already wrote. {book} is keyed on nid, so that is a
+ * duplicate-key error: the second save rolls back, the editor gets a
+ * site-wide error, and the clone is left published without the layout the
+ * second save existed to attach.
+ *
+ * Naming the link the node already has makes updateOutline() take its UPDATE
+ * path instead. Guarded on a link actually existing, so a genuine first
+ * INSERT -- including the save-first-then-assign-a-collection workaround --
+ * still creates one.
+ *
+ * @param \Drupal\node\NodeInterface $node
+ *   The node being saved.
+ *
+ * @see yalesites-org/YaleSites-Internal#1490
+ */
+function _ys_book_keep_existing_collection_link(NodeInterface $node): void {
+  if ($node->isNew() || empty($node->book['bid']) || !empty($node->book['original_bid'])) {
+    return;
+  }
+
+  $existing = \Drupal::service('book.manager')->loadBookLink($node->id(), FALSE);
+  if ($existing && !empty($existing['bid'])) {
+    $node->book['original_bid'] = $existing['bid'];
   }
 }
 
