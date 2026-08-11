@@ -377,7 +377,8 @@ function ys_core_preprocess_block(&$variables) {
  * cannot resolve, publishing a link that looks live and goes nowhere: a
  * protocol-relative "//example.com" (saved as "internal://example.com", which
  * renders with an empty href) and a single-slash "https:/example.com" (rendered
- * as a literal, broken href).
+ * as a literal, broken href). It also corrects a scheme misspelt by a single
+ * character, "htp://example.com", which core rejects outright.
  *
  * @see \Drupal\link\Plugin\Field\FieldWidget\LinkWidget::validateUriElement()
  * @see _ys_core_normalize_bare_domain_uri()
@@ -416,10 +417,11 @@ function _ys_core_normalize_link_uri(array &$element, FormStateInterface $form_s
 /**
  * Corrects a web address typed in a shape Drupal cannot resolve.
  *
- * Three shapes are rewritten to a valid absolute URL:
+ * Four shapes are rewritten to a valid absolute URL:
  * - a bare host, "google.com" or "www.example.org/path?x=1";
  * - a protocol-relative URL, "//example.com";
- * - an http(s) URL missing its authority delimiter, "https:/example.com".
+ * - an http(s) URL missing its authority delimiter, "https:/example.com";
+ * - a misspelt http(s) scheme, "htp://example.com".
  *
  * Values that are empty, internal paths ("/", "#", "?"), route tokens
  * ("<front>", "<nolink>"), or already scheme-qualified ("https://", "mailto:",
@@ -455,6 +457,18 @@ function _ys_core_normalize_bare_domain_uri(string $uri): string {
     return $uri;
   }
 
+  // A mistyped scheme such as "htp://example.com" is a scheme core does not
+  // allow, so the value is rejected wholesale with "The path '…' is invalid."
+  // — which names the whole address rather than the one wrong character, and
+  // leaves the editor to find it. Correct it to the scheme it is a single
+  // keystroke away from.
+  if (preg_match('~^([a-z][a-z0-9+.\-]*):/{0,2}([^/].*)$~i', $trimmed, $matches)) {
+    $corrected = _ys_core_correct_mistyped_http_scheme($matches[1]);
+    if ($corrected !== NULL) {
+      return $corrected . '://' . $matches[2];
+    }
+  }
+
   // Anything that already declares a scheme is left untouched.
   if (preg_match('/^[a-z][a-z0-9+.\-]*:/i', $trimmed)) {
     return $uri;
@@ -467,6 +481,41 @@ function _ys_core_normalize_bare_domain_uri(string $uri): string {
   }
 
   return $uri;
+}
+
+/**
+ * Resolves a misspelt web scheme to the one the editor meant.
+ *
+ * Only a scheme within a single edit of "http" or "https" is treated as a
+ * typo. That bound is the safety property, not a heuristic: every protocol
+ * Drupal allows here — ftp, news, nntp, tel, telnet, mailto, irc, ssh, sftp,
+ * webcal, rtsp — is at least two edits from both, as are "javascript" and
+ * "data", so no scheme an editor deliberately typed can be rewritten and no
+ * executable scheme can be manufactured. LinkUriNormalizationTest pins this.
+ *
+ * @param string $scheme
+ *   The scheme as typed, without the colon.
+ *
+ * @return string|null
+ *   "http" or "https" when the scheme is a misspelling of one of them, or
+ *   NULL when it must be left exactly as typed.
+ */
+function _ys_core_correct_mistyped_http_scheme(string $scheme): ?string {
+  $scheme = strtolower($scheme);
+  // Both are already correct, and each is one edit from the other, so they
+  // have to be excluded before the distance test rather than by it.
+  if ($scheme === 'http' || $scheme === 'https') {
+    return NULL;
+  }
+
+  $to_http = levenshtein($scheme, 'http');
+  $to_https = levenshtein($scheme, 'https');
+  if (min($to_http, $to_https) > 1) {
+    return NULL;
+  }
+
+  // Ties resolve to https so a secure address is never downgraded.
+  return $to_http < $to_https ? 'http' : 'https';
 }
 
 /**

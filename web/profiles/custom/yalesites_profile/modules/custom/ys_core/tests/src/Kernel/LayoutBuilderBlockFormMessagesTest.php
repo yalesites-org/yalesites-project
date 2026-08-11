@@ -13,10 +13,14 @@ use Drupal\KernelTests\KernelTestBase;
  * server-side validation failure re-renders the form as a standalone Layout
  * Builder page, and Gin's page--layout-builder.html.twig never prints the
  * highlighted region that holds the site's messages block. The error text ("The
- * path 'htp://example.com' is invalid.") therefore stayed in the messenger
+ * path 'hxxp://example.com' is invalid.") therefore stayed in the messenger
  * queue and surfaced later on an unrelated page load, leaving only a
  * red-outlined field with no visible text — which also gives screen reader
  * users no error at all.
+ *
+ * The example is deliberately "hxxp" rather than "htp": a scheme one edit from
+ * http is now auto-corrected by _ys_core_normalize_bare_domain_uri(), so it no
+ * longer reaches validation at all. Two edits still does.
  *
  * Placing a status_messages element in the form itself makes the message render
  * wherever the form is rendered, in the dialog or as a standalone page.
