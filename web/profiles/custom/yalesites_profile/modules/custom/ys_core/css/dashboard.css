@@ -99,3 +99,30 @@
 .ys-dashboard__resources .more-link {
   margin-block-start: 0.75rem;
 }
+
+/* Atomic's link-purpose library marks up new-tab links on front-end pages, but
+   it ships in atomic/global and the dashboard is admin-themed, so it never runs
+   here. Draw its "opens in new window" icon ourselves, keyed on the attribute so
+   any new-tab link on the page is covered. The glyph is the same Font Awesome
+   arrow-up-right-from-square link-purpose uses, inlined as a mask so it takes
+   the link's own color (including Gin dark mode) without pulling Font Awesome
+   into the admin UI. The matching screen reader text lives in the template --
+   generated content is not a reliable way to expose it.
+   Glyph: Font Awesome Free 6 "arrow-up-right-from-square" (CC BY 4.0).
+   @see component-library-twig/lib/link-treatment/link-treatment.js */
+.ys-dashboard a[target="_blank"]::after {
+  --ys-dashboard-new-tab-icon: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 512 512'%3E%3Cpath d='M304 24c0 13.3 10.7 24 24 24H430.1L207 271c-9.4 9.4-9.4 24.6 0 33.9s24.6 9.4 33.9 0l223-223V184c0 13.3 10.7 24 24 24s24-10.7 24-24V24c0-13.3-10.7-24-24-24H328c-13.3 0-24 10.7-24 24zM72 32C32.2 32 0 64.2 0 104V440c0 39.8 32.2 72 72 72H408c39.8 0 72-32.2 72-72V312c0-13.3-10.7-24-24-24s-24 10.7-24 24V440c0 13.3-10.7 24-24 24H72c-13.3 0-24-10.7-24-24V104c0-13.3 10.7-24 24-24H200c13.3 0 24-10.7 24-24s-10.7-24-24-24H72z'/%3E%3C/svg%3E");
+
+  content: "";
+  display: inline-block;
+  inline-size: 0.7em;
+  block-size: 0.7em;
+  margin-inline-start: 0.35em;
+  background-color: currentColor;
+  -webkit-mask-image: var(--ys-dashboard-new-tab-icon);
+  -webkit-mask-repeat: no-repeat;
+  -webkit-mask-size: contain;
+  mask-image: var(--ys-dashboard-new-tab-icon);
+  mask-repeat: no-repeat;
+  mask-size: contain;
+}
