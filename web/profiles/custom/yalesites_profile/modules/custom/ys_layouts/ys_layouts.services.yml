@@ -45,3 +45,13 @@ services:
   ys_layouts.block_cloner:
     class: Drupal\ys_layouts\Service\BlockCloner
     arguments: ['@quick_node_clone.entity.form_builder', '@uuid', '@entity_type.manager', '@logger.channel.ys_layouts']
+  # Finds inline blocks left behind when an editor removes a non-reusable block
+  # from a layout. Core cannot collect these for revisionable entities, so the
+  # sweep is on demand via drush ys-layouts:orphaned-blocks.
+  ys_layouts.orphaned_inline_block_cleaner:
+    class: Drupal\ys_layouts\Service\OrphanedInlineBlockCleaner
+    arguments: ['@entity_type.manager', '@entity_field.manager', '@inline_block.usage', '@logger.channel.ys_layouts']
+
+  # Alias to allow type-hinting against the interface.
+  Drupal\ys_layouts\Service\OrphanedInlineBlockCleanerInterface:
+    alias: ys_layouts.orphaned_inline_block_cleaner
