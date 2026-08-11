@@ -386,8 +386,14 @@ class ColorTokenResolver {
 
     // Section layout mapping: one→slot-one, two→slot-four, three→slot-five,
     // four→slot-two, five→slot-nine.
-    // Widget options: one=Blue Yale, two=Gray 100, three=Gray 800,
-    // four=Blue Medium, five=Soft Oceanic (ONHA) / Gray 100 (others).
+    //
+    // Unlike every other mapping in this method, sections deliberately expose
+    // five options rather than six: slot-three is the one palette slot they do
+    // not offer. Ticket #897 (commit 1a06ebc6f) reworked this mapping and
+    // dropped slot-three, and it has not been offered to sections since;
+    // #1153 later added the 'five' => slot-nine entry. Keep this list at five
+    // unless that product decision is revisited (see #1506); the corresponding
+    // form options live in YSLayoutOptions.
     if ($entity_type === 'layout_section' && $bundle === 'ys_layout_options') {
       return $this->buildColorStyles([
         'one' => 'one',
