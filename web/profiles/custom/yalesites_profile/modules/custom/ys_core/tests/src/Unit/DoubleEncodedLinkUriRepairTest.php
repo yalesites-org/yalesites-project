@@ -43,6 +43,13 @@ class DoubleEncodedLinkUriRepairTest extends UnitTestCase {
         'internal:/sites/default/files/Budget%20%28final%29.pdf',
         'internal:/sites/default/files/Budget (final).pdf',
       ],
+      // A plus is what the Linkit autocomplete percent-encodes a file name's
+      // plus to, and rawurlencode() encodes it again into "%252B". Repairing it
+      // to a literal plus is correct: core encodes that back to "%2B".
+      'an encoded plus, the pre-#683 form of a "+" file name' => [
+        'internal:/sites/default/files/2026-08/a%2Bb.pdf',
+        'internal:/sites/default/files/2026-08/a+b.pdf',
+      ],
       'a query string is preserved byte for byte' => [
         'internal:/sites/default/files/My%20Doc.pdf?token=a%26b',
         'internal:/sites/default/files/My Doc.pdf?token=a%26b',

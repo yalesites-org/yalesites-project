@@ -8,6 +8,7 @@
 use Drupal\Component\Utility\Xss;
 use Drupal\Core\Cache\Cache;
 use Drupal\Core\Entity\Sql\SqlContentEntityStorage;
+use Drupal\Core\StreamWrapper\PublicStream;
 use Drupal\taxonomy\Entity\Term;
 
 /**
@@ -1463,6 +1464,32 @@ function ys_core_update_10018() {
 }
 
 /**
+ * Splits a local link URI into the scheme, the path, and what follows it.
+ *
+ * Only "internal:" and "base:" reach the local path encoder in
+ * UnroutedUrlAssembler::buildLocalUrl(), and only their path is ever rewritten:
+ * Url::fromUri() splits the query and fragment off first, so a repair has to
+ * keep everything from the "?" or "#" onwards byte for byte. Both link repairs
+ * below share this boundary, so they share one definition of it.
+ *
+ * @param string $uri
+ *   The stored link URI.
+ *
+ * @return array|null
+ *   NULL for any other scheme, otherwise [$scheme, $path, $suffix].
+ */
+function ys_core_split_link_uri($uri) {
+  if (!is_string($uri) || !preg_match('#^(internal|base):(.*)$#s', $uri, $matches)) {
+    return NULL;
+  }
+  [, $scheme, $remainder] = $matches;
+
+  $path_length = strcspn($remainder, '?#');
+
+  return [$scheme, substr($remainder, 0, $path_length), substr($remainder, $path_length)];
+}
+
+/**
  * Repairs one link URI that Drupal would render double-encoded.
  *
  * Before the Linkit widget started decoding URIs on save (issue #683, applied
@@ -1493,15 +1520,11 @@ function ys_core_update_10018() {
  *   The repaired URI, or NULL when the URI must be left as it is.
  */
 function ys_core_repair_double_encoded_link_uri($uri) {
-  if (!is_string($uri) || !preg_match('#^(internal|base):(.*)$#s', $uri, $matches)) {
+  $parts = ys_core_split_link_uri($uri);
+  if ($parts === NULL) {
     return NULL;
   }
-  [, $scheme, $remainder] = $matches;
-
-  // Keep the query and fragment byte for byte; they never double-encode.
-  $path_length = strcspn($remainder, '?#');
-  $path = substr($remainder, 0, $path_length);
-  $suffix = substr($remainder, $path_length);
+  [$scheme, $path, $suffix] = $parts;
 
   $decoded = rawurldecode($path);
   // Nothing is encoded, so nothing renders double-encoded.
@@ -1524,6 +1547,20 @@ function ys_core_repair_double_encoded_link_uri($uri) {
 /**
  * Repairs every stored link URI that Drupal would render double-encoded.
  *
+ * @param bool $dry_run
+ *   When TRUE, report what would change without writing anything.
+ *
+ * @return array
+ *   A report, as described on ys_core_rewrite_link_uris().
+ */
+function ys_core_repair_double_encoded_link_uris($dry_run = FALSE) {
+  // Only a value holding a percent can be encoded one time too many.
+  return ys_core_rewrite_link_uris('ys_core_repair_double_encoded_link_uri', '%', $dry_run);
+}
+
+/**
+ * Rewrites stored link URIs in place, wherever a rewrite rule matches one.
+ *
  * Writes the field tables directly instead of loading and saving entities. A
  * save would create a new revision, move the "changed" timestamp (polluting
  * the Authoring Dashboard's latest edits) and, for the non-reusable inline
@@ -1540,6 +1577,12 @@ function ys_core_repair_double_encoded_link_uri($uri) {
  * is no batching: this scans a handful of small field tables with one LIKE
  * each and rewrites only the rows that match.
  *
+ * @param callable $rewrite
+ *   Receives one stored URI and returns the value to store in its place, or
+ *   NULL to leave the row exactly as it is.
+ * @param string $needle
+ *   A substring every affected URI must contain, used to narrow the scan to
+ *   the rows that could possibly match.
  * @param bool $dry_run
  *   When TRUE, report what would change without writing anything.
  *
@@ -1547,7 +1590,7 @@ function ys_core_repair_double_encoded_link_uri($uri) {
  *   A report keyed 'repaired', 'left_alone', 'changes', 'left_alone_uris',
  *   'tables' and 'skipped_tables'.
  */
-function ys_core_repair_double_encoded_link_uris($dry_run = FALSE) {
+function ys_core_rewrite_link_uris(callable $rewrite, $needle, $dry_run = FALSE) {
   $database = \Drupal::database();
   $schema = $database->schema();
   $entity_type_manager = \Drupal::entityTypeManager();
@@ -1593,12 +1636,12 @@ function ys_core_repair_double_encoded_link_uris($dry_run = FALSE) {
 
         $rows = $database->select($table, 'f')
           ->fields('f', ['entity_id', 'revision_id', 'delta', 'langcode', $column])
-          ->condition($column, '%' . $database->escapeLike('%') . '%', 'LIKE')
+          ->condition($column, '%' . $database->escapeLike($needle) . '%', 'LIKE')
           ->execute();
 
         foreach ($rows as $row) {
           $stored = $row->{$column};
-          $repaired = ys_core_repair_double_encoded_link_uri($stored);
+          $repaired = $rewrite($stored);
           if ($repaired === NULL) {
             $report['left_alone']++;
             $report['left_alone_uris'][$stored] = $stored;
@@ -1671,6 +1714,157 @@ function ys_core_update_10019() {
   }
 
   return t('Repaired @repaired double-encoded link URI(s) across @tables field table(s); left @left_alone value(s) untouched.', [
+    '@repaired' => $report['repaired'],
+    '@tables' => $report['tables'],
+    '@left_alone' => $report['left_alone'],
+  ]);
+}
+
+/**
+ * Describes how a link URI would look with an eaten "+" put back.
+ *
+ * The forward fix for issue #683 (patches/contrib/linkit/3436733-5.patch) ran
+ * the URI through urldecode(), which reads "+" as an encoded space. A link to a
+ * file named "a+b.pdf" was therefore stored as "a b.pdf", and the href core
+ * builds from it asks for a file whose name really does contain a space, so the
+ * link 404s. That patch now uses rawurldecode(), which leaves "+" alone, but
+ * values already saved through the old one stay wrong until they are rewritten.
+ *
+ * Recognising the shape is only half of the decision, because a space in a file
+ * name is perfectly ordinary: "My Report.pdf" is stored with a literal space by
+ * the same widget and is correct. So this reports the two file names the value
+ * could mean and leaves the caller to confirm against the filesystem which one
+ * actually exists.
+ *
+ * Only a path inside the public files directory is described. Elsewhere there
+ * is no file to check, so there is no evidence either way and nothing should be
+ * rewritten. A path still holding a percent-escape is left to
+ * ys_core_repair_double_encoded_link_uri(), whose case it is.
+ *
+ * Every space becomes a "+", all or nothing, which is the whole of what the old
+ * urldecode() call could have produced from a name of only pluses. A file whose
+ * name mixes a real space with an eaten plus ("a+b c.pdf") is therefore not
+ * recovered - no combination is tried - and is left alone rather than guessed
+ * at. Restoring one of those means re-saving the content.
+ *
+ * @param string $uri
+ *   The stored link URI.
+ * @param string $files_base_path
+ *   The public files directory, as PublicStream::basePath() reports it.
+ *
+ * @return array|null
+ *   NULL when the URI cannot be a decoded "+", otherwise an array keyed:
+ *   - 'uri': the URI with the path's spaces restored to "+".
+ *   - 'stored_file': the stream URI of the file the value names as stored.
+ *   - 'plus_file': the stream URI of the file it would name once restored.
+ */
+function ys_core_restore_plus_link_uri_candidate($uri, $files_base_path) {
+  $parts = ys_core_split_link_uri($uri);
+  if ($parts === NULL) {
+    return NULL;
+  }
+  [$scheme, $path, $suffix] = $parts;
+
+  // A percent-escape survives, so the value mixes a literal space with an
+  // escape. That is not something the old urldecode() produced on its own, so
+  // what it means is ambiguous and it is not rewritten.
+  if (rawurldecode($path) !== $path) {
+    return NULL;
+  }
+
+  // "internal:" paths carry a leading slash and "base:" ones do not.
+  $normalised = '/' . ltrim($path, '/');
+  $prefix = '/' . trim($files_base_path, '/') . '/';
+  if (!str_starts_with($normalised, $prefix)) {
+    return NULL;
+  }
+  $relative = substr($normalised, strlen($prefix));
+
+  // The space has to be in the file name, not in the files directory's own
+  // path: a site whose public files directory contains a space would otherwise
+  // look like a candidate on every link. This also rules out an empty file
+  // name, which holds no space to convert.
+  if (!str_contains($relative, ' ')) {
+    return NULL;
+  }
+
+  $plus_relative = str_replace(' ', '+', $relative);
+  // Rebuilt from the stored bytes so the scheme's own prefix is preserved.
+  $plus_path = substr($path, 0, strlen($path) - strlen($relative)) . $plus_relative;
+
+  return [
+    'uri' => $scheme . ':' . $plus_path . $suffix,
+    'stored_file' => 'public://' . $relative,
+    'plus_file' => 'public://' . $plus_relative,
+  ];
+}
+
+/**
+ * Restores every stored link URI whose "+" was decoded away as a space.
+ *
+ * A value is rewritten only on positive evidence: the file it names as stored
+ * is not there, and the one it would name with its "+" back is. Every other
+ * combination is left alone, so a genuine "My Report.pdf" is never touched, and
+ * a link whose file has simply been deleted is not guessed at either.
+ *
+ * @param bool $dry_run
+ *   When TRUE, report what would change without writing anything.
+ *
+ * @return array
+ *   A report, as described on ys_core_rewrite_link_uris().
+ */
+function ys_core_restore_plus_link_uris($dry_run = FALSE) {
+  $files_base_path = PublicStream::basePath();
+  $undecided = [];
+
+  $rewrite = function ($stored) use ($files_base_path, &$undecided) {
+    $candidate = ys_core_restore_plus_link_uri_candidate($stored, $files_base_path);
+    if ($candidate === NULL) {
+      return NULL;
+    }
+    // The file is there under the name as stored, so the space is genuine.
+    if (file_exists($candidate['stored_file'])) {
+      return NULL;
+    }
+    if (!file_exists($candidate['plus_file'])) {
+      // Neither name is on disk, so there is nothing to decide from. Collected
+      // rather than dropped: this is also what a run against an environment
+      // that has no copy of the files looks like, and the hook only runs once.
+      $undecided[$stored] = $stored;
+      return NULL;
+    }
+    return $candidate['uri'];
+  };
+
+  $report = ys_core_rewrite_link_uris($rewrite, ' ', $dry_run);
+  $report['undecided_uris'] = array_values($undecided);
+
+  return $report;
+}
+
+/**
+ * Restores document links whose "+" was saved as a space after issue #683.
+ */
+function ys_core_update_10020() {
+  $report = ys_core_restore_plus_link_uris();
+  $logger = \Drupal::logger('ys_core');
+
+  foreach ($report['changes'] as $change) {
+    $logger->notice('Restored "+" in link URI: @change', ['@change' => $change]);
+  }
+  if ($report['undecided_uris']) {
+    // Neither the stored name nor its "+" form is on disk. Either the document
+    // was deleted, its name mixes a real space with an eaten "+", or this
+    // environment has no copy of the files. Named so the case is visible: this
+    // hook runs once, so anything it could not decide needs a manual look or a
+    // re-run of ys_core_restore_plus_link_uris() once the files are present.
+    $logger->warning('Left @count link URI(s) with a space alone because no matching file was found either way; re-save the content or re-run the repair once the files are present: @uris', [
+      '@count' => count($report['undecided_uris']),
+      '@uris' => implode(', ', $report['undecided_uris']),
+    ]);
+  }
+
+  return t('Restored @repaired link URI(s) whose "+" had been saved as a space, across @tables field table(s); left @left_alone value(s) containing a space untouched.', [
     '@repaired' => $report['repaired'],
     '@tables' => $report['tables'],
     '@left_alone' => $report['left_alone'],
