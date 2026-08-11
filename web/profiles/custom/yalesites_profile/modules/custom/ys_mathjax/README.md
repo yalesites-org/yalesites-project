@@ -29,10 +29,13 @@ page loads.
 
 - A single dollar sign (`$`) does **not** start math, so ordinary text such as
   "Tickets are $5" is unaffected.
-- Because the Text block also applies typographic replacement (Typogrify),
-  prefer LaTeX macros over literal punctuation inside math — e.g. use `\prime`
-  and `\ldots` rather than `'` and `...` so the source is not altered before
-  MathJax renders it.
+- Punctuation inside the delimiters is left exactly as typed. Multi-row
+  constructs work as they do in standard LaTeX — `\\` ends a row and `&`
+  separates columns:
+
+  ```
+  $$\begin{bmatrix} a & b \\ c & d \end{bmatrix}$$
+  ```
 
 ## For developers
 
@@ -40,5 +43,11 @@ page loads.
   decide whether to load the library (unit tested).
 - `Plugin\Filter\YsMathjaxFilter` — extends the contrib `MathjaxFilter`;
   attaches the library via the parent only when `hasMath()` is TRUE.
+- `Plugin\Filter\YsTypogrifyFilter` — extends the contrib `TypogrifyFilter` and
+  masks math regions so typographic replacement cannot rewrite LaTeX before
+  MathJax sees it. `ys_mathjax_filter_info_alter()` swaps it in for the
+  `typogrify` plugin, so the protection applies to every text format that runs
+  typogrify (`basic_html`, `heading_html`, `restricted_html`), not just the ones
+  with the MathJax filter enabled.
 - Delimiters and MathJax options are configured in `mathjax.settings`
   (`config_type: 0`, single-dollar inline math disabled).
