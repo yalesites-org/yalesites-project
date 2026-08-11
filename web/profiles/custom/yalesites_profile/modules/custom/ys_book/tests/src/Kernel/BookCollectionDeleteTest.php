@@ -48,6 +48,10 @@ class BookCollectionDeleteTest extends KernelTestBase {
     $this->installEntitySchema('node');
     $this->installSchema('node', 'node_access');
     $this->installSchema('book', ['book']);
+    // Kernel tests never run hook_install(), so add the title column this
+    // module installs on a real site; see _ys_book_add_book_title_column().
+    $this->container->get('module_handler')->loadInclude('ys_book', 'install');
+    _ys_book_add_book_title_column();
     $this->installConfig(['node', 'book', 'field']);
 
     // ys_book keeps custom menu link titles in a column it adds to contrib

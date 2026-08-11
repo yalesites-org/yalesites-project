@@ -49,6 +49,10 @@ class YsExpandBookManagerTest extends KernelTestBase {
     // Loading a node fires the book module's hook_node_load, which queries the
     // book table, so its schema must be installed.
     $this->installSchema('book', ['book']);
+    // Kernel tests never run hook_install(), so add the title column this
+    // module installs on a real site; see _ys_book_add_book_title_column().
+    $this->container->get('module_handler')->loadInclude('ys_book', 'install');
+    _ys_book_add_book_title_column();
 
     NodeType::create(['type' => 'page', 'name' => 'Page'])->save();
 
