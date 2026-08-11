@@ -48,7 +48,18 @@ class BookCollectionDeleteTest extends KernelTestBase {
     $this->installEntitySchema('node');
     $this->installSchema('node', 'node_access');
     $this->installSchema('book', ['book']);
+    // Kernel tests never run hook_install(), so add the title column this
+    // module installs on a real site; see _ys_book_add_book_title_column().
+    $this->container->get('module_handler')->loadInclude('ys_book', 'install');
+    _ys_book_add_book_title_column();
     $this->installConfig(['node', 'book', 'field']);
+
+    // ys_book keeps custom menu link titles in a column it adds to contrib
+    // book's table from ys_book_update_10001(). installSchema() only builds
+    // contrib book's own hook_schema(), so run the update hook to match a
+    // real site -- without it every book node save fails on a missing column.
+    $this->container->get('module_handler')->loadInclude('ys_book', 'install');
+    ys_book_update_10001();
 
     // The delete route is gated on 'administer book outlines'; build the router
     // so the confirm form's cancel link can resolve the collections overview.
