@@ -61,6 +61,18 @@ class BeaconConfigDefaultsTest extends UnitTestCase {
   }
 
   /**
+   * Ten content chunks are retrieved as sources per answer by default.
+   *
+   * This is the platform default a newly provisioned site comes up with, and
+   * the value both runtime fallbacks degrade to when the key is absent
+   * (RagRetriever::retrieve() and the Beacon administration form). It stays
+   * inside the form's 1-20 range.
+   */
+  public function testSourcesPerAnswerDefaultsToTen(): void {
+    $this->assertSame(10, $this->installSettings()['top_k']);
+  }
+
+  /**
    * The fallback prompt ships with the full YaleSites system instruction.
    */
   public function testFallbackPromptShipsYaleSitesInstruction(): void {

@@ -165,12 +165,50 @@ class BeaconSettingsSeedTest extends UnitTestCase {
 
     // Everything the partial write never set is restored.
     $this->assertTrue($captured['streaming'], 'Streaming comes back on.');
-    $this->assertSame(5, $captured['top_k'], 'top_k comes back.');
+    $this->assertSame(10, $captured['top_k'], 'top_k comes back.');
     $shipped_keys = array_keys($this->shippedDefaults());
     $captured_keys = array_keys($captured);
     sort($shipped_keys);
     sort($captured_keys);
     $this->assertSame($shipped_keys, $captured_keys, 'The full shipped key set is present.');
+  }
+
+  /**
+   * A site's own tuned value survives a seed that raises the shipped default.
+   *
+   * Raising a shipped default must not retune a site that already made its own
+   * choice. testDoesNotClobberExistingSettings() cannot catch that: it stubs
+   * the existing data with the shipped defaults themselves, so every value
+   * already equals what the seed would write and "preserved" is
+   * indistinguishable from "overwritten with the same number". This holds the
+   * value the site stores deliberately BELOW the shipped default, so a merge
+   * the wrong way round changes it and fails here.
+   */
+  public function testExistingSourcesPerAnswerSurvivesRaisedDefault(): void {
+    $shipped = $this->shippedDefaults();
+    $tuned = $shipped;
+    $tuned['top_k'] = 3;
+    // Guards the premise: an equal value would make the assertion vacuous.
+    $this->assertNotSame(3, $shipped['top_k']);
+    // One shipped key is dropped so there is a gap and the seed does write.
+    unset($tuned['streaming']);
+
+    $captured = NULL;
+    $config = $this->createMock(Config::class);
+    $config->method('getRawData')->willReturn($tuned);
+    $config->expects($this->once())
+      ->method('setData')
+      ->with($this->callback(function (array $data) use (&$captured): bool {
+        $captured = $data;
+        return TRUE;
+      }))
+      ->willReturnSelf();
+    $config->expects($this->once())->method('save')->willReturnSelf();
+    $this->setContainer($config);
+
+    $this->assertTrue(_ys_beacon_seed_settings(), 'A gap was filled.');
+    $this->assertSame(3, $captured['top_k'], "The site's own value is kept.");
+    $this->assertTrue($captured['streaming'], 'The genuine gap was filled.');
   }
 
   /**

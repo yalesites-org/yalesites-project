@@ -114,7 +114,7 @@ class YsBeaconAdminSettings extends ConfigFormBase {
       '#type' => 'number',
       '#title' => $this->t('Sources per answer'),
       '#description' => $this->t('How many content chunks are retrieved as sources for each answer.'),
-      '#default_value' => $config->get('top_k') ?: 5,
+      '#default_value' => $config->get('top_k') ?: 10,
       '#min' => 1,
       '#max' => 20,
       '#required' => TRUE,

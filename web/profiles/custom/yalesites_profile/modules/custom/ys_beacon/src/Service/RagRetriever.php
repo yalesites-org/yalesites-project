@@ -59,7 +59,7 @@ class RagRetriever {
 
     try {
       $query = $index->query([
-        'limit' => (int) ($settings->get('top_k') ?: 5),
+        'limit' => (int) ($settings->get('top_k') ?: 10),
       ]);
       $query->setOption('search_api_ai_get_chunks_result', TRUE);
       // Reading beyond this site's own documents - a read-only borrow or a

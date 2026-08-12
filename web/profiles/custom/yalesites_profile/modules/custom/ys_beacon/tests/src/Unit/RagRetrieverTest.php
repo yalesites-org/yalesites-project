@@ -2,6 +2,7 @@
 
 namespace Drupal\Tests\ys_beacon\Unit;
 
+use Drupal\Core\Config\ConfigFactoryInterface;
 use Drupal\Core\Entity\ContentEntityInterface;
 use Drupal\Core\Entity\EntityStorageInterface;
 use Drupal\Core\Entity\EntityTypeManagerInterface;
@@ -14,6 +15,7 @@ use Drupal\Tests\UnitTestCase;
 use Drupal\ys_beacon\Service\EntityCitationResolver;
 use Drupal\ys_beacon\Service\RagRetriever;
 use Psr\Log\LoggerInterface;
+use Symfony\Component\Yaml\Yaml;
 
 /**
  * Tests Beacon RAG retrieval: failure logging, guards, and citation building.
@@ -95,7 +97,7 @@ class RagRetrieverTest extends UnitTestCase {
     $configFactory = $this->getConfigFactoryStub([
       'ys_beacon.settings' => [
         'search_index_id' => 'internal_corpus',
-        'top_k' => 5,
+        'top_k' => 10,
         'score_threshold' => 0.0,
       ],
     ]);
@@ -123,11 +125,122 @@ class RagRetrieverTest extends UnitTestCase {
     $entityTypeManager->method('getStorage')->with('search_api_index')->willReturn($storage);
 
     $configFactory = $this->getConfigFactoryStub([
-      'ys_beacon.settings' => ['top_k' => 5, 'score_threshold' => 0.0],
+      'ys_beacon.settings' => ['top_k' => 10, 'score_threshold' => 0.0],
     ]);
 
     $retriever = new RagRetriever($entityTypeManager, $configFactory, $this->createMock(LoggerInterface::class), $this->createMock(EntityCitationResolver::class));
     $this->assertSame([], $retriever->retrieve('hello'));
+  }
+
+  /**
+   * A stored sources-per-answer value becomes the retrieval query limit.
+   *
+   * @covers ::retrieve
+   */
+  public function testStoredSourcesPerAnswerBecomesTheQueryLimit(): void {
+    $index = $this->indexExpectingLimit(3);
+
+    $configFactory = $this->getConfigFactoryStub([
+      'ys_beacon.settings' => ['top_k' => 3, 'score_threshold' => 0.0],
+    ]);
+
+    $this->assertSame([], $this->retrieverForIndex($index, $configFactory)->retrieve('hello'));
+  }
+
+  /**
+   * With no stored value the query limit falls back to the shipped default.
+   *
+   * The settings are config-ignored and absent from config/sync, so a site can
+   * legitimately reach retrieval with this key unset - the fallback is the
+   * value such a site actually searches with, not dead code.
+   *
+   * The expectation is read from the shipped file rather than written out, so
+   * the hardcoded fallback and the shipped default cannot drift apart silently.
+   * BeaconConfigDefaultsTest is what pins that shipped value to a number.
+   *
+   * @covers ::retrieve
+   */
+  public function testMissingSourcesPerAnswerFallsBackToShippedDefault(): void {
+    $index = $this->indexExpectingLimit($this->shippedSourcesPerAnswer());
+
+    $configFactory = $this->getConfigFactoryStub([
+      'ys_beacon.settings' => ['score_threshold' => 0.0],
+    ]);
+
+    $this->assertSame([], $this->retrieverForIndex($index, $configFactory)->retrieve('hello'));
+  }
+
+  /**
+   * The shipped top_k default, read from the module's install config.
+   *
+   * @return int
+   *   The number of sources a site searches with when it stores no value.
+   */
+  private function shippedSourcesPerAnswer(): int {
+    $path = dirname(__DIR__, 3) . '/config/install/ys_beacon.settings.yml';
+    $this->assertFileExists($path);
+    return Yaml::parseFile($path)['top_k'];
+  }
+
+  /**
+   * Builds an enabled index that requires the given retrieval query limit.
+   *
+   * @param int $limit
+   *   The limit the query must be built with.
+   *
+   * @return \Drupal\search_api\IndexInterface|\PHPUnit\Framework\MockObject\MockObject
+   *   The index mock.
+   */
+  private function indexExpectingLimit(int $limit): IndexInterface {
+    $results = $this->createMock(ResultSetInterface::class);
+    $results->method('getResultItems')->willReturn([]);
+
+    $query = $this->createMock(QueryInterface::class);
+    $query->method('setOption')->willReturnSelf();
+    $query->method('keys')->willReturnSelf();
+    $query->method('execute')->willReturn($results);
+
+    $index = $this->createMock(IndexInterface::class);
+    $index->method('status')->willReturn(TRUE);
+    $index->method('isReadOnly')->willReturn(FALSE);
+    $index->expects($this->once())
+      ->method('query')
+      ->with(['limit' => $limit])
+      ->willReturn($query);
+
+    return $index;
+  }
+
+  /**
+   * Builds a RagRetriever wired to the given index and config factory.
+   *
+   * @param \Drupal\search_api\IndexInterface $index
+   *   The index the retriever loads.
+   * @param \Drupal\Core\Config\ConfigFactoryInterface $configFactory
+   *   The config factory holding the Beacon settings.
+   *
+   * @return \Drupal\ys_beacon\Service\RagRetriever
+   *   The retriever under test.
+   */
+  private function retrieverForIndex(IndexInterface $index, ConfigFactoryInterface $configFactory): RagRetriever {
+    $storage = $this->createMock(EntityStorageInterface::class);
+    $storage->method('load')->willReturn($index);
+
+    $entityTypeManager = $this->createMock(EntityTypeManagerInterface::class);
+    $entityTypeManager->method('getStorage')->with('search_api_index')->willReturn($storage);
+
+    // retrieve() catches every Throwable around the query, so without this a
+    // limit these tests got right could still be followed by an unrelated
+    // failure and the test would stay green on its empty-array assertion.
+    $logger = $this->createMock(LoggerInterface::class);
+    $logger->expects($this->never())->method('error');
+
+    return new RagRetriever(
+      $entityTypeManager,
+      $configFactory,
+      $logger,
+      $this->createMock(EntityCitationResolver::class),
+    );
   }
 
   /**
@@ -499,7 +612,7 @@ class RagRetrieverTest extends UnitTestCase {
 
     $configFactory = $this->getConfigFactoryStub([
       'ys_beacon.settings' => [
-        'top_k' => 5,
+        'top_k' => 10,
         'score_threshold' => 0.0,
         'query_entire_index' => $query_entire_index,
       ],

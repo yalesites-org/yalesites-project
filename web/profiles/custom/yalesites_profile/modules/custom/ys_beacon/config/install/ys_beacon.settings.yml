@@ -14,7 +14,7 @@ azure_search_url_key: ''
 read_only: false
 query_entire_index: false
 pdf_extraction_max_bytes: 20971520
-top_k: 5
+top_k: 10
 score_threshold: 0.0
 streaming: true
 # Context window (in tokens) of the model Portkey currently routes to. Used to
