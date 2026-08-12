@@ -70,12 +70,12 @@ class YSLayoutOptionsTest extends UnitTestCase {
     $this->assertSame('select', $form['theme']['#type']);
     $this->assertSame('two', $form['theme']['#default_value']);
 
-    // Sections offer five colors plus "Default - no color", where block
-    // components offer six colors. This is deliberate (see #1506), so pin the
-    // list an editor actually sees rather than letting a sixth option appear
-    // silently.
+    // Sections offer six colors plus "Default - no color", matching the block
+    // component pickers (#1518). Pin the list an editor actually sees, since
+    // it is declared here, in ColorTokenResolver's section slot mapping and
+    // ordering arrays, and again in the component library SCSS.
     $this->assertSame(
-      ['default', 'one', 'two', 'three', 'four', 'five'],
+      ['default', 'one', 'two', 'three', 'four', 'five', 'six'],
       array_keys($form['theme']['#options']),
     );
   }

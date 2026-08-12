@@ -518,36 +518,34 @@ class ColorTokenResolverTest extends UnitTestCase {
   }
 
   /**
-   * Tests that layout sections expose five color options, not six.
+   * Tests that layout sections expose six color options, including slot-three.
    *
-   * Every block-content mapping in getColorStylesForEntity() offers six
-   * options covering slots one, two, three, four, five and nine. Sections
-   * deliberately offer five and never expose slot-three: an option for it was
-   * added and then removed again within ticket #897, and #1153 reused the
-   * freed 'five' key for slot-nine. This test pins that decision so the
-   * difference reads as intentional rather than as a missed slot (#1506), and
-   * so adding a sixth option is a deliberate change with a test to update.
+   * Sections offered five options for a long time while every block-content
+   * mapping offered six: slot-three was the one palette slot sections never
+   * exposed. #1518 closed that gap, so sections now match the block pickers at
+   * six options and 'six' is the key that resolves to slot-three.
    *
    * @covers ::getColorStylesForEntity
    */
-  public function testGetColorStylesForEntitySectionExposesFiveOptions(): void {
+  public function testGetColorStylesForEntitySectionExposesSixOptions(): void {
     $resolver = $this->createResolver($this->fixturePath);
     $styles = $resolver->getColorStylesForEntity('layout_section', 'ys_layout_options');
 
     $this->assertSame(
-      ['one', 'two', 'three', 'four', 'five'],
+      ['one', 'two', 'three', 'four', 'five', 'six'],
       array_keys($styles['one']),
     );
 
-    // No option resolves to slot-three under any global theme.
-    foreach ($styles as $global_theme => $options) {
-      foreach ($options as $option_key => $declarations) {
-        $this->assertNotContains(
-          "var(--global-themes-{$global_theme}-colors-slot-three)",
-          $declarations,
-          "Section option '{$option_key}' unexpectedly resolves to slot-three.",
-        );
-      }
+    // Option 'six' resolves to slot-three under every global theme. Theme
+    // 'four' (Onha) is included deliberately: its slot swap exchanges slot-two
+    // and slot-five only, so slot-three must pass through untouched there --
+    // mirroring the SCSS, which likewise leaves slot-three out of that swap.
+    foreach (array_keys($styles) as $global_theme) {
+      $this->assertSame(
+        ["var(--global-themes-{$global_theme}-colors-slot-three)"],
+        $styles[$global_theme]['six'],
+        "Section option 'six' should resolve to slot-three under global theme '{$global_theme}'.",
+      );
     }
   }
 
