@@ -56,6 +56,7 @@ class EventMetaBlockTest extends UnitTestCase {
       'ticket_url' => NULL,
       'ticket_cost' => NULL,
       'place_info' => [],
+      'location_additional_info' => NULL,
       'event_types' => [],
       'event_audience' => [],
       'event_topics' => [],

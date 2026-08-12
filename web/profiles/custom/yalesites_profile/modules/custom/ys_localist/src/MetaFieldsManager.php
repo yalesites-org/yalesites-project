@@ -244,7 +244,11 @@ class MetaFieldsManager implements ContainerFactoryPluginInterface {
     if ($node->hasField('field_location_additional_info') && !$node->get('field_location_additional_info')->isEmpty()) {
       $field_value = $node->get('field_location_additional_info')->first()->getValue();
       if (!empty($field_value['value'])) {
-        $locationAdditionalInfo = check_markup($field_value['value'], $field_value['format'] ?? 'basic_html');
+        $locationAdditionalInfo = [
+          '#type' => 'processed_text',
+          '#text' => $field_value['value'],
+          '#format' => $field_value['format'] ?? 'basic_html',
+        ];
       }
     }
 

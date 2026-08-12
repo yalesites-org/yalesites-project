@@ -322,7 +322,7 @@ content:
     third_party_settings: {  }
   field_event_place:
     type: chosen_select
-    weight: 6
+    weight: 38
     region: content
     settings: {  }
     third_party_settings: {  }
@@ -335,7 +335,7 @@ content:
     third_party_settings: {  }
   field_event_room:
     type: string_textfield
-    weight: 7
+    weight: 39
     region: content
     settings:
       size: 60
