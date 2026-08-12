@@ -23,6 +23,10 @@ use Drupal\Tests\user\Traits\UserCreationTrait;
  * core's default image formatter and the token resolves to a whole <img> tag
  * with the alt text inside it.
  *
+ * The separator can also arrive from the uploaded file's own name, which
+ * nothing sanitizes, so this also carries the chain through metatag's og:image
+ * plugin and asserts on the tags it actually emits.
+ *
  * @group ys_core
  * @group yalesites
  */
@@ -42,6 +46,14 @@ class MediaImageTokenTest extends KernelTestBase {
   private const FILE_NAME = 'sculpture-in-snow.jpg';
 
   /**
+   * A file name containing metatag's separator, which nothing sanitizes away.
+   *
+   * Every option under file.settings:filename_sanitization is off, so an editor
+   * can upload this name verbatim.
+   */
+  private const SEPARATOR_FILE_NAME = 'sunset, beach.jpg';
+
+  /**
    * {@inheritdoc}
    */
   protected static $modules = [
@@ -52,6 +64,8 @@ class MediaImageTokenTest extends KernelTestBase {
     'image',
     'media',
     'token',
+    'metatag',
+    'metatag_open_graph',
   ];
 
   /**
@@ -65,6 +79,16 @@ class MediaImageTokenTest extends KernelTestBase {
     $this->installEntitySchema('media');
     $this->installSchema('file', 'file_usage');
     $this->installConfig(['system', 'field', 'file', 'media']);
+
+    // Metatag ships a blank separator that falls back to a comma. Pin the value
+    // the platform actually exports, so separator() below and metatag's own
+    // plugin both read production's value rather than contrib's default. Its
+    // remaining settings stay unset and so read as NULL, which makes
+    // MetaNameBase::trimValue() short-circuit -- as it also does in production,
+    // where no trim maxlength is configured for og:image.
+    $this->config('metatag.settings')
+      ->set('separator', $this->readConfig('metatag.settings')['separator'])
+      ->save();
 
     $this->createMediaType('image', ['id' => 'image']);
 
@@ -107,10 +131,10 @@ class MediaImageTokenTest extends KernelTestBase {
   /**
    * Creates an image media whose alt text contains commas.
    */
-  private function createImageMedia(): MediaInterface {
+  private function createImageMedia(string $file_name = self::FILE_NAME): MediaInterface {
     $file = File::create([
-      'uri' => 'public://' . self::FILE_NAME,
-      'filename' => self::FILE_NAME,
+      'uri' => 'public://' . $file_name,
+      'filename' => $file_name,
     ]);
     $file->save();
 
@@ -118,7 +142,7 @@ class MediaImageTokenTest extends KernelTestBase {
       ->getStorage('media')
       ->create([
         'bundle' => 'image',
-        'name' => self::FILE_NAME,
+        'name' => $file_name,
         'field_media_image' => [
           'target_id' => $file->id(),
           'alt' => self::ALT_TEXT,
@@ -127,6 +151,38 @@ class MediaImageTokenTest extends KernelTestBase {
     $media->save();
 
     return $media;
+  }
+
+  /**
+   * Returns the separator metatag splits multi-valued tags like og:image on.
+   *
+   * Read from active config, which setUp() pinned to the platform's own export.
+   * Metatag's own getSeparator() substitutes a comma when that value is blank,
+   * so the pin is what keeps this helper and metatag in agreement.
+   */
+  private function separator(): string {
+    return $this->config('metatag.settings')->get('separator');
+  }
+
+  /**
+   * Renders the given value through metatag's real og:image plugin.
+   *
+   * Asserting on the token value alone would not be enough: og:image's value
+   * also passes through parseImageUrl(), whitespace tidying, absolute-URL
+   * handling and trimming, any of which could mangle an encoded URL. This goes
+   * through the plugin manager rather than instantiating the class so the
+   * plugin's own annotation, which is what marks og:image multi-valued, is the
+   * thing under test.
+   *
+   * @return array
+   *   The render array elements metatag would emit for this value.
+   */
+  private function ogImageOutput(string $value): array {
+    $tag = $this->container->get('plugin.manager.metatag.tag')
+      ->createInstance('og_image');
+    $tag->setValue($value);
+
+    return $tag->output();
   }
 
   /**
@@ -144,7 +200,7 @@ class MediaImageTokenTest extends KernelTestBase {
    * split on it, so a value containing one becomes several malformed tags.
    */
   public function testImageTokenResolvesToBareUrl(): void {
-    $separator = $this->readConfig('metatag.settings')['separator'];
+    $separator = $this->separator();
     $this->assertNotEmpty($separator, 'Metatag should define a multi-value separator.');
     $this->assertStringContainsString($separator, self::ALT_TEXT, 'The fixture alt text should contain the separator.');
 
@@ -168,6 +224,47 @@ class MediaImageTokenTest extends KernelTestBase {
       self::ALT_TEXT,
       trim($this->replaceImageToken($this->createImageMedia(), '[media:field_media_image:alt]')),
     );
+  }
+
+  /**
+   * A separator in the uploaded file's own name still yields one og:image tag.
+   *
+   * The token resolving to a bare URL is only half the guarantee: the URL
+   * itself has to be free of metatag's separator, or metatag's multi-value
+   * splitting would shatter it the same way the alt text did. Core
+   * percent-encodes the file path when it builds the URL, which is what keeps
+   * that true, so this asserts the whole chain rather than the encoding alone:
+   * it would fail if a future formatter, image style, or stream wrapper emitted
+   * the raw name.
+   */
+  public function testSeparatorInFileNameYieldsOneOgImageTag(): void {
+    $this->assertStringContainsString($this->separator(), self::SEPARATOR_FILE_NAME, 'The fixture file name should contain the separator.');
+
+    $media = $this->createImageMedia(self::SEPARATOR_FILE_NAME);
+    $url = trim($this->replaceImageToken($media, '[media:field_media_image]'));
+    $this->assertNotEmpty($url, 'The token should resolve to the image URL.');
+
+    $elements = $this->ogImageOutput($url);
+
+    // Each assertion catches a different way this has failed or could fail: the
+    // reported symptom was several tags; a naive fix could leave one truncated
+    // tag; and og:image is useless to a crawler if it is not absolute.
+    $this->assertCount(1, $elements, 'A separator in the file name must not split og:image into several tags.');
+    $content = $elements[0]['#attributes']['content'];
+    $this->assertStringEndsWith(rawurlencode(self::SEPARATOR_FILE_NAME), $content, 'The emitted URL should end in the whole encoded file name.');
+    $this->assertStringStartsWith('http', $content, 'og:image must be an absolute URL.');
+  }
+
+  /**
+   * Control for the test above: an unencoded separator really does split.
+   *
+   * Without this, the one-tag assertion could pass vacuously. Should metatag
+   * stop splitting values this way, this fails and that guard can be relaxed.
+   */
+  public function testMetatagSplitsAnUnencodedSeparator(): void {
+    $elements = $this->ogImageOutput('http://localhost/files/' . self::SEPARATOR_FILE_NAME);
+
+    $this->assertGreaterThan(1, count($elements), sprintf("Metatag is expected to split og:image on '%s'.", $this->separator()));
   }
 
 }
