@@ -398,47 +398,32 @@ class ColorTokenResolverTest extends UnitTestCase {
   }
 
   /**
-   * Tests build color info resolves component theme variable.
+   * Tests build color info does not resolve component theme variables.
    *
-   * BuildColorInfo() resolves a component-themes CSS variable directly from
-   * the component-themes section of the token JSON.
+   * BuildColorInfo() only resolves --global-themes-*-colors-slot-* variables.
+   * A component-themes variable is passed through with hex/name/ref left empty
+   * even though the fixture's component-themes section does define
+   * five.background. Ticket #1153 replaced the component-token bypass with
+   * global slot resolution, so no code path reads that section any more.
    *
    * @covers ::buildColorInfo
    */
-  public function testBuildColorInfoResolvesComponentThemeVariable(): void {
+  public function testBuildColorInfoDoesNotResolveComponentThemeVariable(): void {
     $resolver = $this->createResolver($this->fixturePath);
     $this->assertSame([
       'css_var' => 'var(--component-themes-five-background)',
-      'hex' => '#e3f7f5',
-      'token_name' => '',
-      'token_ref' => 'component-themes-five-background',
-    ], $resolver->buildColorInfo('five', 'var(--component-themes-five-background)'));
-  }
-
-  /**
-   * Tests build color info returns empty for missing component theme.
-   *
-   * BuildColorInfo() leaves hex/name/ref empty when the component-themes
-   * property doesn't exist.
-   *
-   * @covers ::buildColorInfo
-   */
-  public function testBuildColorInfoReturnsEmptyForMissingComponentThemeProperty(): void {
-    $resolver = $this->createResolver($this->fixturePath);
-    $this->assertSame([
-      'css_var' => 'var(--component-themes-five-nonexistent)',
       'hex' => '',
       'token_name' => '',
       'token_ref' => '',
-    ], $resolver->buildColorInfo('five', 'var(--component-themes-five-nonexistent)'));
+    ], $resolver->buildColorInfo('five', 'var(--component-themes-five-background)'));
   }
 
   /**
    * Tests build color info returns empty for unmatched var pattern.
    *
    * BuildColorInfo() keeps the raw css_var but leaves hex/name/ref empty when
-   * a var() value matches neither the global-themes nor component-themes
-   * variable name patterns.
+   * a var() value does not match the global-themes slot variable name pattern,
+   * which is the only pattern it resolves.
    *
    * @covers ::buildColorInfo
    */
@@ -554,9 +539,11 @@ class ColorTokenResolverTest extends UnitTestCase {
   /**
    * Tests get color styles for entity callout bundle mapping.
    *
-   * GetColorStylesForEntity() applies the callout-family mapping, the
-   * slot-five->slot-two swap (one direction only) for theme 'four', and the
-   * component-themes-five-background direct override for option 'five'.
+   * GetColorStylesForEntity() applies the callout-family mapping plus the
+   * bidirectional slot-two <-> slot-five swap for global theme 'four' (Onha).
+   * The swap is keyed by the resolved slot identifier rather than the option
+   * key, so option 'three' (slot-five) and option 'five' (slot-two) trade
+   * places while option 'two' (slot-four) passes through unchanged.
    *
    * @covers ::getColorStylesForEntity
    */
@@ -568,7 +555,7 @@ class ColorTokenResolverTest extends UnitTestCase {
     $this->assertSame(['var(--global-themes-four-colors-slot-four)'], $styles['four']['two']);
     $this->assertSame(['var(--global-themes-four-colors-slot-two)'], $styles['four']['three']);
     $this->assertSame(['var(--global-themes-four-colors-slot-three)'], $styles['four']['four']);
-    $this->assertSame(['var(--component-themes-five-background)'], $styles['four']['five']);
+    $this->assertSame(['var(--global-themes-four-colors-slot-five)'], $styles['four']['five']);
 
     // Other callout-family bundles share the same mapping.
     $spotlight_styles = $resolver->getColorStylesForEntity('block_content', 'content_spotlight');
@@ -576,18 +563,20 @@ class ColorTokenResolverTest extends UnitTestCase {
   }
 
   /**
-   * Tests get color styles for entity facts bundle uses four option override.
+   * Tests get color styles for entity facts bundle swaps on the four option.
    *
-   * GetColorStylesForEntity() applies the facts-specific override, which
-   * targets option 'four' (not 'five') for the component-theme override.
+   * The facts mapping differs from the callout family in which option lands on
+   * slot-two: for facts it is option 'four', so that is the option the theme
+   * 'four' slot-two <-> slot-five swap moves. Option 'five' maps to slot-three
+   * and is unaffected by the swap.
    *
    * @covers ::getColorStylesForEntity
    */
-  public function testGetColorStylesForEntityFactsBundleUsesFourOptionOverride(): void {
+  public function testGetColorStylesForEntityFactsBundleSwapsOnFourOption(): void {
     $resolver = $this->createResolver($this->fixturePath);
     $styles = $resolver->getColorStylesForEntity('block_content', 'facts');
 
-    $this->assertSame(['var(--component-themes-five-background)'], $styles['four']['four']);
+    $this->assertSame(['var(--global-themes-four-colors-slot-five)'], $styles['four']['four']);
     $this->assertSame(['var(--global-themes-four-colors-slot-three)'], $styles['four']['five']);
   }
 
@@ -602,10 +591,50 @@ class ColorTokenResolverTest extends UnitTestCase {
 
     $this->assertSame(['var(--global-themes-four-colors-slot-three)'], $styles['four']['two']);
     $this->assertSame(['var(--global-themes-four-colors-slot-four)'], $styles['four']['four']);
-    $this->assertSame(['var(--component-themes-five-background)'], $styles['four']['five']);
+    $this->assertSame(['var(--global-themes-four-colors-slot-five)'], $styles['four']['five']);
 
     $link_grid_styles = $resolver->getColorStylesForEntity('block_content', 'link_grid');
     $this->assertSame($styles['four'], $link_grid_styles['four']);
+  }
+
+  /**
+   * Tests no entity mapping returns a component-themes variable.
+   *
+   * Regression pin for #1153, which replaced the per-component token bypass
+   * with global slot resolution. Four assertions in this class went stale
+   * asserting the bypass value one bundle at a time (#1522); this sweeps every
+   * mapping getColorStylesForEntity() knows about instead, so reintroducing
+   * the bypass in any of them fails here rather than going unnoticed.
+   *
+   * @covers ::getColorStylesForEntity
+   */
+  public function testGetColorStylesForEntityNeverReturnsComponentThemes(): void {
+    $resolver = $this->createResolver($this->fixturePath);
+    $targets = [
+      [NULL, NULL],
+      ['layout_section', 'ys_layout_options'],
+      ['block_content', 'callout'],
+      ['block_content', 'content_spotlight'],
+      ['block_content', 'content_spotlight_portrait'],
+      ['block_content', 'cta_banner'],
+      ['block_content', 'grand_hero'],
+      ['block_content', 'facts'],
+      ['block_content', 'quote_callout'],
+      ['block_content', 'link_grid'],
+      ['block_content', 'inline_message'],
+      ['block_content', 'accordion'],
+    ];
+
+    foreach ($targets as [$entity_type, $bundle]) {
+      $label = sprintf('%s/%s', $entity_type ?? 'null', $bundle ?? 'null');
+      $styles = $resolver->getColorStylesForEntity($entity_type, $bundle);
+      $this->assertNotEmpty($styles, "Mapping {$label} returned no styles.");
+      $this->assertStringNotContainsString(
+        '--component-themes-',
+        (string) json_encode($styles),
+        "Mapping {$label} returned a component-themes variable.",
+      );
+    }
   }
 
   /**
