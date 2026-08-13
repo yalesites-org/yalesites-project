@@ -7,6 +7,7 @@ use Drupal\Core\Form\FormBase;
 use Drupal\Core\Form\FormStateInterface;
 use Drupal\Core\Messenger\MessengerInterface;
 use Drupal\Core\Render\RendererInterface;
+use Drupal\ys_migrate\Batch\CsvImportBatch;
 use Drupal\ys_migrate\Service\CsvValidatorService;
 use Drupal\ys_migrate\Service\ResourceImportService;
 use Symfony\Component\DependencyInjection\ContainerInterface;
@@ -224,18 +225,43 @@ class ResourceCsvImportForm extends FormBase {
     $preview_only = $form_state->getValue('preview');
     $skip_duplicates = $form_state->getValue('skip_duplicates');
     $validation_result = $form_state->get('csv_validation');
-
-    $file = $this->entityTypeManager->getStorage('file')->load($csv_file[0]);
+    $fid = $csv_file[0];
 
     if ($preview_only) {
       $this->previewImport($validation_result['data'], $skip_duplicates);
-    }
-    else {
-      $this->processImport($validation_result['data'], $skip_duplicates);
+      // Preview renders its own response and never touches the batch queue,
+      // so the upload is cleaned up immediately rather than by a batch
+      // operation.
+      $this->entityTypeManager->getStorage('file')->load($fid)->delete();
+      return;
     }
 
-    // Clean up the uploaded file.
-    $file->delete();
+    // A real import runs through the Batch API, one request per chunk, so a
+    // large CSV cannot time out a single request. File cleanup becomes the
+    // batch's own trailing operation instead of happening here, since
+    // submitForm() returns before any row is processed.
+    $this->setBatch(CsvImportBatch::build(
+      'ys_migrate.resource_import',
+      $validation_result['data'],
+      $skip_duplicates,
+      $fid,
+      'resource',
+      (string) $this->t('Importing resources...')
+    ));
+  }
+
+  /**
+   * Hands the batch definition to Drupal's Batch API.
+   *
+   * Isolated in its own method so tests can verify the batch definition
+   * submitForm() builds without going through the real batch_set(), which
+   * needs a full Drupal batch/session stack unavailable in a unit test.
+   *
+   * @param array $batch
+   *   A batch definition suitable for batch_set().
+   */
+  protected function setBatch(array $batch) {
+    batch_set($batch);
   }
 
   /**
@@ -302,38 +328,6 @@ class ResourceCsvImportForm extends FormBase {
     if (!empty($result['valid_resources'])) {
       $this->displayPreviewTable($result['valid_resources']);
     }
-  }
-
-  /**
-   * Processes the import and creates resource nodes.
-   *
-   * @param array $data
-   *   The CSV data.
-   * @param bool $skip_duplicates
-   *   Whether to skip duplicates.
-   */
-  protected function processImport(array $data, $skip_duplicates) {
-    $result = $this->resourceImport->processImport($data, $skip_duplicates);
-
-    if ($result['created'] > 0) {
-      $this->messenger->addStatus($this->t('Created @count resource(s).', ['@count' => $result['created']]));
-    }
-
-    if ($result['skipped'] > 0) {
-      $this->messenger->addWarning($this->t('Skipped @count duplicate resource(s).', ['@count' => $result['skipped']]));
-    }
-
-    if (!empty($result['needs_media'])) {
-      $this->messenger->addWarning($this->t(
-        '@count imported resource(s) have no External Source and still need Resource Media attached: @titles',
-        [
-          '@count' => count($result['needs_media']),
-          '@titles' => implode(', ', $result['needs_media']),
-        ]
-      ));
-    }
-
-    $this->reportErrors($result['errors']);
   }
 
   /**
