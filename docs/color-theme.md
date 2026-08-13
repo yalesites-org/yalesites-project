@@ -108,7 +108,8 @@ global-themes:
       slot-nine:
         value: "{color.gray.100.value}"
   ```
-  - `slot-nine` is reserved for the secondary background variant in our global theme palettes. In the current implementation, ONHA uses `soft-oceanic` and the other themes use a neutral gray background.
+  - `slot-nine` is reserved for the secondary background variant in our global theme palettes. In the current implementation, ONHA uses `soft-oceanic` and the other themes use a neutral gray background. It is always paired with `slot-seven` as the foreground/text color — that pairing is contrast-safe (AA) across all 7 global themes; see the Storybook contrast matrix story (`?path=/docs/tokens-colors-contrast-matrix--docs`) rather than a hardcoded table here, since it recomputes live from `tokens.json`.
+  - Layout Section's "Component theme" picker exposes this as option `'five'` (labeled "Five" in the admin UI), not a `'six'` option like block-level component pickers — Sections have their own slot mapping (see `ColorTokenResolver::getColorStylesForEntity()`'s `layout_section` case) that omits `slot-three` by design. Don't be misled by the option label: `'five'` resolves to `slot-nine`, not `slot-five`.
   - Add your new theme, following the same convention shown above. If there are `three` themes already entered, and yours would be number `four`, name it accordingly.
   - For example (say we wanted to use the new `brown` value we added above): 
 
