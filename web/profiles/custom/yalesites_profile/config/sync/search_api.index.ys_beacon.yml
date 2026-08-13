@@ -105,8 +105,7 @@ processor_settings:
       preprocess_index: -49
       preprocess_query: -48
     all_fields: false
-    fields:
-      - rendered_item
+    fields: {  }
     title: true
     alt: true
     tags:
@@ -121,6 +120,12 @@ processor_settings:
   ys_beacon_ai_metadata: {  }
   ys_beacon_citation_fields: {  }
   ys_beacon_exclude_ai_disabled: {  }
+  ys_beacon_invisible_html:
+    weights:
+      preprocess_index: -49
+    all_fields: false
+    fields:
+      - rendered_item
 tracker_settings:
   default:
     indexing_order: fifo
