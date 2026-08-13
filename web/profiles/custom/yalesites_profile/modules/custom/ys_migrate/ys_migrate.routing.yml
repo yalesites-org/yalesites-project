@@ -5,3 +5,11 @@ ys_migrate.profile_csv_import:
     _title: 'Profile CSV Import'
   requirements:
     _permission: 'create profile content'
+
+ys_migrate.resource_csv_import:
+  path: '/admin/content/manage-resources/csv-import'
+  defaults:
+    _form: '\Drupal\ys_migrate\Form\ResourceCsvImportForm'
+    _title: 'Resource CSV Import'
+  requirements:
+    _permission: 'create resource content'
