@@ -2,6 +2,8 @@
 
 namespace Drupal\ys_beacon\Service;
 
+use Drupal\Component\Utility\Html;
+use Drupal\Component\Utility\Xss;
 use Drupal\Core\Entity\ContentEntityInterface;
 use Drupal\Core\Entity\EntityTypeManagerInterface;
 use Drupal\Core\Render\RendererInterface;
@@ -152,7 +154,12 @@ class ContentFeedBuilder {
   }
 
   /**
-   * Renders an entity's default view, returning plain text.
+   * Renders an entity's default view as HTML a consumer can safely render.
+   *
+   * HTML - rather than plain text or Markdown - is the contract the legacy
+   * ai_engine_feed endpoint published for its documentContent field, so a
+   * consumer written against that feed keeps working. Headings, lists, tables,
+   * links, and emphasis therefore survive; see sanitize() for what does not.
    *
    * The caller (build()) switches to the anonymous user for the whole page, so
    * the feed body matches what the chatbot indexes and never leaks content only
@@ -164,12 +171,42 @@ class ContentFeedBuilder {
       $build = $this->entityTypeManager
         ->getViewBuilder($entity->getEntityTypeId())
         ->view($entity, 'default');
-      $html = (string) $this->renderer->renderInIsolation($build);
+      // Sanitizing inside the try keeps one unrenderable entity from failing
+      // the whole request: the item is fed with an empty body instead.
+      return $this->sanitize((string) $this->renderer->renderInIsolation($build));
     }
     catch (\Throwable $e) {
-      $html = '';
+      return '';
     }
-    return trim((string) preg_replace('/\s+/', ' ', strip_tags($html)));
+  }
+
+  /**
+   * Strips everything a consumer must not execute, keeping the structure.
+   *
+   * @param string $html
+   *   The rendered entity markup.
+   *
+   * @return string
+   *   HTML limited to non-executable body markup.
+   */
+  protected function sanitize(string $html): string {
+    if (trim($html) === '') {
+      return '';
+    }
+
+    // Remove script and style elements, and comments, with their contents:
+    // Xss below drops the tags but would leave the JavaScript, the CSS, and
+    // Twig's debug output behind as text in the middle of the content.
+    $document = Html::load($html);
+    $xpath = new \DOMXPath($document);
+    foreach (iterator_to_array($xpath->query('//script|//style|//comment()')) as $node) {
+      $node->parentNode->removeChild($node);
+    }
+
+    // filterAdmin() allows every body tag except script and style, so the
+    // structure survives, and strips the rest - iframes, objects, form
+    // controls - along with every event-handler attribute and javascript: URL.
+    return trim(Xss::filterAdmin(Html::serialize($document)));
   }
 
 }

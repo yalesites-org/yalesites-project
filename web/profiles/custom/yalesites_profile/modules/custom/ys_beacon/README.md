@@ -331,7 +331,7 @@ Response shape:
       "changed": "2026-02-01T00:00:00+00:00",
       "ai_description": "…",
       "ai_tags": "…",
-      "content": "plain-text rendering of the default view (nodes only)"
+      "content": "<article>…</article>"
     }
   ],
   "pagination": {
@@ -345,7 +345,20 @@ Response shape:
 ```
 
 Node bodies are rendered as the anonymous user, so the feed never exposes
-content a logged-out visitor could not see.
+content a logged-out visitor could not see. Media items always have an empty
+`content`; their file lives at `url`.
+
+**`content` is HTML, not plain text.** It is the entity's default view mode
+rendered and then sanitized, so headings, lists, tables, links, and emphasis
+reach the consumer intact — the same contract the legacy `/api/ai/v1/content`
+endpoint published for its `documentContent` field. Sanitizing means
+`<script>` and `<style>` elements are removed with their contents, HTML
+comments are dropped, and the remainder is passed through
+`Xss::filterAdmin()`, which strips every tag that can execute or embed
+(`<iframe>`, `<object>`, form controls), all `on*` event-handler attributes,
+and `javascript:` URLs. A consumer can render the value directly; it is not
+escaped, so a consumer that wants text instead should strip the tags on its
+side.
 
 ## Citations
 
