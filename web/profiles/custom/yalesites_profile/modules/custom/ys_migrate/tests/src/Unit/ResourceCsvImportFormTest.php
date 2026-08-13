@@ -148,6 +148,29 @@ class ResourceCsvImportFormTest extends UnitTestCase {
   }
 
   /**
+   * BuildForm() gives every column a note, including free-text fields.
+   *
+   * Description, Teaser Title and Teaser Text previously fell through to an
+   * empty notes cell with nothing to tell an editor what belongs there.
+   *
+   * @covers ::buildForm
+   * @covers ::columnNotes
+   */
+  public function testBuildFormNotesFreeTextColumnsRatherThanLeavingThemBlank() {
+    $this->csvValidator->method('getExpectedResourceColumns')->willReturn([
+      'description' => 'Description',
+      'teaser title' => 'Teaser Title',
+      'teaser text' => 'Teaser Text',
+    ]);
+
+    $form = $this->form->buildForm([], new FormState());
+
+    foreach ($form['columns']['#rows'] as $row) {
+      $this->assertNotSame('', $row[1], "{$row[0]} should not have a blank notes cell.");
+    }
+  }
+
+  /**
    * SubmitForm() previews the import and cleans up the uploaded file.
    *
    * Preview renders its own response synchronously and never touches the

@@ -174,13 +174,33 @@ class ProfileCsvImportFormTest extends UnitTestCase {
    * @covers ::buildForm
    */
   public function testBuildForm() {
+    $this->csvValidator->method('getExpectedColumns')->willReturn(['display name' => 'Display Name']);
+
     $form = $this->form->buildForm([], new FormState());
 
+    $this->assertEquals('table', $form['columns']['#type']);
+    $this->assertEquals(['Column', 'Notes'], $form['columns']['#header']);
     $this->assertEquals('managed_file', $form['csv_file']['#type']);
     $this->assertTrue($form['csv_file']['#required']);
     $this->assertTrue($form['preview']['#default_value']);
     $this->assertTrue($form['skip_duplicates']['#default_value']);
     $this->assertEquals('submit', $form['actions']['submit']['#type']);
+  }
+
+  /**
+   * BuildForm() gives every recognised column a note, none left blank.
+   *
+   * @covers ::buildForm
+   * @covers ::columnNotes
+   */
+  public function testBuildFormAddsNoteForEveryColumn() {
+    $this->csvValidator->method('getExpectedColumns')->willReturn(CsvValidatorService::EXPECTED_COLUMNS);
+
+    $form = $this->form->buildForm([], new FormState());
+
+    foreach ($form['columns']['#rows'] as $row) {
+      $this->assertNotSame('', $row[1], "{$row[0]} should not have a blank notes cell.");
+    }
   }
 
   /**

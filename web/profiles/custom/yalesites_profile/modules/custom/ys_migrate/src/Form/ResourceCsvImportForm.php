@@ -19,6 +19,7 @@ use Symfony\Component\DependencyInjection\ContainerInterface;
 class ResourceCsvImportForm extends FormBase {
 
   use BatchSubmitTrait;
+  use ColumnReferenceTableTrait;
 
   /**
    * Maximum upload size, in bytes.
@@ -129,18 +130,12 @@ class ResourceCsvImportForm extends FormBase {
       '#value' => $this->t('Resources are imported as drafts, so review and publish them once the import finishes. Resource Media cannot be set from a CSV file: rows with an External Source are ready to use straight away, and the import summary lists the rest, which you will need to open and attach media to.'),
     ];
 
+    $form['columns'] = $this->columnReferenceTable($this->csvValidator->getExpectedResourceColumns(), $this->columnNotes());
+
     $form['sample_download'] = [
       '#type' => 'link',
-      '#title' => $this->t('Download a sample CSV'),
+      '#title' => $this->t('Download a sample CSV to see the expected columns and an example row.'),
       '#url' => Url::fromRoute('ys_migrate.resource_csv_sample'),
-      '#attributes' => ['class' => ['button']],
-    ];
-
-    $form['columns'] = [
-      '#type' => 'table',
-      '#caption' => $this->t('Recognised columns'),
-      '#header' => [$this->t('Column'), $this->t('Notes')],
-      '#rows' => $this->columnReferenceRows(),
     ];
 
     $form['csv_file'] = [
@@ -272,33 +267,27 @@ class ResourceCsvImportForm extends FormBase {
   }
 
   /**
-   * Builds the rows of the recognised-columns reference table.
+   * Guidance text for the recognised-columns reference table.
    *
    * @return array
-   *   Table rows of column label and guidance.
+   *   Notes keyed by column machine name.
    */
-  protected function columnReferenceRows() {
-    // Columns absent from this list need no explanation beyond their name.
-    $notes = [
+  protected function columnNotes() {
+    return [
       'title' => $this->t('Required. Also used to detect duplicates.'),
+      'description' => $this->t('Plain text.'),
       'resource category' => $this->t('Comma-separated. Terms are created if missing.'),
       'audience' => $this->t('Comma-separated. Terms are created if missing.'),
       'custom vocab' => $this->t('Comma-separated. "Custom Vocabulary" also works as a header.'),
       'resource publication date' => $this->t('YYYY-MM-DD or MM/DD/YYYY.'),
       'date format' => $this->t('Year, Month/Year, or Month/Day/Year.'),
       'tags' => $this->t('Comma-separated. Terms are created if missing.'),
+      'teaser title' => $this->t('Plain text.'),
+      'teaser text' => $this->t("Plain text. Character count is capped by the Teaser Text field's own limit."),
       'external source' => $this->t('Full http:// or https:// URL.'),
       'cas login required' => $this->t('Yes or No.'),
       'pin to beginning of list' => $this->t('Yes or No.'),
     ];
-
-    $rows = [];
-
-    foreach ($this->csvValidator->getExpectedResourceColumns() as $key => $label) {
-      $rows[] = [$label, $notes[$key] ?? ''];
-    }
-
-    return $rows;
   }
 
   /**

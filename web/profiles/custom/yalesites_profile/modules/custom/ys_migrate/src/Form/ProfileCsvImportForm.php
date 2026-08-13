@@ -19,6 +19,7 @@ use Symfony\Component\DependencyInjection\ContainerInterface;
 class ProfileCsvImportForm extends FormBase {
 
   use BatchSubmitTrait;
+  use ColumnReferenceTableTrait;
 
   /**
    * The messenger service.
@@ -119,34 +120,29 @@ class ProfileCsvImportForm extends FormBase {
    * {@inheritdoc}
    */
   public function buildForm(array $form, FormStateInterface $form_state) {
-    $form['description'] = [
-      '#type' => 'markup',
-      '#markup' => '<div class="profile-csv-import-description">
-        <h3>Bulk Import Profile Content</h3>
-        <p>Upload a CSV file to bulk import profile content. The CSV should contain one profile per row with the following columns:</p>
-        <ul>
-          <li><strong>Display Name</strong> (required) - The main title for the profile</li>
-          <li><strong>First Name</strong> - Person\'s first name</li>
-          <li><strong>Last Name</strong> - Person\'s last name</li>
-          <li><strong>Honorific Prefix</strong> - Title (e.g., Dr., Prof., Mr., Ms.)</li>
-          <li><strong>Pronouns</strong> - Preferred pronouns</li>
-          <li><strong>Position</strong> - Job title or role</li>
-          <li><strong>Subtitle</strong> - Secondary title or role</li>
-          <li><strong>Department</strong> - Department or unit</li>
-          <li><strong>Email</strong> - Email address</li>
-          <li><strong>Telephone</strong> - Phone number</li>
-          <li><strong>Address</strong> - Physical address</li>
-          <li><strong>Teaser Title</strong> - Short title for teaser displays</li>
-          <li><strong>Teaser Text</strong> - Brief description (max 150 characters)</li>
-          <li><strong>Affiliation</strong> - Comma-separated affiliation terms</li>
-          <li><strong>Audience</strong> - Comma-separated audience terms</li>
-          <li><strong>Tags</strong> - Comma-separated tag terms</li>
-          <li><strong>Custom Vocabulary</strong> - Comma-separated custom terms</li>
-        </ul>
-        <p><strong>Note:</strong> The first row should contain column headers. All fields except Display Name are optional.</p>
-        <p><a href="https://yalesites.yale.edu/resource/bulk-profile-importer-template" target="_blank">For more information and the CSV Template, visit the YaleSites Profile resource in our User Guide</a></p>
+    $form['heading'] = [
+      '#type' => 'html_tag',
+      '#tag' => 'h3',
+      '#value' => $this->t('Bulk Import Profile Content'),
+    ];
 
-      </div>',
+    $form['intro'] = [
+      '#type' => 'html_tag',
+      '#tag' => 'p',
+      '#value' => $this->t('Upload a CSV file to bulk import profile content. The CSV should contain one profile per row with the following columns:'),
+    ];
+
+    $form['columns'] = $this->columnReferenceTable($this->csvValidator->getExpectedColumns(), $this->columnNotes());
+
+    $form['note'] = [
+      '#type' => 'html_tag',
+      '#tag' => 'p',
+      '#value' => $this->t('The first row should contain column headers. All fields except Display Name are optional.'),
+    ];
+
+    $form['template_link'] = [
+      '#type' => 'markup',
+      '#markup' => '<p><a href="https://yalesites.yale.edu/resource/bulk-profile-importer-template" target="_blank">For more information and the CSV Template, visit the YaleSites Profile resource in our User Guide</a></p>',
     ];
 
     $form['csv_file'] = [
@@ -267,6 +263,34 @@ class ProfileCsvImportForm extends FormBase {
       $fid,
       (string) $this->t('Importing profiles...')
     ));
+  }
+
+  /**
+   * Guidance text for the recognised-columns reference table.
+   *
+   * @return array
+   *   Notes keyed by column machine name.
+   */
+  protected function columnNotes() {
+    return [
+      'display name' => $this->t('Required. The main title for the profile.'),
+      'first name' => $this->t("Person's first name."),
+      'last name' => $this->t("Person's last name."),
+      'honorific prefix' => $this->t('Title, e.g. Dr., Prof., Mr., Ms.'),
+      'pronouns' => $this->t('Preferred pronouns.'),
+      'position' => $this->t('Job title or role.'),
+      'subtitle' => $this->t('Secondary title or role.'),
+      'department' => $this->t('Department or unit.'),
+      'email' => $this->t('Email address. Also used to detect duplicates.'),
+      'telephone' => $this->t('Phone number.'),
+      'address' => $this->t('Physical address.'),
+      'teaser title' => $this->t('Plain text.'),
+      'teaser text' => $this->t('Plain text, max 150 characters.'),
+      'affiliation' => $this->t('Comma-separated. Terms are created if missing.'),
+      'audience' => $this->t('Comma-separated. Terms are created if missing.'),
+      'tags' => $this->t('Comma-separated. Terms are created if missing.'),
+      'custom vocabulary' => $this->t('Comma-separated. Terms are created if missing.'),
+    ];
   }
 
   /**
