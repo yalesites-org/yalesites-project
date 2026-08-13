@@ -7,6 +7,7 @@ use Drupal\Core\Form\FormBase;
 use Drupal\Core\Form\FormStateInterface;
 use Drupal\Core\Messenger\MessengerInterface;
 use Drupal\Core\Render\RendererInterface;
+use Drupal\Core\Url;
 use Drupal\ys_migrate\Batch\CsvImportBatch;
 use Drupal\ys_migrate\Service\CsvValidatorService;
 use Drupal\ys_migrate\Service\ResourceImportService;
@@ -126,6 +127,13 @@ class ResourceCsvImportForm extends FormBase {
       '#type' => 'html_tag',
       '#tag' => 'p',
       '#value' => $this->t('Resources are imported as drafts, so review and publish them once the import finishes. Resource Media cannot be set from a CSV file: rows with an External Source are ready to use straight away, and the import summary lists the rest, which you will need to open and attach media to.'),
+    ];
+
+    $form['sample_download'] = [
+      '#type' => 'link',
+      '#title' => $this->t('Download a sample CSV'),
+      '#url' => Url::fromRoute('ys_migrate.resource_csv_sample'),
+      '#attributes' => ['class' => ['button']],
     ];
 
     $form['columns'] = [

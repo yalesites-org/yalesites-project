@@ -134,6 +134,20 @@ class ResourceCsvImportFormTest extends UnitTestCase {
   }
 
   /**
+   * BuildForm() includes a link to download a sample CSV.
+   *
+   * @covers ::buildForm
+   */
+  public function testBuildFormIncludesSampleDownloadLink() {
+    $this->csvValidator->method('getExpectedResourceColumns')->willReturn(['title' => 'Title']);
+
+    $form = $this->form->buildForm([], new FormState());
+
+    $this->assertEquals('link', $form['sample_download']['#type']);
+    $this->assertEquals('ys_migrate.resource_csv_sample', $form['sample_download']['#url']->getRouteName());
+  }
+
+  /**
    * SubmitForm() previews the import and cleans up the uploaded file.
    *
    * Preview renders its own response synchronously and never touches the

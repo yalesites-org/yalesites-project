@@ -13,3 +13,10 @@ ys_migrate.resource_csv_import:
     _title: 'Resource CSV Import'
   requirements:
     _permission: 'create resource content'
+
+ys_migrate.resource_csv_sample:
+  path: '/admin/content/manage-resources/csv-import/sample.csv'
+  defaults:
+    _controller: '\Drupal\ys_migrate\Controller\ResourceCsvSampleController::download'
+  requirements:
+    _permission: 'create resource content'
