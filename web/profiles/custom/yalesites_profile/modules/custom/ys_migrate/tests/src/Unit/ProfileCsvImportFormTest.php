@@ -329,6 +329,32 @@ class ProfileCsvImportFormTest extends UnitTestCase {
   }
 
   /**
+   * SubmitForm() preview cleanup tolerates a file entity that is already gone.
+   *
+   * @covers ::submitForm
+   */
+  public function testSubmitFormPreviewOnlyToleratesMissingFile() {
+    $this->fileStorage->method('load')->with(123)->willReturn(NULL);
+
+    $this->profileImport->method('previewImport')->willReturn([
+      'valid_profiles' => [],
+      'duplicates' => [],
+      'total' => 0,
+    ]);
+
+    $form = [];
+    $form_state = new FormState();
+    $form_state->setValue('csv_file', [123]);
+    $form_state->setValue('preview', TRUE);
+    $form_state->setValue('skip_duplicates', TRUE);
+    $form_state->set('csv_validation', ['data' => []]);
+
+    // No exception, nothing to assert beyond "this does not throw".
+    $this->form->submitForm($form, $form_state);
+    $this->addToAssertionCount(1);
+  }
+
+  /**
    * SubmitForm() schedules a batch instead of processing synchronously.
    *
    * A real import runs through the Batch API so a large CSV cannot time out
@@ -375,10 +401,12 @@ class ProfileCsvImportFormTest extends UnitTestCase {
 
     [$chunk_callback, $chunk_args] = $captured['operations'][0];
     $this->assertSame([CsvImportBatch::class, 'processChunk'], $chunk_callback);
-    $this->assertSame('ys_migrate.profile_import', $chunk_args[0]);
+    $this->assertSame([
+      'import_service_id' => 'ys_migrate.profile_import',
+      'skip_duplicates' => TRUE,
+      'entity_label' => 'profile',
+    ], $chunk_args[0]);
     $this->assertSame($data, $chunk_args[1]);
-    $this->assertTrue($chunk_args[2]);
-    $this->assertSame('profile', $chunk_args[3]);
 
     [$cleanup_callback, $cleanup_args] = $captured['operations'][1];
     $this->assertSame([CsvImportBatch::class, 'deleteUploadedFile'], $cleanup_callback);

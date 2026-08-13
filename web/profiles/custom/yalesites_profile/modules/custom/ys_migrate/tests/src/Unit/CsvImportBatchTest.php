@@ -40,6 +40,17 @@ class CsvImportBatchTest extends UnitTestCase {
   }
 
   /**
+   * Builds the standard $options array build()/processChunk() expect.
+   */
+  protected function options(string $serviceId = 'ys_migrate.profile_import', string $label = 'profile', bool $skipDuplicates = TRUE): array {
+    return [
+      'import_service_id' => $serviceId,
+      'skip_duplicates' => $skipDuplicates,
+      'entity_label' => $label,
+    ];
+  }
+
+  /**
    * Build() splits rows into CHUNK_SIZE-row operations plus a cleanup op.
    *
    * @covers ::build
@@ -47,17 +58,15 @@ class CsvImportBatchTest extends UnitTestCase {
   public function testBuildChunksRowsAndAppendsCleanupOperation() {
     $rows = $this->rows(125);
 
-    $batch = CsvImportBatch::build('ys_migrate.profile_import', $rows, TRUE, 42, 'profile', 'Importing profiles');
+    $batch = CsvImportBatch::build($this->options(), $rows, 42, 'Importing profiles');
 
     // 125 rows at CHUNK_SIZE (50) => 3 process operations + 1 cleanup.
     $this->assertCount(4, $batch['operations']);
 
     [$callback1, $args1] = $batch['operations'][0];
     $this->assertSame([CsvImportBatch::class, 'processChunk'], $callback1);
-    $this->assertSame('ys_migrate.profile_import', $args1[0]);
+    $this->assertSame($this->options(), $args1[0]);
     $this->assertCount(50, $args1[1]);
-    $this->assertTrue($args1[2]);
-    $this->assertSame('profile', $args1[3]);
 
     [, $args3] = $batch['operations'][2];
     $this->assertCount(25, $args3[1], 'Last chunk carries the remainder.');
@@ -73,7 +82,7 @@ class CsvImportBatchTest extends UnitTestCase {
    * @covers ::build
    */
   public function testBuildWithFewerRowsThanChunkSizeProducesSingleChunk() {
-    $batch = CsvImportBatch::build('ys_migrate.profile_import', $this->rows(10), TRUE, 1, 'profile', 'Importing profiles');
+    $batch = CsvImportBatch::build($this->options(), $this->rows(10), 1, 'Importing profiles');
 
     // 1 process operation + 1 cleanup.
     $this->assertCount(2, $batch['operations']);
@@ -85,7 +94,7 @@ class CsvImportBatchTest extends UnitTestCase {
    * @covers ::build
    */
   public function testBuildWithEmptyRowsStillCleansUpFile() {
-    $batch = CsvImportBatch::build('ys_migrate.profile_import', [], TRUE, 7, 'profile', 'Importing profiles');
+    $batch = CsvImportBatch::build($this->options(), [], 7, 'Importing profiles');
 
     $this->assertCount(1, $batch['operations']);
     [$callback, $args] = $batch['operations'][0];
@@ -99,7 +108,7 @@ class CsvImportBatchTest extends UnitTestCase {
    * @covers ::build
    */
   public function testBuildSetsTitleAndFinishedCallback() {
-    $batch = CsvImportBatch::build('ys_migrate.profile_import', $this->rows(1), TRUE, 1, 'profile', 'Importing profiles');
+    $batch = CsvImportBatch::build($this->options(), $this->rows(1), 1, 'Importing profiles');
 
     $this->assertSame('Importing profiles', $batch['title']);
     $this->assertSame([CsvImportBatch::class, 'finished'], $batch['finished']);
@@ -121,22 +130,25 @@ class CsvImportBatchTest extends UnitTestCase {
     $container->set('ys_migrate.profile_import', $importService);
 
     $context = [];
-    CsvImportBatch::processChunk('ys_migrate.profile_import', ['row1'], TRUE, 'profile', $context);
-    CsvImportBatch::processChunk('ys_migrate.profile_import', ['row2'], TRUE, 'profile', $context);
+    CsvImportBatch::processChunk($this->options(), ['row1'], $context);
+    CsvImportBatch::processChunk($this->options(), ['row2'], $context);
 
     $this->assertSame(5, $context['results']['created']);
     $this->assertSame(1, $context['results']['skipped']);
-    $this->assertSame(['Row 2: boom'], $context['results']['errors']);
+    // Each chunk's errors are kept as their own sub-array (not flattened
+    // eagerly) so accumulation stays O(1) per chunk; finished() flattens
+    // once, at the end.
+    $this->assertSame([['Row 2: boom'], []], $context['results']['errors']);
     $this->assertSame('profile', $context['results']['entity_label']);
     $this->assertSame([], $context['results']['needs_media']);
   }
 
   /**
-   * ProcessChunk() merges 'needs_media' when the underlying service returns it.
+   * ProcessChunk() collects 'needs_media' when the service returns it.
    *
    * @covers ::processChunk
    */
-  public function testProcessChunkMergesNeedsMedia() {
+  public function testProcessChunkCollectsNeedsMedia() {
     $importService = $this->getMockBuilder(\stdClass::class)->addMethods(['processImport'])->getMock();
     $importService->method('processImport')->willReturnOnConsecutiveCalls(
       ['created' => 1, 'skipped' => 0, 'errors' => [], 'needs_media' => ['Resource A']],
@@ -147,10 +159,10 @@ class CsvImportBatchTest extends UnitTestCase {
     $container->set('ys_migrate.resource_import', $importService);
 
     $context = [];
-    CsvImportBatch::processChunk('ys_migrate.resource_import', ['row1'], TRUE, 'resource', $context);
-    CsvImportBatch::processChunk('ys_migrate.resource_import', ['row2'], TRUE, 'resource', $context);
+    CsvImportBatch::processChunk($this->options('ys_migrate.resource_import', 'resource'), ['row1'], $context);
+    CsvImportBatch::processChunk($this->options('ys_migrate.resource_import', 'resource'), ['row2'], $context);
 
-    $this->assertSame(['Resource A', 'Resource B'], $context['results']['needs_media']);
+    $this->assertSame([['Resource A'], ['Resource B']], $context['results']['needs_media']);
   }
 
   /**
@@ -161,15 +173,7 @@ class CsvImportBatchTest extends UnitTestCase {
   public function testDeleteUploadedFileDeletesWhenFileExists() {
     $file = $this->getMockBuilder(\stdClass::class)->addMethods(['delete'])->getMock();
     $file->expects($this->once())->method('delete');
-
-    $storage = $this->getMockBuilder(\stdClass::class)->addMethods(['load'])->getMock();
-    $storage->method('load')->with(99)->willReturn($file);
-
-    $entityTypeManager = $this->getMockBuilder(\stdClass::class)->addMethods(['getStorage'])->getMock();
-    $entityTypeManager->method('getStorage')->with('file')->willReturn($storage);
-
-    $container = \Drupal::getContainer();
-    $container->set('entity_type.manager', $entityTypeManager);
+    $this->mockFileStorage($file);
 
     $context = [];
     CsvImportBatch::deleteUploadedFile(99, $context);
@@ -181,19 +185,25 @@ class CsvImportBatchTest extends UnitTestCase {
    * @covers ::deleteUploadedFile
    */
   public function testDeleteUploadedFileSkipsMissingFile() {
-    $storage = $this->getMockBuilder(\stdClass::class)->addMethods(['load'])->getMock();
-    $storage->method('load')->with(99)->willReturn(NULL);
-
-    $entityTypeManager = $this->getMockBuilder(\stdClass::class)->addMethods(['getStorage'])->getMock();
-    $entityTypeManager->method('getStorage')->with('file')->willReturn($storage);
-
-    $container = \Drupal::getContainer();
-    $container->set('entity_type.manager', $entityTypeManager);
+    $this->mockFileStorage(NULL);
 
     // No exception, nothing to assert beyond "this does not throw".
     $context = [];
     CsvImportBatch::deleteUploadedFile(99, $context);
     $this->addToAssertionCount(1);
+  }
+
+  /**
+   * Registers an entity_type.manager mock whose file storage load(99) => $file.
+   */
+  protected function mockFileStorage($file): void {
+    $storage = $this->getMockBuilder(\stdClass::class)->addMethods(['load'])->getMock();
+    $storage->method('load')->with(99)->willReturn($file);
+
+    $entityTypeManager = $this->getMockBuilder(\stdClass::class)->addMethods(['getStorage'])->getMock();
+    $entityTypeManager->method('getStorage')->with('file')->willReturn($storage);
+
+    \Drupal::getContainer()->set('entity_type.manager', $entityTypeManager);
   }
 
   /**
@@ -301,6 +311,58 @@ class CsvImportBatchTest extends UnitTestCase {
   }
 
   /**
+   * Finished() flattens the per-chunk 'errors' sub-arrays before reporting.
+   *
+   * @covers ::finished
+   */
+  public function testFinishedFlattensChunkedErrors() {
+    $reported = [];
+    $messenger = $this->createMock(MessengerInterface::class);
+    $messenger->method('addError')->willReturnCallback(function ($message) use (&$reported) {
+      $reported[] = $message;
+    });
+
+    $container = \Drupal::getContainer();
+    $container->set('messenger', $messenger);
+
+    CsvImportBatch::finished(TRUE, [
+      'entity_label' => 'profile',
+      'created' => 0,
+      'skipped' => 0,
+      'errors' => [['Row 2: boom'], [], ['Row 9: also boom']],
+      'needs_media' => [],
+    ], []);
+
+    $this->assertSame(['Row 2: boom', 'Row 9: also boom'], $reported);
+  }
+
+  /**
+   * Finished() flattens the per-chunk 'needs_media' sub-arrays too.
+   *
+   * @covers ::finished
+   */
+  public function testFinishedFlattensChunkedNeedsMedia() {
+    $reported = [];
+    $messenger = $this->createMock(MessengerInterface::class);
+    $messenger->method('addWarning')->willReturnCallback(function ($message) use (&$reported) {
+      $reported[] = (string) $message;
+    });
+
+    $container = \Drupal::getContainer();
+    $container->set('messenger', $messenger);
+
+    CsvImportBatch::finished(TRUE, [
+      'entity_label' => 'resource',
+      'created' => 2,
+      'skipped' => 0,
+      'errors' => [],
+      'needs_media' => [['Resource A'], ['Resource B']],
+    ], []);
+
+    $this->assertStringContainsString('Resource A, Resource B', implode(' ', $reported));
+  }
+
+  /**
    * Finished() reports a single error and does not attempt to build messages.
    *
    * $success is FALSE when the batch itself did not complete (e.g. a PHP
@@ -317,6 +379,64 @@ class CsvImportBatchTest extends UnitTestCase {
     $container->set('messenger', $messenger);
 
     CsvImportBatch::finished(FALSE, [], []);
+  }
+
+  /**
+   * Finished() still reports chunks that completed before a later failure.
+   *
+   * A batch failure (e.g. a PHP fatal in a later chunk) must not discard the
+   * created/skipped/error counts from chunks that already ran -- those rows
+   * are already saved in the database, so hiding them risks a re-run
+   * duplicating work the editor believes never happened.
+   *
+   * @covers ::finished
+   */
+  public function testFinishedReportsPartialResultsOnBatchFailure() {
+    $statusMessages = [];
+    $messenger = $this->createMock(MessengerInterface::class);
+    $messenger->method('addStatus')->willReturnCallback(function ($m) use (&$statusMessages) {
+      $statusMessages[] = (string) $m;
+    });
+    $messenger->expects($this->once())->method('addError');
+
+    $container = \Drupal::getContainer();
+    $container->set('messenger', $messenger);
+
+    CsvImportBatch::finished(FALSE, [
+      'entity_label' => 'profile',
+      'created' => 40,
+      'skipped' => 0,
+      'errors' => [],
+      'needs_media' => [],
+    ], []);
+
+    $this->assertNotEmpty($statusMessages);
+    $this->assertStringContainsString('40', $statusMessages[0]);
+  }
+
+  /**
+   * Finished() deletes the uploaded file even when the batch failed early.
+   *
+   * DeleteUploadedFile() is normally the batch's own trailing operation, so
+   * it never runs if an earlier chunk aborts the batch; finished() has to
+   * find it among the operations that were queued but not reached and run
+   * it itself, or the upload is left behind.
+   *
+   * @covers ::finished
+   */
+  public function testFinishedCleansUpFileOnBatchFailure() {
+    $file = $this->getMockBuilder(\stdClass::class)->addMethods(['delete'])->getMock();
+    $file->expects($this->once())->method('delete');
+    $this->mockFileStorage($file);
+
+    $messenger = $this->createMock(MessengerInterface::class);
+    \Drupal::getContainer()->set('messenger', $messenger);
+
+    $remaining_operations = [
+      [[CsvImportBatch::class, 'deleteUploadedFile'], [99]],
+    ];
+
+    CsvImportBatch::finished(FALSE, [], $remaining_operations);
   }
 
 }

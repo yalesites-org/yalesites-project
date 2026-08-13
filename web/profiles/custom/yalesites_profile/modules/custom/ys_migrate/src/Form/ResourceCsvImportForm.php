@@ -17,6 +17,8 @@ use Symfony\Component\DependencyInjection\ContainerInterface;
  */
 class ResourceCsvImportForm extends FormBase {
 
+  use BatchSubmitTrait;
+
   /**
    * Maximum upload size, in bytes.
    */
@@ -232,7 +234,10 @@ class ResourceCsvImportForm extends FormBase {
       // Preview renders its own response and never touches the batch queue,
       // so the upload is cleaned up immediately rather than by a batch
       // operation.
-      $this->entityTypeManager->getStorage('file')->load($fid)->delete();
+      $file = $this->entityTypeManager->getStorage('file')->load($fid);
+      if ($file) {
+        $file->delete();
+      }
       return;
     }
 
@@ -240,28 +245,22 @@ class ResourceCsvImportForm extends FormBase {
     // large CSV cannot time out a single request. File cleanup becomes the
     // batch's own trailing operation instead of happening here, since
     // submitForm() returns before any row is processed.
+    $data = $validation_result['data'];
+    // Drupal's FormSubmitter attaches $form_state to the batch it persists,
+    // so the parsed CSV would otherwise be serialized twice: once chunked
+    // into the batch operations below, and again here.
+    $form_state->set('csv_validation', NULL);
+
     $this->setBatch(CsvImportBatch::build(
-      'ys_migrate.resource_import',
-      $validation_result['data'],
-      $skip_duplicates,
+      [
+        'import_service_id' => 'ys_migrate.resource_import',
+        'skip_duplicates' => $skip_duplicates,
+        'entity_label' => 'resource',
+      ],
+      $data,
       $fid,
-      'resource',
       (string) $this->t('Importing resources...')
     ));
-  }
-
-  /**
-   * Hands the batch definition to Drupal's Batch API.
-   *
-   * Isolated in its own method so tests can verify the batch definition
-   * submitForm() builds without going through the real batch_set(), which
-   * needs a full Drupal batch/session stack unavailable in a unit test.
-   *
-   * @param array $batch
-   *   A batch definition suitable for batch_set().
-   */
-  protected function setBatch(array $batch) {
-    batch_set($batch);
   }
 
   /**
