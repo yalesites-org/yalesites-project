@@ -276,6 +276,10 @@ class ResourceCsvImportForm extends FormBase {
     return [
       'title' => $this->t('Required. Also used to detect duplicates.'),
       'description' => $this->t('Plain text.'),
+      'abstract' => $this->t('Plain text.'),
+      'citation' => $this->t('Plain text.'),
+      'journal publication name' => $this->t('Plain text.'),
+      'journal publication issue' => $this->t('Plain text.'),
       'resource category' => $this->t('Comma-separated. Terms are created if missing.'),
       'audience' => $this->t('Comma-separated. Terms are created if missing.'),
       'custom vocab' => $this->t('Comma-separated. "Custom Vocabulary" also works as a header.'),

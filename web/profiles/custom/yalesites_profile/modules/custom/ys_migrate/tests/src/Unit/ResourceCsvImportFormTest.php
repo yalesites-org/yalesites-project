@@ -148,25 +148,32 @@ class ResourceCsvImportFormTest extends UnitTestCase {
   }
 
   /**
-   * BuildForm() gives every column a note, including free-text fields.
+   * BuildForm() gives every expected column a note, free-text ones included.
    *
    * Description, Teaser Title and Teaser Text previously fell through to an
-   * empty notes cell with nothing to tell an editor what belongs there.
+   * empty notes cell with nothing to tell an editor what belongs there. The
+   * form is built against the real CsvValidatorService rather than a mock
+   * with a hand-listed column set, so a column added to
+   * EXPECTED_RESOURCE_COLUMNS without a matching columnNotes() entry fails
+   * here instead of shipping blank.
    *
    * @covers ::buildForm
    * @covers ::columnNotes
    */
-  public function testBuildFormNotesFreeTextColumnsRatherThanLeavingThemBlank() {
-    $this->csvValidator->method('getExpectedResourceColumns')->willReturn([
-      'description' => 'Description',
-      'teaser title' => 'Teaser Title',
-      'teaser text' => 'Teaser Text',
-    ]);
+  public function testBuildFormNotesEveryExpectedResourceColumn() {
+    $form = new ResourceCsvImportForm(
+      $this->messenger,
+      new CsvValidatorService(),
+      $this->resourceImport,
+      $this->entityTypeManager,
+      $this->renderer
+    );
+    $form->setStringTranslation($this->getStringTranslationStub());
 
-    $form = $this->form->buildForm([], new FormState());
+    $built = $form->buildForm([], new FormState());
 
-    foreach ($form['columns']['#rows'] as $row) {
-      $this->assertNotSame('', $row[1], "{$row[0]} should not have a blank notes cell.");
+    foreach ($built['columns']['#rows'] as $row) {
+      $this->assertNotSame('', (string) $row[1], "{$row[0]} should not have a blank notes cell.");
     }
   }
 

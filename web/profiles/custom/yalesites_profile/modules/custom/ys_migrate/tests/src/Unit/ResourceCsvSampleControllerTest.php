@@ -102,11 +102,13 @@ class ResourceCsvSampleControllerTest extends UnitTestCase {
   }
 
   /**
-   * Download() only ever writes columns CsvValidatorService actually expects.
+   * Download() writes exactly the columns CsvValidatorService expects, filled.
    *
    * Guards against the controller's own hardcoded example row silently
-   * drifting out of sync with CsvValidatorService::EXPECTED_RESOURCE_COLUMNS
-   * (e.g. after a column is renamed or removed there).
+   * drifting out of sync with CsvValidatorService::EXPECTED_RESOURCE_COLUMNS:
+   * a column renamed or removed there, or a column added there with no
+   * matching exampleRow() entry, which ships as a blank cell that tells the
+   * editor nothing about what belongs in it.
    *
    * @covers ::download
    */
@@ -120,6 +122,10 @@ class ResourceCsvSampleControllerTest extends UnitTestCase {
     $expected = array_values($csvValidator->getExpectedResourceColumns());
     $this->assertSame($expected, $rows[0]);
     $this->assertCount(count($expected), $rows[1], 'Example row has one cell per expected column.');
+
+    foreach ($rows[0] as $index => $label) {
+      $this->assertNotSame('', $rows[1][$index], "{$label} should have an example value.");
+    }
   }
 
 }

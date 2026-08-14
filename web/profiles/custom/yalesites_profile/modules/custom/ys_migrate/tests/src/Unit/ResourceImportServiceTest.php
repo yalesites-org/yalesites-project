@@ -12,6 +12,7 @@ use Drupal\Tests\UnitTestCase;
 use Drupal\field\FieldConfigInterface;
 use Drupal\field\FieldStorageConfigInterface;
 use Drupal\node\NodeInterface;
+use Drupal\ys_migrate\Service\CsvValidatorService;
 use Drupal\ys_migrate\Service\ResourceImportService;
 use Drupal\ys_migrate\Service\TaxonomyResolverService;
 
@@ -145,6 +146,10 @@ class ResourceImportServiceTest extends UnitTestCase {
     $row = [
       'title' => '  Annual Report  ',
       'description' => ' A yearly summary. ',
+      'abstract' => ' What the report covers. ',
+      'citation' => ' Yale Research Review, 2026. ',
+      'journal publication name' => ' Yale Research Review ',
+      'journal publication issue' => ' Vol. 12, No. 2 ',
       'resource category' => 'Reports, Finance',
       'audience' => 'Alumni',
       'custom vocab' => 'Custom A',
@@ -162,6 +167,10 @@ class ResourceImportServiceTest extends UnitTestCase {
 
     $this->assertSame('Annual Report', $result['title']);
     $this->assertSame('A yearly summary.', $result['description']);
+    $this->assertSame('What the report covers.', $result['abstract']);
+    $this->assertSame('Yale Research Review, 2026.', $result['citation']);
+    $this->assertSame('Yale Research Review', $result['journal_publication_name']);
+    $this->assertSame('Vol. 12, No. 2', $result['journal_publication_issue']);
     $this->assertSame(['Reports', 'Finance'], $result['category']);
     $this->assertSame(['Alumni'], $result['audience']);
     $this->assertSame(['Custom A'], $result['custom_vocab']);
@@ -173,6 +182,53 @@ class ResourceImportServiceTest extends UnitTestCase {
     $this->assertSame('https://example.com/report.pdf', $result['external_source']);
     $this->assertTrue($result['login_required']);
     $this->assertFalse($result['sticky']);
+  }
+
+  /**
+   * Every recognised CSV column is actually read into the prepared data.
+   *
+   * A column added to CsvValidatorService but never read here is validated,
+   * listed as recognised, and given an example in the sample CSV -- and then
+   * silently dropped. Nothing else catches that: getUnknownResourceColumns()
+   * diffs incoming headers against the declared list, which is the very list
+   * the column was just added to.
+   *
+   * @covers ::prepareResourceData
+   */
+  public function testEveryExpectedColumnIsReadIntoPreparedData() {
+    $this->passThroughTaxonomyParsing();
+
+    // Each recognised column and the prepared-data key it lands in.
+    $lands_in = [
+      'title' => 'title',
+      'description' => 'description',
+      'abstract' => 'abstract',
+      'citation' => 'citation',
+      'journal publication name' => 'journal_publication_name',
+      'journal publication issue' => 'journal_publication_issue',
+      'resource category' => 'category',
+      'audience' => 'audience',
+      'custom vocab' => 'custom_vocab',
+      'resource publication date' => 'publish_date',
+      'date format' => 'date_format',
+      'tags' => 'tags',
+      'teaser title' => 'teaser_title',
+      'teaser text' => 'teaser_text',
+      'external source' => 'external_source',
+      'cas login required' => 'login_required',
+      'pin to beginning of list' => 'sticky',
+    ];
+
+    $this->assertEqualsCanonicalizing(
+      array_keys(CsvValidatorService::EXPECTED_RESOURCE_COLUMNS),
+      array_keys($lands_in),
+      'Every recognised column must name the prepared-data key it lands in.'
+    );
+    $this->assertEqualsCanonicalizing(
+      array_values($lands_in),
+      array_keys($this->resourceImport->prepareResourceData([])),
+      'Every mapped key must be produced by prepareResourceData().'
+    );
   }
 
   /**
@@ -214,6 +270,10 @@ class ResourceImportServiceTest extends UnitTestCase {
 
     $this->assertSame('Bare Resource', $result['title']);
     $this->assertSame('', $result['description']);
+    $this->assertSame('', $result['abstract']);
+    $this->assertSame('', $result['citation']);
+    $this->assertSame('', $result['journal_publication_name']);
+    $this->assertSame('', $result['journal_publication_issue']);
     $this->assertSame([], $result['tags']);
     $this->assertNull($result['publish_date']);
     $this->assertNull($result['date_format']);
@@ -477,6 +537,10 @@ class ResourceImportServiceTest extends UnitTestCase {
     $this->resourceImport->createResourceNode([
       'title' => 'Annual Report',
       'description' => 'A yearly summary.',
+      'abstract' => 'What the report covers.',
+      'citation' => 'Yale Research Review, 2026.',
+      'journal_publication_name' => 'Yale Research Review',
+      'journal_publication_issue' => 'Vol. 12, No. 2',
       'category' => ['Reports'],
       'audience' => ['Alumni'],
       'custom_vocab' => ['Custom A'],
@@ -521,6 +585,19 @@ class ResourceImportServiceTest extends UnitTestCase {
       ['value' => 'Short teaser.', 'format' => 'heading_html'],
       $captured['field_teaser_text']
     );
+    $this->assertSame(
+      ['value' => 'What the report covers.', 'format' => 'restricted_html'],
+      $captured['field_abstract']
+    );
+    $this->assertSame(
+      ['value' => 'Yale Research Review, 2026.', 'format' => 'restricted_html'],
+      $captured['field_citation']
+    );
+
+    // Journal Publication Name and Issue are plain string fields, so they
+    // store a bare value the way Teaser Title does.
+    $this->assertSame('Yale Research Review', $captured['field_journal_publication_name']);
+    $this->assertSame('Vol. 12, No. 2', $captured['field_journal_publication_issue']);
 
     // A link field stores a URI, not a bare string.
     $this->assertSame(
@@ -545,27 +622,17 @@ class ResourceImportServiceTest extends UnitTestCase {
         return $node;
       });
 
-    $this->resourceImport->createResourceNode([
-      'title' => 'Bare Resource',
-      'description' => '',
-      'category' => [],
-      'audience' => [],
-      'custom_vocab' => [],
-      'tags' => [],
-      'publish_date' => NULL,
-      'date_format' => NULL,
-      'teaser_title' => '',
-      'teaser_text' => '',
-      'external_source' => '',
-      'login_required' => FALSE,
-      'sticky' => FALSE,
-    ]);
+    $this->resourceImport->createResourceNode(['title' => 'Bare Resource'] + $this->emptyData());
 
     $this->assertArrayNotHasKey('field_publish_date', $captured);
     $this->assertArrayNotHasKey('field_date_format', $captured);
     $this->assertArrayNotHasKey('field_external_source', $captured);
     $this->assertArrayNotHasKey('field_content_description', $captured);
     $this->assertArrayNotHasKey('field_teaser_text', $captured);
+    $this->assertArrayNotHasKey('field_abstract', $captured);
+    $this->assertArrayNotHasKey('field_citation', $captured);
+    $this->assertArrayNotHasKey('field_journal_publication_name', $captured);
+    $this->assertArrayNotHasKey('field_journal_publication_issue', $captured);
     $this->assertSame('Bare Resource', $captured['title']);
   }
 
@@ -711,6 +778,10 @@ class ResourceImportServiceTest extends UnitTestCase {
   protected function emptyData(): array {
     return [
       'description' => '',
+      'abstract' => '',
+      'citation' => '',
+      'journal_publication_name' => '',
+      'journal_publication_issue' => '',
       'category' => [],
       'audience' => [],
       'custom_vocab' => [],

@@ -67,6 +67,10 @@ class ResourceCsvSampleController extends ControllerBase {
     return [
       'title' => 'Yale Research Symposium Recap',
       'description' => 'Summary of presentations from the annual research symposium.',
+      'abstract' => 'A short abstract of the symposium proceedings.',
+      'citation' => 'Yale Research Review, 2026.',
+      'journal publication name' => 'Yale Research Review',
+      'journal publication issue' => 'Vol. 12, No. 2',
       'resource category' => 'Event',
       'audience' => 'Faculty, Staff',
       'custom vocab' => 'Sustainability',

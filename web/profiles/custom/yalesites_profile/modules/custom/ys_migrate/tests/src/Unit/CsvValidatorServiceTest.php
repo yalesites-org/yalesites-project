@@ -440,11 +440,15 @@ class CsvValidatorServiceTest extends UnitTestCase {
     $this->assertEquals('Title', $columns['title']);
     $this->assertEquals('Resource Category', $columns['resource category']);
     $this->assertEquals('Pin to beginning of list', $columns['pin to beginning of list']);
+    $this->assertEquals('Abstract', $columns['abstract']);
+    $this->assertEquals('Citation', $columns['citation']);
+    $this->assertEquals('Journal Publication Name', $columns['journal publication name']);
+    $this->assertEquals('Journal Publication Issue', $columns['journal publication issue']);
     // Media cannot travel in a CSV cell, and Resource has no Affiliation field.
     $this->assertArrayNotHasKey('resource media', $columns);
     $this->assertArrayNotHasKey('teaser media', $columns);
     $this->assertArrayNotHasKey('affiliation', $columns);
-    $this->assertCount(13, $columns);
+    $this->assertCount(17, $columns);
   }
 
 }

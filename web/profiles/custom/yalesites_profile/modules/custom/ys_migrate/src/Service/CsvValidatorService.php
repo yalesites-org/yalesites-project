@@ -44,6 +44,10 @@ class CsvValidatorService {
   const EXPECTED_RESOURCE_COLUMNS = [
     'title' => 'Title',
     'description' => 'Description',
+    'abstract' => 'Abstract',
+    'citation' => 'Citation',
+    'journal publication name' => 'Journal Publication Name',
+    'journal publication issue' => 'Journal Publication Issue',
     'resource category' => 'Resource Category',
     'audience' => 'Audience',
     'custom vocab' => 'Custom Vocab',

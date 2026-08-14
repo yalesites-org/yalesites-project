@@ -50,7 +50,7 @@ class ResourceImportService {
    *
    * Long-text fields need an explicit format, or Drupal falls back to the
    * plain-text fallback filter and escapes the editor's markup. The format
-   * must also be one the field itself allows: both of these fields restrict
+   * must also be one the field itself allows: each of these fields restricts
    * allowed_formats to a single format, and storing anything else leaves the
    * widget disabled on the node form ("you do not have sufficient permissions
    * to edit it"), because no YaleSites role holds "administer filters".
@@ -61,6 +61,8 @@ class ResourceImportService {
   const TEXT_FORMAT_FALLBACKS = [
     'field_content_description' => 'restricted_html',
     'field_teaser_text' => 'heading_html',
+    'field_abstract' => 'restricted_html',
+    'field_citation' => 'restricted_html',
   ];
 
   /**
@@ -175,6 +177,10 @@ class ResourceImportService {
     return [
       'title' => trim($row['title'] ?? ''),
       'description' => trim($row['description'] ?? ''),
+      'abstract' => trim($row['abstract'] ?? ''),
+      'citation' => trim($row['citation'] ?? ''),
+      'journal_publication_name' => trim($row['journal publication name'] ?? ''),
+      'journal_publication_issue' => trim($row['journal publication issue'] ?? ''),
       'category' => $this->taxonomyResolver->parseCommaSeparatedValues($row['resource category'] ?? ''),
       'audience' => $this->taxonomyResolver->parseCommaSeparatedValues($row['audience'] ?? ''),
       // Alternative header spellings are folded onto the canonical name by
@@ -256,6 +262,24 @@ class ResourceImportService {
         'value' => $data['description'],
         'format' => $this->textFormat('field_content_description'),
       ];
+    }
+    if ($data['abstract'] !== '') {
+      $values['field_abstract'] = [
+        'value' => $data['abstract'],
+        'format' => $this->textFormat('field_abstract'),
+      ];
+    }
+    if ($data['citation'] !== '') {
+      $values['field_citation'] = [
+        'value' => $data['citation'],
+        'format' => $this->textFormat('field_citation'),
+      ];
+    }
+    if ($data['journal_publication_name'] !== '') {
+      $values['field_journal_publication_name'] = $data['journal_publication_name'];
+    }
+    if ($data['journal_publication_issue'] !== '') {
+      $values['field_journal_publication_issue'] = $data['journal_publication_issue'];
     }
     if ($data['teaser_title'] !== '') {
       $values['field_teaser_title'] = $data['teaser_title'];
