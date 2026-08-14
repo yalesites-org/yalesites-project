@@ -90,6 +90,42 @@ function ys_core_theme($existing, $type, $theme, $path): array {
 }
 
 /**
+ * Implements hook_element_info_alter().
+ */
+function ys_core_element_info_alter(array &$info) {
+  if (isset($info['linkit'])) {
+    $info['linkit']['#process'][] = 'ys_core_linkit_uri_selector';
+  }
+}
+
+/**
+ * Process callback: suffixes a linkit element's drupal selector with "-uri".
+ *
+ * Linkit's autocomplete JavaScript is written for the link field widget, whose
+ * URI sub-element always gets a data-drupal-selector ending in "-uri"; it
+ * derives the sibling metadata inputs from that suffix and throws outright when
+ * it is missing. A standalone "#type => linkit" element - which our settings
+ * forms use - is named for its own config key instead, so selecting a
+ * suggestion threw before the JavaScript ever wrote the chosen path into the
+ * field. Suffixing the selector satisfies that check; the sibling inputs it
+ * then looks for simply do not exist outside a link widget, which the
+ * JavaScript handles without complaint.
+ *
+ * @param array $element
+ *   The linkit element being processed.
+ *
+ * @return array
+ *   The processed element.
+ */
+function ys_core_linkit_uri_selector(array $element) {
+  $selector = $element['#attributes']['data-drupal-selector'] ?? '';
+  if ($selector && !str_ends_with($selector, '-uri')) {
+    $element['#attributes']['data-drupal-selector'] = $selector . '-uri';
+  }
+  return $element;
+}
+
+/**
  * Implements hook_form_alter().
  */
 function ys_core_form_alter(&$form, FormStateInterface $form_state, $form_id) {
