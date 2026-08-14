@@ -7,19 +7,29 @@ use Drupal\Core\Form\FormBase;
 use Drupal\Core\Form\FormStateInterface;
 use Drupal\Core\Messenger\MessengerInterface;
 use Drupal\Core\Render\RendererInterface;
-use Drupal\Core\Session\AccountInterface;
+use Drupal\Core\Url;
 use Drupal\ys_migrate\Batch\CsvImportBatch;
 use Drupal\ys_migrate\Service\CsvValidatorService;
-use Drupal\ys_migrate\Service\ProfileImportService;
+use Drupal\ys_migrate\Service\ResourceImportService;
 use Symfony\Component\DependencyInjection\ContainerInterface;
 
 /**
- * Form for bulk importing profile content from CSV files.
+ * Form for bulk importing resource content from CSV files.
  */
-class ProfileCsvImportForm extends FormBase {
+class ResourceCsvImportForm extends FormBase {
 
   use BatchSubmitTrait;
   use ColumnReferenceTableTrait;
+
+  /**
+   * Maximum upload size, in bytes.
+   */
+  const MAX_FILE_SIZE = 10485760;
+
+  /**
+   * How many preview rows to show before truncating.
+   */
+  const PREVIEW_LIMIT = 100;
 
   /**
    * The messenger service.
@@ -29,13 +39,6 @@ class ProfileCsvImportForm extends FormBase {
   protected $messenger;
 
   /**
-   * The current user.
-   *
-   * @var \Drupal\Core\Session\AccountInterface
-   */
-  protected $currentUser;
-
-  /**
    * The CSV validator service.
    *
    * @var \Drupal\ys_migrate\Service\CsvValidatorService
@@ -43,11 +46,11 @@ class ProfileCsvImportForm extends FormBase {
   protected $csvValidator;
 
   /**
-   * The profile import service.
+   * The resource import service.
    *
-   * @var \Drupal\ys_migrate\Service\ProfileImportService
+   * @var \Drupal\ys_migrate\Service\ResourceImportService
    */
-  protected $profileImport;
+  protected $resourceImport;
 
   /**
    * The entity type manager.
@@ -64,16 +67,14 @@ class ProfileCsvImportForm extends FormBase {
   protected $renderer;
 
   /**
-   * Constructs a ProfileCsvImportForm object.
+   * Constructs a ResourceCsvImportForm object.
    *
    * @param \Drupal\Core\Messenger\MessengerInterface $messenger
    *   The messenger service.
-   * @param \Drupal\Core\Session\AccountInterface $current_user
-   *   The current user.
    * @param \Drupal\ys_migrate\Service\CsvValidatorService $csv_validator
    *   The CSV validator service.
-   * @param \Drupal\ys_migrate\Service\ProfileImportService $profile_import
-   *   The profile import service.
+   * @param \Drupal\ys_migrate\Service\ResourceImportService $resource_import
+   *   The resource import service.
    * @param \Drupal\Core\Entity\EntityTypeManagerInterface $entity_type_manager
    *   The entity type manager.
    * @param \Drupal\Core\Render\RendererInterface $renderer
@@ -81,16 +82,14 @@ class ProfileCsvImportForm extends FormBase {
    */
   public function __construct(
     MessengerInterface $messenger,
-    AccountInterface $current_user,
     CsvValidatorService $csv_validator,
-    ProfileImportService $profile_import,
+    ResourceImportService $resource_import,
     EntityTypeManagerInterface $entity_type_manager,
     RendererInterface $renderer,
   ) {
     $this->messenger = $messenger;
-    $this->currentUser = $current_user;
     $this->csvValidator = $csv_validator;
-    $this->profileImport = $profile_import;
+    $this->resourceImport = $resource_import;
     $this->entityTypeManager = $entity_type_manager;
     $this->renderer = $renderer;
   }
@@ -100,60 +99,53 @@ class ProfileCsvImportForm extends FormBase {
    */
   public static function create(ContainerInterface $container) {
     return new static(
-          $container->get('messenger'),
-          $container->get('current_user'),
-          $container->get('ys_migrate.csv_validator'),
-          $container->get('ys_migrate.profile_import'),
-          $container->get('entity_type.manager'),
-          $container->get('renderer')
-      );
+      $container->get('messenger'),
+      $container->get('ys_migrate.csv_validator'),
+      $container->get('ys_migrate.resource_import'),
+      $container->get('entity_type.manager'),
+      $container->get('renderer')
+    );
   }
 
   /**
    * {@inheritdoc}
    */
   public function getFormId() {
-    return 'ys_migrate_profile_csv_import';
+    return 'ys_migrate_resource_csv_import';
   }
 
   /**
    * {@inheritdoc}
    */
   public function buildForm(array $form, FormStateInterface $form_state) {
-    $form['heading'] = [
-      '#type' => 'html_tag',
-      '#tag' => 'h3',
-      '#value' => $this->t('Bulk Import Profile Content'),
-    ];
-
     $form['intro'] = [
       '#type' => 'html_tag',
       '#tag' => 'p',
-      '#value' => $this->t('Upload a CSV file to bulk import profile content. The CSV should contain one profile per row with the following columns:'),
+      '#value' => $this->t('Upload a CSV file to create resources in bulk, one per row. The first row must contain column headers. Any column may be left out; only Title is required.'),
     ];
 
-    $form['columns'] = $this->columnReferenceTable($this->csvValidator->getExpectedColumns(), $this->columnNotes());
-
-    $form['note'] = [
+    $form['media_notice'] = [
       '#type' => 'html_tag',
       '#tag' => 'p',
-      '#value' => $this->t('The first row should contain column headers. All fields except Display Name are optional.'),
+      '#value' => $this->t('Resources are imported as drafts, so review and publish them once the import finishes. Resource Media cannot be set from a CSV file: rows with an External Source are ready to use straight away, and the import summary lists the rest, which you will need to open and attach media to.'),
     ];
 
-    $form['template_link'] = [
-      '#type' => 'markup',
-      '#markup' => '<p><a href="https://yalesites.yale.edu/resource/bulk-profile-importer-template" target="_blank">For more information and the CSV Template, visit the YaleSites Profile resource in our User Guide</a></p>',
+    $form['columns'] = $this->columnReferenceTable($this->csvValidator->getExpectedResourceColumns(), $this->columnNotes());
+
+    $form['sample_download'] = [
+      '#type' => 'link',
+      '#title' => $this->t('Download a sample CSV to see the expected columns and an example row.'),
+      '#url' => Url::fromRoute('ys_migrate.resource_csv_sample'),
     ];
 
     $form['csv_file'] = [
       '#type' => 'managed_file',
-      '#title' => $this->t('CSV File'),
-      '#description' => $this->t('Upload a CSV file with profile data. Maximum file size: 10MB.'),
+      '#title' => $this->t('CSV file'),
+      '#description' => $this->t('Maximum file size: 10MB.'),
       '#upload_location' => 'private://csv_imports/',
       '#upload_validators' => [
-        'file_validate_extensions' => ['csv'],
-      // 10MB
-        'file_validate_size' => [10485760],
+        'FileExtension' => ['extensions' => 'csv'],
+        'FileSizeLimit' => ['fileLimit' => self::MAX_FILE_SIZE],
       ],
       '#required' => TRUE,
     ];
@@ -161,14 +153,14 @@ class ProfileCsvImportForm extends FormBase {
     $form['preview'] = [
       '#type' => 'checkbox',
       '#title' => $this->t('Preview only'),
-      '#description' => $this->t('Check this to preview the import without creating any content.'),
+      '#description' => $this->t('Show what would be created without saving anything.'),
       '#default_value' => TRUE,
     ];
 
     $form['skip_duplicates'] = [
       '#type' => 'checkbox',
       '#title' => $this->t('Skip duplicates'),
-      '#description' => $this->t('Skip profiles that already exist (based on email address).'),
+      '#description' => $this->t('Skip rows whose title already belongs to an existing resource. Uncheck to import them anyway.'),
       '#default_value' => TRUE,
     ];
 
@@ -197,7 +189,6 @@ class ProfileCsvImportForm extends FormBase {
       return;
     }
 
-    // Load the file and validate its contents.
     $file = $this->entityTypeManager->getStorage('file')->load($csv_file[0]);
     if (!$file) {
       $form_state->setErrorByName('csv_file', $this->t('Unable to load the uploaded file.'));
@@ -210,11 +201,21 @@ class ProfileCsvImportForm extends FormBase {
       return;
     }
 
-    // Validate CSV structure.
-    $validation_result = $this->csvValidator->validateCsvStructure($file_path);
+    $validation_result = $this->csvValidator->validateResourceCsvStructure($file_path);
     if (!$validation_result['valid']) {
       $form_state->setErrorByName('csv_file', $validation_result['message']);
       return;
+    }
+
+    // An unrecognised header is skipped in silence, so a mistyped column name
+    // would drop its data with nothing to show for it. Warn rather than fail:
+    // an extra column an editor keeps for their own notes is legitimate.
+    $unknown = $this->csvValidator->getUnknownResourceColumns($validation_result['headers']);
+    if (!empty($unknown)) {
+      $this->messenger->addWarning($this->t(
+        'These columns are not recognised and will be ignored: @columns',
+        ['@columns' => implode(', ', $unknown)]
+      ));
     }
 
     // Store validation results for use in submit.
@@ -255,13 +256,13 @@ class ProfileCsvImportForm extends FormBase {
 
     $this->setBatch(CsvImportBatch::build(
       [
-        'import_service_id' => 'ys_migrate.profile_import',
+        'import_service_id' => 'ys_migrate.resource_import',
         'skip_duplicates' => $skip_duplicates,
-        'entity_label' => 'profile',
+        'entity_label' => 'resource',
       ],
       $data,
       $fid,
-      (string) $this->t('Importing profiles...')
+      (string) $this->t('Importing resources...')
     ));
   }
 
@@ -273,23 +274,23 @@ class ProfileCsvImportForm extends FormBase {
    */
   protected function columnNotes() {
     return [
-      'display name' => $this->t('Required. The main title for the profile.'),
-      'first name' => $this->t("Person's first name."),
-      'last name' => $this->t("Person's last name."),
-      'honorific prefix' => $this->t('Title, e.g. Dr., Prof., Mr., Ms.'),
-      'pronouns' => $this->t('Preferred pronouns.'),
-      'position' => $this->t('Job title or role.'),
-      'subtitle' => $this->t('Secondary title or role.'),
-      'department' => $this->t('Department or unit.'),
-      'email' => $this->t('Email address. Also used to detect duplicates.'),
-      'telephone' => $this->t('Phone number.'),
-      'address' => $this->t('Physical address.'),
-      'teaser title' => $this->t('Plain text.'),
-      'teaser text' => $this->t('Plain text, max 150 characters.'),
-      'affiliation' => $this->t('Comma-separated. Terms are created if missing.'),
+      'title' => $this->t('Required. Also used to detect duplicates.'),
+      'description' => $this->t('Plain text.'),
+      'abstract' => $this->t('Plain text.'),
+      'citation' => $this->t('Plain text.'),
+      'journal publication name' => $this->t('Plain text.'),
+      'journal publication issue' => $this->t('Plain text.'),
+      'resource category' => $this->t('Comma-separated. Terms are created if missing.'),
       'audience' => $this->t('Comma-separated. Terms are created if missing.'),
+      'custom vocab' => $this->t('Comma-separated. "Custom Vocabulary" also works as a header.'),
+      'resource publication date' => $this->t('YYYY-MM-DD or MM/DD/YYYY.'),
+      'date format' => $this->t('Year, Month/Year, or Month/Day/Year.'),
       'tags' => $this->t('Comma-separated. Terms are created if missing.'),
-      'custom vocabulary' => $this->t('Comma-separated. Terms are created if missing.'),
+      'teaser title' => $this->t('Plain text.'),
+      'teaser text' => $this->t("Plain text. Character count is capped by the Teaser Text field's own limit."),
+      'external source' => $this->t('Full http:// or https:// URL.'),
+      'cas login required' => $this->t('Yes or No.'),
+      'pin to beginning of list' => $this->t('Yes or No.'),
     ];
   }
 
@@ -302,58 +303,83 @@ class ProfileCsvImportForm extends FormBase {
    *   Whether to skip duplicates.
    */
   protected function previewImport(array $data, $skip_duplicates) {
-    $preview_result = $this->profileImport->previewImport($data, $skip_duplicates);
+    $result = $this->resourceImport->previewImport($data, $skip_duplicates);
 
-    $message = $this->t('Preview: @valid valid profiles found.', ['@valid' => count($preview_result['valid_profiles'])]);
-    if (!empty($preview_result['duplicates'])) {
-      $message .= ' ' . $this->t('@duplicates would be skipped as duplicates.', ['@duplicates' => count($preview_result['duplicates'])]);
+    $this->messenger->addStatus($this->t(
+      'Preview only, nothing was saved. @valid of @total row(s) would be imported.',
+      [
+        '@valid' => count($result['valid_resources']),
+        '@total' => $result['total'],
+      ]
+    ));
+
+    if (!empty($result['duplicates'])) {
+      $this->messenger->addWarning($this->t(
+        '@count row(s) would be skipped as duplicates: @titles',
+        [
+          '@count' => count($result['duplicates']),
+          '@titles' => implode(', ', $result['duplicates']),
+        ]
+      ));
     }
 
-    $this->messenger->addStatus($message);
+    $this->reportErrors($result['errors']);
 
-    if (!empty($preview_result['valid_profiles'])) {
-      $this->displayPreviewTable($preview_result['valid_profiles']);
+    if (!empty($result['valid_resources'])) {
+      $this->displayPreviewTable($result['valid_resources']);
     }
   }
 
   /**
-   * Displays a preview table of the profiles to be created.
+   * Surfaces per-row errors, which never stop the rest of the run.
    *
-   * @param array $profiles
-   *   Array of profile data.
+   * @param array $errors
+   *   The row error messages.
    */
-  protected function displayPreviewTable(array $profiles) {
+  protected function reportErrors(array $errors) {
+    foreach ($errors as $error) {
+      $this->messenger->addError($error);
+    }
+  }
+
+  /**
+   * Displays a preview table of the resources to be created.
+   *
+   * @param array $resources
+   *   Array of prepared resource data.
+   */
+  protected function displayPreviewTable(array $resources) {
     $rows = [];
 
-    // Show first 10.
-    foreach (array_slice($profiles, 0, 100) as $profile) {
+    foreach (array_slice($resources, 0, self::PREVIEW_LIMIT) as $resource) {
       $rows[] = [
-        $profile['display_name'],
-        $profile['email'] ?: '-',
-        $profile['position'] ?: '-',
-        $profile['department'] ?: '-',
+        $resource['title'],
+        $resource['category'] ? implode(', ', $resource['category']) : '-',
+        $resource['publish_date'] ?: '-',
+        $resource['external_source'] ?: '-',
+        $resource['external_source'] ? $this->t('No') : $this->t('Yes'),
       ];
     }
 
-    if (count($profiles) > 100) {
+    if (count($resources) > self::PREVIEW_LIMIT) {
       $rows[] = [
-        '...',
-        '...',
-        '...',
-        '...',
+        $this->t('...and @count more', ['@count' => count($resources) - self::PREVIEW_LIMIT]),
+        '', '', '', '',
       ];
     }
 
     $build = [
       '#type' => 'table',
+      '#caption' => $this->t('Resources to be created'),
       '#header' => [
-        $this->t('Display Name'),
-        $this->t('Email'),
-        $this->t('Position'),
-        $this->t('Department'),
+        $this->t('Title'),
+        $this->t('Resource Category'),
+        $this->t('Publication Date'),
+        $this->t('External Source'),
+        $this->t('Needs media'),
       ],
       '#rows' => $rows,
-      '#attributes' => ['class' => ['profile-preview-table']],
+      '#attributes' => ['class' => ['resource-preview-table']],
     ];
 
     $this->messenger->addStatus($this->renderer->render($build));
