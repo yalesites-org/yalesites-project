@@ -179,6 +179,10 @@ Component themes are visualized here: https://yalesites-org.github.io/component-
 - Quick Links (`component-library-twig/components/02-molecules/quick-links/yds-quick-links.twig`)
 - Tabs (`component-library-twig/components/02-molecules/tabs/yds-tabs.twig`)
 
+**Layout Builder Sections** also expose a "Component theme" picker. Any layout in `ys_layouts.layouts.yml` whose `class` is (or extends) `\Drupal\ys_layouts\Plugin\Layout\YSLayoutOptions` gets it. Sections do not map options to slots 1:1 — `ColorTokenResolver::getColorStylesForEntity()` holds the mapping under the `layout_section`/`ys_layout_options` pair, and is the only place it should be read from. The one thing worth stating here because it surprises people: the option labeled "Five" resolves to slot-nine, not slot-five.
+
+Most of those layouts render through `@organisms/layout/layout` (`yds-layout.twig`), which carries the `data-component-theme` attribute the color rules in `_yds-layout.scss` key on. **Banner is the exception** — it adopts the `yds-layout` class and the attribute without embedding the organism, and drops the inherited divider checkbox because it has a single region. The reasoning is in the docblock of `ys_layouts/layouts/banner/layout--banner.html.twig`; read it before changing that template.
+
 The purpose in registering these component themes is to establish default values from which a global theme will be iterated over to apply color slots, changing color values depending on the active global theme.
 
 **Note:** 

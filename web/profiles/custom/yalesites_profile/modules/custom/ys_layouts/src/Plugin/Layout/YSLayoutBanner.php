@@ -2,12 +2,27 @@
 
 namespace Drupal\ys_layouts\Plugin\Layout;
 
-use Drupal\Core\Layout\LayoutDefault;
+use Drupal\Core\Form\FormStateInterface;
 
 /**
  * Banner layout class.
+ *
+ * Extends YSLayoutOptions so Banner sections get the same "Component theme"
+ * picker as the other themed Section layouts. Banner has a single region, so
+ * the inherited divider checkbox is removed.
  */
-class YSLayoutBanner extends LayoutDefault {
+class YSLayoutBanner extends YSLayoutOptions {
+
+  /**
+   * {@inheritdoc}
+   */
+  public function buildConfigurationForm(array $form, FormStateInterface $form_state) {
+    $form = parent::buildConfigurationForm($form, $form_state);
+
+    unset($form['divider']);
+
+    return $form;
+  }
 
   /**
    * {@inheritdoc}

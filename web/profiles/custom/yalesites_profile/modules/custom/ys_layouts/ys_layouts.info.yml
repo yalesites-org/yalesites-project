@@ -10,3 +10,4 @@ dependencies:
   - drupal:layout_builder
   - quick_node_clone
   - ys_localist
+  - ys_themes

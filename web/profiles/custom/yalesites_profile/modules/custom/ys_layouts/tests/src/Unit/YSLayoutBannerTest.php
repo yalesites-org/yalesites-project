@@ -3,10 +3,12 @@
 namespace Drupal\Tests\ys_layouts\Unit;
 
 use Drupal\Core\Entity\FieldableEntityInterface;
+use Drupal\Core\Form\FormState;
 use Drupal\Core\Layout\LayoutDefinition;
 use Drupal\Core\Routing\RouteMatchInterface;
 use Drupal\Tests\UnitTestCase;
 use Drupal\ys_layouts\Plugin\Layout\YSLayoutBanner;
+use Drupal\ys_themes\ColorTokenResolver;
 use Symfony\Component\DependencyInjection\ContainerBuilder;
 
 /**
@@ -25,7 +27,32 @@ class YSLayoutBannerTest extends UnitTestCase {
     $definition = new LayoutDefinition([
       'regions' => ['content' => ['label' => 'Content']],
     ]);
-    return new YSLayoutBanner([], 'ys_layout_banner', $definition);
+    return new YSLayoutBanner(
+      [],
+      'ys_layout_banner',
+      $definition,
+      $this->createMock(ColorTokenResolver::class),
+    );
+  }
+
+  /**
+   * Banner exposes the Component theme picker, but not the divider checkbox.
+   *
+   * Banner is a single-region layout, so the inherited divider checkbox has
+   * nothing to divide and is removed.
+   *
+   * @covers ::buildConfigurationForm
+   */
+  public function testBuildConfigurationFormExposesThemeWithoutDivider(): void {
+    $layout = $this->buildLayout();
+    $layout->setStringTranslation($this->getStringTranslationStub());
+
+    $form = $layout->buildConfigurationForm([], new FormState());
+
+    // Only Banner's delta from YSLayoutOptions is asserted here. The theme
+    // element's own shape and option list stay pinned in YSLayoutOptionsTest.
+    $this->assertArrayNotHasKey('divider', $form);
+    $this->assertArrayHasKey('theme', $form);
   }
 
   /**
