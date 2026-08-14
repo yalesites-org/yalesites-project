@@ -1,0 +1,54 @@
+# Schema for the layout settings ys_layouts adds on top of core's
+# layout_plugin.settings (label, context_mapping).
+#
+# Without this, saving a config entity (e.g. core.entity_view_display.*)
+# whose default section uses one of these layout IDs throws
+# Drupal\Core\Config\Schema\SchemaIncompleteException under strict schema
+# checking (KernelTestBase/BrowserTestBase, and some config-inspection
+# tooling) -- layout_plugin.settings.[%parent.layout_id] falls back to the
+# generic layout_plugin.settings mapping for any layout ID without its own
+# entry, and that mapping does not declare these as allowed keys.
+#
+# Two additions, kept as separate types since they don't apply to the same
+# set of layouts:
+#
+# - 'ys_layouts_sections_config' (currently just 'padding_options') is added
+#   to EVERY layout's settings by
+#   ys_layouts_form_layout_builder_configure_section_alter(), which has no
+#   per-layout filter -- this repo's own exported config already has it on
+#   layout_onecol sections (core.entity_view_display.node.resource.default.yml).
+#   ys_layouts.layout_settings.padding_options captures that, and only
+#   layout_onecol is mapped to it here (this change's scope) -- ys_layout_banner
+#   and ys_layout_page_meta have the same gap but are out of scope for this PR.
+# - 'divider' and 'theme' only exist on layouts YSLayoutOptions backs.
+#   ys_layouts.layout_settings.theme_and_divider extends the padding type
+#   above (those layouts get section padding too) and only layout_onecol is
+#   mapped to it here -- the same gap is real for ys_layout_two_column,
+#   ys_layout_two_column_50_50, and ys_layout_three_column_33_33_33, but
+#   fixing those is a deliberate follow-up decision left to the PR's reviewer
+#   rather than expanded silently.
+ys_layouts.layout_settings.padding_options:
+  type: layout_plugin.settings
+  label: 'Layout settings with section padding options'
+  mapping:
+    ys_layouts_sections_config:
+      type: mapping
+      label: 'Section padding configuration'
+      mapping:
+        padding_options:
+          type: string
+          label: 'Section padding options'
+
+ys_layouts.layout_settings.theme_and_divider:
+  type: ys_layouts.layout_settings.padding_options
+  label: 'Layout settings with a Component theme picker'
+  mapping:
+    divider:
+      type: integer
+      label: 'Divider'
+    theme:
+      type: string
+      label: 'Component theme'
+
+layout_plugin.settings.layout_onecol:
+  type: ys_layouts.layout_settings.theme_and_divider

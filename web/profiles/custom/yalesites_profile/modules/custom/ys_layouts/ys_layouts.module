@@ -11,6 +11,7 @@ use Drupal\Core\Form\FormStateInterface;
 use Drupal\Core\Plugin\Context\Context;
 use Drupal\Core\Plugin\Context\EntityContextDefinition;
 use Drupal\ys_layouts\CloneBlockLinkBuilder;
+use Drupal\ys_layouts\Plugin\Layout\YSLayoutOneColumn;
 use Drupal\ys_layouts\Render\DetachContextualOperations;
 
 /**
@@ -475,5 +476,29 @@ function ys_layouts_contextual_links_plugins_alter(array &$contextual_links) {
   if (isset($contextual_links['layout_builder_block_remove'])) {
     $contextual_links['layout_builder_block_remove']['title'] = t('Remove');
     $contextual_links['layout_builder_block_remove']['weight'] = 10;
+  }
+}
+
+/**
+ * Implements hook_layout_alter().
+ *
+ * Core's "One column" layout (`layout_onecol`, from layout_discovery) is the
+ * generic, fully editable main-content Section every page gets, but unlike
+ * Two Column (50/50), Two Column (70/30), and Three Column (33/33/33), it
+ * ships with core's LayoutDefault class and never gets YSLayoutOptions'
+ * "Component theme" picker. Because it's a core plugin, not one
+ * ys_layouts.layouts.yml declares, its class can't be set there -- it has to
+ * be attached here instead.
+ *
+ * @see \Drupal\ys_layouts\Plugin\Layout\YSLayoutOneColumn
+ */
+function ys_layouts_layout_alter(&$definitions) {
+  if (isset($definitions['layout_onecol'])) {
+    $definitions['layout_onecol']->setClass(YSLayoutOneColumn::class);
+    // setLibrary() replaces rather than merges, so this also detaches core's
+    // own 'layout_discovery/onecol' library -- ys_layout_onecol carries that
+    // library's one rule over so it isn't silently lost. See that library's
+    // CSS file for the theming rule this is actually here for.
+    $definitions['layout_onecol']->setLibrary('ys_layouts/ys_layout_onecol');
   }
 }

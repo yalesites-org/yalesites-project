@@ -54,6 +54,12 @@ class OrphanedInlineBlockCleanerTest extends KernelTestBase {
     'quick_node_clone',
     // Stands in for a non-revisionable layout-bearing entity type.
     'entity_test',
+    // enableLayoutBuilder() below instantiates the default layout_onecol
+    // section, which ys_layouts_layout_alter() points at YSLayoutOneColumn
+    // (extends YSLayoutOptions) -- that class resolves
+    // ys_themes.color_token_resolver from the container.
+    'formdazzle',
+    'ys_themes',
     'ys_layouts',
   ];
 
