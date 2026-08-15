@@ -123,7 +123,9 @@
   "prefer-stable": true,
   "config": {
     "audit": {
-      "ignore": ["SA-CONTRIB-2025-060"]
+      "ignore": [
+        "SA-CONTRIB-2025-060"
+      ]
     },
     "sort-packages": true
   },
