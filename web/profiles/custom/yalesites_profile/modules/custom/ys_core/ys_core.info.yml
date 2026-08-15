@@ -8,3 +8,4 @@ dependencies:
   - media_library_form_element
   - role_delegation
   - cas
+  - ys_media
