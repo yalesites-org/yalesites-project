@@ -1,0 +1,20 @@
+name: Project status sync
+
+# Keeps the linked YaleSites-Internal ticket's Status on the YaleSites Board in
+# step with this pull request. The logic lives in one shared workflow so all
+# three code repos stay identical; see
+# https://github.com/yalesites-org/.github/blob/main/docs/project-status-sync.md
+
+on:
+  pull_request:
+    types: [labeled, closed]
+
+jobs:
+  sync-status:
+    name: Sync ticket status
+    # Secrets are not available to pull requests from forks, so the job could
+    # not do anything there.
+    if: github.event.pull_request.head.repo.full_name == github.repository
+    uses: yalesites-org/.github/.github/workflows/project-status-sync.yml@main
+    secrets:
+      PROJECT_TOKEN: ${{ secrets.PROJECT_TOKEN }}
