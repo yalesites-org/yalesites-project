@@ -300,9 +300,11 @@ class CoreTwigExtensionTest extends UnitTestCase {
     }
 
     $this->markTestSkipped(
-      'No component library asset manifest is installed (build the theme assets). '
-      . 'getAssetPath() falls back to the unversioned name in that case, which '
-      . 'testGetAssetPathFallsBackToInputWhenManifestMissing() already covers.'
+      'No component library asset manifest is installed. Since the move to the '
+      . 'Vite build this is the normal case -- that build emits no manifest, so '
+      . 'these manifest-present branches are skipped everywhere rather than only '
+      . 'in an unbuilt checkout, and getAssetPath() is effectively a passthrough. '
+      . 'testGetAssetPathFallsBackToInputWhenManifestMissing() covers that path.'
     );
   }
 

@@ -317,7 +317,16 @@ class CoreTwigExtension extends AbstractExtension {
   }
 
   /**
-   * Get the versioned asset path from the webpack manifest.
+   * Get the versioned asset filename from the component library manifest.
+   *
+   * Returns a bare filename, not a path -- callers prepend the directory the
+   * asset is served from (see _yds-icon.twig).
+   *
+   * The component library's Vite build emits no manifest, so this currently
+   * always falls back to $asset_name and assets are served unversioned. The
+   * webpack build it replaced wrote dist/manifest.json alongside a hashed copy
+   * of each asset; restoring that is tracked separately. This is kept as the
+   * seam such a fix plugs back into.
    *
    * @param string $asset_name
    *   The original asset filename (e.g., 'icons.svg').
@@ -325,7 +334,7 @@ class CoreTwigExtension extends AbstractExtension {
    *   Optional directory path for theme (e.g. 'themes/contrib/atomic').
    *
    * @return string
-   *   The versioned asset path, or the original filename if manifest not found.
+   *   The versioned filename, or the original filename if no manifest maps it.
    */
   public function getAssetPath($asset_name, $directory = NULL) {
     // Determine the manifest file path.
