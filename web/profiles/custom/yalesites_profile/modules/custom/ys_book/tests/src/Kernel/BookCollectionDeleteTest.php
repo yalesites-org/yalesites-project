@@ -6,6 +6,7 @@ use Drupal\KernelTests\KernelTestBase;
 use Drupal\Tests\user\Traits\UserCreationTrait;
 use Drupal\node\Entity\Node;
 use Drupal\node\Entity\NodeType;
+use Drupal\node\NodeInterface;
 use Drupal\ys_book\Controller\YsBookController;
 use Drupal\ys_book\Form\BookCollectionDeleteForm;
 use Drupal\Core\Form\FormState;
@@ -48,6 +49,10 @@ class BookCollectionDeleteTest extends KernelTestBase {
     $this->installEntitySchema('node');
     $this->installSchema('node', 'node_access');
     $this->installSchema('book', ['book']);
+    // Kernel tests never run hook_install(), so add the title column this
+    // module installs on a real site; see _ys_book_add_book_title_column().
+    $this->container->get('module_handler')->loadInclude('ys_book', 'install');
+    _ys_book_add_book_title_column();
     $this->installConfig(['node', 'book', 'field']);
 
     // The delete route is gated on 'administer book outlines'; build the router
@@ -93,6 +98,20 @@ class BookCollectionDeleteTest extends KernelTestBase {
     $grandchild->save();
 
     return [$root, $child, $grandchild];
+  }
+
+  /**
+   * Reloads a node so book_node_load() repopulates its $node->book data.
+   *
+   * Both the delete hooks and the delete confirmation read $node->book, which
+   * only exists because contrib book_node_load() attaches it on load. Deleting
+   * the in-memory node returned by createCollection() would skip that and stop
+   * exercising the real Manage Content path.
+   */
+  private function reload(NodeInterface $node): NodeInterface {
+    $storage = $this->container->get('entity_type.manager')->getStorage('node');
+    $storage->resetCache([$node->id()]);
+    return $storage->load($node->id());
   }
 
   /**
@@ -257,6 +276,161 @@ class BookCollectionDeleteTest extends KernelTestBase {
       $this->container->get('entity_type.manager')->getStorage('node')->load($root->id()),
       'The former collection root survives as a standalone page.'
     );
+  }
+
+  /**
+   * Deleting a collection's top-level page creates no new collections.
+   *
+   * This is the Manage Content path: the page is deleted as a piece of
+   * content, rather than the collection being taken apart from Manage Content
+   * Collections. Contrib BookManager::deleteFromBook() promotes the children
+   * of a book root into books of their own, which left the editor with one
+   * junk collection per sub-page and no bulk way to undo it.
+   *
+   * @see yalesites-org/YaleSites-Internal#1511
+   */
+  public function testDeletingCollectionRootLeavesSubPagesStandalone(): void {
+    [$root, $child, $grandchild] = $this->createCollection();
+
+    $this->reload($root)->delete();
+
+    $this->assertSame(
+      0,
+      $this->bookRowCount(),
+      'No outline rows survive, so no sub-page was promoted into a collection.'
+    );
+    $this->assertEmpty(
+      $this->container->get('book.manager')->getAllBooks(),
+      'No new collections were created from the sub-pages.'
+    );
+
+    // Only the deleted page is gone; the sub-pages stay as standalone content.
+    $storage = $this->container->get('entity_type.manager')->getStorage('node');
+    $storage->resetCache();
+    foreach ([$child, $grandchild] as $page) {
+      $this->assertNotNull($storage->load($page->id()), 'Sub-page survives the delete.');
+    }
+    $this->assertNull($storage->load($root->id()), 'The deleted top-level page is gone.');
+  }
+
+  /**
+   * Deleting a page mid-collection still moves its children up a level.
+   *
+   * Only the top-level page needed new behaviour. Contrib's handling of a page
+   * in the middle of a collection is already what we want and must not
+   * regress.
+   */
+  public function testDeletingMidCollectionPageKeepsCollectionIntact(): void {
+    [$root, $child, $grandchild] = $this->createCollection();
+    $bid = (int) $root->id();
+
+    $this->reload($child)->delete();
+
+    $this->assertCount(
+      2,
+      _ys_book_get_all_book_nids($bid),
+      'The collection keeps its remaining pages.'
+    );
+    $this->assertCount(
+      1,
+      $this->container->get('book.manager')->getAllBooks(),
+      'No extra collection was created.'
+    );
+
+    $link = $this->container->get('book.manager')->loadBookLink($grandchild->id(), FALSE);
+    $this->assertEquals($bid, $link['bid'], 'The orphaned page stays in the original collection.');
+    $this->assertEquals($bid, $link['pid'], 'The orphaned page moved up under the root.');
+  }
+
+  /**
+   * The Manage Content delete confirmation says the sub-pages survive.
+   *
+   * Left alone this is the generic content-delete confirmation, whose only
+   * description is "This action cannot be undone". That is a big part of why
+   * losing the collection here is a surprise; Manage Content Collections' own
+   * confirmation already spells the consequence out.
+   *
+   * @see \Drupal\ys_book\Form\BookCollectionDeleteForm::getDescription()
+   */
+  public function testDeleteConfirmFormExplainsSubPagesSurvive(): void {
+    [$root] = $this->createCollection();
+
+    $form = $this->container->get('entity.form_builder')
+      ->getForm($this->reload($root), 'delete');
+
+    $this->assertArrayHasKey('ys_book_collection_notice', $form);
+    $this->assertStringContainsString(
+      "won't be deleted",
+      (string) $form['ys_book_collection_notice']['#value'],
+      'The confirmation tells the editor the other pages are kept.'
+    );
+  }
+
+  /**
+   * Pages with no sub-pages to lose keep the plain delete confirmation.
+   */
+  public function testDeleteConfirmFormLeavesOtherPagesAlone(): void {
+    [, $child] = $this->createCollection();
+    $builder = $this->container->get('entity.form_builder');
+
+    $standalone = Node::create(['type' => 'page', 'title' => 'Standalone', 'status' => 1]);
+    $standalone->save();
+    $this->assertArrayNotHasKey(
+      'ys_book_collection_notice',
+      $builder->getForm($this->reload($standalone), 'delete'),
+      'A page in no collection gets the plain confirmation.'
+    );
+
+    $this->assertArrayNotHasKey(
+      'ys_book_collection_notice',
+      $builder->getForm($this->reload($child), 'delete'),
+      'A sub-page is not a collection root, so nothing extra is said.'
+    );
+
+    $solo = Node::create([
+      'type' => 'page',
+      'title' => 'Solo',
+      'status' => 1,
+      'book' => ['bid' => 'new'],
+    ]);
+    $solo->save();
+    $this->assertCount(
+      1,
+      _ys_book_get_all_book_nids((int) $solo->id()),
+      'Solo really is a one-page collection, so the page count is what suppresses the notice here.'
+    );
+    $this->assertArrayNotHasKey(
+      'ys_book_collection_notice',
+      $builder->getForm($this->reload($solo), 'delete'),
+      'A collection that is only its top-level page has no sub-pages to explain.'
+    );
+  }
+
+  /**
+   * Pages taken out of the outline are hidden from contrib book's predelete.
+   *
+   * Contrib book_node_predelete() only checks the in-memory copy of the book
+   * data, so once a page's outline row has gone that copy has to be cleared or
+   * contrib goes looking for a row that no longer exists. It applies to the
+   * top-level page itself, and to any sub-page swept up in the same bulk
+   * delete, which runs predelete for every selected node before removing any.
+   */
+  public function testPredeleteHidesDismantledPagesFromContribBook(): void {
+    [$root, $child] = $this->createCollection();
+    $root = $this->reload($root);
+    $child = $this->reload($child);
+
+    ys_book_node_predelete($root);
+
+    $this->assertSame(0, $this->bookRowCount(), 'The whole collection left the outline.');
+    $this->assertEmpty($root->book['bid'] ?? NULL, 'Contrib book skips the top-level page.');
+
+    // The sub-page still carries the collection data it was loaded with.
+    $this->assertNotEmpty($child->book['bid'], 'The sub-page copy is stale, not yet cleared.');
+
+    ys_book_node_predelete($child);
+
+    $this->assertEmpty($child->book['bid'] ?? NULL, 'Contrib book skips the sub-page too.');
   }
 
   /**

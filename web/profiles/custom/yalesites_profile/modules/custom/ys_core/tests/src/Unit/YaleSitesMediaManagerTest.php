@@ -151,6 +151,108 @@ class YaleSitesMediaManagerTest extends UnitTestCase {
   }
 
   /**
+   * The fallback set is four favicons with their page-head attributes.
+   *
+   * Pins the markup contract ys_core_page_attachments() renders into the head,
+   * so a relocation that drops or renames a tag is visible. Added for Phase 0
+   * of yalesites-org/YaleSites-Internal#579.
+   *
+   * @covers ::getFavicons
+   */
+  public function testGetFaviconsFallbackSetStructure(): void {
+    $this->yaleSettings->method('get')->with('custom_favicon')->willReturn(NULL);
+
+    $favicons = $this->manager->getFavicons();
+
+    $this->assertSame(
+      ['apple-touch-icon', 'icon-32', 'icon-16', 'icon-ico'],
+      array_keys($favicons)
+    );
+
+    $expected_rels = [
+      'apple-touch-icon' => 'apple-touch-icon',
+      'icon-32' => 'icon',
+      'icon-16' => 'icon',
+      'icon-ico' => 'shortcut icon',
+    ];
+    foreach ($expected_rels as $key => $rel) {
+      $this->assertSame('link', $favicons[$key]['#tag'], "$key renders a link.");
+      $this->assertSame($rel, $favicons[$key]['#attributes']['rel'], "$key rel.");
+    }
+
+    $this->assertSame('32x32', $favicons['icon-32']['#attributes']['sizes']);
+    $this->assertSame('16x16', $favicons['icon-16']['#attributes']['sizes']);
+  }
+
+  /**
+   * Every fallback favicon href points at a file that exists on disk.
+   *
+   * The other fallback tests assert these hrefs as hardcoded strings, so they
+   * stay green even if the files move or are deleted -- which is what Phase 1
+   * of yalesites-org/YaleSites-Internal#579 does when it relocates this class
+   * and the images/favicons/ directory into a new module.
+   *
+   * @covers ::getFavicons
+   */
+  public function testGetFaviconsFallbackFilesExistOnDisk(): void {
+    $this->yaleSettings->method('get')->with('custom_favicon')->willReturn(NULL);
+
+    $favicons = $this->manager->getFavicons();
+    $this->assertCount(4, $favicons, 'Guard: all four hrefs get checked.');
+
+    foreach ($favicons as $key => $favicon) {
+      $href = $favicon['#attributes']['href'];
+      $this->assertStringStartsWith('/', $href, "$key href is root-relative.");
+
+      $path = DRUPAL_ROOT . $href;
+      $this->assertFileExists($path, sprintf(
+        "The '%s' fallback favicon href (%s) must resolve to a real file. If "
+        . 'the ys_core module or its images/favicons/ directory moved, update '
+        . 'the hardcoded hrefs in getFavicons().',
+        $key,
+        $href
+      ));
+      $this->assertGreaterThan(0, filesize($path), "$key file is not empty.");
+    }
+  }
+
+  /**
+   * Every image style getFavicons() names ships in the profile's config.
+   *
+   * A missing style is a silent cliff rather than an error: getFavicons()
+   * unset()s that favicon, so once a site sets a custom favicon the tag just
+   * disappears from the page head. The styles ship in the profile's
+   * config/sync, so this checks the shipped YAML rather than active config.
+   *
+   * @covers ::getFavicons
+   */
+  public function testGetFaviconsNamedImageStylesShipInConfig(): void {
+    $this->yaleSettings->method('get')->with('custom_favicon')->willReturn(NULL);
+
+    $styles = [];
+    foreach ($this->manager->getFavicons() as $key => $favicon) {
+      $this->assertArrayHasKey('#image_style', $favicon, "$key names a style.");
+      $styles[$key] = $favicon['#image_style'];
+    }
+    $this->assertCount(4, $styles, 'Guard: four style names to check.');
+
+    // The profile path is already hardcoded in the favicon hrefs themselves,
+    // so resolving it the same way here introduces no new coupling.
+    $sync = DRUPAL_ROOT . '/profiles/custom/yalesites_profile/config/sync';
+    $this->assertDirectoryExists($sync);
+
+    foreach ($styles as $key => $style) {
+      $this->assertFileExists($sync . '/image.style.' . $style . '.yml', sprintf(
+        "getFavicons() maps '%s' to image style '%s', which ships in no "
+        . 'config/sync file. Without it the favicon is silently dropped from '
+        . 'the page head whenever a site has a custom favicon set.',
+        $key,
+        $style
+      ));
+    }
+  }
+
+  /**
    * @covers ::getFavicons
    */
   public function testGetFaviconsKeepsFallbackWhenCustomFileNotFound(): void {

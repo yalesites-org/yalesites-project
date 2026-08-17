@@ -1,0 +1,39 @@
+<?php
+
+/**
+ * @file
+ * Contains ys_ai_tester.module functions.
+ */
+
+/**
+ * Implements hook_theme().
+ */
+function ys_ai_tester_theme(): array {
+  return [
+    'ys_ai_tester_ai_export' => [
+      'variables' => [
+        'question_count' => 0,
+        'run_a' => 0,
+        'run_b' => 0,
+        'label_a' => '',
+        'label_b' => '',
+        'prompt_id' => '',
+        'download' => NULL,
+        'copy' => NULL,
+      ],
+    ],
+    // One tab per question, each revealing a panel of per-run answer columns.
+    // Rendered by both AI Tester views: the comparison passes two sides per
+    // panel and the single-run detail view passes one. The panel grid derives
+    // its column count from however many sides it is given, so the count is
+    // neither a variable here nor a literal in the stylesheet.
+    'ys_ai_tester_question_tabs' => [
+      'variables' => [
+        'tabs' => [],
+        'panels' => [],
+        'tablist_label' => '',
+        'empty' => '',
+      ],
+    ],
+  ];
+}

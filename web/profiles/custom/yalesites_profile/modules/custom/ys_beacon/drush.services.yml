@@ -1,0 +1,6 @@
+services:
+  ys_beacon.commands:
+    class: \Drupal\ys_beacon\Commands\BeaconCommands
+    arguments: ['@ys_beacon.index_manager']
+    tags:
+      - { name: drush.command }

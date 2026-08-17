@@ -294,4 +294,161 @@ class CsvValidatorServiceTest extends UnitTestCase {
     $this->assertCount(17, $columns);
   }
 
+  /**
+   * A well-formed resource CSV validates and reports the resource count.
+   *
+   * @covers ::validateResourceCsvStructure
+   */
+  public function testValidateResourceCsvStructureWithValidCsv() {
+    $path = $this->createCsvFile(
+      "Title,Description,External Source\n" .
+      "Annual Report,A yearly summary.,https://example.com/a.pdf\n" .
+      "Style Guide,How we write.,\n"
+    );
+
+    $result = $this->csvValidator->validateResourceCsvStructure($path);
+
+    $this->assertTrue($result['valid']);
+    $this->assertEquals('CSV file is valid. Found 2 resources.', (string) $result['message']);
+    $this->assertCount(2, $result['data']);
+    $this->assertEquals('Annual Report', $result['data'][0]['title']);
+  }
+
+  /**
+   * A resource CSV without a Title column is rejected.
+   *
+   * @covers ::validateResourceCsvStructure
+   */
+  public function testValidateResourceCsvStructureRequiresTitleColumn() {
+    $path = $this->createCsvFile("Description,Tags\nSomething,tag1\n");
+
+    $result = $this->csvValidator->validateResourceCsvStructure($path);
+
+    $this->assertFalse($result['valid']);
+    $this->assertStringContainsString('must contain a "Title" column', (string) $result['message']);
+  }
+
+  /**
+   * A resource row with an empty Title is reported by line number.
+   *
+   * @covers ::validateResourceCsvStructure
+   */
+  public function testValidateResourceCsvStructureRequiresTitleValue() {
+    $path = $this->createCsvFile("Title,Description\nGood,fine\n   ,also fine\n");
+
+    $result = $this->csvValidator->validateResourceCsvStructure($path);
+
+    $this->assertFalse($result['valid']);
+    $this->assertStringContainsString('Row 3: Title is required.', (string) $result['message']);
+  }
+
+  /**
+   * Cell-level problems are left to the import service, not the validator.
+   *
+   * A bad date or URL must not reject the whole file; it surfaces as a row
+   * error in the preview so the editor can see and fix just that row.
+   *
+   * @covers ::validateResourceCsvStructure
+   */
+  public function testValidateResourceCsvStructureIgnoresCellSemantics() {
+    $path = $this->createCsvFile(
+      "Title,Resource Publication Date,External Source\n" .
+      "Odd One,whenever,not a url\n"
+    );
+
+    $result = $this->csvValidator->validateResourceCsvStructure($path);
+
+    $this->assertTrue($result['valid']);
+    $this->assertCount(1, $result['data']);
+  }
+
+  /**
+   * The true CSV line number is threaded onto each resource row.
+   *
+   * @covers ::validateResourceCsvStructure
+   */
+  public function testValidateResourceCsvStructureThreadsRowNumbers() {
+    $path = $this->createCsvFile("Title\nFirst\n\nSecond\n");
+
+    $result = $this->csvValidator->validateResourceCsvStructure($path);
+
+    $this->assertTrue($result['valid']);
+    $this->assertSame(2, $result['data'][0]['_row_number']);
+    // The blank line is skipped, so the second resource is really line 4.
+    $this->assertSame(4, $result['data'][1]['_row_number']);
+  }
+
+  /**
+   * Alternative header spellings are folded onto their canonical column.
+   *
+   * "Custom Vocabulary" is the ticket's wording; "CAS Protected" is the header
+   * ys_content_export writes, so an export can be edited and imported back.
+   *
+   * @covers ::validateResourceCsvStructure
+   */
+  public function testValidateResourceCsvStructureFoldsHeaderAliases() {
+    $path = $this->createCsvFile("Title,Custom Vocabulary,CAS Protected\nAliased,Vocab A,Yes\n");
+
+    $result = $this->csvValidator->validateResourceCsvStructure($path);
+
+    $this->assertTrue($result['valid']);
+    $this->assertSame('Vocab A', $result['data'][0]['custom vocab']);
+    $this->assertSame('Yes', $result['data'][0]['cas login required']);
+    $this->assertSame([], $this->csvValidator->getUnknownResourceColumns($result['headers']));
+  }
+
+  /**
+   * An Excel UTF-8 byte-order mark does not hide the first column's header.
+   *
+   * @covers ::validateResourceCsvStructure
+   */
+  public function testValidateResourceCsvStructureToleratesUtf8Bom() {
+    $path = $this->createCsvFile("\xEF\xBB\xBFTitle,Description\nBom Survivor,fine\n");
+
+    $result = $this->csvValidator->validateResourceCsvStructure($path);
+
+    $this->assertTrue($result['valid']);
+    $this->assertSame('Bom Survivor', $result['data'][0]['title']);
+  }
+
+  /**
+   * Headers the importer will silently ignore are reported to the caller.
+   *
+   * @covers ::getUnknownResourceColumns
+   */
+  public function testGetUnknownResourceColumnsNamesIgnoredHeaders() {
+    $path = $this->createCsvFile("Title,Tag,Editor Notes\nTypo'd,tag1,internal\n");
+
+    $result = $this->csvValidator->validateResourceCsvStructure($path);
+    $unknown = $this->csvValidator->getUnknownResourceColumns($result['headers']);
+
+    $this->assertTrue($result['valid']);
+    // "Tag" is a typo for "Tags"; without this warning it would be dropped.
+    $this->assertContains('Tag', $unknown);
+    $this->assertContains('Editor Notes', $unknown);
+    $this->assertNotContains('Title', $unknown);
+  }
+
+  /**
+   * GetExpectedResourceColumns() omits the fields a CSV cannot carry.
+   *
+   * @covers ::getExpectedResourceColumns
+   */
+  public function testGetExpectedResourceColumns() {
+    $columns = $this->csvValidator->getExpectedResourceColumns();
+
+    $this->assertEquals('Title', $columns['title']);
+    $this->assertEquals('Resource Category', $columns['resource category']);
+    $this->assertEquals('Pin to beginning of list', $columns['pin to beginning of list']);
+    $this->assertEquals('Abstract', $columns['abstract']);
+    $this->assertEquals('Citation', $columns['citation']);
+    $this->assertEquals('Journal Publication Name', $columns['journal publication name']);
+    $this->assertEquals('Journal Publication Issue', $columns['journal publication issue']);
+    // Media cannot travel in a CSV cell, and Resource has no Affiliation field.
+    $this->assertArrayNotHasKey('resource media', $columns);
+    $this->assertArrayNotHasKey('teaser media', $columns);
+    $this->assertArrayNotHasKey('affiliation', $columns);
+    $this->assertCount(17, $columns);
+  }
+
 }
