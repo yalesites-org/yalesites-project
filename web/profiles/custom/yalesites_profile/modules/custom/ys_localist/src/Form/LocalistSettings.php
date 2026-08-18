@@ -7,6 +7,7 @@ use Drupal\Core\Entity\EntityTypeManagerInterface;
 use Drupal\Core\Form\ConfigFormBase;
 use Drupal\Core\Form\FormStateInterface;
 use Drupal\Core\Session\AccountProxy;
+use Drupal\ys_core\PlatformAdminSettingInterface;
 use Drupal\ys_localist\LocalistManager;
 use Symfony\Component\DependencyInjection\ContainerInterface;
 
@@ -93,7 +94,12 @@ class LocalistSettings extends ConfigFormBase {
     $config = $this->config('ys_localist.settings');
     $groupsImported = $this->localistManager->getMigrationStatus('localist_groups') > 0;
 
-    $allowSecretItems = function_exists('ys_core_allow_secret_items') ? ys_core_allow_secret_items($this->currentUserSession) : FALSE;
+    // The sync plumbing is a platform admin concern. Asking for the permission
+    // that gates the Platform Admin Settings page - rather than ys_core's
+    // procedural role check, which this module could only call behind a
+    // function_exists() guard - keeps one mechanism across the platform
+    // (yalesites-org/YaleSites-Internal#1560).
+    $allowSecretItems = $this->currentUserSession->hasPermission(PlatformAdminSettingInterface::PERMISSION);
 
     if (
       $config->get('enable_localist_sync') &&

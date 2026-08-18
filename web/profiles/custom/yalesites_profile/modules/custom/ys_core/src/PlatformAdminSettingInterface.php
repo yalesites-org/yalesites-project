@@ -14,6 +14,20 @@ use Drupal\Core\Form\FormStateInterface;
 interface PlatformAdminSettingInterface {
 
   /**
+   * The permission that marks a user as a platform admin.
+   *
+   * This is the platform's single mechanism for "is this a platform admin"
+   * (yalesites-org/YaleSites-Internal#1560). It gates the Platform Admin
+   * Settings route, and any setting left behind on a mixed-audience form gates
+   * on it too, so a rename has one place to change on the PHP side. It is
+   * granted only to the platform_admin role; user 1 satisfies it through
+   * Drupal's permission bypass. The route requirement in ys_core.routing.yml
+   * and the declaration in ys_core.permissions.yml necessarily repeat the
+   * string, because YAML cannot reference a PHP constant.
+   */
+  const PERMISSION = 'administer platform admin settings';
+
+  /**
    * Builds this plugin's settings section.
    *
    * @param array $form

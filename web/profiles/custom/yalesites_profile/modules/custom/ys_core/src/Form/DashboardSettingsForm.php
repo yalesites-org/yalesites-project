@@ -6,6 +6,7 @@ use Drupal\Core\Config\ConfigFactoryInterface;
 use Drupal\Core\Entity\EntityTypeManagerInterface;
 use Drupal\Core\Form\ConfigFormBase;
 use Drupal\Core\Form\FormStateInterface;
+use Drupal\ys_core\PlatformAdminSettingInterface;
 use Drupal\taxonomy\Entity\Term;
 use Drupal\ys_core\DashboardAnnouncements;
 use Symfony\Component\DependencyInjection\ContainerInterface;
@@ -129,6 +130,10 @@ class DashboardSettingsForm extends ConfigFormBase {
       '#open' => FALSE,
       '#description' => $this->t('Most sites leave this off and only <em>consume</em> the feed above. The platform site (yalesites.yale.edu) turns this on to <em>publish</em> the feed at <code>/api/dashboard-announcements</code> from its tagged posts.'),
       // Only platform admins should be deciding which sites publish the feed.
+      // This section stays on this form rather than moving to the Platform
+      // Admin Settings page (yalesites-org/YaleSites-Internal#1560): the
+      // publish side only reads sensibly next to the consume-side fields above,
+      // which site admins own. Kept as a deliberate exception pending sign-off.
       '#access' => $this->isPlatformAdmin(),
     ];
 
@@ -194,11 +199,14 @@ class DashboardSettingsForm extends ConfigFormBase {
   /**
    * Whether the current user can manage the announcements-source side.
    *
-   * Platform admins (and user 1) decide which sites publish the feed.
+   * Platform admins decide which sites publish the feed. This asks for the
+   * permission that gates the Platform Admin Settings page rather than matching
+   * on the platform_admin role name - one mechanism for the whole platform, and
+   * user 1 still passes through Drupal's permission bypass
+   * (yalesites-org/YaleSites-Internal#1560).
    */
   protected function isPlatformAdmin(): bool {
-    $account = $this->currentUser();
-    return (int) $account->id() === 1 || in_array('platform_admin', $account->getRoles(), TRUE);
+    return $this->currentUser()->hasPermission(PlatformAdminSettingInterface::PERMISSION);
   }
 
   /**
