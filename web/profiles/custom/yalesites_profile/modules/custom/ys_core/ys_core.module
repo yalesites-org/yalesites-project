@@ -1401,12 +1401,10 @@ function ys_core_facts_icon_allowed_values(FieldStorageDefinitionInterface $defi
  * across users while the count is resolved per-user at render time.
  */
 function _ys_core_attach_dashboard_badge(array &$variables) {
-  $current_user = \Drupal::currentUser();
-  if ($current_user->isAnonymous()) {
+  if (\Drupal::currentUser()->isAnonymous()) {
     return;
   }
-  $uid = (int) $current_user->id();
-  if (_ys_core_attach_dashboard_badge_walk($variables['items'], $uid)) {
+  if (_ys_core_attach_dashboard_badge_walk($variables['items'])) {
     $variables['#attached']['library'][] = 'ys_core/dashboard_badge';
   }
 }
@@ -1416,8 +1414,20 @@ function _ys_core_attach_dashboard_badge(array &$variables) {
  *
  * The admin menu nests its real top-level entries under a root
  * `system.admin` wrapper, so we cannot assume the link is at depth 0.
+ *
+ * The #lazy_builder deliberately takes no arguments -- do not "helpfully" pass
+ * the uid. The placeholder's parent is core's toolbar, render cached as
+ * `keys: ['toolbar'], contexts: ['user.permissions']`, so a single entry is
+ * shared by every user holding the same permissions, and a placeholder's own
+ * cache metadata cannot make it vary per user (createPlaceholder() returns only
+ * #markup and #attached). The token is a hash of the placeholder array,
+ * arguments included, so a uid baked in here is one editor's uid frozen into
+ * an entry everyone else reads: they would see that editor's count, and
+ * clearing their own read state could not invalidate an entry tagged for
+ * somebody else. Resolving the viewer inside the lazy builder keeps the
+ * placeholder user-agnostic and correct for whoever it is replaced for.
  */
-function _ys_core_attach_dashboard_badge_walk(array &$items, int $uid): bool {
+function _ys_core_attach_dashboard_badge_walk(array &$items): bool {
   $found = FALSE;
   foreach ($items as &$item) {
     $url = $item['url'] ?? NULL;
@@ -1430,7 +1440,7 @@ function _ys_core_attach_dashboard_badge_walk(array &$items, int $uid): bool {
           'badge' => [
             '#lazy_builder' => [
               'ys_core.dashboard_toolbar_lazy_builders:renderBadge',
-              [(string) $uid],
+              [],
             ],
             '#create_placeholder' => TRUE,
           ],
@@ -1439,7 +1449,7 @@ function _ys_core_attach_dashboard_badge_walk(array &$items, int $uid): bool {
       $found = TRUE;
     }
     if (!empty($item['below']) && is_array($item['below'])) {
-      $found = _ys_core_attach_dashboard_badge_walk($item['below'], $uid) || $found;
+      $found = _ys_core_attach_dashboard_badge_walk($item['below']) || $found;
     }
   }
   return $found;

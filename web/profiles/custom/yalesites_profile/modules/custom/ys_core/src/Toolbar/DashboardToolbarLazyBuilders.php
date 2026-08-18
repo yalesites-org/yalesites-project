@@ -2,8 +2,8 @@
 
 namespace Drupal\ys_core\Toolbar;
 
-use Drupal\Core\Entity\EntityTypeManagerInterface;
 use Drupal\Core\Security\TrustedCallbackInterface;
+use Drupal\Core\Session\AccountInterface;
 use Drupal\Core\StringTranslation\StringTranslationTrait;
 use Drupal\ys_core\DashboardAnnouncements;
 
@@ -13,6 +13,10 @@ use Drupal\ys_core\DashboardAnnouncements;
  * The placeholder is attached to the Dashboard menu link in
  * `ys_core_preprocess_menu()`. Keeping the per-user count behind a lazy
  * builder lets the surrounding admin menu render stay shared across users.
+ *
+ * The viewer is resolved here rather than passed in as an argument.
+ *
+ * @see _ys_core_attach_dashboard_badge_walk()
  */
 class DashboardToolbarLazyBuilders implements TrustedCallbackInterface {
 
@@ -20,7 +24,7 @@ class DashboardToolbarLazyBuilders implements TrustedCallbackInterface {
 
   public function __construct(
     protected DashboardAnnouncements $announcements,
-    protected EntityTypeManagerInterface $entityTypeManager,
+    protected AccountInterface $currentUser,
   ) {}
 
   /**
@@ -33,32 +37,30 @@ class DashboardToolbarLazyBuilders implements TrustedCallbackInterface {
   /**
    * Builds the unread-announcements pill for the Dashboard menu link.
    *
-   * Returns an empty render array when the user has no unread items, but the
-   * cacheability is preserved so the result re-renders on cache invalidation
-   * (e.g. when the user presses "mark all as read" on the dashboard and
-   * `markAllRead()` runs).
+   * Returns an empty render array when the user has nothing unread.
+   *
+   * There is no `#cache['keys']`, so the badge is rebuilt for whoever the
+   * placeholder is replaced for rather than stored. That, not tag
+   * invalidation, is what keeps it per-user correct: on the page pipeline
+   * placeholders are rendered by HtmlResponseAttachmentsProcessor at
+   * `kernel.response` priority 0, after Dynamic Page Cache has already stored
+   * the response at priority 7, so these tags never reach that entry. They are
+   * carried for render paths that do replace placeholders within renderRoot().
    */
-  public function renderBadge(string $uid): array {
-    $uid = (int) $uid;
+  public function renderBadge(): array {
     $build = [
       '#cache' => [
         'contexts' => ['user'],
         'tags' => [
-          DashboardAnnouncements::unreadCacheTag($uid),
+          DashboardAnnouncements::unreadCacheTag((int) $this->currentUser->id()),
           DashboardAnnouncements::FEED_CACHE_TAG,
           'config:ys_core.dashboard_settings',
         ],
         'max-age' => 3600,
       ],
     ];
-    if ($uid <= 0) {
-      return $build;
-    }
-    $account = $this->entityTypeManager->getStorage('user')->load($uid);
-    if (!$account) {
-      return $build;
-    }
-    $count = $this->announcements->getUnreadCount($account);
+    // An anonymous account resolves no unread state, so this is 0 for them.
+    $count = $this->announcements->getUnreadCount($this->currentUser);
     if ($count <= 0) {
       return $build;
     }
