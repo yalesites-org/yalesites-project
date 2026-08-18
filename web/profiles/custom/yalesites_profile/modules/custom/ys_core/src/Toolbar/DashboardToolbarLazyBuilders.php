@@ -35,7 +35,8 @@ class DashboardToolbarLazyBuilders implements TrustedCallbackInterface {
    *
    * Returns an empty render array when the user has no unread items, but the
    * cacheability is preserved so the result re-renders on cache invalidation
-   * (e.g. when the user visits the dashboard and `markAllRead()` runs).
+   * (e.g. when the user presses "mark all as read" on the dashboard and
+   * `markAllRead()` runs).
    */
   public function renderBadge(string $uid): array {
     $uid = (int) $uid;

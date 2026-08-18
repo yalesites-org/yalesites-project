@@ -48,6 +48,9 @@ function ys_core_theme($existing, $type, $theme, $path): array {
       'variables' => [
         'platform_version' => NULL,
         'announcements' => [],
+        // Only built when the user actually has unread announcements, so this
+        // stays NULL the rest of the time and the control is not rendered.
+        'mark_all_read_form' => NULL,
       ],
     ],
     'ys_social_links' => [
