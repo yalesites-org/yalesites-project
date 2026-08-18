@@ -69,6 +69,19 @@ class PlatformAdminSettingsFormTest extends KernelTestBase {
   }
 
   /**
+   * The settings moved off Dashboard settings render here instead.
+   *
+   * @covers ::buildForm
+   */
+  public function testMovedAnnouncementsSourceFieldsRenderOnThePage(): void {
+    $form = $this->buildPage();
+
+    $this->assertArrayHasKey('announcements_source', $form);
+    $this->assertArrayHasKey('announcements_source_enabled', $form['announcements_source']);
+    $this->assertArrayHasKey('announcements_source_term', $form['announcements_source']);
+  }
+
+  /**
    * Sections are ordered by the declared plugin weight.
    *
    * @covers ::buildForm
@@ -78,7 +91,7 @@ class PlatformAdminSettingsFormTest extends KernelTestBase {
     $sections = array_diff(array_keys($this->buildPage()), ['actions']);
 
     $this->assertSame(
-      ['site_branding', 'environment_indicator', 'announcements_feed'],
+      ['site_branding', 'environment_indicator', 'announcements_feed', 'announcements_source'],
       array_values($sections),
     );
   }
