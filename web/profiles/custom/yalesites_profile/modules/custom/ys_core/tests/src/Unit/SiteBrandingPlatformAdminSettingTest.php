@@ -221,4 +221,65 @@ class SiteBrandingPlatformAdminSettingTest extends UnitTestCase {
     $this->assertSame([], $written);
   }
 
+  /**
+   * Unset branding resubmitted as its displayed defaults is not a change.
+   *
+   * The ys_core.header_settings config ships site_name_image as '' and carries
+   * no branding name or link at all, while the form always submits an fids list
+   * plus the fallbacks it displayed. Comparing those raw shapes read an
+   * untouched save as a change, so a platform admin saving only the Beacon
+   * section wrote all three branding keys and flushed the whole render cache.
+   * The site-header component applies the same two fallbacks with Twig's
+   * |default(), so leaving them unwritten renders identically.
+   *
+   * @covers ::submitSettings
+   */
+  public function testSubmitSkipsWriteAndCacheFlushWhenUnsetBrandingIsResubmitted(): void {
+    $cache = $this->createMock(CacheBackendInterface::class);
+    $cache->expects($this->never())->method('invalidateAll');
+    $media_manager = $this->createMock(YaleSitesMediaManager::class);
+    $media_manager->expects($this->never())->method('handleMediaFilesystem');
+
+    $written = [];
+    $plugin = $this->plugin(['site_name_image' => ''], $written, $media_manager, $cache);
+
+    $form_state = new FormState();
+    $form_state->setValue(['site_branding', 'site_name_image'], []);
+    $form_state->setValue(['site_branding', 'site_wide_branding_name'], 'Yale University');
+    $form_state->setValue(['site_branding', 'site_wide_branding_link'], 'https://www.yale.edu');
+    $form = [];
+    $plugin->submitSettings($form, $form_state);
+
+    $this->assertSame([], $written);
+  }
+
+  /**
+   * A first image upload over unset config still writes and flushes.
+   *
+   * The guard above must not swallow the case it exists to allow: the header
+   * reads these values through CoreTwigExtension, which bubbles no
+   * cacheability, so without the flush a new lockup would not appear until the
+   * next cache rebuild.
+   *
+   * @covers ::submitSettings
+   */
+  public function testSubmitFlushesRenderCacheWhenAnImageIsUploadedOverUnsetConfig(): void {
+    $cache = $this->createMock(CacheBackendInterface::class);
+    $cache->expects($this->once())->method('invalidateAll');
+    $media_manager = $this->createMock(YaleSitesMediaManager::class);
+    $media_manager->expects($this->once())->method('handleMediaFilesystem')->with([12], '');
+
+    $written = [];
+    $plugin = $this->plugin(['site_name_image' => ''], $written, $media_manager, $cache);
+
+    $form_state = new FormState();
+    $form_state->setValue(['site_branding', 'site_name_image'], [12]);
+    $form_state->setValue(['site_branding', 'site_wide_branding_name'], 'Yale University');
+    $form_state->setValue(['site_branding', 'site_wide_branding_link'], 'https://www.yale.edu');
+    $form = [];
+    $plugin->submitSettings($form, $form_state);
+
+    $this->assertSame([12], $written['site_name_image']);
+  }
+
 }

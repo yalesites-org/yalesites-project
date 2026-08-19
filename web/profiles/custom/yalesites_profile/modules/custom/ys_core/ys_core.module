@@ -19,6 +19,7 @@ use Drupal\node\Entity\Node;
 use Drupal\node\NodeInterface;
 use Drupal\Component\Utility\NestedArray;
 use Drupal\ys_core\Editoria11yRouteSuppressor;
+use Drupal\ys_core\Plugin\PlatformAdminSetting\EnvironmentIndicatorPlatformAdminSetting;
 use Drupal\ys_core\SiteimproveRouteChecker;
 use Drupal\ys_core\WebformContextualLinksSuppressor;
 
@@ -1120,7 +1121,7 @@ function ys_core_preprocess_html(&$variables) {
   $variables['attributes']['data-font-pairing'] = $font_pairing;
 
   // Remove environment indicator CSS class if the indicator is disabled.
-  $show_indicator = $config->get('environment_indicator.show') ?? TRUE;
+  $show_indicator = $config->get(EnvironmentIndicatorPlatformAdminSetting::CONFIG_KEY) ?? EnvironmentIndicatorPlatformAdminSetting::DISPLAY_DEFAULT;
   if (!$show_indicator) {
     // Remove environment-indicator class if it exists.
     $classes = $variables['attributes']['class'] ?? [];
@@ -1563,7 +1564,7 @@ function ys_core_yale_cas_app_parameter_alter(&$app_value, $event) {
 function ys_core_page_top(array &$page_top) {
   // Check if environment indicator should be shown.
   $config = \Drupal::config('ys_core.site');
-  $show_indicator = $config->get('environment_indicator.show') ?? TRUE;
+  $show_indicator = $config->get(EnvironmentIndicatorPlatformAdminSetting::CONFIG_KEY) ?? EnvironmentIndicatorPlatformAdminSetting::DISPLAY_DEFAULT;
 
   // If disabled, remove the environment indicator from page_top.
   if (!$show_indicator && isset($page_top['indicator'])) {

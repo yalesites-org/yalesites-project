@@ -123,4 +123,48 @@ class EnvironmentIndicatorPlatformAdminSettingTest extends UnitTestCase {
     $this->assertSame([], $written);
   }
 
+  /**
+   * An unset value resubmitted as shown is not a change, so nothing is written.
+   *
+   * The ys_core.site config carries no environment_indicator key on a site that
+   * never saved this, so the form shows the checkbox ticked from its own
+   * `?? TRUE` fallback. Comparing the raw NULL against the submitted TRUE
+   * read that untouched resubmission as a change, so saving any other section
+   * on the page rewrote ys_core.site and invalidated its cache tag for nothing.
+   *
+   * @covers ::submitSettings
+   */
+  public function testSubmitSkipsWriteWhenUnsetValueIsResubmittedAsShown(): void {
+    $written = [];
+    $plugin = $this->plugin([], $written);
+
+    $form_state = new FormState();
+    $form_state->setValue(['environment_indicator', 'environment_indicator_show'], 1);
+    $form = [];
+    $plugin->submitSettings($form, $form_state);
+
+    $this->assertSame([], $written);
+  }
+
+  /**
+   * A legacy integer in config matches the equivalent submitted checkbox.
+   *
+   * SiteSettingsForm stored the raw checkbox value, so sites that saved this
+   * before the move hold integer 1/0 rather than a boolean. A strict
+   * comparison against the cast submission never matched those.
+   *
+   * @covers ::submitSettings
+   */
+  public function testSubmitSkipsWriteWhenStoredIntegerMatchesSubmission(): void {
+    $written = [];
+    $plugin = $this->plugin(['environment_indicator.show' => 1], $written);
+
+    $form_state = new FormState();
+    $form_state->setValue(['environment_indicator', 'environment_indicator_show'], 1);
+    $form = [];
+    $plugin->submitSettings($form, $form_state);
+
+    $this->assertSame([], $written);
+  }
+
 }

@@ -59,6 +59,21 @@ class SiteBrandingPlatformAdminSetting extends PlatformAdminSettingBase {
   ];
 
   /**
+   * The values shown, and rendered, when config carries nothing.
+   *
+   * These must stay in sync with the site-header component, which applies the
+   * same two fallbacks with Twig's |default() and cannot read a PHP constant
+   * from its own repo (component-library-twig, in
+   * components/03-organisms/site-header/_site-header--secondary.twig). Because
+   * both sides agree, an unwritten value renders exactly as a stored one -
+   * which is what lets an untouched save skip the write entirely.
+   */
+  const DISPLAY_DEFAULTS = [
+    'site_wide_branding_name' => 'Yale University',
+    'site_wide_branding_link' => 'https://www.yale.edu',
+  ];
+
+  /**
    * The YaleSites media manager.
    *
    * @var \Drupal\ys_core\YaleSitesMediaManager
@@ -145,7 +160,7 @@ class SiteBrandingPlatformAdminSetting extends PlatformAdminSettingBase {
       '#type' => 'textfield',
       '#title' => $this->t('Site-wide branding name'),
       '#description' => $this->t('Enter the name of the site to be displayed in the header.'),
-      '#default_value' => $config->get('site_wide_branding_name') ?? 'Yale University',
+      '#default_value' => $config->get('site_wide_branding_name') ?? self::DISPLAY_DEFAULTS['site_wide_branding_name'],
       '#required' => TRUE,
     ];
 
@@ -153,7 +168,7 @@ class SiteBrandingPlatformAdminSetting extends PlatformAdminSettingBase {
       '#type' => 'textfield',
       '#title' => $this->t('Site-wide branding link'),
       '#description' => $this->t('Enter the URL that the site-wide branding name should link to.'),
-      '#default_value' => $config->get('site_wide_branding_link') ?? 'https://www.yale.edu',
+      '#default_value' => $config->get('site_wide_branding_link') ?? self::DISPLAY_DEFAULTS['site_wide_branding_link'],
       '#autocomplete_route_name' => 'linkit.autocomplete',
       '#autocomplete_route_parameters' => [
         'linkit_profile_id' => 'default',
@@ -178,8 +193,10 @@ class SiteBrandingPlatformAdminSetting extends PlatformAdminSettingBase {
 
     // The page has one Save button for every section, so this runs even when
     // nobody touched branding. Bail out then, rather than flushing the whole
-    // render cache for an unrelated section's save.
-    if ($submitted === $current) {
+    // render cache for an unrelated section's save. The comparison is
+    // normalized because the two sides hold the same values in different
+    // shapes - see normalize().
+    if ($this->normalize($submitted) === $this->normalize($current)) {
       return;
     }
 
@@ -192,6 +209,30 @@ class SiteBrandingPlatformAdminSetting extends PlatformAdminSettingBase {
     $config->save();
 
     $this->cacheRender->invalidateAll();
+  }
+
+  /**
+   * Reduces branding values to a shape that compares stored against submitted.
+   *
+   * @param array $values
+   *   Branding values keyed by config key, from either side.
+   *
+   * @return array
+   *   The same keys, with the image as a plain list of file ids and the name
+   *   and link as strings carrying their displayed fallback.
+   */
+  private function normalize(array $values): array {
+    $normalized = [];
+    foreach (self::CONFIG_KEYS as $key) {
+      $value = $values[$key] ?? NULL;
+      // An unset image is '' in config, NULL once read and [] from the
+      // managed_file element - all of them the same "no image". The field is
+      // #multiple => FALSE, so there is at most one fid to compare.
+      $normalized[$key] = $key === 'site_name_image'
+        ? array_filter((array) $value)
+        : (string) ($value ?? self::DISPLAY_DEFAULTS[$key]);
+    }
+    return $normalized;
   }
 
 }
