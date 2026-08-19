@@ -6,6 +6,7 @@
  */
 
 use Drupal\imagemagick\ImagemagickExecArguments;
+use Drupal\Core\Entity\EntityTypeInterface;
 use Drupal\Core\Entity\FieldableEntityInterface;
 use Drupal\Core\Field\FieldStorageDefinitionInterface;
 use Drupal\Core\Cache\Cache;
@@ -123,6 +124,50 @@ function ys_core_linkit_uri_selector(array $element) {
     $element['#attributes']['data-drupal-selector'] = $selector . '-uri';
   }
   return $element;
+}
+
+/**
+ * Implements hook_entity_bundle_field_info_alter().
+ *
+ * Several block types only render correctly within a set number of items. The
+ * rule is attached to the field the message is about, so Drupal flags that
+ * field's widget and renders the error where every other form error appears —
+ * on the standalone block form and, via InlineBlock::blockValidate(), inside
+ * the Layout Builder off-canvas dialog. It previously lived in a browser-side
+ * setCustomValidity() call that landed on the Component Title instead. See
+ * yalesites-org/YaleSites-Internal#1564.
+ *
+ * Where field storage already caps the number of items — Tabs, at five — the
+ * cap is read from there rather than restated, so the message an editor reads
+ * cannot drift from what the widget actually allows.
+ */
+function ys_core_entity_bundle_field_info_alter(&$fields, EntityTypeInterface $entity_type, $bundle) {
+  if ($entity_type->id() !== 'block_content') {
+    return;
+  }
+
+  $item_count_rules = [
+    'quick_links' => ['field_links', ['min' => 3, 'max' => 9, 'itemLabel' => 'links']],
+    'tabs' => ['field_tabs', ['min' => 2, 'max' => NULL, 'itemLabel' => 'tabs']],
+    'media_grid' => ['field_media_grid_items', ['min' => 2, 'max' => NULL, 'itemLabel' => 'media grid items']],
+    'gallery' => ['field_gallery_items', ['min' => 2, 'max' => NULL, 'itemLabel' => 'gallery items']],
+  ];
+
+  if (!isset($item_count_rules[$bundle])) {
+    return;
+  }
+
+  [$field_name, $options] = $item_count_rules[$bundle];
+  if (!isset($fields[$field_name])) {
+    return;
+  }
+
+  $cardinality = $fields[$field_name]->getFieldStorageDefinition()->getCardinality();
+  if ($options['max'] === NULL && $cardinality !== FieldStorageDefinitionInterface::CARDINALITY_UNLIMITED) {
+    $options['max'] = $cardinality;
+  }
+
+  $fields[$field_name]->addConstraint('YsItemCountRange', $options);
 }
 
 /**
@@ -295,21 +340,6 @@ function ys_core_form_alter(&$form, FormStateInterface $form_state, $form_id) {
     ];
   }
 
-  $block_content_forms = [
-    'block_content_tabs_form',
-    'block_content_quick_links_form',
-    'block_content_media_grid_form',
-    'block_content_gallery_form',
-    'block_content_tabs_edit_form',
-    'block_content_quick_links_edit_form',
-    'block_content_media_grid_edit_form',
-    'block_content_gallery_edit_form',
-  ];
-
-  if (in_array($form_id, $block_content_forms)) {
-    $form['#attached']['library'][] = 'ys_core/block_form';
-  }
-
   $layout_builder_block_forms = [
     'layout_builder_update_block',
     'layout_builder_add_block',
@@ -331,17 +361,6 @@ function ys_core_form_alter(&$form, FormStateInterface $form_state, $form_id) {
       '#type' => 'status_messages',
       '#weight' => -100,
     ];
-
-    $block_type_name = ys_core_get_block_type($form, $form_state);
-    $limited_block_types = [
-      'tabs',
-      'quick_links',
-      'media_grid',
-      'gallery',
-    ];
-    if (in_array($block_type_name, $limited_block_types)) {
-      $form['#attached']['library'][] = 'ys_core/block_form';
-    }
 
     $emptyAdminLabel = $form['settings']['label']['#default_value'] ?? '';
     if (empty($emptyAdminLabel)) {
