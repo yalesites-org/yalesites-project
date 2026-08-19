@@ -21,6 +21,7 @@ use Drupal\node\Entity\Node;
 use Drupal\node\NodeInterface;
 use Drupal\Component\Utility\NestedArray;
 use Drupal\ys_core\Editoria11yRouteSuppressor;
+use Drupal\ys_core\ItemCount\BlockItemCountRules;
 use Drupal\ys_core\SiteimproveRouteChecker;
 use Drupal\ys_core\WebformContextualLinksSuppressor;
 
@@ -131,43 +132,40 @@ function ys_core_linkit_uri_selector(array $element) {
  *
  * Several block types only render correctly within a set number of items. The
  * rule is attached to the field the message is about, so Drupal flags that
- * field's widget and renders the error where every other form error appears —
- * on the standalone block form and, via InlineBlock::blockValidate(), inside
- * the Layout Builder off-canvas dialog. It previously lived in a browser-side
- * setCustomValidity() call that landed on the Component Title instead. See
- * yalesites-org/YaleSites-Internal#1564.
+ * field's widget and reports the error the way every other form error is
+ * reported. Being an entity constraint, it runs on the standalone block form
+ * (ContentEntityForm::validateForm()) and on the Layout Builder path (core's
+ * InlineBlock::blockValidate()) through one implementation rather than two.
+ * It previously lived in a browser-side setCustomValidity() call that landed
+ * on the Component Title instead. See yalesites-org/YaleSites-Internal#1564.
  *
  * Where field storage already caps the number of items — Tabs, at five — the
  * cap is read from there rather than restated, so the message an editor reads
  * cannot drift from what the widget actually allows.
+ *
+ * Which block types are limited, and to what, lives in BlockItemCountRules —
+ * add a block type there and this hook picks it up with no change here.
+ *
+ * @see \Drupal\ys_core\ItemCount\BlockItemCountRules
  */
 function ys_core_entity_bundle_field_info_alter(&$fields, EntityTypeInterface $entity_type, $bundle) {
   if ($entity_type->id() !== 'block_content') {
     return;
   }
 
-  $item_count_rules = [
-    'quick_links' => ['field_links', ['min' => 3, 'max' => 9, 'itemLabel' => 'links']],
-    'tabs' => ['field_tabs', ['min' => 2, 'max' => NULL, 'itemLabel' => 'tabs']],
-    'media_grid' => ['field_media_grid_items', ['min' => 2, 'max' => NULL, 'itemLabel' => 'media grid items']],
-    'gallery' => ['field_gallery_items', ['min' => 2, 'max' => NULL, 'itemLabel' => 'gallery items']],
-  ];
-
-  if (!isset($item_count_rules[$bundle])) {
+  $rule = BlockItemCountRules::forBundle($bundle);
+  if (!$rule || !isset($fields[$rule->fieldName])) {
     return;
   }
 
-  [$field_name, $options] = $item_count_rules[$bundle];
-  if (!isset($fields[$field_name])) {
-    return;
-  }
+  $options = $rule->toConstraintOptions();
 
-  $cardinality = $fields[$field_name]->getFieldStorageDefinition()->getCardinality();
+  $cardinality = $fields[$rule->fieldName]->getFieldStorageDefinition()->getCardinality();
   if ($options['max'] === NULL && $cardinality !== FieldStorageDefinitionInterface::CARDINALITY_UNLIMITED) {
     $options['max'] = $cardinality;
   }
 
-  $fields[$field_name]->addConstraint('YsItemCountRange', $options);
+  $fields[$rule->fieldName]->addConstraint('YsItemCountRange', $options);
 }
 
 /**
