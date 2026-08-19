@@ -111,15 +111,13 @@ function ys_beacon_entity_update(EntityInterface $entity) {
   $original = $entity->original ?? NULL;
 
   if ($entity instanceof MediaInterface) {
-    // Re-extract PDF text only on a genuine file replacement: there must be a
-    // prior revision to compare against and the source file id must differ.
-    // New media are handled by hook_entity_insert, and a save with no original
-    // (some programmatic saves) is not treated as a file change - this also
-    // ensures saving our own extracted-text field back never re-queues.
-    if ($original instanceof MediaInterface
-      && _ys_beacon_media_source_fid($entity) !== _ys_beacon_media_source_fid($original)) {
-      _ys_beacon_queue_pdf_extraction($entity);
-    }
+    // One rule covers every way a document comes to be owed extraction: an
+    // editor opting it in to AI indexing, a bulk opt-in action, and a file
+    // replacement are all plain media updates, and the fid-comparison this
+    // replaced saw only the last of them. PdfTextIndexer::needsExtraction()
+    // records its attempt before writing the extracted text back, so that
+    // save - itself an update - does not re-queue the work.
+    _ys_beacon_queue_pdf_extraction($entity);
   }
 
   if (!in_array($entity->getEntityTypeId(), ['node', 'media'], TRUE)) {
@@ -317,45 +315,43 @@ function ys_beacon_entity_insert(EntityInterface $entity) {
 }
 
 /**
- * Queues background PDF text extraction for a media entity when appropriate.
+ * Implements hook_entity_delete().
  *
- * @param \Drupal\media\MediaInterface $media
- *   The media entity that may hold a PDF.
+ * Forgets the media's PDF extraction attempt record, which would otherwise
+ * outlive the media it describes.
  */
-function _ys_beacon_queue_pdf_extraction(MediaInterface $media) {
-  // Nothing runs on sites where a platform admin has not authorized Beacon.
-  if (!\Drupal::service('ys_beacon.authorization')->isAuthorized()) {
-    return;
-  }
-  // Only extract on sites where Beacon indexing is configured; without an
-  // index there is nothing to feed the extracted text into.
-  if (!\Drupal::config('ys_beacon.settings')->get('azure_index_name')) {
-    return;
-  }
-  /** @var \Drupal\ys_beacon\Service\PdfTextIndexer $indexer */
-  $indexer = \Drupal::service('ys_beacon.pdf_text_indexer');
-  if ($indexer->isExtractable($media)) {
-    \Drupal::queue('ys_beacon_pdf_text_extraction')->createItem(['media_id' => $media->id()]);
+function ys_beacon_entity_delete(EntityInterface $entity) {
+  if ($entity instanceof MediaInterface) {
+    \Drupal::service('ys_beacon.pdf_text_indexer')->forgetAttempt($entity->id());
   }
 }
 
 /**
- * Returns the source file id of a media entity, or NULL.
+ * Queues background PDF text extraction for a media entity when appropriate.
  *
  * @param \Drupal\media\MediaInterface $media
- *   The media entity.
+ *   The media entity that may hold a PDF.
  *
- * @return string|null
- *   The source file id, or NULL when the media has no file source.
+ * @return bool
+ *   TRUE when an extraction item was queued.
  */
-function _ys_beacon_media_source_fid(MediaInterface $media): ?string {
-  try {
-    $fid = $media->getSource()->getSourceFieldValue($media);
-    return $fid !== NULL ? (string) $fid : NULL;
+function _ys_beacon_queue_pdf_extraction(MediaInterface $media): bool {
+  // Nothing runs on sites where a platform admin has not authorized Beacon.
+  if (!\Drupal::service('ys_beacon.authorization')->isAuthorized()) {
+    return FALSE;
   }
-  catch (\Throwable $e) {
-    return NULL;
+  // Only extract on sites where Beacon indexing is configured; without an
+  // index there is nothing to feed the extracted text into.
+  if (!\Drupal::config('ys_beacon.settings')->get('azure_index_name')) {
+    return FALSE;
   }
+  /** @var \Drupal\ys_beacon\Service\PdfTextIndexer $indexer */
+  $indexer = \Drupal::service('ys_beacon.pdf_text_indexer');
+  if (!$indexer->needsExtraction($media)) {
+    return FALSE;
+  }
+  \Drupal::queue('ys_beacon_pdf_text_extraction')->createItem(['media_id' => $media->id()]);
+  return TRUE;
 }
 
 /**

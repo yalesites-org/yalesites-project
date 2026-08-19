@@ -64,3 +64,54 @@ function ys_beacon_deploy_10001() {
     ? t('Filled in Beacon settings defaults missing from an incomplete configuration.')
     : t('Beacon settings are complete; nothing to restore.');
 }
+
+/**
+ * Queues PDF text extraction for documents that predate the trigger fix.
+ *
+ * Until issue #1580 extraction only ever fired when a media item's source file
+ * changed, so no document uploaded and opted in through the normal editorial
+ * flow has ever had its text extracted. On sites migrated from another
+ * platform the whole media library predates Beacon and no editor action will
+ * ever trigger it, so the backlog has to be swept once here rather than left
+ * to the fixed trigger.
+ *
+ * This only queues: parsing PDFs is pure PHP, and the existing
+ * ys_beacon_pdf_text_extraction worker already drains on cron, so the deploy
+ * window stays short. The sandbox pages through the library because loading
+ * every media item at once would not survive a large one. Sites where Beacon
+ * is unauthorized or unconfigured queue nothing - the shared gate in
+ * _ys_beacon_queue_pdf_extraction() decides, so it cannot drift from the
+ * editorial path.
+ */
+function ys_beacon_deploy_10002(array &$sandbox) {
+  // Belt and braces: deploy:hook runs at full bootstrap, so the module file
+  // holding the queueing helper is already loaded. Asking for it explicitly
+  // costs nothing and keeps this hook honest about what it depends on.
+  \Drupal::moduleHandler()->loadInclude('ys_beacon', 'module');
+
+  if (!isset($sandbox['ids'])) {
+    $sandbox['ids'] = \Drupal::service('ys_beacon.pdf_text_indexer')->pendingMediaIds();
+    $sandbox['total'] = count($sandbox['ids']);
+    $sandbox['queued'] = 0;
+  }
+  if (!$sandbox['total']) {
+    $sandbox['#finished'] = 1;
+    return t('No PDF documents were waiting for text extraction.');
+  }
+
+  $storage = \Drupal::entityTypeManager()->getStorage('media');
+  foreach ($storage->loadMultiple(array_splice($sandbox['ids'], 0, 50)) as $media) {
+    if (_ys_beacon_queue_pdf_extraction($media)) {
+      $sandbox['queued']++;
+    }
+  }
+
+  if ($sandbox['ids']) {
+    $sandbox['#finished'] = 1 - (count($sandbox['ids']) / $sandbox['total']);
+    return NULL;
+  }
+  $sandbox['#finished'] = 1;
+  return t('Queued @count PDF document(s) for text extraction; cron extracts them.', [
+    '@count' => $sandbox['queued'],
+  ]);
+}
