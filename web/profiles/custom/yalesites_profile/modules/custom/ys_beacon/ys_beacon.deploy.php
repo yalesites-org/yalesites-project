@@ -79,15 +79,30 @@ function ys_beacon_deploy_10001() {
  * ys_beacon_pdf_text_extraction worker already drains on cron, so the deploy
  * window stays short. The sandbox pages through the library because loading
  * every media item at once would not survive a large one. Sites where Beacon
- * is unauthorized or unconfigured queue nothing - the shared gate in
- * _ys_beacon_queue_pdf_extraction() decides, so it cannot drift from the
- * editorial path.
+ * is unauthorized or unconfigured are skipped outright, before the library is
+ * enumerated at all; the per-item gate in _ys_beacon_queue_pdf_extraction()
+ * still decides each document, so the rule cannot drift from the editorial
+ * path.
  */
 function ys_beacon_deploy_10002(array &$sandbox) {
   // Belt and braces: deploy:hook runs at full bootstrap, so the module file
   // holding the queueing helper is already loaded. Asking for it explicitly
   // costs nothing and keeps this hook honest about what it depends on.
   \Drupal::moduleHandler()->loadInclude('ys_beacon', 'module');
+
+  // Beacon is authorized per site by a platform administrator and a site can
+  // be left without an index name, so most sites receiving this deploy have it
+  // switched off. _ys_beacon_queue_pdf_extraction() gates on exactly these two
+  // conditions and would queue nothing anyway, but the enumeration that feeds
+  // it - an entity query over the media library plus chunked entity loads -
+  // still costs real deploy time on a large site to achieve nothing. Decide
+  // once, up front. Deploy hooks run after config:import, so this reads the
+  // site's post-import state, which is the state the queue would run against.
+  if (!\Drupal::service('ys_beacon.authorization')->isAuthorized()
+    || !\Drupal::config('ys_beacon.settings')->get('azure_index_name')) {
+    $sandbox['#finished'] = 1;
+    return t('Beacon is not enabled on this site; no PDF text extraction was queued.');
+  }
 
   if (!isset($sandbox['ids'])) {
     $sandbox['ids'] = \Drupal::service('ys_beacon.pdf_text_indexer')->pendingMediaIds();
