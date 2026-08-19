@@ -2,6 +2,11 @@ global:
   css:
     theme:
       css/admin-ui.css: {}
+  js:
+    js/office-hours-widget.js: {}
+  dependencies:
+    - core/drupal
+    - core/once
 
 tokens:
   css:
