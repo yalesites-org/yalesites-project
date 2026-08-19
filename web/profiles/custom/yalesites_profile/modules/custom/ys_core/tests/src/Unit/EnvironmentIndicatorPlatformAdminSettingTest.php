@@ -167,4 +167,47 @@ class EnvironmentIndicatorPlatformAdminSettingTest extends UnitTestCase {
     $this->assertSame([], $written);
   }
 
+  /**
+   * Turning the banner off over an unset value still writes.
+   *
+   * The stored side now falls back to the display default before comparing,
+   * which is what makes an untouched resubmission a no-op. It must not also
+   * make the platform admin's untick a no-op on a site that never saved this -
+   * and since the shipped ys_core.site omits the key, that is the most common
+   * path through the guard, not an edge case.
+   *
+   * @covers ::submitSettings
+   */
+  public function testSubmitWritesWhenUnsetValueIsUnticked(): void {
+    $written = [];
+    $plugin = $this->plugin([], $written);
+
+    $form_state = new FormState();
+    $form_state->setValue(['environment_indicator', 'environment_indicator_show'], 0);
+    $form = [];
+    $plugin->submitSettings($form, $form_state);
+
+    $this->assertSame(['environment_indicator.show' => FALSE], $written);
+  }
+
+  /**
+   * Ticking the box over a stored legacy integer 0 still writes.
+   *
+   * The other half of the legacy-integer shape: normalizing the stored side
+   * must let a real change through, not just suppress a false one.
+   *
+   * @covers ::submitSettings
+   */
+  public function testSubmitWritesWhenStoredLegacyIntegerIsTicked(): void {
+    $written = [];
+    $plugin = $this->plugin(['environment_indicator.show' => 0], $written);
+
+    $form_state = new FormState();
+    $form_state->setValue(['environment_indicator', 'environment_indicator_show'], 1);
+    $form = [];
+    $plugin->submitSettings($form, $form_state);
+
+    $this->assertSame(['environment_indicator.show' => TRUE], $written);
+  }
+
 }
