@@ -77,9 +77,13 @@ page loads.
   survives — but note it does not run in CI (`composer unit-test` is a stub),
   so it is a local guard rather than a gate. One consequence worth knowing:
   `MathJax.js` tells developers to load `unpacked/MathJax.js` when debugging a
-  rendering problem, and the prune removes it. To get it back temporarily, run
-  `composer install --no-scripts` or extract the upstream tarball by hand — a
-  plain `composer install` will just prune it again.
+  rendering problem, and the prune removes it. To get it back temporarily use
+  `composer reinstall mathjax/mathjax --no-scripts`, which re-extracts the
+  package without re-running the prune. A plain `composer install` will not
+  restore it: composer decides what to install from the lock and
+  `vendor/composer/installed.php`, so with the package still recorded as
+  installed it reports "Nothing to install, update or remove" and leaves the
+  pruned tree alone.
 - **The pin must stay on MathJax 2.7.1 or later.** Contrib `mathjax` 4.x still
   targets the MathJax 2.x API, so this is deliberately not a 3.x/4.x library.
   Within 2.x, 2.7.0 and earlier fetch the accessibility menu from `[Contrib]`,
