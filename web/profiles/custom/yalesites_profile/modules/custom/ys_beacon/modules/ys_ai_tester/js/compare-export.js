@@ -14,8 +14,8 @@
    */
   function report(button, message) {
     const status = button
-      .closest(".ys-compare-export")
-      ?.querySelector("[data-ys-copy-status]");
+      .closest('.ys-compare-export')
+      ?.querySelector('[data-ys-copy-status]');
     if (status) {
       status.textContent = message;
     }
@@ -26,11 +26,11 @@
 
   Drupal.behaviors.ysAiTesterCompareExport = {
     attach(context) {
-      once("ys-compare-export", "[data-ys-copy-target]", context).forEach(
+      once('ys-compare-export', '[data-ys-copy-target]', context).forEach(
         (button) => {
-          button.addEventListener("click", async () => {
+          button.addEventListener('click', async () => {
             const prompt = document.getElementById(
-              button.getAttribute("data-ys-copy-target")
+              button.getAttribute('data-ys-copy-target'),
             );
             if (!prompt) {
               return;
@@ -38,7 +38,7 @@
 
             try {
               await navigator.clipboard.writeText(prompt.value.trim());
-              report(button, Drupal.t("Prompt copied to the clipboard."));
+              report(button, Drupal.t('Prompt copied to the clipboard.'));
             } catch (error) {
               // Clipboard access can be refused outright (denied permission, or
               // a non-secure context). Selecting the text leaves the reviewer one
@@ -47,11 +47,11 @@
               prompt.select();
               report(
                 button,
-                Drupal.t("Press Ctrl/Cmd+C to copy the selected prompt.")
+                Drupal.t('Press Ctrl/Cmd+C to copy the selected prompt.'),
               );
             }
           });
-        }
+        },
       );
     },
   };

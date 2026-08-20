@@ -139,28 +139,27 @@ lando drush migrate:rollback --group=ys_sn
 The migrations run in dependency order. Use `--execute-dependencies` to have
 Drush handle this automatically.
 
-| ID | Label | Depends on | Description |
-|----|-------|------------|-------------|
-| `ys_sn_news_terms` | Sustainability News Terms | — | Migrates D7 `take_action_topics` taxonomy terms into the D10 `post_category` vocabulary. |
-| `ys_sn_files` | Sustainability News Files | — | Migrates D7 `file_managed` records for public images into D10 `entity:file`, physically copying files from `d7_source/` to `public://news/`. |
-| `ys_sn_media` | Sustainability News Media | `ys_sn_files` | Creates D10 `media:image` entities for each migrated file. Alt and title text are sourced from D7 field data (`field_image2` takes precedence over `field_news_image`). All media items are tagged *Imported from migration* in the `tags` vocabulary. |
-| `ys_sn_news` | Sustainability News | `ys_sn_files`, `ys_sn_media`, `ys_sn_news_terms` | Migrates D7 `news` nodes to D10 `post` nodes, including Layout Builder sections with inline image and text blocks. |
+| ID                 | Label                     | Depends on                                       | Description                                                                                                                                                                                                                                            |
+| ------------------ | ------------------------- | ------------------------------------------------ | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| `ys_sn_news_terms` | Sustainability News Terms | —                                                | Migrates D7 `take_action_topics` taxonomy terms into the D10 `post_category` vocabulary.                                                                                                                                                               |
+| `ys_sn_files`      | Sustainability News Files | —                                                | Migrates D7 `file_managed` records for public images into D10 `entity:file`, physically copying files from `d7_source/` to `public://news/`.                                                                                                           |
+| `ys_sn_media`      | Sustainability News Media | `ys_sn_files`                                    | Creates D10 `media:image` entities for each migrated file. Alt and title text are sourced from D7 field data (`field_image2` takes precedence over `field_news_image`). All media items are tagged _Imported from migration_ in the `tags` vocabulary. |
+| `ys_sn_news`       | Sustainability News       | `ys_sn_files`, `ys_sn_media`, `ys_sn_news_terms` | Migrates D7 `news` nodes to D10 `post` nodes, including Layout Builder sections with inline image and text blocks.                                                                                                                                     |
 
 ### Field mapping
 
-| D7 field | D10 field | Notes |
-|----------|-----------|-------|
-| `title` | `title` | |
-| `field_date` | `field_publish_date` | Converted from datetime to date |
-| `field_link_to_external_story` | `field_external_source` | URL only; 123 nodes |
-| `field_image2` / `field_news_image` | `field_teaser_media` | `field_image2` preferred; 199 / 132 nodes respectively |
-| `body/summary` | `field_teaser_text` | 156 nodes; format: `heading_html` |
-| `field_take_action_topic` | `field_category` | 161 nodes; looked up from `ys_sn_news_terms` |
-| `body/value` | Layout Builder text block | 440 nodes; inline block created per node |
-| `field_image2` / `field_news_image` | Layout Builder image block | Inline block; `field_image2` preferred |
-| `status` | `moderation_state` | `0` → `draft`, `1` → `published` |
-| `field_feature_on_homepage` | — | Skipped (unused since 2022) |
-| `metatags` | — | Skipped |
-| `redirect` | — | Skipped |
-| Author | `uid` | Hardcoded to `uid = 1` (admin) |
-
+| D7 field                            | D10 field                  | Notes                                                  |
+| ----------------------------------- | -------------------------- | ------------------------------------------------------ |
+| `title`                             | `title`                    |                                                        |
+| `field_date`                        | `field_publish_date`       | Converted from datetime to date                        |
+| `field_link_to_external_story`      | `field_external_source`    | URL only; 123 nodes                                    |
+| `field_image2` / `field_news_image` | `field_teaser_media`       | `field_image2` preferred; 199 / 132 nodes respectively |
+| `body/summary`                      | `field_teaser_text`        | 156 nodes; format: `heading_html`                      |
+| `field_take_action_topic`           | `field_category`           | 161 nodes; looked up from `ys_sn_news_terms`           |
+| `body/value`                        | Layout Builder text block  | 440 nodes; inline block created per node               |
+| `field_image2` / `field_news_image` | Layout Builder image block | Inline block; `field_image2` preferred                 |
+| `status`                            | `moderation_state`         | `0` → `draft`, `1` → `published`                       |
+| `field_feature_on_homepage`         | —                          | Skipped (unused since 2022)                            |
+| `metatags`                          | —                          | Skipped                                                |
+| `redirect`                          | —                          | Skipped                                                |
+| Author                              | `uid`                      | Hardcoded to `uid = 1` (admin)                         |

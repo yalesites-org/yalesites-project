@@ -17,6 +17,7 @@ Each migration within Yale is organized into specific migration groups. These gr
 All migrations use a shared database connection, typically named 'd7' for Drupal 7 sources. This connection is defined in the site’s `settings.php` file and is essential for accessing the source data.
 
 Below is a sample configuration for the `settings.php` file:
+
 ```php
 $databases['d7']['default'] = [
   'database'=>'pantheon',

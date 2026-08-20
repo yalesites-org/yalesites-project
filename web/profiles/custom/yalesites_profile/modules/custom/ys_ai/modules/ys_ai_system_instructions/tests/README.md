@@ -9,6 +9,7 @@ The `TextFormatDetectionService` detects whether content is markdown or plain te
 ### Two Formatting Paths
 
 1. **Markdown Path** (detected via CommonMark AST scoring)
+
    - Preserves content exactly as-is (trimmed only)
    - Maintains markdown structure (headers, lists, formatting)
    - Used for AI-generated system instructions
@@ -24,6 +25,7 @@ The `TextFormatDetectionService` detects whether content is markdown or plain te
 ### Why Not Always Markdown?
 
 Plain text formatting transformations (sentence breaks, line wrapping) would corrupt markdown structure. For example:
+
 - Plain text: `"First sentence. Second sentence."` → Adds `\n\n` between sentences
 - Markdown: `"# Header\n\nContent"` → Preserved exactly (those `\n\n` are intentional structure)
 

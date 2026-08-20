@@ -23,9 +23,9 @@
     message.clear();
     message.add(
       Drupal.t(
-        "Your changes have not been saved yet. An emergency alert has to be confirmed before it goes live: choose Confirm in the confirmation window to publish it, or Cancel to keep editing."
+        'Your changes have not been saved yet. An emergency alert has to be confirmed before it goes live: choose Confirm in the confirmation window to publish it, or Cancel to keep editing.',
       ),
-      { type: "warning", id: "ys-alert-emergency-pending" }
+      { type: 'warning', id: 'ys-alert-emergency-pending' },
     );
   }
 
@@ -39,31 +39,31 @@
    *   The dialog instance.
    */
   function buildDialog(form) {
-    const content = document.createElement("div");
+    const content = document.createElement('div');
     content.textContent = Drupal.t(
-      "Please be aware that you have selected the Emergency Alert option. We strongly recommend that you only use this alert option in the case of an emergency, such as lockdown/safety information, severe weather that requires people to take shelter, or other events with possible detrimental effects on one's safety."
+      "Please be aware that you have selected the Emergency Alert option. We strongly recommend that you only use this alert option in the case of an emergency, such as lockdown/safety information, severe weather that requires people to take shelter, or other events with possible detrimental effects on one's safety.",
     );
 
     const dialog = Drupal.dialog(content, {
       // jQuery UI only honours "dialogClass" in back-compat mode, which Drupal
       // does not enable, so use the supported "classes" option instead. The
       // default "ui-corner-all" is repeated here because "classes" replaces it.
-      classes: { "ui-dialog": "ui-corner-all confirm-dialog" },
+      classes: { 'ui-dialog': 'ui-corner-all confirm-dialog' },
       resizable: true,
       closeOnEscape: false,
       width: 600,
-      title: Drupal.t("Emergency Alert Confirmation"),
+      title: Drupal.t('Emergency Alert Confirmation'),
       buttons: [
         {
-          text: Drupal.t("Cancel"),
-          class: "button--secondary button",
+          text: Drupal.t('Cancel'),
+          class: 'button--secondary button',
           click() {
             dialog.close();
           },
         },
         {
-          text: Drupal.t("Confirm"),
-          class: "button--primary button",
+          text: Drupal.t('Confirm'),
+          class: 'button--primary button',
           click() {
             form.submit();
           },
@@ -76,17 +76,17 @@
 
   Drupal.behaviors.ysAlertConfirmTypeModal = {
     attach(context) {
-      once("ys-alert-confirm-type", "form.ys-alert-settings", context).forEach(
+      once('ys-alert-confirm-type', 'form.ys-alert-settings', context).forEach(
         (form) => {
-          const submitButton = form.querySelector("#edit-submit");
-          const emergency = form.querySelector("#edit-type-emergency");
-          const region = form.querySelector(".ys-alert-emergency-notice");
+          const submitButton = form.querySelector('#edit-submit');
+          const emergency = form.querySelector('#edit-type-emergency');
+          const region = form.querySelector('.ys-alert-emergency-notice');
 
           if (!submitButton || !emergency || !region) {
             return;
           }
 
-          submitButton.addEventListener("click", (event) => {
+          submitButton.addEventListener('click', (event) => {
             if (!emergency.checked) {
               return;
             }
@@ -95,7 +95,7 @@
             showPendingNotice(region);
             buildDialog(form).showModal();
           });
-        }
+        },
       );
     },
   };

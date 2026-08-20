@@ -13,6 +13,6 @@
         s.parentNode.insertBefore(gcse, s);
         window.gcseLoaded = true;
       }
-    }
+    },
   };
 })(Drupal);

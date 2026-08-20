@@ -119,16 +119,19 @@ This project features custom fields for block theming. For example, the divider 
 This project uses semantic release for automated versioning and publishing:
 
 ### Branch Strategy
+
 - **develop**: Default branch for active development and integration testing
 - **master**: Production-ready code; triggers semantic release process
 
 ### Semantic Release
+
 - Commits to `master` branch trigger automated versioning based on conventional commit messages
 - Version updates are automatically applied to `web/profiles/custom/yalesites_profile/yalesites_profile.info.yml`
 - Changes are automatically backmerged to the `develop` branch
 - GitHub releases are created automatically
 
 ### Conventional Commits Impact
+
 - `fix:` commits trigger patch releases (e.g., 1.0.1)
 - `feat:` commits trigger minor releases (e.g., 1.1.0)
 - `BREAKING CHANGE:` in commit body triggers major releases (e.g., 2.0.0)

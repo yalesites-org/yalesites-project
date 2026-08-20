@@ -1,9 +1,11 @@
 # YaleSites Themes
 
 ## Description
+
 The YaleSites Themes module empowers site administrators with a suite of features that put them in control of their website's visual identity. Our primary objective is to offer site owners the tools they need to personalize the look and feel of their websites. This feature-rich module not only enhances customization capabilities but also instills confidence in site owners, enabling them to make informed decisions and achieve their desired outcomes.
 
 ## Features
+
 - **Levers**: This module introduces a user-friendly theme settings form accessible via the admin toolbar. This intuitive form opens in a modal dialog and guides site owners through the process of selecting site colors from a curated set of palettes. Additionally, it provides control over other site-wide settings, influencing the global styling of the website. The tool's preview functionality allows authors to visualize theme settings before implementation, ensuring their decisions align with their vision.
 - **Dials**: The module offers granular control over theme settings at the level of individual components. Site authors can fine-tune background colors, layouts, and orientations of these components, providing them with the flexibility to craft their unique narrative and visual experience.
 - **Theme Settings Management**: This module streamlines the organization of theme settings and incorporates them into the code as data attributes and CSS custom variables. This approach enhances the maintainability and consistency of the theme settings, making it easier for developers to manage and customize the site's visual elements.

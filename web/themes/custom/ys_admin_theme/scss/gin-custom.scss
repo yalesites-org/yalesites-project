@@ -55,7 +55,8 @@ a.focal-point-preview-link {
     gap: 1rem;
     grid-template-columns: repeat(2, 1fr);
 
-    .form-element, .form-item {
+    .form-element,
+    .form-item {
       width: 100%;
       min-width: 100%;
     }
@@ -69,7 +70,8 @@ a.focal-point-preview-link {
     gap: 1rem;
     grid-template-columns: repeat(3, 1fr);
 
-    .form-element, .form-item {
+    .form-element,
+    .form-item {
       width: 100%;
       min-width: 100%;
     }
@@ -120,13 +122,19 @@ a.focal-point-preview-link {
 // other items adhere to, like chosen and the title of a
 // drupal form.  This allows it to closer match them.
 .form-element {
-  min-height: calc(var(--input-padding-vertical) * 3 + var(--input-line-height));
+  min-height: calc(
+    var(--input-padding-vertical) * 3 + var(--input-line-height)
+  );
 }
 
 // Safari: inflating min-height on single-line inputs can make long URLs appear to wrap.
 // Inputs win over `.form-element` via higher specificity (no !important).
-input.form-element:not([type="checkbox"]):not([type="radio"]):not([type="file"]) {
-  min-height: calc(var(--input-padding-vertical) * 2 + var(--input-line-height));
+input.form-element:not([type='checkbox']):not([type='radio']):not(
+    [type='file']
+  ) {
+  min-height: calc(
+    var(--input-padding-vertical) * 2 + var(--input-line-height)
+  );
 }
 
 // Long URLs in Linkit / entity autocomplete: keep suggestions on one line and wide
@@ -179,7 +187,7 @@ input.form-element:not([type="checkbox"]):not([type="radio"]):not([type="file"])
 // Extra specificity (element + two classes / attribute) beats Gin defaults without !important.
 input.form-element.form-linkit-autocomplete,
 .claro-autocomplete input.form-element.form-autocomplete,
-input.form-element[type="url"],
+input.form-element[type='url'],
 input.form-element.form-autocomplete {
   overflow-x: auto;
   white-space: nowrap;
@@ -360,7 +368,6 @@ input.form-element.form-autocomplete {
   .visually-hidden.skip-link {
     color: var(--color-white);
   }
-
 }
 
 /* stylelint-enable */

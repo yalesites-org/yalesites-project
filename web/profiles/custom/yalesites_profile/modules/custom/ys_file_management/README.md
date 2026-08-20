@@ -27,6 +27,7 @@ Users with the "File Manager" role have the following capabilities:
 - Delete files even when they're used by other media (with warnings about broken references)
 
 **Permissions granted to File Manager:**
+
 - `access files overview`
 - `access media overview`
 - `delete any document media`
@@ -46,6 +47,7 @@ Platform Admins do **not** automatically receive File Manager permissions. If ne
 ### Regular Users
 
 Users without the File Manager role:
+
 - Can only delete media entities they have permission to delete
 - Cannot delete associated physical files
 - Do not see file deletion options on the media delete form
@@ -61,6 +63,7 @@ The module implements `hook_entity_type_alter()` to replace the default media de
 `ConditionalMediaDeleteForm` extends Drupal Core's `ContentEntityDeleteForm` and:
 
 1. **For File Managers** (`manage media files` permission):
+
    - Shows custom file deletion form with checkbox
    - **Can delete files regardless of ownership** - warned if owned by another user
    - **Can delete files regardless of usage count** - warned about broken references if used elsewhere
@@ -91,8 +94,8 @@ This differs from the default Drupal behavior where `$file->delete()` only marks
 File deletion behavior is controlled by `ys_file_management.settings.yml`:
 
 ```yaml
-delete_file_default: false  # Checkbox unchecked by default
-disable_delete_control: false  # Checkbox can be toggled
+delete_file_default: false # Checkbox unchecked by default
+disable_delete_control: false # Checkbox can be toggled
 ```
 
 ### Dependencies
@@ -130,6 +133,7 @@ For File Managers with the `manage media files` permission:
 **File Managers can always proceed with deletion** - warnings are informational only and never block the checkbox from appearing.
 
 For regular users without the `manage media files` permission:
+
 - No file deletion options are shown
 - Files are always retained
 - No usage or ownership information is displayed
@@ -143,6 +147,7 @@ For regular users without the `manage media files` permission:
 The module uses a service-oriented architecture to separate concerns and follows modern Drupal 10+ best practices:
 
 **Service Layer:**
+
 - `MediaFileDeleter` - Business logic for file deletion
   - Implements `MediaFileDeleterInterface` for better testability
   - Uses typed properties and constructor property promotion (PHP 8.0+)
@@ -153,6 +158,7 @@ The module uses a service-oriented architecture to separate concerns and follows
   - Helper methods for logger and cache tag management
 
 **Form Layer:**
+
 - `ConditionalMediaDeleteForm` - UI and permission handling
   - Extends `ContentEntityDeleteForm` (Drupal Core)
   - Implements defense-in-depth permission checking
@@ -164,11 +170,13 @@ The module uses a service-oriented architecture to separate concerns and follows
 ### Class Structure
 
 **`MediaFileDeleterInterface`**
+
 - Interface for the file deletion service
 - Defines contract for `validateFile()`, `validateFileUri()`, `deleteFile()`
 - Allows for alternative implementations and improved testing
 
 **`ConditionalMediaDeleteForm`**
+
 - Extends: `ContentEntityDeleteForm` (Drupal Core)
 - Services:
   - `ys_file_management.media_file_deleter` (injected as `MediaFileDeleterInterface`)
@@ -182,6 +190,7 @@ The module uses a service-oriented architecture to separate concerns and follows
   - `submitForm()` - Delegates to service for file deletion
 
 **`MediaFileDeleter`** (Service)
+
 - Service ID: `ys_file_management.media_file_deleter`
 - Interface: `MediaFileDeleterInterface`
 - Dependencies (via constructor property promotion):
@@ -231,28 +240,31 @@ The module uses a **best-effort** approach that prioritizes database consistency
 
 **Strategy Details:**
 
-| Scenario | Behavior | Logging | User Feedback | Return Value |
-|----------|----------|---------|---------------|--------------|
-| **Success** | File and entity deleted, cache invalidated | Info log | Success message | TRUE |
-| **Invalid file object** | Abort operation | Error log | Error message | FALSE |
-| **Invalid URI scheme** | Abort operation | Error log | Error message | FALSE |
-| **Filesystem delete fails** | Delete entity anyway | Warning log | Warning message | FALSE |
-| **FileException** | Skip entity deletion | Error log | Error message | FALSE |
-| **EntityStorageException** | File may be orphaned | Error log | Error message | FALSE |
-| **Unexpected exception** | Varies | Error log with type | Error message | FALSE |
+| Scenario                    | Behavior                                   | Logging             | User Feedback   | Return Value |
+| --------------------------- | ------------------------------------------ | ------------------- | --------------- | ------------ |
+| **Success**                 | File and entity deleted, cache invalidated | Info log            | Success message | TRUE         |
+| **Invalid file object**     | Abort operation                            | Error log           | Error message   | FALSE        |
+| **Invalid URI scheme**      | Abort operation                            | Error log           | Error message   | FALSE        |
+| **Filesystem delete fails** | Delete entity anyway                       | Warning log         | Warning message | FALSE        |
+| **FileException**           | Skip entity deletion                       | Error log           | Error message   | FALSE        |
+| **EntityStorageException**  | File may be orphaned                       | Error log           | Error message   | FALSE        |
+| **Unexpected exception**    | Varies                                     | Error log with type | Error message   | FALSE        |
 
 **Rationale:**
+
 - Database consistency takes priority over filesystem consistency
 - Media deletion should not be blocked by file system issues
 - All failures are logged with appropriate severity for monitoring
 - Cache is invalidated on any deletion to prevent stale UI
 
 **Logging Levels:**
+
 - `info`: Successful operations
 - `warning`: Partial failures (file system deletion failed but entity deleted)
 - `error`: Complete failures, security issues, unexpected errors
 
 **Cache Invalidation:**
+
 - File cache tags are invalidated on both success and partial success
 - Ensures UI accurately reflects file status
 - Prevents references to deleted files from being cached
@@ -262,11 +274,13 @@ The module uses a **best-effort** approach that prioritizes database consistency
 This module follows modern development practices for Drupal 10+:
 
 **PHP 8.0+ Features:**
+
 - **Constructor Property Promotion**: Service dependencies are declared and assigned in the constructor signature, reducing boilerplate code
 - **Typed Properties**: All class properties use explicit type declarations for better IDE support and runtime safety
 - **Mixed Type**: The `validateFile()` method uses `mixed` type for flexible validation
 
 **Drupal 10+ Best Practices:**
+
 - **Interface-Based Design**: `MediaFileDeleterInterface` follows SOLID principles (Dependency Inversion)
 - **Service Aliasing**: The service definition includes an interface alias for type-hinting flexibility
 - **Constant Visibility**: Public constants (e.g., `PERMISSION_MANAGE_FILES`) allow reuse across classes
@@ -274,6 +288,7 @@ This module follows modern development practices for Drupal 10+:
 - **Comprehensive Documentation**: All methods include detailed PHPDoc blocks explaining the "why" not just the "what"
 
 **Code Quality:**
+
 - Follows PSR-12 coding standard
 - Uses Drupal coding conventions (uppercase TRUE/FALSE/NULL)
 - Comprehensive test coverage (unit and kernel tests)
@@ -302,6 +317,7 @@ lando composer code-fix    # Auto-fix violations
 The module includes comprehensive test coverage:
 
 **Unit Tests** (`tests/src/Unit/MediaFileDeleterTest.php`):
+
 - Service implements MediaFileDeleterInterface
 - File object validation (valid, null, invalid objects)
 - URI validation (valid schemes, invalid schemes)
@@ -314,6 +330,7 @@ The module includes comprehensive test coverage:
 - Invalid URI handling
 
 **Kernel Tests** (`tests/src/Kernel/ConditionalMediaDeleteFormTest.php`):
+
 - Service availability and interface implementation
 - Service registration in container
 - File validation integration
@@ -327,6 +344,7 @@ The module includes comprehensive test coverage:
 **Running Tests:**
 
 **Unit Tests** (no database required):
+
 ```bash
 # Run all unit tests
 lando phpunit web/profiles/custom/yalesites_profile/modules/custom/ys_file_management/tests/src/Unit/
@@ -342,6 +360,7 @@ lando phpunit --verbose web/profiles/custom/yalesites_profile/modules/custom/ys_
 ```
 
 **Kernel Tests** (require database):
+
 ```bash
 # Set up environment variables for Lando database
 export SIMPLETEST_DB='mysql://pantheon:pantheon@database/pantheon'
@@ -355,12 +374,14 @@ SIMPLETEST_DB='mysql://pantheon:pantheon@database/pantheon' SIMPLETEST_BASE_URL=
 ```
 
 **Run All Tests:**
+
 ```bash
 # Set environment and run all tests (unit + kernel)
 SIMPLETEST_DB='mysql://pantheon:pantheon@database/pantheon' SIMPLETEST_BASE_URL='http://appserver' lando phpunit web/profiles/custom/yalesites_profile/modules/custom/ys_file_management/tests/
 ```
 
 **Database Configuration:**
+
 - **Host:** `database` (Lando internal hostname)
 - **Database:** `pantheon`
 - **User:** `pantheon`
@@ -386,6 +407,7 @@ Unit tests provide comprehensive coverage of the service layer and can be run lo
 ### Files not being deleted
 
 **Check permissions:**
+
 - User has File Manager role assigned
 - Checkbox is checked on delete form
 - File permissions allow deletion
@@ -393,6 +415,7 @@ Unit tests provide comprehensive coverage of the service layer and can be run lo
 ### Usage warnings appear incorrectly
 
 **Possible causes:**
+
 - File is actually used elsewhere (check Media references)
 - File entity has multiple media referencing it
 - Check database: `SELECT * FROM file_usage WHERE fid = X`
@@ -400,6 +423,7 @@ Unit tests provide comprehensive coverage of the service layer and can be run lo
 ### Errors in log
 
 **Check:**
+
 - File exists at the URI
 - Web server has write permissions to files directory
 - File is not locked by another process

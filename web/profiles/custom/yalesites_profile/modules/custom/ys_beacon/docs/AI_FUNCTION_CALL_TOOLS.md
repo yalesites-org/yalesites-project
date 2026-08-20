@@ -21,10 +21,10 @@ implementation for adding another.
    id to that array (`ToolCallHandler`'s third constructor argument). **This
    is the only place that controls what the model can actually call - and
    `ToolCallHandler` enforces it twice**, not just once: `buildToolsInput()`
-   only ever *offers* the allow-listed plugins, and `executeOne()` separately
-   checks the allow-list again before *executing* a returned call. The second
+   only ever _offers_ the allow-listed plugins, and `executeOne()` separately
+   checks the allow-list again before _executing_ a returned call. The second
    check matters on its own: `FunctionCallPluginManager::
-   convertToolResponseToObject()` resolves a tool call's function_name
+convertToolResponseToObject()` resolves a tool call's function_name
    against every plugin **registered on the site**, not just the ones this
    handler offered - so without that second check, a model that named an
    unoffered plugin (via prompt injection, since indexed site content reaches
@@ -50,7 +50,7 @@ shared half belongs on the handler, not copied into a caller.
 ### Watch the input token budget when adding a tool
 
 `ChatApiController` windows the transcript to the model's context window before the
-first call (`windowTranscriptToBudget()`), and the tool round trip is *not* counted
+first call (`windowTranscriptToBudget()`), and the tool round trip is _not_ counted
 against that budget - neither the tool schema attached to the request nor the
 assistant echo and tool result appended for the follow-up call. Today's single tool
 costs roughly 160 tokens all in, comfortably inside the existing
@@ -119,7 +119,7 @@ not just a mitigation: a required parameter forces the JSON schema offered to
 the model to mark it `"required"`, so a compliant model can never send an
 empty `arguments` object, which means contrib's `Json::decode()` never sees
 `''`. `GetCurrentDateTime`'s `timezone` context is declared `required: TRUE`
-*and* keeps a `default_value` - Drupal's own `Context::getContextValue()`
+_and_ keeps a `default_value` - Drupal's own `Context::getContextValue()`
 falls back to the default whenever no value was ever explicitly set,
 regardless of `required`, so the plugin still tolerates a model that omits the
 key or sends an invalid timezone (`execute()` catches an invalid
@@ -146,7 +146,7 @@ and `ToolsInput::getFunctionByName()` returns `NULL` for a function it does not
 know. `ToolsFunctionOutput::__construct()` only calls `setName()` when that
 argument is non-`NULL`, leaving its non-nullable `string $name` uninitialized, so
 `getName()` raises an `Error` rather than returning a name to reject. That is why
-`ToolCallHandler::executeOne()` reads the name *inside* its own `try` - otherwise
+`ToolCallHandler::executeOne()` reads the name _inside_ its own `try` - otherwise
 the allow-list check would be unreachable in exactly the injected case it exists
 for, and the whole turn would fail instead of the one tool call. The streamed
 path always sets a name, so this is easy to miss when testing only the live

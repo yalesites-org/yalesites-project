@@ -8,12 +8,14 @@
   const GrandHeroForm = {
     config: {
       maxRetries: 10,
-      retryDelay: 300
+      retryDelay: 300,
     },
 
     selectors: {
-      replaceHeadingCheckbox: 'input[name*="[field_replace_heading_with_image]"]',
-      overlayField: 'fieldset.js-media-library-widget[data-drupal-selector*="field-overlay-png"]'
+      replaceHeadingCheckbox:
+        'input[name*="[field_replace_heading_with_image]"]',
+      overlayField:
+        'fieldset.js-media-library-widget[data-drupal-selector*="field-overlay-png"]',
     },
 
     initializedForms: {},
@@ -48,7 +50,9 @@
           return true;
         }
 
-        const $replaceHeadingCheckbox = $context.find(this.selectors.replaceHeadingCheckbox);
+        const $replaceHeadingCheckbox = $context.find(
+          this.selectors.replaceHeadingCheckbox,
+        );
         const $overlayField = $context.find(this.selectors.overlayField);
 
         if (!$replaceHeadingCheckbox.length || !$overlayField.length) {
@@ -88,34 +92,44 @@
         }, this.config.retryDelay);
       }
       return success;
-    }
+    },
   };
 
   Drupal.behaviors.grandHeroForm = {
     attach: function (context, settings) {
-      once('grandHeroForm', 'form.layout-builder-add-block, form.layout-builder-update-block', context).forEach(function (form) {
+      once(
+        'grandHeroForm',
+        'form.layout-builder-add-block, form.layout-builder-update-block',
+        context,
+      ).forEach(function (form) {
         const $form = $(form);
         if ($form.find('#grand-hero-settings').length) {
           GrandHeroForm.attemptInit($form);
         }
       });
-    }
+    },
   };
 
-  $(document).on('dialog:aftercreate', function (event, dialog, $element, settings) {
-    const $targetForm = $element.find('form.layout-builder-add-block, form.layout-builder-update-block').has('#grand-hero-settings');
-    if ($targetForm.length) {
-      GrandHeroForm.attemptInit($targetForm);
-    }
-  });
+  $(document).on(
+    'dialog:aftercreate',
+    function (event, dialog, $element, settings) {
+      const $targetForm = $element
+        .find('form.layout-builder-add-block, form.layout-builder-update-block')
+        .has('#grand-hero-settings');
+      if ($targetForm.length) {
+        GrandHeroForm.attemptInit($targetForm);
+      }
+    },
+  );
 
   $(document).on('drupalAjaxComplete', function (event, xhr, settings) {
     if (settings.selector && settings.selector.includes('layout-builder')) {
-      const $newForm = $('form.layout-builder-add-block, form.layout-builder-update-block').has('#grand-hero-settings');
+      const $newForm = $(
+        'form.layout-builder-add-block, form.layout-builder-update-block',
+      ).has('#grand-hero-settings');
       if ($newForm.length) {
         GrandHeroForm.attemptInit($newForm);
       }
     }
   });
-
 })(jQuery, Drupal, once);

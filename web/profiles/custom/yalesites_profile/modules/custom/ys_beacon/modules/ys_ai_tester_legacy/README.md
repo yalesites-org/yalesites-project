@@ -90,7 +90,7 @@ rather than erroring mid-batch.
 **Do the removal across two releases, and do not delete the code and the
 `core.extension.yml` line in the same one.** The platform removes modules through
 `drush deploy`, not by running `drush pm:uninstall` on each site by hand.
-`config:import` has to *uninstall* this module, which needs its code present to
+`config:import` has to _uninstall_ this module, which needs its code present to
 resolve `getPath()` — with the directory already gone it throws
 `UnknownExtensionException`, and installing any other module in that same import
 rebuilds the module list from active `core.extension` and trips the same error.

@@ -8,7 +8,7 @@
           const prefix = selector.match(/--([a-z]*[0-9]*)/g);
           document.documentElement.style.setProperty(
             selector,
-            `var(${prefix[0]}-${value})`
+            `var(${prefix[0]}-${value})`,
           );
         }
 
@@ -30,7 +30,7 @@
 
         function initStyleDrawer() {
           const formItems = context.querySelectorAll(
-            'input.ys-themes--setting'
+            'input.ys-themes--setting',
           );
 
           for (let i = 0; i < formItems.length; i++) {
@@ -59,7 +59,7 @@
 
       // Get all radio inputs in the glogal_theme name group
       const radioInputs = document.querySelectorAll(
-        'input[name="global_theme"]'
+        'input[name="global_theme"]',
       );
 
       // Add event listener to each radio input
@@ -78,14 +78,14 @@
 
           // Get each component-color span element
           const targetElements = document.querySelectorAll(
-            'span.component-color'
+            'span.component-color',
           );
 
           // Read active global theme and capture the number in a variable and
           // update it on radio input paletter selection change.
           targetElements.forEach((targetElement) => {
             const globalTheme = document.querySelector(
-              'div[data-global-theme]'
+              'div[data-global-theme]',
             );
             const currentTheme = globalTheme.getAttribute('data-global-theme');
             const originalBackground = targetElement.style.background;
@@ -96,7 +96,7 @@
             // Replace the --global-themes-${globalTheme}- portion
             const updatedBackground = originalBackground.replace(
               regexPattern,
-              `--global-themes-${currentTheme}-`
+              `--global-themes-${currentTheme}-`,
             );
 
             // Update the inline style with the modified background value

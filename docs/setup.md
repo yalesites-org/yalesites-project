@@ -1,6 +1,6 @@
 # Local Development Environment
 
-__NOTE: Documentation assumes you are using MacOS with at least 8GB of memory on an Intel, M1, or M2 processor__
+**NOTE: Documentation assumes you are using MacOS with at least 8GB of memory on an Intel, M1, or M2 processor**
 
 :clap: Thank you for considering to contribute to the YaleSites Platform!
 
@@ -24,19 +24,19 @@ __NOTE: Documentation assumes you are using MacOS with at least 8GB of memory on
     cd yalesites-project
     npm run setup
     ```
-10. [Project Commands](#project-commands)
+11. [Project Commands](#project-commands)
 
 ## Repository Links
 
 Repositories used to make the platform:
 
-* [Yalesites Project](https://github.com/yalesites-org/yalesites-project): Drupal Platform Site (This repo)
-   * [Yalsites Project Profile modules](https://github.com/yalesites-org/yalesites-project/tree/develop/web/profiles/custom/yalesites_profile/modules/custom): Each subdirectory should have a README describing the function
-* [Atomic Theme](https://github.com/yalesites-org/atomic): Atomic Drupal Theme bridging the Drupal site and the component library
-* [Component Library Twig](https://github.com/yalesites-org/component-library-twig): Component Library
-   * [Deployed Storybook](https://yalesites-org.github.io/component-library-twig)
-* [Tokens](https://github.com/yalesites-org/tokens): Style tokens from Figma used to drive design of the platform and components
-* [ESLint Config and Other Formatting](https://github.com/yalesites-org/eslint-config-and-other-formatting): Reusable Linting/Formatting included in the project
+- [Yalesites Project](https://github.com/yalesites-org/yalesites-project): Drupal Platform Site (This repo)
+  - [Yalsites Project Profile modules](https://github.com/yalesites-org/yalesites-project/tree/develop/web/profiles/custom/yalesites_profile/modules/custom): Each subdirectory should have a README describing the function
+- [Atomic Theme](https://github.com/yalesites-org/atomic): Atomic Drupal Theme bridging the Drupal site and the component library
+- [Component Library Twig](https://github.com/yalesites-org/component-library-twig): Component Library
+  - [Deployed Storybook](https://yalesites-org.github.io/component-library-twig)
+- [Tokens](https://github.com/yalesites-org/tokens): Style tokens from Figma used to drive design of the platform and components
+- [ESLint Config and Other Formatting](https://github.com/yalesites-org/eslint-config-and-other-formatting): Reusable Linting/Formatting included in the project
 
 ## Requirement Details
 
@@ -45,7 +45,7 @@ Repositories used to make the platform:
 While the project can be cloned and run locally without it, one must setup an SSH key on their development machine if they wish to push code on any of the yalesites repositories.
 Luckily, [GitHub has an intuitive guide on how to setup an SSH key on your machine and register it with your GitHub Account](https://docs.github.com/en/authentication/connecting-to-github-with-ssh/generating-a-new-ssh-key-and-adding-it-to-the-ssh-agent)
 
-In some cases, git will complain about ownership issues when building packages.  If this happens to you you can execute the following to mark things like atomic as a safe directory.
+In some cases, git will complain about ownership issues when building packages. If this happens to you you can execute the following to mark things like atomic as a safe directory.
 
 ```bash
 git config --global --add safe.directory /app/web/themes/contrib/atomic'
@@ -68,7 +68,6 @@ Each environment that needs to pull @yalesites-org packages from GitHub needs to
 - Done!
 
 - [Here's a stack overflow post showing how to set persistent environment variables for various shells](https://unix.stackexchange.com/questions/117467/how-to-permanently-set-environmental-variables)
-
 
 ### Terminus
 
@@ -97,7 +96,7 @@ This project supports development with Lando using the Pantheon recipe. This pro
 
 ### Cloning the project
 
-To clone the project, the above requirements must be met first.  If you have not already cloned the repository:
+To clone the project, the above requirements must be met first. If you have not already cloned the repository:
 
 `git clone git@github.com:yalesites-org/yalesites-project.git`
 
@@ -144,19 +143,22 @@ npm run local:theme-link
 
 ## Project Commands
 
-__NOTE: There are more commands, but these are those that current developers feel are most used.__
+**NOTE: There are more commands, but these are those that current developers feel are most used.**
 
 ### NPM
 
 ```bash
 npm run setup                                   # Setup whole environment
 ```
+
 ```bash
 npm run build-with-assets                       # Build/Rebuild with replaced assets
 ```
+
 ```bash
 npm run build-with-install                      # Rebuild with fresh imports
 ```
+
 ```bash
 npm run local:git-checkout                      # Sync:
                                                 #   yalesites-project: develop branch
@@ -164,47 +166,61 @@ npm run local:git-checkout                      # Sync:
                                                 #   component-library: main branch
                                                 #   tokens: main branch
 ```
+
 ```bash
 npm run local:git-checkout -- -h                # More command help
 ```
+
 ```bash
 npm run confex                                  # Export drupal configuration
 ```
+
 ```bash
 npm run confim                                  # Import drupal configuration
 ```
+
 ```bash
 npm run db:get                                  # Download a dev database locally from a pantheon site
 ```
+
 ```bash
 npm run files:get                               # Download dev files locally from a pantheon site
 ```
+
 ```bash
 npm run content-import                          # Import starterkit content
 ```
+
 ```bash
 npm run lint                                    # Lints js, php, and styles
 ```
+
 ```bash
 npm run lint:js                                 # ESLint for custom JavaScript code
 ```
+
 ```bash
 npm run lint:php                                # PHP CodeSniffer via composer
 ```
+
 ```bash
 npm run lint:styles                             # Stylelint for SCSS files
 ```
+
 ```bash
 npm run fix:js                                  # Fixes js linting errors if possible
 ```
+
 ```bash
 npm run prettier                                # Prettier formatting check
 ```
+
 ```bash
 npm run test                                    # Runs prettier and linting
 ```
 
 ### Composer
+
 ```bash
 lando composer code-sniff                       # Test for PHP linting issues that CI tests against
 ```

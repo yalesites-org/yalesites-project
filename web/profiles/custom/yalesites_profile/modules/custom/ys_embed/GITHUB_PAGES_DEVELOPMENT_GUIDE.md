@@ -27,11 +27,13 @@ This guide focuses specifically on developing GitHub Applet applications that in
 ## Project Setup & Requirements
 
 ### Repository Naming Convention
+
 - Repository name will become the mount point ID: `{repo-name}` → `#repo-name`
 - Use kebab-case naming (e.g., `my-awesome-app`)
 - Repository can be private - GitHub Pages sites can be public even from private repositories
 
 ### Required Dependencies
+
 ```bash
 # Essential packages for GitHub Pages deployment
 npm install --save-dev gh-pages vite @vitejs/plugin-react typescript
@@ -42,6 +44,7 @@ npm install --save-dev @types/react @types/react-dom
 ```
 
 ### Project Structure
+
 ```
 your-app-name/
 |-- src/
@@ -59,6 +62,7 @@ your-app-name/
 ### 1. package.json Configuration
 
 **Critical Elements:**
+
 ```json
 {
   "name": "your-app-name",
@@ -75,6 +79,7 @@ your-app-name/
 ```
 
 **Required Scripts:**
+
 - `build`: Must compile TypeScript and build with Vite
 - `predeploy`: Automatically builds before deployment
 - `deploy`: Deploys `/dist` to `gh-pages` branch
@@ -82,25 +87,27 @@ your-app-name/
 ### 2. vite.config.ts Configuration
 
 **CRITICAL CONFIGURATION - Must be exact (syntax current as of Vite 6.0+):**
+
 ```typescript
-import { defineConfig } from 'vite'
-import react from '@vitejs/plugin-react'
+import { defineConfig } from 'vite';
+import react from '@vitejs/plugin-react';
 
 export default defineConfig({
   plugins: [react()],
-  base: '/your-app-name/',                    // MUST match repository name
+  base: '/your-app-name/', // MUST match repository name
   build: {
     rollupOptions: {
       output: {
-        entryFileNames: 'assets/app.js',       // REQUIRED: Fixed filename in assets/
-        assetFileNames: 'assets/app.css'       // REQUIRED: Fixed filename in assets/
-      }
-    }
-  }
+        entryFileNames: 'assets/app.js', // REQUIRED: Fixed filename in assets/
+        assetFileNames: 'assets/app.css', // REQUIRED: Fixed filename in assets/
+      },
+    },
+  },
 });
 ```
 
 **Why This Configuration is Critical:**
+
 - `base`: GitHub Pages serves from `/repo-name/` path
 - `entryFileNames`: YaleSites embed expects exactly `assets/app.js`
 - `assetFileNames`: YaleSites embed expects exactly `assets/app.css`
@@ -111,20 +118,22 @@ export default defineConfig({
 ### 3. main.tsx Entry Point
 
 **CRITICAL MOUNT POINT CONFIGURATION:**
+
 ```typescript
-import { StrictMode } from 'react'
-import { createRoot } from 'react-dom/client'
-import App from './App.tsx'
+import { StrictMode } from 'react';
+import { createRoot } from 'react-dom/client';
+import App from './App.tsx';
 
 // CRITICAL: ID must exactly match repository name
 createRoot(document.getElementById('your-app-name')!).render(
   <StrictMode>
     <App />
   </StrictMode>,
-)
+);
 ```
 
 **Mount Point Rules:**
+
 - Element ID MUST exactly match repository name
 - Use kebab-case (hyphens, not underscores or camelCase)
 - YaleSites creates this div automatically during embed
@@ -134,7 +143,9 @@ createRoot(document.getElementById('your-app-name')!).render(
 ## Build System Setup
 
 ### TypeScript Configuration
+
 Create `tsconfig.json`:
+
 ```json
 {
   "files": [],
@@ -146,13 +157,15 @@ Create `tsconfig.json`:
 ```
 
 ### ESLint Configuration
+
 Create `eslint.config.js` (ESLint 9+ flat config format):
+
 ```javascript
-import js from '@eslint/js'
-import globals from 'globals'
-import reactHooks from 'eslint-plugin-react-hooks'
-import reactRefresh from 'eslint-plugin-react-refresh'
-import tseslint from 'typescript-eslint'
+import js from '@eslint/js';
+import globals from 'globals';
+import reactHooks from 'eslint-plugin-react-hooks';
+import reactRefresh from 'eslint-plugin-react-refresh';
+import tseslint from 'typescript-eslint';
 
 export default tseslint.config(
   { ignores: ['dist'] },
@@ -175,7 +188,7 @@ export default tseslint.config(
       ],
     },
   },
-)
+);
 ```
 
 **Note**: ESLint configuration formats evolve frequently. Check current ESLint documentation for the latest syntax. The goal is to have working linting for TypeScript and React.
@@ -184,7 +197,7 @@ export default tseslint.config(
 
 ### How the Embed System Works
 
-1. **URL Pattern**: `https://yalesites-org.github.io/{repo_name}/assets/` 
+1. **URL Pattern**: `https://yalesites-org.github.io/{repo_name}/assets/`
 2. **Asset Loading**: System loads `app.js` and `app.css` from the `assets/` directory
 3. **Container Creation**: Creates `<div id="{repo_name}"></div>`
 4. **Application Mount**: Your React app mounts to this container
@@ -192,6 +205,7 @@ export default tseslint.config(
 ### Build Structure Explanation
 
 When you run `npm run build`:
+
 1. Vite builds your app to the `dist/` directory
 2. The `dist/` directory contains `index.html` and an `assets/` subdirectory
 3. `gh-pages` deploys the **contents** of `dist/` to GitHub Pages root
@@ -218,12 +232,14 @@ Files must be in the `assets/` subdirectory - files in the root directory will b
 ### CORS & Cross-Origin Considerations
 
 **Important Notes:**
+
 - Your app will be loaded in an iframe on YaleSites domains
 - External API calls may be restricted by CORS policies
 - Consider using proxy endpoints if needed for external data
 - Test thoroughly in cross-origin context
 
 ### Repository Privacy Benefits
+
 - **Source code remains private** while the built application is publicly accessible
 - Only the compiled assets (`app.js`, `app.css`, `index.html`) are exposed via GitHub Pages
 - Ideal for organizational projects where code should remain secure but applications need public access
@@ -233,6 +249,7 @@ Files must be in the `assets/` subdirectory - files in the root directory will b
 ### GitHub Pages Setup
 
 1. **Enable GitHub Pages:**
+
    ```bash
    # Repository Settings → Pages → Source: Deploy from a branch
    # Branch: gh-pages (will be created automatically)
@@ -240,6 +257,7 @@ Files must be in the `assets/` subdirectory - files in the root directory will b
    ```
 
 2. **Deploy Command:**
+
    ```bash
    npm run deploy
    ```
@@ -264,16 +282,19 @@ Files must be in the `assets/` subdirectory - files in the root directory will b
 ### Code Quality Requirements
 
 **TypeScript:**
+
 - All files must be TypeScript (.tsx, .ts)
 - Strict type checking enabled
 - No TypeScript errors in build
 
 **Linting:**
+
 ```bash
 npm run lint        # Must pass without errors
 ```
 
 **Build Process:**
+
 ```bash
 npm run build       # Must complete successfully
 npm run preview     # Test production build locally
@@ -282,6 +303,7 @@ npm run preview     # Test production build locally
 ### Accessibility Standards
 
 **WCAG 2.1 AA Compliance Required:**
+
 - Semantic HTML structure
 - Proper ARIA labels and roles
 - Keyboard navigation support
@@ -289,9 +311,10 @@ npm run preview     # Test production build locally
 - Color contrast compliance
 
 **Example Accessibility Implementation:**
+
 ```typescript
 // Form fields linked to results
-<input 
+<input
   aria-controls="search-results"
   aria-label="Search PO Boxes"
 />
@@ -310,17 +333,20 @@ npm run preview     # Test production build locally
 ### Accessibility Testing Tools
 
 **Automated Testing (current as of 2024):**
+
 - **axe DevTools**: Browser extension for automated accessibility scanning
 - **axe-core**: JavaScript library for programmatic testing
 - **Lighthouse**: Built into Chrome DevTools, includes accessibility audit
 - **WAVE**: Web Accessibility Evaluation Tool browser extension
 
 **Manual Testing:**
+
 - **Screen readers**: Test with NVDA (Windows), JAWS (Windows), VoiceOver (Mac)
 - **Keyboard navigation**: Ensure all functionality works without mouse
 - **Color contrast**: Use tools like WebAIM Contrast Checker
 
 **Installation & Usage:**
+
 ```bash
 # Install axe-core for automated testing
 npm install --save-dev @axe-core/react
@@ -381,6 +407,7 @@ npx tsc --noEmit
    `https://yalesites-org.github.io/your-app-name/`
 
 2. **Check Asset URLs:**
+
    - `https://yalesites-org.github.io/your-app-name/assets/app.js`
    - `https://yalesites-org.github.io/your-app-name/assets/app.css`
 
@@ -394,6 +421,7 @@ npx tsc --noEmit
 **Before deploying to production, perform these critical audits:**
 
 #### Security Audit
+
 - [ ] **No sensitive data**: Verify no API keys, passwords, or secrets in source code
 - [ ] **Dependencies scan**: Run `npm audit` and resolve high/critical vulnerabilities
 - [ ] **CORS configuration**: Ensure external API calls are properly configured
@@ -401,6 +429,7 @@ npx tsc --noEmit
 - [ ] **Content Security Policy**: Consider CSP headers for enhanced security
 
 #### Accessibility Audit
+
 - [ ] **axe DevTools**: Run automated accessibility scan with zero violations
 - [ ] **Lighthouse**: Achieve accessibility score of 95+ in Chrome DevTools
 - [ ] **Keyboard navigation**: Test all functionality works without mouse
@@ -409,12 +438,14 @@ npx tsc --noEmit
 - [ ] **Focus indicators**: Ensure visible focus indicators for all interactive elements
 
 #### Performance Audit
+
 - [ ] **Bundle size**: Check production build size is reasonable (< 1MB recommended)
 - [ ] **Load time**: First Contentful Paint under 2 seconds
 - [ ] **Lighthouse performance**: Score of 90+ recommended
 - [ ] **Network requests**: Minimize unnecessary API calls
 
 #### Quality Assurance
+
 - [ ] **Cross-browser testing**: Test in Chrome, Firefox, Safari, Edge
 - [ ] **Mobile responsiveness**: Test on various screen sizes
 - [ ] **Error handling**: Verify graceful handling of network failures and edge cases
@@ -422,12 +453,14 @@ npx tsc --noEmit
 - [ ] **Functionality**: Complete end-to-end testing of all features
 
 #### YaleSites Integration
+
 - [ ] **Embed testing**: Verify application works correctly when embedded in YaleSites
 - [ ] **Cross-origin**: Test functionality in iframe context
 - [ ] **Asset loading**: Confirm `assets/app.js` and `assets/app.css` load correctly
 - [ ] **Mount point**: Verify application mounts to correct element ID
 
 **Tools for Auditing:**
+
 ```bash
 # Security
 npm audit
@@ -450,7 +483,7 @@ npm run preview
 **Always check current documentation for the latest syntax and best practices:**
 
 - **Vite**: https://vitejs.dev/config/ - Build configuration reference
-- **React**: https://react.dev/learn - Component and API documentation  
+- **React**: https://react.dev/learn - Component and API documentation
 - **TypeScript**: https://www.typescriptlang.org/docs/ - Configuration and syntax
 - **ESLint**: https://eslint.org/docs/latest/ - Linting configuration (note: flat config is the current standard)
 - **GitHub Pages**: https://docs.github.com/en/pages - Deployment and setup
@@ -468,6 +501,7 @@ npm run preview
 ### Maintenance Checklist
 
 **Periodically review (every 6-12 months):**
+
 - [ ] Update dependency versions and test builds
 - [ ] Check for new accessibility standards or tools
 - [ ] Verify GitHub Pages and YaleSites embed system still work as expected
@@ -477,6 +511,7 @@ npm run preview
 ### Core Requirements That Rarely Change
 
 **These fundamental requirements should remain stable:**
+
 - Files must be named exactly `app.js` and `app.css`
 - Files must be in a subdirectory (typically `assets/`)
 - Mount point ID must match repository name exactly
@@ -490,12 +525,14 @@ npm run preview
 ### Common Issues & Solutions
 
 **1. Application Not Loading in YaleSites**
+
 ```typescript
 // Check main.tsx mount point
 createRoot(document.getElementById('exact-repo-name')!).render(
 ```
 
 **2. Assets Not Found (404 Errors)**
+
 ```typescript
 // Check vite.config.ts output configuration
 output: {
@@ -507,12 +544,14 @@ output: {
 **Common mistake**: Putting files in root directory instead of assets/ subdirectory
 
 **3. Routing Issues on GitHub Pages**
+
 ```typescript
 // Check base path in vite.config.ts
 base: '/your-repo-name/',  // Must match repository name exactly
 ```
 
 **4. TypeScript Build Errors**
+
 ```bash
 # Clear cache and rebuild
 rm -rf dist node_modules
@@ -521,6 +560,7 @@ npm run build
 ```
 
 **5. CORS Issues with External APIs**
+
 - Use fetch with proper headers
 - Consider proxy endpoints for external data
 - Test in cross-origin context
@@ -543,6 +583,7 @@ npm run preview
 All the configurations shown in this guide are based on a working implementation that follows these exact patterns. The key elements you need are:
 
 **Essential Configuration Files:**
+
 - `vite.config.ts` - Build configuration with `assets/app.js` and `assets/app.css` output
 - `src/main.tsx` - Mount point configuration matching repository name
 - `package.json` - Homepage URL and deploy scripts
@@ -560,4 +601,4 @@ All the configurations shown in this guide are based on a working implementation
 
 ---
 
-*This guide ensures your application will integrate seamlessly with YaleSites using the GitHub Applet embed system. For technical details about the ys_embed module architecture, see the [module README](./README.md).*
+_This guide ensures your application will integrate seamlessly with YaleSites using the GitHub Applet embed system. For technical details about the ys_embed module architecture, see the [module README](./README.md)._

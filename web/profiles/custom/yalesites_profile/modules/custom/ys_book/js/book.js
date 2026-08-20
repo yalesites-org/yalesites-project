@@ -14,25 +14,25 @@
    */
   Drupal.behaviors.bookDetailsSummaries = {
     attach(context) {
-      const $select = $(context).find(".book-title-select");
+      const $select = $(context).find('.book-title-select');
       $select
-        .find("option")
+        .find('option')
         .filter(function findCreateNewBookOption() {
-          return $(this).text().trim() === "- Create a new book -";
+          return $(this).text().trim() === '- Create a new book -';
         })
-        .text(Drupal.t("- Create a new collection -"));
+        .text(Drupal.t('- Create a new collection -'));
 
-      const $messageWrapper = $("#edit-book-plid-wrapper", context);
-      const $messageText = $messageWrapper.find("em");
+      const $messageWrapper = $('#edit-book-plid-wrapper', context);
+      const $messageText = $messageWrapper.find('em');
 
       function updateMessage() {
         const val = $select.val();
         const defaultMessage = Drupal.t(
-          "This will be the top-level page in this collection."
+          'This will be the top-level page in this collection.',
         );
-        if (val === "0") {
-          $messageText.text(Drupal.t("No collection selected."));
-        } else if (val === "new") {
+        if (val === '0') {
+          $messageText.text(Drupal.t('No collection selected.'));
+        } else if (val === 'new') {
           $messageText.text(defaultMessage);
         } else {
           $messageText.text(defaultMessage);
@@ -46,7 +46,7 @@
           .each(function () {
             const $description = $(this);
             $description.html((index, html) =>
-              html.replace(/\bbook\b/gi, Drupal.t("collection"))
+              html.replace(/\bbook\b/gi, Drupal.t('collection')),
             );
           });
       }
@@ -56,23 +56,23 @@
       updateDescription();
 
       // Update message when the select value changes
-      $select.on("change", () => {
+      $select.on('change', () => {
         updateMessage();
         updateDescription();
       });
 
       $(context)
-        .find(".book-outline-form")
+        .find('.book-outline-form')
         .drupalSetSummary((context) => {
           const val = $select[0].value;
 
-          if (val === "0") {
-            return Drupal.t("Not in collection");
+          if (val === '0') {
+            return Drupal.t('Not in collection');
           }
-          if (val === "new") {
-            return Drupal.t("New collection");
+          if (val === 'new') {
+            return Drupal.t('New collection');
           }
-          return Drupal.checkPlain($select.find(":selected")[0].textContent);
+          return Drupal.checkPlain($select.find(':selected')[0].textContent);
         });
     },
   };

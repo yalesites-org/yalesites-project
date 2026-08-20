@@ -21,7 +21,7 @@ includes one row per item with these columns:
 Taxonomy cells list every applied term, separated by ", " (matching the on-screen
 columns).
 
-The Events **Dates** cell lists *every* occurrence of the event, oldest first,
+The Events **Dates** cell lists _every_ occurrence of the event, oldest first,
 separated by ", " — so a recurring series shows all of its dates, where the
 on-screen Date column shows only the first and last. Dates render in the site's
 timezone, and an all-day occurrence reads "(All day)" rather than a 12:00 am to

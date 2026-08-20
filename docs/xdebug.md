@@ -83,14 +83,16 @@ dap.configurations.twig = {
 ```
 
 - Visit the file you wish to debug, set breakpoints, start the debugger with your own keybindings, or with the following:
+
 ```vim
 :lua require('dap').continue()
 ```
+
 - Visit the local site in your browser, making sure to append the following to your query string:
   - `XDEBUG_SESSION_START=1`
 - You should see the debugger stop at your breakpoints
 
-- For twig specific debugging, you'll need to use devel's `devel_breakpoint()` function.  This will breakpoint in that method.  Stepping should finally get you to where the templates are loading that you can dive into.
+- For twig specific debugging, you'll need to use devel's `devel_breakpoint()` function. This will breakpoint in that method. Stepping should finally get you to where the templates are loading that you can dive into.
 
 ### VSCode
 
@@ -144,9 +146,9 @@ The following were used to figure out how to implement this solution:
 
 ## Known Issues
 
-- Debugging twig files are not as straightforward as debugging the PHP files.  If you find a more reliable way to do this, please submit a pull request.
-- Clearing cache is still an issue and probably should be done before each debugging request.  Again, if you find a way around this, please submit a pull request.
+- Debugging twig files are not as straightforward as debugging the PHP files. If you find a more reliable way to do this, please submit a pull request.
+- Clearing cache is still an issue and probably should be done before each debugging request. Again, if you find a way around this, please submit a pull request.
 
 ## Contributions
 
-If you have any suggestions or improvements, please feel free to modify this document and submit a pull request.  Please follow the [contributing guidelines](https://github.com/yalesites-org/yalesites-project/blob/develop/docs/CONTRIBUTING.md) from the repository.
+If you have any suggestions or improvements, please feel free to modify this document and submit a pull request. Please follow the [contributing guidelines](https://github.com/yalesites-org/yalesites-project/blob/develop/docs/CONTRIBUTING.md) from the repository.

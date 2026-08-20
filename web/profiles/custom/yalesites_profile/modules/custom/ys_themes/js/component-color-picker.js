@@ -20,10 +20,12 @@
       return null;
     }
     const selects = Array.from(wrapper.querySelectorAll('select'));
-    return selects.find(sel => sel.name && sel.name.length > 0) ||
-           selects.find(sel => sel.classList.contains('palette-select-hidden')) ||
-           selects[0] ||
-           null;
+    return (
+      selects.find((sel) => sel.name && sel.name.length > 0) ||
+      selects.find((sel) => sel.classList.contains('palette-select-hidden')) ||
+      selects[0] ||
+      null
+    );
   }
 
   /**
@@ -37,8 +39,7 @@
       const hexValue = circle.getAttribute('data-hex');
       if (hexValue) {
         circle.style.setProperty('background-color', hexValue);
-      }
-      else {
+      } else {
         const colorValue = circle.getAttribute('data-color');
         if (colorValue && !colorValue.startsWith('var(')) {
           circle.style.setProperty('background-color', colorValue);
@@ -57,10 +58,12 @@
    */
   function dispatchEvent(element, eventType) {
     if (element) {
-      element.dispatchEvent(new Event(eventType, {
-        bubbles: true,
-        cancelable: true,
-      }));
+      element.dispatchEvent(
+        new Event(eventType, {
+          bubbles: true,
+          cancelable: true,
+        }),
+      );
     }
   }
 
@@ -87,7 +90,7 @@
     dispatchEvent(form, 'formUpdated');
 
     const fieldWrapper = selectElement.closest(
-      '.field--widget-component-color-picker, .js-form-item, .form-item'
+      '.field--widget-component-color-picker, .js-form-item, .form-item',
     );
     if (fieldWrapper) {
       dispatchEvent(fieldWrapper, 'change');
@@ -108,8 +111,7 @@
       Array.from(selectElement.options).forEach((option) => {
         option.selected = option.value === paletteValue;
       });
-    }
-    else {
+    } else {
       selectElement.value = paletteValue;
     }
   }
@@ -126,7 +128,10 @@
     const currentValue = selectElement.value;
     if (currentValue) {
       options.forEach((opt) => {
-        opt.setAttribute('data-selected', opt.getAttribute('data-palette') === currentValue ? 'true' : 'false');
+        opt.setAttribute(
+          'data-selected',
+          opt.getAttribute('data-palette') === currentValue ? 'true' : 'false',
+        );
       });
     }
   }
@@ -150,12 +155,19 @@
     // Handle palette option clicks.
     container.addEventListener('click', (e) => {
       const clickedOption = e.target.closest('.palette-option');
-      if (!clickedOption || clickedOption.getAttribute('data-selected') === 'true') {
+      if (
+        !clickedOption ||
+        clickedOption.getAttribute('data-selected') === 'true'
+      ) {
         return;
       }
 
       const paletteValue = clickedOption.getAttribute('data-palette');
-      if (!Array.from(selectElement.options).some((option) => option.value === paletteValue)) {
+      if (
+        !Array.from(selectElement.options).some(
+          (option) => option.value === paletteValue,
+        )
+      ) {
         return;
       }
 
@@ -184,11 +196,13 @@
   if (typeof Drupal !== 'undefined' && Drupal.behaviors) {
     Drupal.behaviors.componentColorPicker = {
       attach: function (context, settings) {
-        const selectors = once('component-color-picker', '[data-palette-selector]', context);
+        const selectors = once(
+          'component-color-picker',
+          '[data-palette-selector]',
+          context,
+        );
         selectors.forEach(initComponentColorPicker);
       },
     };
   }
-
 })(Drupal, once);
-

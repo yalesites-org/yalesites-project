@@ -52,6 +52,7 @@ The ys_embed module includes a specialized GitHub Applet embed source that allow
 #### Overview
 
 GitHub Applets are React applications (or similar) that are:
+
 - Hosted on GitHub Pages within the `yalesites-org` organization
 - Built with specific asset naming conventions for YaleSites integration
 - Designed to be embedded seamlessly within Drupal content
@@ -73,6 +74,7 @@ GitHub Applets are React applications (or similar) that are:
 #### Embed Usage
 
 Add the GitHub Pages URL to "Embed Code or URL" in this format:
+
 ```
 https://yalesites-org.github.io/your-repo-name/assets
 ```
@@ -80,6 +82,7 @@ https://yalesites-org.github.io/your-repo-name/assets
 #### Comprehensive Development Guide
 
 For complete instructions on developing GitHub Applet applications, including:
+
 - Project setup and build configuration
 - TypeScript and accessibility standards
 - Deployment automation
@@ -91,6 +94,7 @@ See: **[GitHub Pages Development Guide](./GITHUB_PAGES_DEVELOPMENT_GUIDE.md)**
 #### Architecture Integration
 
 GitHub Applets integrate with the broader ys_embed system through:
+
 - **EmbedSource Plugin**: `GitHubApplet.php` handles validation and rendering
 - **Embed Field**: Stores GitHub Pages URL and validates format
 - **MediaSource Plugin**: Integrates with Drupal's media library system

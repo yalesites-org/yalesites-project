@@ -136,7 +136,7 @@ button. To roll back after step 4, re-enable "Enable chat widget" on the
 Tracked by yalesites-org/YaleSites-Internal#1459. Two independent reasons:
 
 - **Beacon cannot be brought up during a deploy.** `ys_beacon` is enabled by the
-  `core.extension` diff in the config import's *extension* step, which core runs
+  `core.extension` diff in the config import's _extension_ step, which core runs
   strictly before the step that creates configuration
   (`ConfigImporter::processExtensions()` then `::processConfigurations()`). The
   `key.key.azure_ai_search_*` entities and the Beacon Search API server and
@@ -196,7 +196,7 @@ import will reset the persisted database name and read-only flag.
 (A read-only index still tracks items locally in Search API, but tracking is
 local bookkeeping and never reaches the borrowed collection, so the owning
 site's data is untouched. Retrieving and citing content that belongs to a
-*different* site's collection additionally requires the cross-site citation work
+_different_ site's collection additionally requires the cross-site citation work
 tracked in the shared multi-tenant index epic; a same-content borrow - for
 example across environments of one site - works today.)
 
@@ -397,7 +397,7 @@ trust.
 
 **No Beacon store holds conversation text.** Neither this table nor the
 flagged-turn table below has a column a question or an answer could be written
-into. `SuspectTurnLog` records *that* a turn was flagged and *why* (see
+into. `SuspectTurnLog` records _that_ a turn was flagged and _why_ (see
 [Flagged turns](#flagged-turns-suspected-injection-attempts) below); ordinary
 turns are counted and nothing else.
 
@@ -412,13 +412,13 @@ permission and nothing else.
 **Recorded** — a count, per day, for each event type, plus dimensioned breakdown
 rows:
 
-| Event | Counted when | Breakdowns |
-| --- | --- | --- |
-| `turns` | a turn reached the model — the denominator for the rest | — |
-| `refusal` | the answer's opening reads as a declined request | — |
-| `guardrail_stop` | a guardrail returned a stop (per stopping guardrail, so one turn can contribute more than one) | `mode.<pre\|during\|post>`, `plugin.<label>`, `set.<id>` |
-| `zero_citations` | retrieval returned no citations | — |
-| `injection_pattern` | the question matched a known injection pattern | `pattern.<name>` |
+| Event               | Counted when                                                                                   | Breakdowns                                               |
+| ------------------- | ---------------------------------------------------------------------------------------------- | -------------------------------------------------------- |
+| `turns`             | a turn reached the model — the denominator for the rest                                        | —                                                        |
+| `refusal`           | the answer's opening reads as a declined request                                               | —                                                        |
+| `guardrail_stop`    | a guardrail returned a stop (per stopping guardrail, so one turn can contribute more than one) | `mode.<pre\|during\|post>`, `plugin.<label>`, `set.<id>` |
+| `zero_citations`    | retrieval returned no citations                                                                | —                                                        |
+| `injection_pattern` | the question matched a known injection pattern                                                 | `pattern.<name>`                                         |
 
 `turns` exists so the others can be read as rates: without a denominator, a rise
 in refusals cannot be told apart from a rise in traffic.
@@ -503,8 +503,8 @@ than choices here:
 
 ### Flagged turns (suspected injection attempts)
 
-The daily counters answer "how often on which day". `SuspectTurnLog` adds *when*,
-to the second, and *why*: a row in `ys_beacon_suspect_turn` is a timestamp plus a
+The daily counters answer "how often on which day". `SuspectTurnLog` adds _when_,
+to the second, and _why_: a row in `ys_beacon_suspect_turn` is a timestamp plus a
 reason — the `GuardrailSignalDetector` pattern the question matched, or
 `SuspectTurnLog::REASON_GUARDRAIL_STOP` when a guardrail stopped the turn. That
 is enough to see the shape of a probe (a burst at 03:00, one pattern tried
@@ -526,10 +526,10 @@ conversation text even by accident — the same closed-API property
 
 Two bounds, each stated on the report page rather than left to the schema:
 
-| Bound | Value | Why |
-| --- | --- | --- |
-| Retention | 90 days (`SuspectTurnLog::RETENTION_DAYS`) | Pruned on write, and on cron so a site that stops being probed does not keep its last rows forever. Reads also filter on the window, so an expired row is never shown even before a write prunes it. |
-| Rows per pattern per UTC day | 60 (`MAX_ROWS_PER_PATTERN_PER_DAY`) | The chat endpoint is public and unauthenticated. Per **pattern**, not per day overall: a single day-wide quota is steerable by the attacker it exists to record — 200 throwaway `ignore_instructions` hits would fill it and silently drop every later flagged turn, including a novel attack under another pattern. At quota the pattern's oldest row for the day is evicted, so what survives is the most recent attempts rather than whichever the attacker submitted first. |
+| Bound                        | Value                                      | Why                                                                                                                                                                                                                                                                                                                                                                                                                                                                             |
+| ---------------------------- | ------------------------------------------ | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Retention                    | 90 days (`SuspectTurnLog::RETENTION_DAYS`) | Pruned on write, and on cron so a site that stops being probed does not keep its last rows forever. Reads also filter on the window, so an expired row is never shown even before a write prunes it.                                                                                                                                                                                                                                                                            |
+| Rows per pattern per UTC day | 60 (`MAX_ROWS_PER_PATTERN_PER_DAY`)        | The chat endpoint is public and unauthenticated. Per **pattern**, not per day overall: a single day-wide quota is steerable by the attacker it exists to record — 200 throwaway `ignore_instructions` hits would fill it and silently drop every later flagged turn, including a novel attack under another pattern. At quota the pattern's oldest row for the day is evicted, so what survives is the most recent attempts rather than whichever the attacker submitted first. |
 
 The per-day quota means a sustained campaign is **sampled** here. The aggregate
 `injection_pattern` counters are not capped, so the campaign is still fully
@@ -596,7 +596,7 @@ weaknesses (no touch, no keyboard) cost nothing.
 **Days are UTC, and the report says so in three places** — the column header, a
 note under the by-day table, and the disclosure list. This matters at Yale
 specifically: a UTC day starts at 8pm the previous evening in EDT (7pm in EST), so
-between 8pm and midnight an Eastern reader sees the newest row dated *tomorrow*
+between 8pm and midnight an Eastern reader sees the newest row dated _tomorrow_
 and reasonably suspects a clock bug. It is not one. UTC is deliberate — buckets do
 not shift when the site timezone changes and are not distorted by the 23-hour and
 25-hour days daylight saving produces. `gmdate()` is used throughout, so the
@@ -618,8 +618,8 @@ Nothing else references it: no library, no config, no schema, no test fixture
 outside `TelemetryControllerTest`. The export reports its own limits in the
 payload (`flagged_turns.truncated`, `max_rows_per_export`) rather than silently
 truncating, and is capped at `SuspectTurnLog::MAX_EXPORT_ROWS` rows so a response
-cannot grow unbounded. It carries no conversation text, but *when* a site was
-probed and under *which* pattern is still operational security detail, so it stays
+cannot grow unbounded. It carries no conversation text, but _when_ a site was
+probed and under _which_ pattern is still operational security detail, so it stays
 gated on the same platform-admin-only permission as the page and sent
 `Cache-Control: no-store`.
 
@@ -772,7 +772,7 @@ deltas. `[docN]` markers in the answer map to `citations[N-1]`.
 The four key ids above are created by `config:import` as pantheon-provider
 entities, so do not create keys with those ids yourself - they already exist.
 Where the local environment can reach the Pantheon secrets they resolve as-is;
-where it cannot, create a config-provider key under a *different* id at
+where it cannot, create a config-provider key under a _different_ id at
 `/admin/config/system/keys`, put your dev value in it, and select it in the
 Beacon and Portkey forms (`ys_beacon_portkey.settings` is in `config_ignore`, so
 a local Portkey selection persists across imports). Then:

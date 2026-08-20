@@ -1,29 +1,30 @@
 ((Drupal) => {
   Drupal.behaviors.ysCoreHeaderFooterSettings = {
-    attach: function() { // eslint-disable-line
+    attach: function () {
+      // eslint-disable-line
       // Function to handle radio input checked behavior based on radio element selection.
       function handleRadioInputs(radioGroup) {
         // Get references to the radio input elements within the specified group
         const radioInputs = document.querySelectorAll(radioGroup);
         const detailGroups = document.querySelectorAll(
-          ".ys-core-footer-settings-form details"
+          '.ys-core-footer-settings-form details',
         );
 
         // Add event listener to each radio input
         radioInputs.forEach((input) => {
-          input.addEventListener("change", function () {
+          input.addEventListener('change', function () {
             if (this.checked) {
-              this.setAttribute("checked", "checked");
+              this.setAttribute('checked', 'checked');
               // Remove the 'checked' attribute from other radio inputs
               radioInputs.forEach((otherInput) => {
                 if (otherInput !== this) {
-                  otherInput.removeAttribute("checked");
+                  otherInput.removeAttribute('checked');
                 }
               });
 
               // Closes all details after selecting a new footer variation.
               for (let i = 0; i < detailGroups.length; i++) {
-                detailGroups[i].removeAttribute("open");
+                detailGroups[i].removeAttribute('open');
               }
             }
           });

@@ -41,7 +41,7 @@ before touching anything below.
 
 ## Current coupling points (what to undo)
 
-Unlike the original ticket draft (which described a `ys_ai` that *extended*
+Unlike the original ticket draft (which described a `ys_ai` that _extended_
 `ai_engine`'s settings form), the consolidated `ys_beacon` module already has
 **no `ai_engine` dependency** in `ys_beacon.info.yml` and owns its own config
 (`ys_beacon.settings`). The remaining couplings are runtime coexistence

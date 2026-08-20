@@ -1,13 +1,16 @@
 # Block Form Three-Tab Template Structure
 
 ## Overview
+
 This document provides the standardized template for implementing the three-tab structure (Content → Design → Advanced) across all Layout Builder block forms in YaleSites.
 
 ## Field Categorization Rules
 
 ### Content Tab
+
 **Purpose**: Contains all content-related fields that define what the block displays
 **Fields Include**:
+
 - Text content: `field_heading`, `field_subheading`, `field_text`, `field_caption`
 - Media: `field_media`, `field_image`, background media
 - Links: `field_link`, `field_link_two`, `field_cta`
@@ -15,8 +18,10 @@ This document provides the standardized template for implementing the three-tab 
 - Lists/Collections: paragraph fields, entity references
 
 ### Design Tab
+
 **Purpose**: Houses all visual design and styling options
 **Fields Include**:
+
 - Colors: `field_style_color`, theme selections
 - Layout: `field_style_alignment`, `field_style_position`
 - Variations: `field_style_variation`, `field_style_theme`
@@ -24,8 +29,10 @@ This document provides the standardized template for implementing the three-tab 
 - Spacing/sizing: padding, margin, width controls
 
 ### Advanced Tab
+
 **Purpose**: Edge case and power-user settings (conditional display)
 **Fields Include**:
+
 - Semantic markup: `field_heading_level`
 - Instructions: `field_instructions` (markup fields)
 - Administrative: `info`, `revision_log`
@@ -108,16 +115,19 @@ third_party_settings:
 ## Implementation Examples
 
 ### Content Spotlight Portrait
+
 **Content Tab**: `field_heading`, `field_subheading`, `field_text`, `field_caption`, `field_media`, `field_link`, `field_link_two`
 **Design Tab**: `field_style_alignment`, `field_style_color`, `field_style_position`, `field_style_variation`
 **Advanced Tab**: `field_heading_level`, `field_instructions`, `info`, `revision_log`
 
 ### Grand Hero
+
 **Content Tab**: `field_heading`, `field_text`, `field_link`, `field_link_two`, `field_media`
 **Design Tab**: `field_style_color`, `field_style_position`, `field_style_variation`, `field_overlay_png`, `field_replace_heading_with_image`
 **Advanced Tab**: `field_heading_level`, `field_instructions`, `info`
 
 ### Quote Callout
+
 **Content Tab**: `field_text`, `field_caption`, `field_media`
 **Design Tab**: `field_style_alignment`, `field_style_color`, `field_style_variation`
 **Advanced Tab**: `field_instructions`, `info`
@@ -125,12 +135,14 @@ third_party_settings:
 ## Advanced Tab Conditional Display
 
 ### When to Show Advanced Tab
+
 - Block has `field_heading_level` (semantic markup control)
 - Block has `field_instructions` (contextual help)
 - Block has administrative fields beyond basic `info`
 - Block has specialized configuration options
 
 ### When to Hide Advanced Tab
+
 - Block only has basic `info` and `revision_log` fields
 - No semantic or technical configuration needed
 - Simple blocks with only content and design options
@@ -138,18 +150,23 @@ third_party_settings:
 ## Required Fields Configuration
 
 ### Content Tab
+
 Set `required_fields: true` when tab contains required fields like:
+
 - `field_heading` (required)
 - `field_media` (required)
 - Essential content fields
 
 ### Design Tab
+
 Set `required_fields: true` when tab contains required design fields like:
+
 - `field_style_color` (required)
 - `field_style_variation` (required)
 - Core styling requirements
 
 ### Advanced Tab
+
 Generally set `required_fields: false` unless block has required advanced settings
 
 ## Tab Order and Weights
@@ -161,12 +178,14 @@ Generally set `required_fields: false` unless block has required advanced settin
 ## Accessibility Standards
 
 ### Field Group Module Provides
+
 - Keyboard navigation between tabs (arrow keys)
 - ARIA attributes for screen readers
 - Proper focus management
 - Tab roles and states
 
 ### Additional Requirements
+
 - Ensure all form fields have proper labels
 - Include field descriptions for complex options
 - Maintain logical tab order within each group

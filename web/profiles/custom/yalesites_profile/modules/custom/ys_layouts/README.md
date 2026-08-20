@@ -10,17 +10,17 @@ This module includes a service called `MetaFieldsManager` that was specifically 
 
 `event_dates`
 
-* value - Raw Unix timestamp of start date and time (i.e. 1714757400)
-* end_value - Raw Unix timestamp of end date and time (i.e. 1714761000)
-* duration - Duration in minutes (i.e. 60)
-* timezone - The timezone (i.e. America/New_York)
-* formatted_start_date - Formatted as: Friday, May 3rd, 2024
-* formatted_start_time - Formatted as: 1:30 pm EDT
-* formatted_end_date - Formatted as: Friday, May 3rd, 2024
-* formatted_end_time - Formatted as: 2:30 pm EDT
-* original_start - The unformatted UTC start datetime
-* original_end - The unformatted UTC end datetime
-* is_all_day - Boolean for all day events (i.e. false)
+- value - Raw Unix timestamp of start date and time (i.e. 1714757400)
+- end_value - Raw Unix timestamp of end date and time (i.e. 1714761000)
+- duration - Duration in minutes (i.e. 60)
+- timezone - The timezone (i.e. America/New_York)
+- formatted_start_date - Formatted as: Friday, May 3rd, 2024
+- formatted_start_time - Formatted as: 1:30 pm EDT
+- formatted_end_date - Formatted as: Friday, May 3rd, 2024
+- formatted_end_time - Formatted as: 2:30 pm EDT
+- original_start - The unformatted UTC start datetime
+- original_end - The unformatted UTC end datetime
+- is_all_day - Boolean for all day events (i.e. false)
 
 The `ics_url` is auto-calculated if there is an ICS URL provided from Localist, then use it. If not, calculate an ICS URL dynamically from the first date in the series.
 
@@ -58,8 +58,8 @@ lando drush ys-layouts:orphaned-blocks --delete
 Safety guarantees, in order of importance:
 
 1. **Report by default.** Deletion happens only with the explicit `--delete` flag.
-2. **A block counts as referenced if *any* revision of *any* layout-bearing entity points at
-   *any* of its revisions.** This is stricter than core's own intent and is what makes deletion
+2. **A block counts as referenced if _any_ revision of _any_ layout-bearing entity points at
+   _any_ of its revisions.** This is stricter than core's own intent and is what makes deletion
    safe.
 3. **Layout Builder default layouts stored in config are checked too.** They belong to no node,
    so a node-only sweep would report their blocks as orphans and delete live content.

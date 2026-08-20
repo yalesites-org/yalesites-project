@@ -1,6 +1,7 @@
 # YaleSites Views Content Resources
 
 ## Description
+
 Views Content Resources lets content editors insert a customizable "resource"
 view (journal articles, publications, and similar content) through a
 no-code field widget, without needing to build a Drupal View by hand. It is a
@@ -10,6 +11,7 @@ its specific filters (category, custom vocabulary, audience, academic year,
 discipline, areas of study, geographic areas, and publish year).
 
 ## Features
+
 - **Field Plugin**: View configuration is stored as a serialized JSON object
   in a custom field, so new options can be added without changing the
   underlying schema.

@@ -7,7 +7,7 @@ text filter that attaches the MathJax library **only on pages that actually
 contain math**, so pages without math carry no extra page weight. MathJax emits
 accessible MathML for assistive technology.
 
-> Note: MathML *source* input (`<math>…</math>` markup typed by an editor) is
+> Note: MathML _source_ input (`<math>…</math>` markup typed by an editor) is
 > not supported in v1 — the Basic HTML format's `filter_html` strips those
 > elements before rendering. Enabling MathML source would require adding the
 > MathML elements to Basic HTML's allowed HTML (tracked as a follow-up). Editors

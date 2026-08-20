@@ -28,4 +28,4 @@ This module is a sub-module of `ys_migrate` that contains migration configuratio
 
 ## Usage
 
-This module should only be enabled on sites that need to migrate ONHA content. For other YaleSites installations, this module can remain disabled to avoid having unused migration configurations active. 
+This module should only be enabled on sites that need to migrate ONHA content. For other YaleSites installations, this module can remain disabled to avoid having unused migration configurations active.
