@@ -171,10 +171,12 @@
     ],
     "lint:php": "./.ci/test/static/lint_php",
     "post-install-cmd": [
-      "DrupalProject\\composer\\ScriptHandler::createRequiredFiles"
+      "DrupalProject\\composer\\ScriptHandler::createRequiredFiles",
+      "DrupalProject\\composer\\ScriptHandler::pruneMathJaxLibrary"
     ],
     "post-update-cmd": [
-      "DrupalProject\\composer\\ScriptHandler::createRequiredFiles"
+      "DrupalProject\\composer\\ScriptHandler::createRequiredFiles",
+      "DrupalProject\\composer\\ScriptHandler::pruneMathJaxLibrary"
     ],
     "post-create-project-cmd": [
       "DrupalProject\\composer\\ScriptHandler::createRequiredFiles"

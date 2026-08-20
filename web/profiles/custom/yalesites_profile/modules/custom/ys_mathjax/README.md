@@ -59,6 +59,27 @@ page loads.
   rendering and the status report shows the contrib module's "local library
   files could not be found" error; run `composer install` rather than
   re-enabling the CDN.
+- The install is **pruned after composer places it**. The upstream package is
+  66 MB across 3,147 files, and CI force-adds the gitignored `web/libraries`
+  into the Pantheon artifact on every deploy, so all of it would be committed
+  even though a math-heavy page only ever requests about 448 KB.
+  `ScriptHandler::pruneMathJaxLibrary()` (registered on the root
+  `post-install-cmd` and `post-update-cmd`) removes `unpacked/` — an unminified
+  mirror of the packed tree that `MathJax.js` never loads — plus `test/`, the
+  upstream sample suite, and `docs/` on the builds that ship one (the pinned
+  2.7.9 npm dist has no `docs/`; the upstream git tree at that tag does). A
+  fresh `composer install` should therefore leave **about 44 MB across 1,863
+  files**, with no `unpacked/`, `test/` or `docs/` directory. The prune is a
+  no-op when those are already gone, and only warns rather than failing the
+  build if a removal cannot be completed, since the only thing at stake is
+  artifact size. `MathjaxLibraryInstallTest` asserts
+  both halves — that the directories are gone and that the runtime tree
+  survives — but note it does not run in CI (`composer unit-test` is a stub),
+  so it is a local guard rather than a gate. One consequence worth knowing:
+  `MathJax.js` tells developers to load `unpacked/MathJax.js` when debugging a
+  rendering problem, and the prune removes it. To get it back temporarily, run
+  `composer install --no-scripts` or extract the upstream tarball by hand — a
+  plain `composer install` will just prune it again.
 - **The pin must stay on MathJax 2.7.1 or later.** Contrib `mathjax` 4.x still
   targets the MathJax 2.x API, so this is deliberately not a 3.x/4.x library.
   Within 2.x, 2.7.0 and earlier fetch the accessibility menu from `[Contrib]`,

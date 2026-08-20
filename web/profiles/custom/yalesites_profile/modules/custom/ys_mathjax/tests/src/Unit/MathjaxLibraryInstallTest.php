@@ -12,7 +12,9 @@ use Drupal\Tests\UnitTestCase;
  * config, output jax, font data and extensions at runtime through its own
  * loader, and none of those follow-up requests carry an integrity hash. The
  * platform therefore installs the library itself, and these assertions cover
- * the two ways that install can be subtly wrong while still looking fine.
+ * the ways that install can be subtly wrong while still looking fine: the path
+ * it lands at, the build it resolves its a11y extensions from, and the prune
+ * that keeps the committed artifact from carrying the parts nothing loads.
  *
  * These assert build state rather than code: they read the composer-installed
  * tree under `web/libraries/`, which is gitignored. A failure here means the
@@ -31,6 +33,28 @@ class MathjaxLibraryInstallTest extends UnitTestCase {
    * so a package installed under any other casing silently fails to load.
    */
   protected const LIBRARY_DIR = 'libraries/MathJax';
+
+  /**
+   * Upstream directories `ScriptHandler::pruneMathJaxLibrary()` removes.
+   *
+   * `docs/` only exists in some upstream builds, not in the pinned 2.7.9 dist.
+   */
+  protected const PRUNED_DIRS = [
+    'unpacked',
+    'test',
+    'docs',
+  ];
+
+  /**
+   * Directories MathJax loads at runtime, which the prune must leave alone.
+   */
+  protected const RUNTIME_DIRS = [
+    'config',
+    'extensions',
+    'fonts',
+    'jax',
+    'localization',
+  ];
 
   /**
    * The library is installed on disk at the casing the module expects.
@@ -61,6 +85,34 @@ class MathjaxLibraryInstallTest extends UnitTestCase {
     $config = $this->libraryPath('config/TeX-AMS-MML_HTMLorMML.js');
     $this->assertFileExists($config);
     $this->assertStringContainsString('[MathJax]/extensions/a11y/accessibility-menu.js', file_get_contents($config), 'The combined MathJax config must load the accessibility menu from the local [MathJax] path, not from [Contrib] (cdn.mathjax.org).');
+  }
+
+  /**
+   * The unused upstream directories are pruned from the installed tree.
+   *
+   * CI force-adds `web/libraries` into the Pantheon artifact, so anything
+   * composer leaves in the package ships whether or not a page requests it.
+   * `ScriptHandler::pruneMathJaxLibrary()` removes these after install, and
+   * that comment carries the per-directory reasoning.
+   */
+  public function testUnusedUpstreamDirectoriesArePruned(): void {
+    foreach (self::PRUNED_DIRS as $dir) {
+      $this->assertDirectoryDoesNotExist($this->libraryPath($dir), sprintf('The composer prune must remove %s/ from the installed MathJax tree, because web/libraries is committed into the Pantheon artifact.', $dir));
+    }
+  }
+
+  /**
+   * The prune leaves every directory MathJax loads at runtime in place.
+   *
+   * Over-reach is the failure worth guarding: losing `jax/`, `fonts/` or
+   * `config/` stops math rendering everywhere, and the only symptom is LaTeX
+   * sitting on the page unrendered. Kept as its own test so that a failure
+   * here cannot be masked by the removal assertions above.
+   */
+  public function testThePruneKeepsTheRuntimeTree(): void {
+    foreach (self::RUNTIME_DIRS as $dir) {
+      $this->assertDirectoryExists($this->libraryPath($dir), sprintf('The composer prune must not remove %s/ - MathJax loads it at runtime.', $dir));
+    }
   }
 
   /**
