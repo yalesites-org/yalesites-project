@@ -9,6 +9,10 @@
  * Implements hook_install().
  *
  * Rebuild the node access permissions to remove default nid 0 entry.
+ *
+ * Left unbatched deliberately, unlike the update hooks below: hook_install()
+ * has no $sandbox to return to, and it runs at profile install time when there
+ * is no content for a rebuild to walk.
  */
 function ys_node_access_install() {
   node_access_rebuild();
@@ -22,8 +26,8 @@ function ys_node_access_install() {
  * records in the node_access table until a rebuild. Rebuild so the fix applies
  * to content that already exists, not only to nodes saved after this deploy.
  */
-function ys_node_access_update_10001() {
-  node_access_rebuild();
+function ys_node_access_update_10001(array &$sandbox) {
+  return _ys_node_access_rebuild_grants($sandbox);
 }
 
 /**
@@ -33,6 +37,103 @@ function ys_node_access_update_10001() {
  * record needed replacing. Rebuild so already-unpublished nodes get the
  * corrected grant rows, not just nodes saved after this deploy.
  */
-function ys_node_access_update_10002() {
-  node_access_rebuild();
+function ys_node_access_update_10002(array &$sandbox) {
+  return _ys_node_access_rebuild_grants($sandbox);
+}
+
+/**
+ * Rewrites every node's access grant rows, one page of nodes per pass.
+ *
+ * Core's node_access_rebuild() truncates the whole node_access table before it
+ * rewrites anything, so no node is viewable for the duration of its single
+ * unbounded pass, and if that pass dies on a PHP time or memory limit the
+ * table stays empty for every node it never reached -- a site-wide 403 for
+ * anonymous visitors lasting until someone re-runs updatedb. See issue #1566.
+ *
+ * This rewrites grants node by node instead, so a node always holds either its
+ * old grants or its new ones and never none.
+ * \Drupal\node\NodeGrantDatabaseStorage::write() already replaces the rows of
+ * the node it is handed, so no table-wide delete is needed. The one row that
+ * belongs to no node is the nid 0 default grant, which
+ * \Drupal\node\NodeGrantDatabaseStorage::access() treats as a wildcard over
+ * every published node -- the first pass deletes it, because the rebuild this
+ * replaces did. Rows left behind by deleted nodes are inert, since a row is
+ * only ever read by nid, and are not worth a full table scan to hunt down.
+ *
+ * @param array $sandbox
+ *   The update hook sandbox, carried between passes.
+ *
+ * @return \Drupal\Core\StringTranslation\TranslatableMarkup
+ *   A progress message.
+ *
+ * @see _node_access_rebuild_batch_operation()
+ *   Core's batch equivalent, which this mirrors. It is not called directly:
+ *   it is a private core API and takes a batch $context, not a $sandbox.
+ */
+function _ys_node_access_rebuild_grants(array &$sandbox) {
+  $batch_size = 50;
+
+  if (!isset($sandbox['processed'])) {
+    $sandbox['processed'] = 0;
+    $sandbox['current_nid'] = 0;
+    $sandbox['total'] = (int) \Drupal::entityQuery('node')
+      ->accessCheck(FALSE)
+      ->count()
+      ->execute();
+
+    // Belongs to no node, so the per-node rewrite below never reaches it.
+    \Drupal::database()->delete('node_access')->condition('nid', 0)->execute();
+  }
+
+  // Paged on the node ID rather than on an offset so the cursor stays valid
+  // when content is created or deleted while the deploy runs, and so the
+  // sandbox stays small -- it is serialised between passes, and holding a
+  // snapshot of every nid is the memory this is trying not to use.
+  $nids = \Drupal::entityQuery('node')
+    ->accessCheck(FALSE)
+    ->condition('nid', $sandbox['current_nid'], '>')
+    ->sort('nid')
+    ->range(0, $batch_size)
+    ->execute();
+
+  $node_storage = \Drupal::entityTypeManager()->getStorage('node');
+  $access_control_handler = \Drupal::entityTypeManager()->getAccessControlHandler('node');
+  $grant_storage = \Drupal::service('node.grant_storage');
+
+  foreach ($node_storage->loadMultiple($nids) as $node) {
+    $grant_storage->write($node, $access_control_handler->acquireGrants($node));
+    $sandbox['processed']++;
+  }
+
+  // Only an empty page ends the rebuild. A short one would be the cheaper
+  // test, but the query pages over rows of node_field_data, so on a site with
+  // translations a full page can still collapse to fewer than $batch_size
+  // nodes -- and stopping there would leave the rest of the site on its stale
+  // grants. The extra pass costs one query that returns nothing.
+  if ($nids) {
+    // Advance past every nid this page asked for, not just the ones that
+    // loaded, so a node deleted mid-deploy cannot stall the cursor.
+    $sandbox['current_nid'] = max($nids);
+
+    // Release the nodes this pass loaded. Drush runs every pass in a single
+    // PHP process, so without this the entity static cache accumulates the
+    // whole node table and the batching would bound time but not memory.
+    \Drupal::service('entity.memory_cache')->deleteAll();
+
+    // The total is a snapshot taken before an editor could add or delete
+    // anything, so it drives this progress fraction and nothing else.
+    $sandbox['#finished'] = min(0.99, $sandbox['processed'] / max(1, $sandbox['total']));
+
+    return t('Rebuilt node access grants for @processed of about @total nodes.', [
+      '@processed' => $sandbox['processed'],
+      '@total' => $sandbox['total'],
+    ]);
+  }
+
+  $sandbox['#finished'] = 1;
+  node_access_needs_rebuild(FALSE);
+
+  return t('Rebuilt node access grants for @processed nodes.', [
+    '@processed' => $sandbox['processed'],
+  ]);
 }
