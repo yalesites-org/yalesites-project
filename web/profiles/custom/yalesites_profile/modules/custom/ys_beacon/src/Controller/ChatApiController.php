@@ -55,12 +55,12 @@ class ChatApiController extends ControllerBase {
   /**
    * Default model context window in tokens, used when unset in config.
    *
-   * Sized for the current model (Claude Haiku, 200k). The real model is chosen
+   * Sized for the current model (Claude Sonnet 5, 1M). The real model is chosen
    * by Portkey server-side and is not observable here, so operators set the
    * true window in the Beacon administration form (model_context_window); this
    * default only applies until they do.
    */
-  public const DEFAULT_CONTEXT_WINDOW = 200000;
+  public const DEFAULT_CONTEXT_WINDOW = 1000000;
 
   /**
    * Tokens held back from the context window for the model's reply.
