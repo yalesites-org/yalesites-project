@@ -91,7 +91,15 @@ All commands are prefixed with `npm run`. For example: `npm run setup`
 - `lint:styles` - Stylelint for SCSS files
 - `fix:js` - Auto-fix JavaScript linting errors
 - `prettier` - Check code formatting (does not auto-fix)
+- `prettier:fix` - Auto-fix code formatting
 - `test` - Run complete test suite (prettier + all linting)
+
+`prettier` is part of the CI static-test gate, so formatting drift fails the build.
+Run `npm run prettier:fix` before pushing if `npm run prettier` reports any files.
+Formatting comes from `.prettierrc.js`, which re-exports the shared
+`@yalesites-org/eslint-config-and-other-formatting` config (single quotes, trailing
+commas) - keep the leading dot on that filename or Prettier silently falls back to
+its own defaults.
 
 ### Alternative Commands (via Lando)
 

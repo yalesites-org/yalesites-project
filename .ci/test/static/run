@@ -14,6 +14,13 @@ composer install --no-ansi --no-interaction --optimize-autoloader --no-progress
 
 npm install
 
+# Fail fast if Prettier is not resolving .prettierrc.js. A misnamed config file
+# makes Prettier fall back to its own built-in defaults, which disagree with the
+# shared Yale config - so every formatting check below would silently be measuring
+# the wrong thing. --no-install keeps npx from fetching a different Prettier major
+# from the registry instead of failing.
+npx --no-install prettier --find-config-path package.json
+
 # Run unit tests
 composer -n unit-test
 
@@ -26,3 +33,8 @@ composer -n code-sniff
 # Lint styles and JS
 npm run lint:styles
 # npm run lint:js
+
+# Check formatting of our own tree. Without this gate, drift accumulates unnoticed
+# and then fails an unrelated commit's pre-commit hook, because Prettier checks the
+# whole staged file rather than just the diff.
+npm run prettier
