@@ -15,7 +15,7 @@
     "lint": "npm run lint:js && npm run lint:php && npm run lint:styles",
     "lint:js": "eslint --color --no-error-on-unmatched-pattern --format stylish {web/modules/custom,web/themes/custom,web/profiles/custom}/**/*.js",
     "lint:php": "composer lint:php",
-    "lint:styles": "stylelint --color {web/modules/custom,web/themes/contrib/atomic,web/themes/custom,web/profiles/custom}/**/*.scss",
+    "lint:styles": "stylelint --color {web/modules/custom,web/themes/custom,web/profiles/custom}/**/*.scss",
     "fix:js": "eslint --fix {web/modules/custom,web/themes/custom,web/profiles/custom}/**/*.js",
     "local:review-with-atomic-and-cl-branch": "./scripts/local/local-review-with-atomic-and-cl-branch.sh",
     "local:review-with-atomic-branch": "./scripts/local/local-review-with-atomic-branch.sh",
@@ -23,7 +23,8 @@
     "local:cl-dev": "./scripts/local/local-cl-dev.sh",
     "local:theme-link": "./scripts/local/local-theme-link.sh",
     "local:git-checkout": "./scripts/local/local-git-checkout.sh",
-    "prettier": "prettier '{.github,docs,web/profiles/custom,web/modules/custom,web/themes/contrib/atomic,web/themes/custom}/**/*.{json,md,js,html,scss,html}' --ignore-unknown --list-different",
+    "prettier": "prettier '{.github,docs,web/profiles/custom,web/modules/custom,web/themes/custom}/**/*.{json,md,js,html,scss}' --ignore-unknown --list-different",
+    "prettier:fix": "prettier '{.github,docs,web/profiles/custom,web/modules/custom,web/themes/custom}/**/*.{json,md,js,html,scss}' --ignore-unknown --write",
     "setup": "./scripts/local/setup.sh",
     "test": "./scripts/local/test.sh"
   },
@@ -39,13 +40,13 @@
     "shelljs": "^0.8.5"
   },
   "lint-staged": {
-    "{web/modules/custom,web/themes/contrib/atomic,web/themes/custom,web/profiles/custom}/**/*.scss": [
+    "{web/modules/custom,web/themes/custom,web/profiles/custom}/**/*.scss": [
       "stylelint --color"
     ],
     "{web/modules/custom,web/themes/custom,web/profiles/custom}/**/*.js": [
       "eslint --color --no-error-on-unmatched-pattern --format stylish"
     ],
-    "{.github,docs,web/profiles/custom,web/modules/custom,web/themes/contrib/atomic,web/themes/custom}/**/*.{json,md,js,html,scss}": [
+    "{.github,docs,web/profiles/custom,web/modules/custom,web/themes/custom}/**/*.{json,md,js,html,scss}": [
       "prettier --ignore-unknown --list-different"
     ]
   },
