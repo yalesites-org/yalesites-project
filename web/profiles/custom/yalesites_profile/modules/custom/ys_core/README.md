@@ -39,24 +39,13 @@ someone runs them locally.
 Recorded here so they are visible to anyone working in this module, particularly
 during the staged cleanup tracked in yalesites-org/YaleSites-Internal#579.
 
-- **No config schema for this module's settings objects.** `config/schema/ys_core.schema.yml`
-  covers only `ys_core.dashboard_settings`. `ys_core.site`, `ys_core.header_settings`,
-  `ys_core.footer_settings`, and `ys_core.social_links` have none, so a kernel test
-  that installs this module's config fails with `SchemaIncompleteException` under
-  PHPUnit's default strict schema checking. That blocks kernel-level characterization
-  of every service that reads these objects, so the tests here work around it by
-  exercising only code paths that need no config save. Adding the schema is not
-  test-only work: `environment_indicator.show` ships as boolean `true` in
-  `config/install` but `SiteSettingsForm` saves integer `1`, and `custom_favicon` /
-  `site_name_image` are declared as `''` but hold arrays of file IDs, so no schema
-  type validates both the install defaults and real saved values without also
-  correcting those.
-- **`getFavicons()` custom-favicon branch is only partly pinned.** The test for it
-  stubs a single image style for all four sizes, so it cannot show that each size
-  resolves to its own distinct URL. Verifying that needs a real image style and a
-  saved `custom_favicon` value, so it is blocked on the missing schema above. The
-  fallback branch is covered against the real filesystem and the shipped image
-  style config in `YaleSitesMediaManagerTest`.
+- **`installConfig(['ys_core'])` needs more modules than a settings test wants.**
+  All four settings objects now have a schema, so saving them under strict schema
+  checking works and `CoreSettingsSchemaTest` pins that. Installing the *whole*
+  `config/install` directory additionally installs the `grand_hero`
+  `field_display_mode` field, which pulls in `block_content`, `field` and
+  `options` and needs the block type to exist. A kernel test that only needs the
+  settings objects should save them directly, as `CoreSettingsSchemaTest` does.
 - **`CoreTwigExtension::getAssetPath()`'s `_yale-packages` fallback is uncovered.**
   A normal checkout has an asset manifest under the theme's `node_modules`, so the
   first path always wins; the fallback only runs where the theme's npm assets are

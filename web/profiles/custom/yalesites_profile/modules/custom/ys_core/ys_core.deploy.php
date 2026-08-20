@@ -311,3 +311,111 @@ function ys_core_deploy_10007(&$sandbox) {
 
   return t('Backfilled the default icon on @count In-Line Message block revision(s).', ['@count' => $sandbox['backfilled']]);
 }
+
+/**
+ * Normalises stored settings values that predate this module's config schema.
+ *
+ * Two kinds of value were being stored in a shape their own form never
+ * produces, which went unnoticed because these objects had no config schema to
+ * validate them against:
+ *
+ * - `custom_favicon` and `site_name_image` are managed_file values, so the
+ *   element only ever writes a list of file IDs. Both shipped an empty string
+ *   as their install default, so every site that never uploaded one still
+ *   stores that scalar.
+ * - `environment_indicator.show` ships boolean TRUE in config/install, but
+ *   SiteSettingsForm used to store the checkbox's raw integer, so a site that
+ *   saved the settings form before that cast landed stores 1 or 0.
+ *
+ * This runs as a deploy hook rather than a hook_update_N because it writes to
+ * active config: drush deploy runs updatedb BEFORE config:import, so a config
+ * edit made at that point can be overwritten by the import that follows.
+ * config_ignore does currently list `ys_core*`, which would spare these
+ * objects, but depending on that is fragile - deploy:hook runs after the
+ * import and is correct either way.
+ *
+ * The stale shapes would otherwise persist indefinitely. Saving
+ * one of the settings forms would fix the value in passing - Config::save()
+ * casts to the schema's types once a schema exists - but only partly: header
+ * settings write `site_name_image` solely inside a
+ * ys_core_allow_secret_items() check, so a site_admin saving that form leaves
+ * the stale value untouched.
+ *
+ * Every reader of all three keys only tests truthiness, and an empty list is
+ * falsy exactly as the empty string was, so this changes no behaviour.
+ *
+ * @param bool $dry_run
+ *   When TRUE, report what would change without writing anything.
+ *
+ * @return array
+ *   A report with a single 'changes' key holding one human-readable line per
+ *   value rewritten.
+ */
+function ys_core_normalize_settings_shapes($dry_run = FALSE) {
+  $changes = [];
+  $config_factory = \Drupal::configFactory();
+
+  $describe = function ($name, $key, $from, $to) {
+    return sprintf(
+      '%s:%s %s => %s',
+      $name,
+      $key,
+      var_export($from, TRUE),
+      var_export($to, TRUE)
+    );
+  };
+
+  // Every value is read before anything is written. Config::save() casts data
+  // to the schema's types once a schema exists, so saving one key can silently
+  // correct another - which would make a report built as we go under-count.
+  $file_settings = [
+    'ys_core.site' => 'custom_favicon',
+    'ys_core.header_settings' => 'site_name_image',
+  ];
+  $planned = [];
+
+  foreach ($file_settings as $name => $key) {
+    $value = $config_factory->getEditable($name)->get($key);
+    // NULL means the key is absent from this site's stored config, which the
+    // schema does not object to; an array is already the right shape.
+    if ($value === NULL || is_array($value)) {
+      continue;
+    }
+    // A numeric scalar is still a usable file ID, so keep it rather than
+    // discarding a real upload. Anything else - notably the '' the install
+    // default used to ship - names no file and becomes the empty list.
+    $planned[] = [$name, $key, $value, is_numeric($value) ? [(int) $value] : []];
+  }
+
+  $show = $config_factory->getEditable('ys_core.site')->get('environment_indicator.show');
+  if ($show !== NULL && !is_bool($show)) {
+    $planned[] = ['ys_core.site', 'environment_indicator.show', $show, (bool) $show];
+  }
+
+  foreach ($planned as [$name, $key, $from, $to]) {
+    if (!$dry_run) {
+      $config_factory->getEditable($name)->set($key, $to)->save();
+    }
+    $changes[] = $describe($name, $key, $from, $to);
+  }
+
+  return ['changes' => $changes];
+}
+
+/**
+ * Implements hook_deploy_NAME().
+ *
+ * Normalises ys_core settings values that predate the module's config schema.
+ */
+function ys_core_deploy_10008() {
+  $report = ys_core_normalize_settings_shapes();
+  $logger = \Drupal::logger('ys_core');
+
+  foreach ($report['changes'] as $change) {
+    $logger->notice('Normalised stored ys_core settings value: @change', ['@change' => $change]);
+  }
+
+  return t('Normalised @count stored ys_core settings value(s) to the shape the config schema now declares.', [
+    '@count' => count($report['changes']),
+  ]);
+}

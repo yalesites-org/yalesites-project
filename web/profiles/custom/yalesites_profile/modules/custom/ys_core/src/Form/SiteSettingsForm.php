@@ -439,7 +439,11 @@ class SiteSettingsForm extends ConfigFormBase implements ContainerInjectionInter
     // Save environment indicator setting if the field was present
     // (platform admin only).
     if (ys_core_allow_secret_items($this->currentUserSession)) {
-      $yaleSiteConfig->set('environment_indicator.show', $form_state->getValue('environment_indicator_show') ?? TRUE);
+      // Cast to bool, as DashboardSettingsForm does. The sibling search
+      // checkboxes stay integers because that is what their install defaults
+      // and stored values already are; this one's install default ships
+      // boolean true, so the checkbox's integer needed normalising instead.
+      $yaleSiteConfig->set('environment_indicator.show', (bool) ($form_state->getValue('environment_indicator_show') ?? TRUE));
     }
 
     $yaleSiteConfig->save();

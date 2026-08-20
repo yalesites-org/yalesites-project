@@ -20,3 +20,219 @@ ys_core.dashboard_settings:
     announcements_source_term:
       type: string
       label: 'Taxonomy term name used to tag announcement posts'
+
+ys_core.site:
+  type: config_object
+  label: 'YaleSites site settings'
+  mapping:
+    page:
+      type: mapping
+      label: 'Landing pages'
+      mapping:
+        posts:
+          type: string
+          label: 'Relative path of the posts landing page, for example /post'
+        events:
+          type: string
+          label: 'Relative path of the events calendar page, for example /events'
+    search:
+      type: mapping
+      label: 'Search (superseded by ys_core.header_settings by ys_core_update_9002; still exported)'
+      mapping:
+        enable_search_form:
+          type: integer
+          label: 'Show the search form'
+    seo:
+      type: mapping
+      label: 'SEO'
+      mapping:
+        google_site_verification:
+          type: string
+          label: 'Google site verification token'
+        google_analytics_id:
+          type: string
+          label: 'Google Analytics ID (unused; Google Tag Manager replaced it)'
+    image_fallback:
+      type: mapping
+      label: 'Fallback images'
+      mapping:
+        teaser:
+          type: string
+          label: 'Media ID used when a teaser has no image'
+    taxonomy:
+      type: mapping
+      label: 'Taxonomy'
+      mapping:
+        custom_vocab_name:
+          type: string
+          label: 'Editor-facing label of the custom vocabulary'
+    custom_favicon:
+      type: sequence
+      label: 'Uploaded favicon (a managed_file value, so a list holding at most one file ID)'
+      sequence:
+        type: integer
+        label: 'File ID'
+    font_pairing:
+      type: string
+      label: 'Sitewide font pairing'
+    cas_app_name:
+      type: string
+      label: 'CAS application name used for Yale search'
+    environment_indicator:
+      type: mapping
+      label: 'Environment indicator'
+      mapping:
+        show:
+          type: boolean
+          label: 'Show the environment indicator banner'
+
+ys_core.header_settings:
+  type: config_object
+  label: 'YaleSites header settings'
+  mapping:
+    header_variation:
+      type: string
+      label: 'Header variation'
+    nav_position:
+      type: string
+      label: 'Navigation position'
+    focus_header_image:
+      type: string
+      label: 'Media ID of the focus header image'
+    site_name_image:
+      type: sequence
+      label: 'Site name image (a managed_file value, so a list holding at most one file ID)'
+      sequence:
+        type: integer
+        label: 'File ID'
+    site_wide_branding_name:
+      type: label
+      label: 'Sitewide branding name'
+    site_wide_branding_link:
+      type: string
+      label: 'Sitewide branding link'
+    cta_content:
+      type: label
+      label: 'Call to action text'
+    cta_url:
+      type: string
+      label: 'Call to action link'
+    dropdown_button_title:
+      type: label
+      label: 'Utility navigation dropdown button title'
+    search:
+      type: mapping
+      label: 'Search'
+      mapping:
+        enable_search_form:
+          type: integer
+          label: 'Show the search form'
+        enable_cas_search:
+          type: integer
+          label: 'Offer the CAS-restricted search scope'
+        enable_all_yale_search:
+          type: integer
+          label: 'Offer the all-of-Yale search scope'
+
+ys_core.footer_settings:
+  type: config_object
+  label: 'YaleSites footer settings'
+  mapping:
+    footer_variation:
+      type: string
+      label: 'Footer variation'
+    content:
+      type: mapping
+      label: 'Footer content'
+      mapping:
+        logos:
+          type: sequence
+          label: 'Footer logos'
+          sequence:
+            type: mapping
+            label: 'Footer logo'
+            mapping:
+              logo:
+                type: string
+                label: 'Media ID of the logo'
+              logo_url:
+                type: string
+                label: 'Link the logo points to'
+        school_logo:
+          type: string
+          label: 'Media ID of the school logo'
+        school_logo_url:
+          type: string
+          label: 'Link the school logo points to'
+        text:
+          type: mapping
+          label: 'Footer text'
+          mapping:
+            value:
+              type: text
+              label: 'Text'
+            format:
+              type: string
+              label: 'Text format'
+    links:
+      type: mapping
+      label: 'Footer links'
+      mapping:
+        links_col_1_heading:
+          type: label
+          label: 'Heading of the first links column'
+        links_col_2_heading:
+          type: label
+          label: 'Heading of the second links column'
+        links_col_1:
+          type: sequence
+          label: 'Links in the first column'
+          sequence:
+            type: mapping
+            label: 'Footer link'
+            mapping:
+              link_url:
+                type: string
+                label: 'Link URL'
+              link_title:
+                type: label
+                label: 'Link title'
+        links_col_2:
+          type: sequence
+          label: 'Links in the second column'
+          sequence:
+            type: mapping
+            label: 'Footer link'
+            mapping:
+              link_url:
+                type: string
+                label: 'Link URL'
+              link_title:
+                type: label
+                label: 'Link title'
+
+ys_core.social_links:
+  type: config_object
+  label: 'YaleSites social links'
+  mapping:
+    facebook:
+      type: string
+      label: 'Facebook URL'
+    instagram:
+      type: string
+      label: 'Instagram URL'
+    x-twitter:
+      type: string
+      label: 'X URL'
+    youtube:
+      type: string
+      label: 'YouTube URL'
+    weibo:
+      type: string
+      label: 'Weibo URL'
+    linkedin:
+      type: string
+      label: 'LinkedIn URL'
+    bluesky:
+      type: string
+      label: 'Bluesky URL'
