@@ -5,7 +5,9 @@ namespace Drupal\ys_beacon\Form;
 use Drupal\Core\Form\FormStateInterface;
 use Drupal\search_api\SearchApiException;
 use Drupal\search_api\Utility\IndexingBatchHelperInterface;
+use Drupal\ys_beacon\PdfTextExtractionBatch;
 use Drupal\ys_beacon\Service\BeaconIndexStatus;
+use Drupal\ys_beacon\Service\PdfTextIndexer;
 
 /**
  * Shared Beacon indexing controls and their submit handlers.
@@ -19,8 +21,8 @@ use Drupal\ys_beacon\Service\BeaconIndexStatus;
  * BeaconIndexStatus rather than to this trait: the Beacon section of the
  * Platform Admin Settings page shows the same status but is a plugin rather
  * than a form, so it cannot use this trait and previously carried its own copy
- * of every read. A consuming form must set $indexStatus and
- * $indexingBatchHelper in its create().
+ * of every read. A consuming form must set $indexStatus,
+ * $indexingBatchHelper and $pdfTextIndexer in its create().
  */
 trait BeaconIndexingControlsTrait {
 
@@ -37,6 +39,13 @@ trait BeaconIndexingControlsTrait {
    * @var \Drupal\search_api\Utility\IndexingBatchHelperInterface
    */
   protected IndexingBatchHelperInterface $indexingBatchHelper;
+
+  /**
+   * The PDF text indexer.
+   *
+   * @var \Drupal\ys_beacon\Service\PdfTextIndexer
+   */
+  protected PdfTextIndexer $pdfTextIndexer;
 
   /**
    * Builds the "Indexing" details with the status summary and controls.
@@ -113,6 +122,9 @@ trait BeaconIndexingControlsTrait {
       // re-queueing tracked content; reindex() would only do the latter
       // (issue #1383).
       $index->rebuildTracker();
+      // Documents whose text was never extracted would be re-indexed as
+      // filename-only chunks, so sweep them in the same click.
+      $this->setPdfExtractionBatch();
       $this->messenger()->addStatus($this->t('All content has been queued for re-indexing into the Beacon vector database.'));
     }
     else {
@@ -140,12 +152,23 @@ trait BeaconIndexingControlsTrait {
       $this->messenger()->addWarning($this->t('The Beacon index is not enabled on this site. Enable the chat widget first.'));
       return;
     }
+    // Extract any missing PDF text first, so a document reaches the vector
+    // database with its content rather than just its filename. Batch-set
+    // before the Search API batch so the two run in order and no PDF is
+    // parsed in this submit handler. Note this button is disabled unless
+    // something is already waiting to be indexed, so a site whose only
+    // outstanding work is extraction has to use "Re-index all content" or the
+    // Drush backfill; $extracting therefore only matters in the race the
+    // comment below describes.
+    $extracting = $this->setPdfExtractionBatch();
     // Re-check the queue server-side: the button's #disabled state is only
     // evaluated at render time, so a stale page or a queue drained by cron
     // between render and submit could otherwise start an empty batch, which
     // Search API reports as a failure rather than a no-op.
     if ($this->indexStatus->remainingItems() < 1) {
-      $this->messenger()->addStatus($this->t('There is no content waiting to be indexed.'));
+      if (!$extracting) {
+        $this->messenger()->addStatus($this->t('There is no content waiting to be indexed.'));
+      }
       return;
     }
     try {
@@ -154,6 +177,21 @@ trait BeaconIndexingControlsTrait {
     catch (SearchApiException $e) {
       $this->messenger()->addWarning($this->t('Unable to start indexing right now. Please try again shortly.'));
     }
+  }
+
+  /**
+   * Sets a batch extracting text from documents that still lack it.
+   *
+   * @return bool
+   *   TRUE when a batch was set, FALSE when no document needed extraction.
+   */
+  protected function setPdfExtractionBatch(): bool {
+    $batch = PdfTextExtractionBatch::build($this->pdfTextIndexer->pendingMediaIds());
+    if (!$batch) {
+      return FALSE;
+    }
+    batch_set($batch);
+    return TRUE;
   }
 
 }
