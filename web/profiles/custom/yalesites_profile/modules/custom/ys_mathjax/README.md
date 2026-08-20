@@ -53,16 +53,20 @@ page loads.
   (`config_type: 0`, single-dollar inline math disabled, and `use_cdn: 0` so the
   library is self-hosted rather than loaded from a CDN).
 - The library itself comes from the `mathjax` package repository in the **root**
-  `composer.json` and is installed by `composer install` into
-  `web/libraries/MathJax` — capital M, capital J, which the contrib module
-  hardcodes. If a checkout has no `web/libraries/MathJax`, math silently stops
-  rendering and the status report shows the contrib module's "local library
+  `composer.json` (the version pin itself lives in the profile's
+  `composer.json`, alongside `drupal/mathjax`) and is installed by
+  `composer install` into `web/libraries/MathJax` — capital M, capital J, which
+  the contrib module hardcodes. If a checkout has no `web/libraries/MathJax`,
+  math silently stops rendering and the status report shows the "local library
   files could not be found" error; run `composer install` rather than
   re-enabling the CDN.
 - The install is **pruned after composer places it**. The upstream package is
   66 MB across 3,147 files, and CI force-adds the gitignored `web/libraries`
   into the Pantheon artifact on every deploy, so all of it would be committed
-  even though a math-heavy page only ever requests about 448 KB.
+  even though a page with math requests only a few hundred KB of it. (Not a
+  fixed figure: MathJax fetches jax, fonts and config lazily per formula, and
+  turning on the accessibility explorer pulls several MB more from
+  `extensions/a11y/` — which is why that directory is not pruned.)
   `ScriptHandler::pruneMathJaxLibrary()` (registered on the root
   `post-install-cmd` and `post-update-cmd`) removes `unpacked/` — an unminified
   mirror of the packed tree that `MathJax.js` never loads — plus `test/`, the
@@ -79,11 +83,12 @@ page loads.
   `MathJax.js` tells developers to load `unpacked/MathJax.js` when debugging a
   rendering problem, and the prune removes it. To get it back temporarily use
   `composer reinstall mathjax/mathjax --no-scripts`, which re-extracts the
-  package without re-running the prune. A plain `composer install` will not
-  restore it: composer decides what to install from the lock and
-  `vendor/composer/installed.php`, so with the package still recorded as
-  installed it reports "Nothing to install, update or remove" and leaves the
-  pruned tree alone.
+  package without re-running the prune. A plain `composer install` will *not*
+  restore it, and the reason reconciles this with the bullet above:
+  `LibraryInstaller::isInstalled()` treats a package as present when it is
+  recorded in the lock **and** its install directory exists — it never looks
+  inside. So a missing `web/libraries/MathJax` is reinstalled, while a missing
+  `unpacked/` inside it goes unnoticed and the pruned tree is left alone.
 - **The pin must stay on MathJax 2.7.1 or later.** Contrib `mathjax` 4.x still
   targets the MathJax 2.x API, so this is deliberately not a 3.x/4.x library.
   Within 2.x, 2.7.0 and earlier fetch the accessibility menu from `[Contrib]`,

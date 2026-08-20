@@ -47,23 +47,38 @@ class ScriptHandler
     }
   }
 
-  // Trims the self-hosted MathJax package down to what pages actually request.
-  // web/libraries is gitignored, but CI force-adds it into the Pantheon
-  // artifact, so whatever composer leaves here gets committed - the whole
-  // 66 MB, when a math-heavy page only ever pulls about 448 KB. unpacked/ is
-  // an unminified mirror of the packed tree that MathJax.js never loads, and
-  // on its own is roughly a third of the payload;
-  // test/ is the upstream sample suite, otherwise publicly reachable at
-  // /libraries/MathJax/test/. Composer cannot filter paths inside a package,
-  // so this has to run after it places them.
+  // Removes the parts of the self-hosted MathJax package that the runtime
+  // never loads. web/libraries is gitignored, but the deploy job force-adds
+  // all of web into the Pantheon artifact
+  // (.github/workflows/build_deploy_and_test.yml), so whatever composer
+  // leaves on disk gets committed - all 66 MB of MathJax 2.7.9, across 3,147
+  // files.
+  //
+  // What goes: unpacked/ is an unminified mirror of the packed tree that
+  // MathJax.js never loads, and on its own is a third of the package;
+  // test/ is the upstream sample suite, which would otherwise be publicly
+  // reachable at /libraries/MathJax/test/ - a surface-area reason rather than
+  // a size one, since it is only 104 KB.
+  //
+  // What stays, and why this is not a "trim to what a page requests": the
+  // remaining ~44 MB is mostly fonts/, jax/, config/ and localization/, which
+  // MathJax fetches lazily per formula. Very little of it is requested by any
+  // one page, but it all has to be there. Do not "finish the job" by pruning
+  // those.
+  //
+  // Composer has no way to exclude paths from a package it installs, so this
+  // has to run after composer has extracted it.
   //
   // Registered on both post-install-cmd and post-update-cmd because composer
-  // fires exactly one of the two per command: the deploy build uses
-  // `composer update` (.ci/build/build_frontend) while the test job and local
-  // installs use `composer install`. Re-running against an already-pruned
-  // tree is the normal local case, so it has to be a no-op.
+  // dispatches exactly one of the two per command (Installer.php picks on
+  // $this->update): the deploy build uses `composer update`
+  // (.ci/build/build_frontend), while .ci/test/static/run uses
+  // `composer install`. Note a first `composer install` with no composer.lock
+  // - the normal case here, since the root lock is untracked - is promoted to
+  // an update internally and so fires post-update-cmd. Re-running against an
+  // already-pruned tree is the everyday local case, so this must be a no-op.
   //
-  // The package is required by the profile's composer.json; only its
+  // The version pin lives in the profile's composer.json; only the package's
   // repository definition and this hook sit at root, because composer runs
   // root-package scripts only.
   public static function pruneMathJaxLibrary(Event $event)
@@ -71,14 +86,19 @@ class ScriptHandler
     $fs = new Filesystem();
     $library = static::getDrupalRoot(getcwd()) . '/libraries/MathJax';
 
-    // Nothing to do when the library was never installed in this checkout,
-    // and a safe stop if the pin ever moved to MathJax 3.x, which ships no
-    // root MathJax.js and none of the directories below.
+    // Nothing to do when the library was never installed in this checkout.
+    // Also a safe stop if the pin ever moved to MathJax 3.x, which ships no
+    // root MathJax.js and none of the directories below - belt-and-braces,
+    // since the README's pin rule already forbids 3.x outright.
     if (!$fs->exists($library . '/MathJax.js')) {
       return;
     }
 
-    // docs/ only exists in some upstream builds, not in the pinned 2.7.9 dist.
+    // docs/ cannot appear under the current pin: the repository definition
+    // points dist.url at the npm tarball, which has no docs/. It is listed
+    // for the case where that is ever repointed at the upstream git tree,
+    // which at tag 2.7.9 does ship one. Kept deliberately, not left over.
+    //
     // Filesystem::remove() is already a no-op on a missing path, so the
     // exists() check is here only to keep the log line to what was removed.
     foreach (['unpacked', 'test', 'docs'] as $dir) {
@@ -91,13 +111,17 @@ class ScriptHandler
         $event->getIO()->write("Pruned unused MathJax directory: $dir");
       }
       catch (\Throwable $e) {
-        // Deliberately broad. Failing to prune only costs artifact size, so
-        // this must never fail a build - and IOException alone is not a wide
-        // enough net: Filesystem::remove() renames the target aside and then
-        // builds a \FilesystemIterator over it, which throws
-        // \UnexpectedValueException (not an IOException) if a directory in
-        // the tree cannot be opened. Note that path leaves the renamed
-        // `.!XXXX` sibling behind, hence naming the directory here.
+        // Deliberately broad, \Error included: nothing in a size
+        // optimization is worth failing a deploy over. IOException alone is
+        // not a wide enough net either - Filesystem::remove() renames the
+        // target to a `.!` sibling and then builds a \FilesystemIterator
+        // over it, and that constructor throws \UnexpectedValueException,
+        // not an IOException, if a directory in the tree cannot be opened.
+        //
+        // That code path also skips the rename-back that the IOException path
+        // does, so the `.!` sibling is left holding the full unpacked tree -
+        // and `git add -f ... web` would commit it, making a failed prune
+        // ship more than no prune at all. Hence naming the directory to check.
         $event->getIO()->writeError(
           "<warning>Could not prune MathJax $dir; check $library for a "
           . "leftover .! directory: " . $e->getMessage() . "</warning>"

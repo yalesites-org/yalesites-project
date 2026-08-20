@@ -35,9 +35,7 @@ class MathjaxLibraryInstallTest extends UnitTestCase {
   protected const LIBRARY_DIR = 'libraries/MathJax';
 
   /**
-   * Upstream directories `ScriptHandler::pruneMathJaxLibrary()` removes.
-   *
-   * `docs/` only exists in some upstream builds, not in the pinned 2.7.9 dist.
+   * Upstream directories the composer prune removes.
    */
   protected const PRUNED_DIRS = [
     'unpacked',
@@ -46,7 +44,10 @@ class MathjaxLibraryInstallTest extends UnitTestCase {
   ];
 
   /**
-   * Directories MathJax loads at runtime, which the prune must leave alone.
+   * Directories MathJax may load at runtime, which the prune must leave alone.
+   *
+   * `localization/` only loads when a non-English locale is configured, but it
+   * is listed for the same reason as the rest: the prune must not touch it.
    */
   protected const RUNTIME_DIRS = [
     'config',
@@ -92,8 +93,9 @@ class MathjaxLibraryInstallTest extends UnitTestCase {
    *
    * CI force-adds `web/libraries` into the Pantheon artifact, so anything
    * composer leaves in the package ships whether or not a page requests it.
-   * `ScriptHandler::pruneMathJaxLibrary()` removes these after install, and
-   * that comment carries the per-directory reasoning.
+   * The per-directory reasoning, and why the rest of the tree stays, lives in
+   * the comment above `pruneMathJaxLibrary()` in
+   * `scripts/composer/ScriptHandler.php`.
    */
   public function testUnusedUpstreamDirectoriesArePruned(): void {
     foreach (self::PRUNED_DIRS as $dir) {
