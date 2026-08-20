@@ -315,7 +315,7 @@ function ys_core_deploy_10007(&$sandbox) {
 /**
  * Normalises stored settings values that predate this module's config schema.
  *
- * Two kinds of value were being stored in a shape their own form never
+ * Three kinds of value were being stored in a shape their own form never
  * produces, which went unnoticed because these objects had no config schema to
  * validate them against:
  *
@@ -326,6 +326,11 @@ function ys_core_deploy_10007(&$sandbox) {
  * - `environment_indicator.show` ships boolean TRUE in config/install, but
  *   SiteSettingsForm used to store the checkbox's raw integer, so a site that
  *   saved the settings form before that cast landed stores 1 or 0.
+ * - `focus_header_image` names a single media item, but some sites store an
+ *   array of IDs - the shape ys_core_preprocess_region() has guarded against
+ *   since a production hotfix. Unlike the other two this one is not merely
+ *   untidy: it is the only legacy value the new schema makes unsaveable, so
+ *   repairing it is what lets a deploy finish at all on those sites.
  *
  * This runs as a deploy hook rather than a hook_update_N because it writes to
  * active config: drush deploy runs updatedb BEFORE config:import, so a config
@@ -341,8 +346,11 @@ function ys_core_deploy_10007(&$sandbox) {
  * ys_core_allow_secret_items() check, so a site_admin saving that form leaves
  * the stale value untouched.
  *
- * Every reader of all three keys only tests truthiness, and an empty list is
- * falsy exactly as the empty string was, so this changes no behaviour.
+ * Every reader of the two managed_file keys and the indicator flag only tests
+ * truthiness, and an empty list is falsy exactly as the empty string was, so
+ * this changes no behaviour for them. Clearing an array focus_header_image
+ * matches what the render path already did with that value: it named no single
+ * media item, so no image was ever shown for it.
  *
  * @param bool $dry_run
  *   When TRUE, report what would change without writing anything.
@@ -355,15 +363,16 @@ function ys_core_normalize_settings_shapes($dry_run = FALSE) {
   $changes = [];
   $config_factory = \Drupal::configFactory();
 
-  $describe = function ($name, $key, $from, $to) {
-    return sprintf(
-      '%s:%s %s => %s',
-      $name,
-      $key,
-      var_export($from, TRUE),
-      var_export($to, TRUE)
-    );
-  };
+  // var_export() spreads an array over several lines, which would break the
+  // one-line-per-change shape of the report.
+  $format = fn ($value) => is_array($value) ? json_encode($value) : var_export($value, TRUE);
+  $describe = fn ($name, $key, $from, $to) => sprintf(
+    '%s:%s %s => %s',
+    $name,
+    $key,
+    $format($from),
+    $format($to)
+  );
 
   // Every value is read before anything is written. Config::save() casts data
   // to the schema's types once a schema exists, so saving one key can silently
@@ -373,6 +382,18 @@ function ys_core_normalize_settings_shapes($dry_run = FALSE) {
     'ys_core.header_settings' => 'site_name_image',
   ];
   $planned = [];
+
+  // A focus_header_image holding an array of media IDs rather than one ID is a
+  // shape the render path already guards against (see
+  // ys_core_preprocess_region()), and it is the one legacy value the schema
+  // cannot tolerate: castValue() recurses into the array looking for
+  // focus_header_image.0 under a string element and throws. That aborts ANY
+  // save of ys_core.header_settings, this hook's own site_name_image write
+  // included, so it is planned first and so repaired first.
+  $focus_image = $config_factory->getEditable('ys_core.header_settings')->get('focus_header_image');
+  if ($focus_image !== NULL && !is_scalar($focus_image)) {
+    $planned[] = ['ys_core.header_settings', 'focus_header_image', $focus_image, NULL, TRUE];
+  }
 
   foreach ($file_settings as $name => $key) {
     $value = $config_factory->getEditable($name)->get($key);
@@ -384,17 +405,24 @@ function ys_core_normalize_settings_shapes($dry_run = FALSE) {
     // A numeric scalar is still a usable file ID, so keep it rather than
     // discarding a real upload. Anything else - notably the '' the install
     // default used to ship - names no file and becomes the empty list.
-    $planned[] = [$name, $key, $value, is_numeric($value) ? [(int) $value] : []];
+    $planned[] = [$name, $key, $value, is_numeric($value) ? [(int) $value] : [], FALSE];
   }
 
   $show = $config_factory->getEditable('ys_core.site')->get('environment_indicator.show');
   if ($show !== NULL && !is_bool($show)) {
-    $planned[] = ['ys_core.site', 'environment_indicator.show', $show, (bool) $show];
+    $planned[] = ['ys_core.site', 'environment_indicator.show', $show, (bool) $show, FALSE];
   }
 
-  foreach ($planned as [$name, $key, $from, $to]) {
+  foreach ($planned as [$name, $key, $from, $to, $clear]) {
     if (!$dry_run) {
-      $config_factory->getEditable($name)->set($key, $to)->save();
+      if ($clear) {
+        // Reuse the render path's clearing helper, silently: a deploy has no
+        // interactive user to show its message to.
+        _ys_core_clear_focus_header_image_config($name, FALSE);
+      }
+      else {
+        $config_factory->getEditable($name)->set($key, $to)->save();
+      }
     }
     $changes[] = $describe($name, $key, $from, $to);
   }

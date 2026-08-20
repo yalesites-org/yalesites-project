@@ -195,6 +195,30 @@ class CoreSettingsSchemaTest extends KernelTestBase {
   }
 
   /**
+   * The declared types are what comes back out, not merely what is accepted.
+   *
+   * Every other test here asserts the schema does not reject a form-shaped
+   * value, which a wrong-but-permissive declaration would also satisfy. These
+   * read-backs are the other half: Config::save() casts to the declared type,
+   * so a form's string '1' returning as int 1 is what proves the integer,
+   * boolean and sequence declarations are the types actually being stored.
+   */
+  public function testDeclaredTypesAreWhatIsStored(): void {
+    $this->config('ys_core.site')
+      // The shapes a Form API element hands over: a checkbox's string value,
+      // an integer standing in for a boolean, and file IDs as strings.
+      ->set('search.enable_search_form', '1')
+      ->set('environment_indicator.show', 1)
+      ->set('custom_favicon', ['9'])
+      ->save();
+
+    $site = $this->config('ys_core.site');
+    $this->assertSame(1, $site->get('search.enable_search_form'));
+    $this->assertSame(TRUE, $site->get('environment_indicator.show'));
+    $this->assertSame([9], $site->get('custom_favicon'));
+  }
+
+  /**
    * Saves the given keys onto a config object and asserts the result validates.
    *
    * The save itself is half the assertion: with strict schema checking on, an

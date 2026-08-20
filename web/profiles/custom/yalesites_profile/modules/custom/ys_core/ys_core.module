@@ -1136,10 +1136,18 @@ function ys_core_preprocess_html(&$variables) {
  *
  * @param string $configName
  *   The name of the config to clear the focus header on.
+ * @param bool $notify
+ *   Whether to tell the current user their focus header image is gone. Pass
+ *   FALSE from a non-interactive context such as a deploy hook, where there is
+ *   nobody to read the message and no page to link them to.
  */
-function _ys_core_clear_focus_header_image_config($configName) {
+function _ys_core_clear_focus_header_image_config($configName, $notify = TRUE) {
   $config = \Drupal::configFactory()->getEditable($configName);
   $config->clear('focus_header_image')->save();
+
+  if (!$notify) {
+    return;
+  }
 
   $headerSettingsPath = Url::fromRoute('ys_core.admin_header_settings')->toString();
   $message = t(

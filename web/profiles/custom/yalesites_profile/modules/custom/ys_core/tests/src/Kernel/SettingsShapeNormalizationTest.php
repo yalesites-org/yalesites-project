@@ -4,6 +4,7 @@ namespace Drupal\Tests\ys_core\Kernel;
 
 use Drupal\KernelTests\KernelTestBase;
 use Drupal\Tests\SchemaCheckTestTrait;
+use Drupal\Tests\ys_core\Traits\LegacyConfigFixtureTrait;
 
 /**
  * Tests normalising settings values that predate the ys_core config schema.
@@ -28,6 +29,7 @@ use Drupal\Tests\SchemaCheckTestTrait;
  */
 class SettingsShapeNormalizationTest extends KernelTestBase {
 
+  use LegacyConfigFixtureTrait;
   use SchemaCheckTestTrait;
 
   /**
@@ -41,9 +43,7 @@ class SettingsShapeNormalizationTest extends KernelTestBase {
   protected function setUp(): void {
     parent::setUp();
 
-    // The helper lives in ys_core.deploy.php, which is loaded only by
-    // drush deploy:hook, not for a module that is merely enabled.
-    require_once __DIR__ . '/../../../ys_core.deploy.php';
+    $this->requireDeployHooks();
   }
 
   /**
@@ -140,18 +140,6 @@ class SettingsShapeNormalizationTest extends KernelTestBase {
 
     $this->assertCount(1, $report['changes']);
     $this->assertSame('', $this->config('ys_core.site')->get('custom_favicon'));
-  }
-
-  /**
-   * Writes a pre-schema shape straight to storage, as a live site holds it.
-   *
-   * Going through the config factory would put the value past the schema
-   * checker, which is exactly what these shapes fail.
-   */
-  private function storeLegacy(string $name, array $data): void {
-    $this->container->get('config.storage')->write($name, $data);
-    // Drop the factory's cached copy so the next read sees the raw write.
-    $this->container->get('config.factory')->reset($name);
   }
 
 }
