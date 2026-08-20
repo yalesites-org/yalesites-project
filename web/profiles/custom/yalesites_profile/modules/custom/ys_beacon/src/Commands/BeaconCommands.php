@@ -2,7 +2,9 @@
 
 namespace Drupal\ys_beacon\Commands;
 
+use Drupal\ys_beacon\PdfTextExtractionBatch;
 use Drupal\ys_beacon\Service\BeaconIndexManager;
+use Drupal\ys_beacon\Service\PdfTextIndexer;
 use Drush\Commands\DrushCommands;
 
 /**
@@ -12,6 +14,7 @@ class BeaconCommands extends DrushCommands {
 
   public function __construct(
     protected BeaconIndexManager $indexManager,
+    protected PdfTextIndexer $pdfTextIndexer,
   ) {
     parent::__construct();
   }
@@ -39,6 +42,43 @@ class BeaconCommands extends DrushCommands {
       '@url' => $url,
       '@name' => $name,
     ]));
+  }
+
+  /**
+   * Extracts text from PDF documents that have never been processed.
+   *
+   * The one-time backfill for documents that predate working extraction. Text
+   * is extracted in place and stored on the media, which re-tracks the item
+   * for indexing on its own. Documents already attempted are skipped, so the
+   * command is safe to re-run; --force clears those records so documents that
+   * were attempted but stored no text are tried again - after raising
+   * pdf_extraction_max_bytes, or once missing files are restored. A document
+   * that already holds text is never re-parsed either way; replace the file to
+   * force that.
+   *
+   * @param array $options
+   *   The command options.
+   *
+   * @command ys_beacon:extract-pdf-text
+   * @aliases ys-beacon-extract-pdf-text
+   * @option force Retry documents that were attempted but stored no text.
+   * @usage ys_beacon:extract-pdf-text
+   *   Extracts text from every PDF document still waiting for it.
+   * @usage ys_beacon:extract-pdf-text --force
+   *   Retries documents that were attempted but produced no text.
+   */
+  public function extractPdfText(array $options = ['force' => FALSE]): void {
+    if ($options['force']) {
+      $this->pdfTextIndexer->forgetAllAttempts();
+    }
+    $batch = PdfTextExtractionBatch::build($this->pdfTextIndexer->pendingMediaIds());
+    if (!$batch) {
+      $this->logger()->success(dt('No PDF documents are waiting for text extraction.'));
+      return;
+    }
+    batch_set($batch);
+    drush_backend_batch_process();
+    $this->logger()->success(dt('PDF text extraction finished.'));
   }
 
 }
