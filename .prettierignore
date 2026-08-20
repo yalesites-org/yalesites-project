@@ -1,6 +1,13 @@
 web/profiles/custom/yalesites_profile/modules/custom/ys_beacon/react/static/
 web/profiles/custom/yalesites_profile/modules/custom/ys_beacon/react/node_modules/
 
+# Vite build input. Its body markup is copied verbatim into the committed bundle at
+# react/static/index.html, and .github/workflows/verify_beacon_bundle.yml fails the
+# build when those two drift apart. Formatting it here would mean every run of
+# `npm run prettier:fix` breaks that workflow until someone rebuilds the bundle, so
+# leave its formatting to whoever regenerates the bundle.
+web/profiles/custom/yalesites_profile/modules/custom/ys_beacon/react/index.html
+
 # Deliberately-malformed test fixture (invalid JSON by design). Prettier throws a
 # SyntaxError on it, so exclude it from formatting checks.
 web/profiles/custom/yalesites_profile/modules/custom/ys_themes/tests/fixtures/tokens-fixture-malformed.json
