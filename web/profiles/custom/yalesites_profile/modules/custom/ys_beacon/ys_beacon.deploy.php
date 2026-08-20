@@ -130,3 +130,77 @@ function ys_beacon_deploy_10002(array &$sandbox) {
     '@count' => $sandbox['queued'],
   ]);
 }
+
+/**
+ * Reindexes migrated media whose AI Description was importer bookkeeping.
+ *
+ * AiMetadataManager now treats a migration-metadata-shaped ai_description as
+ * if no description had been set, but that only changes what gets embedded the
+ * next time an item is indexed. The affected items are migrated media that no
+ * editor is ever going to open, and Search API's cron only revisits items it
+ * has been told changed, so without this sweep the noisy vectors measured in
+ * issue #1581 (15 of the 16 described media on the sampled site) would sit in
+ * Azure indefinitely and the fix would be inert on exactly the content it was
+ * written for.
+ *
+ * Affected items are identified by asking AiMetadataManager itself: a non-empty
+ * stored tag that comes back empty is one it suppressed. That deliberately
+ * avoids restating the detection rule here, so this hook cannot drift from the
+ * indexing path it is meant to refresh.
+ *
+ * Only media are scanned, matching the scope of the audit in #1581 - the
+ * ai_description metatag field is only editable on media:document. Sites where
+ * Beacon is unauthorized or unconfigured are skipped before the library is
+ * enumerated. Marking an item updated re-embeds it, which costs an embedding
+ * call per item, so the count is kept to the items that actually carry the bad
+ * data rather than reindexing the whole index.
+ */
+function ys_beacon_deploy_10003(array &$sandbox) {
+  // Decide once, up front: Beacon is authorized per site by a platform
+  // administrator and a site can be left without an index name, so most sites
+  // receiving this deploy have it switched off and the enumeration below would
+  // cost real deploy time to achieve nothing.
+  if (!\Drupal::service('ys_beacon.authorization')->isAuthorized()
+    || !\Drupal::config('ys_beacon.settings')->get('azure_index_name')) {
+    $sandbox['#finished'] = 1;
+    return t('Beacon is not enabled on this site; no media were marked for reindexing.');
+  }
+
+  if (!isset($sandbox['ids'])) {
+    $sandbox['ids'] = array_values(\Drupal::entityQuery('media')->accessCheck(FALSE)->execute());
+    $sandbox['total'] = count($sandbox['ids']);
+    $sandbox['marked'] = 0;
+  }
+  if (!$sandbox['total']) {
+    $sandbox['#finished'] = 1;
+    return t('The media library is empty; nothing was marked for reindexing.');
+  }
+
+  $metatag_manager = \Drupal::service('metatag.manager');
+  $ai_metadata_manager = \Drupal::service('ys_beacon.ai_metadata_manager');
+  $tracking_manager = \Drupal::service('search_api.entity_datasource.tracking_manager');
+  $storage = \Drupal::entityTypeManager()->getStorage('media');
+
+  // Paging matters: loading a large media library in one go would not survive
+  // the deploy window.
+  foreach ($storage->loadMultiple(array_splice($sandbox['ids'], 0, 50)) as $media) {
+    $tags = $metatag_manager->tagsFromEntity($media);
+    if (trim((string) ($tags['ai_description'] ?? '')) === '') {
+      continue;
+    }
+    if ($ai_metadata_manager->getAiMetadata($media)['ai_description'] !== '') {
+      continue;
+    }
+    $tracking_manager->trackEntityChange($media);
+    $sandbox['marked']++;
+  }
+
+  if ($sandbox['ids']) {
+    $sandbox['#finished'] = 1 - (count($sandbox['ids']) / $sandbox['total']);
+    return NULL;
+  }
+  $sandbox['#finished'] = 1;
+  return t('Marked @count media item(s) carrying migration metadata in their AI Description for reindexing.', [
+    '@count' => $sandbox['marked'],
+  ]);
+}

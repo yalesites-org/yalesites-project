@@ -232,6 +232,12 @@ class RagRetrieverTest extends UnitTestCase {
    * read path must undo that so the citation URL is not corrupted (a stored
    * "annual\_report" would otherwise 404).
    *
+   * This is also the regression cover YaleSites-Internal#1581 asks for on the
+   * citation half of that issue: the document reported there
+   * ("Supplier\_Gateway-Reference\_Guide\_for\_Suppliers.pdf") reaches the
+   * user through this exact path, and the multi-underscore filename asserted
+   * below is the same shape. Keep it passing.
+   *
    * @covers ::buildStoredCitations
    * @covers ::decodeStoredValue
    */

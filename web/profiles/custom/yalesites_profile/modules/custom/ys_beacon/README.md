@@ -12,6 +12,28 @@ its `ai_engine_metadata` submodule, so the AI metadata tags editors already
 maintain (`ai_description`, `ai_tags`, `ai_disable_indexing`) keep working and
 flow into the vector index.
 
+One exception: sites imported from the legacy your.yale.edu platform carry the
+importer's own bookkeeping in `ai_description` rather than a description (for
+example `source_url: https://your.yale.edu/media/3359/download?inline`). Because
+that field is embedded as contextual content on every chunk of the item, a bare
+URL there is pure noise in the vector, so `AiMetadataManager` treats a value
+whose line begins with a `<word>_url:` key as if no description had been set.
+
+Scope of that suppression, so it is not mistaken for a general cleanup:
+
+- It applies to what Beacon *reads* - the vector index and the
+  `/api/content-feed` JSON, both of which go through `AiMetadataManager`. The
+  stored field is left untouched, so the raw value still renders in the page's
+  `<meta name="ai_description">` tag and any consumer scraping the page rather
+  than the index still sees it.
+- Nothing changes for editors. The check is anchored to the start of a line, so
+  prose that merely mentions or quotes a URL is kept; a description written in
+  the UI is used as-is, and writing one over a migrated value takes effect
+  immediately because the index has `index_directly` enabled.
+- Suppression only changes what is embedded the *next* time an item is indexed,
+  and nobody edits migrated media. `ys_beacon_deploy_10003()` therefore marks
+  the affected items for reindexing once, on deploy.
+
 ## Naming
 
 The chat widget originates from Microsoft's "Contoso Chat" sample (by way of
