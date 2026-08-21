@@ -96,6 +96,40 @@ class TaxonomyResolverServiceTest extends UnitTestCase {
   }
 
   /**
+   * A term name repeated across CSV rows is only queried once.
+   *
+   * @covers ::findOrCreateTerm
+   */
+  public function testFindOrCreateTermCachesResolvedTermsForTheRequest() {
+    $term = $this->createMock(TermInterface::class);
+    $this->termStorage->expects($this->once())->method('getQuery')->willReturn($this->mockQuery([5 => '5']));
+    $this->termStorage->expects($this->once())->method('load')->with('5')->willReturn($term);
+
+    $first = $this->taxonomyResolver->findOrCreateTerm('Repeated Term', 'tags');
+    $second = $this->taxonomyResolver->findOrCreateTerm('Repeated Term', 'tags');
+
+    $this->assertSame($term, $first);
+    $this->assertSame($term, $second);
+  }
+
+  /**
+   * The same term name in a different vocabulary is resolved separately.
+   *
+   * @covers ::findOrCreateTerm
+   */
+  public function testFindOrCreateTermKeepsVocabulariesSeparate() {
+    $tag = $this->createMock(TermInterface::class);
+    $audience = $this->createMock(TermInterface::class);
+
+    $this->termStorage->expects($this->exactly(2))->method('getQuery')
+      ->willReturnOnConsecutiveCalls($this->mockQuery([5 => '5']), $this->mockQuery([6 => '6']));
+    $this->termStorage->method('load')->willReturnMap([['5', $tag], ['6', $audience]]);
+
+    $this->assertSame($tag, $this->taxonomyResolver->findOrCreateTerm('Alumni', 'tags'));
+    $this->assertSame($audience, $this->taxonomyResolver->findOrCreateTerm('Alumni', 'audience'));
+  }
+
+  /**
    * FindOrCreateTerm() creates and saves a new term when none matches.
    *
    * @covers ::findOrCreateTerm
@@ -206,34 +240,43 @@ class TaxonomyResolverServiceTest extends UnitTestCase {
   /**
    * ParseCommaSeparatedValues() drops genuinely empty segments.
    *
-   * Leading, trailing, and doubled-up commas produce empty ('') segments
-   * that are filtered out entirely -- but array_filter() preserves the
-   * original explode() indices, so the surviving values keep their original
-   * (non-sequential) keys rather than being renumbered from 0.
+   * Leading, trailing, and doubled-up commas produce empty segments, which are
+   * filtered out. The survivors are renumbered from 0 so callers can index the
+   * result; array_filter() alone would leave the original explode() indices.
    *
    * @covers ::parseCommaSeparatedValues
    */
   public function testParseCommaSeparatedValuesDropsEmptySegments() {
     $result = $this->taxonomyResolver->parseCommaSeparatedValues(',Alpha,,Beta,');
 
-    $this->assertSame([1 => 'Alpha', 3 => 'Beta'], $result);
+    $this->assertSame(['Alpha', 'Beta'], $result);
   }
 
   /**
-   * A whitespace-only segment survives filtering and becomes an empty string.
+   * A whitespace-only segment is dropped rather than becoming an empty name.
    *
-   * Array_filter() runs before array_map('trim', ...) in the implementation,
-   * so a segment of only spaces (truthy before trimming) is not dropped the
-   * way a literally empty segment is -- it instead comes out as ''. This
-   * characterizes that exact, easy-to-miss ordering rather than the more
-   * intuitive "no empty strings in the result" behavior.
+   * Trimming has to happen before the empty values are filtered out. The other
+   * order lets a segment of only spaces through, and findOrCreateTerm() then
+   * creates a nameless term in the vocabulary, which shows up unlabelled in
+   * every autocomplete and listing filter with nothing to explain it.
    *
    * @covers ::parseCommaSeparatedValues
    */
-  public function testParseCommaSeparatedValuesWhitespaceOnlySegmentBecomesEmptyString() {
+  public function testParseCommaSeparatedValuesDropsWhitespaceOnlySegments() {
     $result = $this->taxonomyResolver->parseCommaSeparatedValues('Alpha, ,Beta');
 
-    $this->assertSame(['Alpha', '', 'Beta'], $result);
+    $this->assertSame(['Alpha', 'Beta'], $result);
+  }
+
+  /**
+   * A term legitimately named "0" is not mistaken for an empty value.
+   *
+   * @covers ::parseCommaSeparatedValues
+   */
+  public function testParseCommaSeparatedValuesKeepsZeroAsTermName() {
+    $result = $this->taxonomyResolver->parseCommaSeparatedValues('0, Alpha');
+
+    $this->assertSame(['0', 'Alpha'], $result);
   }
 
 }

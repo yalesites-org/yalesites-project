@@ -67,7 +67,7 @@ ys_beacon.settings:
       label: 'Context window in tokens of the model Portkey routes to'
     instructions_max_length:
       type: integer
-      label: 'Maximum system instructions length in characters'
+      label: 'Recommended system instructions length in characters'
     instructions_warning_threshold:
       type: integer
       label: 'Character count at which the instructions editor shows a warning'
