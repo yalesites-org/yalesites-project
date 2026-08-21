@@ -4,10 +4,12 @@ namespace Drupal\Tests\ys_beacon\Unit;
 
 use Drupal\Core\Entity\EntityInterface;
 use Drupal\Core\TypedData\ComplexDataInterface;
+use Drupal\media\MediaInterface;
 use Drupal\search_api\Item\ItemInterface;
 use Drupal\Tests\UnitTestCase;
 use Drupal\ys_beacon\Plugin\search_api\processor\ExcludeAiDisabled;
 use Drupal\ys_beacon\Service\BeaconIndexability;
+use Drupal\ys_beacon\Service\PdfTextIndexer;
 
 /**
  * Proves the Search API processor drops non-indexable items before indexing.
@@ -15,7 +17,8 @@ use Drupal\ys_beacon\Service\BeaconIndexability;
  * ExcludeAiDisabled is the write-path gate: Search API collects tracked items
  * and this processor removes any whose entity fails BeaconIndexability, so a
  * protected or AI-disabled entity is never embedded into the shared vector
- * database. This isolates the processor's own drop logic; the indexability
+ * database. It also drops documents whose PDF text has not been extracted.
+ * This isolates the processor's own drop logic; the indexability
  * decision itself is covered by BeaconIndexabilityAccessTest and
  * BeaconIndexabilityTest.
  *
@@ -67,6 +70,54 @@ class ExcludeAiDisabledProcessorTest extends UnitTestCase {
   }
 
   /**
+   * A document whose PDF text was never extracted is dropped.
+   *
+   * Indexing it would embed a chunk whose only content is the filename: it
+   * matches filename-shaped queries and cites a document with nothing behind
+   * it, which is the whole of issue #1580's user-visible damage.
+   *
+   * @covers ::alterIndexedItems
+   */
+  public function testDocumentWithoutExtractedTextIsDropped(): void {
+    $withText = $this->createMock(MediaInterface::class);
+    $withoutText = $this->createMock(MediaInterface::class);
+
+    $indexability = $this->createMock(BeaconIndexability::class);
+    $indexability->method('isIndexable')->willReturn(TRUE);
+    $pdfTextIndexer = $this->createMock(PdfTextIndexer::class);
+    $pdfTextIndexer->method('lacksExtractedText')
+      ->willReturnCallback(fn ($entity) => $entity === $withoutText);
+
+    $items = [
+      'keep' => $this->item($withText),
+      'drop' => $this->item($withoutText),
+    ];
+
+    $this->processor($indexability, $pdfTextIndexer)->alterIndexedItems($items);
+
+    $this->assertArrayHasKey('keep', $items, 'A document with extracted text is indexed.');
+    $this->assertArrayNotHasKey('drop', $items, 'A document with no extracted text is kept out of the index.');
+  }
+
+  /**
+   * A node is never put through the document text gate.
+   *
+   * @covers ::alterIndexedItems
+   */
+  public function testNonMediaIsNotGatedOnExtractedText(): void {
+    $indexability = $this->createMock(BeaconIndexability::class);
+    $indexability->method('isIndexable')->willReturn(TRUE);
+    $pdfTextIndexer = $this->createMock(PdfTextIndexer::class);
+    $pdfTextIndexer->expects($this->never())->method('lacksExtractedText');
+
+    $items = ['keep' => $this->item($this->createMock(EntityInterface::class))];
+
+    $this->processor($indexability, $pdfTextIndexer)->alterIndexedItems($items);
+
+    $this->assertArrayHasKey('keep', $items);
+  }
+
+  /**
    * Wraps an entity in a Search API item, as the processor receives it.
    */
   private function item(EntityInterface $entity): ItemInterface {
@@ -80,10 +131,12 @@ class ExcludeAiDisabledProcessorTest extends UnitTestCase {
   /**
    * Builds the processor with the indexability service injected.
    */
-  private function processor(BeaconIndexability $indexability): ExcludeAiDisabled {
+  private function processor(BeaconIndexability $indexability, ?PdfTextIndexer $pdfTextIndexer = NULL): ExcludeAiDisabled {
     $processor = (new \ReflectionClass(ExcludeAiDisabled::class))->newInstanceWithoutConstructor();
     $property = new \ReflectionProperty(ExcludeAiDisabled::class, 'indexability');
     $property->setValue($processor, $indexability);
+    $property = new \ReflectionProperty(ExcludeAiDisabled::class, 'pdfTextIndexer');
+    $property->setValue($processor, $pdfTextIndexer ?? $this->createMock(PdfTextIndexer::class));
     return $processor;
   }
 
