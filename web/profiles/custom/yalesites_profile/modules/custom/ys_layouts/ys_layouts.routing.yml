@@ -48,3 +48,23 @@ ys_layouts.clone_block:
     parameters:
       section_storage:
         layout_builder_tempstore: TRUE
+
+# Reports Layout Builder inline blocks left behind when a non-reusable block was
+# removed from a layout. Report-only; deletion is the separate confirm step
+# below. Lives under /admin/yalesites rather than beside
+# ys_layouts.settings_form, whose 'administer site configuration' permission no
+# role on the platform actually holds. No _admin_route needed: already /admin/*.
+ys_layouts.orphaned_blocks_report:
+  path: '/admin/yalesites/orphaned-inline-blocks'
+  defaults:
+    _controller: '\Drupal\ys_layouts\Controller\OrphanedInlineBlockReportController::build'
+    _title: 'Orphaned inline blocks'
+  requirements:
+    _permission: 'administer orphaned inline blocks'
+ys_layouts.orphaned_blocks_delete:
+  path: '/admin/yalesites/orphaned-inline-blocks/delete'
+  defaults:
+    _form: '\Drupal\ys_layouts\Form\OrphanedInlineBlockDeleteForm'
+    _title: 'Delete orphaned inline blocks'
+  requirements:
+    _permission: 'administer orphaned inline blocks'
