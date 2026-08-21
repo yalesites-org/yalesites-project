@@ -16,6 +16,7 @@ use Drupal\Tests\UnitTestCase;
 use Drupal\ys_beacon\Form\YsBeaconAdminSettings;
 use Drupal\ys_beacon\Service\BeaconIndexManager;
 use Drupal\ys_beacon\Service\BeaconIndexStatus;
+use Drupal\ys_beacon\Service\PdfTextIndexer;
 
 /**
  * Tests the Beacon administration settings form.
@@ -102,6 +103,11 @@ class YsBeaconAdminSettingsTest extends UnitTestCase {
     $form = (new \ReflectionClass(YsBeaconAdminSettings::class))->newInstanceWithoutConstructor();
     $this->setProtected($form, 'indexStatus', $index_status);
     $this->setProtected($form, 'indexingBatchHelper', $helper ?? $this->createMock(IndexingBatchHelperInterface::class));
+    // No document is waiting on extraction, so the mirrored handlers do not
+    // reach batch_set(); the sweep is covered by PdfTextExtractionTriggerTest.
+    $pdfTextIndexer = $this->createMock(PdfTextIndexer::class);
+    $pdfTextIndexer->method('pendingMediaIds')->willReturn([]);
+    $this->setProtected($form, 'pdfTextIndexer', $pdfTextIndexer);
     $this->setProtected($form, 'configFactory', $config_factory);
     $this->setProtected($form, 'messenger', $messenger ?? $this->createMock(MessengerInterface::class));
     $this->setProtected($form, 'stringTranslation', $this->getStringTranslationStub());

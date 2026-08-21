@@ -407,6 +407,54 @@ class BookCollectionDeleteTest extends KernelTestBase {
   }
 
   /**
+   * The collection top page drops contrib book's relocation warning.
+   *
+   * Contrib book_form_node_confirm_form_alter() adds "the child pages will be
+   * relocated automatically" to every book page that has children. On a
+   * collection's top page that is no longer what happens: ys_book takes the
+   * collection apart and the sub-pages stay put as standalone content. Showing
+   * both sentences tells the editor two contradictory things about the same
+   * irreversible action.
+   */
+  public function testDeleteConfirmFormDropsContribWarningOnCollectionTop(): void {
+    [$root] = $this->createCollection();
+
+    $form = $this->container->get('entity.form_builder')
+      ->getForm($this->reload($root), 'delete');
+
+    $this->assertArrayNotHasKey(
+      'book_warning',
+      $form,
+      "Contrib's relocation warning is wrong for a collection top page."
+    );
+    $this->assertArrayHasKey(
+      'ys_book_collection_notice',
+      $form,
+      'The accurate YaleSites copy is still the one the editor sees.'
+    );
+  }
+
+  /**
+   * Mid-collection pages keep contrib book's relocation warning.
+   *
+   * Deleting a page from the middle of a collection really does move its
+   * children up under its parent and leave the collection intact, so contrib's
+   * wording is accurate there and must survive.
+   */
+  public function testDeleteConfirmFormKeepsContribWarningMidCollection(): void {
+    [, $child] = $this->createCollection();
+
+    $form = $this->container->get('entity.form_builder')
+      ->getForm($this->reload($child), 'delete');
+
+    $this->assertArrayHasKey(
+      'book_warning',
+      $form,
+      'A mid-collection page really does have its children relocated.'
+    );
+  }
+
+  /**
    * Pages taken out of the outline are hidden from contrib book's predelete.
    *
    * Contrib book_node_predelete() only checks the in-memory copy of the book
