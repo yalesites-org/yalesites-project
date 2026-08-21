@@ -8,6 +8,7 @@
  */
 
 use Drupal\node\NodeInterface;
+use Drupal\Core\Entity\ContentEntityDeleteForm;
 use Drupal\Core\Render\Element;
 use Drupal\Core\Render\Markup;
 use Drupal\Core\Form\FormStateInterface;
@@ -48,6 +49,18 @@ function ys_book_module_implements_alter(&$implementations, $hook) {
   // - node_view: We handle navigation rendering via template instead.
   if (in_array($hook, ['help', 'node_view'])) {
     unset($implementations['book']);
+  }
+
+  // Run our node_predelete ahead of book's. Both modules are weight 0, so
+  // module_implements() would order them alphabetically and
+  // book_node_predelete() would promote a deleted collection's sub-pages into
+  // new collections before we ever got the chance to take the collection
+  // apart.
+  // @see ys_book_node_predelete()
+  if ($hook === 'node_predelete' && isset($implementations['ys_book'])) {
+    $ys_book = $implementations['ys_book'];
+    unset($implementations['ys_book']);
+    $implementations = ['ys_book' => $ys_book] + $implementations;
   }
 }
 
@@ -219,6 +232,83 @@ function ys_book_form_alter(&$form, FormStateInterface $form_state, $form_id) {
     // so appending here runs after them instead of replacing them.
     $form['actions']['submit']['#submit'][] = '_ys_book_outline_form_submit';
   }
+
+  // Warn the editor that deleting a collection's top-level page from Manage
+  // Content takes the collection with it.
+  if ($form_state->getFormObject() instanceof ContentEntityDeleteForm) {
+    _ys_book_add_collection_delete_notice($form, $form_state);
+  }
+}
+
+/**
+ * Checks whether a node is the top-level page of a content collection.
+ *
+ * A collection's outline rows all carry the top page's node ID as their book
+ * ID, so the top page is the one whose book ID is its own node ID.
+ *
+ * @param \Drupal\node\NodeInterface $node
+ *   The node to check.
+ *
+ * @return bool
+ *   TRUE if the node is a collection's top-level page.
+ */
+function _ys_book_is_collection_top(NodeInterface $node): bool {
+  return !empty($node->book['bid']) && $node->book['bid'] == $node->id();
+}
+
+/**
+ * Explains that a deleted collection root's sub-pages are kept.
+ *
+ * The Manage Content delete route uses the generic content-delete
+ * confirmation, whose only description is "This action cannot be undone".
+ * Losing a whole collection to it is a surprise worth spelling out, the way
+ * the Manage Content Collections confirmation already does.
+ *
+ * Contrib book adds its own warning to the same page, so this also takes that
+ * one away -- see the comment at the unset() below. Adding ours and removing
+ * contrib's happen together, under one condition, so the editor can never be
+ * left reading both or neither.
+ *
+ * @param array $form
+ *   The delete confirmation form.
+ * @param \Drupal\Core\Form\FormStateInterface $form_state
+ *   The form state.
+ *
+ * @see \Drupal\ys_book\Form\BookCollectionDeleteForm::getDescription()
+ */
+function _ys_book_add_collection_delete_notice(array &$form, FormStateInterface $form_state): void {
+  $node = $form_state->getFormObject()->getEntity();
+
+  // Only a collection's top-level page loses a collection when it is deleted.
+  if (!$node instanceof NodeInterface || !_ys_book_is_collection_top($node)) {
+    return;
+  }
+
+  // A collection that is only its top-level page has no sub-pages to explain.
+  if (count(_ys_book_get_all_book_nids((int) $node->id())) < 2) {
+    return;
+  }
+
+  // Contrib's book_form_node_confirm_form_alter() has already put "the child
+  // pages will be relocated automatically" on this page. That stopped being
+  // true for a collection's top page when ys_book_node_predelete() started
+  // taking the collection apart and leaving its pages standalone, and read
+  // together with the copy below it tells the editor two contradictory things
+  // about the same irreversible action. It is still accurate for a page in the
+  // middle of a collection, which never reaches this function.
+  // (Both modules are weight 0 and ModuleHandler::alter() runs a module's
+  // alters as a block, so every book_* alter has run by the time any ys_book_*
+  // one does -- the same ordering ys_book_module_implements_alter() relies on.)
+  unset($form['book_warning']);
+
+  $form['ys_book_collection_notice'] = [
+    '#type' => 'html_tag',
+    '#tag' => 'p',
+    '#value' => t("This page is the top of a content collection. Deleting it removes the collection's shared navigation and grouping. The other pages in the collection won't be deleted; they'll stay published as standalone content."),
+    // Lead with the collection-specific consequence, ahead of the generic
+    // "This action cannot be undone" the confirm form adds at weight 0.
+    '#weight' => -10,
+  ];
 }
 
 /**
@@ -705,12 +795,51 @@ function _ys_book_keep_existing_collection_link(NodeInterface $node): void {
 /**
  * Implements hook_ENTITY_TYPE_predelete() for node entities.
  *
- * Invalidates collection nav cache when a book node is deleted.
+ * Invalidates the collection nav cache when a book node is deleted, and takes
+ * the collection apart first when the page being deleted is its top-level one.
+ *
+ * Deleting a collection's top-level page from Manage Content used to promote
+ * every sub-page into the top page of a brand-new collection, because contrib
+ * BookManager::deleteFromBook() re-points a book root's children at themselves
+ * as new book IDs. The pages were never lost, but the editor was left with a
+ * pile of junk collections cluttering the Collection dropdown and no bulk way
+ * to undo it.
+ *
+ * Taking the collection apart here, ahead of book_node_predelete(), removes
+ * every page from the outline deepest-first, so no page is ever a root with
+ * children left to promote and the sub-pages come out as ordinary standalone
+ * pages. That matches what "Delete collection" on Manage Content Collections
+ * already does. Deleting a page in the middle of a collection is deliberately
+ * untouched: contrib moves its children up under its parent and the collection
+ * survives, which is the behaviour we want there.
+ *
+ * @see ys_book_module_implements_alter()
+ * @see _ys_book_dismantle_collection()
+ * @see yalesites-org/YaleSites-Internal#1511
  */
 function ys_book_node_predelete($node) {
-  if (!empty($node->book['bid'])) {
-    _ys_book_invalidate_collection_nav_cache($node->book['bid']);
+  if (empty($node->book['bid'])) {
+    return;
   }
+
+  if (_ys_book_is_collection_top($node)) {
+    _ys_book_dismantle_collection((int) $node->book['bid']);
+  }
+
+  // This page may no longer be in the outline at all: the dismantle above just
+  // took it out, or -- when a collection's top-level page and one of its
+  // sub-pages go in the same bulk delete, which runs this hook for every
+  // selected node before any of them is removed -- the top-level page's own
+  // predelete already did. Contrib book_node_predelete() trusts the in-memory
+  // copy and would go looking for a row that is gone, reading 'bid' and 'pid'
+  // off the empty array loadBookLink() returns. Drop the stale copy so it
+  // skips this node instead.
+  if (!\Drupal::service('book.manager')->loadBookLink($node->id(), FALSE)) {
+    $node->book = [];
+    return;
+  }
+
+  _ys_book_invalidate_collection_nav_cache($node->book['bid']);
 }
 
 /**

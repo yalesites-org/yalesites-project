@@ -48,6 +48,9 @@ function ys_core_theme($existing, $type, $theme, $path): array {
       'variables' => [
         'platform_version' => NULL,
         'announcements' => [],
+        // Only built when the user actually has unread announcements, so this
+        // stays NULL the rest of the time and the control is not rendered.
+        'mark_all_read_form' => NULL,
       ],
     ],
     'ys_social_links' => [
@@ -87,6 +90,42 @@ function ys_core_theme($existing, $type, $theme, $path): array {
       ],
     ],
   ];
+}
+
+/**
+ * Implements hook_element_info_alter().
+ */
+function ys_core_element_info_alter(array &$info) {
+  if (isset($info['linkit'])) {
+    $info['linkit']['#process'][] = 'ys_core_linkit_uri_selector';
+  }
+}
+
+/**
+ * Process callback: suffixes a linkit element's drupal selector with "-uri".
+ *
+ * Linkit's autocomplete JavaScript is written for the link field widget, whose
+ * URI sub-element always gets a data-drupal-selector ending in "-uri"; it
+ * derives the sibling metadata inputs from that suffix and throws outright when
+ * it is missing. A standalone "#type => linkit" element - which our settings
+ * forms use - is named for its own config key instead, so selecting a
+ * suggestion threw before the JavaScript ever wrote the chosen path into the
+ * field. Suffixing the selector satisfies that check; the sibling inputs it
+ * then looks for simply do not exist outside a link widget, which the
+ * JavaScript handles without complaint.
+ *
+ * @param array $element
+ *   The linkit element being processed.
+ *
+ * @return array
+ *   The processed element.
+ */
+function ys_core_linkit_uri_selector(array $element) {
+  $selector = $element['#attributes']['data-drupal-selector'] ?? '';
+  if ($selector && !str_ends_with($selector, '-uri')) {
+    $element['#attributes']['data-drupal-selector'] = $selector . '-uri';
+  }
+  return $element;
 }
 
 /**
@@ -280,6 +319,22 @@ function ys_core_form_alter(&$form, FormStateInterface $form_state, $form_id) {
   ];
 
   if (in_array($form_id, $layout_builder_block_forms)) {
+    // Explain a rejected value where the editor is working. The configure-block
+    // submit carries no #ajax, so a server-side validation failure leaves the
+    // off-canvas dialog and re-renders this form as a standalone Layout Builder
+    // page — and Gin's page--layout-builder.html.twig prints only pre_content
+    // and content, never the highlighted region that holds the site's messages
+    // block. The rejection therefore stayed queued and surfaced later on an
+    // unrelated page, leaving the editor a red-outlined field with no text, and
+    // screen reader users no error at all. This deliberately reuses the key
+    // core's own Ajax error path assigns in AjaxFormHelperTrait::ajaxSubmit():
+    // where that path does run it overwrites this element rather than adding a
+    // second one, which would render the message twice and announce it twice.
+    $form['status_messages'] = [
+      '#type' => 'status_messages',
+      '#weight' => -100,
+    ];
+
     $block_type_name = ys_core_get_block_type($form, $form_state);
     $limited_block_types = [
       'tabs',
@@ -357,7 +412,15 @@ function ys_core_preprocess_block(&$variables) {
  * runs before the core handler and rewrites bare domains to an explicit
  * "https://" URL, matching the editor's intent.
  *
+ * The same handler corrects two mistypings that Drupal accepts and stores but
+ * cannot resolve, publishing a link that looks live and goes nowhere: a
+ * protocol-relative "//example.com" (saved as "internal://example.com", which
+ * renders with an empty href) and a single-slash "https:/example.com" (rendered
+ * as a literal, broken href). It also corrects a scheme misspelt by a single
+ * character, "htp://example.com", which core rejects outright.
+ *
  * @see \Drupal\link\Plugin\Field\FieldWidget\LinkWidget::validateUriElement()
+ * @see _ys_core_normalize_bare_domain_uri()
  */
 function ys_core_field_widget_single_element_form_alter(array &$element, FormStateInterface $form_state, array $context) {
   $widget = $context['widget'] ?? NULL;
@@ -391,12 +454,17 @@ function _ys_core_normalize_link_uri(array &$element, FormStateInterface $form_s
 }
 
 /**
- * Adds an "https://" scheme to a bare domain entered in a link field.
+ * Corrects a web address typed in a shape Drupal cannot resolve.
+ *
+ * Four shapes are rewritten to a valid absolute URL:
+ * - a bare host, "google.com" or "www.example.org/path?x=1";
+ * - a protocol-relative URL, "//example.com";
+ * - an http(s) URL missing its authority delimiter, "https:/example.com";
+ * - a misspelt http(s) scheme, "htp://example.com".
  *
  * Values that are empty, internal paths ("/", "#", "?"), route tokens
- * ("<front>", "<nolink>"), or already scheme-qualified ("https:", "mailto:",
- * "internal:", "entity:", …) are returned unchanged. Only bare hosts such as
- * "google.com" or "www.example.org/path?x=1" are rewritten.
+ * ("<front>", "<nolink>"), or already scheme-qualified ("https://", "mailto:",
+ * "internal:", "entity:", …) are returned unchanged.
  */
 function _ys_core_normalize_bare_domain_uri(string $uri): string {
   $trimmed = trim($uri);
@@ -404,9 +472,40 @@ function _ys_core_normalize_bare_domain_uri(string $uri): string {
     return $uri;
   }
 
+  // A protocol-relative URL is rewritten by the core link widget to
+  // "internal://example.com", which passes validation and saves, then renders
+  // as an anchor with an empty href — a dead link styled exactly like a working
+  // one. Supply the scheme the editor left off.
+  if (preg_match('~^//[^/]~', $trimmed)) {
+    return 'https:' . $trimmed;
+  }
+
+  // "https:/example.com" (and "https:example.com") already declare a scheme, so
+  // they are stored verbatim and rendered as a literal, broken href. Restore
+  // the authority delimiter that http and https always require. Other schemes
+  // are left alone: "mailto:" and "tel:" take no authority, and "internal:/"
+  // and "entity:" are correct with a single slash or none. The scheme is
+  // lowercased because core compares it against its allowed-protocol list with
+  // a case-sensitive in_array(), so "HTTPS://…" is rejected as invalid.
+  if (preg_match('~^(https?):/?([^/].*)$~i', $trimmed, $matches)) {
+    return strtolower($matches[1]) . '://' . $matches[2];
+  }
+
   // Internal paths, fragments, query strings, and route tokens are valid as-is.
   if (in_array($trimmed[0], ['/', '#', '?', '<'], TRUE)) {
     return $uri;
+  }
+
+  // A mistyped scheme such as "htp://example.com" is a scheme core does not
+  // allow, so the value is rejected wholesale with "The path '…' is invalid."
+  // — which names the whole address rather than the one wrong character, and
+  // leaves the editor to find it. Correct it to the scheme it is a single
+  // keystroke away from.
+  if (preg_match('~^([a-z][a-z0-9+.\-]*):/{0,2}([^/].*)$~i', $trimmed, $matches)) {
+    $corrected = _ys_core_correct_mistyped_http_scheme($matches[1]);
+    if ($corrected !== NULL) {
+      return $corrected . '://' . $matches[2];
+    }
   }
 
   // Anything that already declares a scheme is left untouched.
@@ -421,6 +520,41 @@ function _ys_core_normalize_bare_domain_uri(string $uri): string {
   }
 
   return $uri;
+}
+
+/**
+ * Resolves a misspelt web scheme to the one the editor meant.
+ *
+ * Only a scheme within a single edit of "http" or "https" is treated as a
+ * typo. That bound is the safety property, not a heuristic: every protocol
+ * Drupal allows here — ftp, news, nntp, tel, telnet, mailto, irc, ssh, sftp,
+ * webcal, rtsp — is at least two edits from both, as are "javascript" and
+ * "data", so no scheme an editor deliberately typed can be rewritten and no
+ * executable scheme can be manufactured. LinkUriNormalizationTest pins this.
+ *
+ * @param string $scheme
+ *   The scheme as typed, without the colon.
+ *
+ * @return string|null
+ *   "http" or "https" when the scheme is a misspelling of one of them, or
+ *   NULL when it must be left exactly as typed.
+ */
+function _ys_core_correct_mistyped_http_scheme(string $scheme): ?string {
+  $scheme = strtolower($scheme);
+  // Both are already correct, and each is one edit from the other, so they
+  // have to be excluded before the distance test rather than by it.
+  if ($scheme === 'http' || $scheme === 'https') {
+    return NULL;
+  }
+
+  $to_http = levenshtein($scheme, 'http');
+  $to_https = levenshtein($scheme, 'https');
+  if (min($to_http, $to_https) > 1) {
+    return NULL;
+  }
+
+  // Ties resolve to https so a secure address is never downgraded.
+  return $to_http < $to_https ? 'http' : 'https';
 }
 
 /**
@@ -1267,12 +1401,10 @@ function ys_core_facts_icon_allowed_values(FieldStorageDefinitionInterface $defi
  * across users while the count is resolved per-user at render time.
  */
 function _ys_core_attach_dashboard_badge(array &$variables) {
-  $current_user = \Drupal::currentUser();
-  if ($current_user->isAnonymous()) {
+  if (\Drupal::currentUser()->isAnonymous()) {
     return;
   }
-  $uid = (int) $current_user->id();
-  if (_ys_core_attach_dashboard_badge_walk($variables['items'], $uid)) {
+  if (_ys_core_attach_dashboard_badge_walk($variables['items'])) {
     $variables['#attached']['library'][] = 'ys_core/dashboard_badge';
   }
 }
@@ -1282,8 +1414,20 @@ function _ys_core_attach_dashboard_badge(array &$variables) {
  *
  * The admin menu nests its real top-level entries under a root
  * `system.admin` wrapper, so we cannot assume the link is at depth 0.
+ *
+ * The #lazy_builder deliberately takes no arguments -- do not "helpfully" pass
+ * the uid. The placeholder's parent is core's toolbar, render cached as
+ * `keys: ['toolbar'], contexts: ['user.permissions']`, so a single entry is
+ * shared by every user holding the same permissions, and a placeholder's own
+ * cache metadata cannot make it vary per user (createPlaceholder() returns only
+ * #markup and #attached). The token is a hash of the placeholder array,
+ * arguments included, so a uid baked in here is one editor's uid frozen into
+ * an entry everyone else reads: they would see that editor's count, and
+ * clearing their own read state could not invalidate an entry tagged for
+ * somebody else. Resolving the viewer inside the lazy builder keeps the
+ * placeholder user-agnostic and correct for whoever it is replaced for.
  */
-function _ys_core_attach_dashboard_badge_walk(array &$items, int $uid): bool {
+function _ys_core_attach_dashboard_badge_walk(array &$items): bool {
   $found = FALSE;
   foreach ($items as &$item) {
     $url = $item['url'] ?? NULL;
@@ -1296,7 +1440,7 @@ function _ys_core_attach_dashboard_badge_walk(array &$items, int $uid): bool {
           'badge' => [
             '#lazy_builder' => [
               'ys_core.dashboard_toolbar_lazy_builders:renderBadge',
-              [(string) $uid],
+              [],
             ],
             '#create_placeholder' => TRUE,
           ],
@@ -1305,7 +1449,7 @@ function _ys_core_attach_dashboard_badge_walk(array &$items, int $uid): bool {
       $found = TRUE;
     }
     if (!empty($item['below']) && is_array($item['below'])) {
-      $found = _ys_core_attach_dashboard_badge_walk($item['below'], $uid) || $found;
+      $found = _ys_core_attach_dashboard_badge_walk($item['below']) || $found;
     }
   }
   return $found;

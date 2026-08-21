@@ -65,12 +65,15 @@ class SystemInstructionsForm extends FormBase {
   }
 
   /**
-   * Get the maximum instructions length from configuration.
+   * Get the recommended instructions length from configuration.
+   *
+   * This is a soft cap: editors are warned when they go over it, but saving
+   * longer instructions is not blocked.
    *
    * @return int
-   *   The maximum instructions length.
+   *   The recommended instructions length.
    */
-  protected function getMaxInstructionsLength(): int {
+  protected function getRecommendedInstructionsLength(): int {
     return $this->config('ys_beacon.settings')->get('instructions_max_length') ?: 4000;
   }
 
@@ -106,7 +109,7 @@ class SystemInstructionsForm extends FormBase {
       ]),
     ];
 
-    $max_length = $this->getMaxInstructionsLength();
+    $max_length = $this->getRecommendedInstructionsLength();
     $form['instructions'] = [
       '#type' => 'text_format',
       '#title' => $this->t('System Instructions'),
@@ -176,13 +179,9 @@ class SystemInstructionsForm extends FormBase {
       $form_state->setErrorByName('instructions', $this->t('System instructions cannot be empty.'));
     }
 
-    $max_length = $this->getMaxInstructionsLength();
-    if (mb_strlen($instructions) > $max_length) {
-      $form_state->setErrorByName('instructions', $this->t('Instructions are @count characters, which exceeds the maximum of @max characters.', [
-        '@count' => mb_strlen($instructions),
-        '@max' => number_format($max_length),
-      ]));
-    }
+    // The configured length is a recommendation, not a hard requirement: the
+    // character counter (js/system-instructions.js) already warns editors
+    // when they go over it, but saving must not be blocked.
   }
 
   /**

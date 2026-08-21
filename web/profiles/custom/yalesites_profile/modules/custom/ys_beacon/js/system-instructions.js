@@ -9,8 +9,9 @@
    *
    * Instructions are stored as Markdown, but the editor holds HTML. There is no
    * Markdown length available client-side, so the counter reports the editor's
-   * plain-text length as a close, intuitive equivalent; the server-side
-   * validation on the converted Markdown remains authoritative.
+   * plain-text length as a close, intuitive equivalent. This is a
+   * recommendation only; the server does not enforce it, so going over does
+   * not block saving.
    */
   Drupal.behaviors.systemInstructionsCharacterCount = {
     attach(context) {

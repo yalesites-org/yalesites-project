@@ -71,14 +71,11 @@ class BookLinkRepeatSaveTest extends KernelTestBase {
     $this->installEntitySchema('node');
     $this->installSchema('node', 'node_access');
     $this->installSchema('book', ['book']);
-    $this->installConfig(['node', 'book', 'field']);
-
-    // ys_book keeps custom menu link titles in a column it adds to contrib
-    // book's table from ys_book_update_10001(). installSchema() only builds
-    // contrib book's own hook_schema(), so run the update hook to match a
-    // real site -- without it every book node save fails on a missing column.
+    // Kernel tests never run hook_install(), so add the title column this
+    // module installs on a real site; see _ys_book_add_book_title_column().
     $this->container->get('module_handler')->loadInclude('ys_book', 'install');
-    ys_book_update_10001();
+    _ys_book_add_book_title_column();
+    $this->installConfig(['node', 'book', 'field']);
 
     // Needed so the clone route can be looked up by name.
     $this->container->get('router.builder')->rebuild();

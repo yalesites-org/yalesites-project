@@ -24,6 +24,55 @@ This module includes a service called `MetaFieldsManager` that was specifically 
 
 The `ics_url` is auto-calculated if there is an ICS URL provided from Localist, then use it. If not, calculate an ICS URL dynamically from the first date in the series.
 
+## Orphaned inline blocks
+
+When an editor removes a non-reusable ("inline") block from a page's layout, the block
+disappears from the page but its `block_content` record stays in the database. Nothing in the
+admin UI can reach it afterwards: non-reusable blocks have no canonical route, so
+`/block/{id}/edit` returns 404 for every one of them, orphaned or not.
+
+This is documented Drupal core behaviour, not a YaleSites defect, and core cannot clean it up
+for a node that still exists:
+
+- `layout_builder_cron()` collects only `inline_block_usage` rows whose `layout_entity_type`
+  and `layout_entity_id` are **both** NULL, which happens when the parent entity is deleted.
+- `InlineBlockEntityOperations::removeUnusedForEntityOnSave()` returns early for anything
+  implementing `RevisionableInterface`. Nodes always do, so it never runs for them. Core skips
+  it deliberately: an older revision of the node might still reference the block, and core
+  cannot prove otherwise cheaply from inside a single save.
+
+### Sweeping them up
+
+A deliberate sweep can afford the proof core cannot, so this module provides one **on demand**.
+It is **not** wired into cron, because automatically deleting editor content on a schedule is a
+much riskier default than leaving inert rows in place.
+
+```bash
+# Report only. Changes nothing.
+lando drush ys-layouts:orphaned-blocks
+
+# Delete the reported orphans.
+lando drush ys-layouts:orphaned-blocks --delete
+```
+
+Safety guarantees, in order of importance:
+
+1. **Report by default.** Deletion happens only with the explicit `--delete` flag.
+2. **A block counts as referenced if *any* revision of *any* layout-bearing entity points at
+   *any* of its revisions.** This is stricter than core's own intent and is what makes deletion
+   safe.
+3. **Layout Builder default layouts stored in config are checked too.** They belong to no node,
+   so a node-only sweep would report their blocks as orphans and delete live content.
+4. **Blocks referenced only by a non-default revision are never deleted.** They are listed
+   separately in the command output, because rolling a node back to such a revision would make
+   the block live again. Choosing to delete that category would be a separate, explicit
+   decision.
+5. **Deletion derives its own list** and accepts no IDs from the caller, so removing a block
+   that is still on a page is structurally impossible rather than merely guarded against.
+
+Reusable blocks from the Custom Block Library are never candidates; only `reusable = 0` blocks
+are considered.
+
 ## Running tests
 
 This module has PHPUnit tests under `tests/src/` (`Unit/` and `Kernel/`). Run them from the project root on the local Lando environment, passing the module's `tests` path so PHPUnit only discovers this module's tests (not Drupal core/contrib):
