@@ -17,16 +17,20 @@
 #   ys_layouts_form_layout_builder_configure_section_alter(), which has no
 #   per-layout filter -- this repo's own exported config already has it on
 #   layout_onecol sections (core.entity_view_display.node.resource.default.yml).
-#   ys_layouts.layout_settings.padding_options captures that, and only
-#   layout_onecol is mapped to it here (this change's scope) -- ys_layout_banner
-#   and ys_layout_page_meta have the same gap but are out of scope for this PR.
+#   ys_layouts.layout_settings.padding_options captures that. ys_layout_banner
+#   and ys_layout_page_meta take only this padding key (neither is backed by
+#   YSLayoutOptions) and are not mapped yet.
 # - 'divider' and 'theme' only exist on layouts YSLayoutOptions backs.
 #   ys_layouts.layout_settings.theme_and_divider extends the padding type
-#   above (those layouts get section padding too) and only layout_onecol is
-#   mapped to it here -- the same gap is real for ys_layout_two_column,
-#   ys_layout_two_column_50_50, and ys_layout_three_column_33_33_33, but
-#   fixing those is a deliberate follow-up decision left to the PR's reviewer
-#   rather than expanded silently.
+#   above (those layouts get section padding too), and every layout that gets
+#   the Component theme picker is mapped to it.
+#
+# Declaring a key is only half of it: a section can be written straight from a
+# plugin's defaultConfiguration() without passing through the configure-section
+# form, so a declared type has to match that default's PHP type or strict schema
+# checking fails on the type instead of the missing mapping. That is why
+# YSLayoutOptions defaults 'divider' to int 0. YsLayoutsSectionSchemaTest
+# asserts both halves, and that every mapped id is a real plugin.
 ys_layouts.layout_settings.padding_options:
   type: layout_plugin.settings
   label: 'Layout settings with section padding options'
@@ -51,4 +55,13 @@ ys_layouts.layout_settings.theme_and_divider:
       label: 'Component theme'
 
 layout_plugin.settings.layout_onecol:
+  type: ys_layouts.layout_settings.theme_and_divider
+
+layout_plugin.settings.ys_layout_two_column:
+  type: ys_layouts.layout_settings.theme_and_divider
+
+layout_plugin.settings.ys_layout_two_column_50_50:
+  type: ys_layouts.layout_settings.theme_and_divider
+
+layout_plugin.settings.ys_layout_three_column_33_33_33:
   type: ys_layouts.layout_settings.theme_and_divider
