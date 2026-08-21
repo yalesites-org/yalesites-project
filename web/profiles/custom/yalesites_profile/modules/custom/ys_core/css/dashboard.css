@@ -62,6 +62,34 @@
   margin-block-end: 0;
 }
 
+/* Header row: the Announcements heading and the "mark all as read" control,
+   wrapping onto separate lines when the column is too narrow for both. */
+.ys-dashboard__announcements-header {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 0.5rem 1rem;
+  margin-block-end: 0.75rem;
+}
+
+/* The header row carries the gap below itself now. */
+.ys-dashboard__announcements-header > h2 {
+  margin-block-end: 0;
+}
+
+/* Gin spaces form actions for the bottom of a settings form; inline in a
+   section header that margin pushes the button out of line. */
+.ys-dashboard__announcements-header .form-actions {
+  margin: 0;
+}
+
+/* Placement of the "New" pill against an announcement title. The pill itself is
+   .ys-dashboard-badge (css/badge.css), shared with the toolbar count. */
+.ys-dashboard__announcement-new {
+  vertical-align: middle;
+}
+
 .ys-dashboard__announcement-list {
   list-style: none;
   margin: 0;

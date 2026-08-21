@@ -1,11 +1,21 @@
+# The unread-announcements pill, shared by the dashboard page's per-item "New"
+# marker and the admin toolbar's unread count.
+badge:
+  css:
+    theme:
+      css/badge.css: {}
 dashboard:
   css:
     theme:
       css/dashboard.css: {}
+  dependencies:
+    - ys_core/badge
 dashboard_badge:
   css:
     theme:
       css/dashboard-badge.css: {}
+  dependencies:
+    - ys_core/badge
 node_layout_form:
   css:
     theme:
