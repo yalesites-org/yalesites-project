@@ -3,6 +3,7 @@
 namespace Drupal\ys_content_export\Controller;
 
 use Drupal\Core\Controller\ControllerBase;
+use Drupal\Core\Datetime\DateFormatterInterface;
 use Drupal\Core\Entity\EntityTypeManagerInterface;
 use Drupal\views\Views;
 use Drupal\ys_content_export\ContentExportBuilder;
@@ -48,20 +49,33 @@ class ContentExportController extends ControllerBase {
   protected $nodeStorage;
 
   /**
+   * The date formatter.
+   *
+   * @var \Drupal\Core\Datetime\DateFormatterInterface
+   */
+  protected $dateFormatter;
+
+  /**
    * Constructs the controller.
    *
    * @param \Drupal\Core\Entity\EntityTypeManagerInterface $entity_type_manager
    *   The entity type manager.
+   * @param \Drupal\Core\Datetime\DateFormatterInterface $date_formatter
+   *   The date formatter, handed to the export builder for date columns.
    */
-  public function __construct(EntityTypeManagerInterface $entity_type_manager) {
+  public function __construct(EntityTypeManagerInterface $entity_type_manager, DateFormatterInterface $date_formatter) {
     $this->nodeStorage = $entity_type_manager->getStorage('node');
+    $this->dateFormatter = $date_formatter;
   }
 
   /**
    * {@inheritdoc}
    */
   public static function create(ContainerInterface $container) {
-    return new static($container->get('entity_type.manager'));
+    return new static(
+      $container->get('entity_type.manager'),
+      $container->get('date.formatter')
+    );
   }
 
   /**
@@ -93,7 +107,7 @@ class ContentExportController extends ControllerBase {
         $nodes = $this->nodeStorage->loadMultiple($chunk);
         foreach ($chunk as $nid) {
           if (isset($nodes[$nid])) {
-            fputcsv($handle, ContentExportBuilder::getRow($nodes[$nid], $bundle));
+            fputcsv($handle, ContentExportBuilder::getRow($nodes[$nid], $bundle, $this->dateFormatter));
           }
         }
         // Release the chunk so memory stays bounded on large content lists.

@@ -10,6 +10,7 @@ use Drupal\ys_ai_system_instructions\Service\SystemInstructionsManagerService;
 use Symfony\Component\DependencyInjection\ContainerInterface;
 use Drupal\Core\Config\ConfigFactoryInterface;
 use Drupal\Core\Session\AccountInterface;
+use Drupal\ys_ai\BeaconSupersession;
 
 /**
  * Provides a System Instructions integration plugin.
@@ -29,6 +30,13 @@ class SystemInstructionsIntegrationPlugin extends IntegrationPluginBase {
   protected $instructionsManager;
 
   /**
+   * The legacy AI supersession service.
+   *
+   * @var \Drupal\ys_ai\BeaconSupersession
+   */
+  protected BeaconSupersession $supersession;
+
+  /**
    * Constructs a new SystemInstructionsIntegrationPlugin object.
    *
    * @param \Drupal\Core\Config\ConfigFactoryInterface $config_factory
@@ -39,10 +47,13 @@ class SystemInstructionsIntegrationPlugin extends IntegrationPluginBase {
    *   The current user.
    * @param \Drupal\ys_ai_system_instructions\Service\SystemInstructionsManagerService $instructions_manager
    *   The system instructions manager service.
+   * @param \Drupal\ys_ai\BeaconSupersession $supersession
+   *   The legacy AI supersession service.
    */
-  public function __construct(ConfigFactoryInterface $config_factory, array $plugin_definition, AccountInterface $current_user, SystemInstructionsManagerService $instructions_manager) {
+  public function __construct(ConfigFactoryInterface $config_factory, array $plugin_definition, AccountInterface $current_user, SystemInstructionsManagerService $instructions_manager, BeaconSupersession $supersession) {
     parent::__construct($config_factory, $plugin_definition, $current_user);
     $this->instructionsManager = $instructions_manager;
+    $this->supersession = $supersession;
   }
 
   /**
@@ -54,6 +65,7 @@ class SystemInstructionsIntegrationPlugin extends IntegrationPluginBase {
       $plugin_definition,
       $container->get('current_user'),
       $container->get('ys_ai_system_instructions.manager'),
+      $container->get('ys_ai.beacon_supersession'),
     );
   }
 
@@ -61,6 +73,12 @@ class SystemInstructionsIntegrationPlugin extends IntegrationPluginBase {
    * {@inheritdoc}
    */
   public function isTurnedOn(): bool {
+    // Beacon ships its own system instructions editor, so the legacy one is
+    // hidden once Beacon supersedes it, however well configured it is.
+    if ($this->supersession->isSuperseded()) {
+      return FALSE;
+    }
+
     $config = $this->configFactory->get('ys_ai_system_instructions.settings');
 
     // Check if system instructions are enabled.

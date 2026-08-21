@@ -24,11 +24,17 @@ use Drupal\ys_node_access\NodeAccessManager;
  * (see \Drupal\node\NodeGrantDatabaseStorage::access()) is what actually
  * enforces this, not the hooks in isolation.
  *
- * Two of the tests below (testAnyAuthenticatedUserCanViewAnotherUsers...
- * and testUnpublishedNodeWithoutLoginRequiredFieldIsPubliclyViewable) are
- * paired with a skipped GAP test documenting current behavior that is
- * broader than the module's stated purpose. See the GAP log at
+ * testUnpublishedNodeAccessShouldRespectOwnershipAndPermission (below) and
+ * testUnpublishedNodeWithoutFieldShouldStayPrivate (below) characterize
+ * GAPs logged at
  * ~/Documents/Claude/not_dave/module-tests-20260710/ys_node_access.md.
+ * The over-broad-exposure GAP that report describes (any authenticated user
+ * viewing another's unpublished draft) was since fixed by commit 01ceadd7f
+ * (issue #1396) -- testUnpublishedNodeAccessShouldRespectOwnershipAndPermission
+ * now asserts that fixed behavior, not a skipped GAP. That fix's own
+ * regression -- unpublished nodes disappearing from node-access-gated
+ * listings for everyone, regardless of permissions -- is issue #1486, fixed
+ * by the grants added below.
  *
  * @group yalesites
  * @group ys_node_access
@@ -41,6 +47,8 @@ class NodeAccessGrantsTest extends KernelTestBase {
   protected static $modules = [
     'system',
     'node',
+    'content_moderation',
+    'workflows',
     'field',
     'text',
     'user',
@@ -60,6 +68,13 @@ class NodeAccessGrantsTest extends KernelTestBase {
    * @var \Drupal\user\UserInterface
    */
   protected $authenticated;
+
+  /**
+   * A second authenticated user, used as a draft node's owner.
+   *
+   * @var \Drupal\user\UserInterface
+   */
+  protected $owner;
 
   /**
    * {@inheritdoc}
@@ -101,6 +116,8 @@ class NodeAccessGrantsTest extends KernelTestBase {
     $this->anonymous = new AnonymousUserSession();
     $this->authenticated = User::create(['name' => 'authenticated_user', 'uid' => 2]);
     $this->authenticated->save();
+    $this->owner = User::create(['name' => 'owner', 'uid' => 3]);
+    $this->owner->save();
   }
 
   /**
@@ -122,6 +139,28 @@ class NodeAccessGrantsTest extends KernelTestBase {
         ],
       ],
       ys_node_access_node_grants($this->authenticated, 'view')
+    );
+  }
+
+  /**
+   * Tests the anonymous role never reaches the two unpublished realms.
+   *
+   * Even if "view own/any unpublished content" were (mis)granted to the
+   * anonymous role, ys_node_access_node_grants()'s isAuthenticated() guard
+   * must still exclude anonymous -- otherwise a uid-0-owned node (e.g. from
+   * a migration) could become publicly visible via the owner realm.
+   *
+   * @covers ::ys_node_access_node_grants
+   */
+  public function testNodeGrantsExcludeAnonymousFromUnpublishedRealmsEvenIfGranted() {
+    Role::load(RoleInterface::ANONYMOUS_ID)
+      ->grantPermission('view own unpublished content')
+      ->grantPermission('view any unpublished content')
+      ->save();
+
+    $this->assertEquals(
+      [NodeAccessManager::YS_NODE_ACCESS_REALM => [NodeAccessManager::YS_NODE_ACCESS_GRANT_ID_PUBLIC]],
+      ys_node_access_node_grants(new AnonymousUserSession(), 'view')
     );
   }
 
@@ -184,33 +223,95 @@ class NodeAccessGrantsTest extends KernelTestBase {
   }
 
   /**
-   * Tests hook_node_access_records() defers an unpublished node to core.
+   * Tests hook_node_access_records() grants unpublished nodes to viewers.
    *
-   * The module writes a grant_view = 0 record for unpublished nodes: this
-   * keeps its realm's record set non-empty (so core does not fall back to the
-   * default public "all" grant) while granting no view access itself, leaving
-   * unpublished-content access to Drupal core (owner + "view own/any
-   * unpublished content").
+   * Grants go to the owner and to "view any unpublished content" holders,
+   * replacing the grant_view = 0 record the prior approach used -- see
+   * ys_node_access_node_access_records() for why that was insufficient.
+   * Regression test for #1486.
    *
    * @covers ::ys_node_access_node_access_records
    */
-  public function testNodeAccessRecordsUnpublishedDefersToCore() {
+  public function testNodeAccessRecordsUnpublishedGrantsOwnerAndAnyUnpublishedViewers() {
     $node = Node::create([
       'type' => 'protected_type',
       'title' => 'Unpublished',
       'field_login_required' => FALSE,
       'status' => 0,
+      'uid' => $this->owner->id(),
     ]);
 
-    $this->assertEquals([[
-      'realm' => NodeAccessManager::YS_NODE_ACCESS_REALM,
-      'gid' => NodeAccessManager::YS_NODE_ACCESS_GRANT_ID_PRIVATE,
-      'grant_view' => 0,
-      'grant_update' => 0,
-      'grant_delete' => 0,
-      'priority' => 0,
-    ],
+    $this->assertEquals([
+      [
+        'realm' => NodeAccessManager::YS_NODE_ACCESS_UNPUBLISHED_REALM,
+        'gid' => NodeAccessManager::YS_NODE_ACCESS_GRANT_ID_UNPUBLISHED_ANY,
+        'grant_view' => 1,
+        'grant_update' => 0,
+        'grant_delete' => 0,
+        'priority' => 0,
+      ],
+      [
+        'realm' => NodeAccessManager::YS_NODE_ACCESS_UNPUBLISHED_OWNER_REALM,
+        'gid' => $this->owner->id(),
+        'grant_view' => 1,
+        'grant_update' => 0,
+        'grant_delete' => 0,
+        'priority' => 0,
+      ],
     ], ys_node_access_node_access_records($node));
+  }
+
+  /**
+   * Tests unpublished-node grants reach owners and permitted viewers only.
+   *
+   * Owners and "view any unpublished content" holders can see an unpublished
+   * node via the grants system; unrelated authenticated users cannot. This
+   * is the layer admin/content and "Manage <type>" listings actually
+   * enforce (\Drupal\node\NodeGrantDatabaseStorage::access()) -- unlike
+   * $node->access(), which independently allows the "view any unpublished
+   * content" case via content_moderation's hook_entity_access(), outside
+   * the grants system entirely. Regression test for #1486.
+   */
+  public function testUnpublishedNodeVisibleToPermittedUsersViaNodeAccessGrants() {
+    $grant_storage = \Drupal::service('node.grant_storage');
+
+    $node = Node::create([
+      'type' => 'protected_type',
+      'title' => 'Unpublished',
+      'field_login_required' => FALSE,
+      'status' => 0,
+      'uid' => $this->owner->id(),
+    ]);
+    $node->save();
+
+    // A plain authenticated user with neither permission still cannot see
+    // it via the grants system -- this must not reopen the over-exposure
+    // this module's grants were introduced to close.
+    $this->assertFalse($grant_storage->access($node, 'view', $this->authenticated)->isAllowed());
+
+    // A "view any unpublished content" holder (e.g. site_admin/editor) can,
+    // even though they are not the owner. Each permission below is granted
+    // via its own dedicated role (rather than mutating the shared
+    // "authenticated" role) to keep each scenario below isolated.
+    $any_viewer_role = Role::create(['id' => 'ys_test_any_unpub_viewer', 'label' => 'Any unpub viewer']);
+    $any_viewer_role->grantPermission('view any unpublished content')->save();
+    $any_viewer = User::create(['name' => 'any_viewer', 'uid' => 4, 'roles' => [$any_viewer_role->id()]]);
+    $any_viewer->save();
+    $this->assertTrue($grant_storage->access($node, 'view', $any_viewer)->isAllowed());
+
+    // A non-owner holding only "view own unpublished content" (not "view
+    // any") must not reach another user's draft -- the owner realm is keyed
+    // on the node's actual owner uid, not merely on holding the permission.
+    $own_viewer_role = Role::create(['id' => 'ys_test_own_unpub_viewer', 'label' => 'Own unpub viewer']);
+    $own_viewer_role->grantPermission('view own unpublished content')->save();
+    $non_owner = User::create(['name' => 'non_owner', 'uid' => 5, 'roles' => [$own_viewer_role->id()]]);
+    $non_owner->save();
+    $this->assertFalse($grant_storage->access($node, 'view', $non_owner)->isAllowed());
+
+    // The owner can see their own draft via "view own unpublished content".
+    $this->owner->addRole($own_viewer_role->id());
+    $this->owner->save();
+    $this->assertTrue($grant_storage->access($node, 'view', User::load($this->owner->id()))->isAllowed());
   }
 
   /**
@@ -257,15 +358,12 @@ class NodeAccessGrantsTest extends KernelTestBase {
   public function testUnpublishedNodeAccessShouldRespectOwnershipAndPermission() {
     $access_handler = \Drupal::entityTypeManager()->getAccessControlHandler('node');
 
-    $owner = User::create(['name' => 'owner', 'uid' => 3]);
-    $owner->save();
-
     $node = Node::create([
       'type' => 'protected_type',
       'title' => 'Someone else\'s draft',
       'field_login_required' => FALSE,
       'status' => 0,
-      'uid' => $owner->id(),
+      'uid' => $this->owner->id(),
     ]);
     $node->save();
 
@@ -279,7 +377,7 @@ class NodeAccessGrantsTest extends KernelTestBase {
     // just login state.
     Role::load(RoleInterface::AUTHENTICATED_ID)->grantPermission('view own unpublished content')->save();
     $access_handler->resetCache();
-    $this->assertTrue($node->access('view', User::load($owner->id())));
+    $this->assertTrue($node->access('view', User::load($this->owner->id())));
     $access_handler->resetCache();
     $this->assertFalse($node->access('view', User::load($this->authenticated->id())));
   }

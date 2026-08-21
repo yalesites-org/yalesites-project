@@ -1,0 +1,96 @@
+ys_beacon.conversation:
+  path: '/api/ys-beacon/v1/conversation'
+  defaults:
+    _controller: '\Drupal\ys_beacon\Controller\ChatApiController::conversation'
+  methods: [POST]
+  requirements:
+    _access: 'TRUE'
+
+ys_beacon.content_feed:
+  path: '/api/ys-beacon/v1/content'
+  defaults:
+    _controller: '\Drupal\ys_beacon\Controller\ContentFeedController::feed'
+  methods: [GET]
+  requirements:
+    _access: 'TRUE'
+
+ys_beacon.settings:
+  path: '/admin/config/yalesites/ys-beacon'
+  defaults:
+    _form: '\Drupal\ys_beacon\Form\YsBeaconSettings'
+    _title: 'YaleSites Beacon settings'
+  requirements:
+    _permission: 'manage ys beacon settings'
+    _ys_beacon_authorized: 'TRUE'
+
+ys_beacon.admin_settings:
+  path: '/admin/config/yalesites/ys-beacon/admin'
+  defaults:
+    _form: '\Drupal\ys_beacon\Form\YsBeaconAdminSettings'
+    _title: 'YaleSites Beacon administration'
+  requirements:
+    _ys_beacon_admin_access: 'TRUE'
+
+ys_beacon.instructions:
+  path: '/admin/config/yalesites/ys-beacon/instructions'
+  defaults:
+    _form: '\Drupal\ys_beacon\Form\SystemInstructionsForm'
+    _title: 'Beacon system instructions'
+  requirements:
+    _ys_beacon_instructions_access: 'TRUE'
+    _ys_beacon_authorized: 'TRUE'
+
+ys_beacon.instructions_versions:
+  path: '/admin/config/yalesites/ys-beacon/instructions/versions'
+  defaults:
+    _controller: '\Drupal\ys_beacon\Controller\SystemInstructionsController::versionHistory'
+    _title: 'Beacon system instructions version history'
+  requirements:
+    _ys_beacon_instructions_access: 'TRUE'
+    _ys_beacon_authorized: 'TRUE'
+
+ys_beacon.instructions_view:
+  path: '/admin/config/yalesites/ys-beacon/instructions/versions/{version}'
+  defaults:
+    _controller: '\Drupal\ys_beacon\Controller\SystemInstructionsController::viewVersion'
+    _title: 'View Beacon system instructions version'
+  requirements:
+    _ys_beacon_instructions_access: 'TRUE'
+    _ys_beacon_authorized: 'TRUE'
+    version: \d+
+
+ys_beacon.instructions_revert:
+  path: '/admin/config/yalesites/ys-beacon/instructions/revert/{version}'
+  defaults:
+    _form: '\Drupal\ys_beacon\Form\SystemInstructionsRevertForm'
+    _title: 'Revert Beacon system instructions'
+  requirements:
+    _ys_beacon_instructions_access: 'TRUE'
+    _ys_beacon_authorized: 'TRUE'
+    version: \d+
+
+ys_beacon.telemetry:
+  path: '/admin/config/yalesites/ys-beacon/telemetry'
+  defaults:
+    _controller: '\Drupal\ys_beacon\Controller\TelemetryController::report'
+    _title: 'Beacon guardrail telemetry'
+  requirements:
+    # Deliberately its own permission rather than 'manage ys beacon settings',
+    # which site admins also hold: this report shows when a site was probed and
+    # under which injection pattern, which is operational security detail even
+    # though no conversation text is kept. Granted to platform_admin only (user
+    # 1 bypasses permission checks). Re-scoping it later is a change to who
+    # holds this one permission and nothing else.
+    _permission: 'view ys beacon guardrail telemetry'
+    _ys_beacon_authorized: 'TRUE'
+
+# Raw JSON export. Provisional - see "Removing the JSON export" in README.md for
+# the three things to delete if it is dropped.
+ys_beacon.telemetry_export:
+  path: '/admin/config/yalesites/ys-beacon/telemetry/export'
+  defaults:
+    _controller: '\Drupal\ys_beacon\Controller\TelemetryController::export'
+    _title: 'Export Beacon guardrail telemetry'
+  requirements:
+    _permission: 'view ys beacon guardrail telemetry'
+    _ys_beacon_authorized: 'TRUE'

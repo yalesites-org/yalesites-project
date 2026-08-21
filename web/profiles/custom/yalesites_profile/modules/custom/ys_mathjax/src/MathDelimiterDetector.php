@@ -24,6 +24,19 @@ class MathDelimiterDetector {
   const MATH_PATTERN = '/\\\\[([]|\$\$|<math[\s>\/]/i';
 
   /**
+   * Matches a complete math region, delimiters included.
+   *
+   * The same delimiter pairs as MATH_PATTERN, but matched closed rather than
+   * open, so a caller can pick math out of surrounding prose. Keep the two in
+   * step: both describe the delimiters configured in `mathjax.settings`.
+   *
+   * MathML is deliberately absent. `<math>` is already in SmartyPants'
+   * skip-tag list, and Basic HTML's filter_html strips the element long before
+   * any of this runs.
+   */
+  const MATH_REGION_PATTERN = '/\$\$.*?\$\$|\\\\\[.*?\\\\\]|\\\\\(.*?\\\\\)/s';
+
+  /**
    * Checks whether the given text contains math notation.
    *
    * @param string $text

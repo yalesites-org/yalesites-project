@@ -22,7 +22,7 @@ services:
   # Lazy builders for the dashboard menu badge.
   ys_core.dashboard_toolbar_lazy_builders:
     class: Drupal\ys_core\Toolbar\DashboardToolbarLazyBuilders
-    arguments: ['@ys_core.dashboard_announcements', '@entity_type.manager']
+    arguments: ['@ys_core.dashboard_announcements', '@current_user']
   # Redirect visitors to external source if set on the node.
   ys_core.external_source_redirect_subscriber:
     class: Drupal\ys_core\EventSubscriber\ExternalSourceRedirectSubscriber
@@ -47,4 +47,10 @@ services:
     arguments: ['@current_user', '@request_stack']
     tags:
       - { name: event_subscriber }
+  # Manages platform-admin-only settings sections (extensible plugin type).
+  ys_core.platform_admin_setting_manager:
+    class: Drupal\ys_core\PlatformAdminSettingManager
+    arguments: ['@container.namespaces', '@cache.default', '@module_handler']
+    tags:
+      - { name: 'default_plugin_manager' }
 
