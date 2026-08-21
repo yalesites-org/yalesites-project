@@ -8,4 +8,8 @@ services:
     
   ys_migrate.profile_import:
     class: Drupal\ys_migrate\Service\ProfileImportService
-    arguments: ['@current_user', '@ys_migrate.taxonomy_resolver', '@entity_type.manager', '@logger.factory'] 
+    arguments: ['@current_user', '@ys_migrate.taxonomy_resolver', '@entity_type.manager', '@logger.factory']
+
+  ys_migrate.resource_import:
+    class: Drupal\ys_migrate\Service\ResourceImportService
+    arguments: ['@current_user', '@ys_migrate.taxonomy_resolver', '@entity_type.manager', '@logger.factory']
