@@ -13,6 +13,7 @@ use Drupal\search_api\Utility\IndexingBatchHelperInterface;
 use Drupal\Tests\UnitTestCase;
 use Drupal\ys_beacon\Form\YsBeaconSettings;
 use Drupal\ys_beacon\Service\BeaconIndexStatus;
+use Drupal\ys_beacon\Service\PdfTextIndexer;
 
 /**
  * Tests the "Index now" button state and submit handler on the Beacon form.
@@ -47,6 +48,12 @@ class IndexNowFormTest extends UnitTestCase {
     $form = (new \ReflectionClass(YsBeaconSettings::class))->newInstanceWithoutConstructor();
     $this->setProtected($form, 'indexStatus', $this->buildIndexStatus($index));
     $this->setProtected($form, 'indexingBatchHelper', $helper ?? $this->createMock(IndexingBatchHelperInterface::class));
+    // No document is waiting on extraction, so the handlers under test do not
+    // reach batch_set(); the sweep itself is covered by
+    // PdfTextExtractionTriggerTest.
+    $pdfTextIndexer = $this->createMock(PdfTextIndexer::class);
+    $pdfTextIndexer->method('pendingMediaIds')->willReturn([]);
+    $this->setProtected($form, 'pdfTextIndexer', $pdfTextIndexer);
     $this->setProtected($form, 'messenger', $messenger ?? $this->createMock(MessengerInterface::class));
     $this->setProtected($form, 'stringTranslation', $this->getStringTranslationStub());
 
