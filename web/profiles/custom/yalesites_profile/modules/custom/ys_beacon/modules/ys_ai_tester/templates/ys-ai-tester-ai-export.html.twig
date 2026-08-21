@@ -48,7 +48,7 @@ Attached is a JSON export of one comparison covering {{ question_count }} questi
 
 How the file is structured:
 
-- `run_a` and `run_b`: metadata for each run — `id`, `created` (Unix timestamp), `source_filename`, `status`, and `backend` (which assistant answered it).
+- `run_a` and `run_b`: metadata for each run — `id`, `created` (Unix timestamp), `source_filename`, `status`, `backend` (which assistant answered it), and `host` (the site its citations point at, empty when no citation named one).
 - `summary`: counts across the whole comparison — `total_compared`, `differ`, `identical`, `only_a`, `only_b`.
 - `pairs`: one entry per question, each containing:
   - `question`: the question text, the same on both sides.
@@ -56,7 +56,7 @@ How the file is structured:
   - `a` and `b`: that question's result for Run A and Run B, or `null` when the question was not asked in that run. Each side has `answer` (the answer text), `citations`, `len` (answer length in characters), `cited` (how many sources the answer referenced), `retrieved` (how many sources were retrieved), `empty`, and `error` (non-empty only when that side failed to answer).
     - `citations`: one entry per retrieved source, nested inside each side rather than on the question — `number`, `title`, `url`, `excerpt`, and `cited`.
   - `len_delta`: Run B's answer length minus Run A's, and `0` when the question was asked in only one run.
-  - `citation_overlap`: `both`, `only_a` and `only_b`, each a list of `{url, title}`, partitioning the two sides' sources by URL.
+  - `citation_overlap`: `both`, `only_a` and `only_b`, each a list of `{url, title}`, partitioning the two sides' sources. Sources are matched on path plus query string, ignoring the scheme, trailing slash, percent-encoding, fragment, and the run's own host (`run_a.host` / `run_b.host`) — so the same page counts as shared even when the two runs were answered on different hosts. A citation pointing at a *different* site keeps its host in the comparison, so one site's `/about` is never treated as another site's `/about`. The `url` shown is the citing run's own, so a `both` entry carries Run A's host.
 
 Three things to keep in mind while reading it:
 
