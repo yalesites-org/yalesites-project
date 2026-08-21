@@ -40,13 +40,13 @@ class BeaconContextWindowDeployTest extends UnitTestCase {
     $config->method('get')->with('model_context_window')->willReturn(200000);
     $config->expects($this->once())
       ->method('set')
-      ->with('model_context_window', 1000000)
+      ->with('model_context_window', 400000)
       ->willReturnSelf();
     $config->expects($this->once())->method('save')->willReturnSelf();
     $this->containerWith($config);
 
     $this->assertSame(
-      'Raised the Beacon model context window from 200000 to 1000000 tokens for Claude Sonnet 5.',
+      'Raised the Beacon model context window from 200000 to 400000 tokens for Claude Sonnet 5.',
       (string) ys_beacon_deploy_10003(),
     );
   }
@@ -56,13 +56,13 @@ class BeaconContextWindowDeployTest extends UnitTestCase {
    */
   public function testLeavesSiteSpecificWindowAlone(): void {
     $config = $this->createMock(Config::class);
-    $config->method('get')->with('model_context_window')->willReturn(400000);
+    $config->method('get')->with('model_context_window')->willReturn(250000);
     $config->expects($this->never())->method('set');
     $config->expects($this->never())->method('save');
     $this->containerWith($config);
 
     $this->assertSame(
-      'Beacon model context window left at its site-specific value (400000 tokens).',
+      'Beacon model context window left at its site-specific value (250000 tokens).',
       (string) ys_beacon_deploy_10003(),
     );
   }

@@ -18,12 +18,14 @@ top_k: 5
 score_threshold: 0.0
 streaming: true
 # Context window (in tokens) of the model Portkey currently routes to. Used to
-# window long conversations so they degrade gracefully. Defaults to Claude
-# Sonnet 5's 1,000,000-token window; update it in the Beacon administration form
-# when the routed model changes. Keep in sync with
-# ChatApiController::DEFAULT_CONTEXT_WINDOW, the runtime fallback used when this
-# value is absent.
-model_context_window: 1000000
+# window long conversations so they degrade gracefully. Set from a measurement
+# rather than the model's nominal window: the Portkey route (Claude Sonnet 5)
+# accepted 433437 input tokens in one request, so 400000 stays under the proven
+# figure while still exceeding the largest request Beacon can build. Update it
+# in the Beacon administration form when the routed model changes. Keep in sync
+# with ChatApiController::DEFAULT_CONTEXT_WINDOW, the runtime fallback used when
+# this value is absent.
+model_context_window: 400000
 instructions_max_length: 4000
 instructions_warning_threshold: 3500
 # Fallback used only when a site has no active system instructions. Keep in

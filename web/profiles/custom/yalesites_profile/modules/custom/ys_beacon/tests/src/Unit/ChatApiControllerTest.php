@@ -283,13 +283,13 @@ class ChatApiControllerTest extends UnitTestCase {
    */
   public function testInputTokenBudgetSubtractsReservesFromConfiguredWindow(): void {
     // OUTPUT_RESERVE_TOKENS (4096) + SAFETY_MARGIN_TOKENS (2048) are held back.
-    $expected = 1000000 - 4096 - 2048;
+    $expected = 400000 - 4096 - 2048;
 
     $configured = $this->createMock(ImmutableConfig::class);
-    $configured->method('get')->with('model_context_window')->willReturn(1000000);
+    $configured->method('get')->with('model_context_window')->willReturn(400000);
     $this->assertSame($expected, $this->invoke('inputTokenBudget', [$configured]));
 
-    // An unset window falls back to the default Sonnet 5 window (1000000).
+    // An unset window falls back to the measured Sonnet 5 window (400000).
     $unset = $this->createMock(ImmutableConfig::class);
     $unset->method('get')->with('model_context_window')->willReturn(NULL);
     $this->assertSame($expected, $this->invoke('inputTokenBudget', [$unset]));
