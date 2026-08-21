@@ -204,15 +204,81 @@ class AnnouncementsSourcePlatformAdminSettingTest extends UnitTestCase {
    * @covers ::ensureAnnouncementTerm
    */
   public function testSubmitWarnsWhenTheExistingTagIsUnpublished(): void {
-    $unpublished = $this->createMock('Drupal\taxonomy\TermInterface');
-    $unpublished->method('isPublished')->willReturn(FALSE);
-
-    $term_storage = $this->createMock(EntityStorageInterface::class);
-    $term_storage->method('loadByProperties')->willReturn([$unpublished]);
-    $term_storage->expects($this->never())->method('create');
-
     $messenger = $this->createMock(MessengerInterface::class);
     $messenger->expects($this->once())->method('addWarning');
+
+    // A real edit to this section - renaming the tag - so the warning is
+    // reporting on something the admin just did.
+    $this->submitWithUnpublishedTag($messenger, 'Platform News', 'Campus News');
+  }
+
+  /**
+   * The unpublished-tag warning does not re-fire on an unrelated save.
+   *
+   * The self-heal in ensureAnnouncementTerm() deliberately runs ahead of the
+   * no-change short-circuit so a deleted tag is restored on every save. That
+   * has to keep happening, but it must not turn into a Tags warning on every
+   * save of the page: a platform admin editing only the Beacon section would
+   * otherwise be told about this section's tag each time, with nothing on
+   * screen to act on.
+   *
+   * @covers ::ensureAnnouncementTerm
+   */
+  public function testSubmitDoesNotRepeatTheUnpublishedTagWarningOnAnUnrelatedSave(): void {
+    $messenger = $this->createMock(MessengerInterface::class);
+    $messenger->expects($this->never())->method('addWarning');
+
+    // Stored and submitted match, so this save left the section alone.
+    $this->submitWithUnpublishedTag($messenger, 'Platform News', 'Platform News');
+  }
+
+  /**
+   * A missing Tags vocabulary is reported when the section is edited.
+   *
+   * @covers ::ensureAnnouncementTerm
+   */
+  public function testSubmitWarnsWhenTheTagsVocabularyIsMissing(): void {
+    $messenger = $this->createMock(MessengerInterface::class);
+    $messenger->expects($this->once())->method('addWarning');
+
+    $this->submitWithoutTagsVocabulary($messenger, 'Platform News', 'Campus News');
+  }
+
+  /**
+   * The missing-vocabulary warning does not re-fire on an unrelated save.
+   *
+   * Same reasoning as the unpublished-tag warning: without the vocabulary there
+   * is nothing this section can self-heal, so repeating the message on saves
+   * that never touched it is pure noise.
+   *
+   * @covers ::ensureAnnouncementTerm
+   */
+  public function testSubmitDoesNotRepeatTheMissingVocabularyWarningOnAnUnrelatedSave(): void {
+    $messenger = $this->createMock(MessengerInterface::class);
+    $messenger->expects($this->never())->method('addWarning');
+
+    $this->submitWithoutTagsVocabulary($messenger, 'Platform News', 'Platform News');
+  }
+
+  /**
+   * A tag deleted out from under an untouched section is still announced.
+   *
+   * The creation message reports an action that actually happened, so unlike
+   * the warnings it is not gated on the section having changed - this is the
+   * only signal that the self-heal fired.
+   *
+   * @covers ::ensureAnnouncementTerm
+   */
+  public function testSubmitAnnouncesTheRecreatedTagOnAnUnrelatedSave(): void {
+    $term_storage = $this->createMock(EntityStorageInterface::class);
+    $term_storage->method('loadByProperties')->willReturn([]);
+    $term_storage->expects($this->once())->method('create')->with([
+      'vid' => 'tags',
+      'name' => 'Platform News',
+    ])->willReturn($this->createMock('Drupal\taxonomy\TermInterface'));
+
+    $messenger = $this->createMock(MessengerInterface::class);
+    $messenger->expects($this->once())->method('addStatus');
 
     $written = [];
     $plugin = $this->plugin(
@@ -235,6 +301,8 @@ class AnnouncementsSourcePlatformAdminSettingTest extends UnitTestCase {
 
     $form = [];
     $plugin->submitSettings($form, $form_state);
+
+    $this->assertSame([], $written);
   }
 
   /**
@@ -260,6 +328,87 @@ class AnnouncementsSourcePlatformAdminSettingTest extends UnitTestCase {
     );
 
     $this->assertSame([], $written);
+  }
+
+  /**
+   * An untouched save writes nothing when the config object does not exist yet.
+   *
+   * This is the normal state, not an edge case: config_ignore keeps
+   * `ys_core.dashboard_settings` from being created by config:import, so on any
+   * site that has never saved this section both keys read NULL. buildSettings()
+   * then displays the DEFAULT_TERM fallback, and resubmitting exactly what was
+   * displayed used to compare `'' === 'Dashboard Announcement'` and count as a
+   * change - so a platform admin who edited only another section wrote both
+   * keys and dropped the cached feed. Same shape bug that was fixed for the
+   * branding and environment indicator keys.
+   *
+   * @covers ::submitSettings
+   */
+  public function testSubmitSkipsTheWriteWhenUnsetValuesAreResubmittedAsShown(): void {
+    $written = [];
+    $announcements = $this->createMock(DashboardAnnouncements::class);
+    $announcements->expects($this->never())->method('clearCache');
+
+    $this->submit(
+      $written,
+      // Neither key exists in config.
+      [],
+      // What buildSettings() puts on screen for that state.
+      [
+        'announcements_source_enabled' => 0,
+        'announcements_source_term' => AnnouncementsSourcePlatformAdminSetting::DEFAULT_TERM,
+      ],
+      $announcements,
+    );
+
+    $this->assertSame([], $written);
+  }
+
+  /**
+   * A blank stored tag is treated as the default it is displayed as.
+   *
+   * Both config/install and config/sync ship the key, but an empty string is
+   * reachable - and buildSettings() shows DEFAULT_TERM for it - so the two
+   * sides have to agree here too.
+   *
+   * @covers ::submitSettings
+   */
+  public function testSubmitSkipsTheWriteWhenBlankStoredTagIsResubmittedAsShown(): void {
+    $written = [];
+    $announcements = $this->createMock(DashboardAnnouncements::class);
+    $announcements->expects($this->never())->method('clearCache');
+
+    $this->submit(
+      $written,
+      ['announcements_source_enabled' => FALSE, 'announcements_source_term' => ''],
+      [
+        'announcements_source_enabled' => 0,
+        'announcements_source_term' => AnnouncementsSourcePlatformAdminSetting::DEFAULT_TERM,
+      ],
+      $announcements,
+    );
+
+    $this->assertSame([], $written);
+  }
+
+  /**
+   * Normalizing the stored side must not swallow a real edit.
+   *
+   * The counterpart to the two tests above: with nothing stored, an admin who
+   * actually names a tag and ticks the box has to be written.
+   *
+   * @covers ::submitSettings
+   */
+  public function testSubmitWritesWhenUnsetValuesAreGivenRealValues(): void {
+    $written = [];
+    $this->submit(
+      $written,
+      [],
+      ['announcements_source_enabled' => 1, 'announcements_source_term' => 'Platform News'],
+    );
+
+    $this->assertTrue($written['announcements_source_enabled']);
+    $this->assertSame('Platform News', $written['announcements_source_term']);
   }
 
   /**
@@ -367,6 +516,91 @@ class AnnouncementsSourcePlatformAdminSettingTest extends UnitTestCase {
     $plugin->setStringTranslation($this->getStringTranslationStub());
 
     return $plugin;
+  }
+
+  /**
+   * Submits with an existing but unpublished tag in the Tags vocabulary.
+   *
+   * @param \Drupal\Core\Messenger\MessengerInterface $messenger
+   *   The messenger double carrying the test's expectation.
+   * @param string $stored_term
+   *   The tag name already in config.
+   * @param string $submitted_term
+   *   The tag name arriving from the form. Equal to $stored_term for a save
+   *   that left this section alone.
+   */
+  private function submitWithUnpublishedTag(MessengerInterface $messenger, string $stored_term, string $submitted_term): void {
+    $unpublished = $this->createMock('Drupal\taxonomy\TermInterface');
+    $unpublished->method('isPublished')->willReturn(FALSE);
+
+    $term_storage = $this->createMock(EntityStorageInterface::class);
+    $term_storage->method('loadByProperties')->willReturn([$unpublished]);
+    $term_storage->expects($this->never())->method('create');
+
+    $this->submitTerms($messenger, $this->entityTypeManager($term_storage), $stored_term, $submitted_term);
+  }
+
+  /**
+   * Submits on a site whose Tags vocabulary does not exist.
+   *
+   * @param \Drupal\Core\Messenger\MessengerInterface $messenger
+   *   The messenger double carrying the test's expectation.
+   * @param string $stored_term
+   *   The tag name already in config.
+   * @param string $submitted_term
+   *   The tag name arriving from the form.
+   */
+  private function submitWithoutTagsVocabulary(MessengerInterface $messenger, string $stored_term, string $submitted_term): void {
+    $vocab_storage = $this->createMock(EntityStorageInterface::class);
+    $vocab_storage->method('load')->with('tags')->willReturn(NULL);
+
+    $term_storage = $this->createMock(EntityStorageInterface::class);
+    $term_storage->expects($this->never())->method('loadByProperties');
+    $term_storage->expects($this->never())->method('create');
+
+    $manager = $this->createMock(EntityTypeManagerInterface::class);
+    $manager->method('getStorage')->willReturnMap([
+      ['taxonomy_vocabulary', $vocab_storage],
+      ['taxonomy_term', $term_storage],
+    ]);
+
+    $this->submitTerms($messenger, $manager, $stored_term, $submitted_term);
+  }
+
+  /**
+   * Submits publishing-enabled values with the given stored and submitted tag.
+   *
+   * @param \Drupal\Core\Messenger\MessengerInterface $messenger
+   *   The messenger double carrying the test's expectation.
+   * @param \Drupal\Core\Entity\EntityTypeManagerInterface $entity_type_manager
+   *   The entity type manager double describing the taxonomy state.
+   * @param string $stored_term
+   *   The tag name already in config.
+   * @param string $submitted_term
+   *   The tag name arriving from the form.
+   */
+  private function submitTerms(MessengerInterface $messenger, EntityTypeManagerInterface $entity_type_manager, string $stored_term, string $submitted_term): void {
+    $written = [];
+    $plugin = $this->plugin(
+      $this->trackingConfigFactory($written, [
+        'announcements_source_enabled' => TRUE,
+        'announcements_source_term' => $stored_term,
+      ]),
+      NULL,
+      $entity_type_manager,
+      $messenger,
+    );
+
+    $form_state = new FormState();
+    $form_state->setValues([
+      self::PLUGIN_ID => [
+        'announcements_source_enabled' => 1,
+        'announcements_source_term' => $submitted_term,
+      ],
+    ]);
+
+    $form = [];
+    $plugin->submitSettings($form, $form_state);
   }
 
   /**

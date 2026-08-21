@@ -156,30 +156,37 @@ class AnnouncementsSourcePlatformAdminSetting extends PlatformAdminSettingBase {
    */
   public function submitSettings(array &$form, FormStateInterface $form_state): void {
     $enabled = (bool) $form_state->getValue([$this->getPluginId(), 'announcements_source_enabled']);
-    // A cleared field would otherwise store an empty tag and leave
-    // AnnouncementsFeedController falling back to a default name that nothing
-    // guarantees exists - a 200 with zero items and no warning. Normalizing
-    // here matches the fallback buildSettings() and the controller already
-    // apply.
-    $term = trim((string) $form_state->getValue([$this->getPluginId(), 'announcements_source_term'])) ?: self::DEFAULT_TERM;
+    $term = $this->normalizeTerm($form_state->getValue([$this->getPluginId(), 'announcements_source_term']));
+
+    $config = $this->configFactory->getEditable(self::CONFIG_NAME);
+
+    // The page has one Save button for every section, so this runs even when
+    // nobody touched the source fields. Both sides go through normalizeTerm()
+    // because the stored and submitted values hold the same setting in
+    // different shapes: config_ignore keeps ys_core.dashboard_settings out of
+    // config:import, so on a site that has never saved this section the key
+    // reads NULL while the form submits back the default it just displayed.
+    // Comparing those raw counted an untouched save as a change.
+    $unchanged = (bool) $config->get('announcements_source_enabled') === $enabled
+      && $this->normalizeTerm($config->get('announcements_source_term')) === $term;
 
     // Deliberately ahead of the short-circuit below, and re-run on every save
     // while publishing is on: the tag is the one thing here that something
     // else can delete out from under the config. Re-running is how a deleted
     // tag gets restored - it was self-healing on the old form only because
     // that form re-ran this on every platform-admin save.
+    //
+    // Its warnings, though, are reported only when this section actually
+    // changed. The self-heal has to run on every save; telling an admin who
+    // edited only another section about this section's tag on every save does
+    // not, and there is nothing on screen for them to act on.
     if ($enabled) {
-      $this->ensureAnnouncementTerm($term);
+      $this->ensureAnnouncementTerm($term, !$unchanged);
     }
 
-    $config = $this->configFactory->getEditable(self::CONFIG_NAME);
-
-    // The page has one Save button for every section, so this runs even when
-    // nobody touched the source fields. Skip the write - and the cached-feed
-    // drop that follows it - rather than rewriting the same values on every
-    // unrelated save.
-    if ((bool) $config->get('announcements_source_enabled') === $enabled
-      && (string) $config->get('announcements_source_term') === $term) {
+    // Skip the write - and the cached-feed drop that follows it - rather than
+    // rewriting the same values on every unrelated save.
+    if ($unchanged) {
       return;
     }
 
@@ -194,15 +201,42 @@ class AnnouncementsSourcePlatformAdminSetting extends PlatformAdminSettingBase {
   }
 
   /**
+   * Normalizes a tag name to the value the form displays for it.
+   *
+   * A cleared or absent tag would otherwise leave AnnouncementsFeedController
+   * falling back to a default name that nothing guarantees exists - a 200 with
+   * zero items and no warning. Applied to the submitted value before it is
+   * stored, and to the stored value before it is compared, so the no-change
+   * guard sees both sides in the same shape as buildSettings() renders them.
+   *
+   * @param mixed $value
+   *   A stored or submitted tag name.
+   *
+   * @return string
+   *   The trimmed name, or the platform default when it is empty.
+   */
+  private function normalizeTerm($value): string {
+    return trim((string) $value) ?: self::DEFAULT_TERM;
+  }
+
+  /**
    * Ensures a term with the given name exists in the Tags vocabulary.
    *
    * @param string $name
    *   The tag name to look for, and create when it is missing.
+   * @param bool $report_problems
+   *   Whether to warn about a taxonomy state this method cannot fix - a
+   *   missing vocabulary, or an existing but unpublished term. Passed FALSE on
+   *   a save that left this section alone, so the warnings do not re-fire on
+   *   every save of an unrelated section. The creation message is not gated
+   *   this way: it reports something that actually happened.
    */
-  protected function ensureAnnouncementTerm(string $name): void {
+  protected function ensureAnnouncementTerm(string $name, bool $report_problems = TRUE): void {
     $vocab_storage = $this->entityTypeManager->getStorage('taxonomy_vocabulary');
     if (!$vocab_storage->load('tags')) {
-      $this->messenger()->addWarning($this->t('The "Tags" vocabulary does not exist on this site, so the announcement tag could not be created automatically.'));
+      if ($report_problems) {
+        $this->messenger()->addWarning($this->t('The "Tags" vocabulary does not exist on this site, so the announcement tag could not be created automatically.'));
+      }
       return;
     }
 
@@ -215,7 +249,7 @@ class AnnouncementsSourcePlatformAdminSetting extends PlatformAdminSettingBase {
     $term_storage = $this->entityTypeManager->getStorage('taxonomy_term');
     $existing = $term_storage->loadByProperties(['vid' => 'tags', 'name' => $name]);
     if ($existing) {
-      if (!array_filter($existing, fn($term) => $term->isPublished())) {
+      if ($report_problems && !array_filter($existing, fn($term) => $term->isPublished())) {
         $this->messenger()->addWarning($this->t('The %name tag exists but is unpublished, so the feed will return no items until it is published.', ['%name' => $name]));
       }
       return;
