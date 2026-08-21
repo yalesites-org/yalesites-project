@@ -26,8 +26,14 @@ class PlatformAdminSettingsFormTest extends KernelTestBase {
 
   /**
    * {@inheritdoc}
+   *
+   * The site branding section requires ys_media.media_manager, so ys_media has
+   * to be listed explicitly - KernelTestBase only registers services for the
+   * modules a test names, even ones ys_core declares as a dependency. The
+   * service lived in ys_core until the module was extracted in
+   * yalesites-org/YaleSites-Internal#579.
    */
-  protected static $modules = ['system', 'user', 'views', 'twig_tweak', 'ys_core'];
+  protected static $modules = ['system', 'user', 'views', 'twig_tweak', 'ys_media', 'ys_core'];
 
   /**
    * {@inheritdoc}
