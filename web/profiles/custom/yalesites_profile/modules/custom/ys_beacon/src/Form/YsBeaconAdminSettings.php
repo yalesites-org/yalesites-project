@@ -47,6 +47,7 @@ class YsBeaconAdminSettings extends ConfigFormBase {
     $instance->indexManager = $container->get('ys_beacon.index_manager');
     $instance->indexStatus = $container->get('ys_beacon.index_status');
     $instance->indexingBatchHelper = $container->get('search_api.indexing_batch_helper');
+    $instance->pdfTextIndexer = $container->get('ys_beacon.pdf_text_indexer');
     return $instance;
   }
 
