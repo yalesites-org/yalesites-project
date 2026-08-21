@@ -25,6 +25,14 @@ services:
       - '@ai.provider'
       - '@ys_beacon.rag_retriever'
       - '@ys_beacon.prompt_builder'
+      - '@ys_beacon.tool_call_handler'
+
+  ys_beacon.tool_call_handler:
+    class: Drupal\ys_beacon\Service\ToolCallHandler
+    arguments:
+      - '@plugin.manager.ai.function_calls'
+      - '@logger.channel.ys_beacon'
+      - ['ys_beacon:current_date_time']
 
   ys_beacon.markdown_converter:
     class: Drupal\ys_beacon\Service\MarkdownConverter
@@ -92,6 +100,8 @@ services:
       - '@ys_beacon.indexability'
       - '@config.factory'
       - '@logger.channel.ys_beacon'
+      - '@entity_field.manager'
+      - '@keyvalue'
 
   ys_beacon.content_feed_builder:
     class: Drupal\ys_beacon\Service\ContentFeedBuilder

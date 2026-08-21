@@ -85,7 +85,7 @@ class BeaconSettingsSeedTest extends UnitTestCase {
   public function testSeedsShippedDefaultsWhenAbsent(): void {
     $captured = NULL;
     $config = $this->createMock(Config::class);
-    $config->method('isNew')->willReturn(TRUE);
+    $config->method('getRawData')->willReturn([]);
     $config->expects($this->once())
       ->method('setData')
       ->with($this->callback(function (array $data) use (&$captured): bool {
@@ -112,16 +112,65 @@ class BeaconSettingsSeedTest extends UnitTestCase {
   }
 
   /**
-   * An existing configuration is left completely untouched.
+   * A complete existing configuration is left completely untouched.
    */
   public function testDoesNotClobberExistingSettings(): void {
     $config = $this->createMock(Config::class);
-    $config->method('isNew')->willReturn(FALSE);
+    // Every shipped key already present, so there is no gap to fill.
+    $config->method('getRawData')->willReturn($this->shippedDefaults());
     $config->expects($this->never())->method('setData');
     $config->expects($this->never())->method('save');
     $this->setContainer($config);
 
-    _ys_beacon_seed_settings();
+    $this->assertFalse(_ys_beacon_seed_settings(), 'Nothing was written.');
+  }
+
+  /**
+   * A partially recreated configuration has only its gaps filled.
+   *
+   * Once the config import has deleted the settings
+   * (yalesites-org/YaleSites-Internal#1491), the next runtime write recreates
+   * the object holding only that writer's own keys -
+   * BeaconPlatformAdminSetting::submitSettings() writes three,
+   * BeaconIndexManager::propagateConnection() two. Those keys are the site's
+   * real state and must survive; every other shipped default has to come back,
+   * or it reads NULL for good.
+   */
+  public function testFillsGapsWithoutOverwritingExistingKeys(): void {
+    $existing = [
+      'enable_chat' => TRUE,
+      'platform_authorized' => TRUE,
+      'azure_index_name' => 'site-specific-index',
+    ];
+
+    $captured = NULL;
+    $config = $this->createMock(Config::class);
+    $config->method('getRawData')->willReturn($existing);
+    $config->expects($this->once())
+      ->method('setData')
+      ->with($this->callback(function (array $data) use (&$captured): bool {
+        $captured = $data;
+        return TRUE;
+      }))
+      ->willReturnSelf();
+    $config->expects($this->once())->method('save')->willReturnSelf();
+    $this->setContainer($config);
+
+    $this->assertTrue(_ys_beacon_seed_settings(), 'A gap was filled.');
+
+    // The site's own values win over the shipped defaults.
+    $this->assertTrue($captured['enable_chat'], 'The live chat toggle survives.');
+    $this->assertTrue($captured['platform_authorized'], 'Authorization survives.');
+    $this->assertSame('site-specific-index', $captured['azure_index_name']);
+
+    // Everything the partial write never set is restored.
+    $this->assertTrue($captured['streaming'], 'Streaming comes back on.');
+    $this->assertSame(5, $captured['top_k'], 'top_k comes back.');
+    $shipped_keys = array_keys($this->shippedDefaults());
+    $captured_keys = array_keys($captured);
+    sort($shipped_keys);
+    sort($captured_keys);
+    $this->assertSame($shipped_keys, $captured_keys, 'The full shipped key set is present.');
   }
 
   /**

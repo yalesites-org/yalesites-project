@@ -1,4 +1,11 @@
 {{ attach_library('ys_core/dashboard') }}
+
+{# The dashboard is an admin-themed page, so Atomic's link-purpose library never
+   runs here to announce links that leave the editor's session. Every link below
+   that opens a new tab carries this message itself; the matching icon comes from
+   the dashboard's own CSS. #}
+{% set opens_in_new_window %}<span class="visually-hidden"> ({{ 'Link opens in new window'|t }})</span>{% endset %}
+
 <div class="ys-dashboard">
 
   {# Top row: announcements on the left, resources / feedback / platform info on the right. #}
@@ -6,7 +13,12 @@
     {% if announcements is not empty %}
       <div class="ys-dashboard__top-main">
         <section class="ys-dashboard__section ys-dashboard__announcements" aria-labelledby="ys-dashboard-announcements-heading">
-          <h2 id="ys-dashboard-announcements-heading">{{ 'Announcements'|t }}</h2>
+          {# Beside the heading so it reads as acting on this list. Only built
+             when the editor has something unread. #}
+          <div class="ys-dashboard__announcements-header">
+            <h2 id="ys-dashboard-announcements-heading">{{ 'Announcements'|t }}</h2>
+            {{ mark_all_read_form }}
+          </div>
           <ul class="ys-dashboard__announcement-list">
             {% for announcement in announcements %}
               <li class="ys-dashboard__announcement">
@@ -15,6 +27,12 @@
                     <a href="{{ announcement.url }}">{{ announcement.title }}</a>
                   {% else %}
                     {{ announcement.title }}
+                  {% endif %}
+                  {# Inside the heading so it is announced with the title it
+                     belongs to. The text carries the meaning, not the colour
+                     (WCAG 1.4.1). #}
+                  {% if announcement.is_new %}
+                    <span class="ys-dashboard-badge ys-dashboard__announcement-new">{{ 'New'|t }}<span class="visually-hidden"> {{ 'announcement'|t }}</span></span>
                   {% endif %}
                 </h3>
                 {% if announcement.date %}
@@ -37,20 +55,20 @@
         <h2 id="ys-dashboard-resources-heading">{{ 'Resources'|t }}</h2>
         <ul>
           <li>
-            <a href="https://yalesites.yale.edu/explore-resources/learn-the-basics">{{ 'Learn the Basics'|t }}</a> &mdash;
+            <a href="https://yalesites.yale.edu/explore-resources/learn-the-basics" target="_blank" rel="noopener noreferrer">{{ 'Learn the Basics'|t }}{{ opens_in_new_window }}</a> &mdash;
             {{ 'Navigate the interface, create content, and start building your site with confidence.'|t }}
           </li>
           <li>
-            <a href="https://yalesites.yale.edu/explore-resources/user-guide">{{ 'User Guide'|t }}</a> &mdash;
+            <a href="https://yalesites.yale.edu/explore-resources/user-guide" target="_blank" rel="noopener noreferrer">{{ 'User Guide'|t }}{{ opens_in_new_window }}</a> &mdash;
             {{ 'Detailed step-by-step instructions for all platform features, including content creation, sitewide settings, and going live.'|t }}
           </li>
           <li>
-            <a href="https://yalesites.yale.edu/trainings#officehours">{{ 'Office Hours'|t }}</a> &mdash;
+            <a href="https://yalesites.yale.edu/trainings#officehours" target="_blank" rel="noopener noreferrer">{{ 'Office Hours'|t }}{{ opens_in_new_window }}</a> &mdash;
             {{ 'Connect live with the YaleSites team to ask questions and get hands-on help.'|t }}
           </li>
         </ul>
         <div class="more-link">
-          <a href="https://yalesites.yale.edu/resource-library">{{ 'Find more resources'|t }}</a>
+          <a href="https://yalesites.yale.edu/resource-library" target="_blank" rel="noopener noreferrer">{{ 'Find more resources'|t }}{{ opens_in_new_window }}</a>
         </div>
       </section>
 
@@ -67,7 +85,7 @@
 
         <section class="ys-dashboard__section ys-dashboard__actions" aria-labelledby="ys-dashboard-siteimprove-heading">
           <h2 id="ys-dashboard-siteimprove-heading" class="visually-hidden">{{ 'Siteimprove'|t }}</h2>
-          <a href="https://my2.siteimprove.com/Auth/Saml2/66356571" target="_blank" rel="noopener noreferrer" class="button button--primary ys-dashboard__action-button">{{ 'Siteimprove'|t }}</a>
+          <a href="https://my2.siteimprove.com/Auth/Saml2/66356571" target="_blank" rel="noopener noreferrer" class="button button--primary ys-dashboard__action-button">{{ 'Siteimprove'|t }}{{ opens_in_new_window }}</a>
           <p class="ys-dashboard__action-help">{{ 'Access your Siteimprove dashboard here. For more information about how to use Siteimprove, visit our <a href=":url">Getting Started with Siteimprove guide</a>.'|t({':url': 'https://yalesites.yale.edu/explore-resources/working-with-content/getting-started-with-siteimprove'}) }}</p>
         </section>
       </div>

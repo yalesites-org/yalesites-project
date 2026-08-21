@@ -41,11 +41,20 @@ Entity save -> Search API tracking -> ys_beacon index (ai_search backend)
 Visitor -> React widget -> POST /api/ys-beacon/v1/conversation
                  - RagRetriever: vector query, chunked results -> citations
                  - SystemPromptBuilder: site system instructions + [docN] sources
+                 - ToolCallHandler: attaches the allow-listed LLM tools
                  - Portkey chat completion, streamed as NDJSON
+                 - if the model asked for a tool: run it, then call Portkey a
+                   second time (no tools) and stream that answer instead
 ```
 
 Submodule `ys_beacon_portkey` provides the `portkey` AI provider plugin
 (OpenAI-compatible, with `x-portkey-*` headers) used for both operations.
+
+The model can call a small set of ys_beacon-owned tools mid-conversation - today
+just one, returning the current date and time, so answers can depend on "now".
+See [docs/AI_FUNCTION_CALL_TOOLS.md](docs/AI_FUNCTION_CALL_TOOLS.md) for how to
+add another; which tools the model may call is an explicit allow-list on the
+`ys_beacon.tool_call_handler` service, not everything registered on the site.
 
 ## Per-site configuration
 
@@ -262,14 +271,30 @@ the PDF text layer into a media field that Search API can index:
   shipped in the profile config sync. It is machine-populated, not edited by
   hand. Add it to the Beacon index's `field_settings` to include PDF text in AI
   search.
-- **Asynchronous:** on media insert, and on update when the uploaded file
-  changes, `ys_beacon` queues a `ys_beacon_pdf_text_extraction` job that runs on
-  cron, so uploading a large PDF never slows the editorial save.
+- **Asynchronous:** whenever a media save leaves a document owed extraction,
+  `ys_beacon` queues a `ys_beacon_pdf_text_extraction` job that runs on cron, so
+  uploading a large PDF never slows the editorial save. Because media is
+  excluded from AI indexing by default, in practice the trigger is usually the
+  editor opting the document in rather than the upload itself; replacing the
+  file re-extracts.
+- **Attempted once per file:** each attempt is recorded against the media's
+  source file id, so a scanned, corrupt, oversized, or unreadable PDF is not
+  re-parsed on every later save or sweep. Replacing the file makes it eligible
+  again; `drush ys_beacon:extract-pdf-text --force` clears the records so
+  documents that stored no text are tried again. A document that already holds
+  text is never re-parsed by either route.
+- **Backfill:** `drush ys_beacon:extract-pdf-text` extracts every document still
+  waiting, batched. The same sweep runs inside the batch behind "Index now" and
+  "Re-index all content", and a deploy hook queues the backlog once on sites
+  whose media library predates Beacon.
 - **Opt-out and access respected:** extraction is skipped when
   `ai_disable_indexing` is set, and only runs on sites where Beacon indexing is
   configured.
 - **Image-only PDFs:** scanned PDFs with no text layer extract to an empty
-  string (logged, no error). There is no OCR.
+  string (logged, no error). There is no OCR. A document with no extracted text
+  is left out of the index rather than embedded as a filename-only chunk, which
+  would match filename-shaped queries and cite a document with nothing behind
+  it.
 - **Size limit:** files larger than `ys_beacon.settings:pdf_extraction_max_bytes`
   (default 20 MB) are skipped and logged, to bound memory and time.
 

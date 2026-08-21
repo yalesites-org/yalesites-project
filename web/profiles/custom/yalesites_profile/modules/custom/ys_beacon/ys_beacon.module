@@ -111,15 +111,13 @@ function ys_beacon_entity_update(EntityInterface $entity) {
   $original = $entity->original ?? NULL;
 
   if ($entity instanceof MediaInterface) {
-    // Re-extract PDF text only on a genuine file replacement: there must be a
-    // prior revision to compare against and the source file id must differ.
-    // New media are handled by hook_entity_insert, and a save with no original
-    // (some programmatic saves) is not treated as a file change - this also
-    // ensures saving our own extracted-text field back never re-queues.
-    if ($original instanceof MediaInterface
-      && _ys_beacon_media_source_fid($entity) !== _ys_beacon_media_source_fid($original)) {
-      _ys_beacon_queue_pdf_extraction($entity);
-    }
+    // One rule covers every way a document comes to be owed extraction: an
+    // editor opting it in to AI indexing, a bulk opt-in action, and a file
+    // replacement are all plain media updates, and the fid-comparison this
+    // replaced saw only the last of them. PdfTextIndexer::needsExtraction()
+    // records its attempt before writing the extracted text back, so that
+    // save - itself an update - does not re-queue the work.
+    _ys_beacon_queue_pdf_extraction($entity);
   }
 
   if (!in_array($entity->getEntityTypeId(), ['node', 'media'], TRUE)) {
@@ -187,29 +185,63 @@ function ys_beacon_metatag_groups_alter(&$definitions) {
 /**
  * Implements hook_config_ignore_ignored_alter().
  *
- * The per-site Azure index (database) name persisted onto the Beacon search
- * server is config-ignored so a provisioned site keeps it across deploys
- * (yalesites-org/YaleSites-Internal#1387). config_ignore's simple mode applies
- * that ignore to create as well as update, so on a brand-new site - where the
- * server is created, not updated - the incoming database_name key is stripped.
- * ai_search's NewServerEventSubscriber then reaches the vector-database backend
- * with a null name and aborts the whole config import with a TypeError
- * (yalesites-org/YaleSites-Internal#1393).
+ * Registers the Search API keys holding per-site Beacon values as
+ * config-ignored on every direction and operation except import-create.
+ * BeaconIndexManager::propagateConnection() and ::pinSearchUrl() write the
+ * site's own Azure index name, endpoint and read-only flag onto the shared
+ * Search API config, so all three must survive config import on a provisioned
+ * site and must never be exported.
  *
- * Scope that ignore away from create on import (the deploy path) by dropping
- * it from that one operation, so a fresh import keeps the shipped empty default
- * (a harmless present value). The import-update ignore still protects a
- * provisioned site's persisted name on every later deploy, and the export
- * ignores are left untouched so the per-site name never leaks into synced
- * config.
+ * These ignores are added here rather than listed in config_ignore.settings so
+ * they exist only while ys_beacon does. config_ignore transforms the import
+ * storage from the synced settings list before any module is installed, so an
+ * entry in that list also applies to a site that has never had Beacon. There
+ * the server config is created, not updated, and config_ignore's create
+ * handling unsets an ignored key outright rather than blanking it
+ * (ConfigIgnoreEventSubscriber::ignoreParts()). ai_search's
+ * NewServerEventSubscriber then reads the missing database_name as NULL and
+ * aborts the whole config import with a TypeError, which is what broke the
+ * platform-wide deploy (yalesites-org/YaleSites-Internal#1393). An earlier fix
+ * scoped the entry away from import-create in this same hook, but the hook
+ * cannot run on the sites that hit the bug: ys_beacon is not installed yet when
+ * the transform happens.
+ *
+ * Skipping import-create is still required for the case where Beacon is
+ * installed but the server config is absent, so a fresh import keeps the
+ * shipped empty default - a present, harmless value. Import-update keeps a
+ * provisioned site's persisted values across every later deploy
+ * (yalesites-org/YaleSites-Internal#1387).
+ *
+ * Every operation is needed, not just update: the pinned endpoint URL is absent
+ * from synced config entirely, so on import it is a delete-shaped key that
+ * survives via the delete list, and on export it is a create-shaped one that
+ * the export-create entry strips. Dropping either would silently lose a site's
+ * endpoint or leak it into synced config.
  */
 function ys_beacon_config_ignore_ignored_alter(ConfigIgnoreConfig $ignored) {
-  $entry = 'search_api.server.ys_beacon:'
-    . 'backend_config.database_settings.database_name';
-  $create = $ignored->getList('import', 'create');
-  if (in_array($entry, $create, TRUE)) {
-    $create = array_values(array_diff($create, [$entry]));
-    $ignored->setList('import', 'create', $create);
+  // Both machine names are configurable (ys_beacon.settings:search_server_id
+  // and :search_index_id), so resolve them the way every other consumer does
+  // rather than hardcoding the defaults. Raw storage is read rather than the
+  // config factory because this runs during the import storage transformation,
+  // where YsBeaconConfigOverrides is resolving overrides off the same object.
+  $settings = \Drupal::service('config.storage')->read('ys_beacon.settings') ?: [];
+  $server = 'search_api.server.' . (($settings['search_server_id'] ?? '') ?: 'ys_beacon');
+  $index = 'search_api.index.' . (($settings['search_index_id'] ?? '') ?: 'ys_beacon');
+
+  $per_site_keys = [
+    $server . ':backend_config.database_settings.database_name',
+    $server . ':backend_config.database_settings.url',
+    $index . ':read_only',
+  ];
+
+  foreach (['import', 'export'] as $direction) {
+    foreach (['create', 'update', 'delete'] as $operation) {
+      if ($direction === 'import' && $operation === 'create') {
+        continue;
+      }
+      $list = array_merge($ignored->getList($direction, $operation), $per_site_keys);
+      $ignored->setList($direction, $operation, array_values(array_unique($list)));
+    }
   }
 }
 
@@ -283,45 +315,43 @@ function ys_beacon_entity_insert(EntityInterface $entity) {
 }
 
 /**
- * Queues background PDF text extraction for a media entity when appropriate.
+ * Implements hook_entity_delete().
  *
- * @param \Drupal\media\MediaInterface $media
- *   The media entity that may hold a PDF.
+ * Forgets the media's PDF extraction attempt record, which would otherwise
+ * outlive the media it describes.
  */
-function _ys_beacon_queue_pdf_extraction(MediaInterface $media) {
-  // Nothing runs on sites where a platform admin has not authorized Beacon.
-  if (!\Drupal::service('ys_beacon.authorization')->isAuthorized()) {
-    return;
-  }
-  // Only extract on sites where Beacon indexing is configured; without an
-  // index there is nothing to feed the extracted text into.
-  if (!\Drupal::config('ys_beacon.settings')->get('azure_index_name')) {
-    return;
-  }
-  /** @var \Drupal\ys_beacon\Service\PdfTextIndexer $indexer */
-  $indexer = \Drupal::service('ys_beacon.pdf_text_indexer');
-  if ($indexer->isExtractable($media)) {
-    \Drupal::queue('ys_beacon_pdf_text_extraction')->createItem(['media_id' => $media->id()]);
+function ys_beacon_entity_delete(EntityInterface $entity) {
+  if ($entity instanceof MediaInterface) {
+    \Drupal::service('ys_beacon.pdf_text_indexer')->forgetAttempt($entity->id());
   }
 }
 
 /**
- * Returns the source file id of a media entity, or NULL.
+ * Queues background PDF text extraction for a media entity when appropriate.
  *
  * @param \Drupal\media\MediaInterface $media
- *   The media entity.
+ *   The media entity that may hold a PDF.
  *
- * @return string|null
- *   The source file id, or NULL when the media has no file source.
+ * @return bool
+ *   TRUE when an extraction item was queued.
  */
-function _ys_beacon_media_source_fid(MediaInterface $media): ?string {
-  try {
-    $fid = $media->getSource()->getSourceFieldValue($media);
-    return $fid !== NULL ? (string) $fid : NULL;
+function _ys_beacon_queue_pdf_extraction(MediaInterface $media): bool {
+  // Nothing runs on sites where a platform admin has not authorized Beacon.
+  if (!\Drupal::service('ys_beacon.authorization')->isAuthorized()) {
+    return FALSE;
   }
-  catch (\Throwable $e) {
-    return NULL;
+  // Only extract on sites where Beacon indexing is configured; without an
+  // index there is nothing to feed the extracted text into.
+  if (!\Drupal::config('ys_beacon.settings')->get('azure_index_name')) {
+    return FALSE;
   }
+  /** @var \Drupal\ys_beacon\Service\PdfTextIndexer $indexer */
+  $indexer = \Drupal::service('ys_beacon.pdf_text_indexer');
+  if (!$indexer->needsExtraction($media)) {
+    return FALSE;
+  }
+  \Drupal::queue('ys_beacon_pdf_text_extraction')->createItem(['media_id' => $media->id()]);
+  return TRUE;
 }
 
 /**

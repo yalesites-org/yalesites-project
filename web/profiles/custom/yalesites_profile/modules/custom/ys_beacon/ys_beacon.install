@@ -162,6 +162,47 @@ function ys_beacon_schema() {
  * cannot do it (yalesites-org/YaleSites-Internal#1459).
  */
 function ys_beacon_install() {
+  _ys_beacon_provision_settings();
+
+  // Copy the legacy system instructions version history. Values are stored
+  // unescaped (escaping only ever happened on the legacy API wire), and the
+  // legacy service guarantees at most one is_active = 1 row.
+  // Deployment ordering matters: uninstalling ys_ai_system_instructions
+  // drops its table, so it must stay installed until after ys_beacon has
+  // been installed (a same-deploy swap would silently skip this copy).
+  $database = \Drupal::database();
+  if ($database->schema()->tableExists('ys_ai_system_instructions')) {
+    $rows = $database->select('ys_ai_system_instructions', 's')
+      ->fields('s', ['instructions', 'version', 'created_by', 'created_date', 'is_active', 'notes'])
+      ->orderBy('id')
+      ->execute()
+      ->fetchAll(\PDO::FETCH_ASSOC);
+    foreach ($rows as $row) {
+      $database->insert('ys_beacon_system_instructions')->fields($row)->execute();
+    }
+  }
+
+  // Seed default system instructions on a fresh install (no legacy history to
+  // copy). The helper no-ops when versions already exist, so migrations and
+  // existing installs are never overwritten.
+  _ys_beacon_seed_default_instructions($database);
+}
+
+/**
+ * Provisions ys_beacon.settings: shipped defaults plus legacy chat values.
+ *
+ * Split out of hook_install() so ys_beacon_deploy_10001() can re-run the whole
+ * provisioning after config:import, which deletes the object hook_install()
+ * created moments earlier on a site receiving Beacon for the first time. See
+ * ys_beacon.deploy.php for why the import does that and why the deploy phase is
+ * the one that can make the write stick.
+ *
+ * Seed and overlay have to travel together: the legacy values are written into
+ * the very object the import deletes, so restoring the shipped defaults on
+ * their own would silently reset a migrated site's button text, prompts,
+ * disclaimer and footer.
+ */
+function _ys_beacon_provision_settings(): void {
   // Seed the shipped defaults before anything else, so the legacy copy below
   // overlays them instead of writing into a config object that never existed.
   _ys_beacon_seed_settings();
@@ -202,33 +243,10 @@ function ys_beacon_install() {
   if ($changed) {
     $settings->save();
   }
-
-  // Copy the legacy system instructions version history. Values are stored
-  // unescaped (escaping only ever happened on the legacy API wire), and the
-  // legacy service guarantees at most one is_active = 1 row.
-  // Deployment ordering matters: uninstalling ys_ai_system_instructions
-  // drops its table, so it must stay installed until after ys_beacon has
-  // been installed (a same-deploy swap would silently skip this copy).
-  $database = \Drupal::database();
-  if ($database->schema()->tableExists('ys_ai_system_instructions')) {
-    $rows = $database->select('ys_ai_system_instructions', 's')
-      ->fields('s', ['instructions', 'version', 'created_by', 'created_date', 'is_active', 'notes'])
-      ->orderBy('id')
-      ->execute()
-      ->fetchAll(\PDO::FETCH_ASSOC);
-    foreach ($rows as $row) {
-      $database->insert('ys_beacon_system_instructions')->fields($row)->execute();
-    }
-  }
-
-  // Seed default system instructions on a fresh install (no legacy history to
-  // copy). The helper no-ops when versions already exist, so migrations and
-  // existing installs are never overwritten.
-  _ys_beacon_seed_default_instructions($database);
 }
 
 /**
- * Seeds ys_beacon.settings from the shipped defaults when it does not exist.
+ * Fills any shipped default missing from ys_beacon.settings.
  *
  * Ys_beacon.settings is config_ignored, so it is deliberately absent from
  * config/sync. That matters on the install path this module actually takes on a
@@ -243,17 +261,36 @@ function ys_beacon_install() {
  *
  * Reading the shipped file directly sidesteps that, and is the same approach
  * _ys_beacon_portkey_seed_settings() already takes for the same reason.
+ *
+ * This fills gaps rather than only creating an absent object, because the
+ * settings can also come back partially populated. Once the import has deleted
+ * them (yalesites-org/YaleSites-Internal#1491), the next runtime write
+ * recreates the object holding only the handful of keys that writer sets -
+ * BeaconPlatformAdminSetting::submitSettings() writes three, and
+ * BeaconIndexManager::propagateConnection() two. An existence test would call
+ * that healthy and leave every other key reading NULL for good. Existing values
+ * always win, so this stays safe to call on a configured site.
+ *
+ * @return bool
+ *   TRUE when a missing default was written, FALSE when nothing was needed.
  */
-function _ys_beacon_seed_settings(): void {
+function _ys_beacon_seed_settings(): bool {
   $config = \Drupal::configFactory()->getEditable('ys_beacon.settings');
-  // Never clobber an existing configuration; this only fills in an absent one.
-  if (!$config->isNew()) {
-    return;
-  }
   $path = \Drupal::service('extension.list.module')->getPath('ys_beacon') . '/config/install';
-  if ($data = (new FileStorage($path))->read('ys_beacon.settings')) {
-    $config->setData($data)->save();
+  $shipped = (new FileStorage($path))->read('ys_beacon.settings');
+  if (!$shipped) {
+    return FALSE;
   }
+
+  // Union, not merge: a key the site already holds is never overwritten.
+  $current = $config->getRawData();
+  $filled = $current + $shipped;
+  if ($filled === $current) {
+    return FALSE;
+  }
+
+  $config->setData($filled)->save();
+  return TRUE;
 }
 
 /**

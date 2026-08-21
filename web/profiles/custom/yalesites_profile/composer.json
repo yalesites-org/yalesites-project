@@ -114,16 +114,19 @@
     "drupal/webprofiler": "10.3.1",
     "drupal/workflow_buttons": "1.0-beta7",
     "jjj/chosen": "2.2.1",
+    "mathjax/mathjax": "2.7.9",
     "smalot/pdfparser": "2.11.0",
     "yalesites-org/ai_engine": "1.2.18",
-    "yalesites-org/atomic": "1.79.0",
+    "yalesites-org/atomic": "1.81.0",
     "yalesites-org/yale_cas": "v1.3.0"
   },
   "minimum-stability": "dev",
   "prefer-stable": true,
   "config": {
     "audit": {
-      "ignore": ["SA-CONTRIB-2025-060"]
+      "ignore": [
+        "SA-CONTRIB-2025-060"
+      ]
     },
     "sort-packages": true
   },

@@ -15,6 +15,7 @@ use Drupal\ys_beacon\Service\GuardrailTelemetry;
 use Drupal\ys_beacon\Service\RagRetriever;
 use Drupal\ys_beacon\Service\SuspectTurnLog;
 use Drupal\ys_beacon\Service\SystemPromptBuilder;
+use Drupal\ys_beacon\Service\ToolCallHandler;
 use Psr\Log\LoggerInterface;
 use Symfony\Component\DependencyInjection\ContainerInterface;
 use Symfony\Component\HttpFoundation\JsonResponse;
@@ -157,6 +158,13 @@ class ChatApiController extends ControllerBase {
   protected SuspectTurnLog $suspectTurnLog;
 
   /**
+   * The tool call handler.
+   *
+   * @var \Drupal\ys_beacon\Service\ToolCallHandler
+   */
+  protected ToolCallHandler $toolCallHandler;
+
+  /**
    * {@inheritdoc}
    */
   public static function create(ContainerInterface $container) {
@@ -171,6 +179,7 @@ class ChatApiController extends ControllerBase {
     $instance->telemetry = $container->get('ys_beacon.guardrail_telemetry');
     $instance->signalDetector = $container->get('ys_beacon.guardrail_signal_detector');
     $instance->suspectTurnLog = $container->get('ys_beacon.suspect_turn_log');
+    $instance->toolCallHandler = $container->get('ys_beacon.tool_call_handler');
     return $instance;
   }
 
@@ -294,8 +303,10 @@ class ChatApiController extends ControllerBase {
 
       // Guardrail telemetry is recorded once, in the finally below, after the
       // answer has been streamed - so counting can never delay the visible
-      // answer, and a turn that failed part-way is still counted.
-      $chat_input = NULL;
+      // answer, and a turn that failed part-way is still counted. Holds one
+      // entry per provider call this turn made (one, or two when a tool call
+      // made a follow-up call happen).
+      $chat_inputs = [];
       // The answer is accumulated only up to the refusal sample the counters
       // classify from, which is never stored or logged.
       $captured = '';
@@ -312,33 +323,32 @@ class ChatApiController extends ControllerBase {
         // object would leave guardrail stops uncounted (nothing in the module
         // does so today).
         $chat_input = new ChatInput($messages);
+        $chat_inputs[] = $chat_input;
+        $this->toolCallHandler->attachTools($chat_input);
         // The AI module's output filter blocks the links the model returns
         // (its allow-list is empty = block-all), so disable it for this
         // response. See withOutputFilteringDisabled() for the safety rationale.
-        $this->withOutputFilteringDisabled(function () use ($provider, $chat_input, $model_id, $emit, $response_id, &$captured) {
-          $output = $provider->chat($chat_input, $model_id, ['ys_beacon']);
-          $normalized = $output->getNormalized();
+        $this->withOutputFilteringDisabled(function () use ($provider, $chat_input, $messages, $model_id, $emit, $response_id, &$captured, &$chat_inputs) {
+          $normalized = $provider->chat($chat_input, $model_id, ['ys_beacon'])->getNormalized();
+          $emitted = $this->emitAnswer($normalized, $response_id, $model_id, $emit, $captured);
 
-          if ($normalized instanceof \Traversable) {
-            foreach ($normalized as $chunk) {
-              $delta = $chunk->getText();
-              if ($delta === '') {
-                continue;
-              }
-              if (mb_strlen($captured) < GuardrailSignalDetector::REFUSAL_SAMPLE_LENGTH) {
-                $captured .= $delta;
-              }
-              $emit($this->envelope($response_id, $model_id, [
-                ['role' => 'assistant', 'content' => $delta],
-              ]));
-            }
+          // A tool call carries no visible answer of its own, so run it and
+          // ask the model again - without tools this time, so the turn
+          // resolves in exactly one hop - for the answer to actually stream.
+          $follow_up_input = $this->toolCallHandler->followUpInput($normalized, $messages);
+          if ($follow_up_input) {
+            $chat_inputs[] = $follow_up_input;
+            $follow_up_normalized = $provider->chat($follow_up_input, $model_id, ['ys_beacon'])->getNormalized();
+            $emitted = $this->emitAnswer($follow_up_normalized, $response_id, $model_id, $emit, $captured) || $emitted;
           }
-          else {
-            $text = $normalized->getText();
-            $captured = mb_substr($text, 0, GuardrailSignalDetector::REFUSAL_SAMPLE_LENGTH);
-            $emit($this->envelope($response_id, $model_id, [
-              ['role' => 'assistant', 'content' => $text],
-            ]));
+
+          // Nothing readable came back on either hop - a stream that failed
+          // part-way, or a tool call contrib could not assemble. Throwing
+          // hands the turn to the caller's error handling, which tells the
+          // widget the assistant is unavailable; without this the visitor
+          // would just get their question, the sources and no answer at all.
+          if (!$emitted) {
+            throw new \RuntimeException('The model returned no answer for this turn.');
           }
         });
       }
@@ -367,7 +377,10 @@ class ChatApiController extends ControllerBase {
 
         $stops = 0;
         try {
-          $stops = $this->recordTurnTelemetry($has_citations, $captured, $chat_input);
+          // Every call this turn made is read, so a guardrail stop on the
+          // tool-informed follow-up answer is counted too - not only one that
+          // occurred on the initial (pre-tool) call.
+          $stops = $this->recordTurnTelemetry($has_citations, $captured, $chat_inputs);
         }
         catch (\Throwable) {
         }
@@ -479,16 +492,17 @@ class ChatApiController extends ControllerBase {
    *   The captured answer text, at most the refusal sample. Only its opening is
    *   inspected, by isRefusal(). Empty when the turn failed before the model
    *   produced anything.
-   * @param \Drupal\ai\OperationType\Chat\ChatInput|null $chat_input
-   *   The input the model was called with, carrying the turn's guardrail
-   *   results, or NULL if the call was never made.
+   * @param \Drupal\ai\OperationType\Chat\ChatInput[] $chat_inputs
+   *   The input(s) the model was called with, carrying each call's guardrail
+   *   results - one entry for an ordinary turn, two when a tool call made a
+   *   follow-up call happen. Empty when the call was never made.
    *
    * @return int
-   *   How many guardrail stops the turn recorded. Returned so the caller can
-   *   decide whether the turn is worth keeping in full, without parsing the
-   *   contrib guardrail results a second time.
+   *   How many guardrail stops the turn recorded across all of its calls.
+   *   Returned so the caller can decide whether the turn is worth keeping in
+   *   full, without parsing the contrib guardrail results a second time.
    */
-  protected function recordTurnTelemetry(bool $has_citations, string $answer, ?ChatInput $chat_input): int {
+  protected function recordTurnTelemetry(bool $has_citations, string $answer, array $chat_inputs): int {
     // The denominator: recorded for every turn that reached the model, so the
     // other counters can be read as rates rather than raw volumes.
     $this->telemetry->recordTurn();
@@ -501,14 +515,89 @@ class ChatApiController extends ControllerBase {
       $this->telemetry->recordRefusal();
     }
 
-    if ($chat_input === NULL) {
-      return 0;
+    $stops = 0;
+    foreach ($chat_inputs as $chat_input) {
+      $stops += $this->telemetry->recordGuardrailResults(
+        $chat_input->getAllGuardrailResults(),
+        array_keys($chat_input->getGuardrailSets())
+      );
+    }
+    return $stops;
+  }
+
+  /**
+   * Streams or emits a normalized chat answer.
+   *
+   * Any tool calls the answer carries are read separately, by passing the
+   * same $normalized to ToolCallHandler::extractToolCalls() once this
+   * returns - a streamed answer's tool calls are only fully assembled after
+   * its iterator has been drained, which the loop below does as a side
+   * effect of streaming the text.
+   *
+   * Reading a streamed answer can itself throw, from inside the loop below:
+   * contrib's StreamedChatMessageIterator::getIterator() assembles the tool
+   * calls automatically once the underlying generator is exhausted, so a tool
+   * call contrib cannot assemble (see ToolCallHandler::extractToolCalls())
+   * surfaces here rather than from the later ::extractToolCalls() call. It is
+   * absorbed so text already streamed still stands - but the caller must
+   * check the return value, because a turn that streamed NOTHING has to be
+   * reported to the client as a failure rather than left as a blank answer.
+   *
+   * @param mixed $normalized
+   *   The provider's normalized chat output: a ChatMessage, or a
+   *   \Traversable streamed iterator.
+   * @param string $response_id
+   *   The response id shared by all lines of this turn.
+   * @param string $model_id
+   *   The model id.
+   * @param callable $emit
+   *   Emits one NDJSON line to the client.
+   * @param string $captured
+   *   The refusal-detection sample, appended to by reference and capped at
+   *   GuardrailSignalDetector::REFUSAL_SAMPLE_LENGTH. Appended rather than
+   *   assigned because a tool turn calls this twice, and the sample means
+   *   "the opening of the answer the visitor saw".
+   *
+   * @return bool
+   *   TRUE if any assistant text was emitted. FALSE means the model produced
+   *   nothing readable, which the caller must surface as an error.
+   */
+  protected function emitAnswer(mixed $normalized, string $response_id, string $model_id, callable $emit, string &$captured): bool {
+    $emitted = FALSE;
+
+    if ($normalized instanceof \Traversable) {
+      try {
+        foreach ($normalized as $chunk) {
+          $delta = $chunk->getText();
+          if ($delta === '') {
+            continue;
+          }
+          $captured = mb_substr($captured . $delta, 0, GuardrailSignalDetector::REFUSAL_SAMPLE_LENGTH);
+          $emit($this->envelope($response_id, $model_id, [
+            ['role' => 'assistant', 'content' => $delta],
+          ]));
+          $emitted = TRUE;
+        }
+      }
+      catch (\Throwable $e) {
+        $this->logger->error('Beacon failed to drain the streamed answer: @message', ['@message' => $e->getMessage()]);
+      }
+      return $emitted;
     }
 
-    return $this->telemetry->recordGuardrailResults(
-      $chat_input->getAllGuardrailResults(),
-      array_keys($chat_input->getGuardrailSets())
-    );
+    $text = $normalized->getText();
+    // An empty answer is the first hop of a tool turn, which carries the tool
+    // call rather than any text. Emitting it would clear the widget's loading
+    // indicator and leave an empty bubble sitting there for the whole
+    // follow-up round trip, so it is skipped - matching the streamed branch.
+    if ($text === '') {
+      return FALSE;
+    }
+    $captured = mb_substr($captured . $text, 0, GuardrailSignalDetector::REFUSAL_SAMPLE_LENGTH);
+    $emit($this->envelope($response_id, $model_id, [
+      ['role' => 'assistant', 'content' => $text],
+    ]));
+    return TRUE;
   }
 
   /**
