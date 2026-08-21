@@ -23,6 +23,23 @@
           "reference": "2.2.1"
         }
       }
+    },
+    "mathjax": {
+      "type": "package",
+      "package": {
+        "name": "mathjax/mathjax",
+        "version": "2.7.9",
+        "type": "drupal-library",
+        "license": "Apache-2.0",
+        "dist": {
+          "url": "https://registry.npmjs.org/mathjax/-/mathjax-2.7.9.tgz",
+          "type": "tar",
+          "shasum": "d6b67955c173e7d719fcb2fc0288662884eb7d3d"
+        },
+        "extra": {
+          "installer-name": "MathJax"
+        }
+      }
     }
   },
   "require": {

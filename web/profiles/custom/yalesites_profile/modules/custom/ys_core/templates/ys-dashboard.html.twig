@@ -13,7 +13,12 @@
     {% if announcements is not empty %}
       <div class="ys-dashboard__top-main">
         <section class="ys-dashboard__section ys-dashboard__announcements" aria-labelledby="ys-dashboard-announcements-heading">
-          <h2 id="ys-dashboard-announcements-heading">{{ 'Announcements'|t }}</h2>
+          {# Beside the heading so it reads as acting on this list. Only built
+             when the editor has something unread. #}
+          <div class="ys-dashboard__announcements-header">
+            <h2 id="ys-dashboard-announcements-heading">{{ 'Announcements'|t }}</h2>
+            {{ mark_all_read_form }}
+          </div>
           <ul class="ys-dashboard__announcement-list">
             {% for announcement in announcements %}
               <li class="ys-dashboard__announcement">
@@ -22,6 +27,12 @@
                     <a href="{{ announcement.url }}">{{ announcement.title }}</a>
                   {% else %}
                     {{ announcement.title }}
+                  {% endif %}
+                  {# Inside the heading so it is announced with the title it
+                     belongs to. The text carries the meaning, not the colour
+                     (WCAG 1.4.1). #}
+                  {% if announcement.is_new %}
+                    <span class="ys-dashboard-badge ys-dashboard__announcement-new">{{ 'New'|t }}<span class="visually-hidden"> {{ 'announcement'|t }}</span></span>
                   {% endif %}
                 </h3>
                 {% if announcement.date %}
