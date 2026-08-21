@@ -37,6 +37,9 @@ services:
   ys_beacon.markdown_converter:
     class: Drupal\ys_beacon\Service\MarkdownConverter
 
+  ys_beacon.indexable_html_filter:
+    class: Drupal\ys_beacon\Service\IndexableHtmlFilter
+
   ys_beacon.system_instructions_storage:
     class: Drupal\ys_beacon\Service\SystemInstructionsStorage
     arguments:

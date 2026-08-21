@@ -9,7 +9,7 @@ use Drupal\Core\Session\AccountInterface;
 use Drupal\Core\StringTranslation\TranslatableMarkup;
 use Drupal\ys_core\Attribute\PlatformAdminSetting;
 use Drupal\ys_core\PlatformAdminSettingBase;
-use Drupal\ys_core\YaleSitesMediaManager;
+use Drupal\ys_media\YaleSitesMediaManager;
 use Symfony\Component\DependencyInjection\ContainerInterface;
 
 /**
@@ -76,7 +76,7 @@ class SiteBrandingPlatformAdminSetting extends PlatformAdminSettingBase {
   /**
    * The YaleSites media manager.
    *
-   * @var \Drupal\ys_core\YaleSitesMediaManager
+   * @var \Drupal\ys_media\YaleSitesMediaManager
    */
   protected YaleSitesMediaManager $mediaManager;
 
@@ -100,7 +100,7 @@ class SiteBrandingPlatformAdminSetting extends PlatformAdminSettingBase {
    *   The config factory.
    * @param \Drupal\Core\Session\AccountInterface $current_user
    *   The current user.
-   * @param \Drupal\ys_core\YaleSitesMediaManager $media_manager
+   * @param \Drupal\ys_media\YaleSitesMediaManager $media_manager
    *   The YaleSites media manager.
    * @param \Drupal\Core\Cache\CacheBackendInterface $cache_render
    *   The render cache backend.
@@ -129,7 +129,7 @@ class SiteBrandingPlatformAdminSetting extends PlatformAdminSettingBase {
       $plugin_definition,
       $container->get('config.factory'),
       $container->get('current_user'),
-      $container->get('ys_core.media_manager'),
+      $container->get('ys_media.media_manager'),
       $container->get('cache.render'),
     );
   }

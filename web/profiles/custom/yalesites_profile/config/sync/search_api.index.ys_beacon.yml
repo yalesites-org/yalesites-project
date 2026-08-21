@@ -100,27 +100,16 @@ datasource_settings:
 processor_settings:
   add_url: {  }
   entity_status: {  }
-  html_filter:
-    weights:
-      preprocess_index: -49
-      preprocess_query: -48
-    all_fields: false
-    fields:
-      - rendered_item
-    title: true
-    alt: true
-    tags:
-      b: 2.0
-      em: 1.0
-      h1: 5.0
-      h2: 3.0
-      h3: 2.0
-      strong: 2.0
-      u: 1.0
   rendered_item: {  }
   ys_beacon_ai_metadata: {  }
   ys_beacon_citation_fields: {  }
   ys_beacon_exclude_ai_disabled: {  }
+  ys_beacon_indexable_html:
+    weights:
+      preprocess_index: -49
+    all_fields: false
+    fields:
+      - rendered_item
 tracker_settings:
   default:
     indexing_order: fifo

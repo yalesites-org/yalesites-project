@@ -11,7 +11,7 @@ use Drupal\Core\Messenger\MessengerInterface;
 use Drupal\Tests\UnitTestCase;
 use Drupal\Tests\ys_core\Traits\ProtectedPropertyTrait;
 use Drupal\ys_core\Form\SiteSettingsForm;
-use Drupal\ys_core\YaleSitesMediaManager;
+use Drupal\ys_media\YaleSitesMediaManager;
 
 /**
  * Tests the site settings form's submit handler.

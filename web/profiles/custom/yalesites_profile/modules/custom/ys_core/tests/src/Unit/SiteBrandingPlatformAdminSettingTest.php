@@ -9,7 +9,7 @@ use Drupal\Core\Form\FormState;
 use Drupal\Core\Session\AccountInterface;
 use Drupal\Tests\UnitTestCase;
 use Drupal\ys_core\Plugin\PlatformAdminSetting\SiteBrandingPlatformAdminSetting;
-use Drupal\ys_core\YaleSitesMediaManager;
+use Drupal\ys_media\YaleSitesMediaManager;
 
 /**
  * Tests the site branding platform admin setting plugin.
@@ -33,7 +33,7 @@ class SiteBrandingPlatformAdminSettingTest extends UnitTestCase {
    *   The ys_core.header_settings values to report as already stored.
    * @param array $written
    *   Populated with each set() key/value pair, by reference.
-   * @param \Drupal\ys_core\YaleSitesMediaManager|null $media_manager
+   * @param \Drupal\ys_media\YaleSitesMediaManager|null $media_manager
    *   The media manager double, when the test asserts on it.
    * @param \Drupal\Core\Cache\CacheBackendInterface|null $cache_render
    *   The render cache double, when the test asserts on it.

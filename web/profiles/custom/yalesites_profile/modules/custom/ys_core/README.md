@@ -56,7 +56,9 @@ during the staged cleanup tracked in yalesites-org/YaleSites-Internal#579.
   resolves to its own distinct URL. Verifying that needs a real image style and a
   saved `custom_favicon` value, so it is blocked on the missing schema above. The
   fallback branch is covered against the real filesystem and the shipped image
-  style config in `YaleSitesMediaManagerTest`.
+  style config in `YaleSitesMediaManagerTest`. That method and its test now live in
+  the `ys_media` module (Phase 1 of #579), but the blocker is recorded here because
+  the schema that blocks it belongs to `ys_core`.
 - **`CoreTwigExtension::getAssetPath()`'s `_yale-packages` fallback is uncovered.**
   A normal checkout has an asset manifest under the theme's `node_modules`, so the
   first path always wins; the fallback only runs where the theme's npm assets are
