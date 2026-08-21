@@ -55,8 +55,8 @@ class BookCollectionDeleteTest extends KernelTestBase {
     _ys_book_add_book_title_column();
     $this->installConfig(['node', 'book', 'field']);
 
-    // The delete route is gated on 'administer book outlines'; build the router
-    // so the confirm form's cancel link can resolve the collections overview.
+    // Build the router so the confirm form's cancel link can resolve the
+    // collections overview.
     $this->container->get('router.builder')->rebuild();
 
     NodeType::create(['type' => 'page', 'name' => 'Page'])->save();

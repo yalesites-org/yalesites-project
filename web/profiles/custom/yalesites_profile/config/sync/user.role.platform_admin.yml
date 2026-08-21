@@ -143,7 +143,6 @@ permissions:
   - 'administer block content'
   - 'administer block types'
   - 'administer blocks'
-  - 'administer book outlines'
   - 'administer coffee'
   - 'administer google_tag_container'
   - 'administer main menu items'
