@@ -12,7 +12,14 @@ use Symfony\Component\Yaml\Yaml;
  *
  * Two review requirements on issue #190: the actions read "Clone" and "Remove"
  * (not "Clone block" / "Remove block"), and "Remove" stays the last item in the
- * menu now that this module adds a fourth link.
+ * menu now that this module adds links of its own.
+ *
+ * The asserted set is every link the module can contribute, not what any one
+ * block shows: "Make non-reusable" is attached only to reusable placements,
+ * and "View form submissions" only to blocks referencing a webform
+ * (yalesites-org/YaleSites-Internal#1575), and both are access-filtered per
+ * user. What matters here is that whenever they do appear they read correctly
+ * and sit between the layout actions and the destructive one.
  *
  * Ordering is not testable from the "Clone" definition alone, because core's
  * Configure/Move/Remove links ship no weight and so all sort equal — the
@@ -44,21 +51,23 @@ class BlockContextualLinksTest extends UnitTestCase {
   }
 
   /**
-   * Tests that the menu reads Configure, Move, Clone, Remove — in that order.
+   * Tests the menu order: layout actions, then this module's, then Remove.
    */
   public function testRemoveStaysLastAndLabelsDropTheWordBlock(): void {
     $core_group = $this->definitions($this->root . '/core/modules/layout_builder/layout_builder.links.contextual.yml');
-    $clone_group = $this->definitions(dirname(__DIR__, 3) . '/ys_layouts.links.contextual.yml');
+    $ys_groups = $this->definitions(dirname(__DIR__, 3) . '/ys_layouts.links.contextual.yml');
 
     // preRenderLinks() unions the groups in the order they are attached to the
     // element, so assert the result for both possible orders.
     $expected = [
       'layout_builder_block_update' => 'Configure',
       'layout_builder_block_move' => 'Move',
+      'ys_layouts_block_detach' => 'Make non-reusable',
       'layout_builder_block_clone' => 'Clone',
+      'ys_layouts_webform_results' => 'View form submissions',
       'layout_builder_block_remove' => 'Remove',
     ];
-    foreach ([$core_group + $clone_group, $clone_group + $core_group] as $items) {
+    foreach ([$core_group + $ys_groups, $ys_groups + $core_group] as $items) {
       uasort($items, [SortArray::class, 'sortByWeightElement']);
 
       $this->assertSame($expected, array_map(fn (array $item) => (string) $item['title'], $items));
