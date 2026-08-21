@@ -77,3 +77,6 @@ ys_beacon.settings:
     guardrail_supplement:
       type: text
       label: 'Site-specific additions to the platform guardrail'
+    ai_tester_question_delay_ms:
+      type: integer
+      label: 'Milliseconds the AI Tester pauses between questions'
