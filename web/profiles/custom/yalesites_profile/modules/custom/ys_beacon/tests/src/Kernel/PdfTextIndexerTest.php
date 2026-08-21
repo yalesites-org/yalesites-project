@@ -136,6 +136,45 @@ class PdfTextIndexerTest extends KernelTestBase {
   }
 
   /**
+   * An extractable PDF with no stored text is reported as having none.
+   *
+   * The index drops such a document rather than embedding a chunk whose only
+   * content is its filename.
+   *
+   * @covers ::lacksExtractedText
+   */
+  public function testPdfWithoutStoredTextLacksExtractedText(): void {
+    $media = $this->createPdfMedia('empty.pdf', 'application/pdf', 'dummy');
+
+    $this->assertTrue($this->indexer($this->stubExtractor(''))->lacksExtractedText($media));
+  }
+
+  /**
+   * A PDF that has been extracted is not reported as lacking text.
+   *
+   * @covers ::lacksExtractedText
+   */
+  public function testExtractedPdfDoesNotLackText(): void {
+    $media = $this->createPdfMedia('full.pdf', 'application/pdf', 'dummy');
+    $indexer = $this->indexer($this->stubExtractor('Extracted body text'));
+
+    $indexer->extractAndStore($media->id());
+
+    $this->assertFalse($indexer->lacksExtractedText(Media::load($media->id())));
+  }
+
+  /**
+   * A non-PDF is never reported as lacking text; it is not ours to gate.
+   *
+   * @covers ::lacksExtractedText
+   */
+  public function testNonPdfDoesNotLackText(): void {
+    $media = $this->createPdfMedia('photo.jpg', 'image/jpeg', 'binary');
+
+    $this->assertFalse($this->indexer($this->stubExtractor(''))->lacksExtractedText($media));
+  }
+
+  /**
    * Creates a document media entity wrapping a written file.
    */
   private function createPdfMedia(string $filename, string $mime, string $contents): Media {
@@ -192,6 +231,8 @@ class PdfTextIndexerTest extends KernelTestBase {
       $indexability,
       $configFactory,
       $this->container->get('logger.factory')->get('ys_beacon'),
+      $this->container->get('entity_field.manager'),
+      $this->container->get('keyvalue'),
     );
   }
 
