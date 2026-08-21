@@ -1,6 +1,6 @@
 <?php
 
-namespace Drupal\Tests\ys_core\Unit;
+namespace Drupal\Tests\ys_media\Unit;
 
 use Drupal\Core\Config\Config;
 use Drupal\Core\Config\ConfigFactoryInterface;
@@ -10,15 +10,15 @@ use Drupal\Core\File\FileUrlGenerator;
 use Drupal\Tests\UnitTestCase;
 use Drupal\file\FileInterface;
 use Drupal\image\ImageStyleInterface;
-use Drupal\ys_core\YaleSitesMediaManager;
+use Drupal\ys_media\YaleSitesMediaManager;
 use Symfony\Component\DependencyInjection\ContainerInterface;
 
 /**
  * Tests YaleSitesMediaManager's favicon building and media lifecycle logic.
  *
- * @coversDefaultClass \Drupal\ys_core\YaleSitesMediaManager
+ * @coversDefaultClass \Drupal\ys_media\YaleSitesMediaManager
  *
- * @group ys_core
+ * @group ys_media
  * @group yalesites
  */
 class YaleSitesMediaManagerTest extends UnitTestCase {
@@ -54,7 +54,7 @@ class YaleSitesMediaManagerTest extends UnitTestCase {
   /**
    * The manager under test.
    *
-   * @var \Drupal\ys_core\YaleSitesMediaManager
+   * @var \Drupal\ys_media\YaleSitesMediaManager
    */
   protected $manager;
 
@@ -107,7 +107,7 @@ class YaleSitesMediaManagerTest extends UnitTestCase {
    * full Drupal bootstrap) exercises the same code path.
    */
   protected function writeTempFile(string $contents): string {
-    $path = tempnam(sys_get_temp_dir(), 'ys_core_media_');
+    $path = tempnam(sys_get_temp_dir(), 'ys_media_');
     file_put_contents($path, $contents);
     $this->tempFiles[] = $path;
     return $path;
@@ -145,7 +145,7 @@ class YaleSitesMediaManagerTest extends UnitTestCase {
 
     $this->assertCount(4, $favicons);
     $this->assertSame(
-      '/profiles/custom/yalesites_profile/modules/custom/ys_core/images/favicons/apple-touch-icon.png',
+      '/profiles/custom/yalesites_profile/modules/custom/ys_media/images/favicons/apple-touch-icon.png',
       $favicons['apple-touch-icon']['#attributes']['href']
     );
   }
@@ -153,7 +153,7 @@ class YaleSitesMediaManagerTest extends UnitTestCase {
   /**
    * The fallback set is four favicons with their page-head attributes.
    *
-   * Pins the markup contract ys_core_page_attachments() renders into the head,
+   * Pins the markup contract ys_media_page_attachments() renders into the head,
    * so a relocation that drops or renames a tag is visible. Added for Phase 0
    * of yalesites-org/YaleSites-Internal#579.
    *
@@ -188,9 +188,9 @@ class YaleSitesMediaManagerTest extends UnitTestCase {
    * Every fallback favicon href points at a file that exists on disk.
    *
    * The other fallback tests assert these hrefs as hardcoded strings, so they
-   * stay green even if the files move or are deleted -- which is what Phase 1
-   * of yalesites-org/YaleSites-Internal#579 does when it relocates this class
-   * and the images/favicons/ directory into a new module.
+   * would stay green even if the files moved or were deleted. This one fails in
+   * that case, which is what forces the hardcoded hrefs in getFavicons() to be
+   * repointed whenever the module or its images/favicons/ directory moves.
    *
    * @covers ::getFavicons
    */
@@ -207,7 +207,7 @@ class YaleSitesMediaManagerTest extends UnitTestCase {
       $path = DRUPAL_ROOT . $href;
       $this->assertFileExists($path, sprintf(
         "The '%s' fallback favicon href (%s) must resolve to a real file. If "
-        . 'the ys_core module or its images/favicons/ directory moved, update '
+        . 'the ys_media module or its images/favicons/ directory moved, update '
         . 'the hardcoded hrefs in getFavicons().',
         $key,
         $href
@@ -272,7 +272,7 @@ class YaleSitesMediaManagerTest extends UnitTestCase {
 
     $this->assertCount(4, $favicons);
     $this->assertSame(
-      '/profiles/custom/yalesites_profile/modules/custom/ys_core/images/favicons/favicon.ico',
+      '/profiles/custom/yalesites_profile/modules/custom/ys_media/images/favicons/favicon.ico',
       $favicons['icon-ico']['#attributes']['href']
     );
   }
