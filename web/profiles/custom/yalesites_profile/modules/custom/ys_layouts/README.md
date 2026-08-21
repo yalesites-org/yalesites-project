@@ -101,6 +101,14 @@ orphans and a normal revision history it completes in about two seconds, comfort
 web request. The drush command remains the escape hatch if a site ever grows large enough to
 risk a PHP timeout, and is still the right tool for scripting across many sites.
 
+Both tables page at 50 rows. Paging bounds the work that scales with how many blocks were
+found — each row loads a `block_content` entity, so an unpaged report on a site holding
+thousands of orphans would load and render thousands of entities — but it cannot make the
+sweep itself cheaper, because `analyze()` has to walk every revision before it knows what is
+orphaned. Each table pages on its own pager element, so paging one leaves the other where it
+was, and each caption states the full total rather than the number of rows on screen. The
+delete button always counts every orphan, never just the page in front of you.
+
 #### Timing: deploys and unsaved layout work
 
 A button can be pressed at any moment, whereas a drush command is run deliberately by someone

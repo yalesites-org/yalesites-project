@@ -4,6 +4,7 @@ namespace Drupal\ys_layouts\Controller;
 
 use Drupal\Core\DependencyInjection\ContainerInjectionInterface;
 use Drupal\Core\Entity\EntityTypeManagerInterface;
+use Drupal\Core\Pager\PagerManagerInterface;
 use Drupal\Core\StringTranslation\StringTranslationTrait;
 use Drupal\Core\Url;
 use Drupal\ys_layouts\Service\OrphanedInlineBlockCleanerInterface;
@@ -27,16 +28,37 @@ class OrphanedInlineBlockReportController implements ContainerInjectionInterface
   use StringTranslationTrait;
 
   /**
+   * How many blocks each table lists per page.
+   */
+  const ITEMS_PER_PAGE = 50;
+
+  /**
+   * Pager element index for the deletable orphans table.
+   */
+  const ORPHANS_PAGER = 0;
+
+  /**
+   * Pager element index for the revision-only table.
+   *
+   * Distinct from ORPHANS_PAGER because both tables render on one page: sharing
+   * an element would make paging either table move both.
+   */
+  const REVISION_ONLY_PAGER = 1;
+
+  /**
    * Constructs an OrphanedInlineBlockReportController.
    *
    * @param \Drupal\ys_layouts\Service\OrphanedInlineBlockCleanerInterface $cleaner
    *   The orphaned inline block cleaner.
    * @param \Drupal\Core\Entity\EntityTypeManagerInterface $entityTypeManager
    *   The entity type manager.
+   * @param \Drupal\Core\Pager\PagerManagerInterface $pagerManager
+   *   The pager manager.
    */
   public function __construct(
     protected OrphanedInlineBlockCleanerInterface $cleaner,
     protected EntityTypeManagerInterface $entityTypeManager,
+    protected PagerManagerInterface $pagerManager,
   ) {}
 
   /**
@@ -46,6 +68,7 @@ class OrphanedInlineBlockReportController implements ContainerInjectionInterface
     return new static(
       $container->get('ys_layouts.orphaned_inline_block_cleaner'),
       $container->get('entity_type.manager'),
+      $container->get('pager.manager'),
     );
   }
 
@@ -77,19 +100,29 @@ class OrphanedInlineBlockReportController implements ContainerInjectionInterface
     // association is worth stating rather than left to inference.
     $build['orphans'] = [
       '#type' => 'table',
-      '#caption' => $this->t('Unreferenced inline blocks'),
+      // Both captions carry the full total because the tables are paged: the
+      // rows on screen are only a window onto the set.
+      '#caption' => $this->t('Unreferenced inline blocks (@count total)', [
+        '@count' => count($report['orphans']),
+      ]),
       '#header' => [
         ['data' => $this->t('Block ID'), 'scope' => 'col'],
         ['data' => $this->t('Type'), 'scope' => 'col'],
         ['data' => $this->t('Label'), 'scope' => 'col'],
       ],
-      '#rows' => $this->describe($report['orphans']),
+      '#rows' => $this->describe($this->currentPageOf($report['orphans'], self::ORPHANS_PAGER)),
       '#empty' => $this->t('No orphaned inline blocks found.'),
     ];
+    $build['orphans_pager'] = [
+      '#type' => 'pager',
+      '#element' => self::ORPHANS_PAGER,
+    ];
 
-    // The delete action sits directly under the table it acts on. Built before
-    // the revision-only table for that reason: rendering it last would put a
-    // delete button immediately below the one table it must never touch.
+    // The delete action stays with the table it acts on, below that table and
+    // its pager. Built before the revision-only table for that reason:
+    // rendering it last would put a delete button immediately below the one
+    // table it must never touch. Its label counts every orphan, not the page on
+    // screen, because the confirm step re-derives and removes the whole set.
     if ($report['orphans']) {
       $build['actions'] = [
         '#type' => 'container',
@@ -114,13 +147,21 @@ class OrphanedInlineBlockReportController implements ContainerInjectionInterface
       ];
       $build['revision_only'] = [
         '#type' => 'table',
-        '#caption' => $this->t('Referenced only by an older revision — never deleted'),
+        // This table has no delete button to state its magnitude, so the total
+        // in the caption is the only place an operator can read it.
+        '#caption' => $this->t('Referenced only by an older revision — never deleted (@count total)', [
+          '@count' => count($report['revision_only']),
+        ]),
         '#header' => [
           ['data' => $this->t('Block ID'), 'scope' => 'col'],
           ['data' => $this->t('Type'), 'scope' => 'col'],
           ['data' => $this->t('Label'), 'scope' => 'col'],
         ],
-        '#rows' => $this->describe($report['revision_only']),
+        '#rows' => $this->describe($this->currentPageOf($report['revision_only'], self::REVISION_ONLY_PAGER)),
+      ];
+      $build['revision_only_pager'] = [
+        '#type' => 'pager',
+        '#element' => self::REVISION_ONLY_PAGER,
       ];
     }
 
@@ -128,13 +169,44 @@ class OrphanedInlineBlockReportController implements ContainerInjectionInterface
   }
 
   /**
+   * Narrows a set of block IDs to the page currently being viewed.
+   *
+   * Paging cannot make the sweep itself cheaper: analyze() has to walk every
+   * layout revision to decide what is orphaned, so it necessarily returns the
+   * whole ID set. What this bounds is the per-ID work downstream. describe()
+   * loads a block_content entity for every ID it is handed, so on a site
+   * carrying thousands of orphans an unpaged report loads and renders thousands
+   * of entities to fill a table nobody scrolls. Sites where analyze() itself is
+   * the problem still have the drush command as the escape hatch.
+   *
+   * The Pager returned by createPager() clamps its own current page into range,
+   * so a ?page= beyond the end lands on the last page rather than an empty
+   * table.
+   *
+   * @param int[] $block_ids
+   *   The full set of block content entity IDs.
+   * @param int $element
+   *   The pager element index to page this set on.
+   *
+   * @return int[]
+   *   The IDs on the current page, in the order the cleaner sorted them.
+   */
+  protected function currentPageOf(array $block_ids, int $element): array {
+    $pager = $this->pagerManager->createPager(count($block_ids), self::ITEMS_PER_PAGE, $element);
+    return array_slice($block_ids, $pager->getCurrentPage() * self::ITEMS_PER_PAGE, self::ITEMS_PER_PAGE);
+  }
+
+  /**
    * Builds table rows describing the given blocks.
    *
-   * A row is emitted for every ID the sweep reported rather than only for the
-   * ones that still load; dropping one would understate what the operator is
-   * about to act on. In practice every reported ID had a block_content row when
-   * the sweep queried, so the fallback row only shows up if something deleted
-   * the block between that query and this load.
+   * A row is emitted for every ID passed in rather than only for the ones that
+   * still load; dropping one would understate what the operator is about to act
+   * on. In practice every reported ID had a block_content row when the sweep
+   * queried, so the fallback row only shows up if something deleted the block
+   * between that query and this load.
+   *
+   * Callers hand this the current page's IDs, not the whole reported set - see
+   * currentPageOf().
    *
    * Rows are built from $block_ids rather than from the loaded entities so the
    * order the cleaner sorted them into survives; loadMultiple() makes no

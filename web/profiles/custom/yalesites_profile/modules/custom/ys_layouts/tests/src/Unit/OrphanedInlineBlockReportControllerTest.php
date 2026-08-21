@@ -4,6 +4,8 @@ namespace Drupal\Tests\ys_layouts\Unit;
 
 use Drupal\Core\Entity\EntityStorageInterface;
 use Drupal\Core\Entity\EntityTypeManagerInterface;
+use Drupal\Core\Pager\Pager;
+use Drupal\Core\Pager\PagerManagerInterface;
 use Drupal\Tests\UnitTestCase;
 use Drupal\block_content\BlockContentInterface;
 use Drupal\ys_layouts\Controller\OrphanedInlineBlockReportController;
@@ -48,6 +50,16 @@ class OrphanedInlineBlockReportControllerTest extends UnitTestCase {
   protected $controller;
 
   /**
+   * The current page per pager element, keyed by element index.
+   *
+   * Stands in for the ?page= query parameter: the real PagerManager reads it
+   * from the request, so a test sets it here to place itself on a given page.
+   *
+   * @var int[]
+   */
+  protected $currentPage = [];
+
+  /**
    * {@inheritdoc}
    */
   protected function setUp(): void {
@@ -61,7 +73,15 @@ class OrphanedInlineBlockReportControllerTest extends UnitTestCase {
       ['block_content', $this->blockStorage],
     ]);
 
-    $this->controller = new OrphanedInlineBlockReportController($this->cleaner, $entity_type_manager);
+    // A real Pager rather than a mock: its own constructor clamps an
+    // out-of-range page into the result set, which is behaviour these tests
+    // rely on rather than something worth restating in a stub.
+    $pager_manager = $this->createMock(PagerManagerInterface::class);
+    $pager_manager->method('createPager')->willReturnCallback(
+      fn($total, $limit, $element = 0) => new Pager($total, $limit, $this->currentPage[$element] ?? 0)
+    );
+
+    $this->controller = new OrphanedInlineBlockReportController($this->cleaner, $entity_type_manager, $pager_manager);
     $this->controller->setStringTranslation($this->getStringTranslationStub());
   }
 
@@ -210,9 +230,11 @@ class OrphanedInlineBlockReportControllerTest extends UnitTestCase {
     $this->assertSame([
       'description',
       'orphans',
+      'orphans_pager',
       'actions',
       'revision_only_description',
       'revision_only',
+      'revision_only_pager',
     ], $order);
   }
 
@@ -321,6 +343,167 @@ class OrphanedInlineBlockReportControllerTest extends UnitTestCase {
     $build = $this->controller->build();
 
     $this->assertSame(0, $build['#cache']['max-age']);
+  }
+
+  /**
+   * Only the current page of orphans is loaded from storage.
+   *
+   * This is the point of paginating: describe() loads a block_content entity
+   * per reported ID, so on a site with thousands of orphans an unpaginated
+   * report loads thousands of entities to render a table nobody reads past the
+   * first screen of. The pager bounds the entity load, not just the markup.
+   *
+   * @covers ::build
+   */
+  public function testBuildLoadsOnlyTheCurrentPageOfOrphans(): void {
+    $this->cleaner->method('analyze')->willReturn([
+      'orphans' => range(1, 120),
+      'revision_only' => [],
+    ]);
+    $loaded = $this->captureLoads();
+
+    $build = $this->controller->build();
+
+    $this->assertSame([range(1, 50)], $loaded->calls);
+    $this->assertCount(50, $build['orphans']['#rows']);
+  }
+
+  /**
+   * The requested page determines which slice of orphans is loaded.
+   *
+   * @covers ::build
+   */
+  public function testBuildLoadsTheRequestedPageOfOrphans(): void {
+    $this->currentPage = [0 => 1];
+    $this->cleaner->method('analyze')->willReturn([
+      'orphans' => range(1, 120),
+      'revision_only' => [],
+    ]);
+    $loaded = $this->captureLoads();
+
+    $this->controller->build();
+
+    $this->assertSame([range(51, 100)], $loaded->calls);
+  }
+
+  /**
+   * A page beyond the end of the result set falls back to the last page.
+   *
+   * The page number arrives from a query parameter, so it is user input. 120
+   * orphans at 50 per page is three pages, and asking for page 99 must land on
+   * the last one rather than render a table with no rows in it.
+   *
+   * @covers ::build
+   */
+  public function testBuildClampsAnOutOfRangePageIntoTheResultSet(): void {
+    $this->currentPage = [0 => 99];
+    $this->cleaner->method('analyze')->willReturn([
+      'orphans' => range(1, 120),
+      'revision_only' => [],
+    ]);
+    $loaded = $this->captureLoads();
+
+    $build = $this->controller->build();
+
+    $this->assertSame([range(101, 120)], $loaded->calls);
+    $this->assertCount(20, $build['orphans']['#rows']);
+  }
+
+  /**
+   * The delete action counts every orphan, not just the page on screen.
+   *
+   * The confirm form re-derives the full orphan set and deletes all of it, so a
+   * button labelled with the page size would understate what confirming does.
+   *
+   * @covers ::build
+   */
+  public function testBuildDeleteActionCountsEveryOrphanNotJustThePage(): void {
+    $this->currentPage = [0 => 1];
+    $this->cleaner->method('analyze')->willReturn([
+      'orphans' => range(1, 120),
+      'revision_only' => [],
+    ]);
+    $this->captureLoads();
+
+    $build = $this->controller->build();
+
+    $this->assertSame(
+      'Delete 120 orphaned inline blocks',
+      (string) $build['actions']['delete']['#title']
+    );
+  }
+
+  /**
+   * Each table pages independently on its own pager element.
+   *
+   * Two pagers on one page collide unless they carry distinct element indexes:
+   * paging the orphans would otherwise jump the revision-only table too.
+   *
+   * @covers ::build
+   */
+  public function testBuildPagesEachTableOnItsOwnPagerElement(): void {
+    $this->currentPage = [0 => 1, 1 => 0];
+    $this->cleaner->method('analyze')->willReturn([
+      'orphans' => range(1, 60),
+      'revision_only' => range(101, 160),
+    ]);
+    $loaded = $this->captureLoads();
+
+    $build = $this->controller->build();
+
+    $this->assertSame([range(51, 60), range(101, 150)], $loaded->calls);
+    $this->assertSame('pager', $build['orphans_pager']['#type']);
+    $this->assertSame(0, $build['orphans_pager']['#element']);
+    $this->assertSame('pager', $build['revision_only_pager']['#type']);
+    $this->assertSame(1, $build['revision_only_pager']['#element']);
+  }
+
+  /**
+   * Each caption states the full total, not the number of rows shown.
+   *
+   * Paginating hides magnitude: the revision-only table has no delete button to
+   * carry a count, so without this an operator on page 2 cannot tell whether
+   * the site holds sixty of these or six thousand.
+   *
+   * @covers ::build
+   */
+  public function testBuildCaptionsStateTheFullTotal(): void {
+    $this->currentPage = [0 => 1, 1 => 1];
+    $this->cleaner->method('analyze')->willReturn([
+      'orphans' => range(1, 120),
+      'revision_only' => range(201, 260),
+    ]);
+    $this->captureLoads();
+
+    $build = $this->controller->build();
+
+    $this->assertStringContainsString('120', (string) $build['orphans']['#caption']);
+    $this->assertStringContainsString('60', (string) $build['revision_only']['#caption']);
+  }
+
+  /**
+   * Records the ID sets passed to loadMultiple(), in call order.
+   *
+   * @return object
+   *   An object whose $calls property collects each call's ID array.
+   */
+  protected function captureLoads(): object {
+    $recorder = new class() {
+      /**
+       * The ID arrays passed to loadMultiple(), in call order.
+       *
+       * @var array[]
+       */
+      public array $calls = [];
+
+    };
+    $this->blockStorage->method('loadMultiple')->willReturnCallback(
+      function (array $ids) use ($recorder) {
+        $recorder->calls[] = $ids;
+        return [];
+      }
+    );
+    return $recorder;
   }
 
 }
