@@ -75,6 +75,13 @@ behind the a.toolbar-icon element. */
   --icon: url("/profiles/custom/yalesites_profile/modules/custom/ys_toolbar/images/gear.svg");
 }
 
+/* Platform Admin — same story as Settings above: a custom ys_core route Gin has
+   no icon for. A server/rack reads as "the platform" and stays distinct from the
+   gear on Settings. Feather `server` (MIT). */
+.toolbar-icon.toolbar-icon-ys-core-admin-platform-admin {
+  --icon: url("/profiles/custom/yalesites_profile/modules/custom/ys_toolbar/images/server.svg");
+}
+
 /*
 //
 // Toolbar //
