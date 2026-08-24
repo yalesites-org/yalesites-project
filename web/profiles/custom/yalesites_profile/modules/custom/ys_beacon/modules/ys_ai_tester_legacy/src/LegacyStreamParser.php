@@ -70,7 +70,10 @@ final class LegacyStreamParser {
       $parsed++;
 
       if (isset($envelope['error'])) {
-        throw new \RuntimeException(self::errorMessage($envelope['error']));
+        throw new LegacyStreamException(
+          self::errorMessage($envelope['error']),
+          self::errorStatusCode($envelope['error'])
+        );
       }
 
       foreach ($envelope['choices'][0]['messages'] ?? [] as $message) {
@@ -118,6 +121,31 @@ final class LegacyStreamParser {
       return (string) $error['message'];
     }
     return (string) json_encode($error);
+  }
+
+  /**
+   * Reads the status code out of an envelope's error payload.
+   *
+   * The structured Azure OpenAI shape reports it as `code`, sometimes as a
+   * string. It is what lets a throttled or broken-upstream stream be retried:
+   * the response itself was a 200, so there is no HTTP status to read instead.
+   *
+   * @param mixed $error
+   *   The envelope's error value.
+   *
+   * @return int|null
+   *   The reported status code, or NULL when the payload carried none.
+   */
+  private static function errorStatusCode(mixed $error): ?int {
+    if (!is_array($error) || !isset($error['code'])) {
+      return NULL;
+    }
+    $code = $error['code'];
+
+    // Only a plain integer-valued code is usable. Some upstreams report a
+    // symbolic code here instead ("content_filter"), which is not a status and
+    // must not be coerced into one.
+    return is_numeric($code) ? (int) $code : NULL;
   }
 
   /**

@@ -1,0 +1,9 @@
+name: YaleSites Media
+type: module
+description: 'Site media for a YaleSite: favicons, the site name image, and image derivative handling.'
+core_version_requirement: ^10 || ^11
+package: YaleSites
+dependencies:
+  - drupal:file
+  - drupal:image
+  - imagemagick:imagemagick

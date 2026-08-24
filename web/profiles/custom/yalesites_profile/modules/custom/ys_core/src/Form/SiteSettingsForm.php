@@ -14,7 +14,7 @@ use Drupal\Core\Path\PathValidatorInterface;
 use Drupal\Core\Routing\RequestContext;
 use Drupal\Core\Session\AccountProxy;
 use Drupal\path_alias\AliasManagerInterface;
-use Drupal\ys_core\YaleSitesMediaManager;
+use Drupal\ys_media\YaleSitesMediaManager;
 use Symfony\Component\DependencyInjection\ContainerInterface;
 
 /**
@@ -52,7 +52,7 @@ class SiteSettingsForm extends ConfigFormBase implements ContainerInjectionInter
   /**
    * The ys media manager.
    *
-   * @var \Drupal\ys_core\YaleSitesMediaManager
+   * @var \Drupal\ys_media\YaleSitesMediaManager
    */
   protected $ysMediaManager;
 
@@ -95,7 +95,7 @@ class SiteSettingsForm extends ConfigFormBase implements ContainerInjectionInter
    *   The path validator.
    * @param \Drupal\Core\Routing\RequestContext $request_context
    *   The request context.
-   * @param \Drupal\ys_core\YaleSitesMediaManager $ys_media_manager
+   * @param \Drupal\ys_media\YaleSitesMediaManager $ys_media_manager
    *   The media manager.
    * @param \Drupal\Core\Entity\EntityTypeManagerInterface $entity_type_manager
    *   The entity type manager.
@@ -134,7 +134,7 @@ class SiteSettingsForm extends ConfigFormBase implements ContainerInjectionInter
       $container->get('path_alias.manager'),
       $container->get('path.validator'),
       $container->get('router.request_context'),
-      $container->get('ys_core.media_manager'),
+      $container->get('ys_media.media_manager'),
       $container->get('entity_type.manager'),
       $container->get('current_user'),
       $container->get('cache.discovery'),
@@ -162,14 +162,37 @@ class SiteSettingsForm extends ConfigFormBase implements ContainerInjectionInter
     $siteConfig = $this->config('system.site');
     $yaleConfig = $this->config('ys_core.site');
 
-    $form['site_name'] = [
+    // Group the settings by the task a user came here to do, rather than
+    // leaving them in one flat run. Each setting is nested inside its details
+    // group, the same way ViewsSettingsForm already does it: '#tree' is never
+    // set, so nesting rearranges only the render tree and every value still
+    // arrives flat in the form state. submitForm() therefore keeps reading
+    // 'site_name' and friends exactly as before.
+    //
+    // Nesting rather than tagging each setting with '#group' is deliberate.
+    // '#group' is only honoured by element types that wire preRenderGroup —
+    // textfield, textarea, checkbox, container, details, fieldset — so radios
+    // (font pairing), managed_file (favicon), media_library (teaser fallback)
+    // and item (the Tag Manager link) would silently render outside the tabs.
+    $form['vertical_tabs'] = [
+      '#type' => 'vertical_tabs',
+    ];
+
+    $form['site_basics'] = [
+      '#type' => 'details',
+      '#title' => $this->t('Site basics'),
+      '#description' => $this->t('What this site is called and who automated email comes from.'),
+      '#group' => 'vertical_tabs',
+    ];
+
+    $form['site_basics']['site_name'] = [
       '#type' => 'textfield',
       '#title' => $this->t('Site name'),
       '#default_value' => $siteConfig->get('name'),
       '#required' => TRUE,
     ];
 
-    $form['site_mail'] = [
+    $form['site_basics']['site_mail'] = [
       '#type' => 'textfield',
       '#description' => $this->t("The From address in automated emails sent during registration and new password requests, and other notifications. (Use an address ending in your site's domain to help prevent this email being flagged as spam.)"),
       '#title' => $this->t('Site email'),
@@ -177,16 +200,23 @@ class SiteSettingsForm extends ConfigFormBase implements ContainerInjectionInter
       '#required' => TRUE,
     ];
 
-    $form['site_page_front'] = [
+    $form['key_pages'] = [
+      '#type' => 'details',
+      '#title' => $this->t('Key pages'),
+      '#description' => $this->t('Which page the site should use for each of these purposes.'),
+      '#group' => 'vertical_tabs',
+    ];
+
+    $form['key_pages']['site_page_front'] = [
       '#type' => 'entity_autocomplete',
-      '#title' => $this->t('Front page'),
-      '#description' => $this->t("Specify a relative URL to display as the front page. Typically this points to a page in Drupal and is referenced by a node id. Use this autocomplete field to select the correct node."),
+      '#title' => $this->t('Homepage'),
+      '#description' => $this->t("Start typing to find the page you want visitors to land on first, then pick it from the list."),
       '#default_value' => $this->pathToNode($siteConfig->get('page')['front']),
       '#required' => TRUE,
       '#target_type' => 'node',
     ];
 
-    $form['site_page_posts'] = [
+    $form['key_pages']['site_page_posts'] = [
       '#type' => 'textfield',
       '#description' => $this->t("Specify a relative URL to display as the post landing page. This can be set to an existing page URL or use the default value '/post'."),
       '#title' => $this->t('Post landing page'),
@@ -194,7 +224,7 @@ class SiteSettingsForm extends ConfigFormBase implements ContainerInjectionInter
       '#required' => FALSE,
     ];
 
-    $form['site_page_events'] = [
+    $form['key_pages']['site_page_events'] = [
       '#type' => 'textfield',
       '#description' => $this->t("Specify a relative URL to display as the events calendar page. This can be set to an existing page URL or use the default value '/events'."),
       '#title' => $this->t('Events calendar page'),
@@ -202,46 +232,28 @@ class SiteSettingsForm extends ConfigFormBase implements ContainerInjectionInter
       '#required' => FALSE,
     ];
 
-    $form['site_page_403'] = [
+    $form['key_pages']['site_page_403'] = [
       '#type' => 'textfield',
       '#description' => $this->t('This page is displayed when the requested document is denied to the current user. Leave blank to display a generic "access denied" page.'),
-      '#title' => $this->t('403 page'),
+      '#title' => $this->t('Access denied page (403)'),
       '#default_value' => $siteConfig->get('page')['403'],
     ];
 
-    $form['site_page_404'] = [
+    $form['key_pages']['site_page_404'] = [
       '#type' => 'textfield',
       '#description' => $this->t('This page is displayed when no other content matches the requested document. Leave blank to display a generic "page not found" page.'),
-      '#title' => $this->t('404 page'),
+      '#title' => $this->t('Page not found (404)'),
       '#default_value' => $siteConfig->get('page')['404'],
     ];
 
-    $form['google_site_verification'] = [
-      '#type' => 'textfield',
-      '#description' => $this->t('Get a verification key from Google Search Console Tools using the "URL Prefix" tool, clicking on the the alternate methods tab, and selecting the HTML Tag option. Use the "content" attribute from the Google tag within this field. Example: <code>&#60;meta name="google-site-verification" content="USE-THIS-CODE" /></code>'),
-      '#title' => $this->t('Google Site Verification'),
-      '#default_value' => $yaleConfig->get('seo')['google_site_verification'],
+    $form['look_and_feel'] = [
+      '#type' => 'details',
+      '#title' => $this->t('Look and feel'),
+      '#description' => $this->t('Settings that change what visitors see.'),
+      '#group' => 'vertical_tabs',
     ];
 
-    $form['google_analytics_migration'] = [
-      '#type' => 'item',
-      '#title' => $this->t('Google Analytics/Tag Manager'),
-      '#description' => $this->t('YaleSites is transitioning from Google Analytics to Google Tag Manager. Configure Google Tag Manager below to maintain your website analytics tracking.'),
-      '#markup' => Link::fromTextAndUrl(
-        $this->t('Configure Google Tag Manager'),
-        Url::fromRoute('entity.google_tag_container.single_form')
-          ->setOptions(['attributes' => ['class' => ['button'], 'style' => 'margin-top: 0; margin-bottom: 0;']])
-      )->toString(),
-    ];
-
-    $form['custom_vocab_name'] = [
-      '#type' => 'textfield',
-      '#description' => $this->t('This field will update the name of the custom vocabulary for the site. By default, the name is "Custom Vocab".'),
-      '#title' => $this->t('Custom Vocabulary Name'),
-      '#default_value' => $yaleConfig->get('taxonomy')['custom_vocab_name'] ?? 'Custom Vocab',
-    ];
-
-    $form['font_pairing'] = [
+    $form['look_and_feel']['font_pairing'] = [
       '#type' => 'radios',
       '#options' => [
         'yalenew' => $this->t('Yale New (Old-Style Numerals) / Mallory (YaleNew with old-style numerals for headings and other numeric text; Mallory for paragraph text)'),
@@ -255,8 +267,16 @@ class SiteSettingsForm extends ConfigFormBase implements ContainerInjectionInter
       '#suffix' => '</div>',
     ];
 
-    // Add font preview section.
-    $form['font_preview'] = [
+    // The preview stays directly under the font pairing radios: font-preview.js
+    // toggles the active preview on change and the two read as one control.
+    //
+    // Only the sample digits are hidden from assistive technology, not the
+    // whole preview. They are marked up as h2 purely for size, so they would
+    // otherwise be the only headings in this tab's outline and read as
+    // "1234567890" with nothing to convey. The paragraphs beside them do carry
+    // real information the radio labels omit (which digits descend below the
+    // baseline), so those stay exposed.
+    $form['look_and_feel']['font_preview'] = [
       '#type' => 'container',
       '#attributes' => [
         'class' => ['font-preview-container'],
@@ -274,7 +294,7 @@ class SiteSettingsForm extends ConfigFormBase implements ContainerInjectionInter
           '#type' => 'html_tag',
           '#tag' => 'h2',
           '#value' => $this->t('1234567890'),
-          '#attributes' => ['class' => ['preview-heading']],
+          '#attributes' => ['class' => ['preview-heading'], 'aria-hidden' => 'true'],
         ],
         'text' => [
           '#type' => 'html_tag',
@@ -293,7 +313,7 @@ class SiteSettingsForm extends ConfigFormBase implements ContainerInjectionInter
           '#type' => 'html_tag',
           '#tag' => 'h2',
           '#value' => $this->t('Mallory Heading Sample'),
-          '#attributes' => ['class' => ['preview-heading']],
+          '#attributes' => ['class' => ['preview-heading'], 'aria-hidden' => 'true'],
         ],
         'text' => [
           '#type' => 'html_tag',
@@ -312,7 +332,7 @@ class SiteSettingsForm extends ConfigFormBase implements ContainerInjectionInter
           '#type' => 'html_tag',
           '#tag' => 'h2',
           '#value' => $this->t('1234567890'),
-          '#attributes' => ['class' => ['preview-heading']],
+          '#attributes' => ['class' => ['preview-heading'], 'aria-hidden' => 'true'],
         ],
         'text' => [
           '#type' => 'html_tag',
@@ -323,16 +343,7 @@ class SiteSettingsForm extends ConfigFormBase implements ContainerInjectionInter
       ],
     ];
 
-    $form['teaser_image_fallback'] = [
-      '#type' => 'media_library',
-      '#allowed_bundles' => ['image'],
-      '#title' => $this->t('Fallback teaser image'),
-      '#required' => FALSE,
-      '#default_value' => ($yaleConfig->get('image_fallback')) ? $yaleConfig->get('image_fallback')['teaser'] : NULL,
-      '#description' => $this->t('This image will be used for event and post card displays when no teaser image is selected.'),
-    ];
-
-    $form['favicon'] = [
+    $form['look_and_feel']['favicon'] = [
       '#type' => 'managed_file',
       '#upload_location' => 'public://favicons',
       '#multiple' => FALSE,
@@ -350,8 +361,74 @@ class SiteSettingsForm extends ConfigFormBase implements ContainerInjectionInter
       '#use_favicon_preview' => TRUE,
     ];
 
+    // "Teaser" is jargon, but it is used consistently across the platform —
+    // including three node field descriptions that point back at this setting —
+    // so the label stays and the description does the explaining instead.
+    $form['look_and_feel']['teaser_image_fallback'] = [
+      '#type' => 'media_library',
+      '#allowed_bundles' => ['image'],
+      '#title' => $this->t('Fallback teaser image'),
+      '#required' => FALSE,
+      '#default_value' => ($yaleConfig->get('image_fallback')) ? $yaleConfig->get('image_fallback')['teaser'] : NULL,
+      '#description' => $this->t('Used on event and post cards whenever that piece of content has no teaser image of its own, so a card never appears blank.'),
+    ];
+
+    $form['search_and_analytics'] = [
+      '#type' => 'details',
+      '#title' => $this->t('Search and analytics'),
+      '#description' => $this->t('How search engines verify the site and how visits are measured.'),
+      '#group' => 'vertical_tabs',
+    ];
+
+    $form['search_and_analytics']['google_site_verification'] = [
+      '#type' => 'textfield',
+      '#description' => $this->t('Get a verification key from Google Search Console Tools using the "URL Prefix" tool, clicking on the the alternate methods tab, and selecting the HTML Tag option. Use the "content" attribute from the Google tag within this field. Example: <code>&#60;meta name="google-site-verification" content="USE-THIS-CODE" /></code>'),
+      '#title' => $this->t('Google Site Verification'),
+      '#default_value' => $yaleConfig->get('seo')['google_site_verification'],
+    ];
+
+    $form['search_and_analytics']['google_analytics_migration'] = [
+      '#type' => 'item',
+      '#title' => $this->t('Google Analytics/Tag Manager'),
+      '#description' => $this->t('YaleSites is transitioning from Google Analytics to Google Tag Manager. Configure Google Tag Manager below to maintain your website analytics tracking.'),
+      '#markup' => Link::fromTextAndUrl(
+        $this->t('Configure Google Tag Manager'),
+        Url::fromRoute('entity.google_tag_container.single_form')
+          ->setOptions(['attributes' => ['class' => ['button'], 'style' => 'margin-top: 0; margin-bottom: 0;']])
+      )->toString(),
+    ];
+
+    $form['content_and_tagging'] = [
+      '#type' => 'details',
+      '#title' => $this->t('Content and tagging'),
+      '#description' => $this->t('Sitewide defaults for how content is organized and labeled.'),
+      '#group' => 'vertical_tabs',
+    ];
+
+    $form['content_and_tagging']['custom_vocab_name'] = [
+      '#type' => 'textfield',
+      '#description' => $this->t('This field will update the name of the custom vocabulary for the site. By default, the name is "Custom Vocab".'),
+      '#title' => $this->t('Custom Vocabulary Name'),
+      '#default_value' => $yaleConfig->get('taxonomy')['custom_vocab_name'] ?? 'Custom Vocab',
+    ];
+
+    // Both settings in this group are already restricted, so gate the group
+    // itself too — an Advanced tab a user cannot open anything inside is worse
+    // than no tab at all. ys_core_allow_secret_items() already covers user 1,
+    // so it is the whole condition; the narrower $is_user_1 still gates the CAS
+    // field on its own below.
     $is_user_1 = ($this->currentUser->id() == 1);
-    $form['cas_app_name'] = [
+    $allow_secret_items = ys_core_allow_secret_items($this->currentUserSession);
+
+    $form['advanced'] = [
+      '#type' => 'details',
+      '#title' => $this->t('Advanced'),
+      '#description' => $this->t('Platform-level settings. Most sites never need to change these.'),
+      '#group' => 'vertical_tabs',
+      '#access' => $allow_secret_items,
+    ];
+
+    $form['advanced']['cas_app_name'] = [
       '#type' => 'textfield',
       '#title' => $this->t('CAS Application Name'),
       '#description' => $this->t('The name of the application to be used in CAS login.'),
@@ -359,8 +436,8 @@ class SiteSettingsForm extends ConfigFormBase implements ContainerInjectionInter
       '#access' => $is_user_1,
     ];
 
-    if (ys_core_allow_secret_items($this->currentUserSession)) {
-      $form['environment_indicator_show'] = [
+    if ($allow_secret_items) {
+      $form['advanced']['environment_indicator_show'] = [
         '#type' => 'checkbox',
         '#title' => $this->t('Show environment indicator'),
         '#description' => $this->t('Display the environment indicator banner at the top of the site. This setting overrides all environment-specific configurations.'),
@@ -378,34 +455,88 @@ class SiteSettingsForm extends ConfigFormBase implements ContainerInjectionInter
     // Validate front, post, and event page paths.
     $this->validateIsNode($form_state, 'site_page_front');
 
+    // These four fields share the same three path messages, so each message has
+    // to name the field it came from. That mattered less when every setting was
+    // visible in one list; now the offending field can be in a tab the user is
+    // not looking at, "The path has to start with a slash" alone does not say
+    // which of the four is wrong.
     if (!$form_state->isValueEmpty('site_page_posts')) {
-      $this->validateStartWithSlash($form_state, 'site_page_posts');
-      $this->validateIsNotRootPath($form_state, 'site_page_posts');
-      $this->validatePath($form_state, 'site_page_posts');
+      $label = $this->keyPageLabel($form, 'site_page_posts');
+      $this->validateStartWithSlash($form_state, 'site_page_posts', $label);
+      $this->validateIsNotRootPath($form_state, 'site_page_posts', $label);
+      $this->validatePath($form_state, 'site_page_posts', $label);
     }
 
     if (!$form_state->isValueEmpty('site_page_events')) {
-      $this->validateStartWithSlash($form_state, 'site_page_events');
-      $this->validateIsNotRootPath($form_state, 'site_page_events');
-      $this->validatePath($form_state, 'site_page_events');
+      $label = $this->keyPageLabel($form, 'site_page_events');
+      $this->validateStartWithSlash($form_state, 'site_page_events', $label);
+      $this->validateIsNotRootPath($form_state, 'site_page_events', $label);
+      $this->validatePath($form_state, 'site_page_events', $label);
     }
 
     // Get the normal paths of error pages.
     if (!$form_state->isValueEmpty('site_page_403')) {
-      $form_state->setValueForElement($form['site_page_403'], $this->aliasManager->getPathByAlias($form_state->getValue('site_page_403')));
-      $this->validateStartWithSlash($form_state, 'site_page_403');
-      $this->validatePath($form_state, 'site_page_403');
+      $label = $this->keyPageLabel($form, 'site_page_403');
+      $form_state->setValueForElement($form['key_pages']['site_page_403'], $this->aliasManager->getPathByAlias($form_state->getValue('site_page_403')));
+      $this->validateStartWithSlash($form_state, 'site_page_403', $label);
+      $this->validatePath($form_state, 'site_page_403', $label);
     }
     if (!$form_state->isValueEmpty('site_page_404')) {
-      $form_state->setValueForElement($form['site_page_404'], $this->aliasManager->getPathByAlias($form_state->getValue('site_page_404')));
-      $this->validateStartWithSlash($form_state, 'site_page_404');
-      $this->validatePath($form_state, 'site_page_404');
+      $label = $this->keyPageLabel($form, 'site_page_404');
+      $form_state->setValueForElement($form['key_pages']['site_page_404'], $this->aliasManager->getPathByAlias($form_state->getValue('site_page_404')));
+      $this->validateStartWithSlash($form_state, 'site_page_404', $label);
+      $this->validatePath($form_state, 'site_page_404', $label);
     }
 
     // Email validations.
     $this->validateEmail($form_state, 'site_mail');
 
     parent::validateForm($form, $form_state);
+
+    // Reveal the group holding anything that just failed, so the user is never
+    // told there is a problem with no field in sight. Runs last so it also sees
+    // errors the parent added.
+    $this->openGroupsWithErrors($form, $form_state);
+  }
+
+  /**
+   * Returns the visible label of a Key pages field, for error messages.
+   *
+   * @param array $form
+   *   The form array.
+   * @param string $fieldId
+   *   The id of a field in the Key pages group.
+   *
+   * @return string
+   *   The field's title, or its id if it somehow has none.
+   */
+  protected function keyPageLabel(array $form, string $fieldId): string {
+    return (string) ($form['key_pages'][$fieldId]['#title'] ?? $fieldId);
+  }
+
+  /**
+   * Opens each tab group holding a field that failed validation.
+   *
+   * A user must never be told there is a problem with no field in sight. Core's
+   * vertical-tabs.js does open the tab containing a '.error' field, but only
+   * once JS has attached, so doing it server-side as well means the reveal
+   * holds with JS off and there is no flash of the wrong tab before it does.
+   *
+   * @param array $form
+   *   The form array, by reference so the owning group can be opened.
+   * @param \Drupal\Core\Form\FormStateInterface $form_state
+   *   The form state holding the errors collected so far.
+   */
+  protected function openGroupsWithErrors(array &$form, FormStateInterface $form_state) {
+    foreach (array_keys($form_state->getErrors()) as $name) {
+      // Error keys are '][' separated; the first segment is the element key.
+      $element = explode('][', $name)[0];
+      foreach ($form as $key => $group) {
+        if (is_array($group) && ($group['#type'] ?? NULL) === 'details' && isset($group[$element])) {
+          $form[$key]['#open'] = TRUE;
+        }
+      }
+    }
   }
 
   /**
@@ -473,14 +604,17 @@ class SiteSettingsForm extends ConfigFormBase implements ContainerInjectionInter
    *   The form state of the parent form.
    * @param string $fieldId
    *   The id of a field on the connfig form.
+   * @param string $label
+   *   The field's visible label, named in the message so the user can tell
+   *   which of the four path fields is being complained about.
    */
-  protected function validateStartWithSlash(FormStateInterface &$form_state, string $fieldId) {
+  protected function validateStartWithSlash(FormStateInterface &$form_state, string $fieldId, string $label) {
     if (($value = $form_state->getValue($fieldId)) && $value[0] !== '/') {
       $form_state->setErrorByName(
         $fieldId,
         $this->t(
-          "The path '%path' has to start with a slash.",
-         ['%path' => $form_state->getValue($fieldId)]
+          "@label: the path '%path' has to start with a slash.",
+         ['@label' => $label, '%path' => $form_state->getValue($fieldId)]
         )
       );
     }
@@ -493,14 +627,16 @@ class SiteSettingsForm extends ConfigFormBase implements ContainerInjectionInter
    *   The form state passed by reference.
    * @param string $fieldId
    *   The id of a field on the connfig form.
+   * @param string $label
+   *   The field's visible label, named in the message.
    */
-  protected function validateIsNotRootPath(FormStateInterface &$form_state, string $fieldId) {
+  protected function validateIsNotRootPath(FormStateInterface &$form_state, string $fieldId, string $label) {
     if (($value = $form_state->getValue($fieldId)) && $value == '/') {
       $form_state->setErrorByName(
         $fieldId,
         $this->t(
-          "The path '%path' can not be the site root.",
-         ['%path' => $form_state->getValue($fieldId)]
+          "@label: the path '%path' can not be the site root.",
+         ['@label' => $label, '%path' => $form_state->getValue($fieldId)]
         )
       );
     }
@@ -513,14 +649,16 @@ class SiteSettingsForm extends ConfigFormBase implements ContainerInjectionInter
    *   The form state passed by reference.
    * @param string $fieldId
    *   The id of a field on the connfig form.
+   * @param string $label
+   *   The field's visible label, named in the message.
    */
-  protected function validatePath(FormStateInterface &$form_state, string $fieldId) {
+  protected function validatePath(FormStateInterface &$form_state, string $fieldId, string $label) {
     if (!$this->pathValidator->isValid($form_state->getValue($fieldId))) {
       $form_state->setErrorByName(
         $fieldId,
         $this->t(
-          "Either the path '%path' is invalid or you do not have access to it.",
-          ['%path' => $form_state->getValue($fieldId)]
+          "@label: either the path '%path' is invalid or you do not have access to it.",
+          ['@label' => $label, '%path' => $form_state->getValue($fieldId)]
         )
       );
     }

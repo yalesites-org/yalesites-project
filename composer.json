@@ -23,14 +23,31 @@
           "reference": "2.2.1"
         }
       }
+    },
+    "mathjax": {
+      "type": "package",
+      "package": {
+        "name": "mathjax/mathjax",
+        "version": "2.7.9",
+        "type": "drupal-library",
+        "license": "Apache-2.0",
+        "dist": {
+          "url": "https://registry.npmjs.org/mathjax/-/mathjax-2.7.9.tgz",
+          "type": "tar",
+          "shasum": "d6b67955c173e7d719fcb2fc0288662884eb7d3d"
+        },
+        "extra": {
+          "installer-name": "MathJax"
+        }
+      }
     }
   },
   "require": {
     "composer/installers": "^1.9",
     "cweagans/composer-patches": "^1.7",
-    "drupal/core-composer-scaffold": "10.6.13",
-    "drupal/core-project-message": "10.6.13",
-    "drupal/core-recommended": "10.6.13",
+    "drupal/core-composer-scaffold": "10.6.15",
+    "drupal/core-project-message": "10.6.15",
+    "drupal/core-recommended": "10.6.15",
     "drush/drush": "^13",
     "league/commonmark": "^2.0",
     "league/html-to-markdown": "^5.1",

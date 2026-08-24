@@ -5,7 +5,6 @@
  * Contains ys_core.module functions.
  */
 
-use Drupal\imagemagick\ImagemagickExecArguments;
 use Drupal\Core\Entity\FieldableEntityInterface;
 use Drupal\Core\Field\FieldStorageDefinitionInterface;
 use Drupal\Core\Cache\Cache;
@@ -48,6 +47,9 @@ function ys_core_theme($existing, $type, $theme, $path): array {
       'variables' => [
         'platform_version' => NULL,
         'announcements' => [],
+        // Only built when the user actually has unread announcements, so this
+        // stays NULL the rest of the time and the control is not rendered.
+        'mark_all_read_form' => NULL,
       ],
     ],
     'ys_social_links' => [
@@ -130,14 +132,12 @@ function ys_core_linkit_uri_selector(array $element) {
  */
 function ys_core_form_alter(&$form, FormStateInterface $form_state, $form_id) {
   // Strip the Webform module's contextual "edit" links (Test, Results, Build,
-  // Settings) from Pre-Built Form submission forms when the page is being
-  // viewed rather than edited in Layout Builder. Without this, users with
-  // "access contextual links" get an edit icon exposing submission data on the
-  // live page. The links are attached in the Webform module's #after_build, so
-  // a #pre_render (a later phase) reliably removes them before the contextual
-  // placeholder is built.
-  if (str_starts_with($form_id, 'webform_submission')
-    && WebformContextualLinksSuppressor::shouldSuppress(\Drupal::routeMatch()->getRouteName())) {
+  // Settings) from every Pre-Built Form submission form. Left in place, users
+  // with "access contextual links" get an edit icon exposing submission data on
+  // the rendered page (issue #929). The links are attached in the Webform
+  // module's #after_build, so a #pre_render (a later phase) reliably removes
+  // them before the contextual placeholder is built.
+  if (str_starts_with($form_id, 'webform_submission')) {
     $form['#pre_render'][] = [WebformContextualLinksSuppressor::class, 'preRender'];
   }
 
@@ -803,12 +803,6 @@ function ys_core_page_attachments(array &$page) {
   if ($config->get('status') && _ys_core_should_load_siteimprove()) {
     $page['#attached']['library'][] = 'ys_core/siteimprove';
   }
-
-  // Custom or fallback favicons.
-  $favicons = \Drupal::service('ys_core.media_manager')->getFavicons();
-  foreach ($favicons as $name => $favicon) {
-    $page['#attached']['html_head'][] = [$favicon, $name];
-  }
 }
 
 /**
@@ -1344,6 +1338,29 @@ function ys_core_grand_hero_validate($form, FormStateInterface $form_state) {
 }
 
 /**
+ * Implements hook_menu_links_discovered_alter().
+ *
+ * Moves core's Reports link under the platform-admin section. Reports is
+ * platform-admin-only on YaleSites ('access site reports' is held by the
+ * platform_admin role alone), so it does not earn a top-level slot of its own.
+ *
+ * Its own module declares the link, so this hook is the only place ys_core can
+ * state the intent in code. It is not what takes effect on a built site,
+ * though: core.menu.static_menu_link_overrides pins every top-level admin link
+ * and is applied after this hook, so the exported override must agree with the
+ * parent set here or it silently wins. PlatformAdminSectionTest asserts they
+ * agree.
+ *
+ * @see \Drupal\Core\Menu\StaticMenuLinkOverrides
+ */
+function ys_core_menu_links_discovered_alter(&$links) {
+  if (isset($links['system.admin_reports'])) {
+    $links['system.admin_reports']['parent'] = 'ys_core.admin_platform_admin';
+    $links['system.admin_reports']['weight'] = 20;
+  }
+}
+
+/**
  * Implements hook_toolbar_alter().
  *
  * Remove Coffee module's "Go to" item from secondary toolbar and attach
@@ -1398,12 +1415,10 @@ function ys_core_facts_icon_allowed_values(FieldStorageDefinitionInterface $defi
  * across users while the count is resolved per-user at render time.
  */
 function _ys_core_attach_dashboard_badge(array &$variables) {
-  $current_user = \Drupal::currentUser();
-  if ($current_user->isAnonymous()) {
+  if (\Drupal::currentUser()->isAnonymous()) {
     return;
   }
-  $uid = (int) $current_user->id();
-  if (_ys_core_attach_dashboard_badge_walk($variables['items'], $uid)) {
+  if (_ys_core_attach_dashboard_badge_walk($variables['items'])) {
     $variables['#attached']['library'][] = 'ys_core/dashboard_badge';
   }
 }
@@ -1413,8 +1428,20 @@ function _ys_core_attach_dashboard_badge(array &$variables) {
  *
  * The admin menu nests its real top-level entries under a root
  * `system.admin` wrapper, so we cannot assume the link is at depth 0.
+ *
+ * The #lazy_builder deliberately takes no arguments -- do not "helpfully" pass
+ * the uid. The placeholder's parent is core's toolbar, render cached as
+ * `keys: ['toolbar'], contexts: ['user.permissions']`, so a single entry is
+ * shared by every user holding the same permissions, and a placeholder's own
+ * cache metadata cannot make it vary per user (createPlaceholder() returns only
+ * #markup and #attached). The token is a hash of the placeholder array,
+ * arguments included, so a uid baked in here is one editor's uid frozen into
+ * an entry everyone else reads: they would see that editor's count, and
+ * clearing their own read state could not invalidate an entry tagged for
+ * somebody else. Resolving the viewer inside the lazy builder keeps the
+ * placeholder user-agnostic and correct for whoever it is replaced for.
  */
-function _ys_core_attach_dashboard_badge_walk(array &$items, int $uid): bool {
+function _ys_core_attach_dashboard_badge_walk(array &$items): bool {
   $found = FALSE;
   foreach ($items as &$item) {
     $url = $item['url'] ?? NULL;
@@ -1427,7 +1454,7 @@ function _ys_core_attach_dashboard_badge_walk(array &$items, int $uid): bool {
           'badge' => [
             '#lazy_builder' => [
               'ys_core.dashboard_toolbar_lazy_builders:renderBadge',
-              [(string) $uid],
+              [],
             ],
             '#create_placeholder' => TRUE,
           ],
@@ -1436,7 +1463,7 @@ function _ys_core_attach_dashboard_badge_walk(array &$items, int $uid): bool {
       $found = TRUE;
     }
     if (!empty($item['below']) && is_array($item['below'])) {
-      $found = _ys_core_attach_dashboard_badge_walk($item['below'], $uid) || $found;
+      $found = _ys_core_attach_dashboard_badge_walk($item['below']) || $found;
     }
   }
   return $found;
@@ -1572,39 +1599,6 @@ function ys_core_page_top(array &$page_top) {
   // If disabled, remove the environment indicator from page_top.
   if (!$show_indicator && isset($page_top['indicator'])) {
     unset($page_top['indicator']);
-  }
-}
-
-/**
- * Implements hook_imagemagick_arguments_alter().
- *
- * Preserves PNG transparency across all image style operations.
- */
-function ys_core_imagemagick_arguments_alter(ImagemagickExecArguments $arguments, $command) {
-  // Only process 'convert' operations (image transformations).
-  if ($command !== 'convert') {
-    return;
-  }
-
-  // Get the source image path to check if it's a PNG.
-  $source = $arguments->getSource();
-  if (!$source) {
-    return;
-  }
-
-  // Check if source is a PNG file.
-  $source_extension = strtolower(pathinfo($source, PATHINFO_EXTENSION));
-  $source_mime = mime_content_type($source);
-
-  if ($source_extension === 'png' || $source_mime === 'image/png') {
-    // Add transparency preservation arguments for PNG files.
-    // Use ImageMagick v6 compatible syntax.
-    $arguments->add('-alpha on');
-    $arguments->add('-channel RGBA');
-
-    // Ensure PNG compression is optimized while preserving transparency.
-    $arguments->add('-define png:preserve-colormap=true');
-    $arguments->add('-define png:exclude-chunks=date');
   }
 }
 

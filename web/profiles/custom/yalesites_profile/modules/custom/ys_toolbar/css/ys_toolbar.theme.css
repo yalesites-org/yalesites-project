@@ -75,6 +75,17 @@ behind the a.toolbar-icon element. */
   --icon: url("/profiles/custom/yalesites_profile/modules/custom/ys_toolbar/images/gear.svg");
 }
 
+/* Platform Admin — same story as Settings above: a custom ys_core route Gin has
+   no icon for. A shield reads as privileged, platform-level access and stays
+   distinct from the gear on Settings. Deliberately not a server/rack glyph: Gin
+   maps its own `server` sprite to .toolbar-icon-environment, and
+   environment_indicator is enabled on Pantheon environments, so a rack here
+   would read as the environment indicator a couple of items away. No icon in
+   Gin's toolbar set uses a shield. Feather `shield` (MIT). */
+.toolbar-icon.toolbar-icon-ys-core-admin-platform-admin {
+  --icon: url("/profiles/custom/yalesites_profile/modules/custom/ys_toolbar/images/shield.svg");
+}
+
 /*
 //
 // Toolbar //

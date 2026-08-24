@@ -122,7 +122,6 @@ permissions:
   - 'access webform overview'
   - 'add any content to books'
   - 'add content to books'
-  - 'administer book outlines'
   - 'administer google_tag_container'
   - 'administer main menu items'
   - 'administer redirects'
