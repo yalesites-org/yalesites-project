@@ -80,3 +80,7 @@ ys_beacon.settings:
     ai_tester_question_delay_ms:
       type: integer
       label: 'Milliseconds the AI Tester pauses between questions'
+
+plugin.plugin_configuration.search_api_processor.ys_beacon_indexable_html:
+  type: search_api.fields_processor_configuration
+  label: 'Beacon indexable HTML processor configuration'
