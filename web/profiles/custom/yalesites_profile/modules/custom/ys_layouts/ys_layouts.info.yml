@@ -9,4 +9,5 @@ dependencies:
   - drupal:block_content
   - drupal:layout_builder
   - quick_node_clone
+  - ys_core
   - ys_localist

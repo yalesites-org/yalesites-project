@@ -11,3 +11,4 @@ dependencies:
   - paragraphs
   - linkit
   - entity_reference_revisions
+  - ys_media

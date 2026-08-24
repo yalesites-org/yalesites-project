@@ -19,3 +19,13 @@ layout_builder_block_clone:
   options:
     attributes:
       class: ['use-ajax']
+
+ys_layouts_webform_results:
+  # Worded for editors rather than reusing Webform's own "Results" label, which
+  # says nothing about forms out of context.
+  title: 'View form submissions'
+  route_name: 'entity.webform.results_submissions'
+  group: 'ys_layouts_webform_results'
+  # Sorts after the in-place layout actions and before Remove, which
+  # ys_layouts_contextual_links_plugins_alter() weights last.
+  weight: 6
