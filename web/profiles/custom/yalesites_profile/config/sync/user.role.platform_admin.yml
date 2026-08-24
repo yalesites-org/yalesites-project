@@ -114,6 +114,7 @@ dependencies:
     - ys_campus_groups
     - ys_core
     - ys_integrations
+    - ys_layouts
     - ys_localist
 id: platform_admin
 label: 'Platform administrator'
@@ -142,10 +143,10 @@ permissions:
   - 'administer block content'
   - 'administer block types'
   - 'administer blocks'
-  - 'administer book outlines'
   - 'administer coffee'
   - 'administer google_tag_container'
   - 'administer main menu items'
+  - 'administer orphaned inline blocks'
   - 'administer platform admin settings'
   - 'administer redirects'
   - 'administer users'

@@ -14,7 +14,7 @@ use Drupal\Core\Path\PathValidatorInterface;
 use Drupal\Core\Routing\RequestContext;
 use Drupal\Core\Session\AccountProxy;
 use Drupal\path_alias\AliasManagerInterface;
-use Drupal\ys_core\YaleSitesMediaManager;
+use Drupal\ys_media\YaleSitesMediaManager;
 use Symfony\Component\DependencyInjection\ContainerInterface;
 
 /**
@@ -52,7 +52,7 @@ class SiteSettingsForm extends ConfigFormBase implements ContainerInjectionInter
   /**
    * The ys media manager.
    *
-   * @var \Drupal\ys_core\YaleSitesMediaManager
+   * @var \Drupal\ys_media\YaleSitesMediaManager
    */
   protected $ysMediaManager;
 
@@ -95,7 +95,7 @@ class SiteSettingsForm extends ConfigFormBase implements ContainerInjectionInter
    *   The path validator.
    * @param \Drupal\Core\Routing\RequestContext $request_context
    *   The request context.
-   * @param \Drupal\ys_core\YaleSitesMediaManager $ys_media_manager
+   * @param \Drupal\ys_media\YaleSitesMediaManager $ys_media_manager
    *   The media manager.
    * @param \Drupal\Core\Entity\EntityTypeManagerInterface $entity_type_manager
    *   The entity type manager.
@@ -134,7 +134,7 @@ class SiteSettingsForm extends ConfigFormBase implements ContainerInjectionInter
       $container->get('path_alias.manager'),
       $container->get('path.validator'),
       $container->get('router.request_context'),
-      $container->get('ys_core.media_manager'),
+      $container->get('ys_media.media_manager'),
       $container->get('entity_type.manager'),
       $container->get('current_user'),
       $container->get('cache.discovery'),

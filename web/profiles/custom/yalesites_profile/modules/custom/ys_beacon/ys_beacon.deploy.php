@@ -130,3 +130,37 @@ function ys_beacon_deploy_10002(array &$sandbox) {
     '@count' => $sandbox['queued'],
   ]);
 }
+
+/**
+ * Implements hook_deploy_NAME().
+ *
+ * Raises the stored model context window to the measured Sonnet 5 ceiling.
+ *
+ * Beacon now routes to Claude Sonnet 5, measured accepting 433437 input tokens
+ * in one request, while every existing site still holds Haiku's 200k. The
+ * raised value is 400000: under that proven figure, and above the largest
+ * request Beacon can build. ys_beacon.settings is config-ignored
+ * (ys_beacon*) and deliberately absent from config/sync, so the raised default
+ * in config/install reaches new installs only - there is nothing in sync for
+ * config:import to correct an existing site with. Hence a deploy hook.
+ *
+ * Only the untouched old default is raised. A site whose operator deliberately
+ * set another window keeps it, because the routed model is a per-site Portkey
+ * decision this code cannot observe.
+ */
+function ys_beacon_deploy_10003() {
+  $config = \Drupal::configFactory()->getEditable('ys_beacon.settings');
+  $window = $config->get('model_context_window');
+
+  if ($window === NULL) {
+    return t('Beacon settings are absent on this site; the model context window was not changed.');
+  }
+  if ((int) $window !== 200000) {
+    return t('Beacon model context window left at its site-specific value (@value tokens).', [
+      '@value' => (int) $window,
+    ]);
+  }
+
+  $config->set('model_context_window', 400000)->save();
+  return t('Raised the Beacon model context window from 200000 to 400000 tokens for Claude Sonnet 5.');
+}
