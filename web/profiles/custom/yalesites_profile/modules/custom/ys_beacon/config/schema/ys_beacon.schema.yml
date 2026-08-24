@@ -77,3 +77,7 @@ ys_beacon.settings:
     guardrail_supplement:
       type: text
       label: 'Site-specific additions to the platform guardrail'
+
+plugin.plugin_configuration.search_api_processor.ys_beacon_indexable_html:
+  type: search_api.fields_processor_configuration
+  label: 'Beacon indexable HTML processor configuration'

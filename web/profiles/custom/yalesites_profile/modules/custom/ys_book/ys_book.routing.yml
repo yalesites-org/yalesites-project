@@ -4,7 +4,7 @@ book.admin:
     _controller: '\Drupal\ys_book\Controller\YsBookController::adminOverview'
     _title: 'Content Collections'
   requirements:
-    _permission: 'administer book outlines'
+    _ys_book_outline_access: 'TRUE'
 
 book.admin_edit:
   path: '/admin/structure/book/{node}'
@@ -22,7 +22,7 @@ ys_book.collection_delete:
     _form: '\Drupal\ys_book\Form\BookCollectionDeleteForm'
     _title: 'Delete collection'
   requirements:
-    _permission: 'administer book outlines'
+    _ys_book_outline_access: 'TRUE'
     _entity_access: 'node.view'
     node: \d+
   options:
@@ -30,3 +30,26 @@ ys_book.collection_delete:
       node:
         type: 'entity:node'
     _admin_route: TRUE
+
+# Copied verbatim from contrib book's book.routing.yml, with the permission
+# requirement swapped for the collection-management access check. Contrib's own
+# _custom_access still applies, so the narrow 'reorder book pages' permission
+# is still required and the tab still only appears for a collection with more
+# than one sibling to order.
+#
+# @see yalesites-org/YaleSites-Internal#1573
+book.node_child_ordering:
+  path: '/node/{node}/child-ordering'
+  defaults:
+    _form: 'Drupal\book\Form\BookAdminEditForm'
+    _title: 'Re-order book pages and change titles'
+    parameters:
+      node:
+        type: entity:node
+  options:
+    _admin_route: TRUE
+  requirements:
+    _ys_book_outline_access: 'TRUE'
+    _entity_access: 'node.view'
+    _custom_access: '\Drupal\book\Controller\RouteAccessController::access'
+    node: \d+

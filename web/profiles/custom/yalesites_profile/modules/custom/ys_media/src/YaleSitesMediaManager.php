@@ -1,6 +1,6 @@
 <?php
 
-namespace Drupal\ys_core;
+namespace Drupal\ys_media;
 
 use Drupal\Core\Config\ConfigFactoryInterface;
 use Drupal\Core\Controller\ControllerBase;
@@ -78,7 +78,7 @@ class YaleSitesMediaManager extends ControllerBase implements ContainerInjection
    * Creates an array to render favicon markup, either custom or fallback.
    *
    * @return array
-   *   Favicon data for ys_core_page_attachments() to render in the head.
+   *   Favicon data for ys_media_page_attachments() to render in the head.
    */
   public function getFavicons() {
     $customFaviconId = ($this->yaleSettings->get('custom_favicon')) ? $this->yaleSettings->get('custom_favicon')[0] : NULL;
@@ -89,7 +89,7 @@ class YaleSitesMediaManager extends ControllerBase implements ContainerInjection
         '#tag' => 'link',
         '#attributes' => [
           'rel' => 'apple-touch-icon',
-          'href' => '/profiles/custom/yalesites_profile/modules/custom/ys_core/images/favicons/apple-touch-icon.png',
+          'href' => '/profiles/custom/yalesites_profile/modules/custom/ys_media/images/favicons/apple-touch-icon.png',
         ],
       ],
       'icon-32' => [
@@ -99,7 +99,7 @@ class YaleSitesMediaManager extends ControllerBase implements ContainerInjection
           'sizes' => '32x32',
           'rel' => 'icon',
           'type' => 'image/png',
-          'href' => '/profiles/custom/yalesites_profile/modules/custom/ys_core/images/favicons/favicon-32x32.png',
+          'href' => '/profiles/custom/yalesites_profile/modules/custom/ys_media/images/favicons/favicon-32x32.png',
         ],
       ],
       'icon-16' => [
@@ -109,7 +109,7 @@ class YaleSitesMediaManager extends ControllerBase implements ContainerInjection
           'sizes' => '16x16',
           'rel' => 'icon',
           'type' => 'image/png',
-          'href' => '/profiles/custom/yalesites_profile/modules/custom/ys_core/images/favicons/favicon-16x16.png',
+          'href' => '/profiles/custom/yalesites_profile/modules/custom/ys_media/images/favicons/favicon-16x16.png',
         ],
       ],
       'icon-ico' => [
@@ -117,7 +117,7 @@ class YaleSitesMediaManager extends ControllerBase implements ContainerInjection
         '#tag' => 'link',
         '#attributes' => [
           'rel' => 'shortcut icon',
-          'href' => '/profiles/custom/yalesites_profile/modules/custom/ys_core/images/favicons/favicon.ico',
+          'href' => '/profiles/custom/yalesites_profile/modules/custom/ys_media/images/favicons/favicon.ico',
         ],
       ],
     ];
