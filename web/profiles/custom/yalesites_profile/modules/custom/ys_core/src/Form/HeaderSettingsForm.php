@@ -8,7 +8,7 @@ use Drupal\Core\Form\ConfigFormBase;
 use Drupal\Core\Form\FormStateInterface;
 use Drupal\Core\Session\AccountProxy;
 use Drupal\Core\Url;
-use Drupal\ys_core\YaleSitesMediaManager;
+use Drupal\ys_media\YaleSitesMediaManager;
 use Symfony\Component\DependencyInjection\ContainerInterface;
 
 /**
@@ -42,7 +42,7 @@ class HeaderSettingsForm extends ConfigFormBase {
   /**
    * The ys media manager.
    *
-   * @var \Drupal\ys_core\YaleSitesMediaManager
+   * @var \Drupal\ys_media\YaleSitesMediaManager
    */
   protected $ysMediaManager;
 
@@ -55,7 +55,7 @@ class HeaderSettingsForm extends ConfigFormBase {
    *   The Cache backend interface.
    * @param \Drupal\Core\Session\AccountProxy $current_user_session
    *   The current user session.
-   * @param \Drupal\ys_core\YaleSitesMediaManager $ys_media_manager
+   * @param \Drupal\ys_media\YaleSitesMediaManager $ys_media_manager
    *   The media manager.
    */
   public function __construct(
@@ -78,7 +78,7 @@ class HeaderSettingsForm extends ConfigFormBase {
       $container->get('config.factory'),
       $container->get('cache.render'),
       $container->get('current_user'),
-      $container->get('ys_core.media_manager'),
+      $container->get('ys_media.media_manager'),
     );
   }
 
