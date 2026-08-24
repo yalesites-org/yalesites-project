@@ -10,6 +10,47 @@ However, before adding new features or functionality to this module, platform de
 - **Install Configuration**: The module houses default values for YaleSites-specific configuration files used during the creation of new sites on the platform. While technically not mandatory, maintaining these install files is considered a best practice, as they ensure consistency and serve as a reference point for values that should ideally reside in the profile's config/sync directory.
 - **Hooks and Custom Functionality**: It provides a growing list of hooks for adding and altering form elements, tokens, caching rules, and website behavior. These hooks empower developers to customize and fine-tune the platform's behavior to meet specific requirements.
 
+## Admin menu structure
+
+Two top-level admin sections are defined here, and which one a screen belongs
+under is decided by who can reach it:
+
+- **Settings** (`/admin/yalesites`, `ys_core.admin_yalesites`) is for settings
+  site admins use every day.
+- **Platform Admin** (`/admin/platform-admin`, `ys_core.admin_platform_admin`)
+  is for screens only the YaleSites platform team can reach. Platform-admin-only
+  screens hang here rather than under Settings. It currently holds the
+  platform-admin settings form, core's Reports, and the orphaned inline blocks
+  report.
+
+Both are section landing pages using
+`\Drupal\system\Controller\SystemController::systemAdminMenuBlockPage`, which
+lists a route's own child links. A form route cannot do that, so a screen nested
+under the platform-admin _settings form_ would vanish from every section index
+and be reachable only by expanding a collapsed toolbar subtree. That is why the
+section is a separate landing route rather than a child of the form.
+
+Note the moved children keep their existing route paths
+(`/admin/yalesites/platform-admin-settings`, `/admin/yalesites/orphaned-inline-blocks`)
+so bookmarks and existing documentation links keep working. Drupal builds admin
+breadcrumbs from the path rather than the menu, so those pages still breadcrumb
+through YaleSites; moving the paths would be a URL break for a cosmetic gain.
+
+### Access and moving links in
+
+Two rules worth knowing before adding to this section, both explained in full at
+the code:
+
+- `ys_core.admin_platform_admin` declares no permission of its own, only core's
+  `_access_admin_menu_block_page` check, so the section is reachable by anyone who
+  can reach at least one child and can never hide a screen its audience may see.
+  See the comment on the route in `ys_core.routing.yml`.
+- A link owned by another module (core's Reports) is reparented in
+  `ys_core_menu_links_discovered_alter()`, but `core.menu.static_menu_link_overrides`
+  in the profile's `config/sync` is what actually takes effect and is applied after
+  the hook. Change both, or the override silently wins; `PlatformAdminSectionTest`
+  asserts they agree.
+
 ## Running tests
 
 This module has PHPUnit tests under `tests/src/` (`Unit/` and `Kernel/`). Run them from the project root on the local Lando environment, passing the module's `tests` path so PHPUnit only discovers this module's tests (not Drupal core/contrib):
