@@ -73,6 +73,62 @@ Safety guarantees, in order of importance:
 Reusable blocks from the Custom Block Library are never candidates; only `reusable = 0` blocks
 are considered.
 
+### From the admin UI
+
+The command needs terminal access, which means the sweep only ever ran on the sites someone
+remembered to run it on. Platform admins can reach the same sweep per site at:
+
+```
+/admin/yalesites/orphaned-inline-blocks
+```
+
+The screen reports and nothing more; deleting is a separate confirm step at
+`/admin/yalesites/orphaned-inline-blocks/delete`, linked from the report only when there is
+something to delete. Both routes are gated on `administer orphaned inline blocks`, a
+`restrict access: true` permission granted to `platform_admin` alone — deliberately not
+`yalesites manage settings` (site admins hold that) and not `administer site configuration`
+(no role on the platform holds it, so `ys_layouts.settings_form` is effectively user-1-only).
+
+The confirm form deletes *all* orphans rather than a selection, because `deleteOrphans()`
+derives its own list — see guarantee 5 above. The count shown on the report is therefore
+advisory: the list is worked out again when you confirm, so a block that was put back on a
+page in between is left alone. Every deletion is written to the `ys_layouts` log channel with
+the IDs removed, whichever route triggered it.
+
+The sweep runs synchronously in the request. It walks every revision of every layout-bearing
+entity, so cost scales with revision count rather than orphan count; on a site with ~180
+orphans and a normal revision history it completes in about two seconds, comfortably inside a
+web request. The drush command remains the escape hatch if a site ever grows large enough to
+risk a PHP timeout, and is still the right tool for scripting across many sites.
+
+Both tables page at 50 rows. Paging bounds the work that scales with how many blocks were
+found — each row loads a `block_content` entity, so an unpaged report on a site holding
+thousands of orphans would load and render thousands of entities — but it cannot make the
+sweep itself cheaper, because `analyze()` has to walk every revision before it knows what is
+orphaned. Each table pages on its own pager element, so paging one leaves the other where it
+was, and each caption states the full total rather than the number of rows on screen. The
+delete button always counts every orphan, never just the page in front of you.
+
+#### Timing: deploys and unsaved layout work
+
+A button can be pressed at any moment, whereas a drush command is run deliberately by someone
+who knows what else is happening on the site. Both timing questions were checked before the
+screen was exposed:
+
+- **Unsaved layout work is invisible to the sweep, so it cannot be collected.** Adding, cloning
+  or detaching a block in Layout Builder carries the new block on the component as
+  `block_serialized` with `block_revision_id` set to `NULL`; no `block_content` row exists until
+  the layout is saved. Confirmed against a tempstore holding an unsaved cloned block: no rows
+  created and no new orphans reported, so an editor's in-progress layout cannot be swept out
+  from under them.
+- **A deploy does not change the sweep's answer.** Its only inputs are saved entity revisions
+  and the Layout Builder defaults in `entity_view_display` config. No default layout in
+  `config/sync` carries a `block_revision_id`, so a `config:import` cannot transiently strip the
+  last reference to a block, and this module ships no update hook that rewrites layout data.
+  Deploys do not enable maintenance mode, so the screen stays reachable while one runs — which
+  is safe today. An update hook that rewrote layouts would reintroduce this risk and should
+  finish before anything sweeps.
+
 ## Running tests
 
 This module has PHPUnit tests under `tests/src/` (`Unit/` and `Kernel/`). Run them from the project root on the local Lando environment, passing the module's `tests` path so PHPUnit only discovers this module's tests (not Drupal core/contrib):

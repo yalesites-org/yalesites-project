@@ -50,13 +50,14 @@ class AiTesterCompareRenderTest extends UnitTestCase {
   /**
    * A run meta entry as produced by RunComparator::metaArray().
    */
-  protected function runMeta(int $id, string $file, string $backend = 'beacon'): array {
+  protected function runMeta(int $id, string $file, string $backend = 'beacon', string $host = 'example.yale.edu'): array {
     return [
       'id' => $id,
       'created' => $id * 1000,
       'source_filename' => $file,
       'status' => 'complete',
       'backend' => $backend,
+      'host' => $host,
     ];
   }
 
@@ -560,6 +561,69 @@ class AiTesterCompareRenderTest extends UnitTestCase {
 
     $this->assertStringContainsString('Operation timed out', $meta);
     $this->assertStringNotContainsString('Empty answer', $meta);
+  }
+
+  /**
+   * Builds the comparison header for two runs answered on the given hosts.
+   */
+  protected function metaBlocksFor(string $host_a, string $host_b): array {
+    $data = $this->comparisonOf('beacon', 'beacon', $this->side('B answer.', 1, 1, FALSE));
+    $data['run_a'] = $this->runMeta(2, 'a.txt', 'beacon', $host_a);
+    $data['run_b'] = $this->runMeta(3, 'a.txt', 'beacon', $host_b);
+
+    $build = $this->controllerReturning($data)->compare(2, 3);
+
+    return [
+      (string) $build['meta']['a']['#markup'],
+      (string) $build['meta']['b']['#markup'],
+    ];
+  }
+
+  /**
+   * Each run's header states the host it was answered on.
+   *
+   * Citation overlap is matched independently of the run's own host, so the
+   * overlap figures are only interpretable if the reader can see whether the
+   * two sides ran against the same site.
+   *
+   * @covers ::runMetaBlock
+   */
+  public function testRunMetaBlockShowsEachRunsHost(): void {
+    [$meta_a, $meta_b] = $this->metaBlocksFor(
+      'v2260-sitea-yale-edu.pantheonsite.io',
+      'sitea.yale.edu',
+    );
+
+    $this->assertStringContainsString('Host: v2260-sitea-yale-edu.pantheonsite.io', $meta_a);
+    $this->assertStringContainsString('Host: sitea.yale.edu', $meta_b);
+  }
+
+  /**
+   * A run whose citations name no host says so rather than showing a blank.
+   *
+   * @covers ::runMetaBlock
+   */
+  public function testRunMetaBlockReportsAnUnknownHost(): void {
+    [$meta_a] = $this->metaBlocksFor('', 'sitea.yale.edu');
+
+    $this->assertStringContainsString('unknown (no citation named one)', $meta_a);
+  }
+
+  /**
+   * The host is escaped on the way into the header.
+   *
+   * It is derived from a citation URL, which on a borrowed index came from
+   * another site's stored field, so it is not ours to trust. parse_url really
+   * does return a host containing markup for a URL shaped like this one, so
+   * this is a reachable input rather than a contrived one.
+   *
+   * @covers ::runMetaBlock
+   */
+  public function testRunMetaBlockEscapesTheHost(): void {
+    [$meta_a] = $this->metaBlocksFor('<script>alert(1)</script>', 'sitea.yale.edu');
+
+    $this->assertStringNotContainsString('<script>', $meta_a);
+    $this->assertStringContainsString('&lt;script&gt;', $meta_a);
   }
 
 }
