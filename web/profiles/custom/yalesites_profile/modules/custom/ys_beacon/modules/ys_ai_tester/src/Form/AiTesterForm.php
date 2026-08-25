@@ -16,6 +16,7 @@ use Drupal\Core\Url;
 use Drupal\ys_ai_tester\AiTesterBatch;
 use Drupal\ys_ai_tester\AnswerBackendInterface;
 use Drupal\ys_ai_tester\AnswerBackendRegistry;
+use Drupal\ys_ai_tester\RunProgress;
 use Drupal\ys_ai_tester\StaleRunReconciler;
 use Symfony\Component\DependencyInjection\ContainerInterface;
 
@@ -58,6 +59,8 @@ class AiTesterForm extends FormBase {
    *   The answer backend registry.
    * @param \Drupal\ys_ai_tester\StaleRunReconciler $staleRunReconciler
    *   Releases runs whose batch died without reporting a status.
+   * @param \Drupal\ys_ai_tester\RunProgress $runProgress
+   *   Reports how many of a run's questions were answered.
    */
   public function __construct(
     protected Connection $database,
@@ -66,6 +69,7 @@ class AiTesterForm extends FormBase {
     protected TimeInterface $time,
     protected AnswerBackendRegistry $backendRegistry,
     protected StaleRunReconciler $staleRunReconciler,
+    protected RunProgress $runProgress,
   ) {}
 
   /**
@@ -79,6 +83,7 @@ class AiTesterForm extends FormBase {
       $container->get('datetime.time'),
       $container->get('ys_ai_tester.answer_backend_registry'),
       $container->get('ys_ai_tester.stale_run_reconciler'),
+      $container->get('ys_ai_tester.run_progress'),
     );
   }
 
@@ -305,8 +310,9 @@ class AiTesterForm extends FormBase {
    * Builds the run history tableselect render array.
    *
    * A tableselect (rather than a plain table) lets a user pick exactly two runs
-   * to compare; per-row "View" and "Rerun" links are preserved in the actions
-   * column. Rerun is hidden while a run is still processing.
+   * to compare; per-row "View", "Rerun" and "Resume" links are preserved in the
+   * actions column. Both actions are hidden while a run is still processing,
+   * and Resume additionally only appears where questions are outstanding.
    */
   protected function buildHistoryTable(): array {
     // Before reading statuses, not after: a run whose batch died still says
@@ -323,6 +329,13 @@ class AiTesterForm extends FormBase {
     $query->leftJoin('users_field_data', 'u', 'r.uid = u.uid');
     $query->addField('u', 'name');
     $rows = $query->execute()->fetchAll();
+
+    // One grouped query for the whole page rather than one per row, and only
+    // the counts - the resume form loads the questions themselves.
+    $attempted = $this->runProgress->attemptedCounts(array_map(
+      static fn(object $row): int => (int) $row->id,
+      $rows
+    ));
 
     $options = [];
     foreach ($rows as $row) {
@@ -341,6 +354,17 @@ class AiTesterForm extends FormBase {
           $this->t('Rerun'),
           Url::fromRoute('ys_ai_tester.rerun', ['run_id' => $row->id])
         )->toRenderable();
+
+        // Offered only where there is something to finish, so a complete run
+        // does not advertise an action that would decline. Rerun asks the whole
+        // list again as a new run; resume fills in this run's gaps.
+        if (($attempted[(int) $row->id] ?? 0) < (int) $row->question_count) {
+          $actions['resume_separator'] = ['#markup' => ' | '];
+          $actions['resume'] = Link::fromTextAndUrl(
+            $this->t('Resume'),
+            Url::fromRoute('ys_ai_tester.resume', ['run_id' => $row->id])
+          )->toRenderable();
+        }
       }
 
       $date = $this->dateFormatter->format($row->created, 'short');

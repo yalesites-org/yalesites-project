@@ -295,6 +295,108 @@ class AiTesterBatch {
   }
 
   /**
+   * Derives the status of a run that was finished in place by a resume.
+   *
+   * ::runStatus() cannot be reused here. It reads the tallies one batch
+   * accumulated, and a resume's batch only ever processed the questions that
+   * were missing - so a resume of 40 questions out of 160 would report a run
+   * "complete" on the strength of 40 answers. This decides from what the run
+   * has stored in total instead.
+   *
+   * @param bool $success
+   *   TRUE when the resume batch itself completed, as Drupal reports it.
+   * @param int $expected
+   *   How many questions the run's list holds.
+   * @param int $attempted
+   *   How many distinct questions have a stored outcome.
+   * @param int $error_count
+   *   How many of those recorded only errors.
+   *
+   * @return string
+   *   'complete', 'partial', or 'failed'.
+   */
+  public static function wholeRunStatus(bool $success, int $expected, int $attempted, int $error_count): string {
+    // Nothing stored, or nothing that worked: the run has no usable answers,
+    // which is what 'failed' means everywhere else in the tester.
+    if ($attempted < 1 || $error_count >= $attempted) {
+      return 'failed';
+    }
+
+    // Only a run whose every question is answered cleanly, by a batch that
+    // actually finished, is complete. Anything short of that is still worth
+    // reading, so it stays resumable rather than being called failed.
+    if ($success && $attempted >= $expected && $error_count < 1) {
+      return 'complete';
+    }
+
+    return 'partial';
+  }
+
+  /**
+   * Batch finished callback for a resume — restatuses the whole run.
+   *
+   * @param bool $success
+   *   TRUE if no fatal errors occurred during the batch.
+   * @param array $results
+   *   Values accumulated in $context['results'] across operations.
+   * @param array $operations
+   *   Any unprocessed operations (non-empty only on failure).
+   */
+  public static function resumeFinished(bool $success, array $results, array $operations): void {
+    $run_id = $results['run_id'] ?? NULL;
+    if (!$run_id) {
+      \Drupal::logger('ys_ai_tester')->error(
+        'AI tester resumeFinished() called with no run_id — run status not updated.'
+      );
+      return;
+    }
+
+    $database = \Drupal::database();
+    $source_content = (string) $database->query(
+      'SELECT source_content FROM {ys_ai_tester_run} WHERE id = :id',
+      [':id' => $run_id]
+    )->fetchField();
+
+    $run_progress = \Drupal::service('ys_ai_tester.run_progress');
+    $progress = $run_progress->storedProgress((int) $run_id);
+    // The outstanding questions are counted as a set difference rather than as
+    // expected-minus-attempted, so a run can only be called finished when every
+    // delta in its list really has a row. A count comparison would let a stray
+    // delta stand in for a missing one.
+    $remaining = count($run_progress->missingQuestions((int) $run_id, $source_content));
+    $expected = $progress['attempted'] + $remaining;
+    $status = self::wholeRunStatus($success, $expected, $progress['attempted'], $progress['errors']);
+
+    $database->update('ys_ai_tester_run')
+      ->fields(['status' => $status])
+      ->condition('id', $run_id)
+      ->execute();
+    if ($status === 'complete') {
+      \Drupal::messenger()->addStatus(t('Run #@id is now complete — all @total questions are answered.', [
+        '@id' => $run_id,
+        '@total' => $expected,
+      ]));
+      return;
+    }
+
+    if ($remaining > 0) {
+      // Naming what is left is what keeps resume usable more than once: the
+      // connection can drop again, and the next resume picks up from here.
+      \Drupal::messenger()->addWarning(t('Run #@id was not finished — @remaining of @total questions are still unanswered. Resume it again to continue.', [
+        '@id' => $run_id,
+        '@remaining' => $remaining,
+        '@total' => $expected,
+      ]));
+      return;
+    }
+
+    \Drupal::messenger()->addWarning(t('Every question in run #@id has been asked, but @errors could not be answered. Check the Drupal logs for the cause.', [
+      '@id' => $run_id,
+      '@errors' => $progress['errors'],
+    ]));
+  }
+
+  /**
    * Batch finished callback — updates run status and sets a user message.
    *
    * @param bool $success

@@ -25,9 +25,13 @@ use Drupal\Core\Logger\LoggerChannelFactoryInterface;
  * counts as in-flight for its source run, one dropped connection also blocks
  * every later rerun of that source.
  *
- * Reconciling marks such a run 'failed', which is what the same batch would
- * have recorded had it reported: no questions confirmed complete. That restores
- * the Rerun action, so the run's answered questions can be re-asked.
+ * Reconciling records the status the run's stored answers justify, the same way
+ * a resume does when its batch finishes. The status is derived rather than
+ * assumed to be 'failed' because a resume sets its run back to 'processing' for
+ * the duration: hardcoding 'failed' would let an interrupted resume downgrade a
+ * run that had been 'partial' with most of its questions answered, making an
+ * attempted repair label the run worse than leaving it alone. Either way the
+ * run leaves 'processing', which is what restores the Rerun and Resume actions.
  */
 class StaleRunReconciler {
 
@@ -62,11 +66,14 @@ class StaleRunReconciler {
    *   The time service.
    * @param \Drupal\Core\Logger\LoggerChannelFactoryInterface $loggerFactory
    *   The logger factory.
+   * @param \Drupal\ys_ai_tester\RunProgress $runProgress
+   *   Reports what each run actually answered.
    */
   public function __construct(
     protected Connection $database,
     protected TimeInterface $time,
     protected LoggerChannelFactoryInterface $loggerFactory,
+    protected RunProgress $runProgress,
   ) {
   }
 
@@ -99,31 +106,74 @@ class StaleRunReconciler {
       return 0;
     }
 
+    $reconciled = [];
+    foreach ($stale as $run_id) {
+      if ($this->reconcileOne($run_id)) {
+        $reconciled[] = $run_id;
+      }
+    }
+
+    // Counted from the updates that landed rather than from the candidate list,
+    // so a run finished or reconciled concurrently is not claimed here.
+    if ($reconciled === []) {
+      return 0;
+    }
+
+    $this->loggerFactory->get('ys_ai_tester')->warning(
+      'Reconciled @count abandoned AI tester run(s) after @seconds seconds with no progress (run ids: @ids). The batch stopped without reporting, which usually means its connection dropped mid-run.',
+      [
+        '@count' => count($reconciled),
+        '@seconds' => static::STALE_AFTER_SECONDS,
+        '@ids' => implode(', ', $reconciled),
+      ]
+    );
+
+    return count($reconciled);
+  }
+
+  /**
+   * Records the status one abandoned run's stored answers justify.
+   *
+   * Derived with $success = FALSE, so a reconciled run is never called
+   * 'complete' - its batch demonstrably did not finish. What the derivation
+   * decides is whether the answers it did collect are worth keeping: none, or
+   * nothing but errors, is 'failed'; some good answers is 'partial', which
+   * leaves the run resumable and honest about what it holds.
+   *
+   * @param int $run_id
+   *   The run to reconcile.
+   *
+   * @return bool
+   *   TRUE when this call is the one that changed the row.
+   */
+  protected function reconcileOne(int $run_id): bool {
+    $source_content = (string) $this->database->query(
+      'SELECT source_content FROM {ys_ai_tester_run} WHERE id = :id',
+      [':id' => $run_id]
+    )->fetchField();
+
+    $progress = $this->runProgress->storedProgress($run_id);
+    // Expected is answered-plus-outstanding rather than the stored
+    // question_count, so the comparison inside wholeRunStatus() is a real set
+    // difference and cannot call a run finished over a genuine gap.
+    $remaining = count($this->runProgress->missingQuestions($run_id, $source_content));
+    $status = AiTesterBatch::wholeRunStatus(
+      FALSE,
+      $progress['attempted'] + $remaining,
+      $progress['attempted'],
+      $progress['errors']
+    );
+
     $affected = (int) $this->database->update('ys_ai_tester_run')
-      ->fields(['status' => 'failed'])
-      ->condition('id', $stale, 'IN')
+      ->fields(['status' => $status])
+      ->condition('id', $run_id)
       // Guards against the batch reporting its own status between the select
       // and this update: whoever writes a final status first wins, and this
       // never overwrites it.
       ->condition('status', 'processing')
       ->execute();
 
-    // Reported from the update rather than from the candidate list, so a run
-    // that finished or was reconciled concurrently is not claimed here.
-    if ($affected < 1) {
-      return 0;
-    }
-
-    $this->loggerFactory->get('ys_ai_tester')->warning(
-      'Marked @count abandoned AI tester run(s) as failed after @seconds seconds with no progress (candidate run ids: @ids). The batch stopped without reporting, which usually means its connection dropped mid-run.',
-      [
-        '@count' => $affected,
-        '@seconds' => static::STALE_AFTER_SECONDS,
-        '@ids' => implode(', ', $stale),
-      ]
-    );
-
-    return $affected;
+    return $affected > 0;
   }
 
   /**

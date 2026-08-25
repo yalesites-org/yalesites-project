@@ -8,6 +8,7 @@ use Drupal\Component\Datetime\TimeInterface;
 use Drupal\Core\Database\Connection;
 use Drupal\Core\Logger\LoggerChannelFactoryInterface;
 use Drupal\Tests\UnitTestCase;
+use Drupal\ys_ai_tester\RunProgress;
 use Drupal\ys_ai_tester\StaleRunReconciler;
 
 /**
@@ -40,6 +41,7 @@ class StaleRunReconcilerTest extends UnitTestCase {
       $this->createMock(Connection::class),
       $this->createMock(TimeInterface::class),
       $this->createMock(LoggerChannelFactoryInterface::class),
+      $this->createMock(RunProgress::class),
     );
   }
 

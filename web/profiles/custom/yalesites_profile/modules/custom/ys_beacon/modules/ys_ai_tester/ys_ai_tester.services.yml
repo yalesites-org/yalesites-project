@@ -7,6 +7,14 @@ services:
       - '@database'
       - '@datetime.time'
       - '@logger.factory'
+      - '@ys_ai_tester.run_progress'
+
+  # Reports which of a run's questions never got an answer, so an interrupted
+  # run can be finished in place instead of re-asked from the top.
+  ys_ai_tester.run_progress:
+    class: Drupal\ys_ai_tester\RunProgress
+    arguments:
+      - '@database'
 
   ys_ai_tester.run_comparator:
     class: Drupal\ys_ai_tester\RunComparator
