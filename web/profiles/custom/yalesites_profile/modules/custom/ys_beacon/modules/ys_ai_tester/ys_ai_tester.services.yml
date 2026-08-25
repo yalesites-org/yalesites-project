@@ -1,4 +1,13 @@
 services:
+  # Releases runs whose batch died without reporting a status. Read by the run
+  # list and the rerun form, which both refuse to act on a 'processing' run.
+  ys_ai_tester.stale_run_reconciler:
+    class: Drupal\ys_ai_tester\StaleRunReconciler
+    arguments:
+      - '@database'
+      - '@datetime.time'
+      - '@logger.factory'
+
   ys_ai_tester.run_comparator:
     class: Drupal\ys_ai_tester\RunComparator
     arguments:

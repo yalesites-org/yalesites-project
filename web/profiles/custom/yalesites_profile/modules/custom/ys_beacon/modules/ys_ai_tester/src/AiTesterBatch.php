@@ -95,11 +95,70 @@ class AiTesterBatch {
       $context['results']['failed_deltas'][$delta] = $delta;
     }
 
+    // The submission's heartbeat, written even when the question failed: what
+    // it records is that this batch is still alive, not that it is succeeding.
+    // StaleRunReconciler reads it to tell a dead batch from a slow one, so it
+    // has to advance on every operation or a run of nothing but failures would
+    // be reconciled out from under itself.
+    self::touch($run_id);
+
     $context['results']['run_id'] = $run_id;
     // Counted here rather than derived from the run's question_count, so the
     // status a partly-processed batch reports describes what actually ran.
     $context['results']['processed'] = ($context['results']['processed'] ?? 0) + 1;
     $context['message'] = t('Processing question @num...', ['@num' => $delta + 1]);
+  }
+
+  /**
+   * Records that a submission just made progress.
+   *
+   * Deliberately refreshes every processing run of the submission, not only the
+   * one that answered. A "run both assistants" submission inserts one row per
+   * assistant in a single request and then queues one batch set each, and
+   * Drupal runs those sets in sequence - so the second run writes nothing of
+   * its own until every question of the first has been answered. Heartbeating
+   * only the answering run would leave its sibling looking silent for that
+   * whole time, and StaleRunReconciler would fail a run that had not started
+   * yet: a 100-question first run at the observed few seconds per question is
+   * already past ::STALE_AFTER_SECONDS.
+   *
+   * Runs of one submission are identified by sharing a uid and an insert
+   * timestamp, both already stored. Two separate submissions colliding on both
+   * would only keep runs that are all live alive for longer, which is the safe
+   * direction to be wrong in.
+   *
+   * Failures here are swallowed deliberately: a heartbeat that does not land
+   * must not fail a question that was answered. The cost of losing one is only
+   * that a live run looks idle for longer, and the next question rewrites it.
+   *
+   * @param int $run_id
+   *   The run that made progress.
+   */
+  protected static function touch(int $run_id): void {
+    try {
+      $database = \Drupal::database();
+      $submission = $database->select('ys_ai_tester_run', 'r')
+        ->fields('r', ['uid', 'created'])
+        ->condition('id', $run_id)
+        ->execute()
+        ->fetchObject();
+      if (!$submission) {
+        return;
+      }
+
+      $database->update('ys_ai_tester_run')
+        ->fields(['changed' => \Drupal::time()->getRequestTime()])
+        ->condition('status', 'processing')
+        ->condition('uid', (int) $submission->uid)
+        ->condition('created', (int) $submission->created)
+        ->execute();
+    }
+    catch (\Throwable $e) {
+      \Drupal::logger('ys_ai_tester')->warning(
+        'Could not record progress for AI tester run @run: @msg',
+        ['@run' => $run_id, '@msg' => $e->getMessage()]
+      );
+    }
   }
 
   /**

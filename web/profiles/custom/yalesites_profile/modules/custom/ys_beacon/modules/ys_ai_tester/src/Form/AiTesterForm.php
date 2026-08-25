@@ -16,6 +16,7 @@ use Drupal\Core\Url;
 use Drupal\ys_ai_tester\AiTesterBatch;
 use Drupal\ys_ai_tester\AnswerBackendInterface;
 use Drupal\ys_ai_tester\AnswerBackendRegistry;
+use Drupal\ys_ai_tester\StaleRunReconciler;
 use Symfony\Component\DependencyInjection\ContainerInterface;
 
 /**
@@ -55,6 +56,8 @@ class AiTesterForm extends FormBase {
    *   The time service.
    * @param \Drupal\ys_ai_tester\AnswerBackendRegistry $backendRegistry
    *   The answer backend registry.
+   * @param \Drupal\ys_ai_tester\StaleRunReconciler $staleRunReconciler
+   *   Releases runs whose batch died without reporting a status.
    */
   public function __construct(
     protected Connection $database,
@@ -62,6 +65,7 @@ class AiTesterForm extends FormBase {
     protected DateFormatterInterface $dateFormatter,
     protected TimeInterface $time,
     protected AnswerBackendRegistry $backendRegistry,
+    protected StaleRunReconciler $staleRunReconciler,
   ) {}
 
   /**
@@ -74,6 +78,7 @@ class AiTesterForm extends FormBase {
       $container->get('date.formatter'),
       $container->get('datetime.time'),
       $container->get('ys_ai_tester.answer_backend_registry'),
+      $container->get('ys_ai_tester.stale_run_reconciler'),
     );
   }
 
@@ -304,6 +309,10 @@ class AiTesterForm extends FormBase {
    * column. Rerun is hidden while a run is still processing.
    */
   protected function buildHistoryTable(): array {
+    // Before reading statuses, not after: a run whose batch died still says
+    // 'processing', which is exactly the state that hides its Rerun link below.
+    $this->staleRunReconciler->reconcile();
+
     $query = $this->database->select('ys_ai_tester_run', 'r')
       ->fields('r', ['id', 'created', 'uid', 'source_filename', 'question_count', 'status', 'backend'])
       ->orderBy('r.created', 'DESC')
@@ -516,6 +525,9 @@ class AiTesterForm extends FormBase {
         'source_content' => $form_state->get('source_content'),
         'source_run_id' => 0,
         'status' => 'processing',
+        // Seeds the heartbeat StaleRunReconciler reads, so a run is never
+        // born already looking abandoned.
+        'changed' => $this->time->getRequestTime(),
         'question_count' => $question_count,
         'backend' => $backend_id,
       ])
