@@ -7,6 +7,7 @@ use Drupal\Core\Form\FormState;
 use Drupal\KernelTests\KernelTestBase;
 use Drupal\Tests\user\Traits\UserCreationTrait;
 use Drupal\ys_core\Form\SiteSettingsForm;
+use Drupal\ys_core\PlatformAdminSettingInterface;
 
 /**
  * Tests that the Site Settings form is grouped into task-based vertical tabs.
@@ -97,7 +98,6 @@ class SiteSettingsFormGroupingTest extends KernelTestBase {
     'google_analytics_migration' => 'search_and_analytics',
     'custom_vocab_name' => 'content_and_tagging',
     'cas_app_name' => 'advanced',
-    'environment_indicator_show' => 'advanced',
   ];
 
   /**
@@ -258,7 +258,6 @@ class SiteSettingsFormGroupingTest extends KernelTestBase {
       // handleMediaFilesystem() only dereferences this when it is truthy.
       'favicon' => [],
       'cas_app_name' => 'yalesites',
-      'environment_indicator_show' => TRUE,
     ]);
     $this->formObject()->submitForm($form, $form_state);
 
@@ -348,14 +347,47 @@ class SiteSettingsFormGroupingTest extends KernelTestBase {
   }
 
   /**
-   * User 1 still sees the Advanced group and both restricted settings.
+   * The group tracks its last field's gate, not the broader platform admin one.
+   *
+   * A plain user fails both gates, so only a platform admin who is not user 1
+   * can tell a user 1 gate from a platform admin one. Had the group kept the
+   * broader gate it carried while it also held the environment indicator,
+   * that user would open an Advanced tab with nothing in it
+   * (yalesites-org/YaleSites-Internal#1590).
+   *
+   * The account has to be a platform admin by BOTH mechanisms for this to
+   * discriminate. setUpCurrentUser()'s permissions argument invents a role with
+   * a random machine name, which no role-based gate would ever match, so the
+   * role is created under its real name and assigned through 'roles' instead.
+   * The hasPermission() assertion is what stops the setup silently decaying
+   * into a duplicate of the plain-user case above.
+   */
+  public function testAdvancedGroupIsHiddenFromPlatformAdminsWhoAreNotUser1(): void {
+    $this->createRole([PlatformAdminSettingInterface::PERMISSION], 'platform_admin');
+    $account = $this->setUpCurrentUser(['uid' => 3, 'roles' => ['platform_admin']]);
+    $this->assertTrue($account->hasPermission(PlatformAdminSettingInterface::PERMISSION));
+
+    $form = $this->formObject()->buildForm([], new FormState());
+
+    $this->assertFalse($form['advanced']['#access']);
+    // The field's own gate is what #1560 is about, and this is the only user
+    // class it was not already pinned for.
+    $this->assertFalse($form['advanced']['cas_app_name']['#access']);
+  }
+
+  /**
+   * User 1 still sees the Advanced group, and only what is left in it.
+   *
+   * The environment indicator is gone from the form entirely rather than
+   * hidden: a hidden element still submits its default, which would overwrite
+   * whatever a platform admin set on the Platform Admin Settings page.
    */
   public function testAdvancedGroupIsVisibleToUser1(): void {
     $form = $this->buildFormAs(1);
 
     $this->assertTrue($form['advanced']['#access']);
     $this->assertTrue($form['advanced']['cas_app_name']['#access']);
-    $this->assertArrayHasKey('environment_indicator_show', $form['advanced']);
+    $this->assertArrayNotHasKey('environment_indicator_show', $form['advanced']);
   }
 
   /**
