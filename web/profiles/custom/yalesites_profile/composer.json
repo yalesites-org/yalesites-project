@@ -117,7 +117,7 @@
     "mathjax/mathjax": "2.7.9",
     "smalot/pdfparser": "2.11.0",
     "yalesites-org/ai_engine": "1.2.18",
-    "yalesites-org/atomic": "1.81.0",
+    "yalesites-org/atomic": "1.82.0",
     "yalesites-org/yale_cas": "v1.3.0"
   },
   "minimum-stability": "dev",
@@ -165,7 +165,8 @@
         "Decode file URLs (link field) https://www.drupal.org/project/linkit/issues/3436733": "patches/contrib/linkit/3436733-5.patch"
       },
       "drupal/media_library_form_element": {
-        "Order Media items https://www.drupal.org/project/media_library_form_element/issues/3168027": "patches/contrib/media_library_form_element/3168027-8.patch"
+        "Order Media items https://www.drupal.org/project/media_library_form_element/issues/3168027": "patches/contrib/media_library_form_element/3168027-8.patch",
+        "Only shift focus to the open button on a selection change, so a page with a full media_library element does not load scrolled to it - ports the core fix from https://www.drupal.org/project/drupal/issues/3091297": "patches/contrib/media_library_form_element/core-3091297-port-focus-guard.patch"
       },
       "drupal/menu_item_limit": {
         "Can permissions be set for specific roles? https://www.drupal.org/project/menu_item_limit/issues/3458139": "patches/contrib/menu_item_limit/3458139-mr-12.patch"

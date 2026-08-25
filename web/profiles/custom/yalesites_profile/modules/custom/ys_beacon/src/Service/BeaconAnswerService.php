@@ -5,6 +5,7 @@ namespace Drupal\ys_beacon\Service;
 use Drupal\ai\AiProviderPluginManager;
 use Drupal\ai\OperationType\Chat\ChatInput;
 use Drupal\ai\OperationType\Chat\ChatMessage;
+use Drupal\ys_beacon\Exception\BeaconStageException;
 
 /**
  * Answers a question through the Beacon assistant, non-streamed.
@@ -44,7 +45,10 @@ class BeaconAnswerService {
       throw new \RuntimeException('No default chat provider is configured.');
     }
 
-    $citations = $this->ragRetriever->retrieve($question);
+    $citations = $this->runStage(
+      BeaconStageException::STAGE_RETRIEVAL,
+      fn() => $this->ragRetriever->retrieve($question)
+    );
     $messages = [
       new ChatMessage('system', $this->promptBuilder->build($citations)),
       new ChatMessage('user', $question),
@@ -54,12 +58,18 @@ class BeaconAnswerService {
     $chat_input = new ChatInput($messages);
     $this->toolCallHandler->attachTools($chat_input);
 
-    $output = $provider->chat($chat_input, $defaults['model_id'], ['ys_beacon']);
+    $output = $this->runStage(
+      BeaconStageException::STAGE_CHAT,
+      fn() => $provider->chat($chat_input, $defaults['model_id'], ['ys_beacon'])
+    );
     $normalized = $output->getNormalized();
 
     $follow_up_input = $this->toolCallHandler->followUpInput($normalized, $messages);
     if ($follow_up_input) {
-      $output = $provider->chat($follow_up_input, $defaults['model_id'], ['ys_beacon']);
+      $output = $this->runStage(
+        BeaconStageException::STAGE_CHAT_FOLLOW_UP,
+        fn() => $provider->chat($follow_up_input, $defaults['model_id'], ['ys_beacon'])
+      );
       $normalized = $output->getNormalized();
     }
 
@@ -67,6 +77,44 @@ class BeaconAnswerService {
       'answer' => (string) $normalized->getText(),
       'citations' => $citations,
     ];
+  }
+
+  /**
+   * Runs one upstream call, labeling any failure with the stage it came from.
+   *
+   * Answering a question makes several calls to different outside services, and
+   * their exceptions are indistinguishable once they reach the caller: a 500
+   * from the embeddings request and a 500 from the chat request arrive as the
+   * same openai-php ServerException with the same message. Labeling the stage
+   * is what lets a failure be traced to the right service - and, for the two
+   * Portkey calls, to the right API key, since chat and embeddings authenticate
+   * with different ones and can sit in different gateway workspaces.
+   *
+   * The cause is preserved as the wrapped exception, so a caller can still
+   * classify the failure. This service answers only the AI Tester (the chat
+   * widget uses the streamed ChatApiController path), so the wrapping cannot
+   * change what a site visitor sees.
+   *
+   * @param string $stage
+   *   A BeaconStageException::STAGE_* constant.
+   * @param callable $operation
+   *   The call to make.
+   *
+   * @return mixed
+   *   Whatever the call returned.
+   *
+   * @throws \Drupal\ys_beacon\Exception\BeaconStageException
+   *   When the call failed, wrapping the original exception.
+   */
+  protected function runStage(string $stage, callable $operation): mixed {
+    try {
+      return $operation();
+    }
+    catch (\Throwable $e) {
+      // The message is carried over verbatim so anything already displaying it
+      // - the tester's per-question error cell - reads exactly as before.
+      throw new BeaconStageException($stage, $e->getMessage(), $e);
+    }
   }
 
   /**
