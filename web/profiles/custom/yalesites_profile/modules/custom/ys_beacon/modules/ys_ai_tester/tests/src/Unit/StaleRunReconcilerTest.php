@@ -4,46 +4,21 @@ declare(strict_types=1);
 
 namespace Drupal\Tests\ys_ai_tester\Unit;
 
-use Drupal\Component\Datetime\TimeInterface;
-use Drupal\Core\Database\Connection;
-use Drupal\Core\Logger\LoggerChannelFactoryInterface;
 use Drupal\Tests\UnitTestCase;
-use Drupal\ys_ai_tester\RunProgress;
 use Drupal\ys_ai_tester\StaleRunReconciler;
 
 /**
  * Tests which abandoned runs get reconciled.
  *
- * Only ::staleIds() is exercised, matching how RunComparatorTest tests
- * RunComparator: the decision takes already-loaded rows, so it needs no
- * database, and the loading around it is a thin query. ::reconcile() itself -
- * its status guards and its empty-candidate short circuit - is covered by
+ * Only ::staleIds() is exercised - a pure static decision over already-loaded
+ * rows, so it needs no database, matching how RunProgressTest tests
+ * RunProgress::missing(). ::reconcile() and ::reconcileOne() are covered by
  * manual verification against a real database, not by this suite.
  *
  * @group ys_beacon
  * @coversDefaultClass \Drupal\ys_ai_tester\StaleRunReconciler
  */
 class StaleRunReconcilerTest extends UnitTestCase {
-
-  /**
-   * The reconciler under test.
-   *
-   * @var \Drupal\ys_ai_tester\StaleRunReconciler
-   */
-  protected StaleRunReconciler $reconciler;
-
-  /**
-   * {@inheritdoc}
-   */
-  protected function setUp(): void {
-    parent::setUp();
-    $this->reconciler = new StaleRunReconciler(
-      $this->createMock(Connection::class),
-      $this->createMock(TimeInterface::class),
-      $this->createMock(LoggerChannelFactoryInterface::class),
-      $this->createMock(RunProgress::class),
-    );
-  }
 
   /**
    * A run silent for longer than the threshold is abandoned.
@@ -54,7 +29,7 @@ class StaleRunReconcilerTest extends UnitTestCase {
     $now = 1_800_000_000;
     $silent_for = StaleRunReconciler::STALE_AFTER_SECONDS + 1;
 
-    $stale = $this->reconciler->staleIds(
+    $stale = StaleRunReconciler::staleIds(
       [['id' => 7, 'changed' => $now - $silent_for]],
       $now
     );
@@ -70,7 +45,7 @@ class StaleRunReconcilerTest extends UnitTestCase {
   public function testLeavesRecentlyActiveRunAlone(): void {
     $now = 1_800_000_000;
 
-    $stale = $this->reconciler->staleIds(
+    $stale = StaleRunReconciler::staleIds(
       [['id' => 7, 'changed' => $now - 30]],
       $now
     );
@@ -90,7 +65,7 @@ class StaleRunReconcilerTest extends UnitTestCase {
   public function testTreatsTheThresholdItselfAsStillAlive(): void {
     $now = 1_800_000_000;
 
-    $stale = $this->reconciler->staleIds(
+    $stale = StaleRunReconciler::staleIds(
       [['id' => 7, 'changed' => $now - StaleRunReconciler::STALE_AFTER_SECONDS]],
       $now
     );
@@ -107,7 +82,7 @@ class StaleRunReconcilerTest extends UnitTestCase {
     $now = 1_800_000_000;
     $past = $now - (StaleRunReconciler::STALE_AFTER_SECONDS * 2);
 
-    $stale = $this->reconciler->staleIds(
+    $stale = StaleRunReconciler::staleIds(
       [
         ['id' => 1, 'changed' => $past],
         ['id' => 2, 'changed' => $now - 5],
@@ -129,7 +104,7 @@ class StaleRunReconcilerTest extends UnitTestCase {
    * @covers ::staleIds
    */
   public function testReportsRunThatNeverRecordedProgress(): void {
-    $stale = $this->reconciler->staleIds(
+    $stale = StaleRunReconciler::staleIds(
       [['id' => 16, 'changed' => 0]],
       1_800_000_000
     );
@@ -143,7 +118,7 @@ class StaleRunReconcilerTest extends UnitTestCase {
    * @covers ::staleIds
    */
   public function testReportsNothingWhenNoRunsAreProcessing(): void {
-    $this->assertSame([], $this->reconciler->staleIds([], 1_800_000_000));
+    $this->assertSame([], StaleRunReconciler::staleIds([], 1_800_000_000));
   }
 
 }

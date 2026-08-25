@@ -8,87 +8,91 @@ use Drupal\Tests\UnitTestCase;
 use Drupal\ys_ai_tester\AiTesterBatch;
 
 /**
- * Tests the status a resumed run is recorded with.
+ * Tests the status a resumed or abandoned run is recorded with.
  *
- * Separate from the per-batch ::runStatus() because a resume's batch only
- * processed the questions that were missing, so its own tallies describe a
- * fraction of the run. These cases are the reason the two cannot share one
- * function.
+ * Separate from ::runStatus() because a resume's batch only processed the
+ * questions that were missing, so its own tallies describe a fraction of the
+ * run. The provider table below is the reason the two cannot share one
+ * function: the same tallies map to different statuses depending on whether
+ * anything is still outstanding.
+ *
+ * @coversDefaultClass \Drupal\ys_ai_tester\AiTesterBatch
  *
  * @group ys_beacon
- * @coversDefaultClass \Drupal\ys_ai_tester\AiTesterBatch
  */
 class WholeRunStatusTest extends UnitTestCase {
 
   /**
-   * A resume that answered the last gap completes the whole run.
-   *
    * @covers ::wholeRunStatus
+   * @dataProvider provideWholeRunCases
    */
-  public function testCompletesWhenEveryQuestionIsAnswered(): void {
-    $this->assertSame('complete', AiTesterBatch::wholeRunStatus(TRUE, 160, 160, 0));
+  public function testWholeRunStatus(
+    bool $success,
+    int $remaining,
+    int $attempted,
+    int $error_count,
+    string $expected,
+  ): void {
+    $this->assertSame(
+      $expected,
+      AiTesterBatch::wholeRunStatus($success, $remaining, $attempted, $error_count)
+    );
   }
 
   /**
-   * Answering only part of the gap leaves the run partial, not complete.
+   * Batch finished, outstanding, attempted, errored, resulting status.
    *
-   * The case ::runStatus() would get wrong: a resume batch that succeeded at
-   * every question it was given still leaves the run unfinished, so success
-   * plus a clean tally must not read as complete.
-   *
-   * @covers ::wholeRunStatus
+   * The second row is the case ::runStatus() gets wrong, and the reason this
+   * function exists: a resume batch that answered every question it was handed
+   * still leaves the run unfinished, so a clean tally must not read as
+   * complete.
    */
-  public function testStaysPartialWhenQuestionsRemainUnanswered(): void {
-    $this->assertSame('partial', AiTesterBatch::wholeRunStatus(TRUE, 160, 140, 0));
+  public static function provideWholeRunCases(): array {
+    return [
+      'nothing outstanding, none errored, batch finished' => [TRUE, 0, 160, 0, 'complete'],
+      'questions still outstanding despite a clean batch' => [TRUE, 20, 140, 0, 'partial'],
+      'resume interrupted again' => [FALSE, 10, 150, 0, 'partial'],
+      'every question asked but some errored' => [TRUE, 0, 160, 3, 'partial'],
+      'a single good answer among errors' => [TRUE, 0, 4, 3, 'partial'],
+      'nothing attempted at all' => [TRUE, 160, 0, 0, 'failed'],
+      'every attempt errored' => [TRUE, 120, 40, 40, 'failed'],
+      'errors cannot exceed attempts, but are handled if they do' => [TRUE, 0, 2, 3, 'failed'],
+      // A finished batch with nothing outstanding and no errors is the only
+      // route to 'complete'; dropping any one of the three loses it.
+      'finished flag is required for complete' => [FALSE, 0, 160, 0, 'partial'],
+    ];
   }
 
   /**
-   * A resume interrupted again leaves the run partial and resumable.
-   *
-   * @covers ::wholeRunStatus
+   * @covers ::abandonedRunStatus
+   * @dataProvider provideAbandonedCases
    */
-  public function testStaysPartialWhenTheResumeBatchDidNotFinish(): void {
-    $this->assertSame('partial', AiTesterBatch::wholeRunStatus(FALSE, 160, 150, 0));
+  public function testAbandonedRunStatus(
+    int $attempted,
+    int $error_count,
+    string $expected,
+  ): void {
+    $this->assertSame(
+      $expected,
+      AiTesterBatch::abandonedRunStatus($attempted, $error_count)
+    );
   }
 
   /**
-   * Every question asked but some failing is partial, not complete.
+   * Attempted, errored, resulting status.
    *
-   * @covers ::wholeRunStatus
+   * 'complete' is absent by design: an abandoned batch did not finish, so no
+   * tally can earn it. That is what lets the reconciler decide without reading
+   * the run's question list at all.
    */
-  public function testStaysPartialWhenSomeAnswersFailed(): void {
-    $this->assertSame('partial', AiTesterBatch::wholeRunStatus(TRUE, 160, 160, 3));
-  }
-
-  /**
-   * A run where nothing was ever answered is failed.
-   *
-   * @covers ::wholeRunStatus
-   */
-  public function testFailsWhenNothingWasAttempted(): void {
-    $this->assertSame('failed', AiTesterBatch::wholeRunStatus(TRUE, 160, 0, 0));
-  }
-
-  /**
-   * A run where every attempt errored is failed, not partial.
-   *
-   * @covers ::wholeRunStatus
-   */
-  public function testFailsWhenEveryAttemptErrored(): void {
-    $this->assertSame('failed', AiTesterBatch::wholeRunStatus(TRUE, 160, 40, 40));
-  }
-
-  /**
-   * More attempts than expected still completes rather than failing.
-   *
-   * Duplicate deltas are counted distinctly, but an expected count that has
-   * drifted below the stored deltas must not turn a finished run into a
-   * failure.
-   *
-   * @covers ::wholeRunStatus
-   */
-  public function testCompletesWhenAttemptsExceedTheExpectedCount(): void {
-    $this->assertSame('complete', AiTesterBatch::wholeRunStatus(TRUE, 2, 3, 0));
+  public static function provideAbandonedCases(): array {
+    return [
+      'usable answers survive as partial' => [150, 0, 'partial'],
+      'a single answer is still partial' => [1, 0, 'partial'],
+      'some errored, some answered' => [40, 12, 'partial'],
+      'nothing attempted' => [0, 0, 'failed'],
+      'every attempt errored' => [40, 40, 'failed'],
+    ];
   }
 
 }

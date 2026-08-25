@@ -87,24 +87,15 @@ class StaleRunReconciler {
    *   How many runs were reconciled.
    */
   public function reconcile(): int {
-    $runs = $this->database->select('ys_ai_tester_run', 'r')
+    // Fetched as arrays so the threshold decision can take the rows unchanged;
+    // the blob column is deliberately not in the field list.
+    $rows = $this->database->select('ys_ai_tester_run', 'r')
       ->fields('r', ['id', 'changed'])
-      ->condition('status', 'processing')
+      ->condition('status', AiTesterBatch::STATUS_PROCESSING)
       ->execute()
-      ->fetchAll();
+      ->fetchAll(\PDO::FETCH_ASSOC);
 
-    $rows = array_map(
-      static fn(object $run): array => [
-        'id' => (int) $run->id,
-        'changed' => (int) $run->changed,
-      ],
-      $runs
-    );
-
-    $stale = $this->staleIds($rows, $this->time->getRequestTime());
-    if ($stale === []) {
-      return 0;
-    }
+    $stale = static::staleIds($rows, $this->time->getRequestTime());
 
     $reconciled = [];
     foreach ($stale as $run_id) {
@@ -147,22 +138,12 @@ class StaleRunReconciler {
    *   TRUE when this call is the one that changed the row.
    */
   protected function reconcileOne(int $run_id): bool {
-    $source_content = (string) $this->database->query(
-      'SELECT source_content FROM {ys_ai_tester_run} WHERE id = :id',
-      [':id' => $run_id]
-    )->fetchField();
-
     $progress = $this->runProgress->storedProgress($run_id);
-    // Expected is answered-plus-outstanding rather than the stored
-    // question_count, so the comparison inside wholeRunStatus() is a real set
-    // difference and cannot call a run finished over a genuine gap.
-    $remaining = count($this->runProgress->missingQuestions($run_id, $source_content));
-    $status = AiTesterBatch::wholeRunStatus(
-      FALSE,
-      $progress['attempted'] + $remaining,
-      $progress['attempted'],
-      $progress['errors']
-    );
+    // No need to read the run's question list: an abandoned batch cannot have
+    // finished, so the outstanding count cannot change the status. That is what
+    // ::abandonedRunStatus() encodes, and it is why this does not fetch the
+    // source_content blob.
+    $status = AiTesterBatch::abandonedRunStatus($progress['attempted'], $progress['errors']);
 
     $affected = (int) $this->database->update('ys_ai_tester_run')
       ->fields(['status' => $status])
@@ -170,7 +151,7 @@ class StaleRunReconciler {
       // Guards against the batch reporting its own status between the select
       // and this update: whoever writes a final status first wins, and this
       // never overwrites it.
-      ->condition('status', 'processing')
+      ->condition('status', AiTesterBatch::STATUS_PROCESSING)
       ->execute();
 
     return $affected > 0;
@@ -190,12 +171,12 @@ class StaleRunReconciler {
    * @return int[]
    *   Ids of the runs to fail, in the order given.
    */
-  public function staleIds(array $runs, int $now): array {
+  public static function staleIds(array $runs, int $now): array {
     $stale = [];
     foreach ($runs as $run) {
       // Strictly greater, so a run whose last write lands exactly on the
       // threshold is still treated as alive.
-      if (($now - (int) $run['changed']) > static::STALE_AFTER_SECONDS) {
+      if (($now - (int) $run['changed']) > self::STALE_AFTER_SECONDS) {
         $stale[] = (int) $run['id'];
       }
     }

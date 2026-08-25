@@ -103,13 +103,14 @@ class BeaconAnswerService {
    * tester scores answers whose links have been stripped, so it stops measuring
    * what the chat widget actually renders - the one thing it exists to do.
    *
-   * Unlike that streamed path this is a per-call DTO rather than a mutation of
-   * the shared filter service: ProviderProxy applies a ChatInput's
-   * HostnameFilterDto before invoking the provider and restores the singleton
-   * in a finally block, which covers both the non-streamed response and the
-   * eagerly filtered tool results without leaking into other AI features. The
-   * streamed path cannot use a DTO because the proxy restores the filter before
-   * the lazy stream is consumed; this path is not streamed, so it can.
+   * Unlike that streamed path this rides on ChatInput rather than setting the
+   * filter here. The end state is the same - ProviderProxy applies the DTO by
+   * snapshotting and mutating the same singleton, restoring it in a finally
+   * block - but it scopes the override to the one provider call rather than to
+   * a block of our own code, and it is applied early enough to cover strings
+   * built inside the plugin as well as the response. The streamed path cannot
+   * use a DTO at all, because the proxy restores the filter before the lazy
+   * stream is consumed; this path is not streamed, so it can.
    *
    * Safe because full trust bypasses the whole output filter - its HTML
    * sanitizing included - and every consumer of this answer escapes it:

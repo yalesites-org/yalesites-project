@@ -47,10 +47,25 @@ class RunProgress {
    *   run has an attempt recorded for every question.
    */
   public function missingQuestions(int $run_id, string $source_content): array {
-    return static::missing(
-      AiTesterForm::parseQuestionLines($source_content),
-      $this->attemptedDeltas($run_id)
-    );
+    return static::outstanding($source_content, $this->attemptedDeltas($run_id));
+  }
+
+  /**
+   * Returns the unanswered questions given deltas already in hand.
+   *
+   * The query-free half of ::missingQuestions(), for a caller that already
+   * holds the run's deltas and should not read them a second time.
+   *
+   * @param string $source_content
+   *   The run's stored question list.
+   * @param int[] $stored_deltas
+   *   Deltas that already have a row.
+   *
+   * @return array
+   *   Unanswered questions keyed by their delta within the run.
+   */
+  public static function outstanding(string $source_content, array $stored_deltas): array {
+    return static::missing(AiTesterForm::parseQuestionLines($source_content), $stored_deltas);
   }
 
   /**
@@ -68,7 +83,7 @@ class RunProgress {
    * @return int[]
    *   The distinct deltas with a stored row.
    */
-  public function attemptedDeltas(int $run_id): array {
+  protected function attemptedDeltas(int $run_id): array {
     $deltas = $this->database->select('ys_ai_tester_result', 'r')
       ->distinct()
       ->fields('r', ['delta'])
@@ -85,12 +100,18 @@ class RunProgress {
    * Counted over distinct deltas rather than rows so a duplicated batch
    * operation cannot inflate either number.
    *
+   * The deltas come back alongside the tallies rather than being thrown away.
+   * They have already been read here to work out the error count, and every
+   * caller goes on to ask which questions are outstanding, so returning them
+   * saves a second identical read of the same rows. Feed them to
+   * ::outstanding().
+   *
    * @param int $run_id
    *   The run to inspect.
    *
    * @return array
-   *   An array with 'attempted' (deltas with a row) and 'errors' (deltas whose
-   *   every row recorded an error).
+   *   An array with 'attempted' (how many deltas have a row), 'errors' (how
+   *   many of those recorded only errors), and 'deltas' (the deltas listed).
    */
   public function storedProgress(int $run_id): array {
     $rows = $this->database->query(
@@ -99,7 +120,9 @@ class RunProgress {
     )->fetchAll();
 
     $errors = 0;
+    $deltas = [];
     foreach ($rows as $row) {
+      $deltas[] = (int) $row->delta;
       // MIN() over the delta's rows returns '' when any attempt succeeded, so a
       // delta only counts as an error when every attempt at it failed.
       if ((string) $row->best !== '') {
@@ -107,7 +130,7 @@ class RunProgress {
       }
     }
 
-    return ['attempted' => count($rows), 'errors' => $errors];
+    return ['attempted' => count($deltas), 'errors' => $errors, 'deltas' => $deltas];
   }
 
   /**

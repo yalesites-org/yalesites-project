@@ -348,7 +348,7 @@ class AiTesterForm extends FormBase {
       // Re-running a still-processing run is refused server-side, and only a
       // finished run is a meaningful comparison baseline, so the action is
       // hidden until it completes.
-      if ($row->status !== 'processing') {
+      if ($row->status !== AiTesterBatch::STATUS_PROCESSING) {
         $actions['separator'] = ['#markup' => ' | '];
         $actions['rerun'] = Link::fromTextAndUrl(
           $this->t('Rerun'),

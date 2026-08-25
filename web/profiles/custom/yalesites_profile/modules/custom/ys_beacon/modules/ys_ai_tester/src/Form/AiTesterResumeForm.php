@@ -122,7 +122,7 @@ class AiTesterResumeForm extends ConfirmFormBase {
     }
     // A run still processing is either live or not yet reconciled; either way
     // its own batch is the thing that should be writing these rows.
-    if ($status === 'processing') {
+    if ($status === AiTesterBatch::STATUS_PROCESSING) {
       return 'still_processing';
     }
     if ($missing_count < 1) {
@@ -136,22 +136,11 @@ class AiTesterResumeForm extends ConfirmFormBase {
    * {@inheritdoc}
    */
   public function buildForm(array $form, FormStateInterface $form_state, ?int $run_id = NULL): array {
-    $this->runId = (int) $run_id;
-    // Ahead of loadRun() for the same reason the rerun form does it: a run
-    // whose batch died still reads 'processing', which blocks the resume that
-    // exists to recover it.
-    $this->staleRunReconciler->reconcile();
-    $this->loadRun($this->runId);
+    $blocked = $this->guard((int) $run_id);
     $form_state->set('resume_run_id', $this->runId);
-
-    $blocked = static::isBlocked(
-      $this->run->status,
-      count($this->missing),
-      $this->backendIsAvailable(),
-    );
     if ($blocked !== NULL) {
       $this->messenger()->addWarning($this->blockedMessage($blocked));
-      return $this->redirectToTester($form);
+      return $this->blockedBackLink();
     }
 
     return parent::buildForm($form, $form_state);
@@ -161,18 +150,10 @@ class AiTesterResumeForm extends ConfirmFormBase {
    * {@inheritdoc}
    */
   public function submitForm(array &$form, FormStateInterface $form_state): void {
-    $run_id = (int) $form_state->get('resume_run_id');
-    $this->runId = $run_id;
     // Re-read at the point of mutation, as the rerun form does: a reload or a
     // second tab must not queue the same questions twice.
-    $this->staleRunReconciler->reconcile();
-    $this->loadRun($run_id);
-
-    $blocked = static::isBlocked(
-      $this->run->status,
-      count($this->missing),
-      $this->backendIsAvailable(),
-    );
+    $run_id = (int) $form_state->get('resume_run_id');
+    $blocked = $this->guard($run_id);
     if ($blocked !== NULL) {
       $this->messenger()->addWarning($this->blockedMessage($blocked));
       $form_state->setRedirect('ys_ai_tester.tester');
@@ -188,9 +169,9 @@ class AiTesterResumeForm extends ConfirmFormBase {
     // work around - so resume claims rather than checks. AiTesterRerunForm has
     // no equivalent because it has no row yet to claim.
     $claimed = (int) $this->database->update('ys_ai_tester_run')
-      ->fields(['status' => 'processing', 'changed' => $this->time->getRequestTime()])
+      ->fields(['status' => AiTesterBatch::STATUS_PROCESSING, 'changed' => $this->time->getRequestTime()])
       ->condition('id', $run_id)
-      ->condition('status', 'processing', '<>')
+      ->condition('status', AiTesterBatch::STATUS_PROCESSING, '<>')
       ->execute();
     if ($claimed < 1) {
       $this->messenger()->addWarning($this->blockedMessage('still_processing'));
@@ -264,6 +245,32 @@ class AiTesterResumeForm extends ConfirmFormBase {
   }
 
   /**
+   * Loads a run, reconciling first, and reports why a resume is refused.
+   *
+   * The impure half of the guard, shared by both entry points so the inputs to
+   * ::isBlocked() are assembled once. Reconciling has to come before the load:
+   * a run whose batch died still reads 'processing', which would block the very
+   * resume that exists to recover it.
+   *
+   * @param int $run_id
+   *   The run to guard.
+   *
+   * @return string|null
+   *   A reason key from ::isBlocked(), or NULL when the resume may proceed.
+   */
+  protected function guard(int $run_id): ?string {
+    $this->runId = $run_id;
+    $this->staleRunReconciler->reconcile();
+    $this->loadRun($run_id);
+
+    return static::isBlocked(
+      $this->run->status,
+      count($this->missing),
+      $this->backendIsAvailable(),
+    );
+  }
+
+  /**
    * Returns the message shown when a resume is refused.
    *
    * @param string $reason
@@ -281,7 +288,13 @@ class AiTesterResumeForm extends ConfirmFormBase {
       'still_processing' => $this->t('Run #@id is still running. Wait for it to finish before resuming it.', [
         '@id' => $this->runId,
       ]),
-      default => $this->t('Run #@id has an answer recorded for every question, so there is nothing to resume.', [
+      'nothing_missing' => $this->t('Run #@id has an answer recorded for every question, so there is nothing to resume.', [
+        '@id' => $this->runId,
+      ]),
+      // Named arms above cover every reason ::isBlocked() returns; this only
+      // catches a reason added there and not here, where saying nothing precise
+      // beats asserting something wrong about the run.
+      default => $this->t('Run #@id cannot be resumed right now.', [
         '@id' => $this->runId,
       ]),
     };
@@ -308,21 +321,23 @@ class AiTesterResumeForm extends ConfirmFormBase {
   }
 
   /**
-   * Builds a form that only sends the user back to the tester.
+   * Builds the refused-state form: a link back and nothing to confirm.
    *
-   * @param array $form
-   *   The form being built.
+   * Styled to match AiTesterRerunForm's own refusal, so the two actions in one
+   * flow do not present the same dead end differently.
    *
    * @return array
-   *   The form with a single link back.
+   *   A render array with a single link back.
    */
-  protected function redirectToTester(array $form): array {
-    $form['back'] = [
-      '#type' => 'link',
-      '#title' => $this->t('Back to AI Tester'),
-      '#url' => Url::fromRoute('ys_ai_tester.tester'),
+  protected function blockedBackLink(): array {
+    return [
+      'back' => [
+        '#type' => 'link',
+        '#title' => $this->t('Back to tester'),
+        '#url' => $this->getCancelUrl(),
+        '#attributes' => ['class' => ['button']],
+      ],
     ];
-    return $form;
   }
 
   /**
@@ -333,7 +348,7 @@ class AiTesterResumeForm extends ConfirmFormBase {
    */
   protected function loadRun(int $run_id): void {
     $run = $this->database->query(
-      'SELECT id, source_filename, source_content, source_run_id, status, question_count, backend FROM {ys_ai_tester_run} WHERE id = :id',
+      'SELECT source_content, status, backend FROM {ys_ai_tester_run} WHERE id = :id',
       [':id' => $run_id]
     )->fetchObject();
 
