@@ -104,6 +104,13 @@ class ViewsContentResourcesManager extends ControllerBase implements ContainerIn
   protected $cacheTagsInvalidator;
 
   /**
+   * Constrains exposed taxonomy filter options (parent term, excluded terms).
+   *
+   * @var \Drupal\ys_views_content_resources\ExposedTaxonomyFilterOptions
+   */
+  protected ExposedTaxonomyFilterOptions $exposedTaxonomyFilterOptions;
+
+  /**
    * Constructs a new ViewsBasicManager object.
    */
   public function __construct(
@@ -111,12 +118,14 @@ class ViewsContentResourcesManager extends ControllerBase implements ContainerIn
     EntityDisplayRepository $entity_display_repository,
     RouteMatchInterface $route_match,
     CacheTagsInvalidatorInterface $cache_tags_invalidator,
+    ?ExposedTaxonomyFilterOptions $exposed_taxonomy_filter_options = NULL,
   ) {
     $this->entityTypeManager = $entity_type_manager;
     $this->entityDisplayRepository = $entity_display_repository;
     $this->termStorage = $this->entityTypeManager->getStorage('taxonomy_term');
     $this->routeMatch = $route_match;
     $this->cacheTagsInvalidator = $cache_tags_invalidator;
+    $this->exposedTaxonomyFilterOptions = $exposed_taxonomy_filter_options ?? new ExposedTaxonomyFilterOptions($entity_type_manager);
   }
 
   /**
@@ -128,6 +137,7 @@ class ViewsContentResourcesManager extends ControllerBase implements ContainerIn
       $container->get('entity_display.repository'),
       $container->get('current_route_match'),
       $container->get('cache_tags.invalidator'),
+      $container->get('ys_views_content_resources.exposed_taxonomy_filter_options'),
     );
   }
 
@@ -168,6 +178,11 @@ class ViewsContentResourcesManager extends ControllerBase implements ContainerIn
     // Retrieve the current filter options from the view's display settings.
     $filters = $view->getDisplay()->getOption('filters');
 
+    // Terms the editor used to exclude content. Every exposed taxonomy filter
+    // drops these from its options: a visitor selecting one would always get
+    // zero results.
+    $excluded_terms = ExposedTaxonomyFilterOptions::normalizeTermIds($paramsDecoded['filters']['terms_exclude'] ?? []);
+
     // Mapping content types to their respective category filters.
     $category_filters = [
       'resource' => 'field_category_target_id',
@@ -189,36 +204,14 @@ class ViewsContentResourcesManager extends ControllerBase implements ContainerIn
         unset($filters[$filter]);
       }
 
-      $vid = "resource_category";
-
-      // Determine which category terms may appear in the exposed filter. When
-      // an included parent is set, the options are its child terms; otherwise
-      // the whole resource_category vocabulary is available.
-      if (!empty($paramsDecoded['category_included_terms'])) {
-        $available_terms = $this->getChildTermsByParentId($paramsDecoded['category_included_terms'], $vid);
-      }
-      else {
-        $available_terms = $this->getChildTermsByParentId(0, $vid);
-      }
-
-      // Remove any terms used to exclude content from the view. A category
-      // that filters content out would always return zero results if a visitor
-      // selected it, so it should never be offered as a filter option.
-      $excluded_terms = [];
-      if (!empty($paramsDecoded['filters']['terms_exclude'])) {
-        foreach ($paramsDecoded['filters']['terms_exclude'] as $term) {
-          $excluded_terms[] = $this->getTermId($term);
-        }
-      }
-      $available_terms = $this->reduceCategoryTermsForExposure($available_terms, $excluded_terms);
-
-      // Constrain the exposed options only when a parent limits the set or some
-      // terms were excluded; otherwise leave the full vocabulary available.
-      if (!empty($paramsDecoded['category_included_terms']) || $excluded_terms) {
-        $filters[$category_filter_name]['value'] = $available_terms;
-        $filters[$category_filter_name]['limit'] = TRUE;
-        $filters[$category_filter_name]['expose']['reduce'] = TRUE;
-      }
+      // Offer only the included parent's children (when set) and never a term
+      // used to exclude content, which would always return zero results.
+      $this->exposedTaxonomyFilterOptions->apply(
+        $filters,
+        $category_filter_name,
+        $excluded_terms,
+        (int) ($paramsDecoded['category_included_terms'] ?? 0),
+      );
 
       // Set a custom label for the 'Category' filter if provided.
       if (!empty($paramsDecoded['category_filter_label'])) {
@@ -239,17 +232,14 @@ class ViewsContentResourcesManager extends ControllerBase implements ContainerIn
       $custom_vocab_label = $this->entityTypeManager->getStorage('taxonomy_vocabulary')->load('custom_vocab')->label();
       $filters['field_custom_vocab_target_id']['expose']['label'] = $custom_vocab_label;
 
-      // Check if 'custom_vocab_included_terms' is provided for the current
-      // filter type.
-      if (!empty($paramsDecoded['custom_vocab_included_terms'])) {
-        // Determine the vocabulary ID based on the selected filter type.
-        $vid = 'custom_vocab';
-
-        // Limit the filter to specific terms if provided.
-        $filters['field_custom_vocab_target_id']['value'] = $this->getChildTermsByParentId($paramsDecoded['custom_vocab_included_terms'], $vid);
-        $filters['field_custom_vocab_target_id']['limit'] = TRUE;
-        $filters['field_custom_vocab_target_id']['expose']['reduce'] = TRUE;
-      }
+      // Offer only the included parent's children (when set) and never an
+      // excluded term.
+      $this->exposedTaxonomyFilterOptions->apply(
+        $filters,
+        'field_custom_vocab_target_id',
+        $excluded_terms,
+        (int) ($paramsDecoded['custom_vocab_included_terms'] ?? 0),
+      );
     }
     else {
       // Remove filter if 'show filter' field is not set.
@@ -268,6 +258,10 @@ class ViewsContentResourcesManager extends ControllerBase implements ContainerIn
     foreach ($exposed_filters as $exposed_filter_option => $filter_name) {
       if (!isset($paramsDecoded['exposed_filter_options'][$exposed_filter_option])) {
         unset($filters[$filter_name]);
+      }
+      else {
+        // Never offer an excluded term.
+        $this->exposedTaxonomyFilterOptions->apply($filters, $filter_name, $excluded_terms);
       }
     }
 
@@ -622,10 +616,7 @@ class ViewsContentResourcesManager extends ControllerBase implements ContainerIn
    *   The available terms with the excluded ids removed.
    */
   public function reduceCategoryTermsForExposure(array $available, array $excluded): array {
-    if (!$excluded) {
-      return $available;
-    }
-    return array_diff_key($available, array_flip($excluded));
+    return ExposedTaxonomyFilterOptions::reduceTermsForExposure($available, $excluded);
   }
 
   /**
@@ -970,7 +961,9 @@ class ViewsContentResourcesManager extends ControllerBase implements ContainerIn
    *   The term ID.
    */
   private function getTermId($term) : int {
-    return (int) is_array($term) ? $term['target_id'] : $term;
+    // Parenthesized: without them the cast binds to is_array() and the
+    // value is returned uncast.
+    return (int) (is_array($term) ? ($term['target_id'] ?? 0) : $term);
   }
 
   /**

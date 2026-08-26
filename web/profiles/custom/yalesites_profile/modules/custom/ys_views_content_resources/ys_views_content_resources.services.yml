@@ -3,3 +3,8 @@ services:
   ys_views_content_resources.views_content_resources_manager:
     class: Drupal\ys_views_content_resources\ViewsContentResourcesManager
     arguments: ['@entity_type.manager', '@entity_display.repository', '@current_route_match', '@cache_tags.invalidator']
+  # Constrains exposed taxonomy filter options (parent term, excluded terms).
+  # Generic: usable by any module that builds a Views display's filters.
+  ys_views_content_resources.exposed_taxonomy_filter_options:
+    class: Drupal\ys_views_content_resources\ExposedTaxonomyFilterOptions
+    arguments: ['@entity_type.manager']
