@@ -8,7 +8,7 @@ use Drupal\Core\Render\Element;
 use Drupal\KernelTests\KernelTestBase;
 use Drupal\Tests\user\Traits\UserCreationTrait;
 use Drupal\ys_core\Form\SiteSettingsForm;
-use Drupal\ys_core\PlatformAdminSettingInterface;
+use Drupal\ys_core\PlatformAdminCheckerInterface;
 
 /**
  * Tests that the Site Settings form is grouped into task-based vertical tabs.
@@ -373,9 +373,9 @@ class SiteSettingsFormGroupingTest extends KernelTestBase {
    * starts failing instead of quietly certifying a tab nobody can open.
    */
   public function testAdvancedGroupIsHiddenFromPlatformAdminsWhoAreNotUser1(): void {
-    $this->createRole([PlatformAdminSettingInterface::PERMISSION], 'platform_admin');
+    $this->createRole([PlatformAdminCheckerInterface::PERMISSION], 'platform_admin');
     $account = $this->setUpCurrentUser(['uid' => 3, 'roles' => ['platform_admin']]);
-    $this->assertTrue($account->hasPermission(PlatformAdminSettingInterface::PERMISSION));
+    $this->assertTrue($account->hasPermission(PlatformAdminCheckerInterface::PERMISSION));
 
     $form = $this->formObject()->buildForm([], new FormState());
 

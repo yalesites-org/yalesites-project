@@ -7,10 +7,9 @@ use Drupal\Core\Entity\EntityTypeManagerInterface;
 use Drupal\Core\Entity\EntityStorageInterface;
 use Drupal\Core\Form\FormState;
 use Drupal\Core\Messenger\MessengerInterface;
-use Drupal\Core\Session\AccountProxy;
 use Drupal\Tests\UnitTestCase;
 use Drupal\Core\Entity\EntityInterface;
-use Drupal\ys_core\PlatformAdminSettingInterface;
+use Drupal\ys_core\PlatformAdminCheckerInterface;
 use Drupal\ys_localist\Form\LocalistSettings;
 use Drupal\ys_localist\LocalistManager;
 use Symfony\Component\DependencyInjection\ContainerBuilder;
@@ -64,7 +63,7 @@ class LocalistSettingsTest extends UnitTestCase {
    * @param int $groups_imported_count
    *   The value getMigrationStatus('localist_groups') should return.
    * @param bool $is_platform_admin
-   *   Whether the account holds 'administer platform admin settings'.
+   *   What the platform admin checker should report for this request.
    */
   protected function buildFormObject(array $config_values = [], int $groups_imported_count = 0, bool $is_platform_admin = FALSE): LocalistSettings {
     $config_factory = $this->getConfigFactoryStub([
@@ -75,16 +74,14 @@ class LocalistSettingsTest extends UnitTestCase {
       ->with('localist_groups')
       ->willReturn($groups_imported_count);
 
-    $account = $this->createMock(AccountProxy::class);
-    $account->method('hasPermission')
-      ->with(PlatformAdminSettingInterface::PERMISSION)
-      ->willReturn($is_platform_admin);
+    $checker = $this->createMock(PlatformAdminCheckerInterface::class);
+    $checker->method('isPlatformAdmin')->willReturn($is_platform_admin);
 
     return new LocalistSettings(
       $config_factory,
       $this->entityTypeManager,
       $this->localistManager,
-      $account
+      $checker
     );
   }
 
@@ -123,10 +120,10 @@ class LocalistSettingsTest extends UnitTestCase {
   /**
    * A platform admin gets the sync fields unlocked.
    *
-   * Gating on the `administer platform admin settings` permission rather than
-   * the procedural ys_core_allow_secret_items() - which a unit test cannot
-   * load, so this branch was previously unreachable in tests - is what makes
-   * this assertable (yalesites-org/YaleSites-Internal#1560).
+   * Gating on the injected platform admin checker rather than the procedural
+   * ys_core_allow_secret_items() - which a unit test cannot load, so this
+   * branch was previously unreachable in tests - is what makes this
+   * assertable (yalesites-org/YaleSites-Internal#1560).
    *
    * @covers ::buildForm
    */
@@ -242,7 +239,7 @@ class LocalistSettingsTest extends UnitTestCase {
       $config_factory,
       $this->entityTypeManager,
       $this->localistManager,
-      $this->createMock(AccountProxy::class)
+      $this->createMock(PlatformAdminCheckerInterface::class)
     );
 
     $form = [];

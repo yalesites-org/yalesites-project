@@ -10,22 +10,13 @@ use Drupal\Core\Form\FormStateInterface;
  * Each plugin contributes a self-contained section (build, validate, and save)
  * to the platform-admin-only Platform Admin Settings form. The form owns
  * discovery and ordering; each plugin owns its own configuration.
+ *
+ * "Is this account a platform admin?" is not asked here. That question has one
+ * answer platform-wide, in ys_core.platform_admin_checker.
+ *
+ * @see \Drupal\ys_core\PlatformAdminCheckerInterface
  */
 interface PlatformAdminSettingInterface {
-
-  /**
-   * The permission that marks a user as a platform admin.
-   *
-   * This is the platform's single mechanism for "is this a platform admin"
-   * (yalesites-org/YaleSites-Internal#1560). It gates the Platform Admin
-   * Settings route, and any setting left behind on a mixed-audience form gates
-   * on it too, so a rename has one place to change on the PHP side. It is
-   * granted only to the platform_admin role; user 1 satisfies it through
-   * Drupal's permission bypass. The route requirement in ys_core.routing.yml
-   * and the declaration in ys_core.permissions.yml necessarily repeat the
-   * string, because YAML cannot reference a PHP constant.
-   */
-  const PERMISSION = 'administer platform admin settings';
 
   /**
    * Builds this plugin's settings section.
