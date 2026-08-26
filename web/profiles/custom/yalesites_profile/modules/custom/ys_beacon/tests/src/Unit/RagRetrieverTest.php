@@ -131,6 +131,47 @@ class RagRetrieverTest extends UnitTestCase {
   }
 
   /**
+   * With no stored top_k, the query limit falls back to the shipped default.
+   *
+   * Nothing else asserts on the query's limit, and every other fixture here
+   * supplies top_k explicitly, so without this the fallback could drift away
+   * from the shipped default while the whole suite stayed green.
+   *
+   * @covers ::retrieve
+   */
+  public function testRetrieveFallsBackToDefaultTopK(): void {
+    $results = $this->createMock(ResultSetInterface::class);
+    $results->method('getResultItems')->willReturn([]);
+
+    $query = $this->createMock(QueryInterface::class);
+    $query->method('setOption')->willReturnSelf();
+    $query->method('keys')->willReturnSelf();
+    $query->method('execute')->willReturn($results);
+
+    $index = $this->createMock(IndexInterface::class);
+    $index->method('status')->willReturn(TRUE);
+    $index->method('id')->willReturn('ys_beacon');
+    $index->expects($this->once())
+      ->method('query')
+      ->with(['limit' => RagRetriever::DEFAULT_TOP_K])
+      ->willReturn($query);
+
+    $storage = $this->createMock(EntityStorageInterface::class);
+    $storage->method('load')->with('ys_beacon')->willReturn($index);
+
+    $entityTypeManager = $this->createMock(EntityTypeManagerInterface::class);
+    $entityTypeManager->method('getStorage')->with('search_api_index')->willReturn($storage);
+
+    // The site's settings object is missing top_k entirely.
+    $configFactory = $this->getConfigFactoryStub([
+      'ys_beacon.settings' => ['score_threshold' => 0.0],
+    ]);
+
+    $retriever = new RagRetriever($entityTypeManager, $configFactory, $this->createMock(LoggerInterface::class), $this->createMock(EntityCitationResolver::class));
+    $this->assertSame([], $retriever->retrieve('hello'));
+  }
+
+  /**
    * A read-only (shared) index cites from stored fields, bypassing access.
    *
    * The cited document belongs to another site and has no local entity, so no

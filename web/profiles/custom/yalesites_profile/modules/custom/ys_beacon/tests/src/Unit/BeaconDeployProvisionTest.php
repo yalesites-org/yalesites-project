@@ -204,7 +204,7 @@ class BeaconDeployProvisionTest extends UnitTestCase {
     $this->assertTrue($healed->get('platform_authorized'), 'Authorization survives.');
     // ... and the keys that were reading NULL are back.
     $this->assertTrue($healed->get('streaming'), 'Streaming comes back on.');
-    $this->assertSame(5, $healed->get('top_k'), 'top_k comes back.');
+    $this->assertSame(10, $healed->get('top_k'), 'top_k comes back.');
     $this->assertCount(
       count($this->shippedDefaults()),
       $healed->getRawData(),
@@ -256,7 +256,7 @@ class BeaconDeployProvisionTest extends UnitTestCase {
     // them: hoisting the getEditable() above the seed would wipe every key the
     // legacy chat does not carry, and only these assertions would catch it.
     $this->assertTrue($restored->get('streaming'), 'Streaming still ships on.');
-    $this->assertSame(5, $restored->get('top_k'), 'Untouched defaults survive.');
+    $this->assertSame(10, $restored->get('top_k'), 'Untouched defaults survive.');
 
     // Guards the premise: these differ from the shipped defaults, so the
     // assertions above cannot pass by accident.
