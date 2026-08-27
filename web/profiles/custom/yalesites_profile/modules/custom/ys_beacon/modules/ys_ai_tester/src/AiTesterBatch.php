@@ -13,6 +13,32 @@ namespace Drupal\ys_ai_tester;
 class AiTesterBatch {
 
   /**
+   * A run whose batch is live and writing, and the claim that says so.
+   *
+   * Named rather than written inline because this value is no longer only a
+   * label: AiTesterResumeForm claims a run by moving it to this status under a
+   * condition that it was not already there, and StaleRunReconciler only ever
+   * writes over a run holding it. A typo in either place is a wedged run or a
+   * lost mutual exclusion, not a cosmetic wrong word.
+   */
+  const STATUS_PROCESSING = 'processing';
+
+  /**
+   * Every question answered, by a batch that finished.
+   */
+  const STATUS_COMPLETE = 'complete';
+
+  /**
+   * Some usable answers, but not a finished run.
+   */
+  const STATUS_PARTIAL = 'partial';
+
+  /**
+   * Nothing usable was recorded.
+   */
+  const STATUS_FAILED = 'failed';
+
+  /**
    * Processes a single question through one assistant.
    *
    * A failure here is contained to its own question: the error is logged and
@@ -95,11 +121,70 @@ class AiTesterBatch {
       $context['results']['failed_deltas'][$delta] = $delta;
     }
 
+    // The submission's heartbeat, written even when the question failed: what
+    // it records is that this batch is still alive, not that it is succeeding.
+    // StaleRunReconciler reads it to tell a dead batch from a slow one, so it
+    // has to advance on every operation or a run of nothing but failures would
+    // be reconciled out from under itself.
+    self::touch($run_id);
+
     $context['results']['run_id'] = $run_id;
     // Counted here rather than derived from the run's question_count, so the
     // status a partly-processed batch reports describes what actually ran.
     $context['results']['processed'] = ($context['results']['processed'] ?? 0) + 1;
     $context['message'] = t('Processing question @num...', ['@num' => $delta + 1]);
+  }
+
+  /**
+   * Records that a submission just made progress.
+   *
+   * Deliberately refreshes every processing run of the submission, not only the
+   * one that answered. A "run both assistants" submission inserts one row per
+   * assistant in a single request and then queues one batch set each, and
+   * Drupal runs those sets in sequence - so the second run writes nothing of
+   * its own until every question of the first has been answered. Heartbeating
+   * only the answering run would leave its sibling looking silent for that
+   * whole time, and StaleRunReconciler would fail a run that had not started
+   * yet: a 100-question first run at the observed few seconds per question is
+   * already past ::STALE_AFTER_SECONDS.
+   *
+   * Runs of one submission are identified by sharing a uid and an insert
+   * timestamp, both already stored. Two separate submissions colliding on both
+   * would only keep runs that are all live alive for longer, which is the safe
+   * direction to be wrong in.
+   *
+   * Failures here are swallowed deliberately: a heartbeat that does not land
+   * must not fail a question that was answered. The cost of losing one is only
+   * that a live run looks idle for longer, and the next question rewrites it.
+   *
+   * @param int $run_id
+   *   The run that made progress.
+   */
+  protected static function touch(int $run_id): void {
+    try {
+      $database = \Drupal::database();
+      $submission = $database->select('ys_ai_tester_run', 'r')
+        ->fields('r', ['uid', 'created'])
+        ->condition('id', $run_id)
+        ->execute()
+        ->fetchObject();
+      if (!$submission) {
+        return;
+      }
+
+      $database->update('ys_ai_tester_run')
+        ->fields(['changed' => \Drupal::time()->getRequestTime()])
+        ->condition('status', static::STATUS_PROCESSING)
+        ->condition('uid', (int) $submission->uid)
+        ->condition('created', (int) $submission->created)
+        ->execute();
+    }
+    catch (\Throwable $e) {
+      \Drupal::logger('ys_ai_tester')->warning(
+        'Could not record progress for AI tester run @run: @msg',
+        ['@run' => $run_id, '@msg' => $e->getMessage()]
+      );
+    }
   }
 
   /**
@@ -204,6 +289,10 @@ class AiTesterBatch {
   /**
    * Derives the status a finished run is recorded with.
    *
+   * Decides from one batch's own tallies. Its sibling ::wholeRunStatus() reads
+   * everything a run has stored instead, which is what a resume needs - see
+   * there for why the two cannot be collapsed.
+   *
    * The distinction 'partial' draws is the point of it: before it existed, one
    * transient failure out of a hundred questions recorded the same 'failed' as
    * a run where nothing was answered at all, so a 99-percent-successful run
@@ -224,15 +313,138 @@ class AiTesterBatch {
     // An aborted batch did not finish, whatever the per-question tally says.
     // Nothing processed is likewise not a success.
     if (!$success || $processed < 1) {
-      return 'failed';
+      return static::STATUS_FAILED;
     }
     if ($error_count < 1) {
-      return 'complete';
+      return static::STATUS_COMPLETE;
     }
 
     // Reserved for a genuine collapse: a bad credential, an assistant that is
     // gone, an upstream down for the whole run.
-    return $error_count >= $processed ? 'failed' : 'partial';
+    return $error_count >= $processed ? static::STATUS_FAILED : static::STATUS_PARTIAL;
+  }
+
+  /**
+   * Derives the status of a run that was finished in place by a resume.
+   *
+   * ::runStatus() cannot be reused here. It reads the tallies one batch
+   * accumulated, and a resume's batch only ever processed the questions that
+   * were missing - so a resume of 40 questions out of 160 would report a run
+   * "complete" on the strength of 40 answers. This decides from what the run
+   * has stored in total instead.
+   *
+   * @param bool $success
+   *   TRUE when the resume batch itself completed, as Drupal reports it.
+   * @param int $remaining
+   *   How many of the run's questions still have no stored outcome.
+   * @param int $attempted
+   *   How many distinct questions have a stored outcome.
+   * @param int $error_count
+   *   How many of those recorded only errors.
+   *
+   * @return string
+   *   'complete', 'partial', or 'failed'.
+   */
+  public static function wholeRunStatus(bool $success, int $remaining, int $attempted, int $error_count): string {
+    // Nothing stored, or nothing that worked: the run has no usable answers,
+    // which is what 'failed' means everywhere else in the tester.
+    if ($attempted < 1 || $error_count >= $attempted) {
+      return static::STATUS_FAILED;
+    }
+
+    // Only a run whose every question is answered cleanly, by a batch that
+    // actually finished, is complete. Anything short of that is still worth
+    // reading, so it stays resumable rather than being called failed.
+    if ($success && $remaining < 1 && $error_count < 1) {
+      return static::STATUS_COMPLETE;
+    }
+
+    return static::STATUS_PARTIAL;
+  }
+
+  /**
+   * Derives the status of a run whose batch never reported at all.
+   *
+   * Takes no outstanding count on purpose. An abandoned batch did not finish,
+   * so 'complete' is unreachable however many questions were answered, and the
+   * only question left is whether the answers it did collect are worth keeping.
+   * That is why the reconciler does not read the run's question list to decide:
+   * the outstanding count cannot change the answer.
+   *
+   * @param int $attempted
+   *   How many distinct questions have a stored outcome.
+   * @param int $error_count
+   *   How many of those recorded only errors.
+   *
+   * @return string
+   *   'partial' when there are usable answers, 'failed' when there are none.
+   */
+  public static function abandonedRunStatus(int $attempted, int $error_count): string {
+    return static::wholeRunStatus(FALSE, 0, $attempted, $error_count);
+  }
+
+  /**
+   * Batch finished callback for a resume — restatuses the whole run.
+   *
+   * @param bool $success
+   *   TRUE if no fatal errors occurred during the batch.
+   * @param array $results
+   *   Values accumulated in $context['results'] across operations.
+   * @param array $operations
+   *   Any unprocessed operations (non-empty only on failure).
+   */
+  public static function resumeFinished(bool $success, array $results, array $operations): void {
+    $run_id = $results['run_id'] ?? NULL;
+    if (!$run_id) {
+      \Drupal::logger('ys_ai_tester')->error(
+        'AI tester resumeFinished() called with no run_id — run status not updated.'
+      );
+      return;
+    }
+
+    $database = \Drupal::database();
+    $source_content = (string) $database->query(
+      'SELECT source_content FROM {ys_ai_tester_run} WHERE id = :id',
+      [':id' => $run_id]
+    )->fetchField();
+
+    // storedProgress() already reads every attempted delta to tally errors, so
+    // the outstanding questions are derived from those rather than queried
+    // again. It is a set difference, not expected-minus-attempted: a run counts
+    // as finished only when every delta in its list really has a row, where a
+    // count comparison would let a stray delta stand in for a missing one.
+    $progress = \Drupal::service('ys_ai_tester.run_progress')->storedProgress((int) $run_id);
+    $remaining = count(RunProgress::outstanding($source_content, $progress['deltas']));
+    $expected = $progress['attempted'] + $remaining;
+    $status = self::wholeRunStatus($success, $remaining, $progress['attempted'], $progress['errors']);
+
+    $database->update('ys_ai_tester_run')
+      ->fields(['status' => $status])
+      ->condition('id', $run_id)
+      ->execute();
+    if ($status === static::STATUS_COMPLETE) {
+      \Drupal::messenger()->addStatus(t('Run #@id is now complete — all @total questions are answered.', [
+        '@id' => $run_id,
+        '@total' => $expected,
+      ]));
+      return;
+    }
+
+    if ($remaining > 0) {
+      // Naming what is left is what keeps resume usable more than once: the
+      // connection can drop again, and the next resume picks up from here.
+      \Drupal::messenger()->addWarning(t('Run #@id was not finished — @remaining of @total questions are still unanswered. Resume it again to continue.', [
+        '@id' => $run_id,
+        '@remaining' => $remaining,
+        '@total' => $expected,
+      ]));
+      return;
+    }
+
+    \Drupal::messenger()->addWarning(t('Every question in run #@id has been asked, but @errors could not be answered. Check the Drupal logs for the cause.', [
+      '@id' => $run_id,
+      '@errors' => $progress['errors'],
+    ]));
   }
 
   /**
@@ -263,12 +475,12 @@ class AiTesterBatch {
       );
     }
 
-    if ($status === 'complete') {
+    if ($status === static::STATUS_COMPLETE) {
       \Drupal::messenger()->addStatus(t('All questions processed successfully.'));
       return;
     }
 
-    if ($status === 'partial') {
+    if ($status === static::STATUS_PARTIAL) {
       // Naming the questions is what makes a partial run actionable: they can
       // be re-asked individually instead of re-running all hundred.
       \Drupal::messenger()->addWarning(t(
