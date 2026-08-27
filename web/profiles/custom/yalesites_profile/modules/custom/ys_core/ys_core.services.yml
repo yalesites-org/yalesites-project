@@ -46,6 +46,10 @@ services:
     arguments: ['@current_user', '@request_stack']
     tags:
       - { name: event_subscriber }
+  # The platform's single answer to "is this account a platform admin?".
+  ys_core.platform_admin_checker:
+    class: Drupal\ys_core\PlatformAdminChecker
+    arguments: ['@current_user']
   # Manages platform-admin-only settings sections (extensible plugin type).
   ys_core.platform_admin_setting_manager:
     class: Drupal\ys_core\PlatformAdminSettingManager

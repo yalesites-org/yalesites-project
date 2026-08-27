@@ -12,13 +12,13 @@ use Drupal\Core\Form\FormStateInterface;
 use Drupal\Core\Render\Element;
 use Drupal\Core\Routing\RouteMatchInterface;
 use Drupal\Core\Routing\RouteObjectInterface;
-use Drupal\Core\Session\AccountProxy;
 use Drupal\Core\Url;
 use Drupal\link\Plugin\Field\FieldWidget\LinkWidget;
 use Drupal\node\Entity\Node;
 use Drupal\node\NodeInterface;
 use Drupal\Component\Utility\NestedArray;
 use Drupal\ys_core\Editoria11yRouteSuppressor;
+use Drupal\ys_core\Plugin\PlatformAdminSetting\EnvironmentIndicatorPlatformAdminSetting;
 use Drupal\ys_core\SiteimproveRouteChecker;
 use Drupal\ys_core\WebformContextualLinksSuppressor;
 
@@ -673,9 +673,8 @@ function ys_core_preprocess_menu(&$variables) {
   // CAS bulk add menu item title change,
   // and remove Add user for non-platform admins.
   if (!empty($variables['items'])) {
-    $current_user = \Drupal::currentUser();
-    $user_roles = $current_user->getRoles();
-    $has_platform_admin = in_array('platform_admin', $user_roles) || $current_user->id() == 1;
+    $has_platform_admin = \Drupal::service('ys_core.platform_admin_checker')
+      ->isPlatformAdmin();
     foreach ($variables['items'] as &$item) {
       // These are submenu items.
       if (!empty($item['below'])) {
@@ -1112,7 +1111,7 @@ function ys_core_preprocess_html(&$variables) {
   $variables['attributes']['data-font-pairing'] = $font_pairing;
 
   // Remove environment indicator CSS class if the indicator is disabled.
-  $show_indicator = $config->get('environment_indicator.show') ?? TRUE;
+  $show_indicator = $config->get(EnvironmentIndicatorPlatformAdminSetting::CONFIG_KEY) ?? EnvironmentIndicatorPlatformAdminSetting::DISPLAY_DEFAULT;
   if (!$show_indicator) {
     // Remove environment-indicator class if it exists.
     $classes = $variables['attributes']['class'] ?? [];
@@ -1159,22 +1158,6 @@ function ys_core_preprocess_views_view_unformatted(&$variables) {
       $variables['title'] = $title['#markup'] ?? NULL;
     }
   }
-}
-
-/**
- * If current user is platform admin or user 1, allow secret items.
- *
- * @return bool
- *   Returns TRUE if current user is a platform admin or user 1.
- */
-function ys_core_allow_secret_items(AccountProxy $currentUserSession) {
-  $allowSecretItems = FALSE;
-
-  if ($currentUserSession->getAccount()->id() == 1 || in_array('platform_admin', $currentUserSession->getAccount()->getRoles())) {
-    $allowSecretItems = TRUE;
-  }
-
-  return $allowSecretItems;
 }
 
 /**
@@ -1525,7 +1508,7 @@ function _ys_core_attach_icon_preview(&$form, FormStateInterface $form_state, $f
 /**
  * Implements hook_menu_local_actions_alter().
  *
- * Hide 'Add user' action for users without the platform_admin role.
+ * Hide the 'Add user' action from everyone who is not a platform admin.
  */
 function ys_core_menu_local_actions_alter(&$local_actions) {
   // Get the current route name.
@@ -1536,19 +1519,11 @@ function ys_core_menu_local_actions_alter(&$local_actions) {
     // Disable caching for local actions on this page to prevent aching issues.
     \Drupal::service('plugin.manager.menu.local_action')->useCaches(FALSE);
 
-    $current_user = \Drupal::currentUser();
+    $is_platform_admin = \Drupal::service('ys_core.platform_admin_checker')
+      ->isPlatformAdmin();
 
-    // Skip processing if user is user 1.
-    if ($current_user->id() == 1) {
-      return;
-    }
-
-    // Check if current user has the platform_admin role.
-    $user_roles = $current_user->getRoles();
-    $has_platform_admin = in_array('platform_admin', $user_roles);
-
-    // Hide the actions if user doesn't have platform_admin role.
-    if (!$has_platform_admin) {
+    // Hide the actions from everyone who is not a platform admin.
+    if (!$is_platform_admin) {
       // Remove "Add user" action.
       if (isset($local_actions['user_admin_create'])) {
         unset($local_actions['user_admin_create']);
@@ -1594,7 +1569,7 @@ function ys_core_yale_cas_app_parameter_alter(&$app_value, $event) {
 function ys_core_page_top(array &$page_top) {
   // Check if environment indicator should be shown.
   $config = \Drupal::config('ys_core.site');
-  $show_indicator = $config->get('environment_indicator.show') ?? TRUE;
+  $show_indicator = $config->get(EnvironmentIndicatorPlatformAdminSetting::CONFIG_KEY) ?? EnvironmentIndicatorPlatformAdminSetting::DISPLAY_DEFAULT;
 
   // If disabled, remove the environment indicator from page_top.
   if (!$show_indicator && isset($page_top['indicator'])) {
