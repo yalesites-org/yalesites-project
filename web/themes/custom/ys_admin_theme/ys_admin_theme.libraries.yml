@@ -2,6 +2,16 @@ global:
   css:
     theme:
       css/admin-ui.css: {}
+
+# Extends the contrib office_hours widget library rather than riding on
+# `global`. Theme `libraries:` are attached by system_page_attachments(), which
+# only runs for a full page render - so a widget loaded into a Layout Builder
+# modal would never get these. libraries-extend attaches them wherever the
+# contrib widget library itself is attached.
+office_hours_widget:
+  css:
+    theme:
+      css/office-hours-widget.css: {}
   js:
     js/office-hours-widget.js: {}
   dependencies:
