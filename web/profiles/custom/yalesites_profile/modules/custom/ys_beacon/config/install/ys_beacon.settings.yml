@@ -14,7 +14,14 @@ azure_search_url_key: ''
 read_only: false
 query_entire_index: false
 pdf_extraction_max_bytes: 20971520
-top_k: 5
+# Excerpts retrieved per question. 10 rather than 5 because the larger
+# retrieval set gives an answer more of the site's content to ground itself
+# in, which yields more citations. Each one adds up to chunk_size characters
+# to every question's prompt, so this trades cost and latency for answer
+# quality. The administration form accepts 1-20. Keep in sync with
+# RagRetriever::DEFAULT_TOP_K, the runtime fallback used when this value is
+# absent.
+top_k: 10
 score_threshold: 0.0
 streaming: true
 # Context window (in tokens) of the model Portkey currently routes to. Used to
