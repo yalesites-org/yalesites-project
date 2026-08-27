@@ -43,6 +43,7 @@ install:
   - file
   - filter
   - image
+  - klaro
   - link
   - media
   - media_library

@@ -20,3 +20,11 @@ ys_core.dashboard_settings:
     announcements_source_term:
       type: string
       label: 'Taxonomy term name used to tag announcement posts'
+
+ys_core.consent_settings:
+  type: config_object
+  label: 'YaleSites cookie consent settings'
+  mapping:
+    banner_enabled:
+      type: boolean
+      label: 'Ask visitors for cookie consent before loading analytics, share buttons and third-party embeds'

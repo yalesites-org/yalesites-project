@@ -1,0 +1,38 @@
+_core:
+  default_config_hash: FHr6psQnRtYvXa9wwVyQsT3ytUtv2w9OvbvbdMDq4a0
+langcode: en
+consentModal:
+  title: 'Manage your cookie choices'
+  description: 'Choose which services this site may use. Strictly necessary services keep the site working and cannot be turned off. Your choice is stored in your browser and you can change it at any time.'
+  privacyPolicy:
+    name: 'Yale Privacy Statement'
+    text: 'To learn how Yale handles personal data, read the {privacyPolicy}.'
+    url: 'https://privacy.yale.edu/resources/privacy-statement'
+consentNotice:
+  title: 'Cookies on this site'
+  changeDescription: 'The services used on this site have changed since your last visit. Please review your choices.'
+  description: 'Yale uses cookies and similar technologies to measure how this site is used and to show content hosted by other organizations. We use them for: {purposes}.'
+  learnMore: 'Manage choices'
+ok: 'Accept all'
+save: 'Save my choices'
+decline: 'Decline all'
+close: Close
+acceptAll: 'Accept all'
+acceptSelected: 'Save my choices'
+service:
+  disableAll:
+    title: 'Toggle all services'
+    description: 'Use this switch to enable/disable all services.'
+  optOut:
+    title: (opt-out)
+    description: 'This service is loaded by default (opt-out possible).'
+  required:
+    title: '(always active)'
+    description: 'This service is required for the site to work and cannot be turned off.'
+  purposes: Purposes
+  purpose: Purpose
+contextualConsent:
+  acceptAlways: 'Always load'
+  acceptOnce: 'Load once'
+  description: 'This content is hosted by {title}. Load it?'
+poweredBy: 'Powered by Klaro!'

@@ -152,7 +152,7 @@ class SiteSettingsForm extends ConfigFormBase implements ContainerInjectionInter
    * {@inheritdoc}
    */
   protected function getEditableConfigNames() {
-    return ['system.site', 'ys_core.site'];
+    return ['system.site', 'ys_core.site', 'ys_core.consent_settings'];
   }
 
   /**
@@ -398,6 +398,13 @@ class SiteSettingsForm extends ConfigFormBase implements ContainerInjectionInter
       )->toString(),
     ];
 
+    $form['search_and_analytics']['consent_banner_enabled'] = [
+      '#type' => 'checkbox',
+      '#title' => $this->t('Ask visitors for cookie consent'),
+      '#description' => $this->t('Show a consent banner and hold analytics, share buttons and third-party embeds (Instagram, X, Bluesky, Google Maps, SoundCloud and others) until the visitor agrees to load them. Until a visitor consents, a blocked embed shows a short notice with a button to load it. Embeds served from Yale-run systems, such as 25Live and Localist, always load.'),
+      '#default_value' => $this->configFactory->get('ys_core.consent_settings')->get('banner_enabled') ?? FALSE,
+    ];
+
     $form['content_and_tagging'] = [
       '#type' => 'details',
       '#title' => $this->t('Content and tagging'),
@@ -574,6 +581,27 @@ class SiteSettingsForm extends ConfigFormBase implements ContainerInjectionInter
     }
 
     $yaleSiteConfig->save();
+
+    // Consent lives in its own config object rather than in ys_core.site so it
+    // can carry a config schema; ys_core.site has none (see
+    // yalesites-org/YaleSites-Internal#579).
+    $consentConfig = $this->configFactory->getEditable('ys_core.consent_settings');
+    $consentWas = (bool) $consentConfig->get('banner_enabled');
+    $consentNow = (bool) $form_state->getValue('consent_banner_enabled');
+    $consentConfig->set('banner_enabled', $consentNow)->save();
+
+    if ($consentWas !== $consentNow) {
+      // Klaro gates the platform's analytics and share buttons through
+      // hook_js_alter(), whose output is cached in the asset collection under a
+      // key that knows nothing about this setting. A tag invalidation therefore
+      // would not reach it, and the stale copy is dangerous in both directions:
+      // left on, third-party scripts keep loading un-gated on a site that
+      // believes it is asking for consent; left off, the scripts stay deferred
+      // with no Klaro on the page to undefer them, silently killing analytics
+      // and the share buttons. This toggle is flipped roughly once per site, so
+      // a full flush is the cheap and safe answer.
+      drupal_flush_all_caches();
+    }
 
     $submitted_vocab_name = $form_state->getValue('custom_vocab_name') ?: 'Custom Vocab';
     $custom_vocab_name = $this->configFactory->getEditable('taxonomy.vocabulary.custom_vocab')->get('name');

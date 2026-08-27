@@ -53,3 +53,10 @@ services:
     tags:
       - { name: 'default_plugin_manager' }
 
+  # Stands Klaro down on sites that have not opted into cookie consent.
+  ys_core.consent_config_overrides:
+    class: Drupal\ys_core\Config\ConsentConfigOverrides
+    arguments:
+      - '@config.storage'
+    tags:
+      - { name: config.factory.override, priority: 5 }

@@ -56,6 +56,8 @@
     "drupal/jquery_ui_datepicker": "2.1.1",
     "drupal/jquery_ui_slider": "2.1.0",
     "drupal/jquery_ui_touch_punch": "1.1.1",
+    "drupal/klaro": "3.1.1",
+    "drupal/klaro_js": "3.1.0",
     "drupal/layout_builder_browser": "1.9.0",
     "drupal/layout_builder_lock": "2.0.0-rc2",
     "drupal/layout_builder_restrictions": "3.0.4",

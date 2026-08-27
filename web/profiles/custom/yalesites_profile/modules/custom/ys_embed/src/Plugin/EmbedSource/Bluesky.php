@@ -20,13 +20,25 @@ class Bluesky extends EmbedSourceBase implements EmbedSourceInterface {
 
   /**
    * {@inheritdoc}
+   *
+   * Bluesky is a Bluesky PBLLC service.
+   */
+  protected static $klaroService = 'bluesky';
+
+  /**
+   * {@inheritdoc}
    */
   protected static $pattern = '/^(?<blockquote><blockquote class="bluesky-embed".*?<\/blockquote>).*?src="https:\/\/embed\.bsky\.app\/static\/embed\.js"/s';
 
   /**
    * {@inheritdoc}
    */
-  protected static $template = "{{ blockquote|raw }}\r\n<script async src=\"https://embed.bsky.app/static/embed.js\" charset=\"utf-8\"></script>\r\n";
+  protected static $script = 'https://embed.bsky.app/static/embed.js';
+
+  /**
+   * {@inheritdoc}
+   */
+  protected static $template = "{{ blockquote|raw }}\r\n<script async{% if klaro_service %} type=\"text/plain\" data-type=\"application/javascript\" data-src=\"{{ script }}\" data-name=\"{{ klaro_service }}\"{% else %} src=\"{{ script }}\"{% endif %} charset=\"utf-8\"></script>\r\n";
 
   /**
    * {@inheritdoc}

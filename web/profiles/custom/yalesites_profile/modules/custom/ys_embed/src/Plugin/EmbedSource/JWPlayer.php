@@ -20,6 +20,13 @@ class JWPlayer extends EmbedSourceBase implements EmbedSourceInterface {
 
   /**
    * {@inheritdoc}
+   *
+   * JW Player is a third-party video platform.
+   */
+  protected static $klaroService = 'jwplayer';
+
+  /**
+   * {@inheritdoc}
    */
   protected static $pattern = '/<iframe.+src="(?<url>https:\/\/(content|cdn).(jwplatform|jwplayer).com\/players\/[^"]+)"/s';
   /**

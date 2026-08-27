@@ -20,13 +20,25 @@ class Twitter extends EmbedSourceBase implements EmbedSourceInterface {
 
   /**
    * {@inheritdoc}
+   *
+   * X (formerly Twitter) is an X Corp. service.
+   */
+  protected static $klaroService = 'x';
+
+  /**
+   * {@inheritdoc}
    */
   protected static $pattern = '/^(?<blockquote><blockquote.*<\/blockquote>).*src=\"https:\/\/platform\.twitter\.com\/widgets\.js\"/s';
 
   /**
    * {@inheritdoc}
    */
-  protected static $template = "{{ blockquote|raw }}\r\n<script async src=\"https://platform.twitter.com/widgets.js\" charset=\"utf-8\"></script>\r\n";
+  protected static $script = 'https://platform.twitter.com/widgets.js';
+
+  /**
+   * {@inheritdoc}
+   */
+  protected static $template = "{{ blockquote|raw }}\r\n<script async{% if klaro_service %} type=\"text/plain\" data-type=\"application/javascript\" data-src=\"{{ script }}\" data-name=\"{{ klaro_service }}\"{% else %} src=\"{{ script }}\"{% endif %} charset=\"utf-8\"></script>\r\n";
 
   /**
    * {@inheritdoc}

@@ -7,6 +7,8 @@
  * This modules functionality for managing embeddable content.
  */
 
+use Drupal\Core\Cache\CacheableMetadata;
+
 /**
  * Implements hook_theme().
  */
@@ -23,6 +25,9 @@ function ys_embed_theme($existing, $type, $theme, $path) {
         'embedType' => 'unknown',
         'title' => '',
         'url' => '',
+        // The Klaro consent service (app) ID gating this embed, or NULL when
+        // the source is not consent-gated.
+        'klaroService' => NULL,
         'displayAttributes' => [
           'width' => 'site',
           'height' => '100%',
@@ -34,4 +39,65 @@ function ys_embed_theme($existing, $type, $theme, $path) {
       ],
     ],
   ];
+}
+
+/**
+ * Implements hook_preprocess_HOOK() for embed_wrapper.
+ *
+ * Embed source plugins declare which Klaro consent service their third-party
+ * content belongs to, but whether that declaration is acted on is a site
+ * decision. This is the one place that turns the declaration into the rendered
+ * markup, so an embed is never left with Klaro's deferred attributes on a site
+ * where Klaro is not there to undefer them.
+ */
+function ys_embed_preprocess_embed_wrapper(array &$variables) {
+  $config = \Drupal::config('ys_core.consent_settings');
+
+  // Markup varies with the setting, so the rendered embed has to be
+  // invalidated when it changes.
+  CacheableMetadata::createFromRenderArray($variables)
+    ->addCacheableDependency($config)
+    ->applyTo($variables);
+
+  if (ys_embed_consent_gating_applies()) {
+    return;
+  }
+
+  // Consent gating is off for this site: render every embed as it was before
+  // Klaro, on both the iframe path (klaroService) and the script path
+  // (the inline template's own context).
+  $variables['klaroService'] = NULL;
+  if (isset($variables['embedSource']['#context']['klaro_service'])) {
+    $variables['embedSource']['#context']['klaro_service'] = NULL;
+  }
+}
+
+/**
+ * Whether this request should render embeds behind a consent gate.
+ *
+ * Deferring an embed is only safe where Klaro will actually be on the page to
+ * undefer it once the visitor consents; otherwise the embed is simply invisible
+ * forever. Klaro decides that in klaro_page_attachments() and it consults more
+ * than the site's own toggle - the "use klaro" permission, its excluded and
+ * disabled URL patterns, and whether any service needs consent at all. Asking
+ * KlaroHelper the same question keeps the two from drifting apart, which
+ * matters most for the admin paths in klaro.settings:disable_urls: without this
+ * an editor would get placeholders instead of their embeds in Layout Builder.
+ *
+ * @return bool
+ *   TRUE when embeds on this request should be gated.
+ */
+function ys_embed_consent_gating_applies(): bool {
+  if (!\Drupal::config('ys_core.consent_settings')->get('banner_enabled')) {
+    return FALSE;
+  }
+  if (!\Drupal::hasService('klaro.helper')) {
+    return FALSE;
+  }
+
+  $helper = \Drupal::service('klaro.helper');
+  return $helper->hasAccess()
+    && !$helper->onDisabledUri()
+    && !$helper->onExcludedUri()
+    && $helper->consentManagementRequired();
 }

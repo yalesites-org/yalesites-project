@@ -1,0 +1,32 @@
+uuid: 6d0f6720-144b-4325-ac9b-0ae01d0955af
+langcode: en
+status: true
+dependencies: {  }
+_core:
+  default_config_hash: '-iprVkW8-LtyDu0xCMSr8AqKTbIu4DYtGbd3RRPLWek'
+id: google_recaptcha
+label: 'Google reCAPTCHA'
+description: 'reCAPTCHA is a CAPTCHA system owned by Google LLC.'
+default: false
+purposes:
+  - security
+cookies: {  }
+required: true
+opt_out: false
+only_once: false
+contextual_consent_only: null
+contextual_consent_text: null
+info_url: 'https://www.google.com/recaptcha/about/'
+privacy_policy_url: 'https://policies.google.com/privacy'
+javascripts:
+  - 'https://www.google.com/recaptcha/api.js'
+  - 'https://www.recaptcha.net/recaptcha/api.js'
+  - recaptcha.js
+callback_code: ''
+on_init: ''
+on_accept: ''
+on_decline: ''
+wrapper_identifier:
+  - .g-recaptcha
+attachments: {  }
+weight: 0

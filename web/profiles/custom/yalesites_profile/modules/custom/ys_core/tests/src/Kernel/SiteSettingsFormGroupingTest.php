@@ -95,6 +95,7 @@ class SiteSettingsFormGroupingTest extends KernelTestBase {
     'teaser_image_fallback' => 'look_and_feel',
     'google_site_verification' => 'search_and_analytics',
     'google_analytics_migration' => 'search_and_analytics',
+    'consent_banner_enabled' => 'search_and_analytics',
     'custom_vocab_name' => 'content_and_tagging',
     'cas_app_name' => 'advanced',
     'environment_indicator_show' => 'advanced',

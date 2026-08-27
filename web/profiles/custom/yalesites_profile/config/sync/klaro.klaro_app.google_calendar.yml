@@ -1,0 +1,27 @@
+uuid: 36768cac-5901-4b68-8d92-9f4fbb5e7af5
+langcode: en
+status: true
+dependencies: {  }
+id: google_calendar
+label: 'Google Calendar'
+description: 'Google Calendar is a calendar service offered by Google.'
+default: false
+purposes:
+  - external_content
+cookies: {  }
+required: false
+opt_out: false
+only_once: false
+contextual_consent_only: null
+contextual_consent_text: null
+info_url: 'https://calendar.google.com/'
+privacy_policy_url: 'https://policies.google.com/privacy'
+javascripts:
+  - 'https://calendar.google.com/calendar/embed'
+callback_code: ''
+on_init: ''
+on_accept: ''
+on_decline: ''
+wrapper_identifier: {  }
+attachments: {  }
+weight: 0
