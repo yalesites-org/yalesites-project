@@ -135,8 +135,7 @@ third_party_settings:
         - title
         - field_event_description
         - field_event_cta
-        - field_localist_event_experience
-        - field_location_additional_info
+        - group_place
         - field_event_date
         - field_event_recurring
         - group_stream_information
@@ -183,8 +182,7 @@ third_party_settings:
         - field_localist_event_image_alt
         - field_localist_ics_url
         - field_localist_register_enabled
-        - field_event_place
-        - field_event_room
+        - field_localist_event_experience
       label: 'Localist data'
       region: content
       parent_name: group_event_tabs
@@ -221,6 +219,22 @@ third_party_settings:
       region: content
       parent_name: group_basic_info
       weight: 9
+      format_type: fieldset
+      format_settings:
+        classes: ''
+        show_empty_fields: false
+        id: ''
+        description: ''
+        required_fields: true
+    group_place:
+      children:
+        - field_event_place
+        - field_event_room
+        - field_location_additional_info
+      label: Location
+      region: content
+      parent_name: group_basic_info
+      weight: 6
       format_type: fieldset
       format_settings:
         classes: ''
@@ -322,7 +336,7 @@ content:
     third_party_settings: {  }
   field_event_place:
     type: chosen_select
-    weight: 38
+    weight: 6
     region: content
     settings: {  }
     third_party_settings: {  }
@@ -335,7 +349,7 @@ content:
     third_party_settings: {  }
   field_event_room:
     type: string_textfield
-    weight: 39
+    weight: 7
     region: content
     settings:
       size: 60
@@ -369,7 +383,7 @@ content:
     third_party_settings: {  }
   field_localist_event_experience:
     type: chosen_select
-    weight: 5
+    weight: 38
     region: content
     settings: {  }
     third_party_settings: {  }
@@ -440,7 +454,7 @@ content:
     third_party_settings: {  }
   field_location_additional_info:
     type: text_textarea
-    weight: 6
+    weight: 8
     region: content
     settings:
       rows: 5
