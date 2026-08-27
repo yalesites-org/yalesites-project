@@ -46,12 +46,21 @@ class YSLayoutOptionsTest extends UnitTestCase {
   }
 
   /**
-   * The default configuration adds an empty divider setting.
+   * The default configuration adds an integer divider setting.
+   *
+   * The type matters, not just the falsiness: the module's config schema
+   * declares 'divider' as an integer for every layout this class backs, and a
+   * section can be written straight from defaultConfiguration() without ever
+   * passing through the form (a config entity's default section, e.g.
+   * core.entity_view_display.node.profile.default.yml, which ships a
+   * ys_layout_two_column section). A string default there fails strict schema
+   * checking with "variable type is string but applied schema class is
+   * IntegerData" -- trading a missing-schema error for a wrong-type one.
    *
    * @covers ::defaultConfiguration
    */
   public function testDefaultConfigurationAddsDivider(): void {
-    $this->assertSame('', $this->layout->defaultConfiguration()['divider']);
+    $this->assertSame(0, $this->layout->defaultConfiguration()['divider']);
   }
 
   /**

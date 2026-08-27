@@ -61,8 +61,17 @@ class YSLayoutOptions extends LayoutDefault implements ContainerFactoryPluginInt
   public function defaultConfiguration() {
     $configuration = parent::defaultConfiguration();
 
+    // An int, not '': config/schema/ys_layouts.schema.yml declares 'divider'
+    // as an integer for every layout this class backs, and a real checkbox
+    // submission always resolves to 0/1 anyway. A section can also be written
+    // straight from here without ever passing through the form -- a config
+    // entity's default section, as core.entity_view_display.node.profile
+    // .default.yml does for ys_layout_two_column -- and a string default there
+    // fails strict schema checking on the type instead of on the missing
+    // mapping. Both '' and 0 are falsy in Twig, so the templates'
+    // `settings.divider ? 'true' : 'false'` is unaffected.
     return $configuration + [
-      'divider' => '',
+      'divider' => 0,
     ];
   }
 
