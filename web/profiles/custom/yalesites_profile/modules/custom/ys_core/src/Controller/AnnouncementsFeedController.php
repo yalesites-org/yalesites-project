@@ -5,6 +5,7 @@ namespace Drupal\ys_core\Controller;
 use Drupal\Core\Cache\CacheableJsonResponse;
 use Drupal\Core\Cache\CacheableMetadata;
 use Drupal\Core\Controller\ControllerBase;
+use Drupal\ys_core\Plugin\PlatformAdminSetting\AnnouncementsSourcePlatformAdminSetting;
 use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
 
 /**
@@ -34,7 +35,13 @@ class AnnouncementsFeedController extends ControllerBase {
       throw new NotFoundHttpException();
     }
 
-    $term_name = $config->get('announcements_source_term') ?: 'Dashboard Announcement';
+    // Normalized the same way the settings form stores and displays it, and
+    // through the same constant, so the query cannot look for a name the form
+    // would never have written. A whitespace-only value set out of band - by
+    // drush, or a settings.php override the form cannot see - would otherwise
+    // match no term and answer 200 with an empty feed.
+    $term_name = trim((string) $config->get('announcements_source_term'))
+      ?: AnnouncementsSourcePlatformAdminSetting::DEFAULT_TERM;
 
     $cacheability = (new CacheableMetadata())
       ->addCacheTags(['node_list:post', 'taxonomy_term_list:tags'])

@@ -4,9 +4,11 @@ namespace Drupal\Tests\ys_core\Kernel;
 
 use Drupal\Component\Serialization\Yaml;
 use Drupal\Core\Form\FormState;
+use Drupal\Core\Render\Element;
 use Drupal\KernelTests\KernelTestBase;
 use Drupal\Tests\user\Traits\UserCreationTrait;
 use Drupal\ys_core\Form\SiteSettingsForm;
+use Drupal\ys_core\PlatformAdminCheckerInterface;
 
 /**
  * Tests that the Site Settings form is grouped into task-based vertical tabs.
@@ -97,7 +99,6 @@ class SiteSettingsFormGroupingTest extends KernelTestBase {
     'google_analytics_migration' => 'search_and_analytics',
     'custom_vocab_name' => 'content_and_tagging',
     'cas_app_name' => 'advanced',
-    'environment_indicator_show' => 'advanced',
   ];
 
   /**
@@ -107,10 +108,11 @@ class SiteSettingsFormGroupingTest extends KernelTestBase {
    * Writing that schema is explicitly not test-only work and is tracked in
    * yalesites-org/YaleSites-Internal#579: as this module's README records, no
    * schema type validates both the install defaults and the real saved values
-   * without first correcting them (environment_indicator.show ships boolean
-   * true but is saved as integer 1, custom_favicon is declared '' but holds an
-   * array of file ids). Suppressed the same way the six sibling settings-form
-   * kernel tests in this profile do, rather than pre-empting that ticket.
+   * without first correcting them (custom_favicon is declared '' but holds an
+   * array of file ids, and a site that saved environment_indicator.show through
+   * this form before it moved holds integer 1 against a declared boolean).
+   * Suppressed the same way the six sibling settings-form kernel tests in this
+   * profile do, rather than pre-empting that ticket.
    */
   // phpcs:ignore DrupalPractice.Objects.StrictSchemaDisabled.StrictConfigSchema
   protected $strictConfigSchema = FALSE;
@@ -258,7 +260,6 @@ class SiteSettingsFormGroupingTest extends KernelTestBase {
       // handleMediaFilesystem() only dereferences this when it is truthy.
       'favicon' => [],
       'cas_app_name' => 'yalesites',
-      'environment_indicator_show' => TRUE,
     ]);
     $this->formObject()->submitForm($form, $form_state);
 
@@ -344,18 +345,72 @@ class SiteSettingsFormGroupingTest extends KernelTestBase {
 
     $this->assertFalse($form['advanced']['#access']);
     $this->assertFalse($form['advanced']['cas_app_name']['#access']);
-    $this->assertArrayNotHasKey('environment_indicator_show', $form['advanced']);
   }
 
   /**
-   * User 1 still sees the Advanced group and both restricted settings.
+   * A platform admin who is not user 1 must not get an empty Advanced tab.
+   *
+   * The group used to hold two settings - the CAS application name, user 1
+   * only, and the environment indicator, every platform admin - so it was gated
+   * at the platform admin level. The environment indicator has since moved to
+   * the Platform Admin Settings page (yalesites-org/YaleSites-Internal#1560),
+   * leaving only the narrower field, so the old gate would hand a platform
+   * admin a tab with nothing openable inside it (#1590).
+   *
+   * A plain user fails both gates, so a platform admin who is not user 1 is the
+   * only account that can tell a user 1 gate from a platform admin one. The
+   * account has to be a platform admin by BOTH mechanisms for that to hold:
+   * setUpCurrentUser()'s permissions argument invents a role with a random
+   * machine name, which no role-based gate would match, so the role is created
+   * under its real name and assigned through 'roles'. The hasPermission()
+   * assertion is what stops this setup decaying into a duplicate of the
+   * plain-user case above.
+   *
+   * Asserting the emptiness alongside the access is what keeps the rest honest.
+   * The group's gate is derived from its visible children, so the pair says
+   * "hidden BECAUSE nothing in it is reachable" rather than pinning today's
+   * answer - and the day a platform-admin-level setting is added here, this
+   * starts failing instead of quietly certifying a tab nobody can open.
+   */
+  public function testAdvancedGroupIsHiddenFromPlatformAdminsWhoAreNotUser1(): void {
+    $this->createRole([PlatformAdminCheckerInterface::PERMISSION], 'platform_admin');
+    $account = $this->setUpCurrentUser(['uid' => 3, 'roles' => ['platform_admin']]);
+    $this->assertTrue($account->hasPermission(PlatformAdminCheckerInterface::PERMISSION));
+
+    $form = $this->formObject()->buildForm([], new FormState());
+
+    $this->assertSame(
+      [],
+      Element::getVisibleChildren($form['advanced']),
+      'Nothing in Advanced is reachable by a platform admin, so hiding it is the only correct answer.'
+    );
+    $this->assertFalse(
+      $form['advanced']['#access'],
+      'A platform admin who is not user 1 was offered an empty Advanced tab.'
+    );
+    // The field's own gate is what #1560 is about, and this is the only user
+    // class it was not already pinned for.
+    $this->assertFalse($form['advanced']['cas_app_name']['#access']);
+  }
+
+  /**
+   * User 1 still sees the Advanced group, and only what is left in it.
+   *
+   * The other half of the derived rule: a group with something reachable in it
+   * must stay reachable.
+   *
+   * The environment indicator is asserted gone from the form rather than merely
+   * hidden, because a hidden element still submits its default - which would
+   * overwrite whatever a platform admin set on the Platform Admin Settings
+   * page.
    */
   public function testAdvancedGroupIsVisibleToUser1(): void {
     $form = $this->buildFormAs(1);
 
+    $this->assertSame(['cas_app_name'], Element::getVisibleChildren($form['advanced']));
     $this->assertTrue($form['advanced']['#access']);
     $this->assertTrue($form['advanced']['cas_app_name']['#access']);
-    $this->assertArrayHasKey('environment_indicator_show', $form['advanced']);
+    $this->assertArrayNotHasKey('environment_indicator_show', $form['advanced']);
   }
 
   /**
