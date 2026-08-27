@@ -1,16 +1,16 @@
-uuid: 86852be4-97d5-44b5-9030-62fb3e3d96de
+uuid: 14e6fd40-520c-4e5d-bf81-8d248292935d
 langcode: en
 status: true
 dependencies:
   module:
+    - address
     - node
-    - text
-id: node.field_location_additional_info
-field_name: field_location_additional_info
+id: node.field_event_address
+field_name: field_event_address
 entity_type: node
-type: text_long
+type: address
 settings: {  }
-module: text
+module: address
 locked: false
 cardinality: 1
 translatable: true

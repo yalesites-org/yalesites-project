@@ -3,9 +3,11 @@ langcode: en
 status: true
 dependencies:
   config:
+    - field.field.node.event.field_address_additional_info
     - field.field.node.event.field_audience
     - field.field.node.event.field_category
     - field.field.node.event.field_custom_vocab
+    - field.field.node.event.field_event_address
     - field.field.node.event.field_event_audience
     - field.field.node.event.field_event_cta
     - field.field.node.event.field_event_date
@@ -30,7 +32,6 @@ dependencies:
     - field.field.node.event.field_localist_id
     - field.field.node.event.field_localist_info
     - field.field.node.event.field_localist_register_enabled
-    - field.field.node.event.field_location_additional_info
     - field.field.node.event.field_login_required
     - field.field.node.event.field_metatags
     - field.field.node.event.field_stream_embed_code
@@ -44,6 +45,7 @@ dependencies:
     - field.field.node.event.layout_builder__layout
     - node.type.event
   module:
+    - address
     - layout_builder
     - layout_builder_restrictions
     - layout_discovery
@@ -84,6 +86,36 @@ third_party_settings:
               context_mapping:
                 entity: layout_builder.entity
             weight: 1
+            additional: {  }
+          038c272a-c659-42c5-b666-91cc59f47f28:
+            uuid: 038c272a-c659-42c5-b666-91cc59f47f28
+            region: content
+            configuration:
+              id: 'field_block:node:event:field_event_address'
+              label_display: '0'
+              context_mapping:
+                entity: layout_builder.entity
+              formatter:
+                type: address_default
+                label: above
+                settings: {  }
+                third_party_settings: {  }
+            weight: 2
+            additional: {  }
+          614ca93e-806f-448a-a1ce-62147b605df8:
+            uuid: 614ca93e-806f-448a-a1ce-62147b605df8
+            region: content
+            configuration:
+              id: 'field_block:node:event:field_address_additional_info'
+              label_display: '0'
+              context_mapping:
+                entity: layout_builder.entity
+              formatter:
+                type: text_default
+                label: above
+                settings: {  }
+                third_party_settings: {  }
+            weight: 3
             additional: {  }
         third_party_settings:
           layout_builder_lock:
@@ -143,6 +175,13 @@ content:
     third_party_settings: {  }
     weight: -20
     region: content
+  field_address_additional_info:
+    type: text_default
+    label: above
+    settings: {  }
+    third_party_settings: {  }
+    weight: 35
+    region: content
   field_audience:
     type: entity_reference_label
     label: above
@@ -166,6 +205,13 @@ content:
       link: true
     third_party_settings: {  }
     weight: 32
+    region: content
+  field_event_address:
+    type: address_default
+    label: above
+    settings: {  }
+    third_party_settings: {  }
+    weight: 34
     region: content
   field_event_audience:
     type: entity_reference_label
@@ -369,13 +415,6 @@ content:
       format_custom_true: ''
     third_party_settings: {  }
     weight: 30
-    region: content
-  field_location_additional_info:
-    type: text_default
-    label: above
-    settings: {  }
-    third_party_settings: {  }
-    weight: 33
     region: content
   field_stream_embed_code:
     type: string

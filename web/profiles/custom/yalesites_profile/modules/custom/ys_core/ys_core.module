@@ -1118,6 +1118,8 @@ function _ys_core_disable_event_fields(&$form, $form_id) {
       'field_event_source',
       'field_event_id',
       'field_localist_event_experience',
+      'field_event_place',
+      'field_event_room',
     ];
     foreach ($fieldsToDisable as $field) {
       $form[$field]['#disabled'] = TRUE;

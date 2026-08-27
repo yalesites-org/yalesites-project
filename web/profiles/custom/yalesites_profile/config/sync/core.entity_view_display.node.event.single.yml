@@ -4,9 +4,11 @@ status: true
 dependencies:
   config:
     - core.entity_view_mode.node.single
+    - field.field.node.event.field_address_additional_info
     - field.field.node.event.field_audience
     - field.field.node.event.field_category
     - field.field.node.event.field_custom_vocab
+    - field.field.node.event.field_event_address
     - field.field.node.event.field_event_audience
     - field.field.node.event.field_event_cta
     - field.field.node.event.field_event_date
@@ -31,7 +33,6 @@ dependencies:
     - field.field.node.event.field_localist_id
     - field.field.node.event.field_localist_info
     - field.field.node.event.field_localist_register_enabled
-    - field.field.node.event.field_location_additional_info
     - field.field.node.event.field_login_required
     - field.field.node.event.field_metatags
     - field.field.node.event.field_stream_embed_code
@@ -181,8 +182,10 @@ content:
     region: content
 hidden:
   addtoany: true
+  field_address_additional_info: true
   field_audience: true
   field_custom_vocab: true
+  field_event_address: true
   field_event_audience: true
   field_event_description: true
   field_event_id: true
@@ -202,7 +205,6 @@ hidden:
   field_localist_id: true
   field_localist_info: true
   field_localist_register_enabled: true
-  field_location_additional_info: true
   field_login_required: true
   field_metatags: true
   field_stream_embed_code: true
