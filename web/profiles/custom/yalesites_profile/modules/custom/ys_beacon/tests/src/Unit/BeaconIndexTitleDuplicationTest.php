@@ -15,7 +15,7 @@ use Drupal\search_api\Item\FieldInterface;
 use League\HTMLToMarkdown\HtmlConverter;
 
 /**
- * Characterizes how the ys_beacon index's `title` field ends up duplicated.
+ * Verifies the patched fix for the ys_beacon index's duplicated title.
  *
  * YaleSites-Internal#1617 reported the node title appearing twice in every
  * Beacon search chunk (once as a heading, once as a "Title: ..." footer
@@ -29,11 +29,24 @@ use League\HTMLToMarkdown\HtmlConverter;
  * is ever captured. That removes the title from the chunk entirely -- not
  * "once", as intended, but zero times.
  *
+ * The actual fix is a backport of the upstream maintainer's own patch
+ * (https://www.drupal.org/project/ai/issues/3547137, merged for a future
+ * 2.0.x release via https://git.drupalcode.org/project/ai/-/merge_requests/890)
+ * against our installed 1.4.3 `drupal/ai` package: `groupFieldData()` no
+ * longer assigns `$title` (the heading source) for a field that is also
+ * configured as `contextual_content`, so that field's value only appears
+ * once, via the existing "Title: ..." contextual-content line. Unlike the
+ * upstream MR, this backport skips the new admin-facing "Exclude title"
+ * toggle, its config schema/install-hook plumbing, and the entity-based
+ * title extraction rewrite -- none of that is needed to fix the duplication
+ * for our deployed config, and porting it would add schema/update-hook
+ * surface area for no behavioral gain here.
+ *
  * This test exercises the real vendor logic (`groupFieldData()` +
  * `prepareChunkText()` from drupal/ai's ai_search submodule) against a
- * fixture built from the actual `ys_beacon` field configuration, so the
- * duplication -- and the proposed fix's actual effect -- are demonstrated
- * against real code rather than asserted from a reading of it.
+ * fixture built from the actual `ys_beacon` field configuration, so the fix
+ * is demonstrated against real (patched) code rather than asserted from a
+ * reading of it.
  *
  * @group ys_beacon
  * @coversDefaultClass \Drupal\ai_search\Plugin\EmbeddingStrategy\EmbeddingBase
@@ -45,24 +58,28 @@ class BeaconIndexTitleDuplicationTest extends UnitTestCase {
   private const BODY = 'Under federal regulations and sponsor requirements, general administrative expenses include but are not limited to, administrative or clerical salaries.';
 
   /**
-   * Today's config puts the title in a chunk twice.
+   * With the patch applied, today's config renders the title exactly once.
    *
-   * Once as the uppercased `# TITLE` heading, once again as the
-   * `Title: ...` contextual-content footer line appended to every chunk.
+   * Before the patch this same fixture (`title` field set to
+   * `contextual_content`, matching ai_search.index.ys_beacon.yml as
+   * deployed) rendered the title twice: once as the uppercased `# TITLE`
+   * heading, once again as the `Title: ...` contextual-content line. The
+   * patch suppresses the automatic heading whenever the title field is
+   * already contextual content, leaving only the contextual-content line.
    *
    * @covers ::groupFieldData
    * @covers ::prepareChunkText
    */
-  public function testCurrentConfigDuplicatesTitleInEveryChunk(): void {
+  public function testContextualContentConfigRendersTitleExactlyOnceAfterPatch(): void {
     $chunk = $this->buildChunk('contextual_content');
 
     $this->assertSame(
-      2,
+      1,
       $this->countTitleOccurrences($chunk),
-      "Title should appear twice under today's config: once as the heading, once as the contextual-content footer line."
+      'After the patch, the title should appear exactly once -- as the contextual-content line, with the redundant heading suppressed.'
     );
-    $this->assertStringContainsString('# ' . strtoupper(self::TITLE), $chunk);
-    $this->assertStringContainsString('Title: ' . self::TITLE, $chunk);
+    $this->assertStringNotContainsString('# ' . strtoupper(self::TITLE), $chunk, 'The automatic heading should be suppressed once the title is already contextual content.');
+    $this->assertStringContainsString('Title: ' . self::TITLE, $chunk, 'The contextual-content "Title: ..." line should still be present.');
   }
 
   /**
@@ -82,7 +99,23 @@ class BeaconIndexTitleDuplicationTest extends UnitTestCase {
       $this->countTitleOccurrences($chunk),
       "The 'title: ignore' config removes the title from the chunk entirely -- it does not leave a single occurrence as the ticket's acceptance criteria assumed."
     );
-    $this->assertStringNotContainsString('# ' . strtoupper(self::TITLE), $chunk);
+  }
+
+  /**
+   * The patch leaves the non-contextual case alone.
+   *
+   * If the title field were configured as `main_content` instead, the
+   * heading is unaffected by the patch -- the guard only suppresses the
+   * heading when the title is contextual content, so this path still
+   * renders the heading exactly as before.
+   *
+   * @covers ::groupFieldData
+   * @covers ::prepareChunkText
+   */
+  public function testMainContentConfigStillRendersTheHeading(): void {
+    $chunk = $this->buildChunk('main_content');
+
+    $this->assertStringContainsString('# ' . strtoupper(self::TITLE), $chunk, 'A title field configured as main_content should still get the automatic heading -- the patch only guards the contextual_content case.');
   }
 
   /**
@@ -98,16 +131,18 @@ class BeaconIndexTitleDuplicationTest extends UnitTestCase {
 
     $converter = new HtmlConverter();
     $converter->getConfig()->setOption('strip_tags', TRUE);
-    $this->setProtectedProperty($embedding, 'converter', $converter);
-    $this->setProtectedProperty($embedding, 'entityTypeManager', $this->buildEntityTypeManager());
-    $this->setProtectedProperty($embedding, 'configFactory', $this->buildConfigFactory($title_indexing_option));
+    $this->setProperty($embedding, 'converter', $converter);
+    $this->setProperty($embedding, 'entityTypeManager', $this->buildEntityTypeManager());
+    $this->setProperty($embedding, 'configFactory', $this->buildConfigFactory($title_indexing_option));
 
     $index = $this->createMock(IndexInterface::class);
     $index->method('id')->willReturn('ys_beacon');
 
     $fields = [
-      $this->buildField('rendered_item', self::BODY, 'Rendered HTML Output', 'main_content'),
-      $this->buildField('title', self::TITLE, 'Title', $title_indexing_option, isLabelField: TRUE),
+      // Matches search_api.index.ys_beacon.yml: rendered_item has no
+      // datasource_id (it's processor-provided), title's is entity:node.
+      $this->buildField('rendered_item', self::BODY, 'Rendered HTML Output'),
+      $this->buildField('title', self::TITLE, 'Title', hasDatasource: TRUE),
     ];
 
     [$title, $contextual_content, $main_content] = $this->invoke($embedding, 'groupFieldData', [$fields, $index]);
@@ -155,8 +190,14 @@ class BeaconIndexTitleDuplicationTest extends UnitTestCase {
 
   /**
    * Builds a Search API field mock with the given identifier and value.
+   *
+   * `$hasDatasource` mirrors whether the real field carries a
+   * `datasource_id` in search_api.index.ys_beacon.yml: `rendered_item` is
+   * processor-provided (none), `title`'s is `entity:node`. Only a field with
+   * a datasource can ever match the entity's label key in
+   * `groupFieldData()`, so this also exercises the no-datasource branch.
    */
-  private function buildField(string $id, string $value, string $label, string $indexing_option, bool $isLabelField = FALSE): FieldInterface {
+  private function buildField(string $id, string $value, string $label, bool $hasDatasource = FALSE): FieldInterface {
     $field = $this->createMock(FieldInterface::class);
     $field->method('getFieldIdentifier')->willReturn($id);
     $field->method('getLabel')->willReturn($label);
@@ -168,7 +209,7 @@ class BeaconIndexTitleDuplicationTest extends UnitTestCase {
     $definition->method('getDataType')->willReturn('string');
     $field->method('getDataDefinition')->willReturn($definition);
 
-    if ($isLabelField) {
+    if ($hasDatasource) {
       $datasource = $this->createMock(DatasourceInterface::class);
       $datasource->method('getEntityTypeId')->willReturn('node');
       $field->method('getDatasource')->willReturn($datasource);
@@ -186,9 +227,8 @@ class BeaconIndexTitleDuplicationTest extends UnitTestCase {
    * The class's constructor is bypassed via newInstanceWithoutConstructor,
    * so nothing is populated.
    */
-  private function setProtectedProperty(object $object, string $property, mixed $value): void {
+  private function setProperty(object $object, string $property, mixed $value): void {
     $ref = new \ReflectionProperty($object, $property);
-    $ref->setAccessible(TRUE);
     $ref->setValue($object, $value);
   }
 
@@ -197,7 +237,6 @@ class BeaconIndexTitleDuplicationTest extends UnitTestCase {
    */
   private function invoke(object $object, string $method, array $args = []) {
     $ref = new \ReflectionMethod($object, $method);
-    $ref->setAccessible(TRUE);
     return $ref->invokeArgs($object, $args);
   }
 
