@@ -7,7 +7,7 @@ use Drupal\Core\Config\ConfigFactoryInterface;
 use Drupal\Core\Logger\LoggerChannelFactoryInterface;
 use Drupal\Tests\UnitTestCase;
 use Drupal\ys_core\CoreTwigExtension;
-use Drupal\ys_core\YaleSitesMediaManager;
+use Drupal\ys_media\YaleSitesMediaManager;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\RequestStack;
 
@@ -38,7 +38,7 @@ class CoreTwigExtensionTest extends UnitTestCase {
   /**
    * Mock of the media manager, used only for the site_name_image setting.
    *
-   * @var \Drupal\ys_core\YaleSitesMediaManager|\PHPUnit\Framework\MockObject\MockObject
+   * @var \Drupal\ys_media\YaleSitesMediaManager|\PHPUnit\Framework\MockObject\MockObject
    */
   protected $mediaManager;
 
@@ -110,6 +110,52 @@ class CoreTwigExtensionTest extends UnitTestCase {
       ->willReturn('<svg><title>Yale</title></svg>');
 
     $this->assertSame('<svg><title>Yale</title></svg>', $this->extension->getHeaderSetting('site_name_image'));
+  }
+
+  /**
+   * Degrades instead of fataling when the media manager is absent.
+   *
+   * The media manager is injected with an optional container reference, so it
+   * is NULL on any bootstrap where ys_media is not enabled -- which `drush
+   * deploy` guarantees for exactly one bootstrap on an existing site, because
+   * updatedb runs before the config import that enables the module. Pages are
+   * served during that window, so this path has to return the same value the
+   * "no image configured" path returns rather than raising an error.
+   *
+   * @covers ::__construct
+   * @covers ::getHeaderSetting
+   */
+  public function testGetHeaderSettingDegradesWhenMediaManagerIsUnavailable(): void {
+    $configFactory = $this->createMock(ConfigFactoryInterface::class);
+    $configFactory->method('getEditable')->willReturnMap([
+      ['ys_core.site', $this->coreConfig],
+      ['ys_core.header_settings', $this->headerConfig],
+    ]);
+    $requestStack = new RequestStack();
+    $requestStack->push(Request::create('https://www.yale.edu/page'));
+
+    $extension = new CoreTwigExtension(
+      $configFactory,
+      NULL,
+      $requestStack,
+      $this->createMock(LoggerChannelFactoryInterface::class)
+    );
+
+    // A site name image IS configured; only the service is missing.
+    $this->headerConfig->method('get')->willReturnMap([
+      ['site_name_image', [42]],
+      ['header_type', 'mega-menu'],
+    ]);
+
+    $this->assertFalse(
+      $extension->getHeaderSetting('site_name_image'),
+      'Without ys_media the SVG is simply unavailable, exactly as when none is configured.'
+    );
+    $this->assertSame(
+      'mega-menu',
+      $extension->getHeaderSetting('header_type'),
+      'Every other header setting must keep working without ys_media.'
+    );
   }
 
   /**

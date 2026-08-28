@@ -188,12 +188,23 @@ class DashboardAnnouncements {
         $timestamp = $raw_date !== '' ? strtotime((string) $raw_date) : FALSE;
       }
       $summary_source = $item['summary'] ?? $item['content_text'] ?? $item['content_html'] ?? '';
+      // Reads JSON Feed 1.1's own `tags` field, which the source controller
+      // populates with the post's whitelisted category names. Tolerates total
+      // absence of the key (an older cached entry, or a publisher that has
+      // not deployed this yet) by resolving to an empty list rather than
+      // erroring - the "cache shape gotcha" the issue flags.
+      $categories_raw = is_array($item['tags'] ?? NULL) ? $item['tags'] : [];
+      $categories = array_values(array_filter(
+        array_map(fn($value) => trim((string) $value), $categories_raw),
+        fn($value) => $value !== '',
+      ));
       $announcements[] = [
         'title' => isset($item['title']) ? (string) $item['title'] : '',
         'url' => isset($item['url']) ? UrlHelper::stripDangerousProtocols((string) $item['url']) : '',
         'summary' => trim(Unicode::truncate(Html::decodeEntities(strip_tags((string) $summary_source)), 300, TRUE, TRUE)),
         'timestamp' => $timestamp ?: NULL,
         'date' => $timestamp ? $this->dateFormatter->format($timestamp, 'custom', 'F j, Y') : '',
+        'categories' => $categories,
       ];
     }
 
@@ -251,27 +262,69 @@ class DashboardAnnouncements {
   }
 
   /**
-   * Counts announcements newer than the user's last-seen timestamp.
+   * Returns announcements decorated with this user's unread state.
+   *
+   * This is the one place unread state is decided: the dashboard's per-item
+   * marker and the toolbar's badge count both come from here, so they cannot
+   * disagree. Feed order and membership are left alone. Items carry no stable
+   * id, so "new" is derived from the single `announcements_last_seen`
+   * high-water mark rather than per-item read records -- which also means an
+   * item with no parseable date is never new, as nothing can be newer than
+   * that mark without a date to compare.
+   *
+   * @param \Drupal\Core\Session\AccountInterface $account
+   *   The account to resolve unread state for.
+   *
+   * @return array
+   *   The announcements from getAnnouncements(), each with an added `is_new`
+   *   key. Empty for an anonymous account: there is no stored read state to
+   *   decorate, so the feed is not fetched on its behalf either.
+   */
+  public function getAnnouncementsForUser(AccountInterface $account): array {
+    if ($account->isAnonymous()) {
+      return [];
+    }
+    $last_seen = $this->lastSeen($account);
+
+    return array_map(
+      fn (array $item) => $item + [
+        'is_new' => !empty($item['timestamp']) && (int) $item['timestamp'] > $last_seen,
+      ],
+      $this->getAnnouncements()
+    );
+  }
+
+  /**
+   * Counts the announcements this user has not seen yet.
    *
    * Reads the already-cached feed, so this is a cheap operation that adds no
    * extra HTTP requests to the upstream endpoint.
    */
   public function getUnreadCount(AccountInterface $account): int {
-    if ($account->isAnonymous()) {
-      return 0;
-    }
-    $items = $this->getAnnouncements();
-    if (empty($items)) {
-      return 0;
-    }
-    $last_seen = (int) ($this->userData->get(self::USER_DATA_MODULE, (int) $account->id(), self::USER_DATA_LAST_SEEN) ?? 0);
-    $count = 0;
-    foreach ($items as $item) {
-      if (!empty($item['timestamp']) && (int) $item['timestamp'] > $last_seen) {
-        $count++;
-      }
-    }
-    return $count;
+    return self::countUnread($this->getAnnouncementsForUser($account));
+  }
+
+  /**
+   * Counts the items flagged new in an already-decorated announcement list.
+   *
+   * Lets a caller that already holds the decorated list -- the dashboard
+   * controller -- get the count without walking the feed a second time, while
+   * keeping the tally itself in one place.
+   *
+   * @param array $items
+   *   Announcements as returned by getAnnouncementsForUser().
+   */
+  public static function countUnread(array $items): int {
+    return count(array_filter(array_column($items, 'is_new')));
+  }
+
+  /**
+   * The timestamp of the newest announcement this user has already seen.
+   *
+   * Zero when they have never seen one, which makes every dated item unread.
+   */
+  protected function lastSeen(AccountInterface $account): int {
+    return (int) ($this->userData->get(self::USER_DATA_MODULE, (int) $account->id(), self::USER_DATA_LAST_SEEN) ?? 0);
   }
 
   /**
@@ -279,6 +332,13 @@ class DashboardAnnouncements {
    *
    * Stores the newest current timestamp; future items dated later than that
    * will count as unread.
+   *
+   * Invoked only by an explicit editor action, never by rendering the
+   * dashboard. Stamping on page view meant an editor who glanced at the
+   * dashboard on their way to edit a page burned their unread markers without
+   * having read anything, and they did not come back.
+   *
+   * @see \Drupal\ys_core\Form\MarkAnnouncementsReadForm
    */
   public function markAllRead(AccountInterface $account): void {
     if ($account->isAnonymous()) {
@@ -298,8 +358,7 @@ class DashboardAnnouncements {
       return;
     }
     $uid = (int) $account->id();
-    $current = (int) ($this->userData->get(self::USER_DATA_MODULE, $uid, self::USER_DATA_LAST_SEEN) ?? 0);
-    if ($newest > $current) {
+    if ($newest > $this->lastSeen($account)) {
       $this->userData->set(self::USER_DATA_MODULE, $uid, self::USER_DATA_LAST_SEEN, $newest);
       Cache::invalidateTags([self::unreadCacheTag($uid)]);
     }

@@ -8,6 +8,7 @@ use Drupal\Core\Form\FormStateInterface;
 use Drupal\ys_beacon\Config\YsBeaconConfigOverrides;
 use Drupal\ys_beacon\Controller\ChatApiController;
 use Drupal\ys_beacon\Service\BeaconIndexManager;
+use Drupal\ys_beacon\Service\RagRetriever;
 use Drupal\ys_beacon\Service\SystemPromptBuilder;
 use Symfony\Component\DependencyInjection\ContainerInterface;
 
@@ -47,6 +48,7 @@ class YsBeaconAdminSettings extends ConfigFormBase {
     $instance->indexManager = $container->get('ys_beacon.index_manager');
     $instance->indexStatus = $container->get('ys_beacon.index_status');
     $instance->indexingBatchHelper = $container->get('search_api.indexing_batch_helper');
+    $instance->pdfTextIndexer = $container->get('ys_beacon.pdf_text_indexer');
     return $instance;
   }
 
@@ -114,7 +116,7 @@ class YsBeaconAdminSettings extends ConfigFormBase {
       '#type' => 'number',
       '#title' => $this->t('Sources per answer'),
       '#description' => $this->t('How many content chunks are retrieved as sources for each answer.'),
-      '#default_value' => $config->get('top_k') ?: 5,
+      '#default_value' => $config->get('top_k') ?: RagRetriever::DEFAULT_TOP_K,
       '#min' => 1,
       '#max' => 20,
       '#required' => TRUE,
@@ -137,7 +139,7 @@ class YsBeaconAdminSettings extends ConfigFormBase {
     $form['retrieval']['model_context_window'] = [
       '#type' => 'number',
       '#title' => $this->t('Model context window (tokens)'),
-      '#description' => $this->t("The context window, in tokens, of the model Portkey currently routes to. Long conversations are trimmed to fit within it so the chat degrades gracefully instead of erroring. The configured model id is only a placeholder - Portkey selects the real model server-side - so this value cannot be detected automatically: <strong>update it whenever the routed model changes</strong>. Defaults to Claude Haiku's 200000-token window."),
+      '#description' => $this->t("The context window, in tokens, of the model Portkey currently routes to. Long conversations are trimmed to fit within it so the chat degrades gracefully instead of erroring. The configured model id is only a placeholder - Portkey selects the real model server-side - so this value cannot be detected automatically: <strong>update it whenever the routed model changes</strong>. Defaults to 400000 tokens - measured, not nominal: the Sonnet 5 route accepted 433437 input tokens in a single request."),
       '#default_value' => $config->get('model_context_window') ?: ChatApiController::DEFAULT_CONTEXT_WINDOW,
       // Floor comfortably above the reserved output + safety budget plus a full
       // system prompt, so a too-small value is rejected here rather than

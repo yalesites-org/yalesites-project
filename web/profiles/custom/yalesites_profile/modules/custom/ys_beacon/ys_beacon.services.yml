@@ -37,6 +37,9 @@ services:
   ys_beacon.markdown_converter:
     class: Drupal\ys_beacon\Service\MarkdownConverter
 
+  ys_beacon.indexable_html_filter:
+    class: Drupal\ys_beacon\Service\IndexableHtmlFilter
+
   ys_beacon.system_instructions_storage:
     class: Drupal\ys_beacon\Service\SystemInstructionsStorage
     arguments:
@@ -100,6 +103,8 @@ services:
       - '@ys_beacon.indexability'
       - '@config.factory'
       - '@logger.channel.ys_beacon'
+      - '@entity_field.manager'
+      - '@keyvalue'
 
   ys_beacon.content_feed_builder:
     class: Drupal\ys_beacon\Service\ContentFeedBuilder

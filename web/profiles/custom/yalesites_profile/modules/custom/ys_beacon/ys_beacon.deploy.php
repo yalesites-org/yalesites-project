@@ -64,3 +64,103 @@ function ys_beacon_deploy_10001() {
     ? t('Filled in Beacon settings defaults missing from an incomplete configuration.')
     : t('Beacon settings are complete; nothing to restore.');
 }
+
+/**
+ * Queues PDF text extraction for documents that predate the trigger fix.
+ *
+ * Until issue #1580 extraction only ever fired when a media item's source file
+ * changed, so no document uploaded and opted in through the normal editorial
+ * flow has ever had its text extracted. On sites migrated from another
+ * platform the whole media library predates Beacon and no editor action will
+ * ever trigger it, so the backlog has to be swept once here rather than left
+ * to the fixed trigger.
+ *
+ * This only queues: parsing PDFs is pure PHP, and the existing
+ * ys_beacon_pdf_text_extraction worker already drains on cron, so the deploy
+ * window stays short. The sandbox pages through the library because loading
+ * every media item at once would not survive a large one. Sites where Beacon
+ * is unauthorized or unconfigured are skipped outright, before the library is
+ * enumerated at all; the per-item gate in _ys_beacon_queue_pdf_extraction()
+ * still decides each document, so the rule cannot drift from the editorial
+ * path.
+ */
+function ys_beacon_deploy_10002(array &$sandbox) {
+  // Belt and braces: deploy:hook runs at full bootstrap, so the module file
+  // holding the queueing helper is already loaded. Asking for it explicitly
+  // costs nothing and keeps this hook honest about what it depends on.
+  \Drupal::moduleHandler()->loadInclude('ys_beacon', 'module');
+
+  // Beacon is authorized per site by a platform administrator and a site can
+  // be left without an index name, so most sites receiving this deploy have it
+  // switched off. _ys_beacon_queue_pdf_extraction() gates on exactly these two
+  // conditions and would queue nothing anyway, but the enumeration that feeds
+  // it - an entity query over the media library plus chunked entity loads -
+  // still costs real deploy time on a large site to achieve nothing. Decide
+  // once, up front. Deploy hooks run after config:import, so this reads the
+  // site's post-import state, which is the state the queue would run against.
+  if (!\Drupal::service('ys_beacon.authorization')->isAuthorized()
+    || !\Drupal::config('ys_beacon.settings')->get('azure_index_name')) {
+    $sandbox['#finished'] = 1;
+    return t('Beacon is not enabled on this site; no PDF text extraction was queued.');
+  }
+
+  if (!isset($sandbox['ids'])) {
+    $sandbox['ids'] = \Drupal::service('ys_beacon.pdf_text_indexer')->pendingMediaIds();
+    $sandbox['total'] = count($sandbox['ids']);
+    $sandbox['queued'] = 0;
+  }
+  if (!$sandbox['total']) {
+    $sandbox['#finished'] = 1;
+    return t('No PDF documents were waiting for text extraction.');
+  }
+
+  $storage = \Drupal::entityTypeManager()->getStorage('media');
+  foreach ($storage->loadMultiple(array_splice($sandbox['ids'], 0, 50)) as $media) {
+    if (_ys_beacon_queue_pdf_extraction($media)) {
+      $sandbox['queued']++;
+    }
+  }
+
+  if ($sandbox['ids']) {
+    $sandbox['#finished'] = 1 - (count($sandbox['ids']) / $sandbox['total']);
+    return NULL;
+  }
+  $sandbox['#finished'] = 1;
+  return t('Queued @count PDF document(s) for text extraction; cron extracts them.', [
+    '@count' => $sandbox['queued'],
+  ]);
+}
+
+/**
+ * Implements hook_deploy_NAME().
+ *
+ * Raises the stored model context window to the measured Sonnet 5 ceiling.
+ *
+ * Beacon now routes to Claude Sonnet 5, measured accepting 433437 input tokens
+ * in one request, while every existing site still holds Haiku's 200k. The
+ * raised value is 400000: under that proven figure, and above the largest
+ * request Beacon can build. ys_beacon.settings is config-ignored
+ * (ys_beacon*) and deliberately absent from config/sync, so the raised default
+ * in config/install reaches new installs only - there is nothing in sync for
+ * config:import to correct an existing site with. Hence a deploy hook.
+ *
+ * Only the untouched old default is raised. A site whose operator deliberately
+ * set another window keeps it, because the routed model is a per-site Portkey
+ * decision this code cannot observe.
+ */
+function ys_beacon_deploy_10003() {
+  $config = \Drupal::configFactory()->getEditable('ys_beacon.settings');
+  $window = $config->get('model_context_window');
+
+  if ($window === NULL) {
+    return t('Beacon settings are absent on this site; the model context window was not changed.');
+  }
+  if ((int) $window !== 200000) {
+    return t('Beacon model context window left at its site-specific value (@value tokens).', [
+      '@value' => (int) $window,
+    ]);
+  }
+
+  $config->set('model_context_window', 400000)->save();
+  return t('Raised the Beacon model context window from 200000 to 400000 tokens for Claude Sonnet 5.');
+}

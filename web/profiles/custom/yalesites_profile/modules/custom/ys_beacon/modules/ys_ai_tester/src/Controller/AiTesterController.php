@@ -521,14 +521,16 @@ class AiTesterController extends ControllerBase {
    * @param string|\Drupal\Component\Render\MarkupInterface $label
    *   The run label (e.g. a t() "Run A").
    * @param array $meta
-   *   The run meta: id, created, source_filename, status.
+   *   The run meta: id, created, source_filename, status, backend, host.
    *
    * @return array
    *   A #markup render element.
    */
   protected function runMetaBlock(string|MarkupInterface $label, array $meta): array {
+    $host = (string) ($meta['host'] ?? '');
+
     return $this->wrap('ys-compare-meta__run', $this->t(
-      '<strong>@label — Run #@id</strong><br>@date<br>File: @file<br>Assistant: @backend<br>Status: @status',
+      '<strong>@label — Run #@id</strong><br>@date<br>File: @file<br>Assistant: @backend<br>Status: @status<br>Host: @host',
       [
         '@label' => $label,
         '@id' => $meta['id'],
@@ -536,6 +538,10 @@ class AiTesterController extends ControllerBase {
         '@file' => $meta['source_filename'],
         '@backend' => $this->backendRegistry->labelFor($meta['backend']),
         '@status' => $meta['status'],
+        // Stated on every comparison, not only the cross-host ones: citation
+        // matching ignores this host, so a reader has to be able to see whether
+        // the two sides were answered on the same site at all.
+        '@host' => $host !== '' ? $host : $this->t('unknown (no citation named one)'),
       ]
     ));
   }
@@ -1127,7 +1133,7 @@ class AiTesterController extends ControllerBase {
    * CitationFormatter::format() stores both 'content' — the entire retrieved
    * chunk — and 'excerpt', that same text's first 300 characters. Exporting
    * both made the file grow with however long the indexed pages happened to be,
-   * multiplied by up to top_k (default 5) sources per question per side, while
+   * multiplied by up to top_k (default 10) sources per question per side, while
    * adding no category of information the excerpt does not already carry. That
    * is what put the download beyond what an LLM will accept in one go.
    *
