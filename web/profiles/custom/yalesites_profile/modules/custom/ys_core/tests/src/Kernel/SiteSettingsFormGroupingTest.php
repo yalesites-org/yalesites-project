@@ -463,4 +463,26 @@ class SiteSettingsFormGroupingTest extends KernelTestBase {
     );
   }
 
+  /**
+   * The favicon restricts uploads through validation constraint plugins.
+   *
+   * Not a grouping assertion, but this class is the only harness that builds
+   * the real Site Settings form — SiteSettingsFormTest constructs the object
+   * without its constructor and exercises submitForm() alone. The legacy
+   * 'file_validate_*' array form is deprecated in Drupal 10.2 and removed in
+   * Drupal 11, so pinning the constraint plugin IDs is what stops these
+   * restrictions silently disappearing on the major upgrade. Asserted as a
+   * whole array so a legacy key cannot creep back in beside them
+   * (yalesites-org/YaleSites-Internal#1610).
+   */
+  public function testFaviconUsesValidationConstraints(): void {
+    $validators = $this->buildFormAs(1)['look_and_feel']['favicon']['#upload_validators'];
+
+    $this->assertSame([
+      'FileIsImage' => [],
+      'FileExtension' => ['extensions' => 'gif png jpg jpeg'],
+      'FileImageDimensions' => ['maxDimensions' => 0, 'minDimensions' => '180x180'],
+    ], $validators);
+  }
+
 }
