@@ -1,0 +1,12 @@
+ys_views_wizard_spike.choose:
+  path: '/ys-views-wizard/choose/{section_storage_type}/{section_storage}/{delta}/{region}'
+  defaults:
+    _form: '\Drupal\ys_views_wizard_spike\Form\ViewsWizardForm'
+    _title: 'Add a listing'
+  requirements:
+    _layout_builder_access: 'view'
+  options:
+    _admin_route: TRUE
+    parameters:
+      section_storage:
+        layout_builder_tempstore: TRUE
