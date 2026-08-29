@@ -1,0 +1,14 @@
+services:
+  ys_views_wizard_spike.options:
+    class: Drupal\ys_views_wizard_spike\ViewsWizardOptions
+    arguments:
+      - '@plugin.manager.block'
+      - '@context.repository'
+      - '@entity_type.manager'
+      - '@ys_views_basic.views_basic_manager'
+
+  ys_views_wizard_spike.gin_lb_context_validator:
+    class: Drupal\ys_views_wizard_spike\GinLbContextValidator
+    decorates: gin_lb.context_validator
+    arguments:
+      - '@ys_views_wizard_spike.gin_lb_context_validator.inner'
