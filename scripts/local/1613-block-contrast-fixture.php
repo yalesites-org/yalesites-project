@@ -24,6 +24,7 @@
  * per (block x background x theme).
  */
 
+use Drupal\block_content\Entity\BlockContent;
 use Drupal\layout_builder\Section;
 use Drupal\layout_builder\SectionComponent;
 use Drupal\node\Entity\Node;
@@ -31,25 +32,26 @@ use Drupal\node\Entity\Node;
 $themes = ['one', 'two', 'three', 'four', 'five', 'six'];
 
 /**
- * Block types this run changes, and the component each one renders through.
+ * The block types this fixture renders.
  *
  * Deliberately NOT the full 27: accordion, link_grid and wrapped_text_callout
  * are the subject of the open PR component-library-twig#705 (#1614) and are
  * left alone so this work does not conflict with it.
  */
 $blockTypes = [
-  'custom_cards' => '02-molecules/cards/custom-card',
-  'directory' => '02-molecules/cards/directory-listing-card',
-  'reference_card' => '02-molecules/cards/reference-card',
-  'wrapped_image' => '02-molecules/wrapped-image',
-  'content_spotlight_portrait' => '02-molecules/content-spotlight-portrait',
-  // Not changed by this run, but included because they consume properties the
-  // shared `_yds-layout.scss` rule re-points: the CTA atom draws its fill and
-  // border from `--color-layout-border`, and the divider atom from
-  // `--color-divider`. Both therefore need before/after evidence that the
-  // shared change did not regress them.
-  'button_link' => '01-atoms/controls/cta',
-  'divider' => '01-atoms/divider',
+  // Changed by this run.
+  'custom_cards',
+  'directory',
+  'reference_card',
+  'wrapped_image',
+  'content_spotlight_portrait',
+  // NOT changed, but included because they consume properties the shared
+  // `_yds-layout.scss` rule touches, or sit next to ones that do, so they need
+  // before/after evidence that nothing regressed: the CTA atom paints from
+  // `--color-layout-border` (deliberately left alone) and the divider atom
+  // from `--color-divider` (re-pointed).
+  'button_link',
+  'divider',
 ];
 
 $storage = \Drupal::entityTypeManager()->getStorage('block_content');
@@ -57,7 +59,7 @@ $storage = \Drupal::entityTypeManager()->getStorage('block_content');
 // One representative source block per type, oldest first so re-runs pick the
 // same one and before/after captures stay comparable.
 $sources = [];
-foreach (array_keys($blockTypes) as $type) {
+foreach ($blockTypes as $type) {
   $ids = \Drupal::entityQuery('block_content')
     ->accessCheck(FALSE)
     ->condition('type', $type)
@@ -73,14 +75,21 @@ foreach (array_keys($blockTypes) as $type) {
   $sources[$type] = $storage->load(reset($ids));
 }
 
+// The 70/30 entry needs `sidebar_filler`: a 70/30 section whose sidebar is
+// empty collapses to a single column, so without it the capture would be
+// indistinguishable from the One column one AND `.yds-layout__secondary` --
+// which carries the column separator this work re-points -- would never
+// render. See the same note in 1613-section-contrast-fixture.php.
 $fixtures = [
   '1613 Block contrast - One column' => [
     'layout' => 'layout_onecol',
     'region' => 'content',
+    'sidebar_filler' => FALSE,
   ],
   '1613 Block contrast - Two Column 70-30' => [
     'layout' => 'ys_layout_two_column',
     'region' => 'content',
+    'sidebar_filler' => TRUE,
   ],
 ];
 
@@ -120,6 +129,32 @@ foreach ($fixtures as $title => $spec) {
           'block_serialized' => serialize($clone),
         ]
       ));
+
+      if ($spec['sidebar_filler']) {
+        $filler = BlockContent::create([
+          'type' => 'text',
+          'info' => sprintf('1613 sidebar filler - %s - %s', $type, $theme),
+          'reusable' => FALSE,
+          'field_text' => [
+            'value' => '<p>Sidebar copy, so the 70/30 section keeps two '
+            . 'columns and renders its separator.</p>',
+            'format' => 'heading_html',
+          ],
+        ]);
+        $filler->save();
+
+        $section->appendComponent(new SectionComponent(
+          \Drupal::service('uuid')->generate(),
+          'sidebar',
+          [
+            'id' => 'inline_block:text',
+            'label' => sprintf('Sidebar %s %s', $type, $theme),
+            'label_display' => FALSE,
+            'block_revision_id' => $filler->getRevisionId(),
+            'block_serialized' => serialize($filler),
+          ]
+        ));
+      }
 
       $sections[] = $section;
     }

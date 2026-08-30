@@ -37,9 +37,11 @@
       heading: heading ? getComputedStyle(heading).color : null,
       body: body ? getComputedStyle(body).color : null,
       link: link ? getComputedStyle(link).color : null,
-      // The 70/30 column separator. _yds-layout.scss sets this from
-      // --color-divider rather than from --color-layout-border, so unlike the
-      // opt-in .yds-layout__divider it is not section-theme aware.
+      // The always-on 70/30 column separator. It is drawn from
+      // --color-divider, which #1613 re-points to the section's content
+      // colour, so this is the property that change is visible through. (The
+      // opt-in .yds-layout__divider is a different element drawn from
+      // --color-layout-border, which #1613 deliberately leaves alone.)
       sidebarBorder: sidebar
         ? getComputedStyle(sidebar).borderLeftColor
         : null,
