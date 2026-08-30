@@ -1,0 +1,9 @@
+name: 'YaleSites Views Wizard (SPIKE)'
+type: module
+description: 'THROWAWAY SPIKE for yalesites-org/YaleSites-Internal#1586. Prototype B: the thirteen listing tiles in the Layout Builder block picker collapse into one entry that opens a two-question wizard and AJAX-swaps the core add-block form for the matching bundle into the same dialog. Not for release.'
+package: 'YaleSites SPIKE'
+core_version_requirement: ^10 || ^11
+dependencies:
+  - drupal:layout_builder
+  - layout_builder_browser:layout_builder_browser
+  - yalesites_profile:ys_views_basic
