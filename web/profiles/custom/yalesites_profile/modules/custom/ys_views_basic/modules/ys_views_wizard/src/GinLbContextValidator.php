@@ -1,20 +1,19 @@
 <?php
 
-namespace Drupal\ys_views_wizard_spike;
+namespace Drupal\ys_views_wizard;
 
 use Drupal\gin_lb\Service\ContextValidatorInterface;
 
 /**
  * Teaches gin_lb that the wizard form is a Layout Builder form.
  *
- * SPIKE ONLY, and one of this spike's more important findings.
- *
- * gin_lb decides whether to apply its Gin styling in two independent places:
+ * The gin_lb module decides whether to apply its Gin styling in two
+ * independent places:
  *
  * - isLayoutBuilderRoute() matches the route name against
  *   /^(layout_builder\.([^.]+\.)?)/ and then fires
  *   hook_gin_lb_is_layout_builder_route_alter(), so a custom route CAN opt in
- *   with a hook. The spike does that in the .module file.
+ *   with a hook. This module does that in its .module file.
  * - isLayoutBuilderFormId() matches a hardcoded protected $formIds list plus a
  *   str_contains($form_id, 'layout_builder_form') fallback, and fires NO
  *   alter. A custom form therefore cannot opt in with a hook.
@@ -52,7 +51,7 @@ class GinLbContextValidator implements ContextValidatorInterface {
    * {@inheritdoc}
    */
   public function isLayoutBuilderFormId(string $form_id, array $form): bool {
-    if ($form_id === 'ys_views_wizard_spike_choose') {
+    if ($form_id === 'ys_views_wizard_choose') {
       return $this->isValidTheme();
     }
     return $this->inner->isLayoutBuilderFormId($form_id, $form);

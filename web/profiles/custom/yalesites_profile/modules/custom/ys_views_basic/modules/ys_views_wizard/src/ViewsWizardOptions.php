@@ -1,6 +1,6 @@
 <?php
 
-namespace Drupal\ys_views_wizard_spike;
+namespace Drupal\ys_views_wizard;
 
 use Drupal\Core\Block\BlockManagerInterface;
 use Drupal\Core\Plugin\Context\ContextInterface;
@@ -11,9 +11,8 @@ use Drupal\ys_views_basic\ViewsBasicManager;
 /**
  * Answers the two wizard questions for a specific Layout Builder region.
  *
- * SPIKE ONLY - see the module README. This class exists so the form does not
- * have to know anything about block plugin filtering, and so the same
- * region-aware option list can be reused by a second prototype.
+ * This class exists so the form does not have to know anything about block
+ * plugin filtering.
  *
  * Three things it deliberately does NOT do:
  * - It does not restate the content-type / display-mode map. Options come from
@@ -21,9 +20,8 @@ use Drupal\ys_views_basic\ViewsBasicManager;
  *   what the existing authoring widget uses, so labels and icons stay
  *   identical to the form editors already know.
  * - It does not restate the (content type, display mode) -> bundle map either.
- *   That map is published by ViewsBasicManager::LISTING_BUNDLES on the views
- *   rework branch, and this class reads it rather than concatenating bundle
- *   ids by convention.
+ *   That map is published by ViewsBasicManager::LISTING_BUNDLES, and this
+ *   class reads it rather than concatenating bundle ids by convention.
  * - It does not reimplement Layout Builder's placement restrictions. It asks
  *   the block manager for the same filtered definition list the block browser
  *   asks for, so layout_builder_restrictions'
@@ -32,15 +30,15 @@ use Drupal\ys_views_basic\ViewsBasicManager;
 class ViewsWizardOptions {
 
   /**
-   * Label for the category that hosts the single wizard entry.
+   * ID of the block browser category that hosts the single wizard entry.
    *
-   * The first listing category the browser renders is reused as the host and
-   * relabelled, rather than a new category being invented, so the entry keeps
-   * the browser's own markup, image fallback and `#open` state. Its original
-   * label ("Post Views") would be wrong for an entry covering all four
-   * content types.
+   * The matching layout_builder_browser_blockcat config entity ships in this
+   * module's config/install, so the category's label, weight and open state
+   * stay editable in the block browser UI instead of being frozen here. That
+   * entity declares an enforced module dependency on this module, so
+   * uninstalling the wizard takes its category with it.
    */
-  const CATEGORY_LABEL = 'Content Listings';
+  const CATEGORY_ID = 'content_listings';
 
   /**
    * Label shown on the single wizard entry.
@@ -173,7 +171,7 @@ class ViewsWizardOptions {
    * Resolves a (content type, display mode) pair to a block_content bundle.
    *
    * Reverse lookup over ViewsBasicManager::LISTING_BUNDLES, which is the
-   * single source of truth for that mapping on the views rework branch.
+   * single source of truth for that mapping.
    *
    * @param string $content_type
    *   The content type machine name.

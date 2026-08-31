@@ -1,6 +1,6 @@
 <?php
 
-namespace Drupal\ys_views_wizard_spike\Form;
+namespace Drupal\ys_views_wizard\Form;
 
 use Drupal\Core\Ajax\AjaxResponse;
 use Drupal\Core\Ajax\InvokeCommand;
@@ -14,15 +14,13 @@ use Drupal\layout_builder\SectionStorageInterface;
 use Symfony\Component\DependencyInjection\ContainerInterface;
 
 /**
- * Prototype B - the two picker questions, then an AJAX swap in place.
+ * The two picker questions, then a handoff to the real configure form.
  *
- * SPIKE ONLY. Continue is an AJAX submit whose callback builds core's
- * AddBlockForm for the resolved plugin and re-opens the SAME dialog with it,
- * so the editor never leaves #layout-builder-modal. This is approach B in
- * issue #1586. Prototype A (plain redirect out to the standalone configure
- * page) is on the 1586-views-wizard-redirect branch; everything except the
- * handoff is identical between the two, deliberately, so the comparison is
- * about the handoff and nothing else.
+ * Continue is an AJAX submit whose callback builds core's AddBlockForm for
+ * the resolved listing bundle and re-opens the SAME dialog with it, so the
+ * editor never leaves #layout-builder-modal. Without JavaScript the same
+ * submit falls back to a plain redirect onto layout_builder.add_block, which
+ * reaches the identical form as a full page load - see ::submitForm().
  */
 class ViewsWizardForm extends FormBase {
 
@@ -34,7 +32,7 @@ class ViewsWizardForm extends FormBase {
   /**
    * The wizard options resolver.
    *
-   * @var \Drupal\ys_views_wizard_spike\ViewsWizardOptions
+   * @var \Drupal\ys_views_wizard\ViewsWizardOptions
    */
   protected $options;
 
@@ -50,7 +48,7 @@ class ViewsWizardForm extends FormBase {
    */
   public static function create(ContainerInterface $container) {
     $instance = new static();
-    $instance->options = $container->get('ys_views_wizard_spike.options');
+    $instance->options = $container->get('ys_views_wizard.options');
     $instance->formBuilder = $container->get('form_builder');
     return $instance;
   }
@@ -59,7 +57,7 @@ class ViewsWizardForm extends FormBase {
    * {@inheritdoc}
    */
   public function getFormId() {
-    return 'ys_views_wizard_spike_choose';
+    return 'ys_views_wizard_choose';
   }
 
   /**
@@ -103,7 +101,20 @@ class ViewsWizardForm extends FormBase {
     $form['#attached']['library'][] = 'ys_views_basic/ys_views_basic';
     $form['wrapper'] = [
       '#type' => 'container',
-      '#attributes' => ['class' => ['views-basic--group-user-selection']],
+      '#attributes' => [
+        'class' => [
+          'views-basic--group-user-selection',
+          // Opts this form in to the --vb-* spacing and type scale, which
+          // ys_views_basic scopes to the block-configure form's own
+          // base-form-ID class. This form is not that form, so without the
+          // opt-in every var(--vb-*) below it resolves to an invalid
+          // substitution and the two questions render with no gap between
+          // them. See the custom-property block at the top of
+          // ys_views_basic/assets/css/views-basic.css.
+          'views-basic--form-scale',
+          'views-basic--wizard',
+        ],
+      ],
     ];
     $form['wrapper']['choices'] = [
       '#type' => 'container',
@@ -121,6 +132,14 @@ class ViewsWizardForm extends FormBase {
       '#options' => $content_types,
       '#default_value' => $selected_type,
       '#required' => TRUE,
+      // Same classes the authoring widget puts on its own two questions, so
+      // ys_views_basic's card, selected-state and focus styling applies here
+      // unchanged. #attributes rather than #wrapper_attributes because
+      // gin_lb's composite-fieldset template drops the latter - see the
+      // selected-state block in ys_views_basic/assets/css/views-basic.css.
+      '#attributes' => [
+        'class' => ['views-basic--entity-types'],
+      ],
       '#wrapper_attributes' => [
         'class' => ['views-basic--user-selection', 'views-basic--entity-types'],
       ],
@@ -145,7 +164,30 @@ class ViewsWizardForm extends FormBase {
       '#suffix' => '</div>',
     ];
 
-    $form['actions']['#type'] = 'actions';
+    // The same treatment gin_lb's FormAlter gives the five Layout Builder
+    // forms it hardcodes. Two things depend on it, and the second is not
+    // obvious:
+    //
+    // - It is what makes the footer look like every other Layout Builder
+    //   form's footer instead of a bare row of buttons.
+    // - '#type' => 'container' (rather than 'actions') is load bearing. An
+    //   'actions' element renders as div.form-actions, and core's
+    //   dialog.ajax.js copies every button it finds in a .form-actions into
+    //   the jQuery UI button pane and hides the originals with an inline
+    //   display:none. gin_lb ships `.glb-button { display: inline-block
+    //   !important }`, which beats that inline style - so the original
+    //   Continue stayed visible next to its own copy in the footer and the
+    //   dialog showed two Continue buttons. Back, an a.button rather than a
+    //   .glb-button, was unaffected and hid correctly, which is why only one
+    //   of the two duplicated. Rendering a plain container means there is no
+    //   .form-actions for dialog.ajax.js to find in the first place.
+    //
+    // gin_lb keys this off a hardcoded form-ID list with no alter hook, the
+    // same seam problem GinLbContextValidator documents for
+    // isLayoutBuilderFormId(), so the form has to apply it itself.
+    $form['#attributes']['class'][] = 'canvas-form';
+    $form['actions']['#type'] = 'container';
+    $form['actions']['#attributes']['class'][] = 'canvas-form__actions';
     $form['actions']['submit'] = [
       '#type' => 'submit',
       '#value' => $this->t('Continue'),
@@ -271,13 +313,30 @@ class ViewsWizardForm extends FormBase {
    * {@inheritdoc}
    */
   public function submitForm(array &$form, FormStateInterface $form_state) {
+    if (!$this->getRequest()->isXmlHttpRequest()) {
+      // No-JS fallback. Drupal's ajax.js sets X-Requested-With on the submit,
+      // so its absence means #ajax never ran and openConfigureForm() will
+      // never be called. Redirect onto the same route the AJAX path embeds,
+      // which renders the identical configure form as a full page load - the
+      // editor leaves the dialog, but the flow completes.
+      $form_state->setRedirect('layout_builder.add_block', [
+        'section_storage_type' => $form_state->get('section_storage')->getStorageType(),
+        'section_storage' => $form_state->get('section_storage')->getStorageId(),
+        'delta' => $form_state->get('delta'),
+        'region' => $form_state->get('region'),
+        'plugin_id' => $this->options->resolvePluginId(
+          $form_state->getValue('entity_types'),
+          $form_state->getValue('view_mode')
+        ),
+      ]);
+      return;
+    }
+
     // Required, and non-obvious. Without setRebuild() a plain FormBase issues
     // a redirect to the current URL after submission, and Drupal returns that
     // redirect instead of ever invoking the #ajax callback - the POST comes
     // back 200 and the dialog silently does nothing. Everything else happens
-    // in openConfigureForm(). A non-JS fallback would need prototype A's
-    // redirect here; noting that gap rather than building it is deliberate
-    // for a throwaway.
+    // in openConfigureForm().
     $form_state->setRebuild(TRUE);
   }
 
