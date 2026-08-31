@@ -138,7 +138,7 @@ foreach ($fixtures as $title => $spec) {
           'field_text' => [
             'value' => '<p>Sidebar copy, so the 70/30 section keeps two '
             . 'columns and renders its separator.</p>',
-            'format' => 'heading_html',
+            'format' => 'basic_html',
           ],
         ]);
         $filler->save();

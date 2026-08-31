@@ -74,7 +74,12 @@ foreach ($fixtures as $title => $spec) {
             $region,
             $theme
           ),
-          'format' => 'heading_html',
+          // basic_html, NOT heading_html: heading_html allows only
+          // '<em> <strong> <p>', so it strips the <h2> and the <a> out of
+          // the markup above -- which meant this fixture exercised only
+          // --color-layout-content and never --color-heading or
+          // --color-link-base, despite claiming all three.
+          'format' => 'basic_html',
         ],
       ]);
       $block->save();
