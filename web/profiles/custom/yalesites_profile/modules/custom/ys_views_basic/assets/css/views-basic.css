@@ -726,6 +726,29 @@ input.views-basic--view-mode:focus-visible + label.option {
 }
 
 /*
+ * ...except the icon-radio cards, where a bottom margin is not rhythm but a
+ * bug. Those two questions lay their options out as a horizontal flex row, and
+ * what a flex row stretches is the item's MARGIN box - so a card carrying the
+ * 24px bottom margin resolves 24px shorter than one that does not.
+ *
+ * Each card wrapper is a .glb-form-item, so every card picked up the field
+ * margin above except the LAST in each question, which picked up the
+ * :last-child reset to 0 - leaving "Profiles" and "Condensed" rendering
+ * visibly taller than their neighbours. Zeroing it makes each row resolve to a
+ * single height; the radios group's own `gap` already spaces wrapped rows.
+ *
+ * Deliberately scoped to .views-basic--entity-view-mode, the container holding
+ * just those two questions, rather than to every radios group under
+ * .grouped-items. The wider selector would also catch `term_operator` and
+ * `event_time_period`, which are unrelated to this and whose spacing the
+ * #1481 UX pass set intentionally.
+ */
+.views-basic--entity-view-mode .glb-form-radios .glb-form-item,
+.views-basic--entity-view-mode .glb-form-radios .form-item {
+  margin-bottom: 0 !important;
+}
+
+/*
  * Sibling checkboxes within "Result content" (#1481): Show Categories / Show
  * Tags / Show thumbnail image previously sat 32px apart — wider than the
  * 24px used between two unrelated fields — so three related options read as
