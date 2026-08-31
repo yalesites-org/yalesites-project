@@ -286,11 +286,118 @@ class IndexableHtmlFilterTest extends UnitTestCase {
   }
 
   /**
+   * Non-breaking-space spacers do not indent the block that follows them.
+   *
+   * An element holding only a non-breaking space is a spacer, not content, but
+   * PHP's trim() charlist does not include U+00A0, so it used to read as text
+   * and survive. Each survivor converts to a single space that TextConverter
+   * keeps, because it only drops a collapsed space when the next sibling is a
+   * block - and the next sibling here is another inline spacer. The spaces
+   * therefore accumulate ahead of the following block: two spacers reach four
+   * columns, which is the threshold at which CommonMark reads the line as an
+   * indented code block. That is what rendered a heading as a bordered
+   * monospace box in the citation panel, with its setext underline degraded to
+   * a horizontal rule.
+   *
+   * @dataProvider spacerCountProvider
+   */
+  public function testNonBreakingSpaceSpacersDoNotIndentTheNextBlock(int $spacers): void {
+    // Two things this fixture needs in order to be able to fail at all.
+    // Pretty-printed, the way rendered Drupal output arrives: the newline and
+    // indentation between elements are what the surviving spacers add their
+    // spaces to, so without that whitespace there is nothing to accumulate.
+    // And a paragraph ahead of the heading, because toMarkdown() trims the
+    // result - an indent on the very first line would be trimmed away.
+    $markdown = $this->toMarkdown(
+      "<p>Intro paragraph.</p>\n<div>\n"
+      . str_repeat("  <span>&nbsp;</span>\n", $spacers)
+      . "       <h2>Spotlight - Landscape Heading</h2>\n</div>"
+    );
+
+    $this->assertSame(
+      0,
+      $this->leadingColumns($markdown),
+      "{$spacers} non-breaking-space spacer(s) must not indent the heading that follows them."
+    );
+    // Still a real setext heading, not a code block trailed by a rule.
+    $this->assertMatchesRegularExpression(
+      '/^Spotlight - Landscape Heading\n-+$/m',
+      $markdown
+    );
+  }
+
+  /**
+   * Spacer counts either side of the four-column threshold.
+   */
+  public static function spacerCountProvider(): array {
+    return [
+      'one spacer' => [1],
+      'two spacers, the threshold' => [2],
+      'four spacers' => [4],
+      'seven spacers, as reported' => [7],
+    ];
+  }
+
+  /**
+   * A non-breaking space between words is content and is kept.
+   *
+   * Only an element whose entire text is blank is furniture. A non-breaking
+   * space doing its actual job - holding a value and its unit together - sits
+   * in an element with other text, so it must survive.
+   */
+  public function testKeepsNonBreakingSpaceUsedAsContent(): void {
+    $markdown = $this->toMarkdown('<p>The deadline is 15&nbsp;January for all applicants.</p>');
+
+    $this->assertStringContainsString('15', $markdown);
+    $this->assertStringContainsString('January', $markdown);
+    $this->assertStringContainsString('all applicants', $markdown);
+  }
+
+  /**
+   * Removing a spacer does not weld the words on either side together.
+   *
+   * The counterpart to testInlineMarkupDoesNotSplitWords: a spacer between two
+   * words is removed, so the separation has to come from the whitespace that
+   * remains rather than from the spacer itself.
+   */
+  public function testRemovingSpacersDoesNotWeldWordsTogether(): void {
+    $markdown = $this->toMarkdown('<p>Yale <span>&nbsp;</span> University</p>');
+
+    $this->assertStringContainsString('Yale', $markdown);
+    $this->assertStringContainsString('University', $markdown);
+    $this->assertStringNotContainsString('YaleUniversity', $markdown);
+  }
+
+  /**
    * Empty and whitespace-only input is handled without error.
    */
   public function testHandlesEmptyInput(): void {
     $this->assertSame('', $this->filter->filter(''));
     $this->assertSame('', $this->filter->filter('   '));
+    $this->assertSame('', $this->filter->filter("&nbsp;\xc2\xa0"));
+  }
+
+  /**
+   * Widest block-start indent in the markdown, measured in columns.
+   *
+   * Columns rather than characters, because CommonMark expands a tab to the
+   * next four-column stop.
+   */
+  private function leadingColumns(string $markdown): int {
+    $widest = 0;
+
+    foreach (explode("\n", $markdown) as $line) {
+      if (preg_match('/^([ \t]*)\S/', $line, $matches) !== 1 || $matches[1] === '') {
+        continue;
+      }
+      $columns = 0;
+      foreach (str_split($matches[1]) as $character) {
+        $columns += $character === "\t" ? 4 - ($columns % 4) : 1;
+      }
+      $widest = max($widest, $columns);
+    }
+
+    return $widest;
   }
 
 }

@@ -88,8 +88,10 @@ during the staged cleanup tracked in yalesites-org/YaleSites-Internal#579.
   of every service that reads these objects, so the tests here work around it by
   exercising only code paths that need no config save. Adding the schema is not
   test-only work: `environment_indicator.show` ships as boolean `true` in
-  `config/install` but `SiteSettingsForm` saves integer `1`, and `custom_favicon` /
-  `site_name_image` are declared as `''` but hold arrays of file IDs, so no schema
+  `config/install`, and a site that saved it through `SiteSettingsForm` before it
+  moved to the Platform Admin Settings page
+  (yalesites-org/YaleSites-Internal#1560) holds integer `1`; `custom_favicon` /
+  `site_name_image` are declared as `''` but hold arrays of file IDs. So no schema
   type validates both the install defaults and real saved values without also
   correcting those.
 - **`getFavicons()` custom-favicon branch is only partly pinned.** The test for it
