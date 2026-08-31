@@ -51,6 +51,11 @@ class AnnouncementsSourcePlatformAdminSetting extends PlatformAdminSettingBase {
   const DEFAULT_TERM = 'Dashboard Announcement';
 
   /**
+   * The category whitelist used when a site has never saved this section.
+   */
+  const DEFAULT_CATEGORIES = ['Feature release', 'News', 'Important update'];
+
+  /**
    * The dashboard announcements service.
    *
    * @var \Drupal\ys_core\DashboardAnnouncements
@@ -148,7 +153,84 @@ class AnnouncementsSourcePlatformAdminSetting extends PlatformAdminSettingBase {
       ],
     ];
 
+    $form['announcements_source_categories'] = [
+      '#type' => 'textarea',
+      '#title' => $this->t('Announcement categories'),
+      '#rows' => 3,
+      '#default_value' => implode("\n", self::resolveCategoryWhitelist($config->get('announcements_source_categories'))),
+      '#description' => $this->t("One category per line. Only posts tagged (via the Category field) with one of these will have that category exposed in the feed for downstream dashboards to display as a label. Names must match this site's Post Categories vocabulary terms (case-insensitive). Leave blank to publish no categories."),
+      '#states' => [
+        'visible' => [
+          ':input[name="announcements_source[announcements_source_enabled]"]' => ['checked' => TRUE],
+        ],
+      ],
+    ];
+
     return $form;
+  }
+
+  /**
+   * Resolves the stored category whitelist to what should actually be used.
+   *
+   * A `NULL` stored value means the section has never been saved - the normal
+   * state on every existing site, since config_ignore keeps
+   * ys_core.dashboard_settings from being created/merged by config:import -
+   * and resolves to the platform defaults. An explicitly stored value
+   * (including an empty array) is a deliberate choice and is trimmed/filtered
+   * but otherwise returned as-is: an admin who cleared this field to publish
+   * no categories must have that persist as "none", not silently revert to
+   * the defaults.
+   *
+   * Public and static so AnnouncementsFeedController can resolve the same
+   * whitelist the settings form displays, without re-implementing this logic.
+   *
+   * @param mixed $stored
+   *   The raw `announcements_source_categories` config value.
+   *
+   * @return string[]
+   *   The category names to treat as whitelisted, trimmed and non-empty.
+   */
+  public static function resolveCategoryWhitelist($stored): array {
+    if ($stored === NULL) {
+      return self::DEFAULT_CATEGORIES;
+    }
+    if (!is_array($stored)) {
+      return [];
+    }
+    return self::trimNonEmpty($stored);
+  }
+
+  /**
+   * Parses the categories textarea into a normalized array of names.
+   *
+   * @param mixed $value
+   *   The raw submitted textarea value.
+   *
+   * @return string[]
+   *   One entry per non-blank line, trimmed.
+   */
+  private function parseCategoriesInput($value): array {
+    return self::trimNonEmpty(preg_split('/\r\n|\r|\n/', (string) $value) ?: []);
+  }
+
+  /**
+   * Trims each value and drops any that are blank afterward.
+   *
+   * Shared by resolveCategoryWhitelist() (normalizing a stored config value)
+   * and parseCategoriesInput() (normalizing textarea lines) - both need the
+   * same "trim, then drop empties" cleanup, just on different raw input.
+   *
+   * @param array $values
+   *   Raw values to normalize.
+   *
+   * @return string[]
+   *   The trimmed, non-empty values, reindexed.
+   */
+  private static function trimNonEmpty(array $values): array {
+    return array_values(array_filter(
+      array_map(fn($value) => trim((string) $value), $values),
+      fn($value) => $value !== '',
+    ));
   }
 
   /**
@@ -157,18 +239,28 @@ class AnnouncementsSourcePlatformAdminSetting extends PlatformAdminSettingBase {
   public function submitSettings(array &$form, FormStateInterface $form_state): void {
     $enabled = (bool) $form_state->getValue([$this->getPluginId(), 'announcements_source_enabled']);
     $term = $this->normalizeTerm($form_state->getValue([$this->getPluginId(), 'announcements_source_term']));
+    $categories = $this->parseCategoriesInput(
+      $form_state->getValue([$this->getPluginId(), 'announcements_source_categories']),
+    );
 
     $config = $this->configFactory->getEditable(self::CONFIG_NAME);
 
     // The page has one Save button for every section, so this runs even when
-    // nobody touched the source fields. Both sides go through normalizeTerm()
-    // because the stored and submitted values hold the same setting in
-    // different shapes: config_ignore keeps ys_core.dashboard_settings out of
-    // config:import, so on a site that has never saved this section the key
-    // reads NULL while the form submits back the default it just displayed.
-    // Comparing those raw counted an untouched save as a change.
+    // nobody touched the source fields. Enabled/term both go through
+    // normalizeTerm() because the stored and submitted values hold the same
+    // setting in different shapes: config_ignore keeps
+    // ys_core.dashboard_settings out of config:import, so on a site that has
+    // never saved this section the key reads NULL while the form submits back
+    // the default it just displayed. Comparing those raw counted an untouched
+    // save as a change. Categories uses resolveCategoryWhitelist() for the
+    // stored side for the same reason, but the submitted side is used as-is
+    // (never re-defaulted) - an admin who deliberately clears the field to
+    // publish no categories must have that persist as `[]`, not compare equal
+    // to the shown default and silently fail to save.
+    $categories_unchanged = self::resolveCategoryWhitelist($config->get('announcements_source_categories')) === $categories;
     $unchanged = (bool) $config->get('announcements_source_enabled') === $enabled
-      && $this->normalizeTerm($config->get('announcements_source_term')) === $term;
+      && $this->normalizeTerm($config->get('announcements_source_term')) === $term
+      && $categories_unchanged;
 
     // Deliberately ahead of the short-circuit below, and re-run on every save
     // while publishing is on: the tag is the one thing here that something
@@ -184,6 +276,16 @@ class AnnouncementsSourcePlatformAdminSetting extends PlatformAdminSettingBase {
       $this->ensureAnnouncementTerm($term, !$unchanged);
     }
 
+    // Unlike the tag, a whitelist entry that matches no Post Categories term
+    // cannot be self-healed - creating a taxonomy term is a content decision,
+    // not an infrastructure one - so this only warns. Gated on the categories
+    // themselves having changed, same reasoning as the tag warnings above: an
+    // admin saving an unrelated section should not be renagged about a
+    // pre-existing mismatch on every save.
+    if ($enabled && !$categories_unchanged) {
+      $this->warnAboutUnmatchedCategories($categories);
+    }
+
     // Skip the write - and the cached-feed drop that follows it - rather than
     // rewriting the same values on every unrelated save.
     if ($unchanged) {
@@ -193,6 +295,7 @@ class AnnouncementsSourcePlatformAdminSetting extends PlatformAdminSettingBase {
     $config
       ->set('announcements_source_enabled', $enabled)
       ->set('announcements_source_term', $term)
+      ->set('announcements_source_categories', $categories)
       ->save();
 
     // Drop the cached feed so the new settings take effect immediately,
@@ -257,6 +360,45 @@ class AnnouncementsSourcePlatformAdminSetting extends PlatformAdminSettingBase {
 
     $term_storage->create(['vid' => 'tags', 'name' => $name])->save();
     $this->messenger()->addStatus($this->t('Created the %name tag in the Tags vocabulary. Apply it to posts you want to surface on editorial dashboards.', ['%name' => $name]));
+  }
+
+  /**
+   * Warns about whitelist entries that match no Post Categories term.
+   *
+   * A typo or wording drift here has no visible symptom otherwise: the post
+   * still publishes, the feed still returns 200, and the category simply
+   * never appears as a pill anywhere - identical to "correctly configured, no
+   * post uses that category." This is the only place that distinction
+   * becomes visible.
+   *
+   * @param string[] $categories
+   *   The whitelist about to be saved.
+   */
+  protected function warnAboutUnmatchedCategories(array $categories): void {
+    if (!$categories) {
+      return;
+    }
+
+    $vocab_storage = $this->entityTypeManager->getStorage('taxonomy_vocabulary');
+    if (!$vocab_storage->load('post_category')) {
+      $this->messenger()->addWarning($this->t('The "Post Categories" vocabulary does not exist on this site, so the configured categories could not be checked against it.'));
+      return;
+    }
+
+    $term_storage = $this->entityTypeManager->getStorage('taxonomy_term');
+    $existing_names = array_map(
+      fn($term) => mb_strtolower(trim((string) $term->getName())),
+      $term_storage->loadByProperties(['vid' => 'post_category']),
+    );
+
+    $unmatched = array_values(array_filter(
+      $categories,
+      fn($name) => !in_array(mb_strtolower($name), $existing_names, TRUE),
+    ));
+
+    if ($unmatched) {
+      $this->messenger()->addWarning($this->t('These configured categories do not match any existing Post Categories term and will not appear on any post until a matching term exists: %names.', ['%names' => implode(', ', $unmatched)]));
+    }
   }
 
 }

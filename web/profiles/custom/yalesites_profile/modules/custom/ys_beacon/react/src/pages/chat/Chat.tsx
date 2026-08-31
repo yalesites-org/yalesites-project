@@ -25,8 +25,9 @@ import {
 import { Answer } from "../../components/Answer";
 import { QuestionInput } from "../../components/QuestionInput";
 import { AppStateContext } from "../../state/AppProvider";
-import { XSSAllowTags } from "../../constants/xssAllowTags";
-import { demotedHeadingComponents } from "../../constants/markdownComponents";
+import { XSSAllowTags, XSSAllowAttr } from "../../constants/xssAllowTags";
+import { allowLinkOutsideHeading, demotedHeadingComponents } from "../../constants/markdownComponents";
+import { normalizeCitationMarkdown } from "../../utils/normalizeCitationMarkdown";
 
 const enum messageStatus {
     NotRunning = "Not Running",
@@ -56,6 +57,7 @@ const Chat = () => {
     const [isLoading, setIsLoading] = useState<boolean>(false);
     const [showLoadingMessage, setShowLoadingMessage] = useState<boolean>(false);
     const [activeCitation, setActiveCitation] = useState<Citation>();
+    const [activeCitationIndex, setActiveCitationIndex] = useState<number>();
     const [isCitationPanelOpen, setIsCitationPanelOpen] = useState<boolean>(false);
     const abortFuncs = useRef([] as AbortController[]);
     const [messages, setMessages] = useState<ChatMessage[]>([])
@@ -252,6 +254,7 @@ const Chat = () => {
         setMessages([])
         setIsCitationPanelOpen(false);
         setActiveCitation(undefined);
+        setActiveCitationIndex(undefined);
         appStateContext?.dispatch({ type: 'UPDATE_CURRENT_CHAT', payload: null });
         setProcessMessages(messageStatus.Done)
     };
@@ -281,8 +284,9 @@ const Chat = () => {
         chatMessageStreamEnd.current?.scrollIntoView({ behavior: "smooth" })
     }, [showLoadingMessage, processMessages]);
 
-    const onShowCitation = (citation: Citation) => {
+    const onShowCitation = (citation: Citation, citationIndex: number) => {
         setActiveCitation(citation);
+        setActiveCitationIndex(citationIndex);
         setIsCitationPanelOpen(true);
         setIsModalOpen(true);
     };
@@ -307,13 +311,16 @@ const Chat = () => {
         setProvidedQuestion(label)
     };
 
-    const CitationHeader = () => {
-        return (
-            <Stack aria-label="Citations Panel Header Container" horizontal className={styles.citationPanelHeaderContainer} horizontalAlign="space-between" verticalAlign="center">
-                <h2 className={styles.citationPanelHeader}>Citations</h2>
-            </Stack>
-        );
-    }
+    // Names the citation overlay by which citation was opened. The dialog's
+    // accessible name and its visible heading must stay identical, so both
+    // read from this one value.
+    const citationLabel = activeCitationIndex ? `Citation ${activeCitationIndex}` : "Citations";
+
+    const citationHeader = (
+        <Stack aria-label="Citations Panel Header Container" horizontal className={styles.citationPanelHeaderContainer} horizontalAlign="space-between" verticalAlign="center">
+            <h2 className={styles.citationPanelHeader}>{citationLabel}</h2>
+        </Stack>
+    );
 
     return (
         <div className={isLoading ? styles.containerLoading : styles.container}>
@@ -355,7 +362,7 @@ const Chat = () => {
                                                     answer: answer.content,
                                                     citations: parseCitationFromMessage(messages[index - 1]),
                                                 }}
-                                                onCitationClicked={c => onShowCitation(c)}
+                                                onCitationClicked={onShowCitation}
                                             />
                                         </div> : answer.role === "error" ? <div className={styles.chatMessageError} role="group" aria-label="Error message">
                                             <Stack horizontal className={styles.chatMessageErrorContentHeader}>
@@ -426,7 +433,7 @@ const Chat = () => {
                     </div>
                 </div>
                 {/* Citation Panel */}
-                {isModalOpen && <Modal show={isModalOpen} header={<CitationHeader />} footer={null} close={handleCloseModal} variant={'citation'} ariaLabel="Citations">
+                {isModalOpen && <Modal show={isModalOpen} header={citationHeader} footer={null} close={handleCloseModal} variant={'citation'} ariaLabel={citationLabel}>
 
                 {messages && messages.length > 0 && isCitationPanelOpen && activeCitation && (
                     <Stack.Item className={`${styles.citationPanel}`}>
@@ -446,10 +453,12 @@ const Chat = () => {
                             <ReactMarkdown
                                 linkTarget="_blank"
                                 className={styles.citationPanelContent}
-                                children={DOMPurify.sanitize(activeCitation.content, { ALLOWED_TAGS: XSSAllowTags })}
+                                children={normalizeCitationMarkdown(DOMPurify.sanitize(activeCitation.content, { ALLOWED_TAGS: XSSAllowTags, ALLOWED_ATTR: XSSAllowAttr }))}
                                 remarkPlugins={[remarkGfm]}
                                 rehypePlugins={[rehypeRaw]}
                                 components={demotedHeadingComponents}
+                                allowElement={allowLinkOutsideHeading}
+                                unwrapDisallowed
                             />
                             </div>
                         </div>

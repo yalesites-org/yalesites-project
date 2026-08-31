@@ -70,6 +70,19 @@ class IndexableHtmlFilter {
   ];
 
   /**
+   * Matches text a browser renders as nothing but blank space.
+   *
+   * PHP's trim() charlist covers only ASCII whitespace, so a non-breaking
+   * space read as text and kept elements alive that hold no content at all.
+   * The codepoints listed here are the ones that reach rendered Drupal output
+   * as spacers - `&nbsp;` above all - together with the zero-width characters
+   * that occupy no space whatsoever. PCRE's `\s` is left in for the ASCII set
+   * and the rest are named explicitly, because `\s` does not match these
+   * without the Unicode-properties flag.
+   */
+  const BLANK_TEXT_PATTERN = '/^[\s\x{00A0}\x{1680}\x{2000}-\x{200B}\x{2028}\x{2029}\x{202F}\x{205F}\x{3000}\x{FEFF}]*$/u';
+
+  /**
    * Filters rendered HTML down to what belongs in the index.
    *
    * @param string $html
@@ -79,7 +92,9 @@ class IndexableHtmlFilter {
    *   The same HTML with non-content elements and unusable links removed.
    */
   public function filter(string $html): string {
-    if (trim($html) === '') {
+    // Entities are decoded first so that markup consisting only of `&nbsp;`
+    // spacers is recognised as blank here rather than surviving as text.
+    if ($this->isBlank(html_entity_decode($html, ENT_QUOTES | ENT_HTML5, 'UTF-8'))) {
       return '';
     }
 
@@ -119,6 +134,17 @@ class IndexableHtmlFilter {
    * a bare "=" line and runs of twenty blank lines into indexed content. All of
    * it is charged against the chunk size.
    *
+   * "Holds no text" has to count a non-breaking space as blank, which is why
+   * this uses isBlank() rather than trim(). An element holding only `&nbsp;` is
+   * a spacer, and letting it survive corrupted the markdown outright rather
+   * than merely wasting budget: each spacer converts to a single space, and
+   * TextConverter only discards a collapsed space when the next sibling is a
+   * block - so between inline spacers the spaces are kept and accumulate ahead
+   * of the following block. Two spacers put that block at four columns, the
+   * point where CommonMark reads the line as an indented code block. In the
+   * citation panel that rendered a heading as a bordered monospace box, its
+   * setext underline degraded to a horizontal rule.
+   *
    * Elements are removed, never unwrapped, so unlike an earlier revision this
    * cannot disturb text that abuts inline markup.
    *
@@ -143,12 +169,25 @@ class IndexableHtmlFilter {
 
     foreach (iterator_to_array($xpath->query('//body//*')) as $element) {
       if (in_array($element->nodeName, self::TEXTLESS_ELEMENTS_KEPT, TRUE)
-        || trim($element->textContent) !== ''
+        || !$this->isBlank($element->textContent)
         || $xpath->query($keeps, $element)->length > 0) {
         continue;
       }
       $element->parentNode?->removeChild($element);
     }
+  }
+
+  /**
+   * Whether text is blank once spacer characters are taken into account.
+   *
+   * @param string $text
+   *   The text to test.
+   *
+   * @return bool
+   *   TRUE when the text holds nothing a reader would see.
+   */
+  protected function isBlank(string $text): bool {
+    return preg_match(self::BLANK_TEXT_PATTERN, $text) === 1;
   }
 
   /**
