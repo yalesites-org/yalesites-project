@@ -120,6 +120,18 @@ class PageMetaBlock extends BlockBase implements ContainerFactoryPluginInterface
       '#description' => $this->t('For more information about conditional banner titles, <a href="https://yalesites.yale.edu/posts/2023-10-17-community-spotlight-yale-united-way-campaign#tips" target="_blank">view our tips and tricks on this topic</a>.'),
     ];
 
+    // Controls whether the breadcrumb trail displays above this page.
+    $form['breadcrumb_display'] = [
+      '#type' => 'select',
+      '#title' => $this->t('Breadcrumb Display'),
+      '#default_value' => $config['breadcrumb_display'] ?? 'visible',
+      '#options' => [
+        'visible' => $this->t('Display breadcrumbs: Show the breadcrumb trail above this page'),
+        'hidden' => $this->t('Hide breadcrumbs: Useful for top-level pages where the trail adds little value'),
+      ],
+      '#description' => $this->t('Breadcrumbs help visitors understand where a page sits within the site. They are shown by default.'),
+    ];
+
     return $form;
   }
 
@@ -129,6 +141,7 @@ class PageMetaBlock extends BlockBase implements ContainerFactoryPluginInterface
   public function blockSubmit($form, FormStateInterface $form_state) : void {
     parent::blockSubmit($form, $form_state);
     $this->configuration['page_title_display'] = $form_state->getValue('page_title_display');
+    $this->configuration['breadcrumb_display'] = $form_state->getValue('breadcrumb_display');
   }
 
 }

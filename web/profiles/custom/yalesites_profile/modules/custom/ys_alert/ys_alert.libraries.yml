@@ -7,3 +7,5 @@ confirm_type_modal:
   dependencies:
     - core/drupal.ajax
     - core/drupal.dialog
+    - core/drupal.message
+    - core/once

@@ -1,0 +1,5 @@
+name: 'YS Integrations Test'
+type: module
+description: 'Provides a test integration plugin for ys_integrations kernel tests.'
+package: Testing
+core_version_requirement: ^9 || ^10 || ^11

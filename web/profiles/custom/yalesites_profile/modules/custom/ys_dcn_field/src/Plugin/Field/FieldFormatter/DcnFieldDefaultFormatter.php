@@ -87,7 +87,7 @@ class DcnFieldDefaultFormatter extends FormatterBase {
       $dcn_type_term = $item->getDcnType();
       $dcn_identifier = $item->dcn_identifier;
 
-      if ($dcn_type_term && $dcn_identifier) {
+      if ($dcn_type_term && $dcn_identifier !== NULL && $dcn_identifier !== '') {
         if ($show_label) {
           $elements[$delta] = [
             '#markup' => $dcn_type_term->getName() . $separator . $dcn_identifier,

@@ -7,6 +7,7 @@ dependencies:
     - field.field.block_content.image_banner.field_media
     - field.field.block_content.image_banner.field_padding_options
     - field.field.block_content.image_banner.field_style_variation
+    - field.field.block_content.image_banner.field_style_width
     - field.field.block_content.image_banner.field_text
   module:
     - options
@@ -20,7 +21,7 @@ content:
     type: entity_reference_entity_view
     label: hidden
     settings:
-      view_mode: default
+      view_mode: banner_16_5
       link: false
     third_party_settings: {  }
     weight: 0
@@ -38,6 +39,13 @@ content:
     settings: {  }
     third_party_settings: {  }
     weight: 5
+    region: content
+  field_style_width:
+    type: list_key
+    label: hidden
+    settings: {  }
+    third_party_settings: {  }
+    weight: 6
     region: content
   field_text:
     type: text_default

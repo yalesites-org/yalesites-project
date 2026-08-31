@@ -1,0 +1,10 @@
+manage ys beacon settings:
+  title: 'Manage YaleSites Beacon settings'
+  description: 'Set and update Beacon content and display settings.'
+manage ys beacon system instructions:
+  title: 'Manage Beacon system instructions'
+  description: 'Create, view, and revert versions of the Beacon system instructions.'
+view ys beacon guardrail telemetry:
+  title: 'View Beacon guardrail telemetry'
+  description: 'Read and export the Beacon guardrail telemetry report: counts of refusals, guardrail stops and prompt-injection pattern hits, and when each flagged turn happened. No question or answer text is recorded or shown.'
+  restrict access: true

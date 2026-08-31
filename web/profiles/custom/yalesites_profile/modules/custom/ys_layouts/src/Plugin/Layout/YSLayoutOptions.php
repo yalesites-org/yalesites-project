@@ -80,6 +80,9 @@ class YSLayoutOptions extends LayoutDefault implements ContainerFactoryPluginInt
 
     // Use the saved theme value directly from configuration.
     $saved_theme = $this->configuration['theme'] ?? 'default';
+    // Sections offer five color options by design, where block components
+    // offer six. See ColorTokenResolver::getColorStylesForEntity() for which
+    // palette slot each option resolves to and why slot-three is excluded.
     $form['theme'] = [
       '#type' => 'select',
       '#title' => $this->t('Component theme'),
@@ -90,6 +93,7 @@ class YSLayoutOptions extends LayoutDefault implements ContainerFactoryPluginInt
         'two' => $this->t('Two'),
         'three' => $this->t('Three'),
         'four' => $this->t('Four'),
+        'five' => $this->t('Five'),
       ],
       '#weight' => 10,
       '#after_build' => [
@@ -115,9 +119,9 @@ class YSLayoutOptions extends LayoutDefault implements ContainerFactoryPluginInt
   /**
    * After build callback to add the color picker palette UI.
    *
-   * Wraps the ColorTokenResolver processColorPicker method with the section
-   * layout mapping: one=Blue Yale, two=Gray 100, three=Gray 800,
-   * four=Blue Medium, five=Blue Light.
+   * Wraps the ColorTokenResolver processColorPicker method, which owns the
+   * section layout mapping for the 'layout_section'/'ys_layout_options'
+   * entity/bundle pair.
    *
    * @param array $element
    *   The form element.
@@ -134,10 +138,16 @@ class YSLayoutOptions extends LayoutDefault implements ContainerFactoryPluginInt
     // Get the complete form from form state (required for after_build).
     $complete_form = $form_state->getCompleteForm();
 
-    // Use section layout mapping: one→slot-one, two→slot-three,
-    // three→slot-two, four→slot-five, five→slot-four.
-    // This gives: one=Blue Yale, two=Gray 100, three=Gray 800,
-    // four=Blue Medium, five=Blue Light.
+    // The resolver applies the section layout mapping: one→slot-one,
+    // two→slot-four, three→slot-five, four→slot-two, five→slot-nine. The
+    // rendered colors come from the same slots via _yds-layout.scss, so the
+    // swatch shown here matches the page.
+    //
+    // No mapping is passed from this plugin: getColorStylesForEntity() is the
+    // single source of truth for which slot each option resolves to. The
+    // option list itself is not — it is declared three times and the copies
+    // must be kept in sync: the '#options' array above, that same mapping's
+    // keys, and $desired_order in ColorTokenResolver::processColorPicker().
     return $this->colorTokenResolver->processColorPicker(
       $element,
       $form_state,

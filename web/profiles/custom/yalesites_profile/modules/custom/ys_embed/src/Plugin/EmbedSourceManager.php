@@ -135,7 +135,7 @@ class EmbedSourceManager extends DefaultPluginManager {
    */
   public function loadPluginById($plugin_id) {
     if (!$this->isValidSourceId($plugin_id)) {
-      return $this->instances[static::BROKEN_ID];
+      $plugin_id = static::BROKEN_ID;
     }
     if (!empty($this->instances[$plugin_id])) {
       return $this->instances[$plugin_id];
@@ -172,7 +172,7 @@ class EmbedSourceManager extends DefaultPluginManager {
     foreach ($this->getSources() as $plugin_id => $source) {
       $this->loadPluginById($plugin_id);
     }
-    return $this->instance;
+    return $this->instances;
   }
 
 }

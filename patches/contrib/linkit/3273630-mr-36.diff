@@ -1,0 +1,214 @@
+diff --git a/src/Plugin/Linkit/Matcher/PhoneMatcher.php b/src/Plugin/Linkit/Matcher/PhoneMatcher.php
+new file mode 100644
+index 0000000000000000000000000000000000000000..2c7ef4b98317c4c466f6faf9ef8db0b50e218670
+--- /dev/null
++++ b/src/Plugin/Linkit/Matcher/PhoneMatcher.php
+@@ -0,0 +1,39 @@
++<?php
++
++namespace Drupal\linkit\Plugin\Linkit\Matcher;
++
++use Drupal\Component\Utility\Html;
++use Drupal\linkit\MatcherBase;
++use Drupal\linkit\Suggestion\DescriptionSuggestion;
++use Drupal\linkit\Suggestion\SuggestionCollection;
++
++/**
++ * Provides specific linkit matchers for phone numbers.
++ *
++ * @Matcher(
++ *   id = "phone",
++ *   label = @Translation("Phone Number"),
++ * )
++ */
++class PhoneMatcher extends MatcherBase {
++
++    /**
++     * {@inheritdoc}
++     */
++    public function execute($string): SuggestionCollection {
++        $suggestions = new SuggestionCollection();
++
++        if (preg_match("/^(\+\d{1,2}\s)?\(?\d{3}\)?[\s.-]\d{3}[\s.-]\d{4}$/", $string) === 1) {
++            $suggestion = new DescriptionSuggestion();
++            $suggestion->setLabel($this->t('Phone @phone', ['@phone' => $string]))
++                ->setPath('tel:' . Html::escape($string))
++                ->setGroup($this->t('Phone'))
++                ->setDescription($this->t('Opens your mobile phone to call @phone', ['@phone' => $string]));
++
++            $suggestions->addSuggestion($suggestion);
++        }
++
++        return $suggestions;
++    }
++
++}
+diff --git a/tests/src/FunctionalJavascript/LinkFieldTest.php b/tests/src/FunctionalJavascript/LinkFieldTest.php
+index c3a7e6a3498042a94cd241c53fb702c24b66ce73..996dde937be8fee5beaa3282312d72c662ae0af6 100644
+--- a/tests/src/FunctionalJavascript/LinkFieldTest.php
++++ b/tests/src/FunctionalJavascript/LinkFieldTest.php
+@@ -60,6 +60,8 @@ class LinkFieldTest extends WebDriverTestBase {
+     $this->linkitProfile->addMatcher($plugin->getConfiguration());
+     $plugin = $matcherManager->createInstance('email');
+     $this->linkitProfile->addMatcher($plugin->getConfiguration());
++    $plugin = $matcherManager->createInstance('phone');
++    $this->linkitProfile->addMatcher($plugin->getConfiguration());
+     $plugin = $matcherManager->createInstance('front_page');
+     $this->linkitProfile->addMatcher($plugin->getConfiguration());
+     $this->linkitProfile->save();
+@@ -396,6 +398,36 @@ class LinkFieldTest extends WebDriverTestBase {
+       $page->pressButton('Save');
+       $assert_session->pageTextContains("page Valid string node $key has been created");
+     }
++
++    // Tests the autocomplete with a phone number.
++    $this->drupalGet('node/add/page');
++
++    $phone = '555-555-5555';
++
++    $widget_wrapper = $assert_session->elementExists('css', '#edit-field-test-link-wrapper');
++    $uri_input = $assert_session->elementExists('css', 'input[name="field_test_link[0][uri]"]', $widget_wrapper);
++    $uri_input->setValue($phone);
++    $session->getDriver()->keyDown($uri_input->getXpath(), ' ');
++    $assert_session->waitOnAutocomplete();
++    $first_result = $assert_session->elementExists('css', 'ul.linkit-ui-autocomplete li.linkit-result-line span.linkit-result-line--title');
++    $first_result->click();
++    $assert_session->assertWaitOnAjaxRequest();
++
++    $url_input = $assert_session->elementExists('css', 'input[name="field_test_link[0][uri]"]', $widget_wrapper);
++    $this->assertEquals('tel:' . $phone, $url_input->getValue());
++    // Check that the title was populated automatically.
++    $title_input = $assert_session->elementExists('css', 'input[name="field_test_link[0][title]"]', $widget_wrapper);
++    $this->assertEquals((string) new FormattableMarkup('Phone @phone', ['@phone' => $phone]), $title_input->getValue());
++
++    // Give the node a title and save the page.
++    $page->fillField('title[0][value]', 'Host test node 7');
++    $page->pressButton('Save');
++    $assert_session->pageTextContains('Host test node 7 has been created');
++
++    // Check that we are viewing the node
++    // and the formatter displays what we expect.
++    $assert_session->linkByHrefExists('tel:' . $phone);
++    $assert_session->linkExists((string) new FormattableMarkup('Phone @phone', ['@phone' => $phone]));
+   }
+ 
+ }
+diff --git a/tests/src/Kernel/LinkitAutocompleteTest.php b/tests/src/Kernel/LinkitAutocompleteTest.php
+index d0fe6270d75064933df971ce95af250551c3a380..fa4355b0fbdb35d96f8b8edafb377c1360979959 100644
+--- a/tests/src/Kernel/LinkitAutocompleteTest.php
++++ b/tests/src/Kernel/LinkitAutocompleteTest.php
+@@ -114,6 +114,21 @@ class LinkitAutocompleteTest extends LinkitKernelTestBase {
+     $this->assertSame('mailto:' . $email, $data[0]['path'], 'Autocomplete returned email suggestion with an mailto href.');
+   }
+ 
++  /**
++   * Tests the autocomplete with a phone number.
++   */
++  public function testAutocompletionPhone() {
++    /** @var \Drupal\linkit\MatcherInterface $plugin */
++    $plugin = $this->matcherManager->createInstance('phone');
++    $this->linkitProfile->addMatcher($plugin->getConfiguration());
++    $this->linkitProfile->save();
++
++    $phone = '555-555-5555';
++    $data = $this->getAutocompleteResult($phone);
++    $this->assertSame((string) new FormattableMarkup('Phone @phone', ['@phone' => $phone]), $data[0]['label'], 'Autocomplete returned phone suggestion.');
++    $this->assertsame('tel:' . $phone, $data[0]['path'], 'Autocomplete returned phoen suggestion with a tel href.');
++  }
++
+   /**
+    * Tests autocompletion in general.
+    */
+diff --git a/tests/src/Kernel/Matchers/PhoneMatcherTest.php b/tests/src/Kernel/Matchers/PhoneMatcherTest.php
+new file mode 100644
+index 0000000000000000000000000000000000000000..ed64fcc43e452fec6eaf94cec5633bd9b3492249
+--- /dev/null
++++ b/tests/src/Kernel/Matchers/PhoneMatcherTest.php
+@@ -0,0 +1,87 @@
++<?php
++
++namespace Drupal\Tests\link\Kernel\Matchers;
++
++use Drupal\Tests\linkit\Kernel\LinkitKernelTestBase;
++
++/**
++ * Tests ph9one matcher.
++ *
++ * @group linkit
++ */
++class PhoneMatcherTest extends LinkitKernelTestBase {
++  /**
++   * The matcher manager.
++   *
++   * @var \Drupal\linkit\MatcherManager
++   */
++  protected $manager;
++
++  /**
++   * The plugin instance.
++   *
++   * @var \Drupal\linkit\MatcherInterface
++   */
++  protected $plugin;
++
++  /**
++   * {@inheritDoc}
++   */
++  protected function setUp(): void {
++    parent::setUp();
++    $this->manager = $this->container->get('plugin.manager.linkit.matcher');
++    $this->plugin = $this->manager->createInstance('phone', []);
++  }
++
++  /**
++   * Test phone number with only dashes.
++   */
++  public function testDashes() {
++    $phone = '555-555-1234';
++    $suggestions = $this->plugin->execute($phone);
++    $this->assertEquals(1, count($suggestions->getSuggestions()), 'Correct number of suggestions');
++  }
++
++  /**
++   * Test phone number with parenthases.
++   */
++  public function testParentheses() {
++    $phone = '(555) 555-1234';
++    $suggestions = $this->plugin->execute($phone);
++    $this->assertEquals(1, count($suggestions->getSuggestions()), 'Correct number of suggestions');
++  }
++
++  /**
++   * Test phone number with no special symbols.
++   */
++  public function testNoSpecialSymbols() {
++    $phone = '5555551234';
++    $suggestions = $this->plugin->execute($phone);
++    $this->assertEquals(1, count($suggestions->getSuggestions()), 'Correct number of suggestions');
++  }
++
++  /**
++   * Test phone number with country code.
++   */
++  public function testCountryCode() {
++    $phone = '+1 (555) 555-1234';
++    $suggestions = $this->plugin->execute($phone);
++    $suggestions_array = $suggestions->getSuggestions();
++    $this->assertEquals(1, count($suggestions_array), 'Correct number of suggestions');
++    $suggestion = reset($suggestions_array);
++    $this->assertStringContainsString('+1', $suggestion->getDescription(), '`+` is prepended when country code is present');
++  }
++
++  /**
++   * Test phone number prepended with 'tel:'.
++   */
++  public function testTelPrepend() {
++    $phone = 'tel:5555551234';
++    $suggestions = $this->plugin->execute($phone);
++    $suggestions_array = $suggestions->getSuggestions();
++    $this->assertEquals(1, count($suggestions_array), 'Correct number of suggestions');
++    $suggestion = reset($suggestions_array);
++    $this->assertStringNotContainsString('tel:', $suggestion->getDescription(), 'Prepend `tel:` is not duplicated in the description');
++  }
++
++}

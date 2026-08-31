@@ -1,0 +1,323 @@
+From 2e55b2542e9b616130c7b09fb7488582a74f33e8 Mon Sep 17 00:00:00 2001
+From: Marc Berger <marc@fourkitchens.com>
+Date: Thu, 2 Jan 2025 12:18:05 -0800
+Subject: [PATCH 1/4] feat(3497055): Only show help text to users who can edit
+ lock settings
+
+---
+ layout_builder_lock.module | 23 +++++++++++++----------
+ 1 file changed, 13 insertions(+), 10 deletions(-)
+
+diff --git a/layout_builder_lock.module b/layout_builder_lock.module
+index 630c608..53116b1 100644
+--- a/layout_builder_lock.module
++++ b/layout_builder_lock.module
+@@ -32,6 +32,13 @@ function layout_builder_lock_form_layout_builder_configure_section_alter(&$form,
+ 
+   $override = FALSE;
+ 
++  $lock_help_text = [
++    '#markup' => '<p>' . t('Locks can be configured when the section has been added.') . '</p>',
++    '#weight' => 100,
++  ];
++
++  $user_manage_locks_sections = \Drupal::currentUser()->hasPermission('manage lock settings on sections');
++
+   // This is a hacky workaround, as the Layout Builder ConfigureSectionForm
+   // has no public methods to expose if the user is adding or editing an
+   // existing section.
+@@ -41,11 +48,8 @@ function layout_builder_lock_form_layout_builder_configure_section_alter(&$form,
+   // the ConfigureSectionForm.
+   //
+   // @see \Drupal\layout_builder\Form\ConfigureSectionForm::buildForm()
+-  if (isset($form_state->getBuildInfo()['args'][2])) {
+-    $form['layout_settings']['layout_builder_lock_info'] = [
+-      '#markup' => '<p>' . t('Locks can be configured when the section has been added.') . '</p>',
+-      '#weight' => 100,
+-    ];
++  if (isset($form_state->getBuildInfo()['args'][2]) && $user_manage_locks_sections) {
++    $form['layout_settings']['layout_builder_lock_info'] = $lock_help_text;
+     return;
+   }
+ 
+@@ -82,16 +86,15 @@ function layout_builder_lock_form_layout_builder_configure_section_alter(&$form,
+     }
+     catch (\Exception $ignored) {
+       // No section yet, do not go further.
+-      $form['layout_settings']['layout_builder_lock_info'] = [
+-        '#markup' => '<p>' . t('Locks can be configured when the section has been added.') . '</p>',
+-        '#weight' => 100,
+-      ];
++      if ($override && $user_manage_locks_sections) {
++        $form['layout_settings']['layout_builder_lock_info'] = $lock_help_text;
++      }
+       return;
+     }
+   }
+ 
+   // Do not add the settings form when the user does not have permission.
+-  if (!$override && !\Drupal::currentUser()->hasPermission('manage lock settings on sections')) {
++  if (!$override && !$user_manage_locks_sections) {
+     if (isset($form['layout_settings']['layout_builder_lock_info'])) {
+       $form['layout_settings']['layout_builder_lock_info']['#access'] = FALSE;
+     }
+-- 
+GitLab
+
+
+From 288f454994af8b2d71cf3fd243a923d4e552d482 Mon Sep 17 00:00:00 2001
+From: Y0r <panchyk.yuriu@gmail.com>
+Date: Mon, 6 Jan 2025 21:57:11 -0600
+Subject: [PATCH 2/4] Issue #3497783: Fix GitLab autotest pipeline
+
+---
+ .gitlab-ci.yml | 98 +++++++++++---------------------------------------
+ 1 file changed, 20 insertions(+), 78 deletions(-)
+
+diff --git a/.gitlab-ci.yml b/.gitlab-ci.yml
+index fe18a47..359886f 100644
+--- a/.gitlab-ci.yml
++++ b/.gitlab-ci.yml
+@@ -1,90 +1,32 @@
+ ################
+-# DrupalCI GitLabCI template
++# GitLabCI template for Drupal projects.
+ #
+-# Gitlab-ci.yml to replicate DrupalCI testing for Contrib
+-#
+-# With thanks to:
+-#   * The GitLab Acceleration Initiative participants
+-#   * DrupalSpoons
+-################
+-
+-################
+-# Guidelines
+-#
+-# This template is designed to give any Contrib maintainer everything they need to test, without requiring modification. It is also designed to keep up to date with Core Development automatically through the use of include files that can be centrally maintained.
+-#
+-# However, you can modify this template if you have additional needs for your project.
+-################
+-
+-################
+-# Includes
+-#
+-# Additional configuration can be provided through includes.
+-# One advantage of include files is that if they are updated upstream, the changes affect all pipelines using that include.
+-#
+-# Includes can be overridden by re-declaring anything provided in an include, here in gitlab-ci.yml
+-# https://docs.gitlab.com/ee/ci/yaml/includes.html#override-included-configuration-values
++# This template is designed to give any Contrib maintainer everything they need to test, without requiring modification.
++# It is also designed to keep up to date with Core Development automatically through the use of include files that can be centrally maintained.
++# As long as you include the project, ref and three files below, any future updates added by the Drupal Association will be used in your
++# pipelines automatically. However, you can modify this template if you have additional needs for your project.
++# The full documentation is on https://project.pages.drupalcode.org/gitlab_templates/
+ ################
+ 
++# For information on alternative values for 'ref' see https://project.pages.drupalcode.org/gitlab_templates/info/templates-version/
++# To test a Drupal 7 project, change the first include filename from .main.yml to .main-d7.yml
+ include:
+-  ################
+-  # DrupalCI includes:
+-  # As long as you include this, any future includes added by the Drupal Association will be accessible to your pipelines automatically.
+-  # View these include files at https://git.drupalcode.org/project/gitlab_templates/
+-  ################
+   - project: $_GITLAB_TEMPLATES_REPO
+     ref: $_GITLAB_TEMPLATES_REF
+     file:
+-      - '/includes/include.drupalci.main.yml'
+-      - '/includes/include.drupalci.variables.yml'
+-      - '/includes/include.drupalci.workflows.yml'
++      - "/includes/include.drupalci.main.yml"
++      - "/includes/include.drupalci.variables.yml"
++      - "/includes/include.drupalci.workflows.yml"
+ 
+ ################
+-# Pipeline configuration variables
+-#
+-# These are the variables provided to the Run Pipeline form that a user may want to override.
+-#
+-# Docs at https://git.drupalcode.org/project/gitlab_templates/-/blob/1.0.x/includes/include.drupalci.variables.yml
++# Pipeline configuration variables are defined with default values and descriptions in the file
++# https://git.drupalcode.org/project/gitlab_templates/-/blob/main/includes/include.drupalci.variables.yml
++# Uncomment the lines below if you want to override any of the variables. The following is just an example.
+ ################
+ variables:
+-  #  Disabling the default phpunit job in favor of the d9/10 variants described below.
+-  SKIP_PHPUNIT: 1
+-
+-# Run two variations of composer job.
+-composer:
+-  parallel:
+-    matrix:
+-      - _TARGET_PHP: [ "7.4" ]
+-        _TARGET_CORE: [ "9.5.x" ]
+-      - _TARGET_PHP: [ "8.1" ]
+-        _TARGET_CORE: [ "$CORE_STABLE" ]
+-
+-.phpunit-local:
+-  variables:
+-    SKIP_PHPUNIT: 0
+-phpunit-d9:
+-  needs:
+-    - job: composer
+-      parallel:
+-        matrix:
+-          - _TARGET_PHP: "7.4"
+-            _TARGET_CORE: "9.5.x"
+-  variables:
+-    _TARGET_PHP: "7.4"
+-  extends:
+-    - .phpunit-base
+-    - .phpunit-local
+-
+-phpunit-d10:
+-  needs:
+-    - job: composer
+-      parallel:
+-        matrix:
+-          - _TARGET_PHP: "8.1"
+-            _TARGET_CORE: $CORE_STABLE
+-  variables:
+-    _TARGET_PHP: "8.1"
+-  extends:
+-    - .phpunit-base
+-    - .phpunit-local
+-
++  SKIP_CSPELL: 1
++  OPT_IN_TEST_PREVIOUS_MAJOR: 1
++  OPT_IN_TEST_PREVIOUS_MINOR: 1
++  OPT_IN_TEST_NEXT_MINOR: 1
++  OPT_IN_TEST_NEXT_MAJOR: 1
++  OPT_IN_TEST_MAX_PHP: 1
+-- 
+GitLab
+
+
+From ba68f5b9affee27d8baa9241a5912b5218e5258a Mon Sep 17 00:00:00 2001
+From: Tim Diels <41869-timdiels1@users.noreply.drupalcode.org>
+Date: Mon, 27 Jan 2025 01:05:50 +0000
+Subject: [PATCH 3/4] Issue #3463752: New settings not in layout_details
+
+---
+ layout_builder_lock.module | 5 +++--
+ 1 file changed, 3 insertions(+), 2 deletions(-)
+
+diff --git a/layout_builder_lock.module b/layout_builder_lock.module
+index 53116b1..5dc39af 100644
+--- a/layout_builder_lock.module
++++ b/layout_builder_lock.module
+@@ -142,16 +142,17 @@ function layout_builder_lock_form_layout_builder_configure_section_alter(&$form,
+   ];
+ 
+   if ($regions) {
+-    $form['layout_builder_lock_regions'] = [
++    $form['layout_settings']['layout_builder_lock_wrapper']['layout_builder_lock_regions'] = [
+       '#title' => t('Disallow block operations in following regions:'),
+       '#type' => 'checkboxes',
++      '#parents' => ['layout_builder_lock_regions'],
+       '#weight' => 0,
+       '#options' => [],
+       '#default_value' => $default_region_lock_value,
+       '#description' => 'Users won\'t be able to add, move, delete or add blocks in this region. This setting can also be applied in overridden layouts',
+     ];
+     foreach ($regions as $region_id => $region) {
+-      $form['layout_builder_lock_regions']['#options'][$region_id] = $region['label'];
++      $form['layout_settings']['layout_builder_lock_wrapper']['layout_builder_lock_regions']['#options'][$region_id] = $region['label'];
+     }
+   }
+ 
+-- 
+GitLab
+
+
+From e411a8c226d8b5fb9c0a7c54040f0d10152df1d6 Mon Sep 17 00:00:00 2001
+From: Yurii Panchuk <yurii.panchuk@pega.com>
+Date: Sun, 29 Mar 2026 22:52:05 -0400
+Subject: [PATCH 4/4] Issue #3497783: Refactor sections alter to display help
+ text properly
+
+---
+ layout_builder_lock.module | 30 +++++++++++++++---------------
+ 1 file changed, 15 insertions(+), 15 deletions(-)
+
+diff --git a/layout_builder_lock.module b/layout_builder_lock.module
+index 5dc39af..b8616dd 100644
+--- a/layout_builder_lock.module
++++ b/layout_builder_lock.module
+@@ -29,16 +29,21 @@ function layout_builder_lock_element_info_alter(array &$info) {
+  * Implements hook_form_FORM_ID_alter().
+  */
+ function layout_builder_lock_form_layout_builder_configure_section_alter(&$form, FormStateInterface $form_state) {
+-
+   $override = FALSE;
+ 
++  $can_manage_sections_locks = \Drupal::currentUser()->hasPermission('manage lock settings on sections');
++  $can_manage_overrides_locks = \Drupal::currentUser()->hasPermission('manage lock settings on overrides');
++
++  // This helper text is displayed to user who can edit locks on sections or overrides.
++  // It should be displayed when new section is being added or override is different from default.
+   $lock_help_text = [
+-    '#markup' => '<p>' . t('Locks can be configured when the section has been added.') . '</p>',
++    '#type' => 'html_tag',
++    '#tag' => 'p',
+     '#weight' => 100,
++    '#value' => t('Layout Locks can be configured when the section has been added.'),
++    '#access' => $can_manage_sections_locks || $can_manage_overrides_locks,
+   ];
+ 
+-  $user_manage_locks_sections = \Drupal::currentUser()->hasPermission('manage lock settings on sections');
+-
+   // This is a hacky workaround, as the Layout Builder ConfigureSectionForm
+   // has no public methods to expose if the user is adding or editing an
+   // existing section.
+@@ -48,7 +53,8 @@ function layout_builder_lock_form_layout_builder_configure_section_alter(&$form,
+   // the ConfigureSectionForm.
+   //
+   // @see \Drupal\layout_builder\Form\ConfigureSectionForm::buildForm()
+-  if (isset($form_state->getBuildInfo()['args'][2]) && $user_manage_locks_sections) {
++  // @todo refactor after https://www.drupal.org/project/drupal/issues/3522629 is resolved.
++  if (isset($form_state->getBuildInfo()['args'][2])) {
+     $form['layout_settings']['layout_builder_lock_info'] = $lock_help_text;
+     return;
+   }
+@@ -64,9 +70,8 @@ function layout_builder_lock_form_layout_builder_configure_section_alter(&$form,
+   $default_region_lock_value = [];
+ 
+   if ($formObject = $form_state->getFormObject()) {
+-
+-    /** @var Drupal\layout_builder\SectionStorageInterface $sectionStorage */
+     try {
++      /** @var Drupal\layout_builder\SectionStorageInterface $sectionStorage */
+       $sectionStorage = $formObject->getSectionStorage();
+       $section = $sectionStorage->getSection($delta);
+       $default_lock_value = array_filter($section
+@@ -86,23 +91,18 @@ function layout_builder_lock_form_layout_builder_configure_section_alter(&$form,
+     }
+     catch (\Exception $ignored) {
+       // No section yet, do not go further.
+-      if ($override && $user_manage_locks_sections) {
+-        $form['layout_settings']['layout_builder_lock_info'] = $lock_help_text;
+-      }
++      $form['layout_settings']['layout_builder_lock_info'] = $lock_help_text;
+       return;
+     }
+   }
+ 
+   // Do not add the settings form when the user does not have permission.
+-  if (!$override && !$user_manage_locks_sections) {
+-    if (isset($form['layout_settings']['layout_builder_lock_info'])) {
+-      $form['layout_settings']['layout_builder_lock_info']['#access'] = FALSE;
+-    }
++  if (!$override && !$can_manage_sections_locks) {
+     return;
+   }
+ 
+   // Do not show settings in case the user has no permission to override them.
+-  if ($override && !\Drupal::currentUser()->hasPermission('manage lock settings on overrides')) {
++  if ($override && !$can_manage_overrides_locks) {
+     return;
+   }
+ 
+-- 
+GitLab
+

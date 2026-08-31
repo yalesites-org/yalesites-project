@@ -7,6 +7,7 @@ use Drupal\Core\Routing\TrustedRedirectResponse;
 use Drupal\Core\Session\AccountInterface;
 use Drupal\Core\Url;
 use Symfony\Component\HttpKernel\Event\ExceptionEvent;
+use Symfony\Component\Routing\Exception\RouteNotFoundException;
 
 /**
  * Overrides the 403 response to perform a CAS redirect for specific pages.
@@ -53,7 +54,15 @@ class NodeAccessEventSubscriber extends HttpExceptionSubscriberBase {
          */
         if ($node->hasField('field_login_required')) {
           if ($node->isPublished() && $node->field_login_required->first()->getValue()['value']) {
-            $casRedirectUrl = Url::fromRoute('cas.login', ['destination' => $node->toUrl()->toString()])->toString();
+            try {
+              $casRedirectUrl = Url::fromRoute('cas.login', ['destination' => $node->toUrl()->toString()])->toString();
+            }
+            catch (RouteNotFoundException $e) {
+              // The 'cas' module is not installed (not a hard dependency), so
+              // there is no login route to redirect to. Leave the default 403
+              // response in place instead of fataling.
+              return;
+            }
             $returnResponse = new TrustedRedirectResponse($casRedirectUrl);
             $returnResponse->getCacheableMetadata()->setCacheMaxAge(0);
             $event->setResponse($returnResponse);

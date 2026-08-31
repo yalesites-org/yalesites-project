@@ -1,0 +1,39 @@
+services:
+  # Releases runs whose batch died without reporting a status. Read by the run
+  # list and the rerun form, which both refuse to act on a 'processing' run.
+  ys_ai_tester.stale_run_reconciler:
+    class: Drupal\ys_ai_tester\StaleRunReconciler
+    arguments:
+      - '@database'
+      - '@datetime.time'
+      - '@logger.factory'
+      - '@ys_ai_tester.run_progress'
+
+  # Reports which of a run's questions never got an answer, so an interrupted
+  # run can be finished in place instead of re-asked from the top.
+  ys_ai_tester.run_progress:
+    class: Drupal\ys_ai_tester\RunProgress
+    arguments:
+      - '@database'
+
+  ys_ai_tester.run_comparator:
+    class: Drupal\ys_ai_tester\RunComparator
+    arguments:
+      - '@database'
+
+  # Collects every tagged assistant. A backend disappears with the module that
+  # provides it, so uninstalling a backend submodule removes the option without
+  # the tester core ever referencing that submodule.
+  ys_ai_tester.answer_backend_registry:
+    class: Drupal\ys_ai_tester\AnswerBackendRegistry
+    arguments:
+      - !tagged_iterator ys_ai_tester.answer_backend
+
+  # Beacon carries the highest priority so it sorts first and becomes Run A when
+  # a submission is run against every assistant at once.
+  ys_ai_tester.backend.beacon:
+    class: Drupal\ys_ai_tester\Backend\BeaconAnswerBackend
+    arguments:
+      - '@ys_beacon.beacon_answer'
+    tags:
+      - { name: ys_ai_tester.answer_backend, priority: 100 }

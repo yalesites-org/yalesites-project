@@ -1,0 +1,78 @@
+chat:
+  input:
+    description: 'Input provided to the model.'
+    type: 'array'
+    default:
+      - { role: "system", content: "You are a helpful assistant." }
+      - { role: "user", content: "Introduce yourself!" }
+    required: true
+  authentication:
+    description: 'Portkey API Key.'
+    type: 'string'
+    default: ''
+    required: true
+  configuration:
+    max_tokens:
+      label: 'Max Tokens'
+      description: 'The maximum number of tokens to generate in the response.'
+      type: 'integer'
+      default: 1024
+      required: false
+    temperature:
+      label: 'Temperature'
+      description: 'Sampling temperature. Higher values mean more random output.'
+      type: 'float'
+      default: ''
+      required: false
+      constraints:
+        min: 0
+        max: 2
+        step: 0.1
+    top_p:
+      label: 'Top P'
+      description: 'An alternative to sampling with temperature, called nucleus sampling.'
+      type: 'float'
+      default: ''
+      required: false
+      constraints:
+        min: 0
+        max: 1
+        step: 0.1
+    frequency_penalty:
+      label: 'Frequency Penalty'
+      description: 'Penalizes new tokens based on their existing frequency in the text so far.'
+      type: 'float'
+      default: ''
+      required: false
+      constraints:
+        min: -2
+        max: 2
+        step: 0.1
+    presence_penalty:
+      label: 'Presence Penalty'
+      description: 'Penalizes new tokens based on whether they appear in the text so far.'
+      type: 'float'
+      default: ''
+      required: false
+      constraints:
+        min: -2
+        max: 2
+        step: 0.1
+embeddings:
+  input:
+    description: 'Text to convert into a vector embedding.'
+    type: 'string'
+    default: 'Hello world!'
+    required: true
+  authentication:
+    description: 'Portkey API Key.'
+    type: 'string'
+    default: ''
+    required: true
+  configuration:
+    dimensions:
+      label: 'Dimensions'
+      description: 'The number of dimensions the resulting output embeddings should have.'
+      type: 'integer'
+      default: 1536
+      required: false

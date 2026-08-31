@@ -1,0 +1,6 @@
+ys_ai_tester.tester:
+  title: 'AI Tester'
+  description: 'Batch test Beacon AI assistant responses'
+  route_name: ys_ai_tester.tester
+  parent: ys_beacon.admin
+  weight: 3

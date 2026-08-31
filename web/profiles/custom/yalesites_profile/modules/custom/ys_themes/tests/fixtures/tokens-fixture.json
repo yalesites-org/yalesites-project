@@ -1,0 +1,27 @@
+{
+  "global-themes": {
+    "one": {
+      "label": "Old Blues",
+      "colors": {
+        "slot-one": "hsl(210, 100%, 21%)",
+        "slot-two": "hsl(0, 0%, 50%)"
+      }
+    },
+    "two": {
+      "label": "New Haven Green",
+      "colors": {
+        "slot-one": "hsl(150, 50%, 30%)"
+      }
+    }
+  },
+  "color": {
+    "blue": {
+      "yale": "hsl(210, 100%, 21%)"
+    }
+  },
+  "component-themes": {
+    "five": {
+      "background": "hsl(174, 57%, 93%)"
+    }
+  }
+}

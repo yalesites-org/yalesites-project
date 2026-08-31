@@ -8,6 +8,7 @@
  * - content: The content for this layout.
  * - attributes: HTML attributes for the layout <div>.
  * - show_secondary_nav: Whether or not to show the secondary nav.
+ * - show_breadcrumbs: Whether or not to show the breadcrumb trail.
  */
 #}
 {%
@@ -36,7 +37,9 @@
 {% if content.page_meta %}
   <div{{ attributes.addClass(classes) }}>
     <div {{ region_attribute_classes }}>
-      {{ drupal_entity('block', 'yalesitesbreadcrumbs', check_access=false) }}
+      {% if show_breadcrumbs is not defined or show_breadcrumbs %}
+        {{ drupal_entity('block', 'yalesitesbreadcrumbs', check_access=false) }}
+      {% endif %}
 
       {% if show_secondary_nav %}
         {{ drupal_entity('block', 'atomic_custombooknavigation', check_access=false) }}

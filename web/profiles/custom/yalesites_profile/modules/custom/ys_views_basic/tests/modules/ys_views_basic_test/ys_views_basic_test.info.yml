@@ -1,0 +1,8 @@
+name: 'YS Views Basic Test'
+type: module
+description: 'Provides test fixtures (views) for ys_views_basic kernel tests.'
+package: Testing
+core_version_requirement: ^10 || ^11
+dependencies:
+  - drupal:node
+  - drupal:views

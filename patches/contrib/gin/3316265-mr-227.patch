@@ -1,0 +1,205 @@
+From 3da578778bc5b0b58dce0486ef670c246a9dd165 Mon Sep 17 00:00:00 2001
+From: Paul Weidner <paul.weidner@gmail.com>
+Date: Wed, 15 Feb 2023 07:04:45 -0800
+Subject: [PATCH 1/4] Standardize text format wrapper description preprocess
+ logic
+
+This existing logic is the same as the GinDescriptionToggle::preprocess
+function except that it does not check if we are on a gin content form
+route.
+
+This fixes an issue where the description is always visually-hidden on
+non gin content form routes and thus will never have a help toggle
+button rendered.
+---
+ includes/form.theme | 7 +------
+ 1 file changed, 1 insertion(+), 6 deletions(-)
+
+diff --git a/includes/form.theme b/includes/form.theme
+index 4f99ebc4..1e42da5f 100644
+--- a/includes/form.theme
++++ b/includes/form.theme
+@@ -197,12 +197,7 @@ function gin_element_info_alter(&$info) {
+  * Implements template_preprocess_HOOK() for text_format_wrapper.
+  */
+ function gin_preprocess_text_format_wrapper(&$variables) {
+-  /** @var \Drupal\gin\GinSettings $settings */
+-  $settings = \Drupal::classResolver(GinSettings::class);
+-  if ($settings->get('show_description_toggle') && !empty($variables['description'])) {
+-    $variables['description_display'] = 'invisible';
+-    $variables['description_toggle'] = TRUE;
+-  }
++  \Drupal::classResolver(GinDescriptionToggle::class)->preprocess($variables);
+ }
+ 
+ /**
+-- 
+GitLab
+
+
+From 4761c55b5277fba7a296ef9640a704b445574cd0 Mon Sep 17 00:00:00 2001
+From: Paul Weidner <paul.weidner@gmail.com>
+Date: Wed, 15 Feb 2023 07:11:37 -0800
+Subject: [PATCH 2/4] Only depend on description_toggle variable to render
+ description toggle
+
+The logic in GinDescriptionToggle::process will only set
+description_toggle = TRUE if a description is provided. This function
+also has special logic to enable the description toggle for the text
+format edge case when the description has been moved from the form
+element to the text format wrapper.
+---
+ templates/form/form-element.html.twig | 11 +++++------
+ 1 file changed, 5 insertions(+), 6 deletions(-)
+
+diff --git a/templates/form/form-element.html.twig b/templates/form/form-element.html.twig
+index dfe2ac7a..856dae04 100644
+--- a/templates/form/form-element.html.twig
++++ b/templates/form/form-element.html.twig
+@@ -10,7 +10,6 @@
+ Most of core-provided js assumes that the CSS class pattern js-form-item-[something] or
+ js-form-type-[something] exists on form items. We have to keep them.
+ #}
+-{% set show_description_toggle = description_toggle and description.content %}
+ {%
+   set classes = [
+     'js-form-item',
+@@ -23,7 +22,7 @@ js-form-type-[something] exists on form items. We have to keep them.
+     title_display not in ['after', 'before'] ? 'form-item--no-label',
+     disabled == 'disabled' ? 'form-item--disabled',
+     errors ? 'form-item--error',
+-    show_description_toggle ? 'help-icon__description-container'
++    description_toggle ? 'help-icon__description-container'
+   ]
+ %}
+ {%
+@@ -34,7 +33,7 @@ js-form-type-[something] exists on form items. We have to keep them.
+ %}
+ <div{{ attributes.addClass(classes) }}>
+   {% if label_display in ['before', 'invisible'] %}
+-    {% if show_description_toggle %}
++    {% if description_toggle %}
+       <div class="help-icon">
+         {{ label }}
+         {{ attach_library('gin/gin_description_toggle') }}
+@@ -44,7 +43,7 @@ js-form-type-[something] exists on form items. We have to keep them.
+       {{ label }}
+     {% endif %}
+   {% endif %}
+-  {% if show_description_toggle %}
++  {% if description_toggle %}
+   <div class="help-icon__element-has-description">
+   {% endif %}
+   {% if prefix is not empty %}
+@@ -60,7 +59,7 @@ js-form-type-[something] exists on form items. We have to keep them.
+     <span class="form-item__suffix{{disabled == 'disabled' ? ' is-disabled'}}">{{ suffix }}</span>
+   {% endif %}
+   {% if label_display == 'after' %}
+-    {% if show_description_toggle %}
++    {% if description_toggle %}
+       <div class="help-icon">
+         {{ label }}
+         {{ attach_library('gin/gin_description_toggle') }}
+@@ -70,7 +69,7 @@ js-form-type-[something] exists on form items. We have to keep them.
+       {{ label }}
+     {% endif %}
+   {% endif %}
+-  {% if show_description_toggle %}
++  {% if description_toggle %}
+   </div>
+   {% endif %}
+   {% if errors %}
+-- 
+GitLab
+
+
+From bc195473b0bfe0f243ab1e13c456eec47f6f6b85 Mon Sep 17 00:00:00 2001
+From: Paul Weidner <paul.weidner@gmail.com>
+Date: Wed, 15 Feb 2023 07:20:20 -0800
+Subject: [PATCH 3/4] Skip the textarea form container to use text format
+ wrapper description
+
+This fixes a bug where the toggle on a textarea element does not work
+because the description has been moved to the text format wrapper.
+---
+ dist/js/description_toggle.js |  4 ++--
+ js/description_toggle.js      | 10 ++++++++--
+ 2 files changed, 10 insertions(+), 4 deletions(-)
+
+diff --git a/dist/js/description_toggle.js b/dist/js/description_toggle.js
+index 344a15a2..05832289 100644
+--- a/dist/js/description_toggle.js
++++ b/dist/js/description_toggle.js
+@@ -6,11 +6,11 @@
+         elem.dataset.formDescriptionToggleAttached = !0;
+         const a11yLabel = "help-icon-label--" + Math.floor(1e4 * Math.random());
+         elem.setAttribute("id", a11yLabel), elem.setAttribute("aria-expanded", "false"), 
+-        elem.setAttribute("aria-controls", "target"), elem.closest(".help-icon__description-container").querySelectorAll(".claro-details__description, .fieldset__description, .form-item__description").forEach((description => {
++        elem.setAttribute("aria-controls", "target"), elem.closest(".help-icon__description-container:not(.form-type--textarea)").querySelectorAll(".claro-details__description, .fieldset__description, .form-item__description").forEach((description => {
+           description.setAttribute("aria-labelledby", a11yLabel);
+         })), elem.addEventListener("click", (event => {
+           event.preventDefault(), event.stopPropagation(), "SUMMARY" === event.currentTarget.parentElement.tagName && !1 === event.currentTarget.parentElement.parentElement.open && (event.currentTarget.parentElement.parentElement.open = !0), 
+-          event.currentTarget.focus(), event.currentTarget.closest(".help-icon__description-container").querySelectorAll(".claro-details__description, .fieldset__description, .form-item__description").forEach(((description, index) => {
++          event.currentTarget.focus(), event.currentTarget.closest(".help-icon__description-container:not(.form-type--textarea)").querySelectorAll(".claro-details__description, .fieldset__description, .form-item__description").forEach(((description, index) => {
+             if (index > 1) return;
+             const setStatus = description.classList.contains("visually-hidden");
+             event.currentTarget.setAttribute("aria-expanded", setStatus), description.classList.toggle("visually-hidden"), 
+diff --git a/js/description_toggle.js b/js/description_toggle.js
+index 0feaceac..f5538bd1 100644
+--- a/js/description_toggle.js
++++ b/js/description_toggle.js
+@@ -13,7 +13,10 @@
+           elem.setAttribute('aria-expanded', 'false');
+           elem.setAttribute('aria-controls', 'target');
+           elem
+-            .closest('.help-icon__description-container')
++            // Skip the textarea form container to use text format wrapper description.
++            // This fixes a bug where the toggle on a textarea element does not work
++            // because the description has been moved to the text format wrapper.
++            .closest('.help-icon__description-container:not(.form-type--textarea)')
+             .querySelectorAll(
+               '.claro-details__description, .fieldset__description, .form-item__description',
+             )
+@@ -33,7 +36,10 @@
+ 
+             event.currentTarget.focus(); // firefox button focus issue
+             event.currentTarget
+-              .closest('.help-icon__description-container')
++              // Skip the textarea form container to use text format wrapper description.
++              // This fixes a bug where the toggle on a textarea element does not work
++              // because the description has been moved to the text format wrapper.
++              .closest('.help-icon__description-container:not(.form-type--textarea)')
+               .querySelectorAll(
+                 '.claro-details__description, .fieldset__description, .form-item__description',
+               )
+-- 
+GitLab
+
+
+From d8dcacb51bdddd01c4d541433f60d4c875114aae Mon Sep 17 00:00:00 2001
+From: Paul Weidner <paul.weidner@gmail.com>
+Date: Wed, 15 Feb 2023 07:23:11 -0800
+Subject: [PATCH 4/4] Use correct variable to set the description
+ visually-hidden class
+
+The boolean show_description_toggle will never be equal to 'invisible'
+---
+ templates/form/fieldset.html.twig | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/templates/form/fieldset.html.twig b/templates/form/fieldset.html.twig
+index b281f8b5..17fb610f 100644
+--- a/templates/form/fieldset.html.twig
++++ b/templates/form/fieldset.html.twig
+@@ -63,7 +63,7 @@
+ {%
+   set description_classes = [
+   'fieldset__description',
+-  show_description_toggle == 'invisible' ? 'visually-hidden',
++  description_display == 'invisible' ? 'visually-hidden',
+ ]
+ %}
+ <fieldset{{ attributes.addClass(classes) }}>
+-- 
+GitLab
+

@@ -1,0 +1,44 @@
+ys_content_export.export_pages:
+  path: '/admin/content/manage-pages/export'
+  defaults:
+    _controller: 'Drupal\ys_content_export\Controller\ContentExportController::export'
+    _title: 'Export pages to CSV'
+    bundle: page
+  requirements:
+    _permission: 'yalesites manage settings'
+
+ys_content_export.export_posts:
+  path: '/admin/content/manage-posts/export'
+  defaults:
+    _controller: 'Drupal\ys_content_export\Controller\ContentExportController::export'
+    _title: 'Export posts to CSV'
+    bundle: post
+  requirements:
+    _permission: 'yalesites manage settings'
+
+ys_content_export.export_events:
+  path: '/admin/content/manage-events/export'
+  defaults:
+    _controller: 'Drupal\ys_content_export\Controller\ContentExportController::export'
+    _title: 'Export events to CSV'
+    bundle: event
+  requirements:
+    _permission: 'yalesites manage settings'
+
+ys_content_export.export_profiles:
+  path: '/admin/content/manage-profiles/export'
+  defaults:
+    _controller: 'Drupal\ys_content_export\Controller\ContentExportController::export'
+    _title: 'Export profiles to CSV'
+    bundle: profile
+  requirements:
+    _permission: 'yalesites manage settings'
+
+ys_content_export.export_resources:
+  path: '/admin/content/manage-resources/export'
+  defaults:
+    _controller: 'Drupal\ys_content_export\Controller\ContentExportController::export'
+    _title: 'Export resources to CSV'
+    bundle: resource
+  requirements:
+    _permission: 'yalesites manage settings'

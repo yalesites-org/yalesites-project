@@ -5,7 +5,6 @@
  * Contains ys_core.module functions.
  */
 
-use Drupal\imagemagick\ImagemagickExecArguments;
 use Drupal\Core\Entity\FieldableEntityInterface;
 use Drupal\Core\Field\FieldStorageDefinitionInterface;
 use Drupal\Core\Cache\Cache;
@@ -13,11 +12,15 @@ use Drupal\Core\Form\FormStateInterface;
 use Drupal\Core\Render\Element;
 use Drupal\Core\Routing\RouteMatchInterface;
 use Drupal\Core\Routing\RouteObjectInterface;
-use Drupal\Core\Session\AccountProxy;
 use Drupal\Core\Url;
+use Drupal\link\Plugin\Field\FieldWidget\LinkWidget;
 use Drupal\node\Entity\Node;
+use Drupal\node\NodeInterface;
 use Drupal\Component\Utility\NestedArray;
 use Drupal\ys_core\Editoria11yRouteSuppressor;
+use Drupal\ys_core\Plugin\PlatformAdminSetting\EnvironmentIndicatorPlatformAdminSetting;
+use Drupal\ys_core\SiteimproveRouteChecker;
+use Drupal\ys_core\WebformContextualLinksSuppressor;
 
 // Include coffee commands.
 require_once __DIR__ . '/ys_core.coffee.inc';
@@ -43,6 +46,10 @@ function ys_core_theme($existing, $type, $theme, $path): array {
     'ys_dashboard' => [
       'variables' => [
         'platform_version' => NULL,
+        'announcements' => [],
+        // Only built when the user actually has unread announcements, so this
+        // stays NULL the rest of the time and the control is not rendered.
+        'mark_all_read_form' => NULL,
       ],
     ],
     'ys_social_links' => [
@@ -63,6 +70,11 @@ function ys_core_theme($existing, $type, $theme, $path): array {
         'breadcrumbs_placeholder' => [],
       ],
     ],
+    'ys_icon_preview' => [
+      'variables' => [
+        'icon_name' => NULL,
+      ],
+    ],
     'ys_footer_block' => [
       'variables' => [
         'footer_variation' => 'basic',
@@ -80,9 +92,55 @@ function ys_core_theme($existing, $type, $theme, $path): array {
 }
 
 /**
+ * Implements hook_element_info_alter().
+ */
+function ys_core_element_info_alter(array &$info) {
+  if (isset($info['linkit'])) {
+    $info['linkit']['#process'][] = 'ys_core_linkit_uri_selector';
+  }
+}
+
+/**
+ * Process callback: suffixes a linkit element's drupal selector with "-uri".
+ *
+ * Linkit's autocomplete JavaScript is written for the link field widget, whose
+ * URI sub-element always gets a data-drupal-selector ending in "-uri"; it
+ * derives the sibling metadata inputs from that suffix and throws outright when
+ * it is missing. A standalone "#type => linkit" element - which our settings
+ * forms use - is named for its own config key instead, so selecting a
+ * suggestion threw before the JavaScript ever wrote the chosen path into the
+ * field. Suffixing the selector satisfies that check; the sibling inputs it
+ * then looks for simply do not exist outside a link widget, which the
+ * JavaScript handles without complaint.
+ *
+ * @param array $element
+ *   The linkit element being processed.
+ *
+ * @return array
+ *   The processed element.
+ */
+function ys_core_linkit_uri_selector(array $element) {
+  $selector = $element['#attributes']['data-drupal-selector'] ?? '';
+  if ($selector && !str_ends_with($selector, '-uri')) {
+    $element['#attributes']['data-drupal-selector'] = $selector . '-uri';
+  }
+  return $element;
+}
+
+/**
  * Implements hook_form_alter().
  */
 function ys_core_form_alter(&$form, FormStateInterface $form_state, $form_id) {
+  // Strip the Webform module's contextual "edit" links (Test, Results, Build,
+  // Settings) from every Pre-Built Form submission form. Left in place, users
+  // with "access contextual links" get an edit icon exposing submission data on
+  // the rendered page (issue #929). The links are attached in the Webform
+  // module's #after_build, so a #pre_render (a later phase) reliably removes
+  // them before the contextual placeholder is built.
+  if (str_starts_with($form_id, 'webform_submission')) {
+    $form['#pre_render'][] = [WebformContextualLinksSuppressor::class, 'preRender'];
+  }
+
   if ($form_id === 'layout_builder_update_block' || $form_id === 'layout_builder_add_block') {
     $block_type = ys_core_get_block_type($form, $form_state);
 
@@ -258,6 +316,22 @@ function ys_core_form_alter(&$form, FormStateInterface $form_state, $form_id) {
   ];
 
   if (in_array($form_id, $layout_builder_block_forms)) {
+    // Explain a rejected value where the editor is working. The configure-block
+    // submit carries no #ajax, so a server-side validation failure leaves the
+    // off-canvas dialog and re-renders this form as a standalone Layout Builder
+    // page — and Gin's page--layout-builder.html.twig prints only pre_content
+    // and content, never the highlighted region that holds the site's messages
+    // block. The rejection therefore stayed queued and surfaced later on an
+    // unrelated page, leaving the editor a red-outlined field with no text, and
+    // screen reader users no error at all. This deliberately reuses the key
+    // core's own Ajax error path assigns in AjaxFormHelperTrait::ajaxSubmit():
+    // where that path does run it overwrites this element rather than adding a
+    // second one, which would render the message twice and announce it twice.
+    $form['status_messages'] = [
+      '#type' => 'status_messages',
+      '#weight' => -100,
+    ];
+
     $block_type_name = ys_core_get_block_type($form, $form_state);
     $limited_block_types = [
       'tabs',
@@ -289,6 +363,7 @@ function ys_core_form_alter(&$form, FormStateInterface $form_state, $form_id) {
 
   // Add JavaScript preview functionality to Facts and Figures icon fields.
   _ys_core_attach_icon_preview($form, $form_state, $form_id);
+
 }
 
 /**
@@ -301,26 +376,6 @@ function ys_core_preprocess_block(&$variables) {
   // when the config is saved.
   // Via: https://drupal.stackexchange.com/questions/266379/how-to-clear-cache-for-config-entity-after-making-changes
   \Drupal::service('renderer')->addCacheableDependency($variables, $config);
-
-  // Add top level book link to the book navigation sub-nav.
-  if ($variables['base_plugin_id'] == 'custom_book_navigation') {
-    if (isset($variables['content']['#items']) && is_array($variables['content']['#items'])) {
-
-      foreach ($variables['content']['#items'] as &$menuItem) {
-        if (empty($menuItem['below'])) {
-          continue;
-        }
-
-        // Clone top level menu item.
-        $clonedMenuItem = $menuItem;
-
-        // We don't want any other subitems, just the top level.
-        $clonedMenuItem['below'] = NULL;
-
-        array_unshift($menuItem['below'], $clonedMenuItem);
-      }
-    }
-  }
 
   // Supports the post lead-in (field_teaser_lead_in) on reference cards.
   if ($variables['plugin_id'] == 'inline_block:reference_card') {
@@ -340,6 +395,163 @@ function ys_core_preprocess_block(&$variables) {
     }
   }
 
+}
+
+/**
+ * Implements hook_field_widget_single_element_form_alter().
+ *
+ * Prevents invalid link values from ever being stored. When an editor types a
+ * bare domain such as "google.com" (no scheme, no leading slash) the core link
+ * widget rewrites it to "internal:google.com" — an invalid internal URI because
+ * it lacks the leading slash. Building a Url object from that value throws an
+ * InvalidArgumentException, which white-screens any consumer that resolves the
+ * link (entity_usage, for example). We prepend a normalisation handler that
+ * runs before the core handler and rewrites bare domains to an explicit
+ * "https://" URL, matching the editor's intent.
+ *
+ * The same handler corrects two mistypings that Drupal accepts and stores but
+ * cannot resolve, publishing a link that looks live and goes nowhere: a
+ * protocol-relative "//example.com" (saved as "internal://example.com", which
+ * renders with an empty href) and a single-slash "https:/example.com" (rendered
+ * as a literal, broken href). It also corrects a scheme misspelt by a single
+ * character, "htp://example.com", which core rejects outright.
+ *
+ * @see \Drupal\link\Plugin\Field\FieldWidget\LinkWidget::validateUriElement()
+ * @see _ys_core_normalize_bare_domain_uri()
+ */
+function ys_core_field_widget_single_element_form_alter(array &$element, FormStateInterface $form_state, array $context) {
+  $widget = $context['widget'] ?? NULL;
+  if (
+    $widget instanceof LinkWidget &&
+    isset($element['uri']['#element_validate']) &&
+    is_array($element['uri']['#element_validate'])
+  ) {
+    array_unshift($element['uri']['#element_validate'], '_ys_core_normalize_link_uri');
+  }
+}
+
+/**
+ * Form element validation handler: normalises bare-domain link URIs.
+ *
+ * Runs before LinkWidget::validateUriElement() so the core handler receives a
+ * scheme-qualified URL and no longer treats the value as an invalid internal
+ * path.
+ */
+function _ys_core_normalize_link_uri(array &$element, FormStateInterface $form_state, array &$complete_form) {
+  $value = $element['#value'] ?? '';
+  if (!is_string($value)) {
+    return;
+  }
+
+  $normalized = _ys_core_normalize_bare_domain_uri($value);
+  if ($normalized !== $value) {
+    $element['#value'] = $normalized;
+    $form_state->setValueForElement($element, $normalized);
+  }
+}
+
+/**
+ * Corrects a web address typed in a shape Drupal cannot resolve.
+ *
+ * Four shapes are rewritten to a valid absolute URL:
+ * - a bare host, "google.com" or "www.example.org/path?x=1";
+ * - a protocol-relative URL, "//example.com";
+ * - an http(s) URL missing its authority delimiter, "https:/example.com";
+ * - a misspelt http(s) scheme, "htp://example.com".
+ *
+ * Values that are empty, internal paths ("/", "#", "?"), route tokens
+ * ("<front>", "<nolink>"), or already scheme-qualified ("https://", "mailto:",
+ * "internal:", "entity:", …) are returned unchanged.
+ */
+function _ys_core_normalize_bare_domain_uri(string $uri): string {
+  $trimmed = trim($uri);
+  if ($trimmed === '') {
+    return $uri;
+  }
+
+  // A protocol-relative URL is rewritten by the core link widget to
+  // "internal://example.com", which passes validation and saves, then renders
+  // as an anchor with an empty href — a dead link styled exactly like a working
+  // one. Supply the scheme the editor left off.
+  if (preg_match('~^//[^/]~', $trimmed)) {
+    return 'https:' . $trimmed;
+  }
+
+  // "https:/example.com" (and "https:example.com") already declare a scheme, so
+  // they are stored verbatim and rendered as a literal, broken href. Restore
+  // the authority delimiter that http and https always require. Other schemes
+  // are left alone: "mailto:" and "tel:" take no authority, and "internal:/"
+  // and "entity:" are correct with a single slash or none. The scheme is
+  // lowercased because core compares it against its allowed-protocol list with
+  // a case-sensitive in_array(), so "HTTPS://…" is rejected as invalid.
+  if (preg_match('~^(https?):/?([^/].*)$~i', $trimmed, $matches)) {
+    return strtolower($matches[1]) . '://' . $matches[2];
+  }
+
+  // Internal paths, fragments, query strings, and route tokens are valid as-is.
+  if (in_array($trimmed[0], ['/', '#', '?', '<'], TRUE)) {
+    return $uri;
+  }
+
+  // A mistyped scheme such as "htp://example.com" is a scheme core does not
+  // allow, so the value is rejected wholesale with "The path '…' is invalid."
+  // — which names the whole address rather than the one wrong character, and
+  // leaves the editor to find it. Correct it to the scheme it is a single
+  // keystroke away from.
+  if (preg_match('~^([a-z][a-z0-9+.\-]*):/{0,2}([^/].*)$~i', $trimmed, $matches)) {
+    $corrected = _ys_core_correct_mistyped_http_scheme($matches[1]);
+    if ($corrected !== NULL) {
+      return $corrected . '://' . $matches[2];
+    }
+  }
+
+  // Anything that already declares a scheme is left untouched.
+  if (preg_match('/^[a-z][a-z0-9+.\-]*:/i', $trimmed)) {
+    return $uri;
+  }
+
+  // A bare host (one or more dot-separated labels, optional port and path)
+  // is what the editor meant as an external link; supply the missing scheme.
+  if (preg_match('~^[a-z0-9](?:[a-z0-9\-]*[a-z0-9])?(?:\.[a-z0-9](?:[a-z0-9\-]*[a-z0-9])?)+(?::\d+)?(?:[/?#].*)?$~i', $trimmed)) {
+    return 'https://' . $trimmed;
+  }
+
+  return $uri;
+}
+
+/**
+ * Resolves a misspelt web scheme to the one the editor meant.
+ *
+ * Only a scheme within a single edit of "http" or "https" is treated as a
+ * typo. That bound is the safety property, not a heuristic: every protocol
+ * Drupal allows here — ftp, news, nntp, tel, telnet, mailto, irc, ssh, sftp,
+ * webcal, rtsp — is at least two edits from both, as are "javascript" and
+ * "data", so no scheme an editor deliberately typed can be rewritten and no
+ * executable scheme can be manufactured. LinkUriNormalizationTest pins this.
+ *
+ * @param string $scheme
+ *   The scheme as typed, without the colon.
+ *
+ * @return string|null
+ *   "http" or "https" when the scheme is a misspelling of one of them, or
+ *   NULL when it must be left exactly as typed.
+ */
+function _ys_core_correct_mistyped_http_scheme(string $scheme): ?string {
+  $scheme = strtolower($scheme);
+  // Both are already correct, and each is one edit from the other, so they
+  // have to be excluded before the distance test rather than by it.
+  if ($scheme === 'http' || $scheme === 'https') {
+    return NULL;
+  }
+
+  $to_http = levenshtein($scheme, 'http');
+  $to_https = levenshtein($scheme, 'https');
+  if (min($to_http, $to_https) > 1) {
+    return NULL;
+  }
+
+  // Ties resolve to https so a secure address is never downgraded.
+  return $to_http < $to_https ? 'http' : 'https';
 }
 
 /**
@@ -408,6 +620,9 @@ function ys_core_user_login_form_submit($form, FormStateInterface $form_state) {
  * Implements theme_preprocess_menu().
  */
 function ys_core_preprocess_menu(&$variables) {
+  if ($variables['menu_name'] === 'admin') {
+    _ys_core_attach_dashboard_badge($variables);
+  }
   if ($variables['menu_name'] == 'main') {
     // If submenu, add the top level link as the first link in the submenu.
     foreach ($variables['items'] as &$menuItem) {
@@ -458,9 +673,8 @@ function ys_core_preprocess_menu(&$variables) {
   // CAS bulk add menu item title change,
   // and remove Add user for non-platform admins.
   if (!empty($variables['items'])) {
-    $current_user = \Drupal::currentUser();
-    $user_roles = $current_user->getRoles();
-    $has_platform_admin = in_array('platform_admin', $user_roles) || $current_user->id() == 1;
+    $has_platform_admin = \Drupal::service('ys_core.platform_admin_checker')
+      ->isPlatformAdmin();
     foreach ($variables['items'] as &$item) {
       // These are submenu items.
       if (!empty($item['below'])) {
@@ -476,6 +690,62 @@ function ys_core_preprocess_menu(&$variables) {
           }
         }
       }
+    }
+  }
+
+  // Replace menu item URLs with external source URLs where applicable.
+  // When a menu item points to a node that has a populated
+  // field_external_source, swap the routed (internal) Url for one built from
+  // the external URI. The yds-text-link / getUrlType() cascade then classifies
+  // the link as external and applies the with-icon class plus
+  // data-link-type="external" attribute automatically.
+  if (!empty($variables['items'])) {
+    _ys_core_apply_external_source_to_menu_items($variables['items']);
+  }
+}
+
+/**
+ * Replaces menu item URLs with external source URLs where applicable.
+ *
+ * Recursively walks the menu tree. When an item points to a node whose
+ * field_external_source field has a value, the item's Url is replaced with a
+ * Url built from that external URI. This mirrors the behavior of the
+ * canonical-page redirect in ExternalSourceRedirectSubscriber so menu links
+ * resolve to the same destination as visiting the node directly.
+ *
+ * @param array $items
+ *   The menu items render array (mutated by reference).
+ */
+function _ys_core_apply_external_source_to_menu_items(array &$items) {
+  $node_storage = \Drupal::entityTypeManager()->getStorage('node');
+
+  foreach ($items as &$item) {
+    if (!empty($item['url'])
+      && $item['url'] instanceof Url
+      && $item['url']->isRouted()
+      && $item['url']->getRouteName() === 'entity.node.canonical'
+    ) {
+      $route_parameters = $item['url']->getRouteParameters();
+      if (!empty($route_parameters['node'])) {
+        $node = $node_storage->load($route_parameters['node']);
+        if ($node
+          && $node->hasField('field_external_source')
+          && !$node->get('field_external_source')->isEmpty()
+        ) {
+          $external_uri = $node->get('field_external_source')->first()->getValue()['uri'] ?? NULL;
+          if (!empty($external_uri)) {
+            try {
+              $item['url'] = Url::fromUri($external_uri);
+            }
+            catch (\Exception $e) {
+              // Invalid URI; leave the original (internal) Url in place.
+            }
+          }
+        }
+      }
+    }
+    if (!empty($item['below'])) {
+      _ys_core_apply_external_source_to_menu_items($item['below']);
     }
   }
 }
@@ -532,12 +802,6 @@ function ys_core_page_attachments(array &$page) {
   if ($config->get('status') && _ys_core_should_load_siteimprove()) {
     $page['#attached']['library'][] = 'ys_core/siteimprove';
   }
-
-  // Custom or fallback favicons.
-  $favicons = \Drupal::service('ys_core.media_manager')->getFavicons();
-  foreach ($favicons as $name => $favicon) {
-    $page['#attached']['html_head'][] = [$favicon, $name];
-  }
 }
 
 /**
@@ -571,120 +835,10 @@ function ys_core_page_attachments_alter(array &$attachments) {
  *   TRUE if SiteImprove should load, FALSE otherwise.
  */
 function _ys_core_should_load_siteimprove() {
-  $route_match = \Drupal::routeMatch();
-  $route_name = $route_match->getRouteName();
-  $current_path = \Drupal::service('path.current')->getPath();
-
-  // Administrative routes to exclude.
-  $excluded_routes = [
-    // Admin pages.
-    'system.admin',
-    'system.admin_content',
-    'system.admin_structure',
-    'system.admin_config',
-    'system.admin_reports',
-    'system.admin_help',
-    'system.modules_list',
-    'system.themes_page',
-
-    // Content editing.
-    'entity.node.edit_form',
-    'node.add',
-    'entity.node.delete_form',
-    'entity.node.revision',
-    'entity.node.version_history',
-    'quickedit.field_form',
-    'entity.node.content_translation_overview',
-
-    // Layout Builder.
-    'layout_builder.overrides.node.view',
-    'layout_builder.overrides.node.save',
-    'layout_builder.overrides.node.cancel',
-    'layout_builder.overrides.node.revert',
-    'layout_builder.move_block',
-    'layout_builder.configure_block',
-    'layout_builder.add_block',
-    'layout_builder.remove_block',
-    'layout_builder.configure_section',
-    'layout_builder.add_section',
-    'layout_builder.remove_section',
-
-    // User management (keep public profiles).
-    'entity.user.edit_form',
-    'user.register',
-    'user.pass',
-    'user.login',
-    'user.logout',
-    'entity.user.delete_form',
-    'user.admin_create',
-    'user.admin_index',
-    'user.multiple_cancel_confirm',
-    'cas.bulk_add_cas_users',
-
-    // Taxonomy editing.
-    'entity.taxonomy_term.edit_form',
-    'entity.taxonomy_term.add_form',
-    'entity.taxonomy_term.delete_form',
-    'entity.taxonomy_vocabulary.overview_form',
-    'entity.taxonomy_vocabulary.collection',
-    'entity.taxonomy_vocabulary.add_form',
-    'entity.taxonomy_vocabulary.edit_form',
-
-    // Block and media management.
-    'entity.block_content.collection',
-    'entity.block_content.add_form',
-    'entity.block_content.edit_form',
-    'entity.media.collection',
-    'entity.media.add_form',
-    'entity.media.edit_form',
-    'view.media.media_page_list',
-
-    // Configuration and development.
-    'config.sync',
-    'config.import_full',
-    'config.export_full',
-    'config.diff',
-    'devel.admin_settings',
-    'devel.switch',
-    'system.performance_settings',
-    'system.logging_settings',
-    'system.cron_settings',
-    'system.site_information_settings',
-
-    // Reports and maintenance.
-    'system.status',
-    'dblog.overview',
-    'update.status',
-    'system.run_cron',
-  ];
-
-  // Path patterns to exclude (for routes not caught above).
-  $excluded_path_patterns = [
-    '/admin',
-    '/node/add',
-    '/layout_builder',
-    '/devel',
-  ];
-
-  // Check if current route should be excluded.
-  if (in_array($route_name, $excluded_routes)) {
-    return FALSE;
-  }
-
-  // Check for editing paths in current path.
-  if (preg_match('/\/(edit|add|delete|layout)($|\/)/i', $current_path)) {
-    return FALSE;
-  }
-
-  // Check excluded path patterns.
-  foreach ($excluded_path_patterns as $pattern) {
-    if (strpos($current_path, $pattern) === 0) {
-      return FALSE;
-    }
-  }
-
-  // Allow SiteImprove on all other pages (front-facing content).
-  return TRUE;
+  return SiteimproveRouteChecker::shouldLoad(
+    \Drupal::routeMatch()->getRouteName(),
+    \Drupal::service('path.current')->getPath()
+  );
 }
 
 /**
@@ -783,12 +937,62 @@ function ys_core_taxonomy_term_update() {
 }
 
 /**
+ * Implements hook_ENTITY_insert().
+ *
+ * Refresh the announcements feed cache when a new post is created on a site
+ * that is publishing the announcements feed.
+ */
+function ys_core_node_insert($node) {
+  _ys_core_clear_announcements_cache_if_source($node);
+}
+
+/**
+ * Implements hook_ENTITY_delete().
+ *
+ * Refresh the announcements feed cache when a post is deleted on a site
+ * that is publishing the announcements feed.
+ */
+function ys_core_node_delete($node) {
+  _ys_core_clear_announcements_cache_if_source($node);
+}
+
+/**
+ * Clears the announcements cache when a post changes on a source site.
+ *
+ * Without this, the consumer keyvalue cache holds the previous set of items
+ * for up to an hour, so newly-published announcements would not appear on the
+ * dashboard or in the toolbar badge until that window expires.
+ */
+function _ys_core_clear_announcements_cache_if_source($node) {
+  if (!$node instanceof NodeInterface) {
+    return;
+  }
+  if ($node->bundle() !== 'post') {
+    return;
+  }
+  if (!\Drupal::config('ys_core.dashboard_settings')->get('announcements_source_enabled')) {
+    return;
+  }
+  // Clear the consumer's parsed-feed keyvalue and bust the dashboard/badge
+  // render caches via FEED_CACHE_TAG.
+  \Drupal::service('ys_core.dashboard_announcements')->clearCache();
+
+  // Also bust the source endpoint's HTTP response cache. Drupal auto-
+  // invalidates `node_list:post` on insert and delete, but NOT on update — so
+  // a draft being published (an update) would leave the cached feed response
+  // serving stale items until the cache lifetime expires.
+  Cache::invalidateTags(['node_list:post']);
+}
+
+/**
  * Implements hook_ENTITY_update().
  *
  * Clears entity and page cache when field_external_source is updated on a node.
  * This ensures the ExternalSourceRedirectSubscriber sees fresh field data.
  */
 function ys_core_node_update($node) {
+  _ys_core_clear_announcements_cache_if_source($node);
+
   // Only process nodes that have the external source field.
   if (!$node->hasField('field_external_source')) {
     return;
@@ -907,7 +1111,7 @@ function ys_core_preprocess_html(&$variables) {
   $variables['attributes']['data-font-pairing'] = $font_pairing;
 
   // Remove environment indicator CSS class if the indicator is disabled.
-  $show_indicator = $config->get('environment_indicator.show') ?? TRUE;
+  $show_indicator = $config->get(EnvironmentIndicatorPlatformAdminSetting::CONFIG_KEY) ?? EnvironmentIndicatorPlatformAdminSetting::DISPLAY_DEFAULT;
   if (!$show_indicator) {
     // Remove environment-indicator class if it exists.
     $classes = $variables['attributes']['class'] ?? [];
@@ -954,22 +1158,6 @@ function ys_core_preprocess_views_view_unformatted(&$variables) {
       $variables['title'] = $title['#markup'] ?? NULL;
     }
   }
-}
-
-/**
- * If current user is platform admin or user 1, allow secret items.
- *
- * @return bool
- *   Returns TRUE if current user is a platform admin or user 1.
- */
-function ys_core_allow_secret_items(AccountProxy $currentUserSession) {
-  $allowSecretItems = FALSE;
-
-  if ($currentUserSession->getAccount()->id() == 1 || in_array('platform_admin', $currentUserSession->getAccount()->getRoles())) {
-    $allowSecretItems = TRUE;
-  }
-
-  return $allowSecretItems;
 }
 
 /**
@@ -1133,6 +1321,29 @@ function ys_core_grand_hero_validate($form, FormStateInterface $form_state) {
 }
 
 /**
+ * Implements hook_menu_links_discovered_alter().
+ *
+ * Moves core's Reports link under the platform-admin section. Reports is
+ * platform-admin-only on YaleSites ('access site reports' is held by the
+ * platform_admin role alone), so it does not earn a top-level slot of its own.
+ *
+ * Its own module declares the link, so this hook is the only place ys_core can
+ * state the intent in code. It is not what takes effect on a built site,
+ * though: core.menu.static_menu_link_overrides pins every top-level admin link
+ * and is applied after this hook, so the exported override must agree with the
+ * parent set here or it silently wins. PlatformAdminSectionTest asserts they
+ * agree.
+ *
+ * @see \Drupal\Core\Menu\StaticMenuLinkOverrides
+ */
+function ys_core_menu_links_discovered_alter(&$links) {
+  if (isset($links['system.admin_reports'])) {
+    $links['system.admin_reports']['parent'] = 'ys_core.admin_platform_admin';
+    $links['system.admin_reports']['weight'] = 20;
+  }
+}
+
+/**
  * Implements hook_toolbar_alter().
  *
  * Remove Coffee module's "Go to" item from secondary toolbar and attach
@@ -1180,10 +1391,73 @@ function ys_core_facts_icon_allowed_values(FieldStorageDefinitionInterface $defi
 }
 
 /**
- * Helper function to attach icon preview to Facts and Figures forms.
+ * Attaches the unread-announcements badge to the Dashboard admin menu link.
  *
- * This function adds JavaScript preview functionality to Facts and Figures icon
- * fields. The field options are handled by the allowed_values_function in field
+ * Wraps the link title in an inline template that includes a #lazy_builder
+ * placeholder. This keeps the surrounding admin menu render cache shared
+ * across users while the count is resolved per-user at render time.
+ */
+function _ys_core_attach_dashboard_badge(array &$variables) {
+  if (\Drupal::currentUser()->isAnonymous()) {
+    return;
+  }
+  if (_ys_core_attach_dashboard_badge_walk($variables['items'])) {
+    $variables['#attached']['library'][] = 'ys_core/dashboard_badge';
+  }
+}
+
+/**
+ * Recursively walks menu items looking for the Dashboard link to badge.
+ *
+ * The admin menu nests its real top-level entries under a root
+ * `system.admin` wrapper, so we cannot assume the link is at depth 0.
+ *
+ * The #lazy_builder deliberately takes no arguments -- do not "helpfully" pass
+ * the uid. The placeholder's parent is core's toolbar, render cached as
+ * `keys: ['toolbar'], contexts: ['user.permissions']`, so a single entry is
+ * shared by every user holding the same permissions, and a placeholder's own
+ * cache metadata cannot make it vary per user (createPlaceholder() returns only
+ * #markup and #attached). The token is a hash of the placeholder array,
+ * arguments included, so a uid baked in here is one editor's uid frozen into
+ * an entry everyone else reads: they would see that editor's count, and
+ * clearing their own read state could not invalidate an entry tagged for
+ * somebody else. Resolving the viewer inside the lazy builder keeps the
+ * placeholder user-agnostic and correct for whoever it is replaced for.
+ */
+function _ys_core_attach_dashboard_badge_walk(array &$items): bool {
+  $found = FALSE;
+  foreach ($items as &$item) {
+    $url = $item['url'] ?? NULL;
+    if ($url instanceof Url && $url->isRouted() && $url->getRouteName() === 'ys_core.admin_dashboard') {
+      $item['title'] = [
+        '#type' => 'inline_template',
+        '#template' => '{{ label }}{{ badge }}',
+        '#context' => [
+          'label' => $item['title'],
+          'badge' => [
+            '#lazy_builder' => [
+              'ys_core.dashboard_toolbar_lazy_builders:renderBadge',
+              [],
+            ],
+            '#create_placeholder' => TRUE,
+          ],
+        ],
+      ];
+      $found = TRUE;
+    }
+    if (!empty($item['below']) && is_array($item['below'])) {
+      $found = _ys_core_attach_dashboard_badge_walk($item['below']) || $found;
+    }
+  }
+  return $found;
+}
+
+/**
+ * Helper function to attach the live icon preview to icon-picker forms.
+ *
+ * Adds the JavaScript preview to any icon field rendered on a paragraph or
+ * Layout Builder block form (Facts and Figures, In-Line Message, ...). The
+ * field options are handled by the allowed_values_function in field
  * configuration.
  *
  * @param array $form
@@ -1234,7 +1508,7 @@ function _ys_core_attach_icon_preview(&$form, FormStateInterface $form_state, $f
 /**
  * Implements hook_menu_local_actions_alter().
  *
- * Hide 'Add user' action for users without the platform_admin role.
+ * Hide the 'Add user' action from everyone who is not a platform admin.
  */
 function ys_core_menu_local_actions_alter(&$local_actions) {
   // Get the current route name.
@@ -1245,19 +1519,11 @@ function ys_core_menu_local_actions_alter(&$local_actions) {
     // Disable caching for local actions on this page to prevent aching issues.
     \Drupal::service('plugin.manager.menu.local_action')->useCaches(FALSE);
 
-    $current_user = \Drupal::currentUser();
+    $is_platform_admin = \Drupal::service('ys_core.platform_admin_checker')
+      ->isPlatformAdmin();
 
-    // Skip processing if user is user 1.
-    if ($current_user->id() == 1) {
-      return;
-    }
-
-    // Check if current user has the platform_admin role.
-    $user_roles = $current_user->getRoles();
-    $has_platform_admin = in_array('platform_admin', $user_roles);
-
-    // Hide the actions if user doesn't have platform_admin role.
-    if (!$has_platform_admin) {
+    // Hide the actions from everyone who is not a platform admin.
+    if (!$is_platform_admin) {
       // Remove "Add user" action.
       if (isset($local_actions['user_admin_create'])) {
         unset($local_actions['user_admin_create']);
@@ -1303,44 +1569,11 @@ function ys_core_yale_cas_app_parameter_alter(&$app_value, $event) {
 function ys_core_page_top(array &$page_top) {
   // Check if environment indicator should be shown.
   $config = \Drupal::config('ys_core.site');
-  $show_indicator = $config->get('environment_indicator.show') ?? TRUE;
+  $show_indicator = $config->get(EnvironmentIndicatorPlatformAdminSetting::CONFIG_KEY) ?? EnvironmentIndicatorPlatformAdminSetting::DISPLAY_DEFAULT;
 
   // If disabled, remove the environment indicator from page_top.
   if (!$show_indicator && isset($page_top['indicator'])) {
     unset($page_top['indicator']);
-  }
-}
-
-/**
- * Implements hook_imagemagick_arguments_alter().
- *
- * Preserves PNG transparency across all image style operations.
- */
-function ys_core_imagemagick_arguments_alter(ImagemagickExecArguments $arguments, $command) {
-  // Only process 'convert' operations (image transformations).
-  if ($command !== 'convert') {
-    return;
-  }
-
-  // Get the source image path to check if it's a PNG.
-  $source = $arguments->getSource();
-  if (!$source) {
-    return;
-  }
-
-  // Check if source is a PNG file.
-  $source_extension = strtolower(pathinfo($source, PATHINFO_EXTENSION));
-  $source_mime = mime_content_type($source);
-
-  if ($source_extension === 'png' || $source_mime === 'image/png') {
-    // Add transparency preservation arguments for PNG files.
-    // Use ImageMagick v6 compatible syntax.
-    $arguments->add('-alpha on');
-    $arguments->add('-channel RGBA');
-
-    // Ensure PNG compression is optimized while preserving transparency.
-    $arguments->add('-define png:preserve-colormap=true');
-    $arguments->add('-define png:exclude-chunks=date');
   }
 }
 

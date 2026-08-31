@@ -1,0 +1,5 @@
+services:
+  access_check.ys_book.outline:
+    class: Drupal\ys_book\Access\BookOutlineAccessCheck
+    tags:
+      - { name: access_check, applies_to: _ys_book_outline_access }

@@ -25,94 +25,37 @@ settings:
       tab: tab
     negate: 0
     target_bundles_drag_drop:
-      accordion:
-        weight: 31
-        enabled: false
       accordion_item:
         weight: 32
-        enabled: false
-      basic_view:
-        weight: 33
-        enabled: false
-      callout:
-        weight: 34
         enabled: false
       callout_item:
         weight: 35
         enabled: false
-      cta_banner:
-        weight: 36
+      cta_link:
+        weight: 14
         enabled: false
       custom_card:
         weight: 37
         enabled: false
-      custom_cards:
-        weight: 38
-        enabled: false
-      divider:
-        weight: 39
-        enabled: false
-      embed:
-        weight: 40
-        enabled: false
-      event_cards:
-        weight: 41
-        enabled: false
-      event_list:
-        weight: 42
-        enabled: false
-      gallery:
-        weight: 43
+      facts_item:
+        weight: 16
         enabled: false
       gallery_item:
         weight: 44
         enabled: false
-      grand_hero:
-        weight: 45
-        enabled: false
-      image:
-        weight: 46
-        enabled: false
-      media_grid:
-        weight: 47
+      link_list:
+        weight: 18
         enabled: false
       media_grid_item:
         weight: 48
         enabled: false
-      post_cards:
-        weight: 49
-        enabled: false
-      post_list:
-        weight: 50
-        enabled: false
-      pull_quote:
-        weight: 51
-        enabled: false
-      quick_links:
-        weight: 52
-        enabled: false
-      section:
-        weight: 53
-        enabled: false
       tab:
         weight: 54
         enabled: true
-      tabs:
-        weight: 55
-        enabled: false
       text:
         weight: 56
         enabled: false
-      text_with_image:
-        weight: 57
-        enabled: false
-      video:
-        weight: 58
-        enabled: false
-      webform:
-        weight: 59
-        enabled: false
-      wrapped_image:
-        weight: 60
+      tile:
+        weight: 22
         enabled: false
 field_type: entity_reference_revisions

@@ -109,3 +109,15 @@ In the `destination` section of the migration there is a `overwrite_properties` 
 
 ## Scheduling
 The cron run is scheduled in the `ys_localist.module` file to run every hour. Note that due to caching of the API, caching of Drupal, and any edge caching, data can take longer than an hour to show up.
+
+## Running tests
+
+This module has PHPUnit tests under `tests/src/`. They mock all HTTP and never contact the live Localist API. Run them from the project root on the local Lando environment, passing the module's `tests` path so PHPUnit only discovers this module's tests (not Drupal core/contrib):
+
+```bash
+lando ssh -c "env SIMPLETEST_DB=mysql://pantheon:pantheon@database/pantheon \
+  php /app/vendor/bin/phpunit -c /app/phpunit.xml \
+  /app/web/profiles/custom/yalesites_profile/modules/custom/ys_localist/tests"
+```
+
+Add `--testdox` for readable output.

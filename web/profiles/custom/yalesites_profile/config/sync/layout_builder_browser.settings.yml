@@ -5,6 +5,7 @@ enabled_section_storages:
 use_modal: true
 auto_added_reusable_block_content_bundles:
   accordion: accordion
+  audio: audio
   button_link: button_link
   callout: callout
   content_spotlight: content_spotlight
