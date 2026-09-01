@@ -34,74 +34,74 @@
    */
   const COMPONENTS = {
     accordion: {
-      root: '.accordion',
+      root: ".accordion",
       elements: [
-        { name: 'block heading', selector: '.accordion__heading' },
-        { name: 'expand-all control', selector: '.accordion__toggle-all' },
+        { name: "block heading", selector: ".accordion__heading" },
+        { name: "expand-all control", selector: ".accordion__toggle-all" },
         {
-          name: 'expand-all icon',
-          selector: '.accordion__toggle-all .accordion__icon',
-          property: 'fill',
+          name: "expand-all icon",
+          selector: ".accordion__toggle-all .accordion__icon",
+          property: "fill",
         },
-        { name: 'item heading', selector: '.accordion-item__heading' },
-        { name: 'item toggle', selector: '.accordion-item__toggle' },
+        { name: "item heading", selector: ".accordion-item__heading" },
+        { name: "item toggle", selector: ".accordion-item__toggle" },
         {
-          name: 'item toggle icon',
-          selector: '.accordion-item__icon',
-          property: 'fill',
+          name: "item toggle icon",
+          selector: ".accordion-item__icon",
+          property: "fill",
         },
-        { name: 'item body text', selector: '.accordion-item__content p' },
-        { name: 'item body link', selector: '.accordion-item__content a' },
+        { name: "item body text", selector: ".accordion-item__content p" },
+        { name: "item body link", selector: ".accordion-item__content a" },
         {
           // Only drawn on the undialled accordion; the dialled one replaces it
           // with the decorative left accent. It separates one item from the
           // next, so it communicates structure rather than decoration.
-          name: 'item separator',
-          selector: '.accordion-item',
-          property: 'borderBottomColor',
+          name: "item separator",
+          selector: ".accordion-item",
+          property: "borderBottomColor",
           nonText: true,
         },
         {
-          name: 'decorative left accent',
-          selector: '.accordion-item',
-          property: 'borderLeftColor',
+          name: "decorative left accent",
+          selector: ".accordion-item",
+          property: "borderLeftColor",
           decorative: true,
         },
       ],
     },
     link_grid: {
-      root: '.link-grid',
+      root: ".link-grid",
       elements: [
-        { name: 'block heading', selector: '.link-grid__heading' },
-        { name: 'column heading', selector: '.link-group__heading' },
-        { name: 'link', selector: '.link-grid__link' },
+        { name: "block heading", selector: ".link-grid__heading" },
+        { name: "column heading", selector: ".link-group__heading" },
+        { name: "link", selector: ".link-grid__link" },
         {
-          name: 'decorative column rule',
-          selector: '.link-grid__column-wrapper',
-          property: 'borderLeftColor',
+          name: "decorative column rule",
+          selector: ".link-grid__column-wrapper",
+          property: "borderLeftColor",
           decorative: true,
         },
       ],
     },
     wrapped_text_callout: {
-      root: '.wrapped-callout',
+      root: ".wrapped-callout",
       elements: [
         {
           // Heading LEVEL is an editor choice in the WYSIWYG, so the source
           // callout uses h3 while the SCSS styles h2. Level-agnostic here:
           // `_yds-headings.scss` gives every h1-h6 `color: var(--color-heading)`,
           // so whichever level the editor picked is the element to measure.
-          name: 'callout heading',
-          selector: '.wrapped-callout__callout :is(h1, h2, h3, h4, h5, h6)',
+          name: "callout heading",
+          selector: ".wrapped-callout__callout :is(h1, h2, h3, h4, h5, h6)",
         },
-        { name: 'callout body text', selector: '.wrapped-callout__callout p' },
-        { name: 'callout link', selector: '.wrapped-callout__callout a' },
-        { name: 'body text', selector: '.wrapped-callout__content p' },
-        { name: 'body link', selector: '.wrapped-callout__content a' },
+        { name: "callout body text", selector: ".wrapped-callout__callout p" },
+        { name: "callout link", selector: ".wrapped-callout__callout a" },
+        { name: "body text", selector: ".wrapped-callout__content p" },
+        { name: "body link", selector: ".wrapped-callout__content a" },
         {
-          name: 'decorative callout outline',
-          selector: '.wrapped-callout__callout',
-          property: 'borderTopColor',
+          name: "decorative callout outline",
+          selector: ".wrapped-callout__callout",
+          property: "borderTopColor",
           decorative: true,
         },
       ],
@@ -119,28 +119,32 @@
     let el = start;
     while (el) {
       const bg = getComputedStyle(el).backgroundColor;
-      if (bg && bg !== 'rgba(0, 0, 0, 0)' && bg !== 'transparent') return bg;
+      if (bg && bg !== "rgba(0, 0, 0, 0)" && bg !== "transparent") return bg;
       el = el.parentElement;
     }
-    return 'rgb(255, 255, 255)';
+    return "rgb(255, 255, 255)";
   };
 
   const globalTheme = document
-    .querySelector('[data-global-theme]')
-    ?.getAttribute('data-global-theme');
+    .querySelector("[data-global-theme]")
+    ?.getAttribute("data-global-theme");
 
   const rows = [];
 
   for (const section of document.querySelectorAll(
-    '.yds-layout[data-component-theme]',
+    ".yds-layout[data-component-theme]"
   )) {
-    const sectionTheme = section.getAttribute('data-component-theme');
+    const sectionTheme = section.getAttribute("data-component-theme");
 
     for (const [component, spec] of Object.entries(COMPONENTS)) {
       const root = section.querySelector(spec.root);
       if (!root) continue;
 
-      const dial = root.getAttribute('data-component-theme');
+      // Absent attribute reads as the `default` dial rather than as null.
+      // A null would serialise into the JSON and then throw an opaque
+      // TypeError out of `localeCompare` in the report generator -- in a
+      // different repo from the one that produced the bad data.
+      const dial = root.getAttribute("data-component-theme") ?? "default";
 
       for (const element of spec.elements) {
         // First match only: the fixture places one block per section and the
@@ -150,7 +154,7 @@
         if (!node) continue;
 
         const style = getComputedStyle(node);
-        const property = element.property || 'color';
+        const property = element.property || "color";
         const value = style[property];
 
         // A zero-width border paints nothing, so its color is not a contrast
@@ -158,9 +162,9 @@
         // and the "no lines" link grid drop out rather than reporting a
         // phantom failure.
         const widthProperty = {
-          borderBottomColor: 'borderBottomWidth',
-          borderLeftColor: 'borderLeftWidth',
-          borderTopColor: 'borderTopWidth',
+          borderBottomColor: "borderBottomWidth",
+          borderLeftColor: "borderLeftWidth",
+          borderTopColor: "borderTopWidth",
         }[property];
         if (widthProperty && parseFloat(style[widthProperty]) === 0) continue;
 
@@ -185,7 +189,7 @@
   // reads as "no failures" rather than "not measured". See the coverage
   // assertion in 1614-collect-rendered.mjs.
   const expected = Object.entries(COMPONENTS).flatMap(([component, spec]) =>
-    spec.elements.map((element) => `${component} | ${element.name}`),
+    spec.elements.map((element) => `${component} | ${element.name}`)
   );
 
   return { rows, expected };

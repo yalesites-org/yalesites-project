@@ -19,25 +19,46 @@
  * back off the DOM.
  */
 
-import { execFileSync } from 'node:child_process';
-import { createRequire } from 'node:module';
-import { mkdirSync } from 'node:fs';
-import { fileURLToPath } from 'node:url';
-import { dirname, join } from 'node:path';
+import { execFileSync } from "node:child_process";
+import { createRequire } from "node:module";
+import { mkdirSync } from "node:fs";
+import { fileURLToPath } from "node:url";
+import { dirname, join } from "node:path";
 
 const [state, outputDir] = process.argv.slice(2);
-if (!['before', 'after'].includes(state) || !outputDir) {
-  throw new Error('Usage: node 1614-capture.mjs <before|after> <output-dir>');
+if (!["before", "after"].includes(state) || !outputDir) {
+  throw new Error("Usage: node 1614-capture.mjs <before|after> <output-dir>");
 }
 
 const here = dirname(fileURLToPath(import.meta.url));
-const repoRoot = join(here, '..', '..');
+const repoRoot = join(here, "..", "..");
 
 const require = createRequire(import.meta.url);
-const playwrightRoot = execFileSync('npm', ['root', '-g'], { encoding: 'utf8' }).trim();
-const { chromium } = require(join(playwrightRoot, '@playwright', 'cli', 'node_modules', 'playwright'));
+const playwrightRoot = execFileSync("npm", ["root", "-g"], {
+  encoding: "utf8",
+}).trim();
+const { chromium } = require(join(
+  playwrightRoot,
+  "@playwright",
+  "cli",
+  "node_modules",
+  "playwright"
+));
 
-const SITE = 'https://yalesites-platform.lndo.site';
+/**
+ * This checkout's own Lando host, derived rather than hardcoded.
+ *
+ * Several yalesites-project checkouts run side by side and they are NOT
+ * interchangeable -- different Lando app names, different Pantheon sites,
+ * different branches. A literal host here happens to work in the checkout it
+ * was written in and silently sweeps the wrong site (or fails obscurely) in
+ * the next one.
+ */
+const SITE = `https://${
+  readFileSync(join(repoRoot, ".lando.local.yml"), "utf8").match(
+    /^name:\s*(\S+)/m
+  )[1]
+}.lndo.site`;
 
 /**
  * The failing cells worth a picture.
@@ -47,21 +68,45 @@ const SITE = 'https://yalesites-platform.lndo.site';
  * dial-major, so the index is deterministic.
  */
 const CELLS = [
-  { component: 'link_grid', dial: 'two', sectionTheme: 'one', note: 'link-grid-heading-dial-two-section-one' },
-  { component: 'link_grid', dial: 'six', sectionTheme: 'three', note: 'link-grid-heading-dial-six-section-three' },
-  { component: 'wrapped_text_callout', dial: 'one', sectionTheme: 'one', note: 'callout-heading-dial-one-section-one' },
-  { component: 'wrapped_text_callout', dial: 'four', sectionTheme: 'four', note: 'callout-heading-dial-four-section-four' },
+  {
+    component: "link_grid",
+    dial: "two",
+    sectionTheme: "one",
+    note: "link-grid-heading-dial-two-section-one",
+  },
+  {
+    component: "link_grid",
+    dial: "six",
+    sectionTheme: "three",
+    note: "link-grid-heading-dial-six-section-three",
+  },
+  {
+    component: "wrapped_text_callout",
+    dial: "one",
+    sectionTheme: "one",
+    note: "callout-heading-dial-one-section-one",
+  },
+  {
+    component: "wrapped_text_callout",
+    dial: "four",
+    sectionTheme: "four",
+    note: "callout-heading-dial-four-section-four",
+  },
 ];
 
-const GLOBAL_THEMES = { one: 'old-blues', four: 'onha' };
+const GLOBAL_THEMES = { one: "old-blues", four: "onha" };
 
 const lando = (args) =>
-  execFileSync('lando', args, { cwd: repoRoot, encoding: 'utf8', stdio: ['ignore', 'pipe', 'pipe'] });
+  execFileSync("lando", args, {
+    cwd: repoRoot,
+    encoding: "utf8",
+    stdio: ["ignore", "pipe", "pipe"],
+  });
 
 const nid = (component) =>
   lando([
-    'drush',
-    'sqlq',
+    "drush",
+    "sqlq",
     `SELECT nid FROM node_field_data WHERE title = '1614 Functional contrast - ${component}' LIMIT 1`,
   ]).trim();
 
@@ -72,27 +117,39 @@ const page = await browser.newPage({ viewport: { width: 1600, height: 1200 } });
 
 for (const [theme, label] of Object.entries(GLOBAL_THEMES)) {
   lando([
-    'drush',
-    'ev',
+    "drush",
+    "ev",
     `\\Drupal::service('ys_themes.theme_settings_manager')->setSetting('global_theme','${theme}');`,
   ]);
-  lando(['drush', 'cr']);
+  lando(["drush", "cr"]);
 
   for (const cell of CELLS) {
-    await page.goto(`${SITE}/node/${nid(cell.component)}?cb=${Date.now()}${process.hrtime.bigint()}`, {
-      // `networkidle` is too strict here: these fixture pages carry 36-42
-      // sections, and the first load after a `drush cr` rebuilds enough of the
-      // render cache that the network never goes quiet inside 30s. Waiting for
-      // the markup under measurement is both faster and the thing that
-      // actually has to be true.
-      waitUntil: 'domcontentloaded',
+    await page.goto(
+      `${SITE}/node/${nid(
+        cell.component
+      )}?cb=${Date.now()}${process.hrtime.bigint()}`,
+      {
+        // `networkidle` is too strict here: these fixture pages carry 36-42
+        // sections, and the first load after a `drush cr` rebuilds enough of the
+        // render cache that the network never goes quiet inside 30s. Waiting for
+        // the markup under measurement is both faster and the thing that
+        // actually has to be true.
+        waitUntil: "domcontentloaded",
+        timeout: 120000,
+      }
+    );
+    await page.waitForSelector(".yds-layout[data-component-theme]", {
       timeout: 120000,
     });
-    await page.waitForSelector('.yds-layout[data-component-theme]', { timeout: 120000 });
 
-    const rendered = await page.getAttribute('[data-global-theme]', 'data-global-theme');
+    const rendered = await page.getAttribute(
+      "[data-global-theme]",
+      "data-global-theme"
+    );
     if (rendered !== theme) {
-      throw new Error(`Expected global theme ${theme}, page rendered ${rendered}`);
+      throw new Error(
+        `Expected global theme ${theme}, page rendered ${rendered}`
+      );
     }
 
     // Find the section holding this (dial x section theme) pairing by reading
@@ -101,24 +158,35 @@ for (const [theme, label] of Object.entries(GLOBAL_THEMES)) {
     // silently wrong the moment that loop changes.
     const handle = await page.evaluateHandle(
       ([root, dial, sectionTheme]) =>
-        [...document.querySelectorAll(`.yds-layout[data-component-theme='${sectionTheme}']`)].find(
-          (section) => section.querySelector(`${root}[data-component-theme='${dial}']`),
+        [
+          ...document.querySelectorAll(
+            `.yds-layout[data-component-theme='${sectionTheme}']`
+          ),
+        ].find((section) =>
+          section.querySelector(`${root}[data-component-theme='${dial}']`)
         ),
       [
-        { link_grid: '.link-grid', wrapped_text_callout: '.wrapped-callout' }[cell.component],
+        { link_grid: ".link-grid", wrapped_text_callout: ".wrapped-callout" }[
+          cell.component
+        ],
         cell.dial,
         cell.sectionTheme,
-      ],
+      ]
     );
 
     const element = handle.asElement();
     if (!element) {
-      throw new Error(`No section for ${cell.component} dial ${cell.dial} section ${cell.sectionTheme}`);
+      throw new Error(
+        `No section for ${cell.component} dial ${cell.dial} section ${cell.sectionTheme}`
+      );
     }
 
     await element.scrollIntoViewIfNeeded();
     await element.screenshot({
-      path: join(outputDir, `${state}-global-${theme}-${label}-${cell.note}.png`),
+      path: join(
+        outputDir,
+        `${state}-global-${theme}-${label}-${cell.note}.png`
+      ),
     });
     process.stderr.write(`${state} ${theme} ${cell.note}\n`);
   }
