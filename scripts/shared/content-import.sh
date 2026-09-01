@@ -1,5 +1,7 @@
 #!/bin/bash
 
+source ./scripts/local/local-dev-tool.sh
+
 STARTERKIT_VERSION="latest"
 STARTERKIT_FILE="starterkit.zip"
 DOWNLOAD_URL="https://github.com/yalesites-org/yalesites-starterkit/releases/$STARTERKIT_VERSION/download/$STARTERKIT_FILE"
@@ -18,9 +20,9 @@ fi
 nid_command="print \Drupal::service('path_alias.manager')->getPathByAlias('/homepage');"
 
 if [ "$YALESITES_IS_LOCAL" == "1" ]; then
-  lando drush content:import ../"$STARTERKIT_FILE" && rm "$STARTERKIT_FILE"
-  homepage_nid=$(lando drush ev "$nid_command")
-  lando drush cset system.site page.front "$homepage_nid" -y
+  ys_local_drush content:import ../"$STARTERKIT_FILE" && rm "$STARTERKIT_FILE"
+  homepage_nid=$(ys_local_drush ev "$nid_command")
+  ys_local_drush cset system.site page.front "$homepage_nid" -y
 else
   [ -z "$env" ] && env="dev"
   COMMAND=$(terminus connection:info "$SITE_MACHINE_NAME"."$env" --field=sftp_command)
