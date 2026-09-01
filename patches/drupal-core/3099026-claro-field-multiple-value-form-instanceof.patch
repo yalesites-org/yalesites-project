@@ -1,0 +1,27 @@
+Fix TypeError when contrib restructures the multiple-value form header.
+
+claro_preprocess_field_multiple_value_form() guards the header-cell class
+manipulation with isset() only, then calls ->removeClass() on it. When the
+Paragraphs multi-value widget (e.g. the Gallery block's field_gallery_items)
+restructures the header so that #attributes is a plain array rather than an
+Attribute object, this fatals with 'Call to a member function removeClass()
+on array' (white screen when adding the block in Layout Builder).
+
+Type-guard the branch with 'instanceof Attribute' so Claro skips its
+cosmetic label classes for a contrib-restructured header instead of
+crashing, matching the existing instanceof Attribute idiom in this file.
+
+Ref: https://www.drupal.org/project/drupal/issues/3099026
+     https://www.drupal.org/project/paragraphs/issues/3099024
+
+--- a/core/themes/claro/claro.theme
++++ b/core/themes/claro/claro.theme
+@@ -1075,7 +1075,7 @@
+     // Add an additional CSS class to the field label table cell. The table
+     // header cell should always exist unless removed by contrib.
+     // @see template_preprocess_field_multiple_value_form().
+-    if (isset($variables['table']['#header'][0]['data']['#attributes'])) {
++    if (isset($variables['table']['#header'][0]['data']['#attributes']) && $variables['table']['#header'][0]['data']['#attributes'] instanceof Attribute) {
+       $variables['table']['#header'][0]['data']['#attributes']->removeClass('label');
+       $variables['table']['#header'][0]['data']['#attributes']->addClass('form-item__label', 'form-item__label--multiple-value-form');
+     }
