@@ -1,0 +1,21 @@
+uuid: 04f25f2e-8f93-41d6-89ee-8529655df59a
+langcode: en
+status: true
+dependencies:
+  config:
+    - block_content.type.office_hours
+    - field.storage.block_content.field_office_hours
+  module:
+    - office_hours
+id: block_content.office_hours.field_office_hours
+field_name: field_office_hours
+entity_type: block_content
+bundle: office_hours
+label: Hours
+description: 'Set the opening and closing time for each day. Tick Closed to show a day as closed, or All day for a day that is open around the clock. Use "Add exception" for holidays and one-off closures.'
+required: false
+translatable: true
+default_value: {  }
+default_value_callback: ''
+settings: {  }
+field_type: office_hours

@@ -124,6 +124,7 @@ third_party_settings:
               - text
               - video
               - webform
+              - office_hours
             'Inline blocks':
               - 'inline_block:accordion'
               - 'inline_block:button_link'
@@ -136,6 +137,7 @@ third_party_settings:
               - 'inline_block:tabs'
               - 'inline_block:text'
               - 'inline_block:video'
+              - 'inline_block:office_hours'
       restricted_categories:
         ys_layout_two_column_50_50:
           all_regions:
