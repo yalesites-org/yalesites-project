@@ -10,10 +10,6 @@ libraries:
   - ys_admin_theme/tokens
   - ys_admin_theme/global
 
-libraries-extend:
-  office_hours/office_hours_widget:
-    - ys_admin_theme/office_hours_widget
-
 # Regions
 regions:
   header: "Header"

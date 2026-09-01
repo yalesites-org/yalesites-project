@@ -1672,3 +1672,26 @@ function ys_core_form_menu_edit_form_alter(array &$form, FormStateInterface $for
     '#weight' => -100,
   ];
 }
+
+/**
+ * Implements hook_field_widget_complete_form_alter().
+ *
+ * Attaches the Office Hours editor affordances (the Closed column and the
+ * per-row operations menu) to the contrib office_hours widget.
+ *
+ * These assets live in ys_admin_theme but cannot be attached from the theme.
+ * A theme's `libraries:` entries are added by system_page_attachments(), which
+ * only runs for a full HTML page render, and `libraries-extend` only applies
+ * while that theme is the active one. Layout Builder renders in the front-end
+ * theme and loads the block form over AJAX, so neither mechanism reaches the
+ * "Configure block" modal. Attaching here travels with the widget's own render
+ * array, so it works on the modal, the sidebar and the standalone block form
+ * alike.
+ */
+function ys_core_field_widget_complete_form_alter(array &$field_widget_complete_form, FormStateInterface $form_state, array $context) {
+  if ($context['items']->getFieldDefinition()->getType() !== 'office_hours') {
+    return;
+  }
+
+  $field_widget_complete_form['#attached']['library'][] = 'ys_admin_theme/office_hours_widget';
+}

@@ -26,11 +26,11 @@
   line-height: 1;
 }
 .field--type-office-hours .ys-office-hours-actions__toggle:hover {
-  background-color: var(--gin-bg-layer2);
+  background-color: var(--gin-bg-layer2, rgba(0, 0, 0, 0.06));
 }
 .field--type-office-hours .ys-office-hours-actions__toggle:focus-visible {
   outline: none;
-  box-shadow: 0 0 0 1px var(--gin-color-focus-border), 0 0 0 4px var(--gin-color-focus);
+  box-shadow: 0 0 0 1px var(--gin-color-focus-border, #fff), 0 0 0 4px var(--gin-color-focus, #26a769);
 }
 .field--type-office-hours .ys-office-hours-actions__menu {
   position: absolute;
@@ -38,9 +38,9 @@
   inset-inline-end: 0;
   min-width: 11rem;
   padding: 0.5rem;
-  border: 1px solid var(--gin-border-color);
+  border: 1px solid var(--gin-border-color, #d3d4d9);
   border-radius: 4px;
-  background-color: var(--gin-bg-layer);
+  background-color: var(--gin-bg-layer, #fff);
   box-shadow: 0 2px 6px rgba(0, 0, 0, 0.15);
 }
 
