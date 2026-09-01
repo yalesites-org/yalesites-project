@@ -7,8 +7,10 @@ audit, a set of reproducible WCAG failures, and a recommendation for the team an
 developer to review before any implementation is scoped.
 
 - **Date:** 2026-09-01
-- **Measured against:** `yalesites-project` `develop` @ `5898452f`, `atomic` `develop`,
-  `component-library-twig` `develop`, `tokens` `main`
+- **Measured against:** `yalesites-project` `develop` @ `5898452f` (this branch's base),
+  `component-library-twig` `develop`, `tokens` `main`, `atomic` `develop`. Note the working
+  checkout has since moved on — a re-check will not find those exact revisions, so pin to
+  `5898452f` if reproducing.
 - **Environment:** local Lando only. Nothing was run against, logged into, or changed on any
   remote or production site.
 
@@ -34,6 +36,35 @@ should be read with hindsight bias in mind.
 held-back set has to live somewhere the agent is not handed up front: a separate issue, a
 comment posted after the independent pass lands, or a file revealed on request. A `<details>`
 block does not achieve it. This is worth fixing for future research tickets.
+
+### 0.1 This document was adversarially fact-checked, and it changed the argument
+
+After the first draft, an independent pass re-verified every `file:line` citation, every
+specificity claim, and every contrast ratio against source. It found real errors. They are
+corrected in place rather than hidden, and the substantive ones are listed here because two of
+them change what the document concludes:
+
+| what was wrong | corrected to |
+|---|---|
+| §3.1 claimed 0 of 46 direct-placement buttons fail, generalised to all themes | That page renders under **global theme one only**. Across all seven themes the same pairing **fails AA in 8 of 35 combinations** (2 also below 3:1). The control still localises the *severe* fault to nesting, but it does **not** exonerate the section pairings — see §3.1. |
+| §7.1 claimed the #1533 contrast matrix covers only four global themes | **False.** It iterates the token map, so all seven already render. Its real blind spot is that it shows slot x slot pairings and does not reproduce nesting. |
+| "16 self-referential cycles"; `_yds-layout.scss:51` listed as one | **20** exist; `:51` is a reference to a *different* cyclic property, not a self-reference; `:30`/`:31` are already dead. See §2.4 D3. |
+| "38 dangling `--component-themes-{four,five}-slot-*` references" | **292** (146 per theme across slots one to eight). |
+| `--color-link-grid-action` "declared only by `.yds-layout`" | Declared in **two** files; link-grid's own value normally wins, so it is not evidence of intentional deference. |
+| Phase 0 asked to add theme five to `_yds-image.scss`'s exclusion list | `_yds-image.scss` **already handles** theme five; only `_yds-textfields.scss` needs it. |
+| "at least eight components" trust `--color-text` | **Three** unconditionally; two more only when a dial is left unset; `quick-links` not at all. |
+| "28 of 40 palette primitives drift" | **30 of 42.** |
+
+Also corrected: the `--color-slot-white` typo's impact was overstated (it is masked by `color`
+inheritance and only bites non-inherited consumers); §2.3's "same as anywhere else" is false under
+global theme four, which swaps slots two and five inside the section; `tabs:83` resolves fine and
+only `:82` is undefined; `sd.config.js:102` is `:101`; and §9 no longer claims full
+reproducibility, since the §3.1 control page exists only in a local database.
+
+**What survived unchanged: all of the arithmetic.** Every ratio in §2.2, §3.2, §3.3, §3.4 and
+§3.7 reproduced exactly — 210 renders, 129 / 101 / 29 failures, the per-global split including
+24/30 for theme seven, the 15 structural pairings, and the (0,5,0) specificity. The two root
+causes and the reproduction stand as measured.
 
 ---
 
@@ -116,7 +147,9 @@ Two CSS facts the rest of this document relies on:
 ```
 
 `--color-layout-theme` (the section's painted background) and `--color-layout-border` are
-declared **only** by `.yds-layout` (`_yds-layout.scss:88-144`). This rule therefore says, in
+declared **only** by `.yds-layout` — the per-theme blocks at `_yds-layout.scss:88-144`, plus the
+unqualified defaults at `:12` and `:27`. Nothing else in the library declares either variable.
+This rule therefore says, in
 so many words: *any button anywhere inside a themed section is coloured for the section, not
 for the surface it sits on.* It is a descendant selector, so depth is unbounded.
 
@@ -183,11 +216,24 @@ actually paints:
 | seven | `#c6baa9` | `#ffffff` | **1.90:1** | FAIL |
 
 **Section theme two fails in all seven global themes**, and it is the only section theme that
-does (the other four pass, 4.60:1 – 16.10:1). Every component that trusts `--color-text`
-without re-declaring it renders near-invisible text in a theme-two section. Confirmed
-consumers include `social-links:34`, `profile-meta:18`, `event-meta:50,54`,
-`publication-detail:22,209`, `text-with-image:265,269,293`, `taxonomy-display:31`,
-`quick-links:14`.
+does (the other four pass, 4.60:1 – 16.10:1). Any component that trusts `--color-text` **without
+re-declaring it** renders near-invisible text in a theme-two section.
+
+Being precise about who that is, because it is fewer components than it first appears:
+
+| consumer | re-declares `--color-text`? | exposed? |
+|---|---|---|
+| `social-links:34` | no | **yes, unconditionally** |
+| `event-meta:50,54` | no | **yes, unconditionally** |
+| `publication-detail:22,209` | no | **yes, unconditionally** |
+| `profile-meta:18` | yes (`:64,71,75,83,90,97,103`) | no |
+| `text-with-image:265,269,293` | yes (`:86,96,108,124,132`) | only when the dial is left at `default` |
+| `taxonomy-display:31` | yes (`:90,99,110,125,132`) | only when the dial is left at `default` |
+| `quick-links:14` | yes (`:46,222`), and its dial always defaults to `one` | **no — not exposed at all** |
+
+So: **three components unconditionally**, two more when an editor leaves the dial unset, and
+`quick-links` not at all. The mechanism is real and worth fixing; the blast radius is narrower
+than "every consumer of `--color-text`".
 
 The same disagreement affects `--color-background`, whose most visible consumer is
 `--color-text-shadow` — the halo knocked out behind link descenders
@@ -205,8 +251,11 @@ Inside `.yds-layout`, two rules set slots at equal specificity **(0,2,0)**:
 `.yds-layout[data-component-theme='X']` (`:16-54`) and `[data-global-theme='G'] .yds-layout`
 (`:60-84`). The global one is later in source, so **it wins** — verified in the compiled
 sheet. A section's slot values are therefore always the *global* theme's values, which are
-also what any element elsewhere on the page would resolve. A nested component inheriting
-slot-seven sees nothing unusual.
+also what any element elsewhere on the page would resolve, **with one exception**: under global
+theme four, `_yds-layout.scss:78-82` swaps slot-two and slot-five *inside* the `.yds-layout`
+subtree, and `_color-global-themes.scss` does not. So under that one theme a section's slot-two
+and slot-five are the opposite of what an element outside a section resolves. Otherwise a nested
+component inheriting slot-seven sees nothing unusual.
 
 Consequences:
 
@@ -247,14 +296,35 @@ one..five, and both generic loops iterate that map. `ColorTokenResolver` maps op
 global slot-nine for the picker swatch, so **the editor sees a colour swatch that the CSS
 never applies.**
 
-**D3 — self-referential declarations that erase rather than preserve.**
-`_yds-layout.scss:30,31,41,42,48,49,51` declare `--color-link-base: var(--color-link-base)`.
-A custom property referencing itself is a dependency cycle, so it computes to the
-guaranteed-invalid value and the inherited value is *discarded* — the opposite of the evident
-intent. It happens to work for `color` (an inherited property falls back to the parent's
-computed value) and would fail for `background-color`, `border-color`, `fill` or `text-shadow`.
+**D3 — self-referential declarations that erase rather than preserve.** A custom property
+referencing itself is a dependency cycle, so it computes to the guaranteed-invalid value and the
+inherited value is *discarded* — the opposite of the evident intent. It happens to work for
+`color` (an inherited property falls back to the parent's computed value) and would fail for
+`background-color`, `border-color`, `fill` or `text-shadow`.
 
-**D4 — the developer documentation teaches the bug.** `docs/color-theme.md`, "Working with
+**20 such declarations exist** across `components/`, six of them in the section wrapper:
+
+| file | lines | property |
+|---|---|---|
+| `_yds-layout.scss` | `:30`, `:42`, `:49` | `--color-link-base` |
+| `_yds-layout.scss` | `:31`, `:41`, `:48` | `--color-link-hover` |
+| 11 molecules/organisms | `reference-card:539`, `content-spotlight-portrait:52`, `inline-message:68`, `taxonomy-display:51`, `text-with-image:47`, `quote-callout:56`, `facts-and-figures-group:44`, `secondary-nav:93`, `site-in-this-section:46` | `--color-link-hover` |
+| `tile-item` | `:103`, `:115` | `--color-link-visited-hover` |
+| `pull-quote:33`, `quote-callout:48`, `:49` | | component-private accents |
+
+Two details that matter for fixing them:
+
+- **`_yds-layout.scss:51` is *not* a self-reference.** It is
+  `--color-link-visited-hover: var(--color-link-hover)` — a reference to a *different* property
+  that happens to be cyclic, so it inherits the invalidity. A related defect, but a different fix.
+- **`:30` and `:31` are already dead**, overridden on `.yds-layout` itself by the later,
+  same-specificity per-theme blocks at `:88-144`. The declarations that actually bite are the
+  descendant rules at `:41-42` (`.link`, `.text-field a`, `.caption a`) and `:48-49`
+  (`.link-grid__link`), which nothing re-declares.
+
+**D4 — the developer documentation teaches the bug.** `docs/color-theme.md` — note this one file
+lives in **`yalesites-project`**, not `component-library-twig` like every other path in this
+document — "Working with
 themes in CSS", Part three, shows the global-theme loop as:
 
 ```scss
@@ -272,12 +342,32 @@ copy-paste template developers are pointed at. Worth fixing regardless of this r
 
 ## 3. Reproducible failures, with evidence
 
-### 3.1 Calibration — the direct case already works
+### 3.1 Calibration — the direct case is much better, but not clean
 
 `/blocks-for-visreg/button`, a real page with CTAs placed **directly** in themed sections:
-**0 of 46 buttons fail AA**, worst ratio 4.98:1. "One container back" is already correct when the
-button really does sit on the section. The defect is specific to nesting. This control matters: it rules out
-"the section colours are simply wrong" and localises the fault to the reach-back.
+**0 of 46 buttons fail AA**, worst ratio 4.98:1.
+
+**That page renders under global theme one only, and the result does not generalise.** For a
+directly-placed CTA the reach-back resolves to `--color-layout-border` on `--color-layout-theme`,
+so the pairing is computable for every theme. Across all 7 global x 5 section themes:
+
+| | result |
+|---|---|
+| combinations | 35 |
+| fail SC 1.4.3 (<4.5:1) | **8** |
+| also fail 3:1 | **2** (global seven x section three at 2.42:1; x section four at 2.99:1) |
+
+The failures cluster on section theme **four** (fails under globals two, three, four, six, seven)
+and on global theme **seven** (fails on sections one, three, four). Under global theme one all
+five section themes pass (4.98:1 – 15.03:1), which is why the visreg page shows nothing.
+
+**What this control does and does not establish.** It localises the *severe* fault to nesting:
+direct placement bottoms out at 2.42:1 and never produces an invisible control, whereas nesting
+produces 129/210 failures and 29 renders at or near 1.00:1. But it does **not** rule out the
+section pairings themselves being wrong — 8 of 35 fail AA on their own, worst under theme seven,
+the palette this document elsewhere identifies as the weakest. **Those 8 are a separate defect
+from root cause A and will not be fixed by fixing it.** They belong with the #1613/#1614
+section-colour work.
 
 ### 3.2 The reproduction page
 
@@ -374,8 +464,9 @@ headings, and it is worth stating separately because a fix aimed only at root ca
 catch it.
 
 `_yds-tabs.scss:63,70,77` declares `--color-heading: var(--color-gray-700)` **directly on
-`.tabs`**, so it defeats the section's inherited `--color-heading: var(--color-slot-eight)`
-(`_yds-layout.scss:96`). Meanwhile `.tabs__container` sets **no background** (verified in the
+`.tabs`**, so it defeats the section's inherited `--color-heading`, whichever slot that is: slot-eight for
+section themes one, three and four (`_yds-layout.scss:96,118,130`) and slot-seven for the light
+themes two and five (`:105,141`). Meanwhile `.tabs__container` sets **no background** (verified in the
 compiled CSS), so tab-panel content renders on the *section's* background. gray-700 was chosen
 for the gray-100 tab strip, not for the section behind the panel.
 
@@ -395,8 +486,8 @@ is no editor choice that avoids it.
 The generalisable lesson: **a component that declares a foreground but paints no background is
 always a latent failure**, because its foreground was chosen against a background it does not
 control. `wrapped-callout` (dark heading plus a border that collides exactly with the section
-background at 1.00:1) and `link-grid` (hardcoded white heading, no background at all) have the
-same shape. A "nearest container" model must therefore treat *painting a background* and
+background at 1.00:1) and `link-grid` (white heading scoped to its own dial, no background at
+all) have the same shape. A "nearest container" model must therefore treat *painting a background* and
 *choosing a foreground* as one indivisible decision.
 
 ---
@@ -655,9 +746,11 @@ relative luminance and contrast ratio, it already has tests under `node --test`,
 `contrast-matrix.mdx` already renders pairings.
 
 - **Pros.** Converts contrast from a review responsibility into a build gate. It is the only
-  option that would have caught all 129 failures **and** theme seven **and** would keep
-  catching them as themes are added. Extends the slot-1/6/7 safe-foreground rule from #1539
-  from a convention into an enforced invariant.
+  option that would have caught all 129 failures, and it keeps catching them as themes are
+  added. The existing contrast matrix already covers all seven themes but cannot see *which*
+  pairings components actually produce — closing that gap is precisely what a generated-pairing
+  gate does. Extends the slot-1/6/7 safe-foreground rule from #1539 from a convention into an
+  enforced invariant.
 - **Cons.** Requires the token structure to express pairings, which is the largest upfront
   design work. Gates only the *generated* pairings — it cannot see a hardcoded literal like
   `.taxonomy-list--tags`, so it needs a companion lint banning Sass colour literals and raw
@@ -681,11 +774,11 @@ the model discussion.
 | Delete or re-scope the section-descendant CTA block | `_yds-cta.scss:333-348` | Root cause A. Removes the reach-back entirely. Needs a decision on what a button on a *bare* section should do — see §5.5. |
 | Publish `--component-themes-{four,five}-slot-*` under the flat name | `tokens/tokens/base/color.yml:78-125` | 292 dangling references (146 per theme across slots 1-8); themes four and five currently void slots 1-5 |
 | Add a `[data-component-theme='six']` block, or stop offering option six | tokens + `component_overrides.yml` | Editors pick a swatch the CSS never applies |
-| Fix `--color-slot-white` -> `--color-basic-white` | `_yds-callout.scss:76` | One-character-class typo; silently disables a link colour |
+| Fix `--color-slot-white` -> `--color-basic-white` | `_yds-callout.scss:76` | `--color-slot-white` is defined nowhere, so `--color-link-base` is guaranteed-invalid. Currently masked: `color` is inherited, so it falls back to `.callouts { color: var(--color-text) }` = white, the intended value. The observable defect is confined to non-inherited consumers such as `fill: var(--color-link-base)` (`_yds-text-link.scss:43`), which falls back to black. Low severity, trivial fix. |
 | Give `--color-action` a real root fallback | `_global-config.scss:6` | Both referenced variables are undefined; an outline CTA can lose its border entirely |
-| Remove the 16 self-referential `var()` cycles | `_yds-layout.scss:30,31,41,42,48,49,51` + 9 others | They erase the value they appear to preserve |
+| Remove the 20 self-referential `var()` cycles | `_yds-layout.scss:30,31,41,42,48,49` + 14 others (§2.4 D3) | They erase the value they appear to preserve. Start with `:41-42` and `:48-49` — the descendant rules nothing re-declares; `:30`/`:31` are already dead. Handle `:51` separately: it references a different cyclic property rather than itself. |
 | Replace the Sass colour literal | `_yds-list.scss:67` | `hsl(210,100%,21%)` is baked into the compiled CSS and unoverridable; invisible tags on section theme one |
-| Add section theme five to the light-theme exclusion lists | `_yds-textfields.scss:34-42`, `_yds-image.scss:44-66` | Both lists treat only theme two as light; five is also light |
+| Add section theme five to the light-theme exclusion list | `_yds-textfields.scss:34-42` | Its `:not(default, two)` guard omits five, so the required-field asterisk goes white on a light theme-five section. (`_yds-image.scss` does **not** need this — `:44-49` already excludes both two and five, and `:66-82` is a dedicated theme-five block.) |
 | Fix the global-loop example | `docs/color-theme.md` Part three | Teaches `$theme` inside the `$globalTheme` loop |
 
 **Phase 1 — split the overloaded attribute (small, unblocks everything).**
@@ -715,11 +808,17 @@ deliberately, not by accident:
    working case. The correct replacement is the surface contract: the section publishes its
    surface, the button reads the *nearest* surface, and for a directly-placed button the
    nearest surface *is* the section. Same outcome, no reach-back.
-2. **`link-grid` genuinely wants the section's content colour.** It reads
-   `--color-link-grid-action`, declared only by `.yds-layout` (`_yds-layout.scss:97,107,...`),
-   and `_yds-layout.scss:148-153` forces dark headings on light section themes. This is a
-   deliberate design decision, not a leak. Under the new model it becomes an explicit
-   opt-in — "inherit my parent surface" — rather than the default.
+2. **`link-grid` partly wants the section's content colour — but less than first appears.**
+   `_yds-layout.scss:148-153` forces dark headings on light section themes two and five, and that
+   *is* a deliberate cross-boundary decision. But `--color-link-grid-action` is **not**
+   section-only: it is declared in two files — `_yds-layout.scss:97,107,119,131,143` and
+   `_yds-link-grid.scss:51,55,59,63,67,71,107`. Since `.link-grid[data-component-theme='one']`
+   (0,2,0) directly matches the element while the section's value arrives only by inheritance,
+   **link-grid's own value normally wins**, so this variable is not evidence of intentional
+   deference. Likewise `_yds-link-grid.scss:91-93` carries a comment saying the white-heading
+   rule is scoped to link-grid's own dial *precisely so the section cannot force it*. Treat the
+   `:148-153` heading override as the genuine opt-in case and re-examine the rest rather than
+   assuming deference.
 3. **The global theme must keep cascading.** Covered in §5.2: it is the palette layer and is
    untouched.
 
@@ -748,7 +847,8 @@ Phase 2 and Phase 3 on their own track.
 Research question 7. Fixing root cause A alone addresses the **129 of 210** measured AA
 failures on real markup (§3), including **29 renders where the control is invisible**. Fixing
 root cause B addresses the `--color-text` failures in every theme-two section (§2.2), which
-affect at least eight components. Phase 3 prevents the class from recurring as themes are
+affect three components unconditionally and two more whenever a block dial is left unset.
+Phase 3 prevents the class from recurring as themes are
 added — theme seven, the worst-performing palette at 24/30 failures, was added after the
 existing contrast tooling was built and is not covered by it.
 
@@ -822,10 +922,14 @@ recommends deleting first (§5.4, Phase 0).
 
 | ticket | relationship | recommendation |
 |---|---|---|
-| **#1613** — "block dial inside themed section slot mixing"; "make slots six and up referenceable outside `yds-layout`" | Both acceptance criteria are **restatements of findings here**. The first is root cause B plus the reach-back. The second is confirmed as real: slots 6-9 exist only inside a `.yds-layout` subtree (§2.0), so `var(--color-slot-seven)` outside one is guaranteed-invalid — which is what silently disables `profile-meta:75-76,103-105` and `tabs:82-83`. | **Defer the "slot mixing" criterion** pending the Phase 0/1 decision — fixing it tactically means patching a symptom of the reach-back. **Proceed with "slots six and up referenceable"** immediately; it is independently correct, low-risk, and a prerequisite for the surface contract. |
-| **#1614** — Accordion, Wrapped Callout, Link Grid contrast failures | All three appear in this audit as instances of one pattern, not three bugs: accordion forces white on light section theme five; wrapped-callout declares a dark heading and a colliding border while painting no background; link-grid hardcodes a white heading with no background. | **Proceed** — these are real and users are affected now. But land them knowing they are symptom fixes, and **record them as the third, fourth and fifth local patch** for the same root cause (§4.4 lists five prior ones). If #1614 is fixed the same way again, that is eight. |
+| **#1613** — "block dial inside themed section slot mixing"; "make slots six and up referenceable outside `yds-layout`" | Both acceptance criteria are **restatements of findings here**. The first is root cause B plus the reach-back. The second is confirmed as real: slots 6-9 exist only inside a `.yds-layout` subtree (§2.0), so `var(--color-slot-seven)` outside one is guaranteed-invalid — which is what silently disables `profile-meta:75-76,103-105` and `tabs:82`. (Not
+`tabs:83` — `_yds-tabs.scss:42` sets `--color-slot-nine` inside tabs' own global-theme loop, so
+only the slot-seven reference at `:82` is undefined.) | **Defer the "slot mixing" criterion** pending the Phase 0/1 decision — fixing it tactically means patching a symptom of the reach-back. **Proceed with "slots six and up referenceable"** immediately; it is independently correct, low-risk, and a prerequisite for the surface contract. |
+| **#1614** — Accordion, Wrapped Callout, Link Grid contrast failures | All three appear in this audit as instances of one pattern, not three bugs: accordion forces white on light section theme five; wrapped-callout declares a dark heading and a colliding border while painting no background; link-grid sets a white heading — scoped to its own dial, deliberately, per the comment at
+`_yds-link-grid.scss:91-93` — while painting no background at all, so that heading lands on the
+section's surface. | **Proceed** — these are real and users are affected now. But land them knowing they are symptom fixes, and **record them as the third, fourth and fifth local patch** for the same root cause (§4.4 lists five prior ones). If #1614 is fixed the same way again, that is eight. |
 | **#1539** — slot-1 / slot-6 / slot-7 safe-foreground rule | The right idea, applied as a convention. | **Promote it to the enforced invariant** in Phase 3 (§5.3 Option C). Its rule is precisely what the build-time gate should check. |
-| **#1533** / component-library-twig#686 — contrast-matrix Storybook story | Valuable, but has two blind spots this research exposes: it was built when there were four global themes and does not cover **five, six or seven** (theme seven is the worst at 24/30 failures), and **Storybook does not reproduce production nesting** — a story without a `[data-global-theme]` wrapper renders the otherwise-dead `component-themes` slot values (§2.3). | **Extend to seven themes** and add a *nested* fixture (section theme x block theme) so the matrix can see this bug class at all. Reuse `contrast-ratio.mjs`, which already has the math and tests. |
+| **#1533** / component-library-twig#686 — contrast-matrix Storybook story | Better than this research first assumed: it iterates the token map (`colors.stories.js:207`, `:1216-1232`), so **all seven global themes already render** and a new theme appears automatically — `contrast-matrix.mdx:12` says so explicitly. Its real blind spot is structural: it shows **slot x slot** pairings without knowing which pairings components actually produce, and **it does not reproduce production nesting** — a story without a `[data-global-theme]` wrapper renders the otherwise-dead `component-themes` slot values (§2.3), so Storybook is not a faithful preview of section-nested colour. | Add a **nested fixture** (section theme x block theme) so the matrix can see this bug class at all. No theme-coverage work needed. |
 | **#1551** — text-shadow halo | **Explained by root cause B.** `--color-text-shadow` is set from `--color-background`, which on a section disagrees with the painted background; and `_yds-image.scss:44-66`'s per-theme fixes omit section theme two, the one theme that always fails. | **Link #1551 to this research.** It is not a separate bug and a local fix will not generalise. |
 
 ### 7.1a Reconciliation with the in-flight #1613 work (PR yalesites-project#1514)
@@ -937,7 +1041,19 @@ For the lead developer and the accessibility engineer. Most consequential first.
 
 ## 9. Reproducing this research
 
-Everything is scripted and re-runnable. Artifacts referenced above:
+Mostly scripted and re-runnable — with two honest gaps, stated first:
+
+- **`/blocks-for-visreg/button` (the §3.1 control) exists only in a local database.** It has no
+  source in `yalesites-project`, `component-library-twig`, `atomic`, or the starterkit
+  migrations. Its 46-button result is therefore not independently reproducible. The *derived*
+  part of §3.1 — the 8-of-35 direct-placement table — is reproducible from tokens alone and does
+  not depend on that page.
+- **Node 90 is local database state**, created by `build_repro.php`. The script is re-runnable
+  against any local site; the node itself is not a committed artifact.
+
+The contrast maths *is* fully re-runnable from the repo (`contrast-ratio.mjs` plus
+`contrast-ratio.test.mjs` under `node --test`), and every number derived from tokens rather than
+from local content reproduces. Artifacts referenced above:
 
 | what | how |
 |---|---|
@@ -962,8 +1078,9 @@ live alongside the run log and can be attached to this PR or the issue on reques
 
 Contrast numbers are computed from the **shipped** token values (`tokens/build/`), not the
 authored hex in `figma-transformed-tokens.json`. Style Dictionary's `color/hsl` transform
-(`tokens/sd.config.js:81,102,124`) rounds H/S/L to integers, and **28 of 40 palette primitives
-drift by 1–3 per channel** as a result — `color.blue.yale` authors as `#00356b` and ships as
+(`tokens/sd.config.js:81,101,124`) rounds H/S/L to integers, and **30 of 42 palette primitives
+drift by 1–3 per channel** as a result (12 are identical; the largest drift is
+`color.orange.coral`, `#ff6654` -> `#ff6352`) — `color.blue.yale` authors as `#00356b` and ships as
 `#00366b`; `color.gray.800` authors as `#222222` and ships as `#212121`. The shipped value is
 what the browser rasterises, so it is the correct basis for a contrast check. **That drift is
 itself worth a ticket** — the design system's source of truth and its output disagree.
