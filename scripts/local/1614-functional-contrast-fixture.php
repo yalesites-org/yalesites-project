@@ -21,7 +21,7 @@
  *
  * One node per block type, each holding (dial x section theme) sections, so a
  * single page load per global theme measures every pairing for that block.
- * That is 3 pages x 7 global themes = 21 loads instead of 114 x 7.
+ * That is 3 pages x 7 global themes = 21 loads instead of 133 x 7.
  *
  * Read the resolved colors out with scripts/local/1614-measure-rendered.js.
  */
@@ -30,7 +30,17 @@ use Drupal\layout_builder\Section;
 use Drupal\layout_builder\SectionComponent;
 use Drupal\node\Entity\Node;
 
-$sectionThemes = ['one', 'two', 'three', 'four', 'five', 'six'];
+/**
+ * The section backgrounds each block is placed on.
+ *
+ * `default` is the section an editor gets by having picked nothing, and it is
+ * not a no-op cell: an unthemed section paints no background, so a block inside
+ * it sits on the page surface while still carrying its OWN colour dial. That is
+ * where the link grid's descender halo was drawn in the dial's colour rather
+ * than the page's (component-library-twig#714). Measuring only the six themed
+ * backgrounds is why that cell had no row in the first pass of this audit.
+ */
+$sectionThemes = ['default', 'one', 'two', 'three', 'four', 'five', 'six'];
 
 /**
  * The block types this fixture renders, with the dial values each offers.
