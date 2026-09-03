@@ -349,9 +349,10 @@ Next, we set the component-theme slot values, based on the global theme:
       --color-slot-three: var(--global-themes-#{$globalTheme}-colors-slot-three);
       --color-slot-four: var(--global-themes-#{$globalTheme}-colors-slot-four);
       --color-slot-five: var(--global-themes-#{$globalTheme}-colors-slot-five);
-      --color-slot-six: var(--component-themes-#{$theme}-slot-six);
-      --color-slot-seven: var(--component-themes-#{$theme}-slot-seven);
-      --color-slot-eight: var(--component-themes-#{$theme}-slot-eight);
+      --color-slot-six: var(--global-themes-#{$globalTheme}-colors-slot-six);
+      --color-slot-seven: var(--global-themes-#{$globalTheme}-colors-slot-seven);
+      --color-slot-eight: var(--global-themes-#{$globalTheme}-colors-slot-eight);
+      --color-slot-nine: var(--global-themes-#{$globalTheme}-colors-slot-nine);
     }
   }
 ```
