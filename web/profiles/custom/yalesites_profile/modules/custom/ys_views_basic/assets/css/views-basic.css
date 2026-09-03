@@ -23,8 +23,18 @@
  * .layout-builder-configure-block is Drupal's own base-form-ID class for the
  * whole block-configure form (General tab included), so it is unaffected by
  * which container the #group relocation leaves the tab content under.
+ *
+ * .views-basic--form-scale is the opt-in for any OTHER form that reuses this
+ * stylesheet's card and fieldset treatment but is not the block-configure
+ * form, and therefore never carries Drupal's base-form-ID class. Without it
+ * every var(--vb-*) reference below resolves to an invalid substitution and
+ * the property computes to its initial value - which for the margin rules
+ * means no spacing at all between groups. Add the class to such a form's
+ * outermost container. This module does not use it itself; it exists so an
+ * add-on can reuse the scale without restating it.
  */
-.layout-builder-configure-block {
+.layout-builder-configure-block,
+.views-basic--form-scale {
   /*
    * 14 distinct vertical gaps were measured across the form's four tabs with
    * no shared system behind them. These steps sit on a 4px grid, each named
@@ -335,8 +345,15 @@
   padding-left: 0;
 }
 
+/*
+ * fieldset:focus-within used to be in this list, which drew the outline
+ * around the entire question ("I Want To Show" and every card in it) the
+ * moment focus landed on any one card, instead of around the card that
+ * actually had focus. The radio inputs are visually hidden (see the rule
+ * further up), so the focus indicator has to be drawn on the label that
+ * stands in for them - that is the :focus-visible + label rule below.
+ */
 .views-basic--group-user-selection .grouped-items fieldset:focus-visible,
-.views-basic--group-user-selection .grouped-items fieldset:focus-within,
 .views-basic--group-user-selection .grouped-items label:focus-visible,
 .views-basic--group-user-selection
   .grouped-items
@@ -363,55 +380,106 @@
 }
 
 /*
- * Selected-state color for the entity-type icon-radio cards (Pages/Profiles/
- * Events/Posts below, plus the general checked/hover rule further down). The
- * attribute-selector chain here already out-specifies the base card
- * treatment's `color: var(--gin-color-text);` (views-basic--group-user-
- * selection block above), which isn't !important, so no !important is
- * needed to win.
+ * Selected and focused state for the icon-radio cards in both questions.
+ *
+ * Keyed on .views-basic--entity-types / .views-basic--view-mode, which both
+ * forms set via #attributes on their two radios elements. It has to be
+ * #attributes and not #wrapper_attributes: gin_lb renders a radios element as
+ * a composite fieldset whose template drops #wrapper_attributes on the floor,
+ * while #attributes propagates down onto every child radio input - which is
+ * exactly the element the :checked state lives on anyway.
+ *
+ * This used to be four near-identical blocks keyed on
+ * .form-item-settings-block-form-group-user-selection-entity-and-view-mode-entity-types
+ * - Drupal's auto-generated form-item class, which encodes the widget's
+ * entire #tree name path. That made the rule silently specific to ONE form:
+ * any other form reusing these cards generates a different form-item class
+ * and got no selected state at all. It also enumerated the four content-type
+ * values by hand, so a fifth content type would have been styleless, and it
+ * covered only the content-type question, never the display-mode one.
+ *
+ * :checked rather than [checked="checked"]: the attribute selector matches
+ * the server-rendered HTML attribute, so the highlight tracked the value the
+ * page was BUILT with and did not follow a click until the next rebuild. The
+ * pseudo-class tracks live state, which is what a selected state has to do.
+ *
+ * WHY .glb-form-item__label IS IN THE SELECTOR, AND WHY IT IS NOT OPTIONAL.
+ * The base hover rule further up is
+ * `.glb-form-type--radio label.glb-form-item__label.glb-option:hover`, four
+ * classes and one element. Without .glb-form-item__label this rule is three
+ * classes and two elements, which LOSES to it - so a card the pointer was
+ * resting on kept the grey hover border (#545560) and only turned blue once
+ * the pointer moved off it. Measured in the Layout Builder modal: click a
+ * card, hold the mouse still, computed border-color rgb(84, 85, 96).
+ * That read as "the click did not register" (yalesites-org/yalesites-project#1513
+ * review finding 2). With the extra class the selected state is four classes
+ * and two elements, so it wins whether or not the card is hovered and this
+ * rule needs no :hover permutations of its own.
+ *
+ * There IS a block further down that enumerates them - the
+ * `.layout-builder-configure-block .glb-form-type--radio input:checked` set.
+ * That is not redundant with this one and should not be folded in: it is
+ * scoped to the block-configure form and matches EVERY checked glb radio card
+ * in it, including the term-operator segments, which these two classes do not
+ * reach. One caveat if you ever change the value below: that block's
+ * off-canvas branch is (1,4,2), a tie with this rule's own off-canvas
+ * branches, and it comes later in the file - so inside the off-canvas panel it
+ * takes border-color. Today both resolve to --gin-color-primary, so nothing
+ * differs; change one without the other and the off-canvas panel will quietly
+ * keep the old colour.
+ *
+ * The treatment is deliberately heavier than hover, which only recolours the
+ * border: the selected card also gets gin's own 10% primary tint
+ * (--gin-bg-item-hover, the "elevated surface" tone this stylesheet already
+ * reaches for on the selected-term chip further up) and an inset ring that
+ * reads as a thicker border without changing the box and reflowing the row.
+ *
+ * `color` is deliberately NOT set. The base
+ * `.views-basic--group-user-selection .glb-form-item__label` rule further up
+ * pins the label to `var(--wool) !important`, so the blue text this rule used
+ * to ask for has never rendered on any of the three surfaces below - verified
+ * as computed rgb(34, 35, 48) on a checked card. It holds even where --wool is
+ * undefined: an invalid-at-computed-value-time declaration still wins the
+ * cascade, it just resolves to inherit. Demoting that !important is a wider
+ * change than this review, so the selected state carries no text colour
+ * rather than a declaration that silently does nothing.
+ *
+ * THREE FORMS MATCH THIS RULE, not two - all three set these classes and
+ * attach this stylesheet, so check all three when changing it:
+ *   - ys_views_wizard's ViewsWizardForm (both questions)
+ *   - ys_views_basic's ViewsBasicDefaultWidget (the legacy `view` bundle's
+ *     authoring form)
+ *   - ys_views_content_resources' ViewsContentResourcesDefaultWidget (its
+ *     "Show resources as" question, which sets views-basic--view-mode)
  */
-
-/* Pages */
-.form-item-settings-block-form-group-user-selection-entity-and-view-mode-entity-types
-  input[value="page"][checked="checked"]
-  + label,
-#drupal-off-canvas-wrapper .form-item-settings-block-form-group-user-selection-entity-and-view-mode-entity-types
-  input[value="page"][checked="checked"]
-  + label {
-  color: var(--gin-color-primary);
+input.views-basic--entity-types:checked + label.glb-form-item__label.glb-option,
+input.views-basic--entity-types:checked + label.option,
+input.views-basic--view-mode:checked + label.glb-form-item__label.glb-option,
+input.views-basic--view-mode:checked + label.option,
+#drupal-off-canvas-wrapper
+  input.views-basic--entity-types:checked
+  + label.glb-form-item__label.glb-option,
+#drupal-off-canvas-wrapper input.views-basic--entity-types:checked + label.option,
+#drupal-off-canvas-wrapper
+  input.views-basic--view-mode:checked
+  + label.glb-form-item__label.glb-option,
+#drupal-off-canvas-wrapper input.views-basic--view-mode:checked + label.option {
   border-color: var(--gin-color-primary);
+  background-color: var(--gin-bg-item-hover);
+  box-shadow: inset 0 0 0 1px var(--gin-color-primary);
 }
 
-/* Profiles */
-.form-item-settings-block-form-group-user-selection-entity-and-view-mode-entity-types
-  input[value="profile"][checked="checked"]
-  + label,
-#drupal-off-canvas-wrapper .form-item-settings-block-form-group-user-selection-entity-and-view-mode-entity-types
-  input[value="profile"][checked="checked"]
-  + label {
-    color: var(--gin-color-primary);
-    border-color: var(--gin-color-primary);
-}
-
-/* Events */
-.form-item-settings-block-form-group-user-selection-entity-and-view-mode-entity-types
-  input[value="event"][checked="checked"]
-  + label,
-#drupal-off-canvas-wrapper .form-item-settings-block-form-group-user-selection-entity-and-view-mode-entity-types
-  input[value="event"][checked="checked"]
-  + label {
-    color: var(--gin-color-primary);
-    border-color: var(--gin-color-primary);
-}
-
-.form-item-settings-block-form-group-user-selection-entity-and-view-mode-entity-types
-  input[value="post"][checked="checked"]
-  + label,
-#drupal-off-canvas-wrapper .form-item-settings-block-form-group-user-selection-entity-and-view-mode-entity-types
-  input[value="post"][checked="checked"]
-  + label {
-    color: var(--gin-color-primary);
-    border-color: var(--gin-color-primary);
+/*
+ * Keyboard focus indicator for the cards. The radio input itself is visually
+ * hidden, so without this the only thing a keyboard user saw was the
+ * fieldset-wide outline removed above.
+ */
+input.views-basic--entity-types:focus-visible + label.glb-option,
+input.views-basic--entity-types:focus-visible + label.option,
+input.views-basic--view-mode:focus-visible + label.glb-option,
+input.views-basic--view-mode:focus-visible + label.option {
+  outline: var(--size-thickness-2) solid var(--color-link-base);
+  outline-offset: var(--size-thickness-2);
 }
 
 #drupal-off-canvas-wrapper
@@ -432,29 +500,47 @@
   gap: 0.75rem;
 }
 
+/*
+ * The same hover-beats-checked problem, solved the other way round, for a
+ * WIDER set of cards than the two picker questions above.
+ *
+ * This is deliberately kept rather than folded into that rule. It is keyed on
+ * a generic `input:checked` inside .layout-builder-configure-block, so it
+ * covers every checked glb radio card in the block-configure form - the
+ * term-operator segments among them - none of which carry
+ * .views-basic--entity-types or .views-basic--view-mode. Narrowing it needs
+ * its own measurement on each of those controls; extending the tint-and-ring
+ * treatment to it was tried and reverted, because it repainted the
+ * Include/Exclude term-operator toggles, which are not icon-radio cards.
+ *
+ * It enumerates the :hover permutations because it ends on a bare `label`,
+ * which the rule above does not need to do. Both end up beating the base
+ * `.glb-form-type--radio label.glb-form-item__label.glb-option:hover` rule;
+ * they just get there differently.
+ */
 .layout-builder-configure-block
   .glb-form-type--radio
-  input[checked="checked"]
+  input:checked
   + label,
 #drupal-off-canvas-wrapper .layout-builder-configure-block
   .glb-form-type--radio
-  input[checked="checked"]
+  input:checked
   + label,
 .layout-builder-configure-block
   .glb-form-type--radio
-  input[checked="checked"]
+  input:checked
   + label:hover,
 #drupal-off-canvas-wrapper .layout-builder-configure-block
   .glb-form-type--radio
-  input[checked="checked"]
+  input:checked
   + label:hover,
 .layout-builder-configure-block
   .glb-form-type--radio:hover
-  input[checked="checked"]
+  input:checked
   + label,
 #drupal-off-canvas-wrapper .layout-builder-configure-block
   .glb-form-type--radio:hover
-  input[checked="checked"]
+  input:checked
   + label {
     color: var(--gin-color-primary);
     border-color: var(--gin-color-primary);
@@ -703,6 +789,29 @@
 
 .grouped-items .glb-form-item:last-child,
 .grouped-items .form-item:last-child {
+  margin-bottom: 0 !important;
+}
+
+/*
+ * ...except the icon-radio cards, where a bottom margin is not rhythm but a
+ * bug. Those two questions lay their options out as a horizontal flex row, and
+ * what a flex row stretches is the item's MARGIN box - so a card carrying the
+ * 24px bottom margin resolves 24px shorter than one that does not.
+ *
+ * Each card wrapper is a .glb-form-item, so every card picked up the field
+ * margin above except the LAST in each question, which picked up the
+ * :last-child reset to 0 - leaving "Profiles" and "Condensed" rendering
+ * visibly taller than their neighbours. Zeroing it makes each row resolve to a
+ * single height; the radios group's own `gap` already spaces wrapped rows.
+ *
+ * Deliberately scoped to .views-basic--entity-view-mode, the container holding
+ * just those two questions, rather than to every radios group under
+ * .grouped-items. The wider selector would also catch `term_operator` and
+ * `event_time_period`, which are unrelated to this and whose spacing the
+ * #1481 UX pass set intentionally.
+ */
+.views-basic--entity-view-mode .glb-form-radios .glb-form-item,
+.views-basic--entity-view-mode .glb-form-radios .form-item {
   margin-bottom: 0 !important;
 }
 
