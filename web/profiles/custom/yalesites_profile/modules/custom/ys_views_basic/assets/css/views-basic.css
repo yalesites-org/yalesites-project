@@ -403,21 +403,70 @@
  * page was BUILT with and did not follow a click until the next rebuild. The
  * pseudo-class tracks live state, which is what a selected state has to do.
  *
- * label.glb-option / label.option keeps this at three classes plus two
- * elements, which out-specifies the base card treatment's
- * `color: var(--gin-color-text)` (two classes plus an element, further up) -
- * the same reason the old attribute chain needed no !important.
+ * WHY .glb-form-item__label IS IN THE SELECTOR, AND WHY IT IS NOT OPTIONAL.
+ * The base hover rule further up is
+ * `.glb-form-type--radio label.glb-form-item__label.glb-option:hover`, four
+ * classes and one element. Without .glb-form-item__label this rule is three
+ * classes and two elements, which LOSES to it - so a card the pointer was
+ * resting on kept the grey hover border (#545560) and only turned blue once
+ * the pointer moved off it. Measured in the Layout Builder modal: click a
+ * card, hold the mouse still, computed border-color rgb(84, 85, 96).
+ * That read as "the click did not register" (yalesites-org/yalesites-project#1513
+ * review finding 2). With the extra class the selected state is four classes
+ * and two elements, so it wins whether or not the card is hovered and this
+ * rule needs no :hover permutations of its own.
+ *
+ * There IS a block further down that enumerates them - the
+ * `.layout-builder-configure-block .glb-form-type--radio input:checked` set.
+ * That is not redundant with this one and should not be folded in: it is
+ * scoped to the block-configure form and matches EVERY checked glb radio card
+ * in it, including the term-operator segments, which these two classes do not
+ * reach. One caveat if you ever change the value below: that block's
+ * off-canvas branch is (1,4,2), a tie with this rule's own off-canvas
+ * branches, and it comes later in the file - so inside the off-canvas panel it
+ * takes border-color. Today both resolve to --gin-color-primary, so nothing
+ * differs; change one without the other and the off-canvas panel will quietly
+ * keep the old colour.
+ *
+ * The treatment is deliberately heavier than hover, which only recolours the
+ * border: the selected card also gets gin's own 10% primary tint
+ * (--gin-bg-item-hover, the "elevated surface" tone this stylesheet already
+ * reaches for on the selected-term chip further up) and an inset ring that
+ * reads as a thicker border without changing the box and reflowing the row.
+ *
+ * `color` is deliberately NOT set. The base
+ * `.views-basic--group-user-selection .glb-form-item__label` rule further up
+ * pins the label to `var(--wool) !important`, so the blue text this rule used
+ * to ask for has never rendered on any of the three surfaces below - verified
+ * as computed rgb(34, 35, 48) on a checked card. It holds even where --wool is
+ * undefined: an invalid-at-computed-value-time declaration still wins the
+ * cascade, it just resolves to inherit. Demoting that !important is a wider
+ * change than this review, so the selected state carries no text colour
+ * rather than a declaration that silently does nothing.
+ *
+ * THREE FORMS MATCH THIS RULE, not two - all three set these classes and
+ * attach this stylesheet, so check all three when changing it:
+ *   - ys_views_wizard's ViewsWizardForm (both questions)
+ *   - ys_views_basic's ViewsBasicDefaultWidget (the legacy `view` bundle's
+ *     authoring form)
+ *   - ys_views_content_resources' ViewsContentResourcesDefaultWidget (its
+ *     "Show resources as" question, which sets views-basic--view-mode)
  */
-input.views-basic--entity-types:checked + label.glb-option,
+input.views-basic--entity-types:checked + label.glb-form-item__label.glb-option,
 input.views-basic--entity-types:checked + label.option,
-input.views-basic--view-mode:checked + label.glb-option,
+input.views-basic--view-mode:checked + label.glb-form-item__label.glb-option,
 input.views-basic--view-mode:checked + label.option,
-#drupal-off-canvas-wrapper input.views-basic--entity-types:checked + label.glb-option,
+#drupal-off-canvas-wrapper
+  input.views-basic--entity-types:checked
+  + label.glb-form-item__label.glb-option,
 #drupal-off-canvas-wrapper input.views-basic--entity-types:checked + label.option,
-#drupal-off-canvas-wrapper input.views-basic--view-mode:checked + label.glb-option,
+#drupal-off-canvas-wrapper
+  input.views-basic--view-mode:checked
+  + label.glb-form-item__label.glb-option,
 #drupal-off-canvas-wrapper input.views-basic--view-mode:checked + label.option {
-  color: var(--gin-color-primary);
   border-color: var(--gin-color-primary);
+  background-color: var(--gin-bg-item-hover);
+  box-shadow: inset 0 0 0 1px var(--gin-color-primary);
 }
 
 /*
@@ -451,6 +500,24 @@ input.views-basic--view-mode:focus-visible + label.option {
   gap: 0.75rem;
 }
 
+/*
+ * The same hover-beats-checked problem, solved the other way round, for a
+ * WIDER set of cards than the two picker questions above.
+ *
+ * This is deliberately kept rather than folded into that rule. It is keyed on
+ * a generic `input:checked` inside .layout-builder-configure-block, so it
+ * covers every checked glb radio card in the block-configure form - the
+ * term-operator segments among them - none of which carry
+ * .views-basic--entity-types or .views-basic--view-mode. Narrowing it needs
+ * its own measurement on each of those controls; extending the tint-and-ring
+ * treatment to it was tried and reverted, because it repainted the
+ * Include/Exclude term-operator toggles, which are not icon-radio cards.
+ *
+ * It enumerates the :hover permutations because it ends on a bare `label`,
+ * which the rule above does not need to do. Both end up beating the base
+ * `.glb-form-type--radio label.glb-form-item__label.glb-option:hover` rule;
+ * they just get there differently.
+ */
 .layout-builder-configure-block
   .glb-form-type--radio
   input:checked

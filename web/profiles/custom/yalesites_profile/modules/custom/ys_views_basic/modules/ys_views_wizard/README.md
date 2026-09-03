@@ -25,10 +25,13 @@ This is an **optional add-on** to `ys_views_basic`, and the dependency runs one 
 If you change the card markup here, check the authoring widget too — both surfaces share
 those CSS rules deliberately.
 
-This module ships no stylesheet of its own, because everything it renders is already
-covered by `ys_views_basic`'s. Anything genuinely wizard-only should get its own
-`ys_views_wizard.libraries.yml` here rather than being added to `ys_views_basic` — the
-`views-basic--wizard` class on the form's container is the hook to target.
+Card, selected-state and spacing rules all come from `ys_views_basic`'s stylesheet.
+`assets/css/views-wizard.css` holds only what is true of the wizard's dialog and of
+nothing else, so anything genuinely wizard-only belongs there rather than in
+`ys_views_basic` — the `views-basic--wizard` class on the form's container is the hook to
+target, and keeping these rules here means uninstalling the module removes them. Right
+now that is two rules: the gap under the last question, and zeroing the dialog's own
+bottom padding so gin_lb's actions bar reaches the dialog edge.
 
 ## How it works
 
@@ -67,16 +70,30 @@ covered by `ys_views_basic`'s. Anything genuinely wizard-only should get its own
    there into the jQuery UI button pane, hiding the originals with an inline
    `display: none`. gin_lb ships `.glb-button { display: inline-block !important }`, which
    beats an inline style — so the original Continue stayed visible beside its own copy and
-   the dialog showed two Continue buttons. (`Back` is an `a.button`, not a `.glb-button`,
-   so it hid correctly, which is why only one of the two duplicated.) Rendering a plain
-   container with gin_lb's `canvas-form__actions` class — exactly what gin_lb's own
-   `FormAlter` does for the five Layout Builder form IDs it hardcodes — means there is no
-   `.form-actions` for `dialog.ajax.js` to find.
-5. **`FormBuilder` derives `#action` from the current request.** Built in-process from the
+   the dialog showed two Continue buttons. (`Back` was an `a.button`, not a
+   `.glb-button`, so it hid correctly, which is why only one of the two duplicated.)
+   Rendering a plain container with gin_lb's `canvas-form__actions` class — exactly what
+   gin_lb's own `FormAlter` does for the five Layout Builder form IDs it hardcodes — means
+   there is no `.form-actions` for `dialog.ajax.js` to find.
+
+   `Back` now **does** carry `glb-button`, so that it matches Continue's 48px/16px sizing
+   instead of rendering as a 41px/14px plain `a.button`. That is only safe because of the
+   container above: with no `.form-actions` in the form there is nothing for
+   `dialog.ajax.js` to copy, so making `Back` a `.glb-button` cannot resurrect the
+   duplicate-button bug. If the actions element is ever turned back into `actions`, both
+   buttons will duplicate, not just Continue.
+5. **gin_lb's canvas-form treatment has three parts, and the form has to apply all
+   three.** `canvas-form` on the form escapes the dialog's own side padding with
+   `margin-left/right: -20px`; gin_lb puts that 20px back on the two _inner_ parts,
+   `canvas-form__settings` and `canvas-form__actions`, not on the form. Set only the
+   actions half and the questions render 20px left of the buttons beneath them, 4px off
+   the dialog's edge. `__settings` is also what makes the questions the scrolling region
+   with the actions bar parked below, the way gin_lb's own Layout Builder forms behave.
+6. **`FormBuilder` derives `#action` from the current request.** Built in-process from the
    wizard's AJAX callback that is the _wizard's_ route, so `#action` has to be set
    explicitly to the `layout_builder.add_block` URL or the embedded form posts back to a
    route that builds a different form.
-6. **`$form_state->setRebuild(TRUE)` is required on the AJAX path.** Without it a plain
+7. **`$form_state->setRebuild(TRUE)` is required on the AJAX path.** Without it a plain
    `FormBase` issues a redirect to the current URL after submission, and Drupal returns
    that redirect instead of ever invoking the `#ajax` callback — the POST comes back 200
    and the dialog silently does nothing.

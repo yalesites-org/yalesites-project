@@ -1,0 +1,50 @@
+/**
+ * @file
+ * Dialog layout for the wizard step.
+ *
+ * The cards, the selected state and the --vb-* spacing scale all come from
+ * ys_views_basic/ys_views_basic, which this form also attaches. What lives
+ * here is only what is true of the WIZARD's dialog and of nothing else, so
+ * that ys_views_basic keeps no reference to its optional add-on and
+ * uninstalling the wizard takes these rules with it.
+ */
+
+/*
+ * Breathing room under the last question.
+ *
+ * .views-basic--wizard is also gin_lb's .glb-canvas-form__settings (see
+ * ViewsWizardForm::buildForm()), which gives it 20px of side padding but no
+ * bottom padding - so the bottom edge of the last row of cards landed 4px
+ * from the actions bar's border-top. 20px rather than a --vb-* step because
+ * this is the gap to a structural gin_lb element, matching the 20px that
+ * element already puts on the sides, not one of the field-rhythm steps the
+ * scale defines.
+ */
+.views-basic--wizard {
+  padding-bottom: 20px;
+}
+
+/*
+ * Dead strip below the actions bar.
+ *
+ * gin_lb sets `padding: 1em` on `.ui-dialog .ui-widget-content.ui-dialog-content`
+ * and gin's own dialog.css overrides only padding-inline, so every dialog keeps
+ * a 16px padding-block. .glb-canvas-form escapes the horizontal half with its
+ * -20px side margins; nothing escapes the bottom one. The actions bar's
+ * border-top and --gin-bg-app background therefore stopped 16px short of the
+ * dialog's bottom edge, and that strip of dialog background under a bar meant
+ * to sit ON the edge read as unexplained empty space
+ * (yalesites-org/yalesites-project#1513 review finding 4; measured actions
+ * bottom 831 against dialog bottom 847).
+ *
+ * Zeroed on the dialog rather than worked around with a negative margin on the
+ * form: the padding is the actual cause, the bar already carries enough inner
+ * space to keep the buttons off the edge, and a negative bottom margin would
+ * make the last 16px unreachable once the dialog scrolls. Scoped with :has()
+ * so it applies only while THIS form is the dialog's content - once Continue
+ * swaps in the configure form the selector stops matching and the dialog gets
+ * its padding back.
+ */
+#layout-builder-modal:has(.views-basic--wizard) {
+  padding-bottom: 0;
+}

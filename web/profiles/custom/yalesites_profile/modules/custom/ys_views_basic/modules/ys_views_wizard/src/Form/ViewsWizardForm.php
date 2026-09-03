@@ -99,6 +99,11 @@ class ViewsWizardForm extends FormBase {
     // cards do not, because every layout rule in views-basic.css is written
     // against gin_lb's .glb-* / .fieldset__wrapper--group DOM.
     $form['#attached']['library'][] = 'ys_views_basic/ys_views_basic';
+    // Layout for this dialog only - the gap under the last question and the
+    // dialog's own bottom padding. Kept in this module rather than added to
+    // views-basic.css so ys_views_basic holds no reference to its optional
+    // add-on and uninstalling the wizard removes the rules with it.
+    $form['#attached']['library'][] = 'ys_views_wizard/ys_views_wizard';
     $form['wrapper'] = [
       '#type' => 'container',
       '#attributes' => [
@@ -113,6 +118,17 @@ class ViewsWizardForm extends FormBase {
           // ys_views_basic/assets/css/views-basic.css.
           'views-basic--form-scale',
           'views-basic--wizard',
+          // The second of gin_lb's three canvas-form parts, and the reason
+          // the questions are not flush against the modal edge.
+          // .glb-canvas-form (set on the form below) escapes the dialog's own
+          // side padding with margin-left/right: -20px, and gin_lb puts it
+          // back on the two INNER parts - __settings and __actions - rather
+          // than on the form. Without this class only the actions bar got its
+          // 20px back, so the two questions rendered 20px further left than
+          // the buttons under them, 4px off the dialog's edge. It also makes
+          // the questions the scrolling region with the actions bar parked
+          // below it, which is how gin_lb's own Layout Builder forms behave.
+          'canvas-form__settings',
         ],
       ],
     ];
@@ -211,7 +227,14 @@ class ViewsWizardForm extends FormBase {
       // navigate the window. layout_builder_browser_link_alter() then supplies
       // the modal target, because layout_builder.choose_block IS on its
       // whitelist - unlike the wizard's own route.
-      '#attributes' => ['class' => ['button', 'use-ajax']],
+      //
+      // 'glb-button' is spelled out rather than left as 'button' because
+      // gin_lb's class prefixing only rewrites the classes its own templates
+      // emit; classes handed to a '#type' => 'link' pass through untouched.
+      // Continue is a '#type' => 'submit', which gin_lb's input template does
+      // render as .glb-button - 48px tall, 16px type - so a plain a.button
+      // came out 41px and 14px and the two did not match.
+      '#attributes' => ['class' => ['glb-button', 'button', 'use-ajax']],
     ];
 
     return $form;
