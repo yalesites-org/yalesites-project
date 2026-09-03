@@ -235,7 +235,113 @@ function ys_layouts_form_alter(&$form, $form_state, $form_id) {
       $form['info']['#title'] = t('Reusable Block title');
       $form['info']['#description'] = t('Add a short, descriptive title to easily find and reuse the Reusable Block. Defaults to Administrative label if no title is provided.');
     }
+
+    // Name the block in the heading; both surfaces otherwise open as the route
+    // title "Configure block". DialogRenderer::getTitleAsStringable() prefers
+    // the render array's #title over the route's, which is what makes one
+    // assignment reach the modal, the off-canvas sidebar and the dialog's
+    // accessible name alike.
+    //
+    // The add form is the modal where a block is created and the update form is
+    // the sidebar where an existing one is configured: layout_builder_browser
+    // runs with use_modal and rewrites layout_builder.add_block to a modal,
+    // leaving layout_builder.update_block on the off_canvas renderer.
+    //
+    // BlockPluginTrait::buildConfigurationForm() has already resolved the
+    // block's human-readable name into the admin_label item, so reading it here
+    // covers inline, reusable and plugin blocks alike without touching the
+    // plugin.
+    $block_name = $form['settings']['admin_label']['#plain_text'] ?? '';
+    if ($block_name !== '') {
+      $form['#title'] = $form_id == 'layout_builder_add_block'
+        ? t('Create @block', ['@block' => $block_name])
+        : t('Configure @block', ['@block' => $block_name]);
+
+      // That item now only restates the heading, so it can go, freeing the slot
+      // the guidance moves into below. Nothing reads its value -
+      // BlockPluginTrait::validateConfigurationForm() unsets it precisely so it
+      // does not persist.
+      //
+      // Deliberately inside this branch, not beside it: the item is redundant
+      // only *because* the heading took over naming the block. If no name could
+      // be resolved the heading stays generic, and removing this too would
+      // leave the editor with the block's name nowhere on the form.
+      unset($form['settings']['admin_label']);
+    }
+
+    $form['#after_build'][] = 'ys_layouts_lift_block_instructions';
   }
+}
+
+/**
+ * Form #after_build callback: lifts block guidance above the fields it labels.
+ *
+ * A block type's guidance is field_instructions, a markup field on the
+ * block_content bundle, so it renders inside the embedded entity form and lands
+ * after the Administrative label it is meant to introduce. Moving it up puts it
+ * in the slot the redundant "Block description" item vacated, so guidance comes
+ * before the fields it describes.
+ *
+ * This cannot be done in hook_form_alter(): InlineBlock::blockForm() declares
+ * block_form as a bare container with a #process callback, so the entity form
+ * display - and with it field_instructions - is only built during processing,
+ * after the alter has run.
+ *
+ * Moving the element is safe because MarkupWidget::formElement() emits nothing
+ * submittable: the copy lives in field settings, not storage, so there are no
+ * values whose #parents have to be preserved.
+ *
+ * That safety is specific to this field, so do not copy the pattern to a field
+ * with a real widget without more thought. The moved element keeps the
+ * #array_parents it was built with, and WidgetBase::afterBuild() has already
+ * recorded that now-stale path in the field state; WidgetBase::flagErrors()
+ * resolves violations through it, so a validating widget would silently fail to
+ * attach its errors. A markup field never validates, so this cannot fire here.
+ *
+ * @param array $form
+ *   The complete form.
+ * @param \Drupal\Core\Form\FormStateInterface $form_state
+ *   The current state of the form.
+ *
+ * @return array
+ *   The form, with the guidance lifted.
+ */
+function ys_layouts_lift_block_instructions(array $form, FormStateInterface $form_state) {
+  if (!isset($form['settings'])) {
+    return $form;
+  }
+
+  // Inline blocks build the entity subform under settings.
+  if (isset($form['settings']['block_form']['field_instructions'])) {
+    $form['settings']['field_instructions'] = $form['settings']['block_form']['field_instructions'];
+    unset($form['settings']['block_form']['field_instructions']);
+  }
+  // Reusable block_content placements build it at the top level.
+  elseif (isset($form['block_form']['field_instructions'])) {
+    $form['settings']['field_instructions'] = $form['block_form']['field_instructions'];
+    unset($form['block_form']['field_instructions']);
+  }
+  // Nothing to lift. Note this is also how the lift degrades if a block type's
+  // form display ever puts field_instructions inside a field group: field_group
+  // relocates grouped children from a #process callback, which runs before this
+  // one, so the field would no longer be where either branch looks for it and
+  // the guidance would quietly stay put.
+  else {
+    return $form;
+  }
+
+  // Outrank the Administrative label and everything else the block plugin put
+  // in settings. Any negative weight would do: FormBuilder::doBuildForm()
+  // assigns unweighted children a small positive #weight ($count / 1000). This
+  // orders within settings only, and so does not compete with the
+  // status_messages element ys_core adds at the form root.
+  $form['settings']['field_instructions']['#weight'] = -50;
+  // FormBuilder::doBuildForm() asserts #sorted on every element it processes,
+  // and Element::children() refuses to re-sort a subtree already flagged - so
+  // without this the new weight is silently ignored.
+  unset($form['settings']['#sorted']);
+
+  return $form;
 }
 
 /**
