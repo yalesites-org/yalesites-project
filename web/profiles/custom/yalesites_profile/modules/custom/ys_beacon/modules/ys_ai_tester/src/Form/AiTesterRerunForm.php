@@ -13,6 +13,7 @@ use Drupal\Core\Url;
 use Drupal\ys_ai_tester\AiTesterBatch;
 use Drupal\ys_ai_tester\AnswerBackendInterface;
 use Drupal\ys_ai_tester\AnswerBackendRegistry;
+use Drupal\ys_ai_tester\StaleRunReconciler;
 use Symfony\Component\DependencyInjection\ContainerInterface;
 use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
 
@@ -50,12 +51,15 @@ class AiTesterRerunForm extends ConfirmFormBase {
    *   The time service.
    * @param \Drupal\ys_ai_tester\AnswerBackendRegistry $backendRegistry
    *   The answer backend registry.
+   * @param \Drupal\ys_ai_tester\StaleRunReconciler $staleRunReconciler
+   *   Releases runs whose batch died without reporting a status.
    */
   public function __construct(
     protected Connection $database,
     protected AccountProxyInterface $currentUser,
     protected TimeInterface $time,
     protected AnswerBackendRegistry $backendRegistry,
+    protected StaleRunReconciler $staleRunReconciler,
   ) {}
 
   /**
@@ -67,6 +71,7 @@ class AiTesterRerunForm extends ConfirmFormBase {
       $container->get('current_user'),
       $container->get('datetime.time'),
       $container->get('ys_ai_tester.answer_backend_registry'),
+      $container->get('ys_ai_tester.stale_run_reconciler'),
     );
   }
 
@@ -168,6 +173,10 @@ class AiTesterRerunForm extends ConfirmFormBase {
    */
   public function buildForm(array $form, FormStateInterface $form_state, ?int $run_id = NULL): array {
     $this->runId = (int) $run_id;
+    // Ahead of loadRun(), so the status the guard reads is already reconciled:
+    // otherwise an abandoned run - or an abandoned earlier rerun of it, which
+    // still counts as in flight - refuses this rerun forever.
+    $this->staleRunReconciler->reconcile();
     $this->loadRun($this->runId);
     $form_state->set('rerun_run_id', $this->runId);
 
@@ -198,7 +207,9 @@ class AiTesterRerunForm extends ConfirmFormBase {
     $run_id = (int) $form_state->get('rerun_run_id');
     $this->runId = $run_id;
     // Reloaded rather than reused from buildForm() because this is a fresh
-    // request: the status read here is what the guard below acts on.
+    // request: the status read here is what the guard below acts on, so it is
+    // reconciled first for the same reason buildForm() does.
+    $this->staleRunReconciler->reconcile();
     $run = $this->loadRun($run_id);
     $backend_id = $this->backendId();
 
@@ -231,6 +242,9 @@ class AiTesterRerunForm extends ConfirmFormBase {
         'source_content' => $run->source_content,
         'source_run_id' => $run_id,
         'status' => 'processing',
+        // Seeds the heartbeat StaleRunReconciler reads, so a rerun is never
+        // born already looking abandoned.
+        'changed' => $this->time->getRequestTime(),
         'question_count' => count($questions),
         // A rerun targets the same assistant as its source, so the old and new
         // answers are a like-for-like comparison.

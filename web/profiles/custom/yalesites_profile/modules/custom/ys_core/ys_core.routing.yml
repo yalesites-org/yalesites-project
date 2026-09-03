@@ -46,6 +46,30 @@ ys_core.admin_views_settings:
     _title: 'Search Settings'
   requirements:
     _permission: 'yalesites manage settings'
+# Platform-admin-only section landing page.
+#
+# Uses core's menu-block controller, like ys_core.admin_yalesites above, so the
+# page lists its own child links. A form route cannot do that, which is why
+# platform-admin-only screens hang here rather than under the settings form.
+#
+# Access is deliberately core's _access_admin_menu_block_page check with no
+# _permission of its own. Route requirements are ANDed, so a permission here
+# would gate the whole section on it -- and Drupal prunes a menu subtree whose
+# parent fails access, so a role holding only one child's permission (say
+# 'access site reports') would lose that child from the menu while its URL kept
+# working. The menu-block check grants access when at least one child is
+# reachable, so the section can never hide a screen the user may see, and it
+# needs no edit when children change. The section stays platform-admin-only
+# because every child is.
+#
+# @see \Drupal\system\Access\SystemAdminMenuBlockAccessCheck
+ys_core.admin_platform_admin:
+  path: '/admin/platform-admin'
+  defaults:
+    _controller: '\Drupal\system\Controller\SystemController::systemAdminMenuBlockPage'
+    _title: 'Platform Admin'
+  requirements:
+    _access_admin_menu_block_page: 'TRUE'
 # Platform-admin-only settings form.
 ys_core.platform_admin_settings:
   path: '/admin/yalesites/platform-admin-settings'

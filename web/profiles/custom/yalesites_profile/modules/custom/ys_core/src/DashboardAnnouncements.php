@@ -188,12 +188,23 @@ class DashboardAnnouncements {
         $timestamp = $raw_date !== '' ? strtotime((string) $raw_date) : FALSE;
       }
       $summary_source = $item['summary'] ?? $item['content_text'] ?? $item['content_html'] ?? '';
+      // Reads JSON Feed 1.1's own `tags` field, which the source controller
+      // populates with the post's whitelisted category names. Tolerates total
+      // absence of the key (an older cached entry, or a publisher that has
+      // not deployed this yet) by resolving to an empty list rather than
+      // erroring - the "cache shape gotcha" the issue flags.
+      $categories_raw = is_array($item['tags'] ?? NULL) ? $item['tags'] : [];
+      $categories = array_values(array_filter(
+        array_map(fn($value) => trim((string) $value), $categories_raw),
+        fn($value) => $value !== '',
+      ));
       $announcements[] = [
         'title' => isset($item['title']) ? (string) $item['title'] : '',
         'url' => isset($item['url']) ? UrlHelper::stripDangerousProtocols((string) $item['url']) : '',
         'summary' => trim(Unicode::truncate(Html::decodeEntities(strip_tags((string) $summary_source)), 300, TRUE, TRUE)),
         'timestamp' => $timestamp ?: NULL,
         'date' => $timestamp ? $this->dateFormatter->format($timestamp, 'custom', 'F j, Y') : '',
+        'categories' => $categories,
       ];
     }
 

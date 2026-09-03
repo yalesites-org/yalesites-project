@@ -4,14 +4,15 @@ ys_layouts.settings:
   parent: system.admin_config_system
   route_name: ys_layouts.settings_form
   weight: 100
-
-# Parent is ys_core's /admin/yalesites section. Modules that hang a link there
-# declare ys_core as a dependency (ys_alert, ys_integrations both do), so
-# ys_layouts.info.yml now does too rather than relying on the profile always
-# installing it.
+# Parent is ys_core's platform-admin section: this report needs
+# 'administer orphaned inline blocks', which only the platform_admin role
+# holds, so it belongs there rather than in the settings section site admins
+# use. Modules that hang a link on a ys_core section declare ys_core as a
+# dependency (ys_alert, ys_integrations both do), so ys_layouts.info.yml does
+# too rather than relying on the profile always installing it.
 ys_layouts.orphaned_blocks_report:
   title: 'Orphaned inline blocks'
   description: 'Review inline blocks left behind when a non-reusable block was removed from a page, and delete them.'
-  parent: ys_core.admin_yalesites
+  parent: ys_core.admin_platform_admin
   route_name: ys_layouts.orphaned_blocks_report
-  weight: 40
+  weight: 30
