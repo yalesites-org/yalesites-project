@@ -477,30 +477,6 @@ the rewrite**, and the response envelope's metadata key changed from `totals` to
 > new and silently duplicate its entire corpus. Migrate such a consumer to `uuid`, and plan
 > a one-time reconciliation of anything already stored under a legacy `id`.
 
-### Why two of these changed
-
-- **Why the totals changed.** The legacy endpoint did all of its filtering inside the
-  entity query — a query-level access tag, a media bundle condition, and (when configured)
-  a SQL `NOT LIKE` against the metatags field — so the set it counted was exactly the set
-  it served, and an exact total was free. Beacon's rule cannot be expressed in SQL: it
-  performs a real per-entity `view` access check as the anonymous user and resolves metatag
-  tokens per entity. So it filters in PHP, *after* the page window is taken, which makes a
-  precise total cost a full load and access check of every entity on the site per request.
-  The endpoint declines to pay that, and reports an upper bound instead.
-- **Why the access basis changed.** The legacy query used `accessCheck(TRUE)`, which
-  resolves against *whoever is calling*, so an authenticated privileged consumer could pull
-  non-public content from the same URL that served an anonymous one less. That was wrong:
-  an AI content feed should expose exactly the public, AI-indexable content and nothing
-  else, regardless of who asks. Beacon always builds the page as the anonymous user, so the
-  payload no longer depends on the caller. A consumer that authenticated against the legacy
-  feed will therefore receive **less** content now. That reduction is the fix, not a
-  regression — what it loses is content it should never have been served.
-
-  For the same reason, the legacy feed did not honor per-item AI opt-out at all in practice:
-  its `ai_disable_indexing` filter was gated on an `ai_engine_feed.settings.metatags_field`
-  value that ships empty, so the condition was skipped and content marked "do not index for
-  AI" was still served. Beacon always applies that rule.
-
 A migration checklist:
 
 1. **Remap every item field** using the table above, and read pagination metadata from
