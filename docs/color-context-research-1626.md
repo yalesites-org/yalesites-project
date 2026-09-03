@@ -2,6 +2,16 @@
 
 Research for [YaleSites-Internal#1626](https://github.com/yalesites-org/YaleSites-Internal/issues/1626).
 
+> **Follow-up tracking:** The recommendations in this document are scoped into
+> [YaleSites-Internal#1634](https://github.com/yalesites-org/YaleSites-Internal/issues/1634)
+> — _Epic: Color system, component surface model_. Child tickets
+> [#1627](https://github.com/yalesites-org/YaleSites-Internal/issues/1627)–[#1632](https://github.com/yalesites-org/YaleSites-Internal/issues/1632)
+> follow the phases in §5.4. §8 question 1 is the blocking decision and is tracked in
+> [#1627](https://github.com/yalesites-org/YaleSites-Internal/issues/1627), along with the
+> accessibility sign-off on removing the self-referential cycles. The token-value drift
+> noted in §9 is a separate follow-up in
+> [#1633](https://github.com/yalesites-org/YaleSites-Internal/issues/1633).
+
 **This is a research document. No production behaviour changes with it.** The output is an
 audit, a set of reproducible WCAG failures, and a recommendation for the team and the lead
 developer to review before any implementation is scoped.
