@@ -53,6 +53,8 @@ module:
   entity_redirect: 0
   entity_reference_revisions: 0
   environment_indicator: 0
+  feeds: 0
+  feeds_tamper: 0
   field: 0
   field_group: 0
   field_ui: 0
@@ -140,6 +142,7 @@ module:
   smart_date_recur: 0
   sophron: 0
   system: 0
+  tamper: 0
   taxonomy: 0
   taxonomy_manager: 0
   telephone: 0
@@ -167,6 +170,7 @@ module:
   ys_captcha: 0
   ys_content_export: 0
   ys_dcn_field: 0
+  ys_feeds_demo: 0
   ys_file_management: 0
   ys_integrations: 0
   ys_layouts: 0

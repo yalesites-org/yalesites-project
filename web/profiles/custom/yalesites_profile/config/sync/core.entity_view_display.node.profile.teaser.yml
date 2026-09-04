@@ -4,6 +4,7 @@ status: true
 dependencies:
   config:
     - core.entity_view_mode.node.teaser
+    - field.field.node.profile.feeds_item
     - field.field.node.profile.field_address
     - field.field.node.profile.field_affiliation
     - field.field.node.profile.field_audience
@@ -46,6 +47,7 @@ content:
     region: content
 hidden:
   addtoany: true
+  feeds_item: true
   field_address: true
   field_affiliation: true
   field_audience: true

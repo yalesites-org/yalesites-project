@@ -1,0 +1,531 @@
+uuid: 89c43a83-842d-48c5-8e8a-d7dd5385aebb
+langcode: en
+status: true
+dependencies:
+  config:
+    - field.field.node.resource.feeds_item
+    - field.field.node.resource.field_abstract
+    - field.field.node.resource.field_academic_years
+    - field.field.node.resource.field_audience
+    - field.field.node.resource.field_category
+    - field.field.node.resource.field_citation
+    - field.field.node.resource.field_content_description
+    - field.field.node.resource.field_date_format
+    - field.field.node.resource.field_discipline
+    - field.field.node.resource.field_external_source
+    - field.field.node.resource.field_geographic_areas
+    - field.field.node.resource.field_journal_publication_issue
+    - field.field.node.resource.field_journal_publication_name
+    - field.field.node.resource.field_login_required
+    - field.field.node.resource.field_media
+    - field.field.node.resource.field_publish_date
+    - field.field.node.resource.field_tags
+    - field.field.node.resource.field_teaser_media
+    - field.field.node.resource.field_teaser_text
+    - field.field.node.resource.field_teaser_title
+    - field.field.node.resource.layout_builder__layout
+    - node.type.resource
+  module:
+    - feeds_tamper
+    - node
+    - ys_feeds_demo
+third_party_settings:
+  feeds_tamper:
+    tampers:
+      4f5ceda8-6193-4fe9-b22b-a5a6395d104a:
+        date_format: ''
+        fallback: true
+        uuid: 4f5ceda8-6193-4fe9-b22b-a5a6395d104a
+        plugin: strtotime
+        source: pub_date
+        weight: 0
+        label: 'Parse whatever date shape arrived'
+        description: ''
+      cf5e4883-2ff0-4c5f-9bda-69d747bfa86a:
+        date_format: Y-m-d
+        uuid: cf5e4883-2ff0-4c5f-9bda-69d747bfa86a
+        plugin: timetodate
+        source: pub_date
+        weight: 1
+        label: 'Normalise to Y-m-d'
+        description: ''
+      4a95f31e-f2f0-45ab-bc6c-e11e69ac7d4c:
+        uuid: 4a95f31e-f2f0-45ab-bc6c-e11e69ac7d4c
+        plugin: skip_on_empty
+        source: geo
+        weight: -1
+        label: 'Drop empty cells before splitting'
+        description: ''
+      d858dc33-c0d1-452c-9ce1-f78ecffe4152:
+        separator: '|'
+        limit: null
+        uuid: d858dc33-c0d1-452c-9ce1-f78ecffe4152
+        plugin: explode
+        source: geo
+        weight: 0
+        label: 'Split on pipes'
+        description: ''
+      c75bb1e9-f540-4fc1-abd5-ee9d85fe29e6:
+        character: ''
+        side: trim
+        uuid: c75bb1e9-f540-4fc1-abd5-ee9d85fe29e6
+        plugin: trim
+        source: geo
+        weight: 1
+        label: 'Trim each value'
+        description: ''
+      934e787a-a1e6-404d-96bc-3737c9bf8fb6:
+        uuid: 934e787a-a1e6-404d-96bc-3737c9bf8fb6
+        plugin: array_filter
+        source: geo
+        weight: 2
+        label: 'Drop empty values left by trailing separators'
+        description: ''
+      1e16f158-4f74-446e-b584-be0d5571b82f:
+        uuid: 1e16f158-4f74-446e-b584-be0d5571b82f
+        plugin: skip_on_empty
+        source: years
+        weight: -1
+        label: 'Drop empty cells before splitting'
+        description: ''
+      9d8dbcbd-d2e5-45a6-9289-2febcfa3571e:
+        separator: '|'
+        limit: null
+        uuid: 9d8dbcbd-d2e5-45a6-9289-2febcfa3571e
+        plugin: explode
+        source: years
+        weight: 0
+        label: 'Split on pipes'
+        description: ''
+      c0f9694b-9d9d-4883-98dc-6d88bf4f913f:
+        character: ''
+        side: trim
+        uuid: c0f9694b-9d9d-4883-98dc-6d88bf4f913f
+        plugin: trim
+        source: years
+        weight: 1
+        label: 'Trim each value'
+        description: ''
+      9500994f-c688-4832-9066-376f2b9cf4d2:
+        uuid: 9500994f-c688-4832-9066-376f2b9cf4d2
+        plugin: array_filter
+        source: years
+        weight: 2
+        label: 'Drop empty values left by trailing separators'
+        description: ''
+      b12563cb-face-4c77-912a-a640c705903c:
+        uuid: b12563cb-face-4c77-912a-a640c705903c
+        plugin: skip_on_empty
+        source: tags
+        weight: -1
+        label: 'Drop empty cells before splitting'
+        description: ''
+      3e2933f2-498f-4175-bc5a-8f26758391c2:
+        separator: '|'
+        limit: null
+        uuid: 3e2933f2-498f-4175-bc5a-8f26758391c2
+        plugin: explode
+        source: tags
+        weight: 0
+        label: 'Split on pipes'
+        description: ''
+      b84444bc-975c-47a9-b50c-eb7b3f8f2609:
+        character: ''
+        side: trim
+        uuid: b84444bc-975c-47a9-b50c-eb7b3f8f2609
+        plugin: trim
+        source: tags
+        weight: 1
+        label: 'Trim each value'
+        description: ''
+      f07a47bc-84a4-42cc-9789-c79b2b08b69b:
+        uuid: f07a47bc-84a4-42cc-9789-c79b2b08b69b
+        plugin: array_filter
+        source: tags
+        weight: 2
+        label: 'Drop empty values left by trailing separators'
+        description: ''
+      773f429b-b00b-4ba8-9de8-cab9c9da7754:
+        uuid: 773f429b-b00b-4ba8-9de8-cab9c9da7754
+        plugin: skip_on_empty
+        source: audience
+        weight: -1
+        label: 'Drop empty cells before splitting'
+        description: ''
+      3d403ffe-d84b-4b8b-89ef-83f65e823d39:
+        separator: ','
+        limit: null
+        uuid: 3d403ffe-d84b-4b8b-89ef-83f65e823d39
+        plugin: explode
+        source: audience
+        weight: 0
+        label: 'Split on commas'
+        description: ''
+      a1c35d97-edf2-41b8-a531-fcc5076f43c6:
+        character: ''
+        side: trim
+        uuid: a1c35d97-edf2-41b8-a531-fcc5076f43c6
+        plugin: trim
+        source: audience
+        weight: 1
+        label: 'Trim each value'
+        description: ''
+      b681b850-23aa-4d0e-b027-e4840dcba1b9:
+        find: '/\|.*$/'
+        replace: ''
+        limit: null
+        uuid: b681b850-23aa-4d0e-b027-e4840dcba1b9
+        plugin: find_replace_regex
+        source: discipline
+        weight: 0
+        label: 'Keep only the first discipline'
+        description: ''
+      ceabb869-6de2-4845-b4a3-33662bfb2eac:
+        character: ''
+        side: trim
+        uuid: ceabb869-6de2-4845-b4a3-33662bfb2eac
+        plugin: trim
+        source: discipline
+        weight: 1
+        label: Trim
+        description: ''
+      dce8cf88-4fb4-4608-acd0-f0f3a3405ae8:
+        false_value: 'No'
+        match_case: false
+        no_match_value: false
+        uuid: dce8cf88-4fb4-4608-acd0-f0f3a3405ae8
+        plugin: convert_boolean
+        source: cas
+        weight: 0
+        label: 'Yes/No to boolean'
+        description: ''
+        truth_value: 'Yes'
+        other_text: ''
+      1d6dda14-2ee6-40b3-95e4-655496e25557:
+        allowed_tags: ''
+        uuid: 1d6dda14-2ee6-40b3-95e4-655496e25557
+        plugin: strip_tags
+        source: blurb
+        weight: 0
+        label: 'Strip HTML'
+        description: ''
+      cad07ca9-ebf9-44e2-a938-8b470554d647:
+        num_char: 150
+        ellipses: true
+        wordsafe: true
+        uuid: cad07ca9-ebf9-44e2-a938-8b470554d647
+        plugin: truncate_text
+        source: blurb
+        weight: 1
+        label: 'Truncate to 150 characters'
+        description: ''
+      02bdf5eb-b14d-4a75-8d07-1af3db51bc38:
+        default_value: date
+        only_if_empty: false
+        uuid: 02bdf5eb-b14d-4a75-8d07-1af3db51bc38
+        plugin: default_value
+        source: date_format
+        weight: 0
+        label: 'Always use the full-date display format'
+        description: ''
+      d030ddfc-7e31-46f8-b0ad-91a7a7719901:
+        character: ''
+        side: trim
+        uuid: d030ddfc-7e31-46f8-b0ad-91a7a7719901
+        plugin: trim
+        source: accession
+        weight: 0
+        label: Trim
+        description: ''
+      ab55d28b-2d85-46fe-9f74-a0e469471bf4:
+        invert: false
+        uuid: ab55d28b-2d85-46fe-9f74-a0e469471bf4
+        plugin: required
+        source: accession
+        weight: 1
+        label: 'Skip rows with no accession number'
+        description: ''
+label: 'Demo: library resource collection'
+id: demo_resource_library
+description: "Turns an uploaded catalogue export into Resource nodes, downloading each record's PDF and cover image into real media entities. Keyed on accession number, so re-uploading an updated export updates the existing resources rather than duplicating them."
+help: 'Upload a CSV export from the collection management system. Rows are matched on the accession column, so re-uploading a corrected export updates the existing resources instead of duplicating them. Each row may point at a PDF and a cover image by URL; those are downloaded and become media entities.'
+import_period: -1
+import_period_per_feed: false
+fetcher: upload
+fetcher_configuration:
+  allowed_extensions: 'csv tsv txt'
+  directory: 'private://feeds'
+parser: csv
+parser_configuration:
+  delimiter: ','
+  no_headers: false
+  line_limit: 100
+processor: 'entity:node'
+processor_configuration:
+  values:
+    type: resource
+  langcode: en
+  insert_new: 1
+  update_existing: 2
+  update_non_existent: _keep
+  skip_hash_check: false
+  skip_validation: false
+  skip_validation_types:
+    - Count
+  authorize: false
+  revision: false
+  expire: -1
+  owner_feed_author: false
+  owner_id: 1
+custom_sources:
+  accession:
+    value: accession
+    label: accession
+    machine_name: accession
+    type: csv
+  title:
+    value: title
+    label: title
+    machine_name: title
+    type: csv
+  description:
+    value: description
+    label: description
+    machine_name: description
+    type: csv
+  blurb:
+    value: blurb
+    label: blurb
+    machine_name: blurb
+    type: csv
+  abstract:
+    value: abstract
+    label: abstract
+    machine_name: abstract
+    type: csv
+  citation:
+    value: citation
+    label: citation
+    machine_name: citation
+    type: csv
+  journal:
+    value: journal
+    label: journal
+    machine_name: journal
+    type: csv
+  issue:
+    value: issue
+    label: issue
+    machine_name: issue
+    type: csv
+  pub_date:
+    value: pub_date
+    label: pub_date
+    machine_name: pub_date
+    type: csv
+  category:
+    value: category
+    label: category
+    machine_name: category
+    type: csv
+  discipline:
+    value: discipline
+    label: discipline
+    machine_name: discipline
+    type: csv
+  geo:
+    value: geo
+    label: geo
+    machine_name: geo
+    type: csv
+  years:
+    value: years
+    label: years
+    machine_name: years
+    type: csv
+  tags:
+    value: tags
+    label: tags
+    machine_name: tags
+    type: csv
+  audience:
+    value: audience
+    label: audience
+    machine_name: audience
+    type: csv
+  cas:
+    value: cas
+    label: cas
+    machine_name: cas
+    type: csv
+  source_url:
+    value: source_url
+    label: source_url
+    machine_name: source_url
+    type: csv
+  pdf_url:
+    value: pdf_url
+    label: pdf_url
+    machine_name: pdf_url
+    type: csv
+  cover_url:
+    value: cover_url
+    label: cover_url
+    machine_name: cover_url
+    type: csv
+  cover_alt:
+    value: cover_alt
+    label: cover_alt
+    machine_name: cover_alt
+    type: csv
+  date_format:
+    value: date_format
+    label: date_format
+    machine_name: date_format
+    type: blank
+mappings:
+  -
+    target: feeds_item
+    map:
+      guid: accession
+    settings: {  }
+    unique:
+      guid: true
+  -
+    target: title
+    map:
+      value: title
+    settings:
+      language: null
+  -
+    target: field_teaser_title
+    map:
+      value: title
+    settings: {  }
+  -
+    target: field_content_description
+    map:
+      value: description
+    settings:
+      format: restricted_html
+  -
+    target: field_teaser_text
+    map:
+      value: blurb
+    settings:
+      format: heading_html
+  -
+    target: field_abstract
+    map:
+      value: abstract
+    settings:
+      format: restricted_html
+  -
+    target: field_citation
+    map:
+      value: citation
+    settings:
+      format: restricted_html
+  -
+    target: field_journal_publication_name
+    map:
+      value: journal
+    settings: {  }
+  -
+    target: field_journal_publication_issue
+    map:
+      value: issue
+    settings: {  }
+  -
+    target: field_publish_date
+    map:
+      value: pub_date
+    settings: {  }
+  -
+    target: field_date_format
+    map:
+      value: date_format
+    settings: {  }
+  -
+    target: field_login_required
+    map:
+      value: cas
+    settings: {  }
+  -
+    target: field_external_source
+    map:
+      uri: source_url
+      title: ''
+    settings: {  }
+  -
+    target: field_category
+    map:
+      target_id: category
+    settings:
+      reference_by: name
+      autocreate: true
+      autocreate_bundle: resource_category
+  -
+    target: field_discipline
+    map:
+      target_id: discipline
+    settings:
+      reference_by: name
+      autocreate: true
+      autocreate_bundle: discipline
+  -
+    target: field_geographic_areas
+    map:
+      target_id: geo
+    settings:
+      reference_by: name
+      autocreate: true
+      autocreate_bundle: geographic_areas
+  -
+    target: field_academic_years
+    map:
+      target_id: years
+    settings:
+      reference_by: name
+      autocreate: true
+      autocreate_bundle: academic_years
+  -
+    target: field_tags
+    map:
+      target_id: tags
+    settings:
+      reference_by: name
+      autocreate: true
+      autocreate_bundle: tags
+  -
+    target: field_audience
+    map:
+      target_id: audience
+    settings:
+      reference_by: name
+      autocreate: true
+      autocreate_bundle: audience
+  -
+    target: layout_builder__layout
+    map:
+      value: description
+    settings:
+      format: restricted_html
+      section_label: 'Content Section'
+      block_label: 'Imported description'
+  -
+    target: field_media
+    map:
+      target_id: pdf_url
+      alt: ''
+    settings:
+      media_bundle: document
+      existing: 1
+  -
+    target: field_teaser_media
+    map:
+      target_id: cover_url
+      alt: cover_alt
+    settings:
+      media_bundle: image
+      existing: 1
