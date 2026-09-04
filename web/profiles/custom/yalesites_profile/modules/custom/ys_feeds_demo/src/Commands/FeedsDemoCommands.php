@@ -113,12 +113,12 @@ class FeedsDemoCommands extends DrushCommands {
     $catalogue = str_replace(self::BASE_URL_PLACEHOLDER, rtrim($base_url, '/'), $catalogue);
     file_put_contents($dest_real . '/resources.csv', $catalogue);
 
-    $media_dest = $dest_real . '/media';
-    $this->fileSystem->prepareDirectory($media_dest, FileSystemInterface::MODIFY_PERMISSIONS | FileSystemInterface::CREATE_DIRECTORY);
-    foreach (glob($source_dir . '/media/*') as $file) {
-      copy($file, $media_dest . '/' . basename($file));
-    }
-
+    // The catalogue's PDFs and cover images are not copied anywhere. They are
+    // served straight out of the module directory, which means they are
+    // present wherever the module is deployed. Copying them into the files
+    // directory used to be a second step that had to happen first, and when it
+    // did not, every media URL in the catalogue returned 404 — fourteen
+    // confusing errors instead of the two the demo intends.
     $this->logger()->success(dt('Published fixtures for @url (roster variant: @v).', [
       '@url' => $base_url,
       '@v' => $options['variant'],
@@ -141,16 +141,35 @@ class FeedsDemoCommands extends DrushCommands {
    * @command ys-feeds-demo:reset
    * @aliases ysfd-reset
    * @option keep-media Leave imported media and files in place.
+   * @option type Reset only this feed type, leaving the others untouched.
    * @usage ys-feeds-demo:reset
+   *   Reset all three demos.
+   * @usage ys-feeds-demo:reset --type=demo_resource_library
+   *   Reset only the catalogue, so a roster feed already pointed at a Google
+   *   Sheet keeps its source.
    */
-  public function reset(array $options = ['keep-media' => FALSE]) {
+  public function reset(array $options = ['keep-media' => FALSE, 'type' => NULL]) {
     $node_storage = $this->entityTypeManager->getStorage('node');
     $feed_storage = $this->entityTypeManager->getStorage('feeds_feed');
 
     $nodes = 0;
     $media_ids = [];
 
-    foreach (array_keys(self::DEMO_FEEDS) as $type) {
+    $types = array_keys(self::DEMO_FEEDS);
+
+    if (!empty($options['type'])) {
+      if (!in_array($options['type'], $types, TRUE)) {
+        $this->logger()->error(dt('Unknown feed type @type. Known: @known', [
+          '@type' => $options['type'],
+          '@known' => implode(', ', $types),
+        ]));
+
+        return 1;
+      }
+      $types = [$options['type']];
+    }
+
+    foreach ($types as $type) {
       foreach ($feed_storage->loadByProperties(['type' => $type]) as $feed) {
         $ids = $node_storage->getQuery()
           ->accessCheck(FALSE)
@@ -178,7 +197,7 @@ class FeedsDemoCommands extends DrushCommands {
     $this->logger()->success(dt('Deleted @count imported node(s).', ['@count' => $nodes]));
 
     if ($options['keep-media'] || !$media_ids) {
-      return;
+      return 0;
     }
 
     $media_storage = $this->entityTypeManager->getStorage('media');
@@ -202,6 +221,8 @@ class FeedsDemoCommands extends DrushCommands {
       '@files' => $files,
     ]));
     $this->logger()->notice(dt('Auto-created taxonomy terms are left alone; run drush ys-orphaned-blocks to sweep inline blocks left by the Layout Builder spike.'));
+
+    return 0;
   }
 
   /**
@@ -233,8 +254,14 @@ class FeedsDemoCommands extends DrushCommands {
       }
 
       // The round-trip demo consumes a file the presenter exports and edits
-      // during the demo itself, so there is nothing to create for it up front.
+      // during the demo itself, so there is no fixture to advertise — but the
+      // feed should still exist and be waiting, so the demo is a file upload
+      // rather than a detour through the feed-creation form.
       if ($info['fixture'] === NULL) {
+        $this->createEmptyFeed($feed_storage, $type, $info['title']);
+        $this->logger()->success(dt('Created @type, ready for a file you export during the demo.', [
+          '@type' => $type,
+        ]));
         continue;
       }
 
@@ -242,6 +269,16 @@ class FeedsDemoCommands extends DrushCommands {
         // An upload feed has no URL to import from until somebody attaches a
         // file, so create it empty and ready rather than importing it. The
         // file to attach is published alongside the fixtures.
+        //
+        // Check one of the media URLs the catalogue points at before handing
+        // over the file. If the media is not reachable the import still
+        // "works" and produces a resource for every row, just with no
+        // documents attached and a wall of download errors — much better to
+        // say so now, in one sentence.
+        if (!$this->mediaIsReachable($base_url)) {
+          return 1;
+        }
+
         $this->createEmptyFeed($feed_storage, $type, $info['title']);
         $this->logger()->success(dt('Created @type, ready for a file. Upload this: @url', [
           '@type' => $type,
@@ -339,6 +376,42 @@ class FeedsDemoCommands extends DrushCommands {
     else {
       $this->logger()->notice(dt('Check the address is right, and pass --base-url if the site does not know its own public URL from the command line.'));
     }
+
+    return FALSE;
+  }
+
+  /**
+   * Checks that the catalogue's media is reachable before a demo relies on it.
+   *
+   * Reads the first media URL out of the published catalogue and requests it.
+   * One sample is enough: every row points into the same directory, so if one
+   * resolves they all do.
+   *
+   * @param string $base_url
+   *   The origin the fixtures were published for.
+   *
+   * @return bool
+   *   TRUE if the media is reachable, or if no media URL could be found to
+   *   test, which is not this check's business to fail on.
+   */
+  protected function mediaIsReachable(string $base_url) {
+    $published = $this->fileSystem->realpath(self::PUBLIC_DIR) . '/resources.csv';
+
+    if (!is_readable($published)) {
+      return TRUE;
+    }
+
+    // Stop at commas and quotes: this is a CSV, and a greedy match runs
+    // straight out of one column and into the next.
+    if (!preg_match('#https?://[^\s,"\']+\.pdf#', (string) file_get_contents($published), $match)) {
+      return TRUE;
+    }
+
+    if ($this->isReachable($match[0])) {
+      return TRUE;
+    }
+
+    $this->logger()->error(dt('The catalogue points at media that is not reachable, so an import would create resources with no documents attached.'));
 
     return FALSE;
   }

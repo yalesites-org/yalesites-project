@@ -211,10 +211,19 @@ file to upload. Get the file from:
 Then go to [/admin/content/feed](https://pr-1527-yalesites-platform.pantheonsite.io/admin/content/feed),
 edit **Special Collections catalogue (demo)**, attach that CSV, and import.
 
-The URLs inside that file are absolute and point at this environment, which is
-why it is downloaded from the site rather than taken straight from
-`fixtures/resources.csv` — the committed fixture carries a `__BASE_URL__`
-placeholder that is filled in when the fixtures are published.
+Why download it from the site rather than use `fixtures/resources.csv`
+directly? Each row points at its PDF and cover image by absolute URL, and an
+absolute URL has to name a host. The committed fixture carries a
+`__BASE_URL__` placeholder instead, and publishing fills in the real address.
+
+The files those URLs point at are served straight out of the module directory,
+so they are present wherever the module is deployed and there is nothing extra
+to copy. That was not always true: they used to be copied into the files
+directory as a separate step, and when that step had not run the import
+produced a resource for every row with no documents attached and fourteen
+download errors instead of the two the demo intends. `ys-feeds-demo:run` now
+checks one media URL before handing you the file, so that failure reports
+itself in one sentence.
 
 ### What to show
 
