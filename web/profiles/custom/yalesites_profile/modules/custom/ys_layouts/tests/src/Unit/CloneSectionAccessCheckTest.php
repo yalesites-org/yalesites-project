@@ -8,6 +8,7 @@ use Drupal\Core\Routing\RouteMatchInterface;
 use Drupal\Core\Session\AccountInterface;
 use Drupal\Tests\UnitTestCase;
 use Drupal\layout_builder\DefaultsSectionStorageInterface;
+use Drupal\layout_builder\OverridesSectionStorageInterface;
 use Drupal\layout_builder\Section;
 use Drupal\layout_builder\SectionStorageInterface;
 use Drupal\layout_builder_lock\LayoutBuilderLock;
@@ -322,6 +323,52 @@ class CloneSectionAccessCheckTest extends UnitTestCase {
     $result = (new CloneSectionAccessCheck())->access($section_storage, $this->account(), $this->routeMatch('9'));
 
     $this->assertTrue($result->isAllowed(), 'An out-of-range delta is not refused as a lock decision.');
+  }
+
+  /**
+   * An override whose own locks went stale still honours the default's.
+   *
+   * Core copies the default layout's sections into an override when it is
+   * created, so the override's lock settings are a snapshot; nothing propagates
+   * a later change to the default into overrides that already exist. Reading
+   * only the override therefore let a Post's "Title and Metadata" section be
+   * cloned even though the default layout locks it — reviewed and reproduced,
+   * with the resulting page carrying two titles and two publish dates.
+   *
+   * @covers ::access
+   */
+  public function testOverrideHonoursTheDefaultLayoutsLocks(): void {
+    // The override says positional-only, which on its own is cloneable.
+    $section_storage = $this->storageWithLock([
+      LayoutBuilderLock::LOCKED_SECTION_BEFORE => LayoutBuilderLock::LOCKED_SECTION_BEFORE,
+      LayoutBuilderLock::LOCKED_SECTION_AFTER => LayoutBuilderLock::LOCKED_SECTION_AFTER,
+    ], OverridesSectionStorageInterface::class);
+    // The default layout it was copied from says the blocks are frozen.
+    $default_section = new Section('layout_onecol');
+    $default_section->setThirdPartySetting('layout_builder_lock', 'lock', [
+      LayoutBuilderLock::LOCKED_BLOCK_DELETE => LayoutBuilderLock::LOCKED_BLOCK_DELETE,
+    ]);
+    $default_storage = $this->createMock(DefaultsSectionStorageInterface::class);
+    $default_storage->method('getSections')->willReturn([$default_section, $default_section]);
+
+    // The default layout is read once and its answers kept, because core does
+    // not cache getDefaultSectionStorage() and the toolbar asks this question
+    // once per section on the page. Pinning the call count is what stops that
+    // caching being dropped again without a test noticing.
+    $section_storage->expects($this->once())
+      ->method('getDefaultSectionStorage')
+      ->willReturn($default_storage);
+
+    $access_check = new CloneSectionAccessCheck();
+
+    foreach (['0', '1'] as $delta) {
+      $result = $access_check->access($section_storage, $this->account(), $this->routeMatch($delta));
+
+      $this->assertTrue(
+        $result->isForbidden(),
+        "A section the default layout locks stays refused when the override's own locks have gone stale."
+      );
+    }
   }
 
 }

@@ -12,6 +12,7 @@ use Drupal\layout_builder\SectionStorageInterface;
 use Drupal\ys_layouts\Service\SectionCloner;
 use Symfony\Component\DependencyInjection\ContainerInterface;
 use Symfony\Component\HttpFoundation\RedirectResponse;
+use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
 
 /**
  * Clones a whole section in Layout Builder from the section toolbar.
@@ -70,7 +71,16 @@ class CloneSectionController implements ContainerInjectionInterface {
    *   to it when the route was reached outside the AJAX pipeline.
    */
   public function build(SectionStorageInterface $section_storage, int $delta) {
-    $original_count = count($section_storage->getSection($delta)->getComponents());
+    try {
+      $original_count = count($section_storage->getSection($delta)->getComponents());
+    }
+    catch (\OutOfBoundsException $e) {
+      // The route's \d+ requirement keeps a non-numeric delta out, but a
+      // numeric one past the last section still reaches here. That is a bad
+      // URL, not a server error.
+      throw new NotFoundHttpException($e->getMessage(), $e);
+    }
+
     $clone = $this->sectionCloner->cloneSection($section_storage, $delta);
     $this->layoutTempstoreRepository->set($section_storage);
 
