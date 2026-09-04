@@ -1,0 +1,57 @@
+/**
+ * @file
+ * Vertical alignment for the create/configure block dialog header.
+ *
+ * gin_lb pins `.ui-dialog-titlebar` to `height: 4.5em !important` but leaves it
+ * `display: block`, so the title stays an inline box whose ~24px line box sits
+ * at the top of the bar's 40px content area, while `.ui-dialog-titlebar-close`
+ * is absolutely positioned at `top: 50%`. The heading this module sets therefore
+ * reads as top-aligned against a centred close icon - measured at 9px above
+ * centre on both the add-block modal and the configure off-canvas sidebar.
+ *
+ * The misalignment is gin_lb's, not this module's, but it is the header of the
+ * dynamic "Create [Block Name]" / "Configure [Block Name]" heading, so it is
+ * fixed alongside it. Centring the titlebar's own content is the smallest fix
+ * available: gin_lb's header height, colours and close button are all left
+ * exactly as they are.
+ *
+ * This lives here rather than in the ys_admin_theme admin theme because gin_lb
+ * renders Layout Builder in the front-end theme - none of ys_admin_theme's
+ * stylesheets load on this surface. It follows detach-reusable-block.css, which
+ * corrects gin_lb off-canvas chrome for this module's other dialog.
+ */
+
+/* The second selector is not redundant. Atomic ships
+ * `#drupal-off-canvas-wrapper .ui-dialog-titlebar { align-items: flex-start }`,
+ * which is inert only for as long as the bar is not a flex container; making it
+ * one below would otherwise wake that rule up and top-align the sidebar title,
+ * reintroducing the bug on the very surface being fixed. `#drupal-off-canvas-
+ * wrapper` is the `.ui-dialog` element itself rather than an ancestor, so
+ * qualifying it out-specifies Atomic's rule without resorting to !important.
+ *
+ * That leaves two repos setting align-items on this element to opposite values,
+ * which is a trap for whoever edits Atomic next. Keeping the fix here is a
+ * deliberate trade to keep this a single-repo change; the follow-up is to delete
+ * Atomic's now-contradictory declaration and, if the team prefers, move both
+ * rules there.
+ */
+.ui-dialog .ui-dialog-titlebar,
+#drupal-off-canvas-wrapper.ui-dialog .ui-dialog-titlebar {
+  display: flex;
+  align-items: center;
+}
+
+/* Blockifying the title as a flex item activates gin_lb's
+ * `margin: 1em 0 !important`, which an inline box had been free to ignore. Left
+ * standing it wraps the title in a 63px margin box inside a 40px content area,
+ * so a heading long enough to wrap spills out of the header. Overriding an
+ * !important declaration requires !important.
+ *
+ * The titlebar is named in the selector purely for specificity: gin_lb's own
+ * `.ui-dialog .ui-dialog-title` is also (0,2,0) and also !important, so matching
+ * it would leave the outcome depending on stylesheet order.
+ */
+.ui-dialog .ui-dialog-titlebar .ui-dialog-title,
+#drupal-off-canvas-wrapper.ui-dialog .ui-dialog-titlebar .ui-dialog-title {
+  margin-block: 0 !important;
+}

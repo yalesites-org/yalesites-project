@@ -39,6 +39,19 @@ class BlockConfigureFormTest extends UnitTestCase {
   const INSTRUCTIONS = 'Accordions are used to hide and display on-page information.';
 
   /**
+   * The id FormBuilder assigns the Administrative label field.
+   */
+  const LABEL_ID = 'edit-settings-label';
+
+  /**
+   * The id FormBuilder assigns the guidance field's wrapper.
+   *
+   * WidgetBase::form() gives the wrapper #parents ending in
+   * "<field name>_wrapper", so the generated id carries that suffix.
+   */
+  const INSTRUCTIONS_ID = 'edit-settings-block-form-field-instructions-wrapper';
+
+  /**
    * {@inheritdoc}
    */
   protected function setUp(): void {
@@ -76,6 +89,10 @@ class BlockConfigureFormTest extends UnitTestCase {
           '#type' => 'textfield',
           '#title' => 'Administrative label',
           '#default_value' => $admin_label,
+          // FormBuilder::doBuildForm() has already assigned the unique id, and
+          // pointed the control at the description this field carries.
+          '#id' => self::LABEL_ID,
+          '#attributes' => ['aria-describedby' => self::LABEL_ID . '--description'],
         ],
         'label_display' => [
           '#type' => 'checkbox',
@@ -98,6 +115,20 @@ class BlockConfigureFormTest extends UnitTestCase {
   protected function instructionsElement(): array {
     return [
       '#type' => 'container',
+      // WidgetBase::form() wraps every field in a container, and
+      // FormBuilder::doBuildForm() gives that container a unique id which
+      // template_preprocess_container() renders onto the div.
+      '#id' => self::INSTRUCTIONS_ID,
+      '#array_parents' => ['settings', 'block_form', 'field_instructions'],
+      // WidgetBase::form() has already put its classes here, so the reference
+      // has to merge into an existing #attributes rather than create one.
+      '#attributes' => [
+        'class' => [
+          'field--type-markup',
+          'field--name-field-instructions',
+          'field--widget-markup',
+        ],
+      ],
       'widget' => [
         0 => [
           'markup' => [
@@ -312,6 +343,138 @@ class BlockConfigureFormTest extends UnitTestCase {
     $twice = $this->afterBuild($once);
 
     $this->assertSame($once, $twice, 'A second run must be a no-op.');
+  }
+
+  /**
+   * Returns the ids the Administrative label points a screen reader at.
+   *
+   * @param array $form
+   *   The built form.
+   *
+   * @return array
+   *   The aria-describedby ids, in the order they are announced.
+   */
+  protected function describedBy(array $form): array {
+    $value = $form['settings']['label']['#attributes']['aria-describedby'] ?? '';
+    return array_values(array_filter(explode(' ', $value)));
+  }
+
+  /**
+   * The guidance is announced to someone who tabs straight to the field.
+   *
+   * The guidance is visible copy introducing the whole form, but focus lands on
+   * the Administrative label, and a control only announces a description it
+   * actually references - so reading the form linearly was the only way to hear
+   * it.
+   */
+  public function testGuidanceIsAnnouncedWithTheAdministrativeLabel(): void {
+    $form = $this->alter($this->blockForm(), 'layout_builder_add_block');
+    $form['settings']['block_form']['field_instructions'] = $this->instructionsElement();
+
+    $form = $this->afterBuild($form);
+
+    $this->assertSame(
+      [self::INSTRUCTIONS_ID, self::LABEL_ID . '--description'],
+      $this->describedBy($form),
+      'The guidance must be referenced, and must not displace the description core already wired up.'
+    );
+  }
+
+  /**
+   * The reference points at an element that will actually exist.
+   *
+   * An aria-describedby pointing at a missing id is worse than none at all: the
+   * description is silently dropped rather than announced.
+   */
+  public function testTheReferencedGuidanceIdIsRendered(): void {
+    $form = $this->alter($this->blockForm(), 'layout_builder_add_block');
+    $form['settings']['block_form']['field_instructions'] = $this->instructionsElement();
+
+    $form = $this->afterBuild($form);
+
+    $this->assertSame(
+      self::INSTRUCTIONS_ID,
+      $form['settings']['field_instructions']['#attributes']['id'],
+      'The wrapper must carry the id as an attribute, so the div renders it.'
+    );
+    $this->assertContains(self::INSTRUCTIONS_ID, $this->describedBy($form));
+  }
+
+  /**
+   * A field with no description of its own still gets the guidance.
+   */
+  public function testGuidanceWiringWhenTheFieldHasNoDescriptionOfItsOwn(): void {
+    $form = $this->blockForm();
+    unset($form['settings']['label']['#attributes']);
+    $form = $this->alter($form, 'layout_builder_add_block');
+    $form['settings']['block_form']['field_instructions'] = $this->instructionsElement();
+
+    $form = $this->afterBuild($form);
+
+    $this->assertSame([self::INSTRUCTIONS_ID], $this->describedBy($form));
+  }
+
+  /**
+   * An id something else already referenced is not added a second time.
+   *
+   * Core only ever writes "<id>--description" here, so the collision has to be
+   * seeded: another module's alter is the way this would arise.
+   */
+  public function testAnAlreadyReferencedGuidanceIdIsNotDuplicated(): void {
+    $form = $this->blockForm();
+    $form['settings']['label']['#attributes']['aria-describedby'] = self::INSTRUCTIONS_ID;
+    $form = $this->alter($form, 'layout_builder_add_block');
+    $form['settings']['block_form']['field_instructions'] = $this->instructionsElement();
+
+    $form = $this->afterBuild($form);
+
+    $this->assertSame([self::INSTRUCTIONS_ID], $this->describedBy($form));
+  }
+
+  /**
+   * Referencing the guidance leaves the wrapper's own attributes intact.
+   */
+  public function testWiringKeepsTheWrappersExistingAttributes(): void {
+    $form = $this->alter($this->blockForm(), 'layout_builder_add_block');
+    $form['settings']['block_form']['field_instructions'] = $this->instructionsElement();
+
+    $form = $this->afterBuild($form);
+
+    $this->assertContains(
+      'field--name-field-instructions',
+      $form['settings']['field_instructions']['#attributes']['class'],
+      'The id must be merged into the widget classes, not written over them.'
+    );
+  }
+
+  /**
+   * A block type with no guidance leaves the existing description alone.
+   */
+  public function testNoGuidanceLeavesTheDescribedbyUntouched(): void {
+    $form = $this->afterBuild($this->alter($this->blockForm(), 'layout_builder_add_block'));
+
+    $this->assertSame([self::LABEL_ID . '--description'], $this->describedBy($form));
+  }
+
+  /**
+   * Guidance with no id is not referenced at all.
+   *
+   * Better to leave the field describing only itself than to point at nothing.
+   */
+  public function testGuidanceWithoutAnIdIsNotReferenced(): void {
+    $form = $this->alter($this->blockForm(), 'layout_builder_add_block');
+    $instructions = $this->instructionsElement();
+    unset($instructions['#id']);
+    $form['settings']['block_form']['field_instructions'] = $instructions;
+
+    $form = $this->afterBuild($form);
+
+    $this->assertSame([self::LABEL_ID . '--description'], $this->describedBy($form));
+    $this->assertArrayHasKey(
+      'field_instructions',
+      $form['settings'],
+      'The guidance is still lifted; only the reference is skipped.'
+    );
   }
 
   /**

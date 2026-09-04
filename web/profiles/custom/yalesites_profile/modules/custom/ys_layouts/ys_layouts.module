@@ -269,6 +269,10 @@ function ys_layouts_form_alter(&$form, $form_state, $form_id) {
       unset($form['settings']['admin_label']);
     }
 
+    // Centre that heading against the dialog's close icon; see
+    // css/block-dialog.css for what gin_lb leaves misaligned and why.
+    $form['#attached']['library'][] = 'ys_layouts/block_dialog';
+
     $form['#after_build'][] = 'ys_layouts_lift_block_instructions';
   }
 }
@@ -340,6 +344,38 @@ function ys_layouts_lift_block_instructions(array $form, FormStateInterface $for
   // and Element::children() refuses to re-sort a subtree already flagged - so
   // without this the new weight is silently ignored.
   unset($form['settings']['#sorted']);
+
+  // Now point the Administrative label at the guidance. Moving the copy up the
+  // page only helps someone reading the form linearly: focus lands on that
+  // input, and a control announces a description only if it references one, so
+  // a screen reader user tabbing straight to the field never heard the guidance
+  // at all.
+  //
+  // Reuse the id FormBuilder::doBuildForm() already gave the field wrapper
+  // rather than minting a second one - it is unique by construction, and
+  // template_preprocess_container() renders it onto the div. Copying it into
+  // #attributes is belt-and-braces rather than a requirement: the preprocess
+  // renders #id for any element with #array_parents, which a moved element
+  // keeps. It states the contract where the reference is made, so a later
+  // change of #type or theme suggestion cannot quietly leave the id unrendered
+  // and the reference dangling.
+  //
+  // Appending is safe because doBuildForm() sets the field's own
+  // aria-describedby while processing the element, and #after_build runs once
+  // the whole form is built - so nothing overwrites this afterwards.
+  // aria-describedby takes a space-separated list, and the guidance is listed
+  // first because that is the order the two read in on screen.
+  $instructions_id = $form['settings']['field_instructions']['#id'] ?? NULL;
+  if ($instructions_id && isset($form['settings']['label'])) {
+    $form['settings']['field_instructions']['#attributes']['id'] = $instructions_id;
+
+    // Core always writes this as a string, but Attribute accepts an array too,
+    // so normalise rather than assume and fatal on another module's alter.
+    $described_by = $form['settings']['label']['#attributes']['aria-describedby'] ?? '';
+    $existing = is_array($described_by) ? $described_by : explode(' ', $described_by);
+    $ids = array_merge([$instructions_id], array_filter($existing));
+    $form['settings']['label']['#attributes']['aria-describedby'] = implode(' ', array_unique($ids));
+  }
 
   return $form;
 }
