@@ -79,6 +79,7 @@ third_party_settings:
         layout_settings:
           label: 'Content Section'
           context_mapping: {  }
+          divider: 1
         components:
           c60f8771-bc1b-46f1-85f5-0bb81f03eb82:
             uuid: c60f8771-bc1b-46f1-85f5-0bb81f03eb82

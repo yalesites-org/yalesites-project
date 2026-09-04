@@ -385,15 +385,19 @@ class ColorTokenResolver {
     ];
 
     // Section layout mapping: one→slot-one, two→slot-four, three→slot-five,
-    // four→slot-two, five→slot-nine.
+    // four→slot-two, five→slot-nine, six→slot-three.
     //
-    // Unlike every other mapping in this method, sections deliberately expose
-    // five options rather than six: slot-three is the one palette slot they do
-    // not offer. Ticket #897 (commit 1a06ebc6f) reworked this mapping and
-    // dropped slot-three, and it has not been offered to sections since;
-    // #1153 later added the 'five' => slot-nine entry. Keep this list at five
-    // unless that product decision is revisited (see #1506); the corresponding
-    // form options live in YSLayoutOptions.
+    // Sections offered only five options for a long time -- slot-three was
+    // the single palette slot they never exposed, dropped by #897 (commit
+    // 1a06ebc6f) and left out when #1153 added the 'five' => slot-nine entry.
+    // #1518 restored it as 'six', so sections now match the block pickers at
+    // six options. This list is mirrored in several other places that must
+    // move together: the form options in YSLayoutOptions, the ordering array
+    // in processColorPicker() below, the per-theme blocks in the component
+    // library's _yds-layout.scss (which is what actually paints the page --
+    // this resolver only drives the admin swatches), that library's
+    // layout-props.yml and theme-constants.js (Storybook/visreg coverage),
+    // and the option-count callout in docs/color-theme.md.
     if ($entity_type === 'layout_section' && $bundle === 'ys_layout_options') {
       return $this->buildColorStyles([
         'one' => 'one',
@@ -401,6 +405,7 @@ class ColorTokenResolver {
         'three' => 'five',
         'four' => 'two',
         'five' => 'nine',
+        'six' => 'three',
       ], $global_themes, $theme_four_slot_swap);
     }
 
@@ -626,10 +631,12 @@ class ColorTokenResolver {
     $color_styles = $all_color_styles[$global_theme] ?? $all_color_styles['one'] ?? [];
 
     $is_section_layout = ($entity_type === 'layout_section' && $bundle === 'ys_layout_options');
+    // Match YSLayoutOptions theme select: default + one–six. Also passed
+    // through as '#palette_order' below, so it is declared once here rather
+    // than repeated.
+    $palette_order = $is_section_layout ? ['default', 'one', 'two', 'three', 'four', 'five', 'six'] : NULL;
     if ($is_section_layout) {
-      // Match YSLayoutOptions theme select: default + one–five.
-      $desired_order = ['default', 'one', 'two', 'three', 'four', 'five'];
-      $palette_options = $this->reorderPaletteOptions($palette_options, $desired_order);
+      $palette_options = $this->reorderPaletteOptions($palette_options, $palette_order);
       $element['#options'] = $palette_options;
     }
 
@@ -643,9 +650,6 @@ class ColorTokenResolver {
       $background_color_var = $color_styles[$option_key][0] ?? NULL;
       $color_info[$option_key] = $this->buildColorInfo($option_key, $background_color_var);
     }
-
-    // Set palette order for section layouts.
-    $palette_order = $is_section_layout ? ['default', 'one', 'two', 'three', 'four', 'five'] : NULL;
 
     $palette_render = [
       '#theme' => 'component_color_picker',

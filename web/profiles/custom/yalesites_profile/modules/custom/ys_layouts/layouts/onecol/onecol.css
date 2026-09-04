@@ -1,0 +1,59 @@
+/*
+ * @file
+ * Styles for core's "One column" layout (layout_onecol), attached via
+ * ys_layouts_layout_alter(). See docs/color-theme.md for how the four section
+ * layouts share one signature.
+ *
+ * LayoutDefinition::setLibrary() replaces rather than merges, so altering
+ * layout_onecol's library to add this file also detaches core's own
+ * `layout_discovery/onecol` library. The first rule below is that library's
+ * one rule, carried over so it is not silently lost for every "One column"
+ * section, themed or not.
+ */
+.layout--onecol .layout__region {
+  width: 100%;
+}
+
+/*
+ * Breathing room for a THEMED section only.
+ *
+ * One column renders through `@organisms/layout/layout` and so always carries
+ * the `yds-layout` class now (YaleSites-Internal#1613) -- it is no longer a
+ * themed-only signal, which is why these rules test the theme attribute
+ * instead of the class. Before that change the class itself was the test.
+ *
+ * The other three section layouts get this padding from the organism's
+ * `.yds-layout__inner` flex row. A single-region layout does not render that
+ * row (there is no row of columns to lay out, and its
+ * `> * > { max-width: 100% }` would stop the full-bleed components a One
+ * column section is expected to host from breaking out), so the padding lives
+ * here instead.
+ *
+ * --main-content-bottom-margin matches the value the theme's
+ * atomic/css/layout-builder.css sets on the last content element of the
+ * page's last section (default 10rem, meant for an unpadded box). Without
+ * this override, that margin lands inside this rule's own padding-block on a
+ * themed section that happens to be last on the page, doubling the visible
+ * gap. Split into start/end (rather than the shorthand) so
+ * data-component-padding below can zero either edge independently, matching
+ * _yds-layout.scss's .yds-layout__inner behavior for the two/three-column
+ * layouts.
+ */
+.layout--onecol.yds-layout:not([data-component-theme="default"]) {
+  --main-content-bottom-margin: var(--size-spacing-10);
+
+  padding-block-start: var(--size-spacing-10);
+  padding-block-end: var(--size-spacing-10);
+}
+
+.layout--onecol.yds-layout:not([data-component-theme="default"])[data-component-padding="no-top"],
+.layout--onecol.yds-layout:not([data-component-theme="default"])[data-component-padding="no-padding"] {
+  margin-top: 0;
+  padding-block-start: 0;
+}
+
+.layout--onecol.yds-layout:not([data-component-theme="default"])[data-component-padding="no-bottom"],
+.layout--onecol.yds-layout:not([data-component-theme="default"])[data-component-padding="no-padding"] {
+  margin-bottom: 0;
+  padding-block-end: 0;
+}
