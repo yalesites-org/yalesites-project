@@ -4,6 +4,14 @@ detach_reusable_block:
     theme:
       css/detach-reusable-block.css: {}
 
+# Icon + spacing for the "Clone" action on the section toolbar. Attached by
+# SectionCloneLinkBuilder when it adds the link.
+clone_section:
+  version: VERSION
+  css:
+    theme:
+      css/clone-section.css: {}
+
 ys_layout_banner:
   version: VERSION
   css:

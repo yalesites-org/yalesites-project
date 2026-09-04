@@ -1,0 +1,58 @@
+/**
+ * @file
+ * Styling for the "Clone" action on the Layout Builder section toolbar.
+ *
+ * Matches the icon-plus-label treatment section_library's section links already
+ * use in this toolbar (a 26px mask-image in a ::before, offset by a 30px left
+ * pad), so the section actions read as one set.
+ *
+ * The icon is coloured with currentColor rather than a fixed value so it tracks
+ * the link in both light and dark mode. Atomic's admin theme then restyles
+ * .layout-builder__link::before generically for dark mode and hover, which
+ * picks this icon up with no extra rules there.
+ */
+
+.layout-builder__link--clone {
+  /* Duplicate: a sheet copied over another, the conventional clone glyph.
+     Named to match atomic's --icon-add-section / --icon-import-library, and
+     scoped here rather than :root because only this action uses it. Declared
+     once because the rule below needs it twice, masked and -webkit-masked. */
+  --icon-clone-section: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="26" height="26"><path d="M15 1H4a2 2 0 0 0-2 2v12h2V3h11V1zm4 4H8a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h11a2 2 0 0 0 2-2V7a2 2 0 0 0-2-2zm0 16H8V7h11v14z"/></svg>');
+
+  position: relative;
+  display: inline-block;
+  padding-left: 30px;
+  background-image: none;
+}
+
+.layout-builder__link--clone::before {
+  position: absolute;
+  top: 50%;
+  left: 0;
+  width: 26px;
+  height: 26px;
+  content: "";
+  transform: translateY(-50%);
+  background-color: currentColor;
+  mask-image: var(--icon-clone-section);
+  mask-repeat: no-repeat;
+  mask-position: center;
+  mask-size: 26px 26px;
+  -webkit-mask-image: var(--icon-clone-section);
+  -webkit-mask-repeat: no-repeat;
+  -webkit-mask-position: center;
+  -webkit-mask-size: 26px 26px;
+}
+
+/*
+ * Atomic's admin theme keeps the section actions blue while a section is
+ * hovered but the action itself is not, via an explicit selector list that
+ * predates this action (admin-theme.css, ".gin--dark-mode .layout-builder__
+ * section:hover ... :not(:hover)"). Its generic ::before rule already covers
+ * this icon; only the label colour needs enrolling. Belongs in that list in
+ * atomic the next time that file is touched -- kept here so this change stays
+ * in one repo.
+ */
+.gin--dark-mode .layout-builder__section:hover .layout-builder__link--clone:not(:hover) {
+  color: var(--ys-contrast-blue);
+}
