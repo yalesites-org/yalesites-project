@@ -3,11 +3,11 @@
 namespace Drupal\Tests\ys_beacon\Kernel;
 
 use Drupal\Component\Serialization\Yaml;
+use Drupal\Tests\ys_core\Kernel\YsKernelTestBase;
 use Drupal\config_ignore\ConfigIgnoreConfig;
 use Drupal\config_ignore\EventSubscriber\ConfigIgnoreEventSubscriber;
 use Drupal\Core\Config\MemoryStorage;
 use Drupal\Core\Config\StorageInterface;
-use Drupal\KernelTests\KernelTestBase;
 
 /**
  * Tests that the per-site Beacon Search API keys survive a fresh config import.
@@ -33,7 +33,7 @@ use Drupal\KernelTests\KernelTestBase;
  *
  * @group ys_beacon
  */
-class BeaconConfigIgnoreCreateScopeTest extends KernelTestBase {
+class BeaconConfigIgnoreCreateScopeTest extends YsKernelTestBase {
 
   /**
    * {@inheritdoc}

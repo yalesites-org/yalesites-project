@@ -2,8 +2,8 @@
 
 namespace Drupal\Tests\ys_book\Kernel;
 
-use Drupal\KernelTests\KernelTestBase;
 use Drupal\Tests\user\Traits\UserCreationTrait;
+use Drupal\Tests\ys_core\Kernel\YsKernelTestBase;
 use Drupal\node\Entity\Node;
 use Drupal\node\Entity\NodeType;
 use Drupal\node\NodeInterface;
@@ -22,7 +22,7 @@ use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
  * @group ys_book
  * @group yalesites
  */
-class BookCollectionDeleteTest extends KernelTestBase {
+class BookCollectionDeleteTest extends YsKernelTestBase {
 
   use UserCreationTrait;
 

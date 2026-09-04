@@ -2,7 +2,7 @@
 
 namespace Drupal\Tests\ys_layouts\Kernel;
 
-use Drupal\KernelTests\KernelTestBase;
+use Drupal\Tests\ys_core\Kernel\YsKernelTestBase;
 use Drupal\ys_layouts\Service\LayoutUpdaterLegacy;
 
 /**
@@ -23,7 +23,7 @@ use Drupal\ys_layouts\Service\LayoutUpdaterLegacy;
  * @group yalesites
  * @group ys_layouts
  */
-class LayoutUpdaterLegacyTest extends KernelTestBase {
+class LayoutUpdaterLegacyTest extends YsKernelTestBase {
 
   /**
    * {@inheritdoc}

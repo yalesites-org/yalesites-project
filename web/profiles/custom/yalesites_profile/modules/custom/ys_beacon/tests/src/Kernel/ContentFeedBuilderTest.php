@@ -2,7 +2,7 @@
 
 namespace Drupal\Tests\ys_beacon\Kernel;
 
-use Drupal\KernelTests\KernelTestBase;
+use Drupal\Tests\ys_core\Kernel\YsKernelTestBase;
 use Drupal\node\Entity\Node;
 use Drupal\node\Entity\NodeType;
 use Drupal\ys_beacon\Service\AiMetadataManager;
@@ -19,7 +19,7 @@ use Drupal\ys_beacon\Service\EntityCitationResolver;
  * @group ys_beacon
  * @coversDefaultClass \Drupal\ys_beacon\Service\ContentFeedBuilder
  */
-class ContentFeedBuilderTest extends KernelTestBase {
+class ContentFeedBuilderTest extends YsKernelTestBase {
 
   /**
    * {@inheritdoc}

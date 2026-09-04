@@ -4,8 +4,8 @@ namespace Drupal\Tests\ys_file_management\Kernel;
 
 use Drupal\Core\Form\FormState;
 use Drupal\file\Entity\File;
-use Drupal\KernelTests\KernelTestBase;
 use Drupal\Tests\media\Traits\MediaTypeCreationTrait;
+use Drupal\Tests\ys_core\Kernel\YsKernelTestBase;
 use Drupal\user\Entity\Role;
 use Drupal\user\Entity\User;
 
@@ -15,7 +15,7 @@ use Drupal\user\Entity\User;
  * @group ys_file_management
  * @group yalesites
  */
-class ConditionalMediaDeleteFormTest extends KernelTestBase {
+class ConditionalMediaDeleteFormTest extends YsKernelTestBase {
 
   use MediaTypeCreationTrait;
 

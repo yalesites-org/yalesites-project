@@ -5,7 +5,7 @@ namespace Drupal\Tests\ys_themes\Kernel;
 use Drupal\Core\Form\FormState;
 use Drupal\Core\Messenger\MessengerInterface;
 use Drupal\Core\Url;
-use Drupal\KernelTests\KernelTestBase;
+use Drupal\Tests\ys_core\Kernel\YsKernelTestBase;
 use Drupal\ys_themes\Form\ThemesSettingsForm;
 use Drupal\ys_themes\ThemeSettingsManager;
 
@@ -16,7 +16,7 @@ use Drupal\ys_themes\ThemeSettingsManager;
  * @group ys_themes
  * @group yalesites
  */
-class ThemesSettingsFormTest extends KernelTestBase {
+class ThemesSettingsFormTest extends YsKernelTestBase {
 
   /**
    * {@inheritdoc}

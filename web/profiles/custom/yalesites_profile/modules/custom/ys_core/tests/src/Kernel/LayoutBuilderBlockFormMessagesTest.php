@@ -3,7 +3,6 @@
 namespace Drupal\Tests\ys_core\Kernel;
 
 use Drupal\Core\Form\FormState;
-use Drupal\KernelTests\KernelTestBase;
 
 /**
  * Tests that Layout Builder block forms render their own validation messages.
@@ -27,7 +26,7 @@ use Drupal\KernelTests\KernelTestBase;
  *
  * @group ys_core
  */
-class LayoutBuilderBlockFormMessagesTest extends KernelTestBase {
+class LayoutBuilderBlockFormMessagesTest extends YsKernelTestBase {
 
   /**
    * {@inheritdoc}

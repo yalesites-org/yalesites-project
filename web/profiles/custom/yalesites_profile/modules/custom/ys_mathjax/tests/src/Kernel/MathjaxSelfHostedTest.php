@@ -3,7 +3,7 @@
 namespace Drupal\Tests\ys_mathjax\Kernel;
 
 use Drupal\Core\Serialization\Yaml;
-use Drupal\KernelTests\KernelTestBase;
+use Drupal\Tests\ys_core\Kernel\YsKernelTestBase;
 
 /**
  * Tests that MathJax is served from this site rather than a third-party CDN.
@@ -19,7 +19,7 @@ use Drupal\KernelTests\KernelTestBase;
  * @group ys_mathjax
  * @group yalesites
  */
-class MathjaxSelfHostedTest extends KernelTestBase {
+class MathjaxSelfHostedTest extends YsKernelTestBase {
 
   /**
    * {@inheritdoc}

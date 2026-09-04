@@ -4,7 +4,6 @@ namespace Drupal\Tests\ys_core\Kernel;
 
 use Drupal\Core\Serialization\Yaml;
 use Drupal\file\Entity\File;
-use Drupal\KernelTests\KernelTestBase;
 use Drupal\media\MediaInterface;
 use Drupal\Tests\media\Traits\MediaTypeCreationTrait;
 use Drupal\Tests\user\Traits\UserCreationTrait;
@@ -30,7 +29,7 @@ use Drupal\Tests\user\Traits\UserCreationTrait;
  * @group ys_core
  * @group yalesites
  */
-class MediaImageTokenTest extends KernelTestBase {
+class MediaImageTokenTest extends YsKernelTestBase {
 
   use MediaTypeCreationTrait;
   use UserCreationTrait;
