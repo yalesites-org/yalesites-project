@@ -1,3 +1,9 @@
+block_dialog:
+  version: VERSION
+  css:
+    theme:
+      css/block-dialog.css: {}
+
 detach_reusable_block:
   version: VERSION
   css:
