@@ -2,7 +2,7 @@
 
 namespace Drupal\Tests\ys_beacon\Kernel;
 
-use Drupal\KernelTests\KernelTestBase;
+use Drupal\Tests\ys_core\Kernel\YsKernelTestBase;
 use Drupal\node\Entity\Node;
 use Drupal\node\Entity\NodeType;
 use Drupal\search_api\Entity\Index;
@@ -28,7 +28,7 @@ use Drupal\ys_beacon\Service\BeaconIndexability;
  *
  * @group ys_beacon
  */
-class BeaconImmediateRemovalTest extends KernelTestBase {
+class BeaconImmediateRemovalTest extends YsKernelTestBase {
 
   /**
    * {@inheritdoc}

@@ -3,7 +3,7 @@
 namespace Drupal\Tests\ys_captcha\Kernel;
 
 use Drupal\Core\Form\FormState;
-use Drupal\KernelTests\KernelTestBase;
+use Drupal\Tests\ys_core\Kernel\YsKernelTestBase;
 
 /**
  * Tests ys_captcha's form alterations for forms carrying a captcha element.
@@ -16,7 +16,7 @@ use Drupal\KernelTests\KernelTestBase;
  * @group ys_captcha
  * @group yalesites
  */
-class ReCaptchaDisclosureTest extends KernelTestBase {
+class ReCaptchaDisclosureTest extends YsKernelTestBase {
 
   /**
    * {@inheritdoc}

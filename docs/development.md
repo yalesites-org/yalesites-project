@@ -114,6 +114,47 @@ This project features custom fields for block theming. For example, the divider 
 5. Proceed to update the key-value pairs within `ys_themes.component_overrides.yml`. Remember to make these updates in two locations: the config/sync directory and the module/install directory.
 6. With these adjustments in place, you can now connect these values to components within the theme templates, achieving the desired styling and functionality.
 
+## Running the custom PHPUnit tests
+
+Tests for our own code live under `web/profiles/custom/yalesites_profile/modules/custom/<module>/tests/src/{Unit,Kernel}`.
+
+```bash
+# Unit suite for a module - no database, effectively free
+lando ssh -c "php /app/vendor/bin/phpunit -c /app/phpunit.xml \
+  /app/web/profiles/custom/yalesites_profile/modules/custom/<module>/tests/src/Unit"
+
+# Kernel suite for a module - needs the test database
+lando ssh -c "env SIMPLETEST_DB=mysql://pantheon:pantheon@database/pantheon?module=mysql \
+  SIMPLETEST_BASE_URL=http://appserver \
+  php /app/vendor/bin/phpunit -c /app/phpunit.xml \
+  /app/web/profiles/custom/yalesites_profile/modules/custom/<module>/tests/src/Kernel"
+```
+
+Things that are easy to get wrong:
+
+- **Use an absolute `-c /app/phpunit.xml`.** A relative path makes a subprocess report a bogus `Could not read "phpunit.xml"`.
+- **Always pass an explicit module path.** The configured default suites scan all of `web/` and fatal on a pre-existing broken contrib test.
+- **PHPUnit honours only the first path argument.** Two paths in one command silently runs only the first, while reporting a total that looks like it covered both. Run one path per invocation.
+- **Run kernel suites one at a time.** Concurrent runs contend on the test database and one gets SIGTERM (exit 143).
+- **Exit code 1 with every test green is normal.** That is the deprecation tally, not a test failure - read the summary line.
+- **CI runs no PHPUnit at all.** `composer unit-test` is an `echo` stub, so `composer code-sniff` is the real automated gate. Never tell a reviewer "CI will catch that" for something only a PHPUnit test covers.
+
+### Kernel tests extend `YsKernelTestBase`
+
+New kernel tests should extend `Drupal\Tests\ys_core\Kernel\YsKernelTestBase` rather than
+`KernelTestBase`. Drupal's `KernelTestBase` forks a fresh PHP process for every test method,
+and each of those processes repeats two full recursive scans of `web/` - one building the
+test namespace map in `web/core/tests/bootstrap.php`, one in `ExtensionDiscovery` during the
+kernel boot - which cannot be reused because the process exits. That is roughly 35s of
+scanning per test method against about 2s of actual test work.
+
+`YsKernelTestBase` turns off process isolation so those per-process caches survive across
+the methods in a class, and turns off `$backupGlobals` / `$backupStaticAttributes`, which is
+a prerequisite rather than a separate tweak - dropping isolation without them makes runs
+dramatically slower, not faster. `Drupal\Tests\ys_core\Unit\KernelTestIsolationContractTest`
+enforces this across the custom tree, so a new kernel test that extends the wrong base fails
+a fast unit test rather than quietly slowing the suite down.
+
 ## Release Process
 
 This project uses semantic release for automated versioning and publishing:

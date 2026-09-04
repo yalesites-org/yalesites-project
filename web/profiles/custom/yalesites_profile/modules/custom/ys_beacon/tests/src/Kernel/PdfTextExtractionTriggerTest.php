@@ -2,10 +2,10 @@
 
 namespace Drupal\Tests\ys_beacon\Kernel;
 
+use Drupal\Tests\ys_core\Kernel\YsKernelTestBase;
 use Drupal\field\Entity\FieldConfig;
 use Drupal\field\Entity\FieldStorageConfig;
 use Drupal\file\Entity\File;
-use Drupal\KernelTests\KernelTestBase;
 use Drupal\media\Entity\Media;
 use Drupal\media\Entity\MediaType;
 use Drupal\ys_beacon\BeaconAuthorization;
@@ -34,7 +34,7 @@ use Drupal\ys_beacon\Service\PdfTextIndexer;
  *
  * @group ys_beacon
  */
-class PdfTextExtractionTriggerTest extends KernelTestBase {
+class PdfTextExtractionTriggerTest extends YsKernelTestBase {
 
   /**
    * {@inheritdoc}

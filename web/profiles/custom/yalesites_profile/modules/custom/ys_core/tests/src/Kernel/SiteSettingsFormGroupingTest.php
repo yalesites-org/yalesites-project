@@ -5,7 +5,6 @@ namespace Drupal\Tests\ys_core\Kernel;
 use Drupal\Component\Serialization\Yaml;
 use Drupal\Core\Form\FormState;
 use Drupal\Core\Render\Element;
-use Drupal\KernelTests\KernelTestBase;
 use Drupal\Tests\user\Traits\UserCreationTrait;
 use Drupal\ys_core\Form\SiteSettingsForm;
 use Drupal\ys_core\PlatformAdminCheckerInterface;
@@ -37,7 +36,7 @@ use Drupal\ys_core\PlatformAdminCheckerInterface;
  *
  * @group ys_core
  */
-class SiteSettingsFormGroupingTest extends KernelTestBase {
+class SiteSettingsFormGroupingTest extends YsKernelTestBase {
 
   use UserCreationTrait;
 

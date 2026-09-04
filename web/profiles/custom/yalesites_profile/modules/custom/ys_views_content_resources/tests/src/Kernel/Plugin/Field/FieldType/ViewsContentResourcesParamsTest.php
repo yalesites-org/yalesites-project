@@ -2,7 +2,7 @@
 
 namespace Drupal\Tests\ys_views_content_resources\Kernel\Plugin\Field\FieldType;
 
-use Drupal\KernelTests\KernelTestBase;
+use Drupal\Tests\ys_core\Kernel\YsKernelTestBase;
 use Drupal\field\Entity\FieldConfig;
 use Drupal\field\Entity\FieldStorageConfig;
 
@@ -13,7 +13,7 @@ use Drupal\field\Entity\FieldStorageConfig;
  * @group ys_views_content_resources
  * @group yalesites
  */
-class ViewsContentResourcesParamsTest extends KernelTestBase {
+class ViewsContentResourcesParamsTest extends YsKernelTestBase {
 
   /**
    * {@inheritdoc}

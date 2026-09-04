@@ -3,7 +3,7 @@
 namespace Drupal\Tests\ys_beacon\Kernel\Plugin\AiFunctionCall;
 
 use Drupal\Component\Datetime\TimeInterface;
-use Drupal\KernelTests\KernelTestBase;
+use Drupal\Tests\ys_core\Kernel\YsKernelTestBase;
 use Drupal\ai\Attribute\FunctionCall;
 use Drupal\ys_beacon\Plugin\AiFunctionCall\GetCurrentDateTime;
 
@@ -19,7 +19,7 @@ use Drupal\ys_beacon\Plugin\AiFunctionCall\GetCurrentDateTime;
  * @group ys_beacon
  * @coversDefaultClass \Drupal\ys_beacon\Plugin\AiFunctionCall\GetCurrentDateTime
  */
-class GetCurrentDateTimeTest extends KernelTestBase {
+class GetCurrentDateTimeTest extends YsKernelTestBase {
 
   /**
    * {@inheritdoc}

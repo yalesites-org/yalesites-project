@@ -2,7 +2,7 @@
 
 namespace Drupal\Tests\ys_integrations\Kernel;
 
-use Drupal\KernelTests\KernelTestBase;
+use Drupal\Tests\ys_core\Kernel\YsKernelTestBase;
 use Drupal\ys_integrations\Controller\YsIntegrationsController;
 
 /**
@@ -20,7 +20,7 @@ use Drupal\ys_integrations\Controller\YsIntegrationsController;
  * @group ys_integrations
  * @group yalesites
  */
-class YsIntegrationsControllerTest extends KernelTestBase {
+class YsIntegrationsControllerTest extends YsKernelTestBase {
 
   /**
    * {@inheritdoc}
