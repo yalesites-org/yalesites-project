@@ -45,6 +45,18 @@ services:
   ys_layouts.block_cloner:
     class: Drupal\ys_layouts\Service\BlockCloner
     arguments: ['@quick_node_clone.entity.form_builder', '@uuid', '@entity_type.manager', '@logger.channel.ys_layouts']
+  # Clones a whole Layout Builder section, blocks included. Delegates per-block
+  # duplication to ys_layouts.block_cloner so section cloning and the
+  # single-block clone stay in sync.
+  ys_layouts.section_cloner:
+    class: Drupal\ys_layouts\Service\SectionCloner
+    arguments: ['@ys_layouts.block_cloner', '@uuid']
+  # Keeps the section clone route inside layout_builder_lock's rules, which that
+  # module enforces on core's section routes but cannot know about this one.
+  ys_layouts.clone_section_access:
+    class: Drupal\ys_layouts\Access\CloneSectionAccessCheck
+    tags:
+      - { name: access_check, applies_to: _ys_layouts_clone_section }
   # Finds inline blocks left behind when an editor removes a non-reusable block
   # from a layout. Core cannot collect these for revisionable entities, so the
   # sweep is on demand via drush ys-layouts:orphaned-blocks.
