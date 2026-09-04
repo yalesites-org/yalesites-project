@@ -4,6 +4,7 @@ import userEvent from "@testing-library/user-event";
 import Chat from "./Chat";
 import { AppStateContext, AppState } from "../../state/AppProvider";
 import { Conversation } from "../../api";
+import styles from "./Chat.module.css";
 
 const renderChat = (
   state: AppState = { currentChat: null },
@@ -585,5 +586,109 @@ describe("Citation overlay accessibility (#1441)", () => {
     );
 
     expect(chip).toHaveFocus();
+  });
+});
+
+// Finds a rule nested inside a media query. jsdom never *applies* media queries,
+// so asserting that the desktop row survived has to be done against the CSS text
+// itself rather than a computed style.
+const findMediaRule = (
+  condition: string,
+  selector: string
+): CSSStyleRule | undefined => {
+  for (const sheet of Array.from(document.styleSheets)) {
+    for (const rule of Array.from(sheet.cssRules)) {
+      const media = (rule as CSSMediaRule).media;
+      if (!media?.mediaText.includes(condition)) continue;
+
+      const match = Array.from((rule as CSSMediaRule).cssRules).find(
+        nested => (nested as CSSStyleRule).selectorText === selector
+      );
+      if (match) return match as CSSStyleRule;
+    }
+  }
+
+  return undefined;
+};
+
+describe("New chat / disclaimer layout (#1645)", () => {
+  // Realistic sample text. jsdom does no layout, so nothing here is actually
+  // length-sensitive -- the real narrow-viewport check is a browser one.
+  const DISCLAIMER =
+    "Responses may contain errors or omissions and should be verified against " +
+    "official Yale sources.";
+
+  beforeEach(() => {
+    const widget = document.createElement("div");
+    widget.id = "ys-beacon-chat-widget";
+    widget.setAttribute("data-disclaimer", DISCLAIMER);
+    document.body.appendChild(widget);
+  });
+
+  afterEach(() => {
+    document.getElementById("ys-beacon-chat-widget")?.remove();
+  });
+
+  const actionsRow = () =>
+    screen.getByRole("button", { name: "New chat" }).parentElement as HTMLElement;
+
+  it("styles the actions row from the stylesheet, not an inline style", () => {
+    renderChat();
+
+    const row = actionsRow();
+
+    // This is the regression fence for the defect itself: an inline style cannot
+    // be overridden by a media query, which is what made the mobile layout
+    // unfixable in the first place.
+    expect(row.getAttribute("style")).toBeNull();
+    expect(row).toHaveClass(styles.chatActions);
+  });
+
+  it("stacks the New chat button above a full-width disclaimer at narrow widths", () => {
+    renderChat();
+
+    // jsdom does not match `(min-width:800px)`, so the computed style here is the
+    // mobile-first base rule -- the layout a phone gets. flex-start is what keeps
+    // the button its natural size while letting the paragraph fill the panel;
+    // centring would re-narrow the disclaimer, stretching would blow the button
+    // out to full width.
+    const computed = getComputedStyle(actionsRow());
+
+    expect(computed.display).toBe("flex");
+    expect(computed.flexDirection).toBe("column");
+    expect(computed.alignItems).toBe("flex-start");
+    // Carried over verbatim from the inline style this rule replaced, and the
+    // two a refactor is most likely to drop silently.
+    expect(computed.gap).toBe("1rem");
+    expect(computed.width).toBe("100%");
+  });
+
+  it("restores the side-by-side desktop row at 800px and up", () => {
+    renderChat();
+
+    const desktopRule = findMediaRule(
+      "(min-width:800px)",
+      `.${styles.chatActions}`
+    );
+
+    expect(desktopRule, "no min-width:800px rule for the actions row").toBeTruthy();
+    // Only the two properties that differ from the mobile base belong here.
+    // getPropertyValue, not the camelCase accessor: rules nested in a media
+    // query use jsdom's plainer CSSOM declaration, which has no typed props.
+    expect(desktopRule?.style.getPropertyValue("flex-direction")).toBe("row");
+    expect(desktopRule?.style.getPropertyValue("align-items")).toBe("center");
+  });
+
+  it("keeps the disclaimer inside the actions row and still described-by the input", () => {
+    renderChat();
+
+    const describedById = screen
+      .getByRole("textbox")
+      .getAttribute("aria-describedby");
+    const disclaimer = document.getElementById(describedById as string);
+
+    // The restructure must not move the disclaimer out of the row or break the
+    // screen-reader association with the question input.
+    expect(actionsRow()).toContainElement(disclaimer);
   });
 });
