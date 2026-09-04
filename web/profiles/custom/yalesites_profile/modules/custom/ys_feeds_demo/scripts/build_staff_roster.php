@@ -9,6 +9,11 @@
  * what ships. After running this, export with `lando drush cex -y` and commit
  * only the feeds.feed_type.* change.
  *
+ * CAUTION: this deletes and recreates the feed type. Deleting a feed type
+ * cascades — the per-feed-type permissions held by site_admin and
+ * platform_admin go with it, silently. Re-grant them before exporting, or
+ * the config diff will quietly drop them.
+ *
  * Run with: lando drush php:script <this file>
  */
 

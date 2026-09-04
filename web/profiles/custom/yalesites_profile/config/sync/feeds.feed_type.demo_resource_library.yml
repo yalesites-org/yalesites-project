@@ -1,4 +1,4 @@
-uuid: 02b8d4f2-972a-427c-b3da-cb6ea12cd1cb
+uuid: 89c43a83-842d-48c5-8e8a-d7dd5385aebb
 langcode: en
 status: true
 dependencies:
@@ -29,174 +29,171 @@ dependencies:
     - feeds_tamper
     - node
     - ys_feeds_demo
-  enforced:
-    module:
-      - ys_feeds_demo
 third_party_settings:
   feeds_tamper:
     tampers:
-      d3c57d5d-8d01-4ca1-9c5c-741b4067e34b:
+      4f5ceda8-6193-4fe9-b22b-a5a6395d104a:
         date_format: ''
         fallback: true
-        uuid: d3c57d5d-8d01-4ca1-9c5c-741b4067e34b
+        uuid: 4f5ceda8-6193-4fe9-b22b-a5a6395d104a
         plugin: strtotime
         source: pub_date
         weight: 0
         label: 'Parse whatever date shape arrived'
         description: ''
-      7f290e82-c85b-49ba-a00e-5e356b8bc0b6:
+      cf5e4883-2ff0-4c5f-9bda-69d747bfa86a:
         date_format: Y-m-d
-        uuid: 7f290e82-c85b-49ba-a00e-5e356b8bc0b6
+        uuid: cf5e4883-2ff0-4c5f-9bda-69d747bfa86a
         plugin: timetodate
         source: pub_date
         weight: 1
         label: 'Normalise to Y-m-d'
         description: ''
-      692cfe39-2aa9-4ad4-92d7-e4bd1c555df2:
-        uuid: 692cfe39-2aa9-4ad4-92d7-e4bd1c555df2
+      4a95f31e-f2f0-45ab-bc6c-e11e69ac7d4c:
+        uuid: 4a95f31e-f2f0-45ab-bc6c-e11e69ac7d4c
         plugin: skip_on_empty
         source: geo
         weight: -1
         label: 'Drop empty cells before splitting'
         description: ''
-      21a7b478-6d62-42b5-a2f5-be278b7165f7:
+      d858dc33-c0d1-452c-9ce1-f78ecffe4152:
         separator: '|'
         limit: null
-        uuid: 21a7b478-6d62-42b5-a2f5-be278b7165f7
+        uuid: d858dc33-c0d1-452c-9ce1-f78ecffe4152
         plugin: explode
         source: geo
         weight: 0
         label: 'Split on pipes'
         description: ''
-      b07d59b3-ba82-4a62-8263-f2eb3a39891f:
+      c75bb1e9-f540-4fc1-abd5-ee9d85fe29e6:
         character: ''
         side: trim
-        uuid: b07d59b3-ba82-4a62-8263-f2eb3a39891f
+        uuid: c75bb1e9-f540-4fc1-abd5-ee9d85fe29e6
         plugin: trim
         source: geo
         weight: 1
         label: 'Trim each value'
         description: ''
-      19a7fb40-7ab3-4969-9f44-cb412b9e39f0:
-        uuid: 19a7fb40-7ab3-4969-9f44-cb412b9e39f0
+      934e787a-a1e6-404d-96bc-3737c9bf8fb6:
+        uuid: 934e787a-a1e6-404d-96bc-3737c9bf8fb6
         plugin: array_filter
         source: geo
         weight: 2
         label: 'Drop empty values left by trailing separators'
         description: ''
-      9eec246b-cf19-4929-a038-5b8ba2351291:
-        uuid: 9eec246b-cf19-4929-a038-5b8ba2351291
+      1e16f158-4f74-446e-b584-be0d5571b82f:
+        uuid: 1e16f158-4f74-446e-b584-be0d5571b82f
         plugin: skip_on_empty
         source: years
         weight: -1
         label: 'Drop empty cells before splitting'
         description: ''
-      b0d7c719-0029-44c6-8112-6e3878e59be5:
+      9d8dbcbd-d2e5-45a6-9289-2febcfa3571e:
         separator: '|'
         limit: null
-        uuid: b0d7c719-0029-44c6-8112-6e3878e59be5
+        uuid: 9d8dbcbd-d2e5-45a6-9289-2febcfa3571e
         plugin: explode
         source: years
         weight: 0
         label: 'Split on pipes'
         description: ''
-      8bf0df8a-0f6b-4342-8b85-5126bdbdbb5e:
+      c0f9694b-9d9d-4883-98dc-6d88bf4f913f:
         character: ''
         side: trim
-        uuid: 8bf0df8a-0f6b-4342-8b85-5126bdbdbb5e
+        uuid: c0f9694b-9d9d-4883-98dc-6d88bf4f913f
         plugin: trim
         source: years
         weight: 1
         label: 'Trim each value'
         description: ''
-      c5eae911-270e-452f-9a35-a829fd54f05c:
-        uuid: c5eae911-270e-452f-9a35-a829fd54f05c
+      9500994f-c688-4832-9066-376f2b9cf4d2:
+        uuid: 9500994f-c688-4832-9066-376f2b9cf4d2
         plugin: array_filter
         source: years
         weight: 2
         label: 'Drop empty values left by trailing separators'
         description: ''
-      947bc180-0abb-4f5a-8291-cb8830265d04:
-        uuid: 947bc180-0abb-4f5a-8291-cb8830265d04
+      b12563cb-face-4c77-912a-a640c705903c:
+        uuid: b12563cb-face-4c77-912a-a640c705903c
         plugin: skip_on_empty
         source: tags
         weight: -1
         label: 'Drop empty cells before splitting'
         description: ''
-      75f01099-5815-4fb4-9880-a140e6cd65a3:
+      3e2933f2-498f-4175-bc5a-8f26758391c2:
         separator: '|'
         limit: null
-        uuid: 75f01099-5815-4fb4-9880-a140e6cd65a3
+        uuid: 3e2933f2-498f-4175-bc5a-8f26758391c2
         plugin: explode
         source: tags
         weight: 0
         label: 'Split on pipes'
         description: ''
-      a7f1ca3c-4610-4535-9cbc-8ee00e1ff586:
+      b84444bc-975c-47a9-b50c-eb7b3f8f2609:
         character: ''
         side: trim
-        uuid: a7f1ca3c-4610-4535-9cbc-8ee00e1ff586
+        uuid: b84444bc-975c-47a9-b50c-eb7b3f8f2609
         plugin: trim
         source: tags
         weight: 1
         label: 'Trim each value'
         description: ''
-      032b2ebc-29aa-4c5b-926a-23cc62968b07:
-        uuid: 032b2ebc-29aa-4c5b-926a-23cc62968b07
+      f07a47bc-84a4-42cc-9789-c79b2b08b69b:
+        uuid: f07a47bc-84a4-42cc-9789-c79b2b08b69b
         plugin: array_filter
         source: tags
         weight: 2
         label: 'Drop empty values left by trailing separators'
         description: ''
-      ec0b36b8-96ff-4e22-861f-1f8e73de32e5:
-        uuid: ec0b36b8-96ff-4e22-861f-1f8e73de32e5
+      773f429b-b00b-4ba8-9de8-cab9c9da7754:
+        uuid: 773f429b-b00b-4ba8-9de8-cab9c9da7754
         plugin: skip_on_empty
         source: audience
         weight: -1
         label: 'Drop empty cells before splitting'
         description: ''
-      9d83dda1-be66-4539-a5ce-5f77ed6f77d7:
+      3d403ffe-d84b-4b8b-89ef-83f65e823d39:
         separator: ','
         limit: null
-        uuid: 9d83dda1-be66-4539-a5ce-5f77ed6f77d7
+        uuid: 3d403ffe-d84b-4b8b-89ef-83f65e823d39
         plugin: explode
         source: audience
         weight: 0
         label: 'Split on commas'
         description: ''
-      f6842e73-a525-4af9-8913-cd6d06cfce44:
+      a1c35d97-edf2-41b8-a531-fcc5076f43c6:
         character: ''
         side: trim
-        uuid: f6842e73-a525-4af9-8913-cd6d06cfce44
+        uuid: a1c35d97-edf2-41b8-a531-fcc5076f43c6
         plugin: trim
         source: audience
         weight: 1
         label: 'Trim each value'
         description: ''
-      b5f3e10c-62ea-4350-89de-cb91746bb468:
+      b681b850-23aa-4d0e-b027-e4840dcba1b9:
         find: '/\|.*$/'
         replace: ''
         limit: null
-        uuid: b5f3e10c-62ea-4350-89de-cb91746bb468
+        uuid: b681b850-23aa-4d0e-b027-e4840dcba1b9
         plugin: find_replace_regex
         source: discipline
         weight: 0
         label: 'Keep only the first discipline'
         description: ''
-      d65dcf5e-4f63-46b6-8ae7-b6291d1c0734:
+      ceabb869-6de2-4845-b4a3-33662bfb2eac:
         character: ''
         side: trim
-        uuid: d65dcf5e-4f63-46b6-8ae7-b6291d1c0734
+        uuid: ceabb869-6de2-4845-b4a3-33662bfb2eac
         plugin: trim
         source: discipline
         weight: 1
         label: Trim
         description: ''
-      66e6cc9b-bb20-444e-b7a1-11afaf7c9856:
+      dce8cf88-4fb4-4608-acd0-f0f3a3405ae8:
         false_value: 'No'
         match_case: false
         no_match_value: false
-        uuid: 66e6cc9b-bb20-444e-b7a1-11afaf7c9856
+        uuid: dce8cf88-4fb4-4608-acd0-f0f3a3405ae8
         plugin: convert_boolean
         source: cas
         weight: 0
@@ -204,45 +201,45 @@ third_party_settings:
         description: ''
         truth_value: 'Yes'
         other_text: ''
-      13593087-90c1-4036-b0f1-d7a6de5e428d:
+      1d6dda14-2ee6-40b3-95e4-655496e25557:
         allowed_tags: ''
-        uuid: 13593087-90c1-4036-b0f1-d7a6de5e428d
+        uuid: 1d6dda14-2ee6-40b3-95e4-655496e25557
         plugin: strip_tags
         source: blurb
         weight: 0
         label: 'Strip HTML'
         description: ''
-      fa58d7ed-95eb-4dcb-917e-f0e6f18b9477:
+      cad07ca9-ebf9-44e2-a938-8b470554d647:
         num_char: 150
         ellipses: true
         wordsafe: true
-        uuid: fa58d7ed-95eb-4dcb-917e-f0e6f18b9477
+        uuid: cad07ca9-ebf9-44e2-a938-8b470554d647
         plugin: truncate_text
         source: blurb
         weight: 1
         label: 'Truncate to 150 characters'
         description: ''
-      dabddfab-1df8-40aa-80a9-d7f79bc07884:
+      02bdf5eb-b14d-4a75-8d07-1af3db51bc38:
         default_value: date
         only_if_empty: false
-        uuid: dabddfab-1df8-40aa-80a9-d7f79bc07884
+        uuid: 02bdf5eb-b14d-4a75-8d07-1af3db51bc38
         plugin: default_value
         source: date_format
         weight: 0
         label: 'Always use the full-date display format'
         description: ''
-      e84ad437-86a2-4ffa-b68a-4caa65c8bc44:
+      d030ddfc-7e31-46f8-b0ad-91a7a7719901:
         character: ''
         side: trim
-        uuid: e84ad437-86a2-4ffa-b68a-4caa65c8bc44
+        uuid: d030ddfc-7e31-46f8-b0ad-91a7a7719901
         plugin: trim
         source: accession
         weight: 0
         label: Trim
         description: ''
-      bcb37689-2ccd-4fa0-966f-d334a70fa1ed:
+      ab55d28b-2d85-46fe-9f74-a0e469471bf4:
         invert: false
-        uuid: bcb37689-2ccd-4fa0-966f-d334a70fa1ed
+        uuid: ab55d28b-2d85-46fe-9f74-a0e469471bf4
         plugin: required
         source: accession
         weight: 1
@@ -250,17 +247,14 @@ third_party_settings:
         description: ''
 label: 'Demo: library resource collection'
 id: demo_resource_library
-description: "Mirrors an external catalogue of collection records into Resource nodes, fetching each record's PDF and cover image into real media entities. Keyed on accession number, so an updated catalogue updates the existing resources rather than duplicating them."
-help: 'Expects a CSV export from the collection management system. Rows are matched on the accession column.'
+description: "Turns an uploaded catalogue export into Resource nodes, downloading each record's PDF and cover image into real media entities. Keyed on accession number, so re-uploading an updated export updates the existing resources rather than duplicating them."
+help: 'Upload a CSV export from the collection management system. Rows are matched on the accession column, so re-uploading a corrected export updates the existing resources instead of duplicating them. Each row may point at a PDF and a cover image by URL; those are downloaded and become media entities.'
 import_period: -1
 import_period_per_feed: false
-fetcher: http
+fetcher: upload
 fetcher_configuration:
-  auto_detect_feeds: false
-  use_pubsubhubbub: false
-  always_download: true
-  fallback_hub: ''
-  request_timeout: 30
+  allowed_extensions: 'csv tsv txt'
+  directory: 'private://feeds'
 parser: csv
 parser_configuration:
   delimiter: ','

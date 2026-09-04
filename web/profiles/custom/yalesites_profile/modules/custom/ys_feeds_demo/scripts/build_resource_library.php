@@ -4,6 +4,11 @@
  * @file
  * Builds the "demo_resource_library" feed type (Demo 1).
  *
+ * CAUTION: this deletes and recreates the feed type. Deleting a feed type
+ * cascades — the per-feed-type permissions held by site_admin and
+ * platform_admin go with it, silently. Re-grant them before exporting, or
+ * the config diff will quietly drop them.
+ *
  * Run with: lando drush php:script <this file>
  */
 
@@ -107,17 +112,19 @@ $mappings = [
 $feed_type = FeedType::create([
   'id' => $id,
   'label' => 'Demo: library resource collection',
-  'description' => 'Mirrors an external catalogue of collection records into Resource nodes, fetching each record\'s PDF and cover image into real media entities. Keyed on accession number, so an updated catalogue updates the existing resources rather than duplicating them.',
-  'help' => 'Expects a CSV export from the collection management system. Rows are matched on the accession column.',
-  // Manual only: nothing should start importing halfway through a demo.
+  'description' => 'Turns an uploaded catalogue export into Resource nodes, downloading each record\'s PDF and cover image into real media entities. Keyed on accession number, so re-uploading an updated export updates the existing resources rather than duplicating them.',
+  'help' => 'Upload a CSV export from the collection management system. Rows are matched on the accession column, so re-uploading a corrected export updates the existing resources instead of duplicating them. Each row may point at a PDF and a cover image by URL; those are downloaded and become media entities.',
+  // Manual only: nothing should start importing halfway through a demo, and
+  // an uploaded file has no URL to poll anyway.
   'import_period' => -1,
-  'fetcher' => 'http',
+  // A collections team sends over a CSV export and someone uploads it. That
+  // is the actual workflow, and it keeps the demo honest: the catalogue rows
+  // arrive as a file, while the PDFs and cover images they point at are still
+  // fetched over HTTP, which is the part that matters.
+  'fetcher' => 'upload',
   'fetcher_configuration' => [
-    'auto_detect_feeds' => FALSE,
-    'use_pubsubhubbub' => FALSE,
-    'always_download' => TRUE,
-    'fallback_hub' => '',
-    'request_timeout' => 30,
+    'allowed_extensions' => 'csv tsv txt',
+    'directory' => 'private://feeds',
   ],
   'parser' => 'csv',
   'parser_configuration' => ['delimiter' => ',', 'no_headers' => FALSE, 'line_limit' => 100],

@@ -31,7 +31,7 @@ class FeedsDemoCommands extends DrushCommands {
     'demo_resource_library' => [
       'title' => 'Special Collections catalogue (demo)',
       'fixture' => 'resources.csv',
-      'source' => 'http',
+      'source' => 'upload',
     ],
     'demo_content_roundtrip' => [
       'title' => 'Bulk edit round trip (demo)',
@@ -227,14 +227,26 @@ class FeedsDemoCommands extends DrushCommands {
     $feed_storage = $this->entityTypeManager->getStorage('feeds_feed');
 
     foreach (self::DEMO_FEEDS as $type => $info) {
-      if ($info['source'] !== 'http') {
-        // The round-trip demo takes a file a person just exported and edited,
-        // so there is nothing sensible to create for it up front.
+      if (!$this->entityTypeManager->getStorage('feeds_feed_type')->load($type)) {
+        $this->logger()->warning(dt('Feed type @type is not installed; skipping.', ['@type' => $type]));
         continue;
       }
 
-      if (!$this->entityTypeManager->getStorage('feeds_feed_type')->load($type)) {
-        $this->logger()->warning(dt('Feed type @type is not installed; skipping.', ['@type' => $type]));
+      // The round-trip demo consumes a file the presenter exports and edits
+      // during the demo itself, so there is nothing to create for it up front.
+      if ($info['fixture'] === NULL) {
+        continue;
+      }
+
+      if ($info['source'] === 'upload') {
+        // An upload feed has no URL to import from until somebody attaches a
+        // file, so create it empty and ready rather than importing it. The
+        // file to attach is published alongside the fixtures.
+        $this->createEmptyFeed($feed_storage, $type, $info['title']);
+        $this->logger()->success(dt('Created @type, ready for a file. Upload this: @url', [
+          '@type' => $type,
+          '@url' => rtrim($base_url, '/') . '/sites/default/files/feeds-demo/' . $info['fixture'],
+        ]));
         continue;
       }
 
@@ -258,6 +270,27 @@ class FeedsDemoCommands extends DrushCommands {
     }
 
     return 0;
+  }
+
+  /**
+   * Creates a feed with no source, ready for someone to attach a file.
+   *
+   * @param \Drupal\Core\Entity\EntityStorageInterface $feed_storage
+   *   The feed storage.
+   * @param string $type
+   *   The feed type id.
+   * @param string $title
+   *   The feed label.
+   */
+  protected function createEmptyFeed($feed_storage, string $type, string $title) {
+    $feed = $feed_storage->create([
+      'type' => $type,
+      'title' => $title,
+      'source' => '',
+      'uid' => 1,
+      'status' => 1,
+    ]);
+    $feed->save();
   }
 
   /**

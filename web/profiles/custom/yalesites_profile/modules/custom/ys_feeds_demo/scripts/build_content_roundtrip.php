@@ -8,6 +8,11 @@
  * can export existing content, bulk-edit it in a spreadsheet, and load the
  * result back onto the same nodes.
  *
+ * CAUTION: this deletes and recreates the feed type. Deleting a feed type
+ * cascades — the per-feed-type permissions held by site_admin and
+ * platform_admin go with it, silently. Re-grant them before exporting, or
+ * the config diff will quietly drop them.
+ *
  * Run with: lando drush php:script <this file>
  */
 
