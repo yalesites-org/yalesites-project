@@ -2,57 +2,92 @@
  * @file
  * Styling for the "Clone" action on the Layout Builder section toolbar.
  *
- * Matches the icon-plus-label treatment section_library's section links already
- * use in this toolbar (a 26px mask-image in a ::before, offset by a 30px left
- * pad), so the section actions read as one set.
+ * The section actions are not a flex row: gin_lb positions each one absolutely
+ * at a hardcoded offset (Remove an 18px icon at left 0, Configure an
+ * icon-plus-label at left 20px) and atomic pins section_library's "Add Section
+ * to Library" at left 275px. Clone is given the same treatment as Remove — an
+ * 18px masked icon with its label off-screen — and placed between Remove and
+ * Configure so the actions read as one set.
  *
- * The icon is coloured with currentColor rather than a fixed value so it tracks
- * the link in both light and dark mode. Atomic's admin theme then restyles
- * .layout-builder__link::before generically for dark mode and hover, which
- * picks this icon up with no extra rules there.
+ * Why between them rather than to Configure's right: Configure's width is the
+ * section label, which editors can set, so it is unbounded (measured 196-219px
+ * for the labels this platform ships). A fixed-width icon placed *before* the
+ * variable-width label cannot collide at any label length, whereas anything to
+ * Configure's right overlaps either Configure or the library link.
+ *
+ * Shifting Configure 20px right is gin_lb's own answer to this: its gin_lb_plus
+ * submodule ships `.layout-builder__link--configure { left: 40px }` when it adds
+ * a fourth item to the row. Configure then ends at 259px worst case, clear of
+ * the library link.
+ *
+ * The left-to-right order here has to match the markup order, or the toolbar
+ * reads in one order and takes focus in another (WCAG 2.4.3). The ordering half
+ * lives in SectionCloneLinkBuilder::insertClone(); change one and check both.
  */
+
+/*
+ * Scoped to the sections that actually get a Clone action, so a section where
+ * cloning is refused does not show an empty slot where Configure used to sit.
+ * The class is added by SectionCloneLinkBuilder::preRender() from the same
+ * access decision that gates the link.
+ */
+.ys-has-clone-action .layout-builder__link--configure {
+  left: 40px;
+}
 
 .layout-builder__link--clone {
   /* Duplicate: a sheet copied over another, the conventional clone glyph.
-     Named to match atomic's --icon-add-section / --icon-import-library, and
-     scoped here rather than :root because only this action uses it. Declared
-     once because the rule below needs it twice, masked and -webkit-masked. */
-  --icon-clone-section: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="26" height="26"><path d="M15 1H4a2 2 0 0 0-2 2v12h2V3h11V1zm4 4H8a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h11a2 2 0 0 0 2-2V7a2 2 0 0 0-2-2zm0 16H8V7h11v14z"/></svg>');
+     Declared once because the rule needs it twice, masked and -webkit-masked. */
+  --icon-clone-section: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="17" height="17"><path d="M15 1H4a2 2 0 0 0-2 2v12h2V3h11V1zm4 4H8a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h11a2 2 0 0 0 2-2V7a2 2 0 0 0-2-2zm0 16H8V7h11v14z"/></svg>');
 
-  position: relative;
-  display: inline-block;
-  padding-left: 30px;
-  background-image: none;
-}
-
-.layout-builder__link--clone::before {
+  /* Geometry matched to gin_lb's .layout-builder__link--remove so the two
+     icon-only actions are the same size and sit on the same baseline. The
+     label is pushed off-screen rather than removed, so it remains the link's
+     accessible name — the technique core's Remove action already uses here.
+     .visually-hidden would collapse the 18px icon box, so it is not an option. */
   position: absolute;
-  top: 50%;
-  left: 0;
-  width: 26px;
-  height: 26px;
-  content: "";
-  transform: translateY(-50%);
-  background-color: currentColor;
+  z-index: 2;
+  top: -18px;
+  left: 20px;
+  width: 18px;
+  height: 18px;
+  white-space: nowrap;
+  text-indent: -9999px;
+
+  /* With a mask, background-color IS the icon colour. */
+  background-color: var(--gin-border-color-form-element);
   mask-image: var(--icon-clone-section);
   mask-repeat: no-repeat;
   mask-position: center;
-  mask-size: 26px 26px;
+  mask-size: 17px 17px;
   -webkit-mask-image: var(--icon-clone-section);
   -webkit-mask-repeat: no-repeat;
   -webkit-mask-position: center;
-  -webkit-mask-size: 26px 26px;
+  -webkit-mask-size: 17px 17px;
+}
+
+/* Hovering the section lights all of its actions, as gin_lb does for Remove. */
+.layout-builder__section:hover .layout-builder__link--clone {
+  background-color: var(--gin-color-primary);
+}
+
+.layout-builder__link--clone:hover,
+.layout-builder__link--clone:focus {
+  background-color: var(--gin-color-primary-hover);
 }
 
 /*
- * Atomic's admin theme keeps the section actions blue while a section is
- * hovered but the action itself is not, via an explicit selector list that
- * predates this action (admin-theme.css, ".gin--dark-mode .layout-builder__
- * section:hover ... :not(:hover)"). Its generic ::before rule already covers
- * this icon; only the label colour needs enrolling. Belongs in that list in
- * atomic the next time that file is touched -- kept here so this change stays
- * in one repo.
+ * Atomic keeps these actions blue on white, including a mask-aware rule for
+ * Remove (admin-theme.css). Clone uses the same mask-on-element pattern so it
+ * needs the same treatment; it belongs alongside Remove's rules in atomic the
+ * next time that file is touched, and is kept here so this change stays in one
+ * repo. Ordered after the rules above so it wins on source order.
  */
-.gin--dark-mode .layout-builder__section:hover .layout-builder__link--clone:not(:hover) {
-  color: var(--ys-contrast-blue);
+.gin--dark-mode .layout-builder__link--clone {
+  background-color: var(--ys-contrast-blue);
+}
+
+.gin--dark-mode .layout-builder__link--clone:hover,
+.gin--dark-mode .layout-builder__link--clone:focus {
+  background-color: var(--ys-contrast-black);
 }

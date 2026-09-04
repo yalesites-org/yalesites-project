@@ -286,6 +286,11 @@ class SectionCloneLinkBuilderTest extends UnitTestCase {
     $element = SectionCloneLinkBuilder::preRender($this->element());
 
     $this->assertFalse($element['layout_builder'][1]['clone']['#access'], 'The clone link is hidden on a section the user may not clone.');
+    $this->assertNotContains(
+      'ys-has-clone-action',
+      $element['layout_builder'][1]['#attributes']['class'],
+      'A section that may not be cloned is not marked, so the stylesheet leaves Configure where it is.'
+    );
   }
 
   /**
@@ -297,6 +302,11 @@ class SectionCloneLinkBuilderTest extends UnitTestCase {
     $element = SectionCloneLinkBuilder::preRender($this->element());
 
     $this->assertTrue($element['layout_builder'][1]['clone']['#access'], 'The clone link is shown on a section the user may clone.');
+    $this->assertContains(
+      'ys-has-clone-action',
+      $element['layout_builder'][1]['#attributes']['class'],
+      'A cloneable section is marked so the stylesheet clears a slot for the action.'
+    );
   }
 
   /**
@@ -330,6 +340,57 @@ class SectionCloneLinkBuilderTest extends UnitTestCase {
         "The section body is still the last child of the section at key $key."
       );
     }
+  }
+
+  /**
+   * Clone is ordered between Remove and Configure.
+   *
+   * The stylesheet lays the actions out Remove, Clone, Configure across the top
+   * of the section, so the markup has to agree: a control that reads second but
+   * takes focus third is a focus-order defect (WCAG 2.4.3).
+   *
+   * @covers ::preRender
+   */
+  public function testCloneLinkIsOrderedBetweenRemoveAndConfigure(): void {
+    $element = SectionCloneLinkBuilder::preRender($this->element());
+
+    foreach ([1, 3] as $key) {
+      $actions = array_values(array_filter(
+        array_keys($element['layout_builder'][$key]),
+        fn ($child_key) => in_array($child_key, ['remove', 'clone', 'configure'], TRUE)
+      ));
+      $this->assertSame(
+        ['remove', 'clone', 'configure'],
+        $actions,
+        "Clone sits between Remove and Configure in the section at key $key."
+      );
+    }
+  }
+
+  /**
+   * With no Configure action, Clone still precedes the section body.
+   *
+   * Not a hypothetical: layout_builder_lock unsets `configure` on any section
+   * carrying LOCKED_SECTION_CONFIGURE and its pre-render runs before this one,
+   * so for an editor this is the normal path on every content-locked section
+   * the platform ships. (Core itself always emits the key and gates it with
+   * `#access`, which is why the fixture has to unset it explicitly.)
+   *
+   * @covers ::preRender
+   */
+  public function testCloneLinkPrecedesTheBodyWhenConfigureIsAbsent(): void {
+    $element = $this->element();
+    unset($element['layout_builder'][1]['configure']);
+
+    $element = SectionCloneLinkBuilder::preRender($element);
+    $keys = array_keys($element['layout_builder'][1]);
+
+    $this->assertContains('clone', $keys, 'The clone link is still added.');
+    $this->assertLessThan(
+      array_search('layout-builder__section', $keys, TRUE),
+      array_search('clone', $keys, TRUE),
+      'The clone link is ordered before the section body.'
+    );
   }
 
   /**

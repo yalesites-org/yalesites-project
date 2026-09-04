@@ -84,29 +84,80 @@ class SectionCloneLinkBuilder implements TrustedCallbackInterface {
         ]
       );
 
-      // Move the section body aside so the new link is appended before it,
-      // keeping the toolbar links above the section content in the markup.
-      $body = $section['layout-builder__section'];
-      unset($element['layout_builder'][$key]['layout-builder__section']);
+      // Computed once: it decides both whether the link renders and whether the
+      // stylesheet shifts Configure aside to make room for it.
+      $can_clone = $url->access();
 
-      $element['layout_builder'][$key]['clone'] = [
+      $link = [
         '#type' => 'link',
         // Named per section, matching the accessible names core gives the
         // Configure and Remove actions, so a screen reader can tell the
-        // sections' actions apart.
+        // sections' actions apart. The label is placed off-screen by the
+        // stylesheet, the same way core's Remove action hides its own.
         '#title' => t('Clone @section', [
           '@section' => static::sectionLabel($section, $delta),
         ]),
         '#url' => $url,
         // The route decides; the link only reflects it. This is what stops a
         // locked section advertising an action that would be refused.
-        '#access' => $url->access(),
+        '#access' => $can_clone,
       ];
 
-      $element['layout_builder'][$key]['layout-builder__section'] = $body;
+      $section = static::insertClone($section, $link);
+
+      // The 20px slot the stylesheet clears for Clone must only be cleared on
+      // the sections that actually get one, or a refused section would show an
+      // empty gap where Configure used to sit.
+      if ($can_clone) {
+        $section['#attributes']['class'][] = 'ys-has-clone-action';
+      }
+
+      $element['layout_builder'][$key] = $section;
     }
 
     return $element;
+  }
+
+  /**
+   * Returns the section's children with the clone link in toolbar order.
+   *
+   * The stylesheet lays the section actions out as Remove, Clone, Configure
+   * across the top edge of the section, so the clone link is placed
+   * immediately before `configure` rather than appended: a link that reads
+   * second but receives focus third is a focus-order defect (WCAG 2.4.3), and
+   * appending it after the whole set would produce exactly that.
+   *
+   * The `configure` child is not always there, so the section body is the
+   * fallback anchor and the action stays ahead of the section's content either
+   * way. Note it is contrib that removes it, not core: core always emits the
+   * key and merely gates it with `#access`, but layout_builder_lock *unsets* it
+   * on any section carrying LOCKED_SECTION_CONFIGURE, and its pre-render runs
+   * before this one (positions 1 and 6 of the `layout_builder` element's
+   * `#pre_render`). Every content-locked section this platform ships carries
+   * that lock, so for an editor the fallback is the normal path on the Banner
+   * and Title and Metadata sections rather than an edge case.
+   *
+   * @param array $section
+   *   The built section render array.
+   * @param array $link
+   *   The clone link render array to insert.
+   *
+   * @return array
+   *   The section render array with the clone link inserted.
+   *
+   * @see \Drupal\layout_builder\Element\LayoutBuilder::buildAdministrativeSection()
+   */
+  protected static function insertClone(array $section, array $link): array {
+    $rebuilt = [];
+    foreach ($section as $child_key => $child) {
+      // Whichever of the two anchors appears first wins.
+      if (!isset($rebuilt['clone']) && in_array($child_key, ['configure', 'layout-builder__section'], TRUE)) {
+        $rebuilt['clone'] = $link;
+      }
+      $rebuilt[$child_key] = $child;
+    }
+
+    return $rebuilt;
   }
 
   /**
