@@ -215,6 +215,26 @@
 }
 
 
+/*
+ * Stacked by default so the disclaimer gets the panel's full width, rather than
+ * being squeezed into a tall thin column beside the button that pushes the answer
+ * off screen on a phone (#1645). Do not flatten these two rules back into one.
+ */
+.chatActions {
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+    align-items: flex-start;
+    width: 100%;
+}
+
+@media screen and (min-width:800px) {
+    .chatActions {
+        flex-direction: row;
+        align-items: center;
+    }
+}
+
 .newChatButton {
     box-sizing: border-box;
     display: inline-flex;
