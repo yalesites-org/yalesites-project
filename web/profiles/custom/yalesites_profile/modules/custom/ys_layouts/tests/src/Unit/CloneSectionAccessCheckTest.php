@@ -14,12 +14,18 @@ use Drupal\layout_builder_lock\LayoutBuilderLock;
 use Drupal\ys_layouts\Access\CloneSectionAccessCheck;
 
 /**
- * Tests that locked sections cannot be cloned.
+ * Tests which layout_builder_lock settings stop a section being cloned.
  *
  * The layout_builder_lock module enforces its locks on core's section routes at
  * the route level, so without an equivalent check on the clone route an editor
- * could duplicate a locked section by visiting the URL directly — and, because
- * the copy inherits the lock settings, be unable to remove what they created.
+ * could duplicate a curated section by visiting the URL directly.
+ *
+ * The distinction under test is content locks versus positional locks: the
+ * former say a section's contents are not the editor's to change and refuse the
+ * clone, while LOCKED_SECTION_BEFORE / LOCKED_SECTION_AFTER only govern where a
+ * new section may be added and do not. The Content Section of Event and Post
+ * carries exactly the positional pair, so it is the case that distinction
+ * exists to allow.
  *
  * @group yalesites
  * @group ys_layouts
@@ -68,14 +74,19 @@ class CloneSectionAccessCheckTest extends UnitTestCase {
    * @param string $interface
    *   The section storage interface to mock, so the defaults and overrides
    *   branches can both be exercised.
+   * @param array $regions
+   *   The layout_builder_lock per-region lock settings to put on the section.
    *
    * @return \Drupal\layout_builder\SectionStorageInterface|\PHPUnit\Framework\MockObject\MockObject
    *   The mocked section storage.
    */
-  protected function storageWithLock(array $lock, string $interface = SectionStorageInterface::class) {
+  protected function storageWithLock(array $lock, string $interface = SectionStorageInterface::class, array $regions = []) {
     $section = new Section('layout_onecol');
     if ($lock) {
       $section->setThirdPartySetting('layout_builder_lock', 'lock', $lock);
+    }
+    if ($regions) {
+      $section->setThirdPartySetting('layout_builder_lock', 'regions', $regions);
     }
 
     $section_storage = $this->createMock($interface);
@@ -103,18 +114,119 @@ class CloneSectionAccessCheckTest extends UnitTestCase {
   }
 
   /**
-   * A section carrying lock settings cannot be cloned.
+   * Every content lock on its own refuses the clone.
+   *
+   * Each of these says some part of the section's contents is not the editor's
+   * to change, so a copy would be a section they cannot populate or correct.
    *
    * @covers ::access
+   *
+   * @dataProvider contentLockProvider
    */
-  public function testLockedSectionCannotBeCloned(): void {
+  public function testContentLockedSectionCannotBeCloned(int $lock): void {
     $result = (new CloneSectionAccessCheck())->access(
-      $this->storageWithLock([LayoutBuilderLock::LOCKED_SECTION_AFTER => LayoutBuilderLock::LOCKED_SECTION_AFTER]),
+      $this->storageWithLock([$lock => $lock]),
       $this->account(),
       $this->routeMatch()
     );
 
-    $this->assertTrue($result->isForbidden(), 'Cloning a locked section is refused.');
+    $this->assertTrue($result->isForbidden(), 'Cloning a section with this content lock is refused.');
+  }
+
+  /**
+   * Supplies every layout_builder_lock setting that is not positional.
+   *
+   * @return array[]
+   *   Test cases of [lock value], keyed by the setting's name.
+   */
+  public static function contentLockProvider(): array {
+    return [
+      'LOCKED_BLOCK_UPDATE' => [LayoutBuilderLock::LOCKED_BLOCK_UPDATE],
+      'LOCKED_BLOCK_DELETE' => [LayoutBuilderLock::LOCKED_BLOCK_DELETE],
+      'LOCKED_BLOCK_MOVE' => [LayoutBuilderLock::LOCKED_BLOCK_MOVE],
+      'LOCKED_BLOCK_ADD' => [LayoutBuilderLock::LOCKED_BLOCK_ADD],
+      'LOCKED_SECTION_CONFIGURE' => [LayoutBuilderLock::LOCKED_SECTION_CONFIGURE],
+      'LOCKED_SECTION_BLOCK_MOVE' => [LayoutBuilderLock::LOCKED_SECTION_BLOCK_MOVE],
+    ];
+  }
+
+  /**
+   * The positional locks alone do not stop a section being cloned.
+   *
+   * This is the Content Section of Event and Post: it carries exactly this
+   * pair, which only removes the "Add section" links either side of it and says
+   * nothing about the blocks inside, so it is cloneable.
+   *
+   * @covers ::access
+   */
+  public function testPositionallyLockedSectionCanBeCloned(): void {
+    $result = (new CloneSectionAccessCheck())->access(
+      $this->storageWithLock([
+        LayoutBuilderLock::LOCKED_SECTION_BEFORE => LayoutBuilderLock::LOCKED_SECTION_BEFORE,
+        LayoutBuilderLock::LOCKED_SECTION_AFTER => LayoutBuilderLock::LOCKED_SECTION_AFTER,
+      ]),
+      $this->account(),
+      $this->routeMatch()
+    );
+
+    $this->assertTrue($result->isAllowed(), 'A section locked only against neighbouring sections is cloneable.');
+  }
+
+  /**
+   * A content lock still refuses when positional locks sit alongside it.
+   *
+   * The skeleton sections carry the whole set, so the positional pair must not
+   * mask the content locks it is mixed with.
+   *
+   * @covers ::access
+   */
+  public function testPositionalLocksDoNotExcuseContentLocks(): void {
+    $result = (new CloneSectionAccessCheck())->access(
+      $this->storageWithLock([
+        LayoutBuilderLock::LOCKED_SECTION_BEFORE => LayoutBuilderLock::LOCKED_SECTION_BEFORE,
+        LayoutBuilderLock::LOCKED_SECTION_AFTER => LayoutBuilderLock::LOCKED_SECTION_AFTER,
+        LayoutBuilderLock::LOCKED_BLOCK_ADD => LayoutBuilderLock::LOCKED_BLOCK_ADD,
+      ]),
+      $this->account(),
+      $this->routeMatch()
+    );
+
+    $this->assertTrue($result->isForbidden(), 'A content lock mixed with positional locks still refuses.');
+  }
+
+  /**
+   * A per-region lock refuses the clone.
+   *
+   * Region locks freeze the blocks of one region, so they are content locks in
+   * every meaningful sense. Without reading them, a section locked only
+   * per-region would have become cloneable when the positional locks stopped
+   * blocking.
+   *
+   * @covers ::access
+   */
+  public function testRegionLockedSectionCannotBeCloned(): void {
+    $result = (new CloneSectionAccessCheck())->access(
+      $this->storageWithLock([], regions: ['content' => ['content']]),
+      $this->account(),
+      $this->routeMatch()
+    );
+
+    $this->assertTrue($result->isForbidden(), 'Cloning a section with a locked region is refused.');
+  }
+
+  /**
+   * Region settings with nothing selected count as unlocked.
+   *
+   * @covers ::access
+   */
+  public function testSectionWithEmptyRegionLocksCanBeCloned(): void {
+    $result = (new CloneSectionAccessCheck())->access(
+      $this->storageWithLock([], regions: ['content' => []]),
+      $this->account(),
+      $this->routeMatch()
+    );
+
+    $this->assertTrue($result->isAllowed(), 'A section whose region locks are all unselected is cloneable.');
   }
 
   /**
@@ -139,8 +251,8 @@ class CloneSectionAccessCheckTest extends UnitTestCase {
   public function testSectionWithOnlyUncheckedLocksCanBeCloned(): void {
     $result = (new CloneSectionAccessCheck())->access(
       $this->storageWithLock([
-        LayoutBuilderLock::LOCKED_SECTION_BEFORE => 0,
-        LayoutBuilderLock::LOCKED_SECTION_AFTER => 0,
+        LayoutBuilderLock::LOCKED_BLOCK_ADD => 0,
+        LayoutBuilderLock::LOCKED_SECTION_CONFIGURE => 0,
       ]),
       $this->account(),
       $this->routeMatch()
@@ -156,7 +268,7 @@ class CloneSectionAccessCheckTest extends UnitTestCase {
    */
   public function testBypassPermissionAllowsCloningLockedSection(): void {
     $result = (new CloneSectionAccessCheck())->access(
-      $this->storageWithLock([LayoutBuilderLock::LOCKED_SECTION_AFTER => LayoutBuilderLock::LOCKED_SECTION_AFTER]),
+      $this->storageWithLock([LayoutBuilderLock::LOCKED_BLOCK_ADD => LayoutBuilderLock::LOCKED_BLOCK_ADD]),
       $this->account('bypass lock settings on layout overrides'),
       $this->routeMatch()
     );
@@ -170,7 +282,7 @@ class CloneSectionAccessCheckTest extends UnitTestCase {
    * @covers ::access
    */
   public function testManageLocksPermissionAppliesToTheDefaultLayout(): void {
-    $lock = [LayoutBuilderLock::LOCKED_SECTION_AFTER => LayoutBuilderLock::LOCKED_SECTION_AFTER];
+    $lock = [LayoutBuilderLock::LOCKED_BLOCK_ADD => LayoutBuilderLock::LOCKED_BLOCK_ADD];
 
     $allowed = (new CloneSectionAccessCheck())->access(
       $this->storageWithLock($lock, DefaultsSectionStorageInterface::class),

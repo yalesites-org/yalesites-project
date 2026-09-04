@@ -10,6 +10,7 @@ use Drupal\KernelTests\KernelTestBase;
 use Drupal\layout_builder\Section;
 use Drupal\layout_builder\SectionComponent;
 use Drupal\layout_builder\SectionStorageInterface;
+use Drupal\layout_builder_lock\LayoutBuilderLock;
 use Drupal\paragraphs\Entity\Paragraph;
 use Drupal\paragraphs\Entity\ParagraphsType;
 use Drupal\ys_layouts\Service\BlockCloner;
@@ -242,6 +243,48 @@ class SectionClonerTest extends KernelTestBase {
       'three',
       $clone->getThirdPartySetting('ys_themes', 'component_theme'),
       'The clone keeps the section component-theme selection.'
+    );
+  }
+
+  /**
+   * The clone does not inherit the source's layout_builder_lock settings.
+   *
+   * Inheriting them would leave the editor a section they could not remove; the
+   * reasoning is in the method's own docblock.
+   *
+   * @covers ::duplicateSection
+   *
+   * @see \Drupal\ys_layouts\Service\SectionCloner::duplicateSection()
+   */
+  public function testCloneDoesNotInheritLockSettings(): void {
+    $lock = [
+      LayoutBuilderLock::LOCKED_SECTION_BEFORE => LayoutBuilderLock::LOCKED_SECTION_BEFORE,
+      LayoutBuilderLock::LOCKED_SECTION_AFTER => LayoutBuilderLock::LOCKED_SECTION_AFTER,
+    ];
+
+    $section = $this->createSection();
+    // The positional pair Event's and Post's Content Section actually carries,
+    // which is what CloneSectionAccessCheck permits through.
+    $section->setThirdPartySetting('layout_builder_lock', 'lock', $lock);
+    // Region locks are dropped with the rest of the provider, not key by key.
+    $section->setThirdPartySetting('layout_builder_lock', 'regions', ['first' => ['first']]);
+
+    $clone = $this->sectionCloner->duplicateSection($section);
+
+    $this->assertNotContains(
+      'layout_builder_lock',
+      $clone->getThirdPartyProviders(),
+      'The clone carries no layout_builder_lock settings at all.'
+    );
+    $this->assertSame(
+      'three',
+      $clone->getThirdPartySetting('ys_themes', 'component_theme'),
+      'Dropping the lock settings leaves other providers untouched.'
+    );
+    $this->assertSame(
+      $lock,
+      $section->getThirdPartySetting('layout_builder_lock', 'lock', []),
+      'The original keeps its lock settings.'
     );
   }
 

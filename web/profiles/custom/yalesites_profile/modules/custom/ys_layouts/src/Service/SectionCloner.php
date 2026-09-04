@@ -73,11 +73,29 @@ class SectionCloner {
    * as a third-party setting, so dropping those would silently reset the copy's
    * appearance.
    *
+   * layout_builder_lock's settings are the one exception and are deliberately
+   * left off the copy. They are access control rather than appearance, and
+   * inheriting them would strand the editor: layout_builder_lock removes a
+   * section's "Remove" link whenever it carries any lock setting and the user
+   * lacks `remove sections with lock settings` — a permission no role on this
+   * platform holds — so a copy inheriting its source's locks could not be
+   * deleted by the person who had just created it. Dropping them makes the copy
+   * an ordinary editor-owned section, which is how layout_builder_lock already
+   * treats what an editor adds in an override: its preRender() skips lock
+   * enforcement for blocks that are not part of the default layout.
+   *
+   * Only sections whose *contents* are unlocked can be cloned at all, so what
+   * this drops in practice is the positional pair CloneSectionAccessCheck
+   * permits.
+   *
    * @param \Drupal\layout_builder\Section $section
    *   The section to copy. It is not modified.
    *
    * @return \Drupal\layout_builder\Section
    *   A new section carrying copies of the original's components.
+   *
+   * @see \Drupal\ys_layouts\Access\CloneSectionAccessCheck
+   * @see \Drupal\layout_builder_lock\LayoutBuilderLock::preRender()
    */
   public function duplicateSection(Section $section): Section {
     $components = [];
@@ -90,6 +108,10 @@ class SectionCloner {
 
     $third_party_settings = [];
     foreach ($section->getThirdPartyProviders() as $provider) {
+      // Inheriting these would leave the editor a section they cannot remove.
+      if ($provider === 'layout_builder_lock') {
+        continue;
+      }
       $third_party_settings[$provider] = $section->getThirdPartySettings($provider);
     }
 
