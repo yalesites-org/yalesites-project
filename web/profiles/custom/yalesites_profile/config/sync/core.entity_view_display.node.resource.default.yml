@@ -3,6 +3,7 @@ langcode: en
 status: true
 dependencies:
   config:
+    - field.field.node.resource.feeds_item
     - field.field.node.resource.field_abstract
     - field.field.node.resource.field_academic_years
     - field.field.node.resource.field_areas_of_study
@@ -363,6 +364,7 @@ content:
     region: content
 hidden:
   addtoany: true
+  feeds_item: true
   field_login_required: true
   field_publish_date: true
   field_tags: true

@@ -43,6 +43,9 @@ dependencies:
     - core.entity_view_display.node.post.default
     - core.entity_view_display.node.profile.default
     - core.entity_view_display.node.resource.default
+    - feeds.feed_type.demo_content_roundtrip
+    - feeds.feed_type.demo_resource_library
+    - feeds.feed_type.demo_staff_roster
     - media.type.audio
     - media.type.background_video
     - media.type.document
@@ -77,6 +80,7 @@ dependencies:
     - contextual
     - editoria11y
     - environment_indicator
+    - feeds
     - file
     - google_tag
     - layout_builder
@@ -112,6 +116,7 @@ permissions:
   - 'access content overview'
   - 'access contextual links'
   - 'access environment indicator'
+  - 'access feed overview'
   - 'access files overview'
   - 'access media overview'
   - 'access printer-friendly version'
@@ -388,6 +393,9 @@ permissions:
   - 'edit terms in post_category'
   - 'edit terms in resource_category'
   - 'edit terms in tags'
+  - 'import demo_content_roundtrip feeds'
+  - 'import demo_resource_library feeds'
+  - 'import demo_staff_roster feeds'
   - 'manage editoria11y results'
   - 'manage ys ai system instructions'
   - 'manage ys beacon settings'
@@ -440,6 +448,9 @@ permissions:
   - 'revert profile revisions'
   - 'revert resource revisions'
   - 'update any media'
+  - 'update demo_content_roundtrip feeds'
+  - 'update demo_resource_library feeds'
+  - 'update demo_staff_roster feeds'
   - 'update media'
   - 'use editorial transition archive'
   - 'use editorial transition archived_draft'
@@ -493,6 +504,9 @@ permissions:
   - 'view any webform submission'
   - 'view any wrapped_image block content history'
   - 'view any wrapped_text_callout block content history'
+  - 'view demo_content_roundtrip feeds'
+  - 'view demo_resource_library feeds'
+  - 'view demo_staff_roster feeds'
   - 'view editoria11y checker'
   - 'view event revisions'
   - 'view latest version'
