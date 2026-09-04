@@ -61,7 +61,7 @@ class ContentFeedBuilderTest extends KernelTestBase {
       'ai_tags' => 'tag1, tag2',
     ]);
 
-    $payload = $this->builder($indexability, $metadata)->build('node', 1, 50);
+    $payload = $this->builder($indexability, $metadata)->build('node', 1, 50)->payload;
 
     $this->assertCount(1, $payload['data'], 'Only the indexable published node is fed.');
     $item = $payload['data'][0];
@@ -97,8 +97,46 @@ class ContentFeedBuilderTest extends KernelTestBase {
    * @covers ::build
    */
   public function testPageSizeIsClamped(): void {
-    $payload = $this->builder()->build('node', 1, 10000);
+    $payload = $this->builder()->build('node', 1, 10000)->payload;
     $this->assertSame(ContentFeedBuilder::MAX_PAGE_SIZE, $payload['pagination']['page_size']);
+  }
+
+  /**
+   * The page reports the cacheability of everything it fed.
+   *
+   * The list cache tag catches new, changed, and deleted content; per-entity
+   * tags catch an edit to a node already on the page. Rendering happens under a
+   * forced anonymous account switch, so user- and session-scoped contexts are
+   * dropped: they would label a variation the requesting user had no influence
+   * over. Everything else the render declared is kept.
+   *
+   * @covers ::build
+   */
+  public function testPageReportsCacheability(): void {
+    $node = Node::create(['type' => 'page', 'title' => 'Indexable page', 'status' => 1]);
+    $node->save();
+
+    $indexability = $this->createMock(BeaconIndexability::class);
+    $indexability->method('isIndexable')->willReturn(TRUE);
+
+    $page = $this->builder($indexability)->build('node', 1, 50);
+
+    $tags = $page->getCacheTags();
+    $this->assertContains('node_list', $tags, 'New or deleted content busts the page.');
+    $this->assertContains('node:' . $node->id(), $tags, 'Editing a fed node busts the page.');
+    foreach ($page->getCacheContexts() as $context) {
+      $this->assertStringStartsNotWith(
+        'user',
+        $context,
+        'User-scoped contexts are dropped: items render as the anonymous user.'
+      );
+      $this->assertStringStartsNotWith('session', $context);
+    }
+    $this->assertSame(
+      ContentFeedBuilder::MAX_AGE,
+      $page->getCacheMaxAge(),
+      'The page has a finite TTL rather than an item render max-age.'
+    );
   }
 
   /**
