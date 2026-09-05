@@ -427,6 +427,12 @@ abstract class ViewsBasicWidgetBase extends WidgetBase implements ContainerFacto
         'field_options' => $built['field_options']['#value'],
         'event_field_options' => [],
         'post_field_options' => [],
+        'profile_field_options' => [],
+        // Absent for every design option but the card grid, which is the only
+        // one that offers the control (#1648).
+        'cards_per_row' => isset($selection['options']['cards_per_row'])
+          ? (int) $selection['options']['cards_per_row']['#value']
+          : ViewsBasicManager::CARDS_PER_ROW_DEFAULT,
         'exposed_filter_options' => $exposed_filter_options,
         'category_filter_label' => $built['category_filter_label']['#value'] ?? NULL,
         'category_included_terms' => $built['category_included_terms']['#value'] ?? NULL,
@@ -833,7 +839,7 @@ abstract class ViewsBasicWidgetBase extends WidgetBase implements ContainerFacto
    *   The group with a display row wrapping the field options and preview.
    */
   public static function groupFieldDisplayRow(array $element, FormStateInterface $form_state): array {
-    $field_option_keys = ['field_options', 'event_field_options', 'post_field_options'];
+    $field_option_keys = ['field_options', 'event_field_options', 'post_field_options', 'profile_field_options'];
     $field_options = [];
     foreach ($field_option_keys as $key) {
       if (isset($element[$key])) {
@@ -1347,6 +1353,24 @@ abstract class ViewsBasicWidgetBase extends WidgetBase implements ContainerFacto
       '#min' => 0,
       '#attributes' => ['placeholder' => 0],
     ];
+    // Cards-per-row dial (#1648), offered only by the card grid: the other
+    // design options lay themselves out, so the control would be clutter that
+    // does nothing. The capability is declared on the listing definition
+    // rather than tested against the view mode here (ADR DR-2).
+    if (ViewsBasicManager::bundleSupportsCardsPerRow($this->getBundle())) {
+      $form['group_user_selection']['options']['cards_per_row'] = [
+        '#type' => 'select',
+        '#title' => $this->t('Cards per row'),
+        '#description' => $this->t('The most cards to place side by side. Narrower areas of the page still fit fewer.'),
+        '#options' => array_combine(
+          ViewsBasicManager::CARDS_PER_ROW_OPTIONS,
+          ViewsBasicManager::CARDS_PER_ROW_OPTIONS
+        ),
+        '#default_value' => $params
+          ? $this->viewsBasicManager->getDefaultParamValue('cards_per_row', $params)
+          : ViewsBasicManager::CARDS_PER_ROW_DEFAULT,
+      ];
+    }
     $form['group_user_selection']['options']['show_current_entity'] = [
       '#title' => $this->t('Include the current page'),
       '#description' => $this->t('When this block is placed on a content page, include that page in the results instead of excluding it.'),

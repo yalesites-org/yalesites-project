@@ -6,6 +6,7 @@ use Drupal\Core\Entity\EntityDisplayRepository;
 use Drupal\Core\Plugin\ContainerFactoryPluginInterface;
 use Drupal\Core\Routing\RouteMatchInterface;
 use Drupal\views\Plugin\views\style\StylePluginBase;
+use Drupal\ys_views_basic\ViewsBasicManager;
 use Symfony\Component\DependencyInjection\ContainerInterface;
 
 /**
@@ -150,7 +151,48 @@ class ViewsBasicDynamicStyle extends StylePluginBase implements ContainerFactory
       '#card_collection_modifiers' => $cardCollectionModifiers,
       '#parentNode' => $parentNode,
       '#contentType' => $contentType,
+      '#cards_per_row' => $this->cardsPerRow(),
     ];
+  }
+
+  /**
+   * Views built by ViewsBasicManager::setupView(), and only those.
+   *
+   * This style plugin also serves the content_resources view, which builds its
+   * own, shorter argument list in ViewsContentResourcesManager — index 8 is
+   * pin_settings there, not field display options. Reading the index blindly
+   * would decode the wrong argument, so the lookup is restricted to the views
+   * that ViewsBasicManager::setupView() packs, the same way
+   * ys_views_basic_views_pre_render() guards its own positional reads.
+   */
+  protected const SCAFFOLD_VIEWS = [
+    'views_basic_scaffold',
+    'views_basic_scaffold_events',
+  ];
+
+  /**
+   * Returns the cards-per-row setting for this listing (#1648).
+   *
+   * The dial travels in the shared field_display_options argument because it
+   * describes the collection as a whole rather than an individual result row.
+   * Anything unexpected — another view using this style plugin, a view
+   * rendered outside setupView(), or a stored value the SCSS has no rule for
+   * — falls back to the 3-up grid every listing had before the dial existed.
+   *
+   * @return int
+   *   The maximum cards per row.
+   */
+  protected function cardsPerRow(): int {
+    if (!in_array($this->view->id(), static::SCAFFOLD_VIEWS, TRUE)) {
+      return ViewsBasicManager::CARDS_PER_ROW_DEFAULT;
+    }
+
+    $field_display_options = json_decode($this->view->args[ViewsBasicManager::viewArgumentIndex('field_display_options')] ?? '', TRUE) ?: [];
+    $cards_per_row = (int) ($field_display_options['cards_per_row'] ?? 0);
+
+    return in_array($cards_per_row, ViewsBasicManager::CARDS_PER_ROW_OPTIONS, TRUE)
+      ? $cards_per_row
+      : ViewsBasicManager::CARDS_PER_ROW_DEFAULT;
   }
 
 }

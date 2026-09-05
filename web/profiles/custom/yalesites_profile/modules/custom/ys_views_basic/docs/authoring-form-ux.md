@@ -30,6 +30,7 @@ sub-containers (`entity_and_view_mode`, `filter_and_sort`, `entity_specific`,
 | Field Display Options | `field_options` | checkboxes (categories / tags / teaser image) | `buildFieldDisplayOptions` | all (teaser image: card + list only) |
 | Post field options | `post_field_options` | checkboxes (show eyebrow) | `PostViewWidget` | post |
 | Event field options | `event_field_options` | checkboxes (hide add-to-calendar) | `EventViewWidget` | event |
+| People options | `profile_field_options` | checkboxes (show department / email / phone / pronouns) | `ProfileViewWidget` | profile |
 | Event Time Period | `event_time_period` | radios (future/past/all) | `EventViewWidget` | event |
 | Exposed Filter Options | `exposed_filter_options` | checkboxes (search / category / custom vocab / audience / year) | `getExposedFilterOptions` | all (year: post only) |
 | Category Filter Label | `category_filter_label` | textfield | `buildExposedFilterControls` | all |
@@ -44,6 +45,7 @@ sub-containers (`entity_and_view_mode`, `filter_and_sort`, `entity_specific`,
 | Number of Items to Display | `display` | select (all/limit/pager) | `buildDisplayControls` | all |
 | Items / Items per Page | `limit` | number | `buildDisplayControls` | all |
 | Ignore Number of Results | `offset` | number | `buildDisplayControls` | all |
+| Cards per row | `cards_per_row` | select (3/4) | `buildDisplayControls` | card grid bundles only (`supports_cards_per_row`) |
 | Include this content in view | `show_current_entity` | checkbox | `buildDisplayControls` | all |
 
 ### Problems identified
@@ -92,6 +94,8 @@ copy only.
 | `pin_label` | Pinned-item label | Text shown on each pinned item (for example "Featured"). |
 | `show_current_entity` | Include the current page | When this block is placed on a content page, include that page in the results instead of excluding it. |
 | `display` | How many items to show | Choose all matching items, a fixed number, or a paginated list. |
+| `cards_per_row` | Cards per row | The most cards to place side by side. Narrower areas of the page still fit fewer. |
+| `profile_field_options` | People options | (per option: "Show Department", "Show Email", "Show Phone", "Show Pronouns") |
 | `field_options` | Show on each result | (per option: "Category label", "Tags", "Teaser image") |
 | `terms_include` | Only show content tagged | Limit results to content using any of these tags or categories. |
 | `terms_exclude` | Hide content tagged | Remove results using any of these tags or categories. |

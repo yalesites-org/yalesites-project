@@ -59,6 +59,9 @@ function ys_views_basic_theme($existing, $type, $theme, $path): array {
         'rows' => [],
         'parentNode' => NULL,
         'contentType' => NULL,
+        // Cards-per-row dial (#1648). Defaults to the 3-up grid so a listing
+        // rendered without the setting looks exactly as it always has.
+        'cards_per_row' => ViewsBasicManager::CARDS_PER_ROW_DEFAULT,
       ],
     ],
     'views_basic_events_calendar' => [
@@ -138,14 +141,28 @@ function ys_views_basic_views_pre_build($view) {
 function ys_views_basic_views_pre_render(ViewExecutable $view): void {
   $view_id = $view->id();
   if (in_array($view_id, ['views_basic_scaffold', 'views_basic_scaffold_events'])) {
-    $pin_options = json_decode($view->args[11]);
+    $pin_options = json_decode($view->args[ViewsBasicManager::viewArgumentIndex('pin_settings')]);
     $pin_label = '';
     if ($pin_options->pinned_to_top) {
       $pin_label = $pin_options->pin_label;
     }
-    $field_display_options = json_decode($view->args[8]);
-    $event_field_display_options = json_decode($view->args[9]);
-    $post_field_display_options = json_decode($view->args[10]);
+    $field_display_options = json_decode($view->args[ViewsBasicManager::viewArgumentIndex('field_display_options')]);
+    $event_field_display_options = json_decode($view->args[ViewsBasicManager::viewArgumentIndex('event_field_display_options')]);
+    $post_field_display_options = json_decode($view->args[ViewsBasicManager::viewArgumentIndex('post_field_display_options')]);
+    $profile_field_display_options = json_decode($view->args[ViewsBasicManager::viewArgumentIndex('profile_field_display_options')] ?? '');
+    // Anything that is not the object setupView() writes — an older cached
+    // argument set from before this argument existed, or a JSON scalar — falls
+    // back to an all-off option set. Tested with is_object() rather than a
+    // truthiness check, which would pass a decoded scalar straight through and
+    // fatal on the property reads below.
+    if (!is_object($profile_field_display_options)) {
+      $profile_field_display_options = (object) [
+        'show_department' => 0,
+        'show_email' => 0,
+        'show_phone' => 0,
+        'show_pronouns' => 0,
+      ];
+    }
     // Loop through each row in the view's results and update the node's
     // properties based on show_categories, show_tags and show_thumbnail
     // configuration.
@@ -155,6 +172,11 @@ function ys_views_basic_views_pre_render(ViewExecutable $view): void {
       $row->_entity->show_thumbnail = $field_display_options->show_thumbnail;
       $row->_entity->hide_add_to_calendar = $event_field_display_options->hide_add_to_calendar;
       $row->_entity->show_eyebrow = $post_field_display_options->show_eyebrow;
+      // Profile data pass-throughs (#1648).
+      $row->_entity->show_department = $profile_field_display_options->show_department;
+      $row->_entity->show_email = $profile_field_display_options->show_email;
+      $row->_entity->show_phone = $profile_field_display_options->show_phone;
+      $row->_entity->show_pronouns = $profile_field_display_options->show_pronouns;
       // Context-derived heading level for each result card: H3 when the block
       // renders its own heading (the cards nest under it), H2 when the cards
       // are the first heading on the page. The listing node templates read
@@ -204,13 +226,18 @@ function ys_views_basic_views_pre_view(ViewExecutable $view, $display_id, array 
     // block-entity fact resolved by the formatter, not a saved param). Recover
     // it from the incoming view arguments so exposed-filter and pager AJAX
     // re-renders keep the same result-card heading level as the initial render.
-    // args[8] is the field_display_options JSON (see setupView() arg order).
+    $display_arg = ViewsBasicManager::viewArgumentIndex('field_display_options');
     $block_has_heading = FALSE;
-    if (isset($args[8])) {
-      $incoming_display = json_decode($args[8]);
+    if (isset($args[$display_arg])) {
+      $incoming_display = json_decode($args[$display_arg]);
       $block_has_heading = !empty($incoming_display->block_has_heading);
     }
-    $viewsBasicManager->setupView($view, end($args), NULL, $block_has_heading);
+    // Resolved by name, never with end($args): original_settings is no longer
+    // the last argument, and taking the last one silently handed setupView()
+    // the wrong JSON, leaving every AJAX re-render without its stored display,
+    // sort, view mode and filters (#1648).
+    $settings_arg = ViewsBasicManager::viewArgumentIndex('original_settings');
+    $viewsBasicManager->setupView($view, $args[$settings_arg] ?? end($args), NULL, $block_has_heading);
   }
   finally {
     unset($processing[$object_id]);
