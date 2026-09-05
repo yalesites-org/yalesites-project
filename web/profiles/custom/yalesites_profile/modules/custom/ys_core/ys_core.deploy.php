@@ -311,3 +311,65 @@ function ys_core_deploy_10007(&$sandbox) {
 
   return t('Backfilled the default icon on @count In-Line Message block revision(s).', ['@count' => $sandbox['backfilled']]);
 }
+
+/**
+ * Implements hook_deploy_NAME().
+ *
+ * Repairs Resource text values whose stored text format the field forbids.
+ *
+ * field_abstract, field_citation and field_content_description have declared
+ * `allowed_formats: [restricted_html]` since the day they were created
+ * (YISP-101); the restriction was never narrowed after the fact. Content
+ * written by a third-party migration bypassed the platform's own importer
+ * (ResourceImportService::textFormat(), which derives the format from
+ * allowed_formats) and stored some other format instead.
+ *
+ * Core's \Drupal\filter\Element\TextFormat::processFormat() intersects the
+ * user's usable formats with the field's allowed_formats and then tests the
+ * stored format against that intersection, so those values disable the widget
+ * outright — "This field has been disabled because you do not have sufficient
+ * permissions to edit it." — for every user without 'administer filters'. No
+ * YaleSites role holds that permission (it allows creating arbitrary text
+ * formats, a stored-XSS vector), so core's intended remedy of "an
+ * administrator reassigns the format" is unavailable through the UI and has to
+ * happen here.
+ *
+ * Only the format name changes; the stored markup is untouched, so the repair
+ * is reversible. Values authored under a more permissive format may render
+ * with less markup afterwards — restricted_html is what these fields were
+ * always contracted to render as, so this brings rendering into line with the
+ * field's configuration rather than away from it.
+ *
+ * The three fields are named explicitly rather than discovered from config.
+ * Discovery would also sweep in field_teaser_text, whose contract is
+ * heading_html — a NARROWER format that permits neither <a> nor <br>, so a
+ * link in a Resource teaser would stop rendering as a link. That is a
+ * different, wider change than this report describes and is left for a human
+ * to decide on.
+ *
+ * The repair writes the format column directly instead of re-saving nodes.
+ * content_moderation's presave handler rewrites publication status whenever a
+ * revision's stored status disagrees with its moderation state, and that
+ * branch is NOT inside its isSyncing() guard, so re-saving every Resource
+ * revision could silently unpublish live pages wherever an import left that
+ * divergence behind. A column write cannot create revisions, change the
+ * default revision, alter moderation state, or bump 'changed'.
+ *
+ * @see \Drupal\content_moderation\Entity\Handler\ModerationHandler::onPresave()
+ * @see yalesites-org/YaleSites-Internal#1646
+ */
+function ys_core_deploy_10008() {
+  /** @var \Drupal\ys_core\TextFormatRepair $repair */
+  $repair = \Drupal::service('ys_core.text_format_repair');
+
+  $repaired = 0;
+  foreach (['field_abstract', 'field_citation', 'field_content_description'] as $field_name) {
+    $repaired += $repair->repairFieldStorage('node', 'resource', $field_name);
+  }
+
+  if ($repaired === 0) {
+    return t('No Resource values had an out-of-contract text format.');
+  }
+
+  return t('Repaired the stored text format on @count Resource field value(s).', ['@count' => $repaired]);
+}
