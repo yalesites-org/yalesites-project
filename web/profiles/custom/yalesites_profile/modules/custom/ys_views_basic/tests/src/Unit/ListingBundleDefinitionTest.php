@@ -18,25 +18,28 @@ use Drupal\ys_views_basic\ViewsBasicManager;
 class ListingBundleDefinitionTest extends UnitTestCase {
 
   /**
-   * The (content type, view mode, supports_thumbnail) the definition must map.
+   * The capability row each bundle must map to.
    *
+   * `[content type, view mode, supports_thumbnail, supports_cards_per_row]`.
    * This pins the full 13-bundle grid (ADR DR-2/DR-4). Card and list_item
-   * support the teaser image; condensed and directory do not.
+   * support the teaser image; condensed and directory do not. Only the card
+   * grid takes a cards-per-row dial (#1648) — the other design options lay
+   * themselves out.
    */
   const EXPECTED_BUNDLES = [
-    'post_card' => ['post', 'card', TRUE],
-    'post_list_item' => ['post', 'list_item', TRUE],
-    'post_condensed' => ['post', 'condensed', FALSE],
-    'event_card' => ['event', 'card', TRUE],
-    'event_list_item' => ['event', 'list_item', TRUE],
-    'event_condensed' => ['event', 'condensed', FALSE],
-    'page_card' => ['page', 'card', TRUE],
-    'page_list_item' => ['page', 'list_item', TRUE],
-    'page_condensed' => ['page', 'condensed', FALSE],
-    'profile_card' => ['profile', 'card', TRUE],
-    'profile_list_item' => ['profile', 'list_item', TRUE],
-    'profile_condensed' => ['profile', 'condensed', FALSE],
-    'profile_directory' => ['profile', 'directory', FALSE],
+    'post_card' => ['post', 'card', TRUE, TRUE],
+    'post_list_item' => ['post', 'list_item', TRUE, FALSE],
+    'post_condensed' => ['post', 'condensed', FALSE, FALSE],
+    'event_card' => ['event', 'card', TRUE, TRUE],
+    'event_list_item' => ['event', 'list_item', TRUE, FALSE],
+    'event_condensed' => ['event', 'condensed', FALSE, FALSE],
+    'page_card' => ['page', 'card', TRUE, TRUE],
+    'page_list_item' => ['page', 'list_item', TRUE, FALSE],
+    'page_condensed' => ['page', 'condensed', FALSE, FALSE],
+    'profile_card' => ['profile', 'card', TRUE, TRUE],
+    'profile_list_item' => ['profile', 'list_item', TRUE, FALSE],
+    'profile_condensed' => ['profile', 'condensed', FALSE, FALSE],
+    'profile_directory' => ['profile', 'directory', FALSE, FALSE],
   ];
 
   /**
@@ -58,12 +61,14 @@ class ListingBundleDefinitionTest extends UnitTestCase {
    * @covers ::getContentTypeForBundle
    * @covers ::getViewModeForBundle
    * @covers ::bundleSupportsThumbnail
+   * @covers ::bundleSupportsCardsPerRow
    */
   public function testBundleResolution() {
-    foreach (self::EXPECTED_BUNDLES as $bundle => [$content_type, $view_mode, $supports_thumbnail]) {
-      $this->assertSame($content_type, ViewsBasicManager::getContentTypeForBundle($bundle), "$bundle content type");
+    foreach (self::EXPECTED_BUNDLES as $bundle => [$type, $view_mode, $thumbnail, $per_row]) {
+      $this->assertSame($type, ViewsBasicManager::getContentTypeForBundle($bundle), "$bundle content type");
       $this->assertSame($view_mode, ViewsBasicManager::getViewModeForBundle($bundle), "$bundle view mode");
-      $this->assertSame($supports_thumbnail, ViewsBasicManager::bundleSupportsThumbnail($bundle), "$bundle thumbnail flag");
+      $this->assertSame($thumbnail, ViewsBasicManager::bundleSupportsThumbnail($bundle), "$bundle thumbnail flag");
+      $this->assertSame($per_row, ViewsBasicManager::bundleSupportsCardsPerRow($bundle), "$bundle cards-per-row flag");
     }
   }
 
