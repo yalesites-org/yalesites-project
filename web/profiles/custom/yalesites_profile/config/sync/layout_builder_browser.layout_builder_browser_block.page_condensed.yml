@@ -1,0 +1,11 @@
+uuid: ea525cb5-511d-4496-8593-15ea340effb1
+langcode: en
+status: true
+dependencies: {  }
+id: page_condensed
+block_id: 'inline_block:page_condensed'
+category: page_listings
+label: 'Pages - Condensed View'
+image_path: ''
+image_alt: ''
+weight: 0

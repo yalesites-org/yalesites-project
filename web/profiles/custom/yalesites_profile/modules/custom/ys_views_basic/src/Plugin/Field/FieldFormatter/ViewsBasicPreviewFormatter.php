@@ -134,8 +134,10 @@ class ViewsBasicPreviewFormatter extends FormatterBase implements ContainerFacto
       // Gets the limit.
       $paramsForRender['limit'] = $paramsDecoded['limit'];
 
-      // Gets the number of results for the view.
-      $paramsForRender['count'] = $this->viewsBasicManager->getView('count', $item->params);
+      // Gets the number of results for the view. getView() returns NULL when
+      // the scaffold view is missing; fall back to an empty render to avoid
+      // passing NULL into the preview template.
+      $paramsForRender['count'] = $this->viewsBasicManager->getView('count', $item->params) ?? [];
 
       $elements[$delta] = [
         '#theme' => 'views_basic_formatter_preview',

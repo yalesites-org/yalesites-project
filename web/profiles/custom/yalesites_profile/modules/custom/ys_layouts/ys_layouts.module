@@ -230,10 +230,56 @@ function ys_layouts_form_alter(&$form, $form_state, $form_id) {
   if ($form_id == 'layout_builder_update_block' || $form_id == 'layout_builder_add_block') {
     if (isset($form['reusable'])) {
       $form['reusable']['#title'] = t('Reusable Block');
-      $form['reusable']['#description'] = t("Create reusable content with Reusable Blocks. Changes made to a Reusable Block's content are reflected anywhere the Block is used. This setting cannot be changed after saving.");
+      $form['reusable']['#description'] = t("Create reusable content with Reusable Blocks. Changes made to a Reusable Block's content are reflected anywhere the Block is used.");
+
+      // "Make block reusable" + its dependent "Reusable Block title" field
+      // (#1481) get the same toggle/disclosure row treatment as "Show
+      // Category" and the other exposed filters on the listing-block form
+      // (ys_views_basic's buildExposedFilterAccordion()) — the same
+      // "checkbox turns on, dependent field appears" shape, generalized to
+      // every block type via a shared component (assets/css/reusable-
+      // toggle.css) rather than copied. Built with #prefix/#suffix instead of
+      // nesting 'info' inside 'reusable' in the render tree: this hook runs
+      // before ys_views_basic_form_alter() (alphabetical hook order), which
+      // still needs $form['info'] and $form['reusable'] addressable at their
+      // original top-level keys to attach them to the listing-block General
+      // tab via #group — nesting them here would break that.
+      //
+      // This relies on 'reusable' rendering immediately before 'info'. No
+      // #weight is set here: ConfigureBlockFormBase::doBuildForm() declares
+      // the two adjacently in that order with no weights, so array order
+      // already holds, and weighting them here would hoist both above
+      // $form['settings'] — the block's own content fields — on every block
+      // type. ys_views_basic_form_alter() sets its own weights for the
+      // listing-block General tab and keeps the same relative order.
+      $form['reusable']['#prefix'] = '<div class="ys-toggle-row ys-toggle-row--has-settings">';
+      // Split into its own visually distinct warning (#1481): it's the only
+      // irreversible decision on this form and used to trail as plain help
+      // text easy to skim past. Styled from this module's own
+      // reusable-toggle.css rather than borrowing core's "messages
+      // messages--warning", whose rendering here depends on which route built
+      // the form: in the off-canvas modal (the normal editor path) gin_lb
+      // namespaces messages to .glb-messages* (gin_lb/src/classes.json) and
+      // raw #prefix/#suffix markup never passes through the glb_classes()
+      // renamer, so the bare classes resolve to nothing — transparent
+      // background, plain body text. On the full-page /layout_builder/add
+      // route Gin's admin CSS is present and styles them as a dark box
+      // instead. Owning the styling keeps it identical on both.
+      $form['reusable']['#suffix'] = '<div role="note" class="ys-toggle-row__warning">' . t('This setting cannot be changed after saving.') . '</div>';
 
       $form['info']['#title'] = t('Reusable Block title');
       $form['info']['#description'] = t('Add a short, descriptive title to easily find and reuse the Reusable Block. Defaults to Administrative label if no title is provided.');
+      $form['info']['#prefix'] = '<div class="ys-toggle-row__body">';
+      $form['info']['#suffix'] = '</div></div>';
+      // Disabled (not hidden) while unchecked, matching the same pattern as
+      // category_filter_label/pin_label: the row's CSS collapses the body
+      // via :has() off the checkbox, so 'disabled' is what stops a collapsed
+      // row from still submitting a value.
+      $form['info']['#states'] = [
+        'disabled' => [':input[name="reusable"]' => ['checked' => FALSE]],
+      ];
+
+      $form['#attached']['library'][] = 'ys_layouts/reusable_toggle';
     }
   }
 }

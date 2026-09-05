@@ -7,6 +7,54 @@
   --size-spacing-5: 1rem;
 }
 
+/*
+ * Spacing/type scale (#1481), defined on .layout-builder-configure-block
+ * rather than .views-basic--group-user-selection: that class sits on
+ * group_user_selection, the widget's own outer container, but
+ * _ys_views_basic_listing_form_tabs() re-parents its three tab-group children
+ * (entity_and_view_mode/filter_and_sort/options — i.e. every tab except
+ * General) into the horizontal-tabs bar via #group, which moves their
+ * rendered markup out from under that container entirely (see that
+ * function's own docblock, and the "Restore the icon-radio card styling"
+ * comment further down this file for the same trap). Custom properties don't
+ * cascade across that move, so a definition scoped to
+ * .views-basic--group-user-selection silently stopped applying to the very
+ * fieldsets these variables were written for.
+ * .layout-builder-configure-block is Drupal's own base-form-ID class for the
+ * whole block-configure form (General tab included), so it is unaffected by
+ * which container the #group relocation leaves the tab content under.
+ */
+.layout-builder-configure-block {
+  /*
+   * 14 distinct vertical gaps were measured across the form's four tabs with
+   * no shared system behind them. These steps sit on a 4px grid, each named
+   * for the relationship it spaces rather than a generic
+   * "small/medium/large", so a rule reads at its call site (e.g.
+   * var(--vb-space-option) for two related checkboxes) instead of requiring a
+   * lookup.
+   */
+  --vb-space-option: 0.5rem; /* 8px: option -> sibling option */
+  --vb-space-control-subcontrol: 1rem; /* 16px: control -> dependent sub-control */
+  --vb-space-field: 1.5rem; /* 24px: field -> unrelated field */
+  --vb-space-group: 2.5rem; /* 40px: group -> group */
+
+  /*
+   * The modal renders in the front-end theme (see views-basic-form-tabs.css),
+   * which sets a fixed-px line-height that every wrapped element inherits —
+   * body text was rendering at line-height: 16px on font-size: 16px (ratio
+   * 1.0), squeezing wrapped lines together. A unitless line-height here
+   * restores normal leading; --vb-font-label/--vb-font-heading below round
+   * the existing 1.125 type-scale ratio to whole pixels (was 14.224px /
+   * 12.64px) without changing the ratio itself.
+   */
+  line-height: 1.5;
+  --vb-font-help: 13px;
+  --vb-font-label: 14px;
+  --vb-font-heading: 18px;
+  --vb-line-heading: 1.25;
+  --vb-line-label: 1.35;
+}
+
 /* General styles */
 .views-basic--params {
   display: none;
@@ -26,19 +74,182 @@
   border-radius: unset;
 }
 
+/*
+ * Chosen sets its container's width as an inline style computed from the
+ * underlying select's own rendered width at init time
+ * (`this.container.width(this.container_width())`, chosen.jquery.js) —
+ * whatever narrow width the native select happened to render at, not the
+ * width available in the field. An inline style needs !important to
+ * override from a stylesheet; stretch it to fill the field instead.
+ */
+.layout-builder-configure-block .horizontal-tabs-panes .chosen-container {
+  width: 100% !important;
+}
+
+/*
+ * WHY EVERY .gin--dark-mode .chosen-* RULE BELOW IS QUALIFIED WITH
+ * .layout-builder-configure-block — the qualifier is load-bearing, not cosmetic.
+ *
+ * This stylesheet is not admin-only. TWO front-end surfaces attach
+ * ys_views_basic/ys_views_basic for its JS, and both pull this CSS with it:
+ * atomic's listing scaffold template
+ * (templates/views/views-view--views-basic-scaffold.html.twig) and
+ * EventCalendarFilterForm::buildForm(). Check both before concluding this
+ * qualifier is unnecessary and removing it.
+ *
+ * gin_toolbar renders on the front end for any user with
+ * toolbar access, and it injects the #gin-setting-darkmode payload that Gin's
+ * init.js reads to put .gin--dark-mode on <html> — on the front end, not just
+ * on admin routes. So an unqualified `.gin--dark-mode .chosen-*` rule repaints
+ * the public listing filters in Gin's admin dark palette for every logged-in
+ * editor whose Gin colour mode is dark, while anonymous visitors see the
+ * correct light theme (yalesites-org/yalesites-project#1299 QA).
+ *
+ * .layout-builder-configure-block is the block-configure form's own wrapper and
+ * is present in both the layout_builder_browser modal and the off-canvas
+ * configure panel, so it confines these rules to the authoring form they were
+ * written for. Any future dark-mode `.chosen-*` rule here needs the same
+ * qualifier — or, like the .views-basic--group-user-selection rule further
+ * down, a widget container class that cannot match a front-end page.
+ *
+ * This applies to every dark-mode rule from here to the search-choice-disabled
+ * rule below, which is past the "Contrast fix end" marker.
+ */
+
 /* Chosen dropdown selected color contrast fix */
 
 /* ******************************************* */
-.gin--dark-mode .chosen-container .chosen-results {
-  color: var(--gin-bg-layer);
+
+/*
+ * Was `color: var(--gin-bg-layer)` — the dark background-layer color used
+ * as a text color, which happened not to matter while .chosen-drop still had
+ * Chosen's own default white background (dark-on-light was still legible by
+ * accident). Once the rule below gives the dropdown a real dark background
+ * to match, that same dark value as the text color goes dark-on-dark and
+ * every unhighlighted option disappears. Use the actual text color instead.
+ */
+.gin--dark-mode
+  .layout-builder-configure-block
+  .chosen-container
+  .chosen-results {
+  color: var(--gin-color-text);
 }
 
-.gin--dark-mode .chosen-container-multi .chosen-drop .result-selected {
+.gin--dark-mode
+  .layout-builder-configure-block
+  .chosen-container-multi
+  .chosen-drop
+  .result-selected {
   color: var(--gin-color-focus);
   background-color: var(--gin-bg-layer);
 }
 
 /* ************ Contrast fix end ************ */
+
+/*
+ * The fixes above only cover the results list text and the already-selected
+ * row; the rest of Chosen's own CSS (chosen.css, web/libraries/chosen) still
+ * ships light-mode colors (white dropdown, white input box, light-grey
+ * pills) with nothing to invert them. On the real Gin admin theme this
+ * mostly goes unnoticed because Gin's own chosen.css component override
+ * (web/themes/contrib/gin) only touches container layout and single-select
+ * text color, not these dark-mode cases either — but a Layout Builder block
+ * form renders in the front-end theme (see views-basic-form-tabs.css), so
+ * even that partial coverage isn't present here; only gin_lb's stylesheet
+ * loads, and it does not fill this gap. Extend the same manual, targeted
+ * approach as the fix above rather than trying to reskin Chosen wholesale.
+ */
+.gin--dark-mode .layout-builder-configure-block .chosen-container .chosen-drop {
+  border-color: var(--gin-border-color);
+  background-color: var(--gin-bg-layer);
+}
+
+.gin--dark-mode
+  .layout-builder-configure-block
+  .chosen-container-multi
+  .chosen-choices {
+  border-color: var(--gin-border-color);
+  background-color: var(--gin-bg-input, var(--gin-bg-layer));
+}
+
+.gin--dark-mode
+  .layout-builder-configure-block
+  .chosen-container
+  .chosen-results
+  li.no-results {
+  color: var(--gin-color-text-light);
+  background-color: var(--gin-bg-app);
+}
+
+/*
+ * The selected-term "chip": light-grey-on-dark-text by default. Was
+ * --gin-bg-app (the darkest, page-chrome layer) on a --gin-border-color
+ * border — background-color: var(--gin-bg-input, var(--gin-bg-layer)) above
+ * is what the surrounding field itself uses, and --gin-border-color sits
+ * close enough to that value that the pill's border read as invisible
+ * against its own field. --gin-bg-item-hover is a lighter, already-defined
+ * "elevated surface" tone (used elsewhere in this tab for hover states) —
+ * closer to the field's own background than --gin-bg-app was, so the pill
+ * reads as a distinct object sitting on the field rather than a
+ * darker cutout. --gin-color-text-light (a first attempt at the border) was
+ * still too close to the new background to read as a real edge; the border
+ * now matches --gin-color-text (the same near-white the pill's own label
+ * text uses) for a clean, clearly visible outline.
+ */
+.gin--dark-mode
+  .layout-builder-configure-block
+  .chosen-container-multi
+  .chosen-choices
+  li.search-choice {
+  border-color: var(--gin-color-text);
+  background-color: var(--gin-bg-item-hover);
+  color: var(--gin-color-text);
+}
+
+.gin--dark-mode
+  .layout-builder-configure-block
+  .chosen-container-multi
+  .chosen-choices
+  li.search-choice-disabled {
+  border-color: var(--gin-color-text-light);
+  background-color: var(--gin-bg-app);
+  color: var(--gin-color-text-light);
+}
+
+/*
+ * Sticky vocabulary headers in the include/exclude tag dropdowns.
+ *
+ * Both selects group their #options by vocabulary (ViewsBasicManager::
+ * getTagsForVocabularies()), which Drupal renders as <optgroup>. Chosen
+ * (chosen.jquery.js's results_build()) flattens each optgroup into a plain
+ * `li.group-result` header immediately before that vocabulary's
+ * `li.active-result` term rows, all as siblings inside one scrollable
+ * `ul.chosen-results` — not nested per group. That's exactly the shape
+ * position: sticky needs: pinning each `li.group-result` to the top of that
+ * scroll container makes it stick through its own vocabulary's terms and get
+ * pushed off only when the next vocabulary's header reaches it, with no JS,
+ * so only one header is ever stuck at a time.
+ *
+ * An explicit background (matching .chosen-drop's own, light or dark) is
+ * what keeps term rows from showing through as they scroll underneath the
+ * stuck header instead of behind it.
+ */
+.layout-builder-configure-block
+  .horizontal-tabs-panes
+  .form-item-settings-block-form-group-user-selection-filter-and-sort-terms-include
+  .chosen-results
+  li.group-result,
+.layout-builder-configure-block
+  .horizontal-tabs-panes
+  .form-item-settings-block-form-group-user-selection-filter-and-sort-terms-exclude
+  .chosen-results
+  li.group-result {
+  position: sticky;
+  top: 0;
+  z-index: 1;
+  background: var(--gin-bg-layer, #fff);
+  border-bottom: 1px solid var(--gin-border-color, #d3d4d9);
+}
 
 /* visually hide the inputs */
 
@@ -95,7 +306,19 @@
 }
 
 .views-basic--group-user-selection .grouped-items .fieldset__wrapper {
+  margin: 0;
   border-top: 0.15rem solid var(--color-gray-500);
+}
+
+/*
+ * gin_lb wraps every "grouped-items" details group's body in
+ * .glb-claro-details__wrapper and sets !important left/right padding on it,
+ * which is the actual source of the 24px side gap around these sections
+ * (fieldset__wrapper's own margin, zeroed above, is a separate box).
+ */
+.views-basic--group-user-selection .grouped-items .glb-claro-details__wrapper {
+  padding-left: 0 !important;
+  padding-right: 0 !important;
 }
 
 .views-basic--group-user-selection .glb-fieldset__label,
@@ -139,6 +362,15 @@
   border-color: var(--gin-color-primary);
 }
 
+/*
+ * Selected-state color for the entity-type icon-radio cards (Pages/Profiles/
+ * Events/Posts below, plus the general checked/hover rule further down). The
+ * attribute-selector chain here already out-specifies the base card
+ * treatment's `color: var(--gin-color-text);` (views-basic--group-user-
+ * selection block above), which isn't !important, so no !important is
+ * needed to win.
+ */
+
 /* Pages */
 .form-item-settings-block-form-group-user-selection-entity-and-view-mode-entity-types
   input[value="page"][checked="checked"]
@@ -146,7 +378,7 @@
 #drupal-off-canvas-wrapper .form-item-settings-block-form-group-user-selection-entity-and-view-mode-entity-types
   input[value="page"][checked="checked"]
   + label {
-  color: var(--gin-color-primary) !important;
+  color: var(--gin-color-primary);
   border-color: var(--gin-color-primary);
 }
 
@@ -157,7 +389,7 @@
 #drupal-off-canvas-wrapper .form-item-settings-block-form-group-user-selection-entity-and-view-mode-entity-types
   input[value="profile"][checked="checked"]
   + label {
-    color: var(--gin-color-primary) !important;
+    color: var(--gin-color-primary);
     border-color: var(--gin-color-primary);
 }
 
@@ -168,7 +400,7 @@
 #drupal-off-canvas-wrapper .form-item-settings-block-form-group-user-selection-entity-and-view-mode-entity-types
   input[value="event"][checked="checked"]
   + label {
-    color: var(--gin-color-primary) !important;
+    color: var(--gin-color-primary);
     border-color: var(--gin-color-primary);
 }
 
@@ -178,7 +410,7 @@
 #drupal-off-canvas-wrapper .form-item-settings-block-form-group-user-selection-entity-and-view-mode-entity-types
   input[value="post"][checked="checked"]
   + label {
-    color: var(--gin-color-primary) !important;
+    color: var(--gin-color-primary);
     border-color: var(--gin-color-primary);
 }
 
@@ -224,7 +456,7 @@
   .glb-form-type--radio:hover
   input[checked="checked"]
   + label {
-    color: var(--gin-color-primary) !important;
+    color: var(--gin-color-primary);
     border-color: var(--gin-color-primary);
 }
 
@@ -303,4 +535,273 @@
   gap: 1rem;
   width: 100%;
   flex-flow: row wrap;
+}
+
+/*
+ * Exposed filter rows (#1337).
+ *
+ * ViewsBasicWidgetBase::buildExposedFilterAccordion() pairs each filter's
+ * checkbox with the settings that configure it, so each filter is one bordered
+ * row: the checkbox is the header, and any settings sit in a body below it.
+ * Filters with no settings (search, audience, year) get .vb-filter-row
+ * without .vb-filter-row--has-settings and render as a header only — the
+ * same bordered treatment as every other row, deliberately: five identical
+ * rows where some expand and some don't is what a chevron would promise, and
+ * three of them breaking that promise is what made this look broken.
+ *
+ * There is no chevron. The toggle checkbox is already the disclosure
+ * control — checking "Category" is what reveals its settings — so a
+ * separate chevron icon would be a second affordance for the same action.
+ * .vb-filter-row__body's own indent + left rule is what marks a disclosed
+ * body as belonging to the toggle above it instead.
+ *
+ * Disclosure is driven straight off the header checkbox with :has() rather than
+ * a JS widget: the settings are only meaningful while their filter is on, so
+ * checked/unchecked is exactly the open/closed state. The controls are also
+ * disabled while unchecked, via #states in the widget, so a collapsed row
+ * cannot submit a value.
+ */
+.vb-filter-rows {
+  border: 0;
+  padding: 0;
+  margin: 0;
+}
+
+/*
+ * Claro's @media (min-width: 48em) rule sets left/right margin on
+ * .fieldset__wrapper (via --space-l), which is what actually pushes this
+ * fieldset's rows in from the sides; the unqualified rule above only zeroes
+ * .fieldset__wrapper under a different ancestor scope, so it misses this one.
+ * Claro's rule isn't !important and this selector already out-specifies it
+ * (two classes vs. one), so no !important needed here either.
+ */
+.vb-filter-rows > .fieldset__wrapper {
+  margin-left: 0;
+  margin-right: 0;
+}
+
+.vb-filter-row {
+  border: 1px solid var(--gin-border-color, #d4d4d4);
+  border-radius: 4px;
+  margin-bottom: 0.5rem;
+}
+
+/*
+ * The checkbox row itself; padding lives here so the body can sit flush.
+ * gin_lb adds its own "glb-" prefixed classes alongside Drupal's standard
+ * ones and sets !important margin on .glb-form-item, so it has to be zeroed
+ * out here too, with matching !important, or it leaks through.
+ */
+.vb-filter-row > .form-item,
+.vb-filter-row > .form-type--checkbox,
+.vb-filter-row > .js-form-type-checkbox,
+.vb-filter-row > .glb-form-item,
+.vb-filter-row > .glb-form-type--checkbox {
+  margin: 0 !important;
+  padding: 0.75rem;
+}
+
+/*
+ * Indent + left rule marks the body as subordinate to the toggle above it,
+ * rather than a chevron promising an expansion (removed — see file header).
+ * margin-left (not padding) is what puts daylight between the row's own
+ * left border and this border-left, so the rule reads as a distinct nested
+ * marker instead of overlapping the row's edge; border-top stays unindented
+ * (spanning the full row) to keep separating the header from the body.
+ */
+.vb-filter-row__body {
+  margin-left: 1rem;
+  padding: 0.75rem;
+  border-top: 1px solid var(--gin-border-color, #d4d4d4);
+  border-left: 2px solid var(--gin-border-color, #d4d4d4);
+}
+
+/* Collapsed while the filter is switched off. */
+.vb-filter-row--has-settings:not(:has(input[type="checkbox"]:checked)) .vb-filter-row__body {
+  display: none;
+}
+
+/*
+ * UX pass (#1481): typography scale, spacing scale, and structural fixes on
+ * top of the tab/grouping work above. See the custom-property block at the
+ * top of this file for the scale values these rules apply.
+ */
+
+/*
+ * Round type scale to whole pixels; unitless line-height per element role.
+ * Scoped to .layout-builder-configure-block, not
+ * .views-basic--group-user-selection — see the custom-property block at the
+ * top of this file for why.
+ */
+.layout-builder-configure-block .glb-fieldset__label,
+.layout-builder-configure-block .fieldset__label,
+.layout-builder-configure-block legend {
+  font-size: var(--vb-font-heading);
+  line-height: var(--vb-line-heading);
+}
+
+.layout-builder-configure-block .glb-form-item__label,
+.layout-builder-configure-block .form-item__label {
+  font-size: var(--vb-font-label) !important;
+  line-height: var(--vb-line-label);
+}
+
+.layout-builder-configure-block .glb-form-item__description,
+.layout-builder-configure-block .form-item__description,
+.layout-builder-configure-block .description {
+  font-size: var(--vb-font-help);
+  line-height: 1.5;
+}
+
+/*
+ * Cap running text at 62ch. Help text was already capped at 520px
+ * (gin_lb), but this fieldset's own intro/description paragraphs (the
+ * #markup elements ::buildTermIncludeExclude(), ::buildExposedFilterControls()
+ * and ::groupFieldDisplayRow() build — see .vb-fieldset-intro below) and the
+ * "General" tab's field help text were rendering at the full pane width
+ * (roughly 130-160 characters per line at 1231px).
+ */
+.layout-builder-configure-block .glb-form-item__description,
+.layout-builder-configure-block .form-item__description,
+.layout-builder-configure-block .description,
+.layout-builder-configure-block .vb-fieldset-intro {
+  max-width: 62ch;
+}
+
+/*
+ * The Tag filters intro is the one piece of running text in this form long
+ * enough (it includes a full worked example) that 62ch reads as narrow and
+ * unbalanced against the width of this tab, rather than as a readability
+ * win — so it gets a wider cap of its own rather than dropping the cap
+ * outright.
+ */
+.layout-builder-configure-block .vb-tag-filters-intro__help {
+  max-width: 90ch;
+}
+
+/*
+ * One-sided field margins. Claro sets both margin-top and margin-bottom
+ * (commonly to the same value) on every .glb-form-item and relies on margin
+ * collapse between adjacent siblings — collapse that never happens inside
+ * this form's flex containers (.vb-display-row, .vb-filter-row), so the same
+ * rule renders as the intended gap in some places and double that in others.
+ * Author the gap on margin-bottom only; the more specific .vb-result-content
+ * and .vb-filter-row rules (above/below) override this value for their own
+ * tighter, related-option spacing. Scoped to .grouped-items — the class
+ * ::initSelectionContainers() puts directly on each of the three tab-group
+ * details elements, which (unlike the .views-basic--group-user-selection
+ * ancestor) survives the #group relocation since it travels with the moved
+ * element itself. Does not reach the General tab, whose fields
+ * (field_heading, reusable, etc.) are standard single-field widgets outside
+ * this class.
+ */
+.grouped-items .glb-form-item,
+.grouped-items .form-item {
+  margin-top: 0 !important;
+  margin-bottom: var(--vb-space-field) !important;
+}
+
+.grouped-items .glb-form-item:last-child,
+.grouped-items .form-item:last-child {
+  margin-bottom: 0 !important;
+}
+
+/*
+ * Sibling checkboxes within "Result content" (#1481): Show Categories / Show
+ * Tags / Show thumbnail image previously sat 32px apart — wider than the
+ * 24px used between two unrelated fields — so three related options read as
+ * three separate sections. Matches the general one-sided-margin rule's own
+ * selector specificity (three classes) so this, coming later in the
+ * cascade, actually overrides it — two classes alone would lose to that
+ * rule's higher specificity regardless of source order.
+ */
+.grouped-items .vb-result-content .glb-form-item,
+.grouped-items .vb-result-content .form-item {
+  margin-top: 0 !important;
+  margin-bottom: var(--vb-space-option) !important;
+}
+
+.grouped-items .vb-result-content .glb-form-item:last-child,
+.grouped-items .vb-result-content .form-item:last-child {
+  margin-bottom: 0 !important;
+}
+
+/*
+ * Entity-specific subsections within "Result content" (#1481) — Event
+ * options / Post options (EventViewWidget/PostViewWidget's own
+ * #attributes) are a distinct titled group joining the shared field_options
+ * checkboxes in the same fieldset, not another sibling option of them, so
+ * they get the fieldset's between-groups gap instead of the tighter
+ * sibling-option gap above.
+ */
+.grouped-items .vb-result-content .vb-result-content__subsection {
+  margin-top: var(--vb-space-group) !important;
+}
+
+/*
+ * Term-select + operator "unit" (#1481): ::groupTermOperatorRows() wraps
+ * each term select with its own Any/All operator in one .vb-term-group
+ * container. Padding on that container — not margin between the select and
+ * the operator, or between the container and whatever follows — is what
+ * makes the pair read as one settled block instead of two independently
+ * spaced fields; see that method's docblock for the full rationale.
+ * .vb-term-operator's own margin-top (views-basic-term-operator.css) still
+ * does the tight, belongs-to-this-select gap between the two.
+ */
+.grouped-items .vb-term-group {
+  padding-bottom: var(--vb-space-field);
+}
+
+.grouped-items .vb-term-group:last-child {
+  padding-bottom: 0;
+}
+
+.grouped-items .vb-term-group .glb-form-item,
+.grouped-items .vb-term-group .form-item {
+  margin-bottom: 0 !important;
+}
+
+/*
+ * Fieldset intro paragraphs (#1481): the #markup elements
+ * ::buildTermIncludeExclude() (tag_filters_intro), ::buildExposedFilterControls()
+ * (exposed_filter_options_intro) and ::groupFieldDisplayRow() (result_content_intro)
+ * all build to introduce a fieldset's contents above it — see each method's
+ * docblock for why #description/#description_display couldn't be used
+ * instead (gin_lb ignores 'before' on a fieldset).
+ */
+.layout-builder-configure-block .vb-fieldset-intro {
+  margin: 0 0 var(--vb-space-field);
+  color: var(--gin-color-text);
+}
+
+/*
+ * The general one-sided-margin rule above (.grouped-items .glb-form-item)
+ * ties in specificity with the pre-existing ".vb-filter-row > .glb-form-item"
+ * zeroing (views-basic.css, "Filter rows (#1337)" section) and comes later
+ * in the file, so it was winning — but only for a row with no settings body:
+ * :last-child counts DOM siblings regardless of visibility, so a checkbox
+ * with a display:none .vb-filter-row__body sibling (Show Category, Show
+ * Custom Vocab) doesn't match :last-child and keeps the general rule's 24px
+ * margin-bottom, while a checkbox with no body sibling at all (Show Search,
+ * Show Audience, Show Year) does match :last-child and gets 0 — the same
+ * checkbox item rendering two different heights depending on whether its
+ * filter happens to have settings (confirmed against the real rendered
+ * markup, #1481). Three classes here outranks both two-class rules
+ * regardless of :last-child or source order, so every row is the same
+ * height as its header content, whether or not it has a body.
+ */
+.grouped-items .vb-filter-row > .glb-form-item,
+.grouped-items .vb-filter-row > .form-item {
+  margin: 0 !important;
+}
+
+/*
+ * Space between the "Highlight pinned items" row and "Sort by" above it
+ * (#1481) — margin-top on the row itself, separating it from the field
+ * before it, not padding inside its own border. .vb-filter-row's base rule
+ * ("Filter rows (#1337)" section above) only sets margin-bottom, so there was
+ * nothing separating this row from the field above it.
+ */
+.vb-filter-row--pinned {
+  margin-top: var(--vb-space-group, 2.5rem);
 }

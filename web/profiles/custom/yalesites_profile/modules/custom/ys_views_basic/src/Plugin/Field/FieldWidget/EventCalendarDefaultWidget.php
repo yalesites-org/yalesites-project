@@ -4,6 +4,7 @@ namespace Drupal\ys_views_basic\Plugin\Field\FieldWidget;
 
 use Drupal\Core\Field\FieldItemListInterface;
 use Drupal\Core\Form\FormStateInterface;
+use Drupal\ys_views_basic\ViewsBasicManager;
 
 /**
  * Plugin implementation of the 'event_calendar_default' widget.
@@ -16,7 +17,7 @@ use Drupal\Core\Form\FormStateInterface;
  *   }
  * )
  */
-class EventCalendarDefaultWidget extends ViewsBasicDefaultWidget {
+class EventCalendarDefaultWidget extends ViewsBasicWidgetBase {
 
   /**
    * Vocabulary IDs used in the widget.
@@ -37,6 +38,23 @@ class EventCalendarDefaultWidget extends ViewsBasicDefaultWidget {
   const TIME_PERIOD_FUTURE = 'future';
   const TIME_PERIOD_PAST = 'past';
   const TIME_PERIOD_ALL = 'all';
+
+  /**
+   * {@inheritdoc}
+   */
+  protected function getContentType(): ?string {
+    return ViewsBasicManager::CONTENT_TYPE_EVENT;
+  }
+
+  /**
+   * {@inheritdoc}
+   *
+   * The calendar widget's only entity-specific control is the event time
+   * period, built by buildEventSpecificOptions().
+   */
+  protected function buildEntitySpecificOptions(array &$form, FieldItemListInterface $items, int $delta): void {
+    $this->buildEventSpecificOptions($form, $items, $delta);
+  }
 
   /**
    * {@inheritdoc}

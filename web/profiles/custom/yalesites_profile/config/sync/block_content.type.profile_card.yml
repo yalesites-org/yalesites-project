@@ -1,0 +1,8 @@
+uuid: 359d7c98-bb18-4f01-bbbc-c5b0a5fcbc21
+langcode: en
+status: true
+dependencies: {  }
+id: profile_card
+label: 'People - Card Grid View'
+revision: true
+description: 'People - Card Grid listing block.'

@@ -1,0 +1,254 @@
+/*
+ * Listing block form tabs (#1299).
+ *
+ * In the Layout Builder modal, gin_lb tags each horizontal-tab button with
+ * .glb-claro-details, whose `margin: 0 -0.25em 0 -1.25em !important`
+ * (gin_lb/dist/css/gin_lb.css) pulls every tab ~20px left over its neighbour,
+ * so the labels collide (they read as one run of text). Re-space them into
+ * clearly separated, padded tabs sitting on a shared baseline; the margin reset
+ * needs !important to win against that rule. Loaded only on the listing block
+ * authoring forms (via the ys_views_basic/listing-form-tabs library, attached
+ * in the tabs form_alter) and scoped to the block configure form, so no other
+ * field_group tabs are touched.
+ *
+ * Gin's tabs.css and field_group's horizontal-tabs.css both target
+ * `ul.horizontal-tabs-list li.horizontal-tab-button a`, which beats our
+ * class-only selectors on specificity (their ul/li tip the balance). Worse,
+ * field_group also has a `li.selected a` branch at the same specificity that
+ * wins the tie for the active tab only, giving it different (shorter)
+ * padding than inactive tabs. `!important` throughout this file is what
+ * makes our spacing win consistently across every tab state.
+ */
+.layout-builder-configure-block .horizontal-tabs-list {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.25rem;
+  margin: 0 !important;
+  padding: 0 !important;
+  border-bottom: 1px solid var(--gin-border-color, #d3d4d9);
+}
+
+.layout-builder-configure-block .horizontal-tabs-list .horizontal-tab-button {
+  float: none;
+  margin: 0 !important;
+  padding: 0;
+  border: 0;
+  list-style: none;
+}
+
+.layout-builder-configure-block .horizontal-tabs-list .horizontal-tab-button a {
+  display: block;
+  padding: 0.5rem 1rem !important;
+  white-space: nowrap;
+  text-decoration: none;
+}
+
+/*
+ * Gin's tabs.css also draws its own underline via ::after on the tab list,
+ * offset up from the bottom edge by a fixed spacing value (inset-block-end:
+ * var(--gin-spacing-l)) calibrated for Gin's own, taller default tab height.
+ * Now that the tabs above are shorter, that fixed offset lands mid-label
+ * instead of at the bottom edge, showing as a stray line through the tab
+ * text. We already draw our own border-bottom on the list above, so this
+ * second underline is redundant as well as misplaced; hide it.
+ */
+.layout-builder-configure-block .horizontal-tabs-list::after {
+  display: none !important;
+}
+
+/*
+ * Give the tab panes the same layer background and left/right alignment the
+ * rest of the form uses. Two separate gin_lb overrides fight this:
+ * - .glb-claro-details__wrapper gets `background: var(--gin-bg-app)
+ *   !important` (gin_lb.css) — the near-black app background, not the
+ *   lighter layer surface — and it sits *inside* .horizontal-tabs-panes, so
+ *   it paints over the background set below regardless of what that
+ *   resolves to.
+ * - The same selector also gets `padding-inline: 1.5em !important`, which
+ *   insets the pane content ~24px past the tab list's left edge, breaking
+ *   the alignment between the tab bar and the fields below it. We bring
+ *   that down to a small 0.5rem gutter instead of removing it outright, so
+ *   fields aren't flush against the panel edge, while staying close enough
+ *   to the tab bar's edge to still read as aligned.
+ * Both need !important overrides, scoped to this wrapper specifically, to
+ * win.
+ */
+.layout-builder-configure-block .horizontal-tabs-panes {
+  background: var(--gin-bg-layer, #fff);
+}
+
+.layout-builder-configure-block .horizontal-tabs-panes .glb-claro-details__wrapper {
+  padding-left: 0.5rem !important;
+  padding-right: 0.5rem !important;
+  background: var(--gin-bg-layer, #fff) !important;
+}
+
+/*
+ * The Links field on the General tab (#1318 item 1) is itself wrapped in a
+ * <details> for a collapsed-by-default default state, which means it also
+ * picks up the same gin_lb .glb-claro-details__wrapper padding-inline the
+ * rule above already has to fight — but this one isn't a tab-bar-level pane
+ * that needs an inset gutter from the panel edge; it's a plain sub-section
+ * that should sit flush like every other field in this tab. Zero it out
+ * specifically for this nested details rather than the pane-level one above.
+ */
+.layout-builder-configure-block
+  .horizontal-tabs-panes
+  .vb-heading-links-details
+  .glb-claro-details__wrapper {
+  padding-left: 0 !important;
+  padding-right: 0 !important;
+}
+
+/*
+ * The pane itself (not just its inner wrapper above) also carries
+ * .glb-claro-details, so it inherits that same class's `margin-left:
+ * -1.25em !important` (gin_lb.css) — meant to compensate the tab buttons'
+ * own indent, but here it just shifts the whole pane content 20px left of
+ * the tab bar above it. Zero it out for panes specifically.
+ */
+.layout-builder-configure-block .horizontal-tabs-panes .horizontal-tabs-pane {
+  margin: 0 !important;
+}
+
+/*
+ * The Links field's own nested <details> (.vb-heading-links-details, styling
+ * hook above) also carries gin_lb's .glb-claro-details class, so it inherits
+ * the same -1.25em margin-left as the tab panes above — but this element
+ * isn't a pane matched by that rule, so the offset went unzeroed, shifting
+ * the whole Links table left of every other field on the General tab
+ * (#1481, confirmed against the real rendered margin rather than guessed).
+ */
+.layout-builder-configure-block .horizontal-tabs-panes .vb-heading-links-details {
+  margin: 0 !important;
+}
+
+/*
+ * Restore the icon-radio "card" styling (e.g. Event Time Period) for
+ * controls that now live inside the tab bar. ViewsBasicWidgetBase's
+ * initSelectionContainers() puts the styling hook class
+ * .views-basic--group-user-selection on the *outer* group_user_selection
+ * container, and views-basic.css keys the whole card treatment — hiding
+ * the native radio circle, the bordered label, the icon sizing, the
+ * flex-wrap layout — off that ancestor. But _ys_views_basic_listing_form_tabs()
+ * moves the entity_and_view_mode/filter_and_sort/options subgroups into the
+ * tab bar via Drupal's #group mechanism, which re-parents their rendered
+ * markup under .horizontal-tabs-panes, outside that outer container. So
+ * every .views-basic--group-user-selection-scoped rule silently stops
+ * matching for anything inside those groups. Re-declare the subset that
+ * applies to icon-radio controls here, scoped to the new ancestor, rather
+ * than changing the #group relocation itself.
+ */
+.layout-builder-configure-block .horizontal-tabs-panes .grouped-items input.form-radio {
+  border: 0;
+  clip: rect(0 0 0 0);
+  height: 1px;
+  margin: -1px;
+  overflow: hidden;
+  padding: 0;
+  position: absolute;
+  width: 1px;
+}
+
+.layout-builder-configure-block .horizontal-tabs-panes .grouped-items .glb-form-type--radio {
+  position: relative;
+}
+
+.layout-builder-configure-block .horizontal-tabs-panes .glb-form-type--radio label.glb-option {
+  display: flex !important;
+  align-items: center;
+  flex-direction: column;
+  gap: 1rem;
+  flex: 1 auto;
+  border: 2px solid;
+  aspect-ratio: 2/1;
+  text-align: left;
+  padding: 0.75rem 1rem;
+  color: var(--gin-color-text);
+  border-radius: 0.25rem;
+  margin-bottom: 0.75rem;
+}
+
+/*
+ * Excludes .vb-preview__image (views-basic-preview.css): that image needs to
+ * fill its container width rather than shrink to its natural size, so it
+ * opts out of this icon-radio sizing rule instead of the two fighting via
+ * !important.
+ */
+.layout-builder-configure-block .horizontal-tabs-panes .grouped-items img:not(.vb-preview__image) {
+  width: auto;
+}
+
+.layout-builder-configure-block .horizontal-tabs-panes .form-boolean-group {
+  display: flex;
+  gap: 1rem;
+  width: 100%;
+  flex-flow: row wrap;
+}
+
+/*
+ * Restore the dark color-scheme on form controls so the browser paints its
+ * native widgets (the number-input stepper arrows, most visibly) for a dark
+ * background.
+ *
+ * Gin does this itself with `.gin--dark-mode .form-element { color-scheme:
+ * dark }`, but that rule cannot reach a Layout Builder block form for two
+ * compounding reasons: a Layout Builder page renders in the front-end theme,
+ * so Gin's stylesheet is not loaded here at all (only gin_lb's), and gin_lb
+ * renames `form-element` to `glb-form-element` (its src/classes.json rename
+ * list) so even a loaded copy of the rule would not match. gin_lb ships no
+ * color-scheme declaration of its own, so the control keeps the default light
+ * scheme while gin_lb paints it a dark background — and Safari/WebKit then
+ * draws the "Skip the first results" / "Items" stepper arrows dark-on-dark.
+ */
+.gin--dark-mode .layout-builder-configure-block .glb-form-element {
+  color-scheme: dark;
+}
+
+/*
+ * Remove the Reusable toggle's stray inset padding.
+ *
+ * atomic/css/layout-builder.css carries a rule (originally meant to pad the
+ * standalone reusable-block edit form, per its own comment) that also
+ * matches `.form-item-reusable` and its next sibling wherever
+ * `.layout-builder-configure-block` appears — which includes this tab
+ * layout, since that class is Drupal's own base-form-ID class for both
+ * ConfigureBlockFormBase forms, not something this module adds. That rule
+ * cannot be edited directly (it lives in contrib), so cancel its
+ * padding here instead; `div[data-drupal-selector="edit-block-form"]`, the
+ * selector actually meant for the standalone edit form, is left alone.
+ * Logical properties so this holds in RTL too. `!important` to outrank the
+ * contrib rule regardless of stylesheet load order, matching this file's
+ * existing overrides for the same reason.
+ */
+.layout-builder-configure-block .form-item-reusable,
+.layout-builder-configure-block .form-item-reusable + .form-type--textfield {
+  padding-inline: 0 !important;
+}
+
+/*
+ * Reduce the Header links field's footprint (#1481): URL and Link text
+ * stacked full-width each, three times, made this the tallest thing on the
+ * General tab for a field most blocks never touch. Side by side halves each
+ * row's height with no interactivity added; collapsing the rows behind a
+ * button would need new JS and its own edge cases (e.g. a saved block with
+ * links in row 2/3 but not row 1), out of scope for a CSS pass.
+ *
+ * .fieldset__wrapper is correct unprefixed here: glb-fieldset__wrapper is not
+ * in gin_lb/src/classes.json, so glb_classes() leaves this one alone.
+ */
+.heading-links-widget__row .fieldset__wrapper {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 0 1rem;
+  align-items: start;
+}
+
+/*
+ * Tighten the gap between the three rows themselves — Claro/gin_lb's default
+ * multi-value table spacing was sized for full-width stacked rows, wider
+ * than this side-by-side layout needs.
+ */
+.heading-links-widget__row {
+  margin-bottom: 0.5rem !important;
+}
