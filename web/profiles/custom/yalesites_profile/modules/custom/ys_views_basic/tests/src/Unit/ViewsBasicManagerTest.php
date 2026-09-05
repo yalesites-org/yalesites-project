@@ -411,12 +411,41 @@ class ViewsBasicManagerTest extends UnitTestCase {
   public function testGetDefaultParamValueSimpleArrayOptionsDefaultAndPassThrough() {
     $this->assertSame([], $this->manager->getDefaultParamValue('event_field_options', json_encode([])));
     $this->assertSame([], $this->manager->getDefaultParamValue('post_field_options', json_encode([])));
+    $this->assertSame([], $this->manager->getDefaultParamValue('profile_field_options', json_encode([])));
     $this->assertSame([], $this->manager->getDefaultParamValue('exposed_filter_options', json_encode([])));
 
     $params = json_encode(['event_field_options' => ['hide_add_to_calendar' => 1]]);
     $this->assertSame(
       ['hide_add_to_calendar' => 1],
       $this->manager->getDefaultParamValue('event_field_options', $params)
+    );
+
+    $profile_params = json_encode(['profile_field_options' => ['show_email' => 'show_email']]);
+    $this->assertSame(
+      ['show_email' => 'show_email'],
+      $this->manager->getDefaultParamValue('profile_field_options', $profile_params)
+    );
+  }
+
+  /**
+   * GetDefaultParamValue('cards_per_row', ...) keeps the 3-up grid (#1648).
+   *
+   * Listings saved before the dial existed carry no cards_per_row key and must
+   * keep rendering exactly as they did.
+   *
+   * @covers ::getDefaultParamValue
+   */
+  public function testGetDefaultParamValueCardsPerRowDefaultsToThree() {
+    $this->assertSame(3, $this->manager->getDefaultParamValue('cards_per_row', json_encode([])));
+    $this->assertSame(
+      4,
+      $this->manager->getDefaultParamValue('cards_per_row', json_encode(['cards_per_row' => 4]))
+    );
+    // Anything outside the offered set falls back rather than emitting a grid
+    // the SCSS has no rule for.
+    $this->assertSame(
+      3,
+      $this->manager->getDefaultParamValue('cards_per_row', json_encode(['cards_per_row' => 7]))
     );
   }
 

@@ -34,13 +34,23 @@
         {% if content_type == 'post' %}<span class="vb-preview__eyebrow">{{ 'Eyebrow'|t }}</span>{% endif %}
         <p class="vb-preview__title">{{ 'Example Title'|t }}</p>
         {% if content_type == 'event' %}<span class="vb-preview__meta">{{ 'Month 1, 2026 - 12:00 PM'|t }}</span>{% endif %}
-        {% if content_type == 'profile' %}<span class="vb-preview__meta">{{ 'Job Title'|t }}</span>{% endif %}
+        {% if content_type == 'profile' %}
+          {# Like .vb-preview__pinned, these four start hidden because their
+             checkboxes start unticked (#1648); the behavior reveals them. #}
+          <span class="vb-preview__pronouns" hidden>{{ 'they/them'|t }}</span>
+          <span class="vb-preview__meta">{{ 'Job Title'|t }}</span>
+          <span class="vb-preview__department" hidden>{{ 'Department Name'|t }}</span>
+        {% endif %}
         <span class="vb-preview__category">{{ 'Category A | Category B'|t }}</span>
         <span class="vb-preview__tags">{{ 'Tag A | Tag B'|t }}</span>
         {% if view_mode in ['card', 'list_item'] %}
           <p class="vb-preview__teaser">{{ 'This is example teaser text that shows how a longer summary will wrap onto multiple lines within the card.'|t }}</p>
         {% endif %}
         {% if content_type == 'event' %}<a class="vb-preview__calendar" href="#">{{ 'Add to Calendar'|t }}</a>{% endif %}
+        {% if content_type == 'profile' %}
+          <span class="vb-preview__email" hidden>{{ 'name@example.edu'|t }}</span>
+          <span class="vb-preview__phone" hidden>{{ '203-555-0100'|t }}</span>
+        {% endif %}
       </div>
     </div>
   </div>

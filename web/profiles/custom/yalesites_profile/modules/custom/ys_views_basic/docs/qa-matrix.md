@@ -11,11 +11,12 @@ acceptance criteria.
 
 | Test | Covers |
 |---|---|
-| `Unit/ListingBundleDefinitionTest` | The 13-bundle definition, (type, view_mode, thumbnail) resolution, throw-on-unknown, the `(type, view_mode)` migration mapping, and the predecessor presets. |
+| `Unit/ListingBundleDefinitionTest` | The 13-bundle definition, (type, view_mode, thumbnail, cards-per-row) resolution, throw-on-unknown, the `(type, view_mode)` migration mapping, and the predecessor presets. |
 | `Unit/PostViewWidgetTest` | Post content type, bundle-driven view mode, the post-only year filter, the eyebrow option (no #states), stored `post_field_options`, and the detail-group form sectioning. |
 | `Unit/EventViewWidgetTest` | Event content type, excluded year filter, event field options + time period (no #states), stored `event_field_options` + `filters.event_time_period`. |
 | `Unit/PageViewWidgetTest` | Page content type, bundle-driven view modes, no entity-specific controls, excluded year filter. |
-| `Unit/ProfileViewWidgetTest` | Profile content type, "Show Affiliations" label, affiliation vocabulary, directory mode with disabled thumbnail. |
+| `Unit/ProfileViewWidgetTest` | Profile content type, "Show Affiliations" label, affiliation vocabulary, directory mode with disabled thumbnail, and the department/email/phone/pronouns options (#1648), which are offered on the card and list bundles only (not directory or condensed), plus their stored `profile_field_options`. |
+| `Unit/CardsPerRowTest` | The shared "Cards per row" dial (#1648): offered on every content type's card grid with 3/4 options defaulting to 3, absent from list/condensed/directory, and the declarative `supports_cards_per_row` capability. |
 | `Unit/RenderIsolationTest` | Per-instance view cloning (#906), events scaffold selection, NULL on missing scaffold, deterministic pager element ids, the `show_current_entity` fall-through regression. |
 | `Kernel/ViewMigrationTest` | The `view` → bundle swap per (type, mode), field-table bundle patch, unmappable-skip, idempotency, and the predecessor migration swap + param pre-fill. |
 
