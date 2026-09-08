@@ -1,0 +1,10 @@
+name: 'YaleSites Views Wizard'
+type: module
+description: 'Collapses the per-(content type, display mode) listing tiles in the Layout Builder block picker into a single "Content Listing" entry that asks the two questions editors already answer, then hands off to the matching listing block without leaving the dialog.'
+package: YaleSites
+core_version_requirement: ^10 || ^11
+dependencies:
+  - drupal:layout_builder
+  - gin_lb:gin_lb
+  - layout_builder_browser:layout_builder_browser
+  - yalesites_profile:ys_views_basic

@@ -132,6 +132,18 @@ class ViewsBasicDefaultWidget extends ViewsBasicWidgetBase {
       '#title' => $this->t('I Want To Show'),
       '#tree' => TRUE,
       '#default_value' => ($items[$delta]->params) ? $this->viewsBasicManager->getDefaultParamValue('types', $items[$delta]->params) : NULL,
+      // Carries the selected/focus card styling, mirroring 'view_mode' below.
+      // It has to be #attributes rather than the #wrapper_attributes under
+      // it: gin_lb renders radios as a composite fieldset whose template
+      // ignores #wrapper_attributes, whereas #attributes reaches every child
+      // radio input. Before this the styling keyed on Drupal's generated
+      // form-item class, which encodes this widget's whole #tree name path
+      // and so could never match any other form reusing these cards.
+      '#attributes' => [
+        'class' => [
+          'views-basic--entity-types',
+        ],
+      ],
       '#wrapper_attributes' => [
         'class' => [
           'views-basic--user-selection',
