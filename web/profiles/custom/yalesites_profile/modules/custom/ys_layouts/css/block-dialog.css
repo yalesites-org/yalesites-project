@@ -21,22 +21,33 @@
  * corrects gin_lb off-canvas chrome for this module's other dialog.
  */
 
-/* The second selector is not redundant. Atomic ships
+/* Both selectors are gated on `:has(.ys-block-dialog)`, the class
+ * ys_layouts_form_alter() puts on these two forms. Without it the rules apply
+ * to every jQuery UI dialog on the page, which is not hypothetical: an Ajax
+ * dialog's `#attached` CSS is injected into the *parent* document and stays
+ * for the rest of the page session, so opening the add-block modal once would
+ * leave the section configure tray, the remove-block confirm, the media
+ * library modal and this module's own detach confirm restyled behind it. The
+ * titlebar is a sibling of the dialog content the class lands in rather than
+ * an ancestor of it, so :has() on the dialog is what reaches it.
+ *
+ * The second selector is not redundant. Atomic ships
  * `#drupal-off-canvas-wrapper .ui-dialog-titlebar { align-items: flex-start }`,
  * which is inert only for as long as the bar is not a flex container; making it
  * one below would otherwise wake that rule up and top-align the sidebar title,
  * reintroducing the bug on the very surface being fixed. `#drupal-off-canvas-
  * wrapper` is the `.ui-dialog` element itself rather than an ancestor, so
- * qualifying it out-specifies Atomic's rule without resorting to !important.
+ * qualifying it out-specifies Atomic's rule without resorting to !important -
+ * :has() alone cannot, because it takes the specificity of its argument and no
+ * number of classes outranks Atomic's ID.
  *
- * That leaves two repos setting align-items on this element to opposite values,
- * which is a trap for whoever edits Atomic next. Keeping the fix here is a
- * deliberate trade to keep this a single-repo change; the follow-up is to delete
- * Atomic's now-contradictory declaration and, if the team prefers, move both
- * rules there.
+ * Scoping also settles the conflict the previous revision left open: Atomic's
+ * declaration now keeps applying everywhere it did before, and is overridden
+ * only inside these two dialogs, so there is nothing contradictory left to
+ * clean up there.
  */
-.ui-dialog .ui-dialog-titlebar,
-#drupal-off-canvas-wrapper.ui-dialog .ui-dialog-titlebar {
+.ui-dialog:has(.ys-block-dialog) .ui-dialog-titlebar,
+#drupal-off-canvas-wrapper.ui-dialog:has(.ys-block-dialog) .ui-dialog-titlebar {
   display: flex;
   align-items: center;
 }
@@ -51,7 +62,9 @@
  * `.ui-dialog .ui-dialog-title` is also (0,2,0) and also !important, so matching
  * it would leave the outcome depending on stylesheet order.
  */
-.ui-dialog .ui-dialog-titlebar .ui-dialog-title,
-#drupal-off-canvas-wrapper.ui-dialog .ui-dialog-titlebar .ui-dialog-title {
+.ui-dialog:has(.ys-block-dialog) .ui-dialog-titlebar .ui-dialog-title,
+#drupal-off-canvas-wrapper.ui-dialog:has(.ys-block-dialog)
+  .ui-dialog-titlebar
+  .ui-dialog-title {
   margin-block: 0 !important;
 }

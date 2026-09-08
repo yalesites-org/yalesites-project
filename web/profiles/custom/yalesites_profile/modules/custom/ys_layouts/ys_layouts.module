@@ -277,6 +277,15 @@ function ys_layouts_form_alter(&$form, $form_state, $form_id) {
 
     // Centre that heading against the dialog's close icon; see
     // css/block-dialog.css for what gin_lb leaves misaligned and why.
+    //
+    // The class is what keeps that stylesheet off every other dialog. An Ajax
+    // dialog's #attached CSS is injected into the parent document and stays
+    // there for the rest of the page session, so once this form has opened
+    // once, an unscoped `.ui-dialog` rule would also restyle the section
+    // configure tray, the remove-block confirm and the media library modal.
+    // The titlebar is a sibling of the content this class lands in, so the
+    // stylesheet reaches it with :has() on the dialog.
+    $form['#attributes']['class'][] = 'ys-block-dialog';
     $form['#attached']['library'][] = 'ys_layouts/block_dialog';
 
     $form['#after_build'][] = 'ys_layouts_lift_block_instructions';

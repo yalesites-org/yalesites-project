@@ -294,6 +294,41 @@ class BlockConfigureFormTest extends UnitTestCase {
   }
 
   /**
+   * The dialog stylesheet is attached, and scoped to these forms by a class.
+   *
+   * The stylesheet matches on :has(.ys-block-dialog), so dropping the class
+   * would not fail visibly here - it would silently widen the stylesheet back
+   * out to every dialog on the page. Asserting the two together keeps the
+   * selector's hook and the attachment from drifting apart.
+   */
+  public function testTheDialogStylesheetIsAttachedAndScoped(): void {
+    foreach (['layout_builder_add_block', 'layout_builder_update_block'] as $form_id) {
+      $form = $this->alter($this->blockForm(), $form_id);
+
+      $this->assertContains(
+        'ys_layouts/block_dialog',
+        $form['#attached']['library'] ?? [],
+        "The dialog stylesheet is what centres the heading ($form_id)."
+      );
+      $this->assertContains(
+        'ys-block-dialog',
+        $form['#attributes']['class'] ?? [],
+        "Without this class the stylesheet restyles every dialog ($form_id)."
+      );
+    }
+  }
+
+  /**
+   * An unrelated form gets neither the stylesheet nor the scoping class.
+   */
+  public function testUnrelatedFormGetsNoDialogStyling(): void {
+    $form = $this->alter($this->blockForm(), 'some_other_form');
+
+    $this->assertArrayNotHasKey('#attached', $form);
+    $this->assertArrayNotHasKey('#attributes', $form);
+  }
+
+  /**
    * Guidance renders before the Administrative label it introduces.
    */
   public function testInstructionsRenderBeforeTheAdministrativeLabel(): void {
