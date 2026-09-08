@@ -156,21 +156,6 @@ class ViewsBasicDynamicStyle extends StylePluginBase implements ContainerFactory
   }
 
   /**
-   * Views built by ViewsBasicManager::setupView(), and only those.
-   *
-   * This style plugin also serves the content_resources view, which builds its
-   * own, shorter argument list in ViewsContentResourcesManager — index 8 is
-   * pin_settings there, not field display options. Reading the index blindly
-   * would decode the wrong argument, so the lookup is restricted to the views
-   * that ViewsBasicManager::setupView() packs, the same way
-   * ys_views_basic_views_pre_render() guards its own positional reads.
-   */
-  protected const SCAFFOLD_VIEWS = [
-    'views_basic_scaffold',
-    'views_basic_scaffold_events',
-  ];
-
-  /**
    * Returns the cards-per-row setting for this listing (#1648).
    *
    * The dial travels in the shared field_display_options argument because it
@@ -179,15 +164,28 @@ class ViewsBasicDynamicStyle extends StylePluginBase implements ContainerFactory
    * rendered outside setupView(), or a stored value the SCSS has no rule for
    * — falls back to the 3-up grid every listing had before the dial existed.
    *
+   * The view-id guard matters: this style plugin also serves the
+   * content_resources view, which builds its own, shorter argument list in
+   * ViewsContentResourcesManager — index 8 is pin_settings there, not field
+   * display options — so reading the index blindly would decode a different
+   * argument entirely.
+   *
    * @return int
    *   The maximum cards per row.
    */
   protected function cardsPerRow(): int {
-    if (!in_array($this->view->id(), static::SCAFFOLD_VIEWS, TRUE)) {
+    if (!in_array($this->view->id(), ViewsBasicManager::SCAFFOLD_VIEWS, TRUE)) {
       return ViewsBasicManager::CARDS_PER_ROW_DEFAULT;
     }
 
-    $field_display_options = json_decode($this->view->args[ViewsBasicManager::viewArgumentIndex('field_display_options')] ?? '', TRUE) ?: [];
+    $field_display_options = json_decode($this->view->args[ViewsBasicManager::viewArgumentIndex('field_display_options')] ?? '', TRUE);
+    // Anything that is not the object setupView() writes — a stale argument
+    // set, or a JSON scalar — falls back. Tested with is_array() rather than
+    // a truthiness check, which would leave a decoded scalar to be indexed
+    // below and emit an "array offset on value of type int" warning.
+    if (!is_array($field_display_options)) {
+      $field_display_options = [];
+    }
     $cards_per_row = (int) ($field_display_options['cards_per_row'] ?? 0);
 
     return in_array($cards_per_row, ViewsBasicManager::CARDS_PER_ROW_OPTIONS, TRUE)

@@ -140,7 +140,7 @@ function ys_views_basic_views_pre_build($view) {
  */
 function ys_views_basic_views_pre_render(ViewExecutable $view): void {
   $view_id = $view->id();
-  if (in_array($view_id, ['views_basic_scaffold', 'views_basic_scaffold_events'])) {
+  if (in_array($view_id, ViewsBasicManager::SCAFFOLD_VIEWS, TRUE)) {
     $pin_options = json_decode($view->args[ViewsBasicManager::viewArgumentIndex('pin_settings')]);
     $pin_label = '';
     if ($pin_options->pinned_to_top) {
@@ -196,7 +196,7 @@ function ys_views_basic_views_pre_render(ViewExecutable $view): void {
  * Implements hook_views_pre_view().
  */
 function ys_views_basic_views_pre_view(ViewExecutable $view, $display_id, array &$args) {
-  if (!in_array($view->id(), ['views_basic_scaffold', 'views_basic_scaffold_events'])) {
+  if (!in_array($view->id(), ViewsBasicManager::SCAFFOLD_VIEWS, TRUE)) {
     return;
   }
 
