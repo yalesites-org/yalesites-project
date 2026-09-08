@@ -300,6 +300,32 @@ class MetaFieldsManager implements ContainerFactoryPluginInterface {
       }
     }
 
+    // Native (non-Localist) event address.
+    $eventAddress = [];
+    if ($node->hasField('field_event_address') && !$node->get('field_event_address')->isEmpty()) {
+      $addressValue = $node->get('field_event_address')->first();
+      $eventAddress = [
+        'address' => $addressValue->address_line1 ?? NULL,
+        'city' => $addressValue->locality ?? NULL,
+        'state' => $addressValue->administrative_area ?? NULL,
+        'postal_code' => $addressValue->postal_code ?? NULL,
+        'country_code' => $addressValue->country_code ?? NULL,
+      ];
+    }
+
+    // Free-form address details for native (non-Localist) events.
+    $addressAdditionalInfo = NULL;
+    if ($node->hasField('field_address_additional_info') && !$node->get('field_address_additional_info')->isEmpty()) {
+      $field_value = $node->get('field_address_additional_info')->first()->getValue();
+      if (!empty($field_value['value'])) {
+        $addressAdditionalInfo = [
+          '#type' => 'processed_text',
+          '#text' => $field_value['value'],
+          '#format' => $field_value['format'] ?? 'basic_html',
+        ];
+      }
+    }
+
     /*
      * ICS URL.
      *
@@ -343,7 +369,10 @@ class MetaFieldsManager implements ContainerFactoryPluginInterface {
       'localist_image_url' => $localistImageUrl,
       'localist_image_alt' => $localistImageAlt,
       'teaser_media' => $teaserMediaRender,
+      'is_localist_event' => !empty($localistId),
       'place_info' => $place,
+      'event_address' => $eventAddress,
+      'address_additional_info' => $addressAdditionalInfo,
       'event_types' => $eventTypes,
       'event_audience' => $eventAudience,
       'event_topics' => $eventTopics,

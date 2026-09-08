@@ -9,7 +9,7 @@ id: node.event.field_event_room
 field_name: field_event_room
 entity_type: node
 bundle: event
-label: Room
+label: 'Localist room'
 description: ''
 required: false
 translatable: false
