@@ -53,6 +53,14 @@ class TextFormatRepairTest extends KernelTestBase {
   const RICH_VALUE = '<h3>Findings</h3><ul><li>First</li></ul>';
 
   /**
+   * A teaser authored with a link, which heading_html would strip.
+   *
+   * This is the case the reviewer singled out: repairing it to the field's own
+   * contract removes the link from the rendered output.
+   */
+  const LINKED_VALUE = '<p>See the <a href="https://example.com">report</a>.</p>';
+
+  /**
    * The service under test.
    *
    * @var \Drupal\ys_core\TextFormatRepair
@@ -70,16 +78,15 @@ class TextFormatRepairTest extends KernelTestBase {
     $this->installSchema('node', ['node_access']);
     $this->installConfig(['field', 'filter', 'node']);
 
-    FilterFormat::create([
-      'format' => 'restricted_html',
-      'name' => 'Restricted HTML',
-      'weight' => 1,
-    ])->save();
-    FilterFormat::create([
-      'format' => 'basic_html',
-      'name' => 'Basic HTML',
-      'weight' => 0,
-    ])->save();
+    // These mirror the real formats closely enough for the loss comparison to
+    // mean something. Two properties matter and both are load-bearing:
+    // heading_html permits neither <a> nor <br> and allows no attributes at
+    // all, and — unlike the other two — it does NOT run filter_autop. Without
+    // real filters attached, check_markup() is a pass-through and every repair
+    // would look lossless, so the tests would pass for the wrong reason.
+    $this->createFilterFormat('heading_html', 'Heading HTML', '<em> <strong> <p>', 2);
+    $this->createFilterFormat('restricted_html', 'Restricted HTML', '<a href> <br> <p> <strong> <em>', 1, TRUE);
+    $this->createFilterFormat('basic_html', 'Basic HTML', '<a href> <br> <p class> <h3> <ul> <li> <strong> <em>', 0, TRUE);
 
     NodeType::create(['type' => 'resource', 'name' => 'Resource'])->save();
     // A second bundle, to prove the repair is scoped by bundle.
@@ -95,16 +102,42 @@ class TextFormatRepairTest extends KernelTestBase {
       ['restricted_html'],
       FieldStorageDefinitionInterface::CARDINALITY_UNLIMITED
     );
+    // Mirrors resource.field_teaser_text: a NARROWER contract than what a
+    // migration is likely to have stored, so repairing it can lose markup.
+    $this->createTextField('field_teaser_text', ['heading_html']);
 
     // Constructed directly rather than via the ys_core service, so this test
     // does not have to enable ys_core and its dependency chain (cas, ys_media
-    // and friends) just to exercise four core services.
+    // and friends) just to exercise a handful of core services.
     $this->repair = new TextFormatRepair(
       $this->container->get('entity_type.manager'),
       $this->container->get('entity_field.manager'),
       $this->container->get('database'),
-      $this->container->get('cache_tags.invalidator')
+      $this->container->get('cache_tags.invalidator'),
+      $this->container->get('entity_type.bundle.info')
     );
+  }
+
+  /**
+   * Creates a filter format that actually restricts HTML.
+   */
+  protected function createFilterFormat(string $format, string $name, string $allowed_html, int $weight, bool $autop = FALSE): void {
+    $filters = [
+      'filter_html' => [
+        'status' => TRUE,
+        'settings' => ['allowed_html' => $allowed_html],
+      ],
+    ];
+    if ($autop) {
+      $filters['filter_autop'] = ['status' => TRUE];
+    }
+
+    FilterFormat::create([
+      'format' => $format,
+      'name' => $name,
+      'weight' => $weight,
+      'filters' => $filters,
+    ])->save();
   }
 
   /**
@@ -181,7 +214,7 @@ class TextFormatRepairTest extends KernelTestBase {
 
     $this->assertGreaterThan(
       0,
-      $this->repair->repairFieldStorage('node', 'resource', 'field_abstract')
+      $this->repair->repairFieldStorage('node', 'resource', 'field_abstract', TRUE)->repaired
     );
     $this->assertSame('restricted_html', $this->storedFormat($node->id(), 'field_abstract'));
   }
@@ -199,7 +232,7 @@ class TextFormatRepairTest extends KernelTestBase {
       'field_abstract' => ['value' => self::RICH_VALUE, 'format' => 'basic_html'],
     ]);
 
-    $this->repair->repairFieldStorage('node', 'resource', 'field_abstract');
+    $this->repair->repairFieldStorage('node', 'resource', 'field_abstract', TRUE);
 
     $storage = $this->nodeStorage();
     $storage->resetCache([$node->id()]);
@@ -219,7 +252,7 @@ class TextFormatRepairTest extends KernelTestBase {
       'field_abstract' => ['value' => '<p>Fine</p>', 'format' => 'restricted_html'],
     ]);
 
-    $this->assertSame(0, $this->repair->repairFieldStorage('node', 'resource', 'field_abstract'));
+    $this->assertSame(0, $this->repair->repairFieldStorage('node', 'resource', 'field_abstract')->repaired);
     $this->assertSame('restricted_html', $this->storedFormat($node->id(), 'field_abstract'));
   }
 
@@ -233,7 +266,7 @@ class TextFormatRepairTest extends KernelTestBase {
       'field_teaser' => ['value' => '<p>Anything</p>', 'format' => 'basic_html'],
     ]);
 
-    $this->assertSame(0, $this->repair->repairFieldStorage('node', 'resource', 'field_teaser'));
+    $this->assertSame(0, $this->repair->repairFieldStorage('node', 'resource', 'field_teaser')->repaired);
     $this->assertSame('basic_html', $this->storedFormat($node->id(), 'field_teaser'));
   }
 
@@ -351,7 +384,145 @@ class TextFormatRepairTest extends KernelTestBase {
   public function testMissingFieldIsSkipped(): void {
     $this->assertSame(
       0,
-      $this->repair->repairFieldStorage('node', 'resource', 'field_does_not_exist')
+      $this->repair->repairFieldStorage('node', 'resource', 'field_does_not_exist')->repaired
+    );
+  }
+
+  /**
+   * A repair that would drop markup is reported instead of performed.
+   *
+   * The reviewer's case: a teaser authored with a link, on a field contracted
+   * to heading_html, which permits no <a>. Repairing it would silently remove
+   * the link from every rendering of that teaser, so the decision is escalated
+   * rather than taken.
+   *
+   * @covers ::repairFieldStorage
+   * @covers ::droppedTags
+   */
+  public function testLossyRepairIsDeferredAndReported(): void {
+    $node = $this->createNode([
+      'field_teaser_text' => ['value' => self::LINKED_VALUE, 'format' => 'restricted_html'],
+    ]);
+
+    $result = $this->repair->repairFieldStorage('node', 'resource', 'field_teaser_text');
+
+    $this->assertSame(0, $result->repaired);
+    $this->assertSame(
+      'restricted_html',
+      $this->storedFormat($node->id(), 'field_teaser_text'),
+      'The out-of-contract format is left in place.'
+    );
+
+    $this->assertSame(['a'], $result->droppedTags());
+    $this->assertSame([(int) $node->id()], $result->deferredEntityIds());
+    $this->assertSame('heading_html', $result->deferred[0]['to']);
+  }
+
+  /**
+   * The same lossy repair proceeds once the loss has been accepted.
+   *
+   * @covers ::repairFieldStorage
+   */
+  public function testLossyRepairProceedsWhenAllowed(): void {
+    $node = $this->createNode([
+      'field_teaser_text' => ['value' => self::LINKED_VALUE, 'format' => 'restricted_html'],
+    ]);
+
+    $result = $this->repair->repairFieldStorage('node', 'resource', 'field_teaser_text', TRUE);
+
+    $this->assertGreaterThan(0, $result->repaired);
+    $this->assertSame([], $result->deferred);
+    $this->assertSame('heading_html', $this->storedFormat($node->id(), 'field_teaser_text'));
+  }
+
+  /**
+   * A narrower contract still repairs values that lose nothing by it.
+   *
+   * Deferring is scoped to the values that would actually change on screen, not
+   * to the whole field — otherwise most teasers would stay locked for no
+   * reason.
+   *
+   * @covers ::repairFieldStorage
+   */
+  public function testLosslessRepairProceedsOnNarrowerFormat(): void {
+    $node = $this->createNode([
+      'field_teaser_text' => [
+        'value' => '<p>A <strong>plain</strong> teaser.</p>',
+        'format' => 'restricted_html',
+      ],
+    ]);
+
+    $result = $this->repair->repairFieldStorage('node', 'resource', 'field_teaser_text');
+
+    $this->assertGreaterThan(0, $result->repaired);
+    $this->assertSame([], $result->deferred);
+    $this->assertSame('heading_html', $this->storedFormat($node->id(), 'field_teaser_text'));
+  }
+
+  /**
+   * Markup a filter invented is not treated as markup the repair destroys.
+   *
+   * Only restricted_html runs filter_autop; heading_html does not. So a value
+   * with a blank line renders <p> before the repair and none after. That <p>
+   * was never authored, so calling it a loss would defer nearly every teaser on
+   * the site and make the widened repair a no-op.
+   *
+   * @covers ::droppedTags
+   * @covers ::repairFieldStorage
+   */
+  public function testFilterInventedMarkupIsNotCountedAsLost(): void {
+    $node = $this->createNode([
+      'field_teaser_text' => [
+        'value' => "A <strong>bold</strong> line.\n\nA second paragraph.",
+        'format' => 'restricted_html',
+      ],
+    ]);
+
+    $result = $this->repair->repairFieldStorage('node', 'resource', 'field_teaser_text');
+
+    $this->assertSame([], $result->deferred, 'The autop <p> is not an authored tag.');
+    $this->assertGreaterThan(0, $result->repaired);
+    $this->assertSame('heading_html', $this->storedFormat($node->id(), 'field_teaser_text'));
+  }
+
+  /**
+   * Losing an attribute counts as losing markup, not just losing an element.
+   *
+   * The heading_html format permits <p> but no attributes, so a right-aligned
+   * paragraph keeps its <p> and silently loses the alignment. Comparing element
+   * names alone would call that lossless.
+   *
+   * @covers ::droppedTags
+   * @covers ::repairFieldStorage
+   */
+  public function testAttributeOnlyLossIsDetected(): void {
+    $node = $this->createNode([
+      'field_teaser_text' => [
+        'value' => '<p class="text-align-right">A <strong>bold</strong> teaser.</p>',
+        'format' => 'basic_html',
+      ],
+    ]);
+
+    $result = $this->repair->repairFieldStorage('node', 'resource', 'field_teaser_text');
+
+    $this->assertSame(['p@class'], $result->droppedTags());
+    $this->assertSame(0, $result->repaired);
+    $this->assertSame('basic_html', $this->storedFormat($node->id(), 'field_teaser_text'));
+  }
+
+  /**
+   * Restricted fields are discovered from config rather than hardcoded.
+   *
+   * @covers ::findRestrictedFields
+   */
+  public function testFindRestrictedFieldsDiscoversEveryRestrictedInstance(): void {
+    $found = $this->repair->findRestrictedFields('node');
+
+    $this->assertSame(['page', 'resource'], array_keys($found));
+    $this->assertSame(
+      ['field_abstract', 'field_notes', 'field_teaser_text'],
+      $found['resource'],
+      'field_teaser carries no allowed_formats and is excluded.'
     );
   }
 

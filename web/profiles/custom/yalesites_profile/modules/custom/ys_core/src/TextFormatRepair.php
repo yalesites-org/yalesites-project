@@ -2,9 +2,11 @@
 
 namespace Drupal\ys_core;
 
+use Drupal\Component\Utility\Html;
 use Drupal\Core\Cache\CacheTagsInvalidatorInterface;
 use Drupal\Core\Database\Connection;
 use Drupal\Core\Entity\EntityFieldManagerInterface;
+use Drupal\Core\Entity\EntityTypeBundleInfoInterface;
 use Drupal\Core\Entity\EntityTypeManagerInterface;
 use Drupal\Core\Entity\Sql\DefaultTableMapping;
 use Drupal\Core\Entity\Sql\SqlEntityStorageInterface;
@@ -53,6 +55,14 @@ use Drupal\Core\Entity\Sql\SqlEntityStorageInterface;
 class TextFormatRepair {
 
   /**
+   * Field types that store a value alongside a text format name.
+   *
+   * Only these can carry an out-of-contract format, so only these are worth
+   * scanning. 'string' and 'string_long' hold no format and are excluded.
+   */
+  const FORMATTED_FIELD_TYPES = ['text', 'text_long', 'text_with_summary'];
+
+  /**
    * The entity type manager.
    *
    * @var \Drupal\Core\Entity\EntityTypeManagerInterface
@@ -81,6 +91,13 @@ class TextFormatRepair {
   protected $cacheTagsInvalidator;
 
   /**
+   * The entity type bundle info.
+   *
+   * @var \Drupal\Core\Entity\EntityTypeBundleInfoInterface
+   */
+  protected $entityTypeBundleInfo;
+
+  /**
    * Constructs a new TextFormatRepair.
    *
    * @param \Drupal\Core\Entity\EntityTypeManagerInterface $entity_type_manager
@@ -91,17 +108,66 @@ class TextFormatRepair {
    *   The database connection.
    * @param \Drupal\Core\Cache\CacheTagsInvalidatorInterface $cache_tags_invalidator
    *   The cache tags invalidator.
+   * @param \Drupal\Core\Entity\EntityTypeBundleInfoInterface $entity_type_bundle_info
+   *   The entity type bundle info.
    */
   public function __construct(
     EntityTypeManagerInterface $entity_type_manager,
     EntityFieldManagerInterface $entity_field_manager,
     Connection $database,
     CacheTagsInvalidatorInterface $cache_tags_invalidator,
+    EntityTypeBundleInfoInterface $entity_type_bundle_info,
   ) {
     $this->entityTypeManager = $entity_type_manager;
     $this->entityFieldManager = $entity_field_manager;
     $this->database = $database;
     $this->cacheTagsInvalidator = $cache_tags_invalidator;
+    $this->entityTypeBundleInfo = $entity_type_bundle_info;
+  }
+
+  /**
+   * Finds every field instance on an entity type that restricts its format.
+   *
+   * Discovering the list beats hardcoding it: a field instance that gains an
+   * allowed_formats restriction later is covered without anyone remembering to
+   * extend a literal array, and the set cannot silently drift from config.
+   *
+   * The original hardcoded list existed because discovery also picks up fields
+   * whose contract is NARROWER than what is stored, where repairing would drop
+   * markup. That is no longer a reason to hardcode: ::repairFieldStorage()
+   * refuses a lossy repair unless it is explicitly allowed, and reports what it
+   * held back.
+   *
+   * @param string $entity_type_id
+   *   The entity type ID.
+   *
+   * @return array
+   *   Field machine names keyed by bundle, both sorted, e.g.
+   *   ['resource' => ['field_abstract', 'field_citation']]. Bundles with no
+   *   restricted field are omitted.
+   */
+  public function findRestrictedFields($entity_type_id) {
+    $found = [];
+
+    foreach (array_keys($this->entityTypeBundleInfo->getBundleInfo($entity_type_id)) as $bundle) {
+      foreach ($this->entityFieldManager->getFieldDefinitions($entity_type_id, $bundle) as $field_name => $definition) {
+        if (!in_array($definition->getType(), self::FORMATTED_FIELD_TYPES, TRUE)) {
+          continue;
+        }
+        $allowed = $definition->getSetting('allowed_formats');
+        if (!is_array($allowed) || $allowed === []) {
+          continue;
+        }
+        $found[$bundle][] = $field_name;
+      }
+    }
+
+    foreach ($found as &$field_names) {
+      sort($field_names);
+    }
+    ksort($found);
+
+    return $found;
   }
 
   /**
@@ -165,7 +231,151 @@ class TextFormatRepair {
   }
 
   /**
+   * Returns the HTML tags that re-rendering under another format would remove.
+   *
+   * Answers the question the reviewer actually cares about — "does correcting
+   * this format change what the reader sees?" — by running the value through
+   * the real filter pipeline both ways and diffing the tags that survive. That
+   * is more truthful than comparing the two formats' allowed_html settings,
+   * which ignores every other filter in the chain (escaping, autop, the
+   * platform's own line-break filter).
+   *
+   * Only removals count. A target format that ADDS markup is not a loss, so
+   * additions are ignored. That asymmetry is deliberate but not free: a value
+   * stored under a STRICTER format than the field's contract — plain_text on a
+   * basic_html field, say — will be repaired without comment, and text that
+   * renders escaped today will start rendering as markup. It is filtered
+   * markup either way (this platform has no full_html), so the risk is
+   * content fidelity rather than security, and repairing is still what
+   * unlocks the widget. Revisit if a report ever comes in from that direction.
+   *
+   * @param string $value
+   *   The stored text.
+   * @param string $stored_format
+   *   The format the value renders under today.
+   * @param string $repair_format
+   *   The format it would render under after the repair.
+   * @param string $langcode
+   *   The value's language code.
+   *
+   * @return string[]
+   *   The markup tokens that would disappear, alphabetically. A token is an
+   *   element name ('a') or an element's attribute ('p@class'). Empty when the
+   *   repair is lossless.
+   */
+  public function droppedTags($value, $stored_format, $repair_format, $langcode = '') {
+    if (trim((string) $value) === '') {
+      return [];
+    }
+
+    // Only markup the author actually wrote can be lost. Filters synthesise
+    // markup as well as strip it — filter_autop wraps bare text in <p>,
+    // filter_url turns a bare URL into <a> — and the two formats do not enable
+    // the same filters. heading_html has no filter_autop while restricted_html
+    // does, so without this every plain-text teaser would look like it was
+    // about to lose a <p> it never had, and the whole repair would stall on
+    // false positives.
+    $authored = $this->markupTokens((string) $value);
+    if ($authored === []) {
+      return [];
+    }
+
+    $before = $this->renderedTokens($value, $stored_format, $langcode);
+    $after = $this->renderedTokens($value, $repair_format, $langcode);
+
+    $dropped = array_intersect(array_diff($before, $after), $authored);
+
+    // Losing an element implies losing its attributes, so reporting
+    // "a, a@href, a@target" is noise. Keep the element and drop the rest.
+    $dropped = array_values(array_filter(
+      $dropped,
+      static function ($token) use ($dropped) {
+        $element = strstr($token, '@', TRUE);
+        return $element === FALSE || !in_array($element, $dropped, TRUE);
+      }
+    ));
+    sort($dropped);
+
+    return $dropped;
+  }
+
+  /**
+   * Returns the markup tokens surviving a render under a given format.
+   *
+   * @param string $value
+   *   The stored text.
+   * @param string $format
+   *   The text format to render under.
+   * @param string $langcode
+   *   The value's language code.
+   *
+   * @return string[]
+   *   The distinct markup tokens.
+   */
+  protected function renderedTokens($value, $format, $langcode) {
+    // check_markup() is procedural, but it is the only entry point that runs
+    // the whole configured filter chain; reimplementing it would be the thing
+    // that makes this measurement untrue. filter is guaranteed present here:
+    // without it no field could carry an allowed_formats restriction at all.
+    //
+    // A format that has been deleted or disabled renders as the empty string
+    // (\Drupal\filter\Element\ProcessedText::preRenderText()), so such a value
+    // reports no tokens and every repair of it measures as lossless. That is
+    // correct rather than a hole: the value renders as nothing today, so the
+    // repair can only put markup back.
+    return $this->markupTokens((string) check_markup($value, $format, $langcode));
+  }
+
+  /**
+   * Returns the distinct markup tokens in a fragment of HTML.
+   *
+   * Attributes are tokens in their own right because a format can permit an
+   * element while stripping what qualifies it: heading_html allows <p> but no
+   * attributes, so repairing a right-aligned paragraph to it keeps the <p> and
+   * silently loses the alignment. Comparing element names alone would call that
+   * lossless.
+   *
+   * @param string $html
+   *   The markup to inspect.
+   *
+   * @return string[]
+   *   Distinct tokens, each an element name ('p') or an element's attribute
+   *   ('p@class'), lowercased.
+   */
+  protected function markupTokens($html) {
+    if (trim($html) === '') {
+      return [];
+    }
+
+    // Parsing beats a regex here: it sees hyphenated element names, ignores
+    // stray angle brackets in text, and reaches attributes at all.
+    $body = Html::load($html)->getElementsByTagName('body')->item(0);
+    if ($body === NULL) {
+      return [];
+    }
+
+    $tokens = [];
+    foreach ($body->getElementsByTagName('*') as $element) {
+      $name = strtolower($element->nodeName);
+      $tokens[] = $name;
+      foreach ($element->attributes as $attribute) {
+        $tokens[] = $name . '@' . strtolower($attribute->nodeName);
+      }
+    }
+
+    return array_values(array_unique($tokens));
+  }
+
+  /**
    * Corrects out-of-contract stored formats for one field on one bundle.
+   *
+   * A repair that would drop markup is only carried out when $allow_lossy says
+   * the loss has been accepted for this field. Otherwise it is reported and
+   * left in place, because the decision belongs to a human.
+   *
+   * Note that leaving a value alone also leaves its widget disabled — the bug
+   * this repairs. Deferring is therefore not the "safe" option in general, only
+   * the correct one where nobody has yet agreed to lose the markup.
    *
    * @param string $entity_type_id
    *   The entity type ID.
@@ -173,66 +383,120 @@ class TextFormatRepair {
    *   The bundle name.
    * @param string $field_name
    *   The field machine name.
+   * @param bool $allow_lossy
+   *   Whether to repair values whose rendering loses markup as a result.
    *
-   * @return int
-   *   The number of rows corrected across the field's data and revision
-   *   tables.
+   * @return \Drupal\ys_core\TextFormatRepairResult
+   *   The rows corrected and the rows deferred.
    */
-  public function repairFieldStorage($entity_type_id, $bundle, $field_name) {
+  public function repairFieldStorage($entity_type_id, $bundle, $field_name, $allow_lossy = FALSE) {
     $allowed_formats = $this->getAllowedFormats($entity_type_id, $bundle, $field_name);
     if ($allowed_formats === []) {
-      return 0;
+      return new TextFormatRepairResult();
     }
 
     $tables = $this->getFieldTables($entity_type_id, $field_name);
     if ($tables === []) {
-      return 0;
+      return new TextFormatRepairResult();
     }
 
-    $format_column = $field_name . '_format';
+    $columns = $this->getFieldColumns($entity_type_id, $field_name);
+    $format_column = $columns['format'];
+    // text_with_summary renders its summary under the same format, so the
+    // summary has to be weighed too or a teaser could lose a link unnoticed.
+    $text_columns = array_intersect_key($columns, array_flip(['value', 'summary']));
+
     $entity_ids = [];
     $repaired = 0;
+    $deferred = [];
 
     foreach ($tables as $table) {
-      // Grouping by the offending format keeps this set-based (a handful of
-      // statements, not one per row) while still routing every decision
-      // through getRepairFormat(), so the SQL cannot drift from the rule the
-      // unit tests pin down.
-      $stored_formats = $this->database->select($table, 't')
-        ->distinct()
-        ->fields('t', [$format_column])
+      // Out-of-contract rows are a small minority, so they are inspected one at
+      // a time: whether a repair is lossy depends on the individual value, and
+      // a set-based UPDATE cannot make a per-value decision.
+      $rows = $this->database->select($table, 't')
+        ->fields('t', array_merge(
+          ['entity_id', 'revision_id', 'delta', 'langcode', 'deleted', $format_column],
+          array_values($text_columns)
+        ))
         ->condition('bundle', $bundle)
+        ->condition($format_column, $allowed_formats, 'NOT IN')
         ->execute()
-        ->fetchCol();
+        ->fetchAll(\PDO::FETCH_ASSOC);
 
-      foreach ($stored_formats as $stored_format) {
+      foreach ($rows as $row) {
+        $stored_format = $row[$format_column];
         $repair_format = $this->getRepairFormat($stored_format, $allowed_formats);
         if ($repair_format === NULL) {
+          continue;
+        }
+
+        // Measuring the loss means two full filter runs, so skip it entirely
+        // when the answer cannot change the outcome.
+        $dropped = [];
+        if (!$allow_lossy) {
+          $text = implode("\n", array_map(
+            static fn($column) => (string) ($row[$column] ?? ''),
+            $text_columns
+          ));
+          $dropped = $this->droppedTags($text, $stored_format, $repair_format, $row['langcode']);
+        }
+
+        if ($dropped !== []) {
+          $deferred[] = [
+            'entity_id' => (int) $row['entity_id'],
+            'revision_id' => (int) $row['revision_id'],
+            'from' => $stored_format,
+            'to' => $repair_format,
+            'dropped' => $dropped,
+          ];
           continue;
         }
 
         // Collect the affected entities before rewriting, so their render
         // caches can be invalidated: writing the column directly bypasses the
         // entity API, which would otherwise do this.
-        $entity_ids += array_flip($this->database->select($table, 't')
-          ->distinct()
-          ->fields('t', ['entity_id'])
-          ->condition('bundle', $bundle)
-          ->condition($format_column, $stored_format)
-          ->execute()
-          ->fetchCol());
+        $entity_ids[(int) $row['entity_id']] = TRUE;
 
         $repaired += $this->database->update($table)
           ->fields([$format_column => $repair_format])
           ->condition('bundle', $bundle)
-          ->condition($format_column, $stored_format)
+          ->condition('entity_id', $row['entity_id'])
+          ->condition('revision_id', $row['revision_id'])
+          ->condition('delta', $row['delta'])
+          ->condition('langcode', $row['langcode'])
+          ->condition('deleted', $row['deleted'])
           ->execute();
       }
     }
 
     $this->invalidateEntityCacheTags($entity_type_id, array_keys($entity_ids));
 
-    return $repaired;
+    return new TextFormatRepairResult($repaired, $deferred);
+  }
+
+  /**
+   * Returns the database columns backing a field, keyed by property name.
+   *
+   * @param string $entity_type_id
+   *   The entity type ID.
+   * @param string $field_name
+   *   The field machine name.
+   *
+   * @return array
+   *   Column names keyed by field property, e.g.
+   *   ['value' => 'field_abstract_value', 'format' => 'field_abstract_format'].
+   */
+  protected function getFieldColumns($entity_type_id, $field_name) {
+    $storage = $this->entityTypeManager->getStorage($entity_type_id);
+    $storage_definition = $this->entityFieldManager->getFieldStorageDefinitions($entity_type_id)[$field_name];
+
+    $columns = [];
+    foreach (array_keys($storage_definition->getColumns()) as $property) {
+      $columns[$property] = $storage->getTableMapping()->getFieldColumnName($storage_definition, $property);
+    }
+
+    return $columns;
   }
 
   /**

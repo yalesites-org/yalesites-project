@@ -5,6 +5,7 @@ namespace Drupal\Tests\ys_core\Unit;
 use Drupal\Core\Cache\CacheTagsInvalidatorInterface;
 use Drupal\Core\Database\Connection;
 use Drupal\Core\Entity\EntityFieldManagerInterface;
+use Drupal\Core\Entity\EntityTypeBundleInfoInterface;
 use Drupal\Core\Entity\EntityTypeManagerInterface;
 use Drupal\Core\Field\FieldDefinitionInterface;
 use Drupal\Tests\UnitTestCase;
@@ -36,6 +37,13 @@ class TextFormatRepairTest extends UnitTestCase {
   protected $entityFieldManager;
 
   /**
+   * The entity type bundle info mock.
+   *
+   * @var \Drupal\Core\Entity\EntityTypeBundleInfoInterface|\PHPUnit\Framework\MockObject\MockObject
+   */
+  protected $entityTypeBundleInfo;
+
+  /**
    * The service under test.
    *
    * @var \Drupal\ys_core\TextFormatRepair
@@ -48,11 +56,13 @@ class TextFormatRepairTest extends UnitTestCase {
   protected function setUp(): void {
     parent::setUp();
     $this->entityFieldManager = $this->createMock(EntityFieldManagerInterface::class);
+    $this->entityTypeBundleInfo = $this->createMock(EntityTypeBundleInfoInterface::class);
     $this->repair = new TextFormatRepair(
       $this->createMock(EntityTypeManagerInterface::class),
       $this->entityFieldManager,
       $this->createMock(Connection::class),
-      $this->createMock(CacheTagsInvalidatorInterface::class)
+      $this->createMock(CacheTagsInvalidatorInterface::class),
+      $this->entityTypeBundleInfo
     );
   }
 

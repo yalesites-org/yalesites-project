@@ -40,7 +40,7 @@ services:
   # which core's TextFormat element renders as a disabled widget.
   ys_core.text_format_repair:
     class: Drupal\ys_core\TextFormatRepair
-    arguments: ['@entity_type.manager', '@entity_field.manager', '@database', '@cache_tags.invalidator']
+    arguments: ['@entity_type.manager', '@entity_field.manager', '@database', '@cache_tags.invalidator', '@entity_type.bundle.info']
   # Service for managing Facts and Figures icon options.
   ys_core.facts_and_figures_icon_manager:
     class: Drupal\ys_core\FactsAndFiguresIconManager
