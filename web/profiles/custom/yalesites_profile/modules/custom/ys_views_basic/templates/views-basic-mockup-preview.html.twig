@@ -35,11 +35,13 @@
         <p class="vb-preview__title">{{ 'Example Title'|t }}</p>
         {% if content_type == 'event' %}<span class="vb-preview__meta">{{ 'Month 1, 2026 - 12:00 PM'|t }}</span>{% endif %}
         {% if content_type == 'profile' %}
-          {# Like .vb-preview__pinned, these four start hidden because their
-             checkboxes start unticked (#1648); the behavior reveals them. #}
+          {# Like .vb-preview__pinned, the four profile fields start hidden
+             because their checkboxes start unticked (#1648); the behavior
+             reveals them. They sit where the rendered reference card puts
+             them: pronouns under the heading, department and the contact
+             details below the teaser. #}
           <span class="vb-preview__pronouns" hidden>{{ 'they/them'|t }}</span>
           <span class="vb-preview__meta">{{ 'Job Title'|t }}</span>
-          <span class="vb-preview__department" hidden>{{ 'Department Name'|t }}</span>
         {% endif %}
         <span class="vb-preview__category">{{ 'Category A | Category B'|t }}</span>
         <span class="vb-preview__tags">{{ 'Tag A | Tag B'|t }}</span>
@@ -48,6 +50,7 @@
         {% endif %}
         {% if content_type == 'event' %}<a class="vb-preview__calendar" href="#">{{ 'Add to Calendar'|t }}</a>{% endif %}
         {% if content_type == 'profile' %}
+          <span class="vb-preview__department" hidden>{{ 'Department Name'|t }}</span>
           <span class="vb-preview__email" hidden>{{ 'name@example.edu'|t }}</span>
           <span class="vb-preview__phone" hidden>{{ '203-555-0100'|t }}</span>
         {% endif %}
