@@ -817,14 +817,14 @@ abstract class ViewsBasicWidgetBase extends WidgetBase implements ContainerFacto
    * exposed filters grow as their settings are disclosed, and they are no
    * longer in the same row.
    *
-   * The field_options, event_field_options and post_field_options groups (each
-   * built separately — the last two only by the per-type widgets) are gathered
-   * into one "Result content" fieldset here rather than at build time, so the
-   * per-type widgets keep writing their sibling groups exactly as before; only
-   * the render tree changes. flattenBuiltElements() already descends through
-   * any structural wrapper, so massageFormValues() and
-   * massageEntitySpecificParams() find these values whether they sit at the
-   * top level or inside this fieldset.
+   * The field_options, event_field_options, post_field_options and
+   * profile_field_options groups (each built separately — all but the first
+   * only by the per-type widgets) are gathered into one "Result content"
+   * fieldset here rather than at build time, so the per-type widgets keep
+   * writing their sibling groups exactly as before; only the render tree
+   * changes. flattenBuiltElements() already descends through any structural
+   * wrapper, so massageFormValues() and massageEntitySpecificParams() find
+   * these values whether they sit at the top level or inside this fieldset.
    *
    * Runs as an #after_build for the same reason as
    * ::buildExposedFilterAccordion(): every #parents is fixed by this point, so
@@ -855,9 +855,9 @@ abstract class ViewsBasicWidgetBase extends WidgetBase implements ContainerFacto
         '#title' => t('Result content'),
         '#attributes' => ['class' => ['vb-result-content']],
         // gin_lb ignores #description_display: 'before' on a fieldset
-        // (always renders it after field_options/event_field_options/
-        // post_field_options instead of introducing them), so the intro is a
-        // #markup child with a negative #weight instead — the same pattern
+        // (always renders it after the field option groups instead of
+        // introducing them), so the intro is a #markup child with a negative
+        // #weight instead — the same pattern
         // ViewsBasicWidgetBase::buildTermIncludeExclude() uses for
         // tag_filters_intro (#1481).
         'result_content_intro' => [
