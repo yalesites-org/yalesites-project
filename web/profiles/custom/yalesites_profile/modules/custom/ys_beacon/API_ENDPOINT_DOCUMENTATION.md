@@ -31,6 +31,7 @@ architecture, see the module [README](README.md).
 | Response | `application/json` |
 | Authentication | None |
 | Authorization | Site must have Beacon authorized (see below), else `403` |
+| Rate limit | 120 requests per hour per client IP, else `429` |
 | Replaces | `ai_engine_feed`'s `/api/ai/v1/content` (not drop-in compatible) |
 
 The feed applies the same indexability rules as Beacon's vector index, so for **nodes** a
@@ -339,8 +340,8 @@ Two more constraints to design around:
 5. Optionally guard the loop with `total_pages + 1` as a maximum, purely to avoid looping
    forever against a misbehaving site — never as the terminator.
 
-Handle `403` as a stop-and-skip for that site rather than a retry, and treat `5xx` as
-retryable with backoff.
+Handle `403` as a stop-and-skip for that site rather than a retry, treat `429` as retryable
+after a pause (see Rate limits), and treat `5xx` as retryable with backoff.
 
 ## Error responses
 
@@ -349,9 +350,10 @@ retryable with backoff.
 | `200` | feed object | Success. `data` may legitimately be empty. | Continue. |
 | `400` | `{"error": "Unsupported feed type \"...\"."}` | `type` was neither `node` nor `media`. | Fix the request; do not retry unchanged. |
 | `403` | `{"error": "The content feed is not enabled."}` | Beacon is not authorized on this site. | Stop for this site. Not retryable, not a credential issue. |
+| `429` | `{"error": "Too many requests. Please try again shortly."}` | You are past the per-IP request quota. | Back off and retry after the window; see Rate limits. |
 | `405` | HTML error page | A method other than `GET`. | Use `GET`. |
 
-Note that `400` and `403` return JSON, but `405` returns Drupal's standard HTML error page.
+Note that `400`, `403` and `429` return JSON, but `405` returns Drupal's standard HTML error page.
 A client that assumes every response parses as JSON will throw on a `405` — decide by
 status code before parsing.
 
@@ -374,25 +376,44 @@ a failure:
 
 ### Rate limits
 
-**No request quota is enforced on this endpoint.** There is no per-IP throttle and no `429`
-response, so a client that polls aggressively will not be told to slow down.
+**A quota of 120 requests per hour, per client IP, is enforced.** Past it the endpoint
+returns `429` with `{"error": "Too many requests. Please try again shortly."}` and does no
+work. The window is a rolling hour.
 
-That makes the polling discipline in this section a requirement rather than a suggestion.
-The endpoint does real, uncached work per request (see below), and a site's capacity is
-shared with the visitors browsing it, so treat the guidance here as the contract even
-though nothing enforces it.
+The limit is sized for a bulk crawler rather than for interactive traffic: at the maximum
+`page_size` of 200, 120 requests walk 24,000 entities in a single pass, which covers a full
+crawl of both `node` and `media` on the largest sites with room left over for re-crawls
+inside the same hour. If you are hitting it, you are almost certainly polling far more often
+than this endpoint is meant to be polled - see the polling guidance below.
+
+Two things worth knowing about how the quota interacts with caching:
+
+- **Only requests that actually reach the application are counted.** A repeat of a request
+  already in the cache is served by the cache and never touches the quota. The limit exists
+  to bound expensive work, not to meter cache hits.
+- **The `403` for an unauthorized site is checked before the quota**, so a site that does not
+  participate always answers `403` and is never throttled into a `429`.
 
 ### Why request cost matters here
 
-**Responses are not cached.** The endpoint sends `Cache-Control: must-revalidate, no-cache,
-private`, and Drupal reports the response as uncacheable. Every request re-runs the entity
-query and **fully re-renders every node on the page** to produce `content`.
+**Responses are cacheable.** The endpoint sends `Cache-Control: max-age=..., public` and
+carries full cache metadata, so a repeated identical request is served from the site's page
+cache (and any edge cache in front of it) instead of re-running the query and re-rendering
+every node. Measured on a local development site, a warm repeat of a `page_size=10` request
+returned in ~0.03-0.06s against ~3.5s cold.
 
-The cost therefore scales with `page_size`, roughly linearly. As an order-of-magnitude
-illustration from a local development site with 65 nodes: `page_size=1` took ~0.45s,
-`page_size=50` ~0.94s, and `page_size=200` ~1.81s. Do not read those as production numbers,
-but do expect a large page to be a multi-second request that does real work on the web
-server, with no cache layer absorbing a repeat of it.
+A page stays fresh for at most an hour, and any change to the content it contains
+invalidates it immediately through Drupal's cache tags - so a cached response is never a
+stale view of edited content, and you do not need to add cache-busting query parameters.
+Do not add them: an unrecognised query argument produces a distinct URL that misses the
+cache and burns quota for nothing.
+
+A **cold** request still does real work. It re-runs the entity query and fully re-renders
+every node on the page to produce `content`, so cost scales roughly linearly with
+`page_size`. As an order-of-magnitude illustration from a local development site with 65
+nodes: `page_size=1` took ~0.45s, `page_size=50` ~0.94s, and `page_size=200` ~1.81s. Do not
+read those as production numbers, but do expect a large cold page to be a multi-second
+request that does real work on the web server.
 
 ### Polling guidance
 
@@ -402,11 +423,13 @@ server, with no cache layer absorbing a repeat of it.
   without producing very long single requests. Reach for 200 only if you have measured it
   against the specific site.
 - **Do not crawl in parallel.** Concurrent large pages multiply full-render work on one web
-  server for no throughput gain worth having.
+  server for no throughput gain worth having, and they burn the shared per-IP quota faster
+  without finishing sooner.
 - **Use `changed` to skip work on your side.** Store it per `uuid` and reprocess only items
   whose `changed` advanced. The endpoint has no `since` parameter, so you still fetch every
   page, but you can avoid re-embedding or re-parsing unchanged content.
-- **Back off on `5xx`, stop on `403`.** A `403` will not resolve on retry.
+- **Back off on `5xx`, pause on `429`, stop on `403`.** A `403` will not resolve on retry;
+  a `429` will, once the hour window rolls.
 
 ## Security model
 
@@ -509,7 +532,7 @@ For maintainers. The endpoint is defined in `ys_beacon.routing.yml` as
 
 | Concern | Where it lives |
 |---|---|
-| Route, parameter parsing, `400`/`403` responses | `src/Controller/ContentFeedController.php` |
+| Route, parameter parsing, `400`/`403`/`429` responses, quota, response cacheability | `src/Controller/ContentFeedController.php` |
 | Entity query, paging, clamping, item shape, `content` rendering | `src/Service/ContentFeedBuilder.php` (`ys_beacon.content_feed_builder`) |
 | The indexability rule, including media-excluded-by-default | `src/Service/BeaconIndexability.php` |
 | `ai_description` / `ai_tags` derivation | `src/Service/AiMetadataManager.php` |
