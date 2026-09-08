@@ -2,6 +2,7 @@
 
 namespace Drupal\Tests\ys_layouts\Unit;
 
+use Drupal\Component\Render\FormattableMarkup;
 use Drupal\Core\DependencyInjection\ContainerBuilder;
 use Drupal\Core\Form\FormStateInterface;
 use Drupal\Core\Render\Element;
@@ -241,6 +242,27 @@ class BlockConfigureFormTest extends UnitTestCase {
   }
 
   /**
+   * An admin_label that renders empty keeps core's generic heading too.
+   *
+   * BlockPluginTrait copies the definition in verbatim, so #plain_text is
+   * normally an object - and an object is never identical to '', so the guard
+   * only works on the rendered name.
+   */
+  public function testAnAdminLabelThatRendersEmptyLeavesTheTitleAlone(): void {
+    $form = $this->blockForm();
+    $form['settings']['admin_label']['#plain_text'] = new FormattableMarkup('@name', ['@name' => '']);
+
+    $form = $this->alter($form, 'layout_builder_add_block');
+
+    $this->assertArrayNotHasKey('#title', $form, 'A heading reading "Create " names nothing.');
+    $this->assertArrayHasKey(
+      'admin_label',
+      $form['settings'],
+      'The item is only redundant once the heading names the block.'
+    );
+  }
+
+  /**
    * A block with no resolvable name keeps core's generic heading.
    */
   public function testMissingAdminLabelLeavesTheTitleAlone(): void {
@@ -474,6 +496,33 @@ class BlockConfigureFormTest extends UnitTestCase {
       'field_instructions',
       $form['settings'],
       'The guidance is still lifted; only the reference is skipped.'
+    );
+  }
+
+  /**
+   * Guidance the editor cannot see is not referenced.
+   *
+   * On a reusable placement core gates block_form on "create and edit custom
+   * blocks" and FormBuilder stamps that #access onto every child, so for an
+   * editor without the permission the guidance is lifted but never rendered.
+   */
+  public function testInaccessibleGuidanceIsNotReferenced(): void {
+    $form = $this->alter($this->blockForm(), 'layout_builder_update_block');
+    $instructions = $this->instructionsElement();
+    $instructions['#access'] = FALSE;
+    $form['settings']['block_form']['field_instructions'] = $instructions;
+
+    $form = $this->afterBuild($form);
+
+    $this->assertSame(
+      [self::LABEL_ID . '--description'],
+      $this->describedBy($form),
+      'Pointing at an element that will not render drops the description silently.'
+    );
+    $this->assertArrayHasKey(
+      'field_instructions',
+      $form['settings'],
+      'The lift itself is unaffected; only the reference is skipped.'
     );
   }
 

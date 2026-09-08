@@ -10,6 +10,7 @@ use Drupal\Core\Entity\FieldableEntityInterface;
 use Drupal\Core\Form\FormStateInterface;
 use Drupal\Core\Plugin\Context\Context;
 use Drupal\Core\Plugin\Context\EntityContextDefinition;
+use Drupal\Core\Render\Element;
 use Drupal\ys_layouts\CloneBlockLinkBuilder;
 use Drupal\ys_layouts\Render\DetachContextualOperations;
 use Drupal\ys_layouts\WebformResultsLinkBuilder;
@@ -251,7 +252,12 @@ function ys_layouts_form_alter(&$form, $form_state, $form_id) {
     // block's human-readable name into the admin_label item, so reading it here
     // covers inline, reusable and plugin blocks alike without touching the
     // plugin.
-    $block_name = $form['settings']['admin_label']['#plain_text'] ?? '';
+    //
+    // Cast first: BlockPluginTrait copies the plugin definition's
+    // admin_label in verbatim, so this is usually a TranslatableMarkup and
+    // an object is never identical to '' - the guard below would pass a name
+    // that renders empty straight into the heading.
+    $block_name = (string) ($form['settings']['admin_label']['#plain_text'] ?? '');
     if ($block_name !== '') {
       $form['#title'] = $form_id == 'layout_builder_add_block'
         ? t('Create @block', ['@block' => $block_name])
@@ -365,8 +371,15 @@ function ys_layouts_lift_block_instructions(array $form, FormStateInterface $for
   // the whole form is built - so nothing overwrites this afterwards.
   // aria-describedby takes a space-separated list, and the guidance is listed
   // first because that is the order the two read in on screen.
+  //
+  // Only reference guidance that will actually be in the DOM. On a reusable
+  // placement core gates the whole block_form on 'create and edit custom
+  // blocks', and FormBuilder::doBuildForm() stamps that #access onto every
+  // child - so for an editor without the permission the guidance is lifted
+  // but never rendered, and referencing it would leave the field pointing at
+  // a missing id, which is worse than describing only itself.
   $instructions_id = $form['settings']['field_instructions']['#id'] ?? NULL;
-  if ($instructions_id && isset($form['settings']['label'])) {
+  if ($instructions_id && isset($form['settings']['label']) && Element::isVisibleElement($form['settings']['field_instructions'])) {
     $form['settings']['field_instructions']['#attributes']['id'] = $instructions_id;
 
     // Core always writes this as a string, but Attribute accepts an array too,
