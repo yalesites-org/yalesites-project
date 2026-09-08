@@ -342,9 +342,16 @@ class SiteSettingsForm extends ConfigFormBase implements ContainerInjectionInter
       '#multiple' => FALSE,
       '#description' => $this->t('Allowed extensions: gif png jpg jpeg<br>Image must be at least 180x180'),
       '#upload_validators' => [
-        'file_validate_is_image' => [],
-        'file_validate_extensions' => ['gif png jpg jpeg'],
-        'file_validate_image_resolution' => [0, "180x180"],
+        'FileIsImage' => [],
+        'FileExtension' => ['extensions' => 'gif png jpg jpeg'],
+        // The legacy file_validate_image_resolution() signature was
+        // ($file, $maximum_dimensions = 0, $minimum_dimensions = 0), so the
+        // old [0, "180x180"] meant no maximum and a 180x180 minimum. The zero
+        // maximum is stated rather than omitted: the constraint validator
+        // ignores a falsy maxDimensions, but file.module reads the key
+        // unconditionally when building the upload-help description and warns
+        // if it is absent.
+        'FileImageDimensions' => ['maxDimensions' => 0, 'minDimensions' => '180x180'],
       ],
       '#title' => $this->t('Custom Favicon'),
       '#default_value' => ($yaleConfig->get('custom_favicon')) ? $yaleConfig->get('custom_favicon') : NULL,
