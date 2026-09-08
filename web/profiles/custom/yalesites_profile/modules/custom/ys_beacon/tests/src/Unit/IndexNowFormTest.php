@@ -11,6 +11,7 @@ use Drupal\search_api\SearchApiException;
 use Drupal\search_api\Tracker\TrackerInterface;
 use Drupal\search_api\Utility\IndexingBatchHelperInterface;
 use Drupal\Tests\UnitTestCase;
+use Drupal\Tests\ys_core\Traits\ProtectedPropertyTrait;
 use Drupal\ys_beacon\Form\YsBeaconSettings;
 use Drupal\ys_beacon\Service\BeaconIndexStatus;
 use Drupal\ys_beacon\Service\PdfTextIndexer;
@@ -31,6 +32,8 @@ use Drupal\ys_beacon\Service\PdfTextIndexer;
  */
 class IndexNowFormTest extends UnitTestCase {
 
+  use ProtectedPropertyTrait;
+
   /**
    * Builds the form with mocked dependencies and a given loaded index.
    *
@@ -46,16 +49,16 @@ class IndexNowFormTest extends UnitTestCase {
    */
   private function buildForm(?IndexInterface $index, ?IndexingBatchHelperInterface $helper = NULL, ?MessengerInterface $messenger = NULL): YsBeaconSettings {
     $form = (new \ReflectionClass(YsBeaconSettings::class))->newInstanceWithoutConstructor();
-    $this->setProtected($form, 'indexStatus', $this->buildIndexStatus($index));
-    $this->setProtected($form, 'indexingBatchHelper', $helper ?? $this->createMock(IndexingBatchHelperInterface::class));
+    $this->setProtectedProperty($form, 'indexStatus', $this->buildIndexStatus($index));
+    $this->setProtectedProperty($form, 'indexingBatchHelper', $helper ?? $this->createMock(IndexingBatchHelperInterface::class));
     // No document is waiting on extraction, so the handlers under test do not
     // reach batch_set(); the sweep itself is covered by
     // PdfTextExtractionTriggerTest.
     $pdfTextIndexer = $this->createMock(PdfTextIndexer::class);
     $pdfTextIndexer->method('pendingMediaIds')->willReturn([]);
-    $this->setProtected($form, 'pdfTextIndexer', $pdfTextIndexer);
-    $this->setProtected($form, 'messenger', $messenger ?? $this->createMock(MessengerInterface::class));
-    $this->setProtected($form, 'stringTranslation', $this->getStringTranslationStub());
+    $this->setProtectedProperty($form, 'pdfTextIndexer', $pdfTextIndexer);
+    $this->setProtectedProperty($form, 'messenger', $messenger ?? $this->createMock(MessengerInterface::class));
+    $this->setProtectedProperty($form, 'stringTranslation', $this->getStringTranslationStub());
 
     return $form;
   }
@@ -85,15 +88,6 @@ class IndexNowFormTest extends UnitTestCase {
     $status->setStringTranslation($this->getStringTranslationStub());
 
     return $status;
-  }
-
-  /**
-   * Sets a protected/inherited property on an object via reflection.
-   */
-  private function setProtected(object $object, string $property, mixed $value): void {
-    $reflection = new \ReflectionProperty($object, $property);
-    $reflection->setAccessible(TRUE);
-    $reflection->setValue($object, $value);
   }
 
   /**

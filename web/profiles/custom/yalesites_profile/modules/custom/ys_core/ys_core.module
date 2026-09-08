@@ -1195,7 +1195,13 @@ function ys_core_form_views_exposed_form_alter(&$form, FormStateInterface $form_
 /**
  * Implements hook_menu_local_tasks_alter().
  *
- * If the current user is not user 1, remove the single content sync tab.
+ * Removes the single content sync tab for everyone but user 1. Deliberately
+ * narrower than the platform admin gate used elsewhere in this module, and
+ * narrower than single_content_sync's own permissions: no role in config/sync
+ * grants "export single content" or "import single content", so this is a user
+ * 1 tool by design, and the explicit check keeps the tab hidden even on a site
+ * that grants those permissions locally
+ * (yalesites-org/YaleSites-Internal#1610).
  */
 function ys_core_menu_local_tasks_alter(&$data, $route_name, $cachability) {
   if (isset($data['tabs'][0])) {

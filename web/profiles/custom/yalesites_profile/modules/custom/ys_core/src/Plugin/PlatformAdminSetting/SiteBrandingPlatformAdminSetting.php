@@ -146,7 +146,7 @@ class SiteBrandingPlatformAdminSetting extends PlatformAdminSettingBase {
       '#multiple' => FALSE,
       '#description' => $this->t('Replaces the site name text with an image.<br>Allowed extensions: svg'),
       '#upload_validators' => [
-        'file_validate_extensions' => ['svg'],
+        'FileExtension' => ['extensions' => 'svg'],
       ],
       '#title' => $this->t('Site Name Image'),
       '#default_value' => $config->get('site_name_image') ?: NULL,
