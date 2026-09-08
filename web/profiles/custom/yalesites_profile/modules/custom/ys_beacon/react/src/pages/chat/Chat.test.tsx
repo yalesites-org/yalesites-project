@@ -589,23 +589,45 @@ describe("Citation overlay accessibility (#1441)", () => {
   });
 });
 
-// Finds a rule nested inside a media query. jsdom never *applies* media queries,
-// so asserting that the desktop row survived has to be done against the CSS text
-// itself rather than a computed style.
-const findMediaRule = (
+// Locates a selector's top-level rule and its counterpart nested in a media
+// query, together with their positions in the stylesheet. jsdom never *applies*
+// media queries, so asserting that the desktop row survived has to be done
+// against the CSS text itself rather than a computed style -- and because the
+// two rules have equal specificity, the position of each is part of what has to
+// be asserted, not just that both exist.
+const findOverridePair = (
   condition: string,
   selector: string
-): CSSStyleRule | undefined => {
+):
+  | { baseIndex: number; mediaIndex: number; mediaRule: CSSStyleRule }
+  | undefined => {
   for (const sheet of Array.from(document.styleSheets)) {
-    for (const rule of Array.from(sheet.cssRules)) {
-      const media = (rule as CSSMediaRule).media;
-      if (!media?.mediaText.includes(condition)) continue;
+    const rules = Array.from(sheet.cssRules);
 
-      const match = Array.from((rule as CSSMediaRule).cssRules).find(
-        nested => (nested as CSSStyleRule).selectorText === selector
+    const baseIndex = rules.findIndex(
+      rule => (rule as CSSStyleRule).selectorText === selector
+    );
+    if (baseIndex === -1) continue;
+
+    let mediaIndex = -1;
+    let mediaRule: CSSStyleRule | undefined;
+    rules.forEach((rule, index) => {
+      const media = (rule as CSSMediaRule).media;
+      if (!media?.mediaText.includes(condition)) return;
+
+      const nested = Array.from((rule as CSSMediaRule).cssRules).find(
+        candidate => (candidate as CSSStyleRule).selectorText === selector
       );
-      if (match) return match as CSSStyleRule;
-    }
+      // Keep the last match: if the stylesheet ever grows a second override
+      // block, that is the one that actually wins.
+      if (nested) {
+        mediaIndex = index;
+        mediaRule = nested as CSSStyleRule;
+      }
+    });
+    if (!mediaRule) continue;
+
+    return { baseIndex, mediaIndex, mediaRule };
   }
 
   return undefined;
@@ -666,17 +688,24 @@ describe("New chat / disclaimer layout (#1645)", () => {
   it("restores the side-by-side desktop row at 800px and up", () => {
     renderChat();
 
-    const desktopRule = findMediaRule(
+    const desktop = findOverridePair(
       "(min-width:800px)",
       `.${styles.chatActions}`
     );
 
-    expect(desktopRule, "no min-width:800px rule for the actions row").toBeTruthy();
+    expect(desktop, "no min-width:800px rule for the actions row").toBeDefined();
+    if (!desktop) return;
+
     // Only the two properties that differ from the mobile base belong here.
     // getPropertyValue, not the camelCase accessor: rules nested in a media
     // query use jsdom's plainer CSSOM declaration, which has no typed props.
-    expect(desktopRule?.style.getPropertyValue("flex-direction")).toBe("row");
-    expect(desktopRule?.style.getPropertyValue("align-items")).toBe("center");
+    expect(desktop.mediaRule.style.getPropertyValue("flex-direction")).toBe("row");
+    expect(desktop.mediaRule.style.getPropertyValue("align-items")).toBe("center");
+    // Equal specificity, so source order is the whole override. Hoisting the
+    // media block above the mobile base (e.g. while grouping the stylesheet's
+    // breakpoints together) would leave desktop stacked in a column with every
+    // other assertion here still green.
+    expect(desktop.mediaIndex).toBeGreaterThan(desktop.baseIndex);
   });
 
   it("keeps the disclaimer inside the actions row and still described-by the input", () => {
