@@ -170,6 +170,38 @@
 }
 
 /*
+ * The selected and keyboard-focus halves of that same re-declaration.
+ *
+ * Leaving them out is why an icon-radio inside a tab pane - "Event Time
+ * Period" is the visible one - showed a border on hover but nothing at all
+ * once the pointer left: the card had a base look here but no checked state.
+ * views-basic.css does carry a checked rule, but it is written for the
+ * un-relocated markup and comes out a class short of the base rule above, so
+ * inside .horizontal-tabs-panes the base treatment simply repaints over it.
+ * Ending on label.glb-option is what puts these ahead of it.
+ *
+ * Keyed on :checked and :focus-visible rather than on any one group's name, so
+ * every icon-radio question that ends up in a tab pane is covered.
+ */
+.layout-builder-configure-block
+  .horizontal-tabs-panes
+  .glb-form-type--radio
+  input:checked
+  + label.glb-option {
+  color: var(--gin-color-primary);
+  border-color: var(--gin-color-primary);
+}
+
+.layout-builder-configure-block
+  .horizontal-tabs-panes
+  .glb-form-type--radio
+  input:focus-visible
+  + label.glb-option {
+  outline: var(--size-thickness-2) solid var(--color-link-base);
+  outline-offset: var(--size-thickness-2);
+}
+
+/*
  * Excludes .vb-preview__image (views-basic-preview.css): that image needs to
  * fill its container width rather than shrink to its natural size, so it
  * opts out of this icon-radio sizing rule instead of the two fighting via
