@@ -5,12 +5,14 @@ dependencies:
   config:
     - block_content.type.inline_message
     - field.field.block_content.inline_message.field_heading
+    - field.field.block_content.inline_message.field_icon
     - field.field.block_content.inline_message.field_link
     - field.field.block_content.inline_message.field_padding_options
     - field.field.block_content.inline_message.field_style_color
     - field.field.block_content.inline_message.field_text
   module:
     - allowed_formats
+    - chosen_field
     - hide_revision_field
     - linkit
     - maxlength
@@ -21,6 +23,12 @@ targetEntityType: block_content
 bundle: inline_message
 mode: default
 content:
+  field_icon:
+    type: chosen_select
+    weight: 7
+    region: content
+    settings: {  }
+    third_party_settings: {  }
   field_heading:
     type: text_textfield
     weight: 2

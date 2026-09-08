@@ -6,3 +6,4 @@ package: YaleSites
 dependencies:
   - drupal:filter
   - mathjax:mathjax
+  - typogrify:typogrify

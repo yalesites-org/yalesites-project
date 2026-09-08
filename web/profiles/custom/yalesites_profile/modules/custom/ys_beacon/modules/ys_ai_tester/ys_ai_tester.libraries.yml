@@ -1,0 +1,29 @@
+compare:
+  version: VERSION
+  css:
+    theme:
+      css/compare.css: {}
+
+compare_export:
+  version: VERSION
+  js:
+    js/compare-export.js: {}
+  dependencies:
+    - core/drupal
+    - core/drupal.announce
+    - core/once
+
+question_tabs:
+  version: VERSION
+  css:
+    theme:
+      css/question-tabs.css: {}
+  js:
+    js/question-tabs.js: {}
+  dependencies:
+    - core/drupal
+    - core/once
+    # The status chip on each tab reuses .ys-compare-badge--*, which ships in
+    # the compare library. Without this the one element that keeps "differs"
+    # off colour alone renders as unstyled inline text.
+    - ys_ai_tester/compare

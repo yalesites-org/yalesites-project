@@ -4,3 +4,43 @@
  * @file
  * Module hooks for the ys_ai module.
  */
+
+use Drupal\Core\Cache\Cache;
+use Drupal\Core\Form\FormStateInterface;
+
+/**
+ * Implements hook_form_FORM_ID_alter() for the integration settings form.
+ *
+ * Stops offering the two legacy AI integrations once Beacon supersedes them,
+ * so the form matches the Integrations page, which no longer cards them.
+ *
+ * The checkboxes become value elements rather than being removed: the form
+ * writes every plugin definition back to config on save, so a removed element
+ * would write NULL over the stored setting and change what the site would
+ * revert to if Beacon authorization were ever withdrawn.
+ */
+function ys_ai_form_ys_integrations_integration_settings_form_alter(array &$form, FormStateInterface $form_state, $form_id) {
+  $supersession = \Drupal::service('ys_ai.beacon_supersession');
+
+  // Which checkboxes this form offers depends on the authorization flag, so
+  // the tag belongs on every response, including the early-return path.
+  $form['#cache']['tags'] = Cache::mergeTags(
+    $form['#cache']['tags'] ?? [],
+    $supersession->getCacheTags()
+  );
+
+  if (!$supersession->isSuperseded()) {
+    return;
+  }
+
+  foreach (['ys_ai', 'ys_ai_system_instructions'] as $integration_id) {
+    if (isset($form['integrations'][$integration_id])) {
+      $element = &$form['integrations'][$integration_id];
+      $element['#type'] = 'value';
+      // An integration with no stored key defaults to NULL; save FALSE for it
+      // rather than writing NULL back over the setting.
+      $element['#value'] = $element['#default_value'] ?? FALSE;
+      unset($element);
+    }
+  }
+}

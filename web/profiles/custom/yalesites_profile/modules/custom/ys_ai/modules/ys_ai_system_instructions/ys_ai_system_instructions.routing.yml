@@ -6,6 +6,7 @@ ys_ai_system_instructions.settings:
     _title: 'YS AI System Instructions Settings'
   requirements:
     _permission: 'configure ys ai system instructions'
+    _ys_ai_not_superseded: 'TRUE'
 
 # System Instructions Management
 ys_ai_system_instructions.form:
@@ -15,6 +16,7 @@ ys_ai_system_instructions.form:
     _title: 'YS AI System Instructions'
   requirements:
     _ys_ai_system_instructions_access: 'TRUE'
+    _ys_ai_not_superseded: 'TRUE'
 
 ys_ai_system_instructions.versions:
   path: '/admin/config/ys-ai/system-instructions/versions'
@@ -23,6 +25,7 @@ ys_ai_system_instructions.versions:
     _title: 'YS AI System Instructions Version History'
   requirements:
     _ys_ai_system_instructions_access: 'TRUE'
+    _ys_ai_not_superseded: 'TRUE'
 
 ys_ai_system_instructions.view:
   path: '/admin/config/ys-ai/system-instructions/versions/{version}'
@@ -31,6 +34,7 @@ ys_ai_system_instructions.view:
     _title: 'View YS AI System Instructions Version'
   requirements:
     _ys_ai_system_instructions_access: 'TRUE'
+    _ys_ai_not_superseded: 'TRUE'
     version: \d+
 
 ys_ai_system_instructions.revert:
@@ -40,4 +44,5 @@ ys_ai_system_instructions.revert:
     _title: 'Revert YS AI System Instructions'
   requirements:
     _ys_ai_system_instructions_access: 'TRUE'
+    _ys_ai_not_superseded: 'TRUE'
     version: \d+

@@ -12,12 +12,26 @@ includes one row per item with these columns:
 
 - **Title**, **URL** (path alias), **Published** (Yes/No), and
   **CAS Protected** (Yes/No — whether the item requires CAS login)
+- The type's date column, immediately after Title — **Dates** (Events),
+  **Resource Publication Date** (Resources). Other types have no date column.
 - **Tags**, **Audience**, **Custom Vocab** (on every type)
 - The type's category column — **Category** (Pages, Posts), **Event Category**,
   **Resource Category** — or **Affiliation** (Profiles)
 
 Taxonomy cells list every applied term, separated by ", " (matching the on-screen
-columns). The export reflects the same items you see in the Manage view — including
+columns).
+
+The Events **Dates** cell lists *every* occurrence of the event, oldest first,
+separated by ", " — so a recurring series shows all of its dates, where the
+on-screen Date column shows only the first and last. Dates render in the site's
+timezone, and an all-day occurrence reads "(All day)" rather than a 12:00 am to
+11:59 pm range. **Resource Publication Date** is the same `YYYY-MM-DD` shown on
+the Manage Resources screen. An item with no date exports an empty cell.
+
+Note that a cell holding many dates cannot be sorted as a date in a spreadsheet;
+that trade-off was accepted in favour of showing every occurrence.
+
+The export reflects the same items you see in the Manage view — including
 any filters or search you have applied — and both published and unpublished items,
 subject to your access.
 
@@ -25,7 +39,12 @@ subject to your access.
 
 - `ContentExportBuilder` — pure column map + row builder; `sanitizeCell()`
   neutralises CSV formula injection (values starting with `=`, `+`, `-`, `@`,
-  tab or carriage return are prefixed with a quote). Unit tested.
+  tab or carriage return are prefixed with a quote). Unit tested. It takes no
+  injected services, so a `DateFormatterInterface` is passed into `getRow()`
+  rather than resolved inside it; event dates reuse the platform's existing
+  `event_date_only` / `event_time_only` date formats. The resource publication
+  date is a date-only field already stored as `Y-m-d`, so it is emitted verbatim
+  — reformatting it would only risk a timezone shift of a day.
 - `Controller\ContentExportController::export($bundle, $request)` — resolves the
   matching Manage view's filtered node ids (replaying the request's exposed-filter
   query) and streams the CSV in chunks, gated by the `yalesites manage settings`

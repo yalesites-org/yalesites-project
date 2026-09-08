@@ -4,3 +4,10 @@ ys_migrate.csv_import_profiles:
   title: 'CSV Import'
   appears_on:
     - view.manage_profiles.page_1
+
+# Adds an action link to the manage resources interface.
+ys_migrate.csv_import_resources:
+  route_name: ys_migrate.resource_csv_import
+  title: 'CSV Import'
+  appears_on:
+    - view.manage_resources.page_1

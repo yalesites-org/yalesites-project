@@ -3,3 +3,15 @@ services:
     class: Drupal\ys_ai\Access\SettingsEnabledAccessCheck
     arguments: ['@config.factory']
 
+  # ys_beacon is an optional dependency: without it the argument resolves to
+  # NULL and nothing is superseded.
+  ys_ai.beacon_supersession:
+    class: Drupal\ys_ai\BeaconSupersession
+    arguments: ['@?ys_beacon.authorization']
+
+  ys_ai.not_superseded_access_check:
+    class: Drupal\ys_ai\Access\NotSupersededAccessCheck
+    arguments: ['@ys_ai.beacon_supersession']
+    tags:
+      - { name: access_check, applies_to: _ys_ai_not_superseded }
+

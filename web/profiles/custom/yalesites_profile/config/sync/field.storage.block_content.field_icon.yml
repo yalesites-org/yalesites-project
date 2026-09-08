@@ -1,0 +1,21 @@
+uuid: 015482e3-dc82-425f-8b58-afe471b14cca
+langcode: en
+status: true
+dependencies:
+  module:
+    - block_content
+    - options
+id: block_content.field_icon
+field_name: field_icon
+entity_type: block_content
+type: list_string
+settings:
+  allowed_values: {  }
+  allowed_values_function: ys_core_facts_icon_allowed_values
+module: options
+locked: false
+cardinality: 1
+translatable: true
+indexes: {  }
+persist_with_no_fields: false
+custom_storage: false

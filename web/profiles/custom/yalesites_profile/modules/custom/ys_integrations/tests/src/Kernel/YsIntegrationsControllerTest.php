@@ -78,13 +78,34 @@ class YsIntegrationsControllerTest extends KernelTestBase {
    * @covers ::systemAdminMenuBlockPage
    */
   public function testEnabledIntegrationIsBuilt(): void {
+    $this->config(self::SETTINGS)->set('ys_integrations_test_built', 1)->save();
+
+    $output = $this->controller->systemAdminMenuBlockPage();
+
+    $this->assertArrayHasKey('ys_integrations_test_built', $output['#content']);
+    $this->assertSame(
+      'Built Test Integration',
+      (string) $output['#content']['ys_integrations_test_built']['title']
+    );
+  }
+
+  /**
+   * An enabled integration with nothing to show contributes no card.
+   *
+   * The theme iterates every entry in #content and wraps each one in an
+   * admin-item, so an empty build left in place renders as a blank card.
+   * Plugins signal "show nothing" by returning an empty array, which is how
+   * an integration that is turned on but not configured, or one that has been
+   * superseded, opts out of the overview.
+   *
+   * @covers ::systemAdminMenuBlockPage
+   */
+  public function testEnabledIntegrationWithEmptyBuildIsSkipped(): void {
     $this->config(self::SETTINGS)->set('ys_integrations_test', 1)->save();
 
     $output = $this->controller->systemAdminMenuBlockPage();
 
-    $this->assertArrayHasKey('ys_integrations_test', $output['#content']);
-    // The test plugin inherits the base build(), which returns an empty array.
-    $this->assertSame([], $output['#content']['ys_integrations_test']);
+    $this->assertArrayNotHasKey('ys_integrations_test', $output['#content']);
   }
 
   /**

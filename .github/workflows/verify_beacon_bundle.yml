@@ -1,0 +1,44 @@
+name: Verify Beacon chat bundle
+# The Beacon chat widget's React app is compiled to a bundle that is committed
+# to the repo, because the Pantheon deploy platform has no build step. This
+# guards against the committed bundle silently falling out of sync with its
+# source: it rebuilds from source and fails if the result differs from what is
+# committed. Runs only when the widget's source or bundle changes.
+on:
+  pull_request:
+    paths:
+      - 'web/profiles/custom/yalesites_profile/modules/custom/ys_beacon/react/**'
+defaults:
+  run:
+    shell: bash
+env:
+  REACT_DIR: web/profiles/custom/yalesites_profile/modules/custom/ys_beacon/react
+jobs:
+  verify_bundle:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ github.head_ref || github.ref_name }}
+          repository: ${{ github.event.pull_request.head.repo.full_name || github.repository }}
+
+      - name: Use Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version-file: '.nvmrc'
+
+      - name: Build the bundle from source
+        working-directory: ${{ env.REACT_DIR }}
+        run: |
+          npm ci
+          npm run build
+
+      - name: Fail if the committed bundle is out of sync with source
+        run: |
+          if ! git diff --quiet -- "$REACT_DIR/static"; then
+            echo "::error::The committed Beacon React bundle does not match a fresh build from source. Run 'npm ci && npm run build' in $REACT_DIR and commit the regenerated react/static output."
+            git --no-pager diff --stat -- "$REACT_DIR/static"
+            exit 1
+          fi
+          echo "The committed Beacon React bundle matches a fresh build from source."

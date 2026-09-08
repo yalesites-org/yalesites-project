@@ -4,6 +4,7 @@ namespace Drupal\ys_core;
 
 use Drupal\Core\Config\ConfigFactoryInterface;
 use Drupal\Core\Logger\LoggerChannelFactoryInterface;
+use Drupal\ys_media\YaleSitesMediaManager;
 use Symfony\Component\HttpFoundation\RequestStack;
 use Twig\Extension\AbstractExtension;
 use Twig\TwigFunction;
@@ -28,9 +29,9 @@ class CoreTwigExtension extends AbstractExtension {
   protected $yaleHeaderSettings;
 
   /**
-   * The YaleSites Media Manager.
+   * The YaleSites Media Manager, or NULL while ys_media is not yet enabled.
    *
-   * @var \Drupal\ys_core\YaleSitesMediaManager
+   * @var \Drupal\ys_media\YaleSitesMediaManager|null
    */
   protected $yaleMediaManager;
 
@@ -60,14 +61,24 @@ class CoreTwigExtension extends AbstractExtension {
    *
    * @param \Drupal\Core\Config\ConfigFactoryInterface $configFactory
    *   The configuration interface.
-   * @param \Drupal\ys_core\YaleSitesMediaManager $yale_media_manager
-   *   The YaleSites Media Manager.
+   * @param \Drupal\ys_media\YaleSitesMediaManager|null $yale_media_manager
+   *   The YaleSites Media Manager, or NULL without ys_media.
+   *
+   *   ys_media is an optional container dependency rather than a required one
+   *   because `drush deploy` runs updatedb before config:import, and ys_media
+   *   is enabled by config import -- so on an existing site there is exactly
+   *   one bootstrap where the new ys_core code is on disk but the service does
+   *   not exist. A required reference fails the container compile outright
+   *   there ("has a dependency on a non-existent service"), taking down the
+   *   whole deploy; an optional one degrades for that window instead. Pages
+   *   are served during it, so getHeaderSetting() guards the NULL rather than
+   *   assuming it away. Same pattern as ys_ai's optional ys_beacon reference.
    * @param \Symfony\Component\HttpFoundation\RequestStack $requestStack
    *   The Request Stack to retrieve the domain.
    * @param \Drupal\Core\Logger\LoggerChannelFactoryInterface $logger_factory
    *   The logger factory.
    */
-  public function __construct(ConfigFactoryInterface $configFactory, YaleSitesMediaManager $yale_media_manager, RequestStack $requestStack, LoggerChannelFactoryInterface $logger_factory) {
+  public function __construct(ConfigFactoryInterface $configFactory, ?YaleSitesMediaManager $yale_media_manager, RequestStack $requestStack, LoggerChannelFactoryInterface $logger_factory) {
     $this->yaleCoreSettings = $configFactory->getEditable('ys_core.site');
     $this->yaleHeaderSettings = $configFactory->getEditable('ys_core.header_settings');
     $this->yaleMediaManager = $yale_media_manager;
@@ -114,7 +125,7 @@ class CoreTwigExtension extends AbstractExtension {
   public function getHeaderSetting($setting_name) {
     if ($setting_name == 'site_name_image') {
       $siteNameSVG = FALSE;
-      if ($fid = $this->yaleHeaderSettings->get('site_name_image')) {
+      if ($this->yaleMediaManager && $fid = $this->yaleHeaderSettings->get('site_name_image')) {
         $siteNameSVG = $this->yaleMediaManager->getSiteNameImage($fid[0]);
       }
 

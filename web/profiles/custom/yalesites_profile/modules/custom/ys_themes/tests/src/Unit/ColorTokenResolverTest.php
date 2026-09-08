@@ -518,6 +518,40 @@ class ColorTokenResolverTest extends UnitTestCase {
   }
 
   /**
+   * Tests that layout sections expose five color options, not six.
+   *
+   * Every block-content mapping in getColorStylesForEntity() offers six
+   * options covering slots one, two, three, four, five and nine. Sections
+   * deliberately offer five and never expose slot-three: an option for it was
+   * added and then removed again within ticket #897, and #1153 reused the
+   * freed 'five' key for slot-nine. This test pins that decision so the
+   * difference reads as intentional rather than as a missed slot (#1506), and
+   * so adding a sixth option is a deliberate change with a test to update.
+   *
+   * @covers ::getColorStylesForEntity
+   */
+  public function testGetColorStylesForEntitySectionExposesFiveOptions(): void {
+    $resolver = $this->createResolver($this->fixturePath);
+    $styles = $resolver->getColorStylesForEntity('layout_section', 'ys_layout_options');
+
+    $this->assertSame(
+      ['one', 'two', 'three', 'four', 'five'],
+      array_keys($styles['one']),
+    );
+
+    // No option resolves to slot-three under any global theme.
+    foreach ($styles as $global_theme => $options) {
+      foreach ($options as $option_key => $declarations) {
+        $this->assertNotContains(
+          "var(--global-themes-{$global_theme}-colors-slot-three)",
+          $declarations,
+          "Section option '{$option_key}' unexpectedly resolves to slot-three.",
+        );
+      }
+    }
+  }
+
+  /**
    * Tests get color styles for entity callout bundle mapping.
    *
    * GetColorStylesForEntity() applies the callout-family mapping, the

@@ -284,9 +284,13 @@ class ResourceMetaBlock extends BlockBase implements ContainerFactoryPluginInter
         $linkItem = $node->get('field_external_source')->first();
         $url = UrlHelper::filterBadProtocol($linkItem->getUrl()->toString());
         if ($url) {
+          // The link title sub-field is disabled for this field, so the label
+          // is always this fixed string -- matching the Download CTA below.
+          // Never fall back to the URL: a raw URL is not a meaningful link
+          // name (WCAG 2.4.4) and reads as broken with long URLs.
           $externalSource = [
             'url' => $url,
-            'title' => $linkItem->get('title')->getValue() ?: $url,
+            'title' => $this->t('Visit Source'),
           ];
         }
       }
