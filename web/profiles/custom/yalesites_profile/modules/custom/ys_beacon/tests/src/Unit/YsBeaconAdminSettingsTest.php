@@ -13,6 +13,7 @@ use Drupal\search_api\IndexInterface;
 use Drupal\search_api\Tracker\TrackerInterface;
 use Drupal\search_api\Utility\IndexingBatchHelperInterface;
 use Drupal\Tests\UnitTestCase;
+use Drupal\Tests\ys_core\Traits\ProtectedPropertyTrait;
 use Drupal\ys_beacon\Form\YsBeaconAdminSettings;
 use Drupal\ys_beacon\Service\BeaconIndexManager;
 use Drupal\ys_beacon\Service\BeaconIndexStatus;
@@ -31,6 +32,8 @@ use Drupal\ys_beacon\Service\PdfTextIndexer;
  * @coversDefaultClass \Drupal\ys_beacon\Form\YsBeaconAdminSettings
  */
 class YsBeaconAdminSettingsTest extends UnitTestCase {
+
+  use ProtectedPropertyTrait;
 
   /**
    * Builds the form with a config mock and a given index manager.
@@ -64,10 +67,10 @@ class YsBeaconAdminSettingsTest extends UnitTestCase {
     $factory->method('get')->with('ys_beacon.settings')->willReturn($config);
 
     $form = (new \ReflectionClass(YsBeaconAdminSettings::class))->newInstanceWithoutConstructor();
-    $this->setProtected($form, 'configFactory', $factory);
-    $this->setProtected($form, 'indexManager', $index_manager);
-    $this->setProtected($form, 'messenger', $this->createMock(MessengerInterface::class));
-    $this->setProtected($form, 'stringTranslation', $this->getStringTranslationStub());
+    $this->setProtectedProperty($form, 'configFactory', $factory);
+    $this->setProtectedProperty($form, 'indexManager', $index_manager);
+    $this->setProtectedProperty($form, 'messenger', $this->createMock(MessengerInterface::class));
+    $this->setProtectedProperty($form, 'stringTranslation', $this->getStringTranslationStub());
 
     return ['form' => $form, 'config' => $config];
   }
@@ -101,27 +104,18 @@ class YsBeaconAdminSettingsTest extends UnitTestCase {
     $index_status->setStringTranslation($this->getStringTranslationStub());
 
     $form = (new \ReflectionClass(YsBeaconAdminSettings::class))->newInstanceWithoutConstructor();
-    $this->setProtected($form, 'indexStatus', $index_status);
-    $this->setProtected($form, 'indexingBatchHelper', $helper ?? $this->createMock(IndexingBatchHelperInterface::class));
+    $this->setProtectedProperty($form, 'indexStatus', $index_status);
+    $this->setProtectedProperty($form, 'indexingBatchHelper', $helper ?? $this->createMock(IndexingBatchHelperInterface::class));
     // No document is waiting on extraction, so the mirrored handlers do not
     // reach batch_set(); the sweep is covered by PdfTextExtractionTriggerTest.
     $pdfTextIndexer = $this->createMock(PdfTextIndexer::class);
     $pdfTextIndexer->method('pendingMediaIds')->willReturn([]);
-    $this->setProtected($form, 'pdfTextIndexer', $pdfTextIndexer);
-    $this->setProtected($form, 'configFactory', $config_factory);
-    $this->setProtected($form, 'messenger', $messenger ?? $this->createMock(MessengerInterface::class));
-    $this->setProtected($form, 'stringTranslation', $this->getStringTranslationStub());
+    $this->setProtectedProperty($form, 'pdfTextIndexer', $pdfTextIndexer);
+    $this->setProtectedProperty($form, 'configFactory', $config_factory);
+    $this->setProtectedProperty($form, 'messenger', $messenger ?? $this->createMock(MessengerInterface::class));
+    $this->setProtectedProperty($form, 'stringTranslation', $this->getStringTranslationStub());
 
     return $form;
-  }
-
-  /**
-   * Sets a protected/inherited property on an object via reflection.
-   */
-  private function setProtected(object $object, string $property, mixed $value): void {
-    $reflection = new \ReflectionProperty($object, $property);
-    $reflection->setAccessible(TRUE);
-    $reflection->setValue($object, $value);
   }
 
   /**
@@ -254,10 +248,10 @@ class YsBeaconAdminSettingsTest extends UnitTestCase {
     $index_manager = $this->createMock(BeaconIndexManager::class);
 
     $form = (new \ReflectionClass(YsBeaconAdminSettings::class))->newInstanceWithoutConstructor();
-    $this->setProtected($form, 'configFactory', $factory);
-    $this->setProtected($form, 'indexManager', $index_manager);
-    $this->setProtected($form, 'messenger', $this->createMock(MessengerInterface::class));
-    $this->setProtected($form, 'stringTranslation', $this->getStringTranslationStub());
+    $this->setProtectedProperty($form, 'configFactory', $factory);
+    $this->setProtectedProperty($form, 'indexManager', $index_manager);
+    $this->setProtectedProperty($form, 'messenger', $this->createMock(MessengerInterface::class));
+    $this->setProtectedProperty($form, 'stringTranslation', $this->getStringTranslationStub());
 
     $form_state = new FormState();
     $form_state->setValue('azure_index_name', 'my-site-live');
@@ -301,10 +295,10 @@ class YsBeaconAdminSettingsTest extends UnitTestCase {
     $index_manager = $this->createMock(BeaconIndexManager::class);
 
     $form = (new \ReflectionClass(YsBeaconAdminSettings::class))->newInstanceWithoutConstructor();
-    $this->setProtected($form, 'configFactory', $factory);
-    $this->setProtected($form, 'indexManager', $index_manager);
-    $this->setProtected($form, 'messenger', $this->createMock(MessengerInterface::class));
-    $this->setProtected($form, 'stringTranslation', $this->getStringTranslationStub());
+    $this->setProtectedProperty($form, 'configFactory', $factory);
+    $this->setProtectedProperty($form, 'indexManager', $index_manager);
+    $this->setProtectedProperty($form, 'messenger', $this->createMock(MessengerInterface::class));
+    $this->setProtectedProperty($form, 'stringTranslation', $this->getStringTranslationStub());
 
     $form_state = new FormState();
     $form_state->setValue('azure_index_name', 'my-site-live');
