@@ -5,6 +5,7 @@
 - [Adding a new component theme](#adding-a-new-component-theme)
 - [Adding a new global theme](#adding-a-new-global-theme)
 - [Working with themes in CSS](#working-with-themes-in-css)
+- [The contrast gate](#the-contrast-gate)
 
 ---
 
@@ -410,6 +411,25 @@ Because every component theme assigns global theme color slots differently, some
 ---
 #### Part five
 Commit your changes and open a PR.
+
+---
+## The contrast gate
+
+Adding a color, a component theme or a global theme is also a WCAG decision, and since YaleSites-Internal#1632 it is one the build checks rather than one a reviewer is expected to catch. Two checks run in `component-library-twig` as part of `npm run test`, so they gate every pull request in that repo:
+
+- **The pairing gate** computes the WCAG 2.1 contrast ratio for every pairing the token structure declares — each surface's background against the foreground meant to sit on it — across all seven global themes, and fails below **4.5:1 for text** and **3:1 for non-text** (currently section borders). Surfaces are derived from the token package, so a theme you add here is checked automatically, with no gate change.
+- **The foreground-purity ratchet** catches what the gate cannot see: a color hardcoded in foreground position, either as a literal (`color: #fff`) or as a raw palette token (`color: var(--color-gray-700)`). A palette token is a fixed swatch that cannot follow the theme, so it never enters a pairing and is never measured.
+
+The practical consequence when following the steps above: the `background` / `text` / `heading` values you give a new component theme have to clear 4.5:1 against each other, and any slot you point a component's foreground at has to clear 4.5:1 against the background that component paints. If a new theme fails, the build tells you which pairing and by how much before the theme reaches a site.
+
+Run them locally from a `component-library-twig` checkout:
+
+```sh
+npm run contrast:gate           # every declared pairing, with the report
+npm run contrast:foregrounds    # hardcoded colors in foreground position
+```
+
+Both carry a committed baseline of the failures that already existed when they landed, each with a reason and an owning ticket. The baselines may only ever shrink — adding to one to turn a red build green is not a fix. See "The contrast gate" in the `component-library-twig` README for how to retire a baseline entry.
 
 ---
 ### Other color use information
