@@ -24,9 +24,9 @@
 
 /* Make themes one, three, and four have white borders when system
 color theme is set to dark  */
-[data-component-theme="one"] .ys-layout-builder--drag-drop,
-[data-component-theme="three"] .ys-layout-builder--drag-drop,
-[data-component-theme="four"] .ys-layout-builder--drag-drop {
+[data-section-theme="one"] .ys-layout-builder--drag-drop,
+[data-section-theme="three"] .ys-layout-builder--drag-drop,
+[data-section-theme="four"] .ys-layout-builder--drag-drop {
   @media (prefers-color-scheme: dark) {
     --gin-pattern: white;
   }
@@ -34,7 +34,7 @@ color theme is set to dark  */
 
 
 /* Make theme two borders dark when system color theme is set to light */
-[data-component-theme="two"] .ys-layout-builder--drag-drop {
+[data-section-theme="two"] .ys-layout-builder--drag-drop {
   @media (prefers-color-scheme: light) {
     --gin-pattern: black;
   }
