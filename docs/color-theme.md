@@ -392,7 +392,7 @@ Use the shared mixin — do not hand-write the three declarations:
     @include tokens.publish-surface(
       var(--color-thing-background),   // what this block paints
       var(--color-text),               // the foreground that goes with it
-      var(--color-action)              // optional: the accent for controls
+      var(--color-action)              // the accent; defaults to the foreground
     );
   }
 }
@@ -407,8 +407,13 @@ Two things about *where* it goes are load-bearing:
   surface's values stop being inherited too. Unthemed or unknown, doing nothing is the safe
   outcome. In practice that means the dial loop **and** any hand-written theme block the loop does
   not reach (theme `six` is not a `component-themes` key).
-- **Omit the accent argument** when the component has no control of its own, so the enclosing
-  surface's accent keeps being inherited rather than being reset to something arbitrary.
+- **Never publish a background without an accent.** All three properties are emitted together and
+  `$accent` defaults to `$foreground` precisely so this cannot be got wrong. `_yds-cta.scss` reads
+  `--color-section-background` and `--color-section-accent` as a *matched pair* — a filled
+  button's label comes from one, the fill underneath it from the other. Publish only the
+  background and the label comes from your block while the fill still comes from the section:
+  measured, that puts 105 of 210 theme combinations below AA, worst case 1.03:1 — an invisible
+  button label. Pass an explicit accent only when the component has a control colour of its own.
 
 #### Consuming it
 
@@ -438,7 +443,7 @@ an owning ticket; like the other baselines in that directory it is a ratchet tha
 and adding an entry to turn a red build green is not a fix. Print the current state with:
 
 ```sh
-node components/00-tokens/colors/surface-contract.mjs
+npm run contrast:surfaces
 ```
 
 #### A note on the name
