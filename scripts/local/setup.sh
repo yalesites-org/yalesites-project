@@ -3,6 +3,8 @@
 # Define variable to check from other scripts if this script is being invoked.
 export YALESITES_IS_LOCAL=1
 
+source ./scripts/local/local-dev-tool.sh
+
 # Ignore the composer.lock file on local dev only.
 if ! grep -qxF 'composer.lock' .git/info/exclude; then
   echo "Excluding composer.lock to keep it out of the repo."
@@ -10,7 +12,7 @@ if ! grep -qxF 'composer.lock' .git/info/exclude; then
 fi
 
 # Create a local lando settings file if it does not exist.
-if [[ ! -f ".lando.local.yml" ]]; then
+if [[ "$YALESITES_LOCAL_DOCKER_TOOL" == "lando" && ! -f ".lando.local.yml" ]]; then
   echo "Creating a local lando file for connecting to Pantheon"
   cp .lando.local.example.yml .lando.local.yml
 fi
@@ -19,7 +21,6 @@ fi
 if [[ ! -f "web/sites/default/settings.local.php" ]]; then
   echo "Creating a local Drupal settings file"
   cp web/sites/ys.settings.local.php web/sites/default/settings.local.php
-
 fi
 
 # YALESITES_BUILD_TOKEN is needed for authentication to Github.
@@ -28,8 +29,8 @@ if [[ -z "$YALESITES_BUILD_TOKEN" ]]; then
   exit 1
 fi
 
-# Start lando and create containers.
-lando start
+# Start local development containers.
+ys_local_start
 
 # Generate local secrets file.
 terminus plugin:install pantheon-systems/terminus-secrets-manager-plugin
@@ -40,17 +41,17 @@ npm install
 npm run build-with-install
 
 # Configure Composer to use source packaged versions.
-lando composer config --global 'preferred-install.yalesites-org/*' source
+ys_local_composer config --global 'preferred-install.yalesites-org/*' source
 
 # Manually remove the originally downloaded dist packed version.
-lando ssh -c "rm -rf web/themes/contrib/atomic"
+ys_local_exec rm -rf web/themes/contrib/atomic
 
 # Use Composer to download the new version of the Yale projects.
-lando composer update atomic
+ys_local_composer update atomic
 
 # Setup npm linked packages for theme dependencies
 # See https://yaleits.atlassian.net/browse/YALB-971git
 # npm run local:theme-link
 
 # Create a login link.
-lando drush uli
+ys_local_drush uli

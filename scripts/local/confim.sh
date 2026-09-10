@@ -1,3 +1,5 @@
 #!/bin/bash
 
-lando drush deploy
+source ./scripts/local/local-dev-tool.sh
+
+ys_local_drush deploy

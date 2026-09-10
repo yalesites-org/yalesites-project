@@ -1,0 +1,8 @@
+# Relax ImageMagick PDF coder policy for local dev (matches Lando/Pantheon-style PDF handling).
+# Applied when the web image is built; rebuild with: ddev debug rebuild -s web
+RUN set -eux; \
+  for f in /etc/ImageMagick-6/policy.xml /etc/ImageMagick-7/policy.xml; do \
+    if [ -f "$f" ]; then \
+      sed -i 's#<policy domain="coder" rights="none" pattern="PDF" />#<policy domain="coder" rights="read|write" pattern="PDF" />#g' "$f"; \
+    fi; \
+  done
