@@ -133,7 +133,9 @@ class LayoutBuilderBlockFormMessagesTest extends UnitTestCase {
 
     ys_core_form_alter($form, $form_state, 'user_login_form');
 
-    $this->assertArrayNotHasKey('ys_core_status_messages', $form);
+    // The key the alter writes is status_messages; asserting a name that
+    // never existed passed no matter what the alter did.
+    $this->assertArrayNotHasKey('status_messages', $form);
   }
 
 }
