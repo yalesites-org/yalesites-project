@@ -2,7 +2,6 @@
 
 namespace Drupal\Tests\ys_core\Kernel;
 
-use Drupal\KernelTests\KernelTestBase;
 use Drupal\block_content\Entity\BlockContent;
 use Drupal\block_content\Entity\BlockContentType;
 use Drupal\field\Entity\FieldConfig;
@@ -20,7 +19,7 @@ use Drupal\field\Entity\FieldStorageConfig;
  * @group ys_core
  * @group yalesites
  */
-class DoubleEncodedLinkUriRepairTest extends KernelTestBase {
+class DoubleEncodedLinkUriRepairTest extends YsKernelTestBase {
 
   /**
    * {@inheritdoc}

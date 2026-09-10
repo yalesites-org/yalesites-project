@@ -20,6 +20,24 @@ use Drupal\views\Views;
  */
 class PostPublishDateFilterTest extends ViewsKernelTestBase {
 
+  // This test needs ViewsKernelTestBase, so it cannot extend YsKernelTestBase.
+  // These three must stay in sync with that class - see its docblock for why
+  // they move together, and KernelTestIsolationContractTest, which enforces it.
+  /**
+   * {@inheritdoc}
+   */
+  protected $runTestInSeparateProcess = FALSE;
+
+  /**
+   * {@inheritdoc}
+   */
+  protected $backupGlobals = FALSE;
+
+  /**
+   * {@inheritdoc}
+   */
+  protected $backupStaticAttributes = FALSE;
+
   /**
    * {@inheritdoc}
    */
