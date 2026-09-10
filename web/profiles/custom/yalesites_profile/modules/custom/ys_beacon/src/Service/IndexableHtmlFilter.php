@@ -18,7 +18,7 @@ use Drupal\Component\Utility\UrlHelper;
  * which is how headings, lists and emphasis went missing, and how adjacent list
  * items and table cells ended up concatenated into single words.
  *
- * Deleting is most of what this service does, for the two reasons that
+ * Deleting is most of what this service does, for the three reasons that
  * conversion cannot handle itself:
  *
  * - Some elements are not prose but their text still survives conversion. A
@@ -27,6 +27,9 @@ use Drupal\Component\Utility\UrlHelper;
  *   runs its caption straight into the following paragraph.
  * - A javascript: link target would otherwise be stored as a working Markdown
  *   link, and chat answers are rendered as Markdown.
+ * - A heading that is nothing but a link back to the page being indexed is the
+ *   node template's own title, present only because an item is rendered
+ *   standalone. See SELF-TITLE HEADINGS below.
  *
  * Everything else is deliberately left alone, because the configured converter
  * already does it better than a hand-rolled pass would: strip_tags unwraps
@@ -80,6 +83,60 @@ use Drupal\Component\Utility\UrlHelper;
  * chat page rather than the source page; and an empty href would be dropped by
  * strip_placeholder_links. A heading that already contains a link is left
  * alone, and with no page URL nothing is linked at all.
+ *
+ * SELF-TITLE HEADINGS. Search API's rendered_item field renders an item on its
+ * own in view mode 'default', not as a page. Core's node.html.twig takes its
+ * `{% if label and not page %}` branch in that situation and emits
+ * `<h2><a href="{{ url }}" rel="bookmark">{{ label }}</a></h2>` above the
+ * node's fields, because template_preprocess_node() only sets `page` for view
+ * mode 'full' on the node's own route. A visitor therefore never sees that
+ * heading, and it duplicates the title the display's own meta block renders as
+ * an <h1> - so an indexed chunk carried the page title twice before the
+ * contextual "Title:" line even added its own copy
+ * (YaleSites-Internal#1665).
+ *
+ * The rule is that a heading whose entire content is a link back to the page
+ * being indexed is that title, and it is removed. Both halves are load-bearing
+ * and neither is sufficient alone: "the whole heading is one link" also
+ * describes an editor's heading-sized link into real content, and "links to
+ * this page" also describes an ordinary in-page reference in prose. Only
+ * together do they mean "this page announcing itself", which is chrome.
+ *
+ * "Entire content" is measured in text, exactly as the disclosure-button rule
+ * measures it, so a heading holding words of its own is kept. Removing the
+ * heading rather than unwrapping its link is the point: unwrapping would leave
+ * the duplicated title behind as plain text, which is the thing being fixed.
+ * Nothing is lost by the removal even for a display with no meta block, since
+ * the title also reaches every chunk as contextual content.
+ *
+ * Like the anchored-heading rewrite this needs the caller's page URL, and with
+ * no page URL nothing is removed - the filter is reachable on the search-query
+ * path too, where guessing would risk deleting an authored heading.
+ *
+ * Being an inference from markup, the rule has one false positive worth
+ * knowing about: a page that lists itself. Every card and list-item title on
+ * the platform is rendered by yds-heading.twig as a heading wrapping a single
+ * link, so a Content list or Related content block that happens to include the
+ * node it sits on produces a heading that is entirely a link back to this
+ * page, and that card loses its heading from the index. The rest of the card
+ * still reaches the index where it has any - a card with no teaser or metadata
+ * contributes nothing at all - and the removed text is by definition the
+ * page's own title, which the chunk carries anyway. That, plus the fact that
+ * the two-conjunct test is the narrowest honest way to state the rule, is why
+ * this is accepted rather than worked around.
+ *
+ * Fixing this where it is emitted was considered and rejected. Rendering the
+ * item in view mode 'full' does not help: template_preprocess_node() gates
+ * `page` on node_is_page() as well as the view mode, and indexing runs with no
+ * node route, so the branch still fires - and the bundles' *--full templates
+ * drop indexable fields (event dates, author) that the index needs. A
+ * hook_preprocess_node() in ys_beacon could only key on the view mode, which
+ * would make an optional per-site module silently change rendering for
+ * node_index, secure_index and every "Rendered entity - Default" view; and a
+ * node--default template override lives in the atomic repo, so it would ship
+ * on a different release cycle and depend on the site's default theme. Only
+ * this index runs this processor, so only Beacon's citation-facing Markdown is
+ * affected - which is the intent.
  */
 class IndexableHtmlFilter {
 
@@ -104,8 +161,9 @@ class IndexableHtmlFilter {
   /**
    * Heading elements, in the order HTML defines them.
    *
-   * Both rewrites key off headings: a button is content only when it is the
-   * whole of one, and an id is a linkable landmark only when it is on one.
+   * Every heading rule keys off this list: a button is content only when it is
+   * the whole of one, an id is a linkable landmark only when it is on one, and
+   * a self-referential title link is chrome only when it is the whole of one.
    */
   const HEADING_TAGS = ['h1', 'h2', 'h3', 'h4', 'h5', 'h6'];
 
@@ -170,9 +228,12 @@ class IndexableHtmlFilter {
    *   The rendered HTML for one indexed item.
    * @param string|null $pageUrl
    *   The absolute URL of the page this HTML was rendered from, when the
-   *   caller knows it. Headings carrying an id are linked to their own
-   *   fragment of that URL; without it they are kept but not linked, because
-   *   half a link is worse to a reader than none.
+   *   caller knows it. Two rules need it: headings carrying an id are linked
+   *   to their own fragment of that URL, and a heading that is nothing but a
+   *   link back to that URL is dropped as the node template's own title.
+   *   Without it, headings are kept unlinked - half a link is worse to a
+   *   reader than none - and none are dropped, since there is then nothing to
+   *   recognise a self-link against.
    *
    * @return string
    *   The same HTML with non-content elements and unusable links removed, and
@@ -194,8 +255,11 @@ class IndexableHtmlFilter {
     // After the removal passes, so an emptied heading is never given a link,
     // and before the unsafe-link pass, so a link built here is held to the
     // same protocol check as one that came in with the markup.
-    if ($pageUrl !== NULL && trim($pageUrl) !== '') {
-      $this->linkAnchoredHeadings($document, trim($pageUrl));
+    $page = trim($pageUrl ?? '');
+    if ($page !== '') {
+      // Deletions before rewrites, matching the order of the passes above.
+      $this->removeSelfTitleHeadings($document, $page);
+      $this->linkAnchoredHeadings($document, $page);
     }
     $this->unwrapUnsafeLinks($document);
 
@@ -291,6 +355,98 @@ class IndexableHtmlFilter {
   }
 
   /**
+   * Removes headings that are only a link back to the page being indexed.
+   *
+   * The node template's own title, which exists in the indexed render and
+   * nowhere a visitor looks. See the class docblock for why both halves of the
+   * test are needed and why the heading is removed rather than unwrapped.
+   *
+   * @param \DOMDocument $document
+   *   The document to mutate in place.
+   * @param string $pageUrl
+   *   The absolute URL of the page, already known to be non-empty.
+   */
+  protected function removeSelfTitleHeadings(\DOMDocument $document, string $pageUrl): void {
+    $xpath = new \DOMXPath($document);
+    $query = '//body//*[' . $this->anyOf(self::HEADING_TAGS) . ']/a[@href]';
+
+    foreach (iterator_to_array($xpath->query($query)) as $link) {
+      $heading = $link->parentNode;
+      if ($this->holdsAllTextOf($link, $heading)
+        && $this->targetsPage($link->getAttribute('href'), $pageUrl)) {
+        $heading->parentNode?->removeChild($heading);
+      }
+    }
+  }
+
+  /**
+   * Whether a link target names the page being indexed.
+   *
+   * The target is compared against the page both as a whole URL and against
+   * the page's path alone, because Drupal's URL generation emits either form.
+   * No branch is needed to reject the other shapes, because neither
+   * comparison can accept them: a link to another host differs from the page
+   * in its origin, and a document-relative target has no leading slash while
+   * a path taken from the page URL always does.
+   *
+   * Two targets are refused outright. A bare fragment does name this page, but
+   * a heading wrapping one is the anchored-heading pattern rather than a
+   * title. A protocol-relative target is refused because trimming a trailing
+   * slash would otherwise reduce a bare "//" onto the site root.
+   *
+   * @param string $href
+   *   The link's href attribute.
+   * @param string $pageUrl
+   *   The absolute URL of the page.
+   *
+   * @return bool
+   *   TRUE when the href resolves to the page itself.
+   */
+  protected function targetsPage(string $href, string $pageUrl): bool {
+    $target = trim($this->withoutFragment($href));
+    if ($target === '' || str_starts_with($target, '//')) {
+      return FALSE;
+    }
+
+    // Trailing slashes are dropped throughout so that "/a/b/" and "/a/b" are
+    // recognised as the same page.
+    $page = $this->withoutFragment($pageUrl);
+    $target = rtrim($target, '/');
+
+    if ($target === rtrim($page, '/')) {
+      return TRUE;
+    }
+
+    // The page's path is only a safe thing to compare against while the page
+    // URL carries no query of its own, because parse_url() would discard that
+    // query and make a link to the bare path - a different view of the page -
+    // look like the page itself. No caller produces such a URL today
+    // (EntityCitationResolver returns a canonical entity URL or a file URL),
+    // but this rule deletes content, so it does not lean on that.
+    if (parse_url($page, PHP_URL_QUERY) !== NULL) {
+      return FALSE;
+    }
+
+    return $target === rtrim((string) parse_url($page, PHP_URL_PATH), '/');
+  }
+
+  /**
+   * Drops any fragment from a URL.
+   *
+   * A fragment identifies a place on a page rather than a different page, so
+   * it plays no part in deciding which page a URL names.
+   *
+   * @param string $url
+   *   The URL to strip.
+   *
+   * @return string
+   *   The same URL without its fragment.
+   */
+  protected function withoutFragment(string $url): string {
+    return explode('#', $url, 2)[0];
+  }
+
+  /**
    * Links every heading carrying an id to its own fragment of the page.
    *
    * A real <a> element rather than Markdown text, and an absolute target
@@ -311,7 +467,7 @@ class IndexableHtmlFilter {
     $query = '//body//*[' . $this->anyOf(self::HEADING_TAGS) . '][@id]';
     // A canonical entity URL carries no fragment, but appending a second one
     // to a URL that did would produce a target no browser resolves.
-    $base = explode('#', $pageUrl, 2)[0];
+    $base = $this->withoutFragment($pageUrl);
 
     foreach (iterator_to_array($xpath->query($query)) as $heading) {
       $id = trim($heading->getAttribute('id'));

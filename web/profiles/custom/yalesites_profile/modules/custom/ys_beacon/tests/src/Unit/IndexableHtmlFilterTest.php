@@ -862,6 +862,287 @@ class IndexableHtmlFilterTest extends UnitTestCase {
   }
 
   /**
+   * The node template's own title link is not indexed as content.
+   *
+   * A visitor never sees that heading, and it duplicates the title the
+   * display's own meta block renders. See SELF-TITLE HEADINGS on the service
+   * for why it reaches the indexed render at all.
+   */
+  public function testNodeTemplateTitleLinkIsNotIndexed(): void {
+    $markdown = $this->toMarkdownForPage($this->standaloneNodeRender());
+
+    $this->assertStringNotContainsString('](/about/faq)', $markdown);
+    // Exactly once, not merely present: the removal has to take the invisible
+    // bookmark heading and leave the meta block's h1, which is the heading a
+    // reader of the citation is meant to see.
+    $this->assertSame(
+      1,
+      substr_count($markdown, 'Empty Testing Page'),
+      'The page title should reach the chunk exactly once.'
+    );
+    $this->assertStringContainsString('Body copy.', $markdown);
+  }
+
+  /**
+   * An absolute self-link is recognised as readily as a root-relative one.
+   *
+   * Whether the rendered href is absolute or root-relative depends on how the
+   * URL was generated, and both forms name the same page.
+   */
+  public function testAbsoluteSelfTitleLinkIsAlsoRemoved(): void {
+    $markdown = $this->toMarkdownForPage(
+      '<h2><a href="' . self::PAGE_URL . '" rel="bookmark">Empty Testing Page</a></h2>'
+      . '<p>Body copy.</p>'
+    );
+
+    $this->assertStringNotContainsString('Empty Testing Page', $markdown);
+    $this->assertStringContainsString('Body copy.', $markdown);
+  }
+
+  /**
+   * A fragment on the self-link does not stop it being recognised.
+   */
+  public function testSelfTitleLinkWithFragmentIsRemoved(): void {
+    $markdown = $this->toMarkdownForPage(
+      '<h2><a href="/about/faq#main" rel="bookmark">Empty Testing Page</a></h2>'
+      . '<p>Body copy.</p>'
+    );
+
+    $this->assertStringNotContainsString('Empty Testing Page', $markdown);
+  }
+
+  /**
+   * A heading linking somewhere else is content and is kept.
+   *
+   * The rule keys off the link pointing back at the page being indexed. A
+   * heading that is entirely a link to a different page is an editor's own
+   * navigation into real content and has to survive.
+   */
+  public function testHeadingLinkingToAnotherPageIsKept(): void {
+    $markdown = $this->toMarkdownForPage(
+      '<h2><a href="/admissions">How to apply</a></h2><p>Body copy.</p>'
+    );
+
+    $this->assertStringContainsString('How to apply', $markdown);
+    $this->assertStringContainsString('](/admissions)', $markdown);
+  }
+
+  /**
+   * A heading mixing prose with a self-link keeps both.
+   *
+   * "Entire content" is measured in text, the same way the disclosure-button
+   * rule measures it: a heading holding words of its own is authored content,
+   * not the node template's title link.
+   */
+  public function testHeadingMixingProseWithSelfLinkIsKept(): void {
+    $markdown = $this->toMarkdownForPage(
+      '<h2>See <a href="/about/faq" rel="bookmark">this page</a> for details</h2>'
+    );
+
+    $this->assertStringContainsString('See', $markdown);
+    $this->assertStringContainsString('for details', $markdown);
+    // The link itself has to survive, not merely its text: the heading is kept
+    // whole, so the destination is still there to follow.
+    $this->assertStringContainsString('[this page](/about/faq)', $markdown);
+  }
+
+  /**
+   * A self-link outside a heading is untouched.
+   *
+   * Only the heading form is the node template's title. A body paragraph
+   * linking to its own page is an editor's choice and none of this rule's
+   * business.
+   */
+  public function testSelfLinkInProseIsKept(): void {
+    $markdown = $this->toMarkdownForPage(
+      '<p>Bookmark <a href="/about/faq">this page</a>.</p>'
+    );
+
+    $this->assertStringContainsString('this page', $markdown);
+    $this->assertStringContainsString('](/about/faq)', $markdown);
+  }
+
+  /**
+   * Without a page URL there is nothing to recognise a self-link against.
+   *
+   * The filter is also reachable on the search-query path, where no item URL
+   * exists. Guessing there would risk deleting an authored heading, so the
+   * heading is kept exactly as it was before this rule existed.
+   */
+  public function testSelfTitleLinkIsKeptWhenNoPageUrlIsGiven(): void {
+    $markdown = $this->toMarkdown($this->standaloneNodeRender());
+
+    $this->assertStringContainsString('](/about/faq)', $markdown);
+  }
+
+  /**
+   * Targets that name no page, or not this one, are refused.
+   *
+   * These are the shapes the comparison has to turn down. A bare fragment does
+   * name this page, but a heading wrapping one is the anchored-heading pattern
+   * rather than a title; the rest either name another page or are not a form
+   * Drupal's URL generation emits.
+   *
+   * @dataProvider nonSelfLinkTargetProvider
+   */
+  public function testHeadingLinkingElsewhereIsKept(string $href): void {
+    $markdown = $this->toMarkdownForPage(
+      '<h2><a href="' . $href . '">Keep me</a></h2><p>Body copy.</p>'
+    );
+
+    $this->assertStringContainsString('Keep me', $markdown);
+  }
+
+  /**
+   * Link targets that must not be read as "this page".
+   */
+  public static function nonSelfLinkTargetProvider(): array {
+    return [
+      'bare fragment is the anchored-heading pattern' => ['#main'],
+      'protocol-relative target' => ['//example.yale.edu/about/faq'],
+      'protocol-relative bare root' => ['//'],
+      'document-relative target' => ['faq'],
+      'another host, same path' => ['https://other.example.com/about/faq'],
+      'this path with more beneath it' => ['/about/faq/extra'],
+    ];
+  }
+
+  /**
+   * On a page whose path is "/", the refused targets are still refused.
+   *
+   * This is the case the early-return guard exists for, and the only one where
+   * it does any work: against a page path of "/" both a bare fragment and a
+   * bare "//" trim down to the empty string, so without the guard they would
+   * compare equal to the page and an authored heading would be deleted.
+   *
+   * @dataProvider rootPageRefusedTargetProvider
+   */
+  public function testRefusedTargetsAreStillRefusedOnRootPage(string $href): void {
+    $markdown = trim($this->productionConverter()->convert(
+      $this->filter->filter(
+        '<h2><a href="' . $href . '">Keep me</a></h2><p>Body copy.</p>',
+        'https://example.yale.edu/'
+      )
+    ));
+
+    $this->assertStringContainsString('Keep me', $markdown);
+  }
+
+  /**
+   * Targets that must be refused even when the page itself is the site root.
+   */
+  public static function rootPageRefusedTargetProvider(): array {
+    return [
+      'bare fragment' => ['#main'],
+      'protocol-relative bare root' => ['//'],
+      'protocol-relative host' => ['//example.yale.edu/'],
+    ];
+  }
+
+  /**
+   * The site root's own title link is still recognised on the front page.
+   *
+   * The counterpart to the test above: the guard must not be so broad that a
+   * genuine self-link on a root-path page stops being one.
+   */
+  public function testRootPageSelfTitleLinkIsRemoved(): void {
+    $markdown = trim($this->productionConverter()->convert(
+      $this->filter->filter(
+        '<h2><a href="/" rel="bookmark">Welcome</a></h2><p>Body copy.</p>',
+        'https://example.yale.edu/'
+      )
+    ));
+
+    $this->assertStringNotContainsString('Welcome', $markdown);
+    $this->assertStringContainsString('Body copy.', $markdown);
+  }
+
+  /**
+   * A trailing slash on either side does not hide a self-link.
+   *
+   * Rendered hrefs and generated page URLs disagree about the trailing slash
+   * often enough that the comparison normalises it away; without that, half
+   * the duplicates this rule exists for would survive.
+   *
+   * @dataProvider trailingSlashProvider
+   */
+  public function testTrailingSlashesDoNotAffectRecognition(string $href, string $pageUrl): void {
+    $markdown = trim($this->productionConverter()->convert(
+      $this->filter->filter(
+        '<h2><a href="' . $href . '" rel="bookmark">Empty Testing Page</a></h2><p>Body copy.</p>',
+        $pageUrl
+      )
+    ));
+
+    $this->assertStringNotContainsString('Empty Testing Page', $markdown);
+  }
+
+  /**
+   * Trailing-slash mismatches between an href and the page URL.
+   */
+  public static function trailingSlashProvider(): array {
+    return [
+      'slash on the href only' => ['/about/faq/', self::PAGE_URL],
+      'slash on the page only' => ['/about/faq', self::PAGE_URL . '/'],
+      'slash on both' => ['/about/faq/', self::PAGE_URL . '/'],
+    ];
+  }
+
+  /**
+   * A query on the target makes it a different page, so it is kept.
+   *
+   * This is what stops the comparison being "simplified" into a paths-only
+   * one: a pager link on a listing page is a heading-sized link to this same
+   * path with a query, and it is content.
+   */
+  public function testSelfPathWithQueryIsKept(): void {
+    $markdown = $this->toMarkdownForPage(
+      '<h2><a href="/about/faq?page=2">Page 2</a></h2><p>Body copy.</p>'
+    );
+
+    $this->assertStringContainsString('Page 2', $markdown);
+    $this->assertStringContainsString('](/about/faq?page=2)', $markdown);
+  }
+
+  /**
+   * A query on the PAGE does not make a bare-path link the page itself.
+   *
+   * Comparing against the page's path alone would delete a heading linking to
+   * a genuinely different view of the page, because parse_url() discards the
+   * query the page URL itself carried.
+   */
+  public function testBarePathIsNotSelfLinkOfQueriedPage(): void {
+    $markdown = trim($this->productionConverter()->convert(
+      $this->filter->filter(
+        '<h2><a href="/about/faq">Unpaged</a></h2><p>Body copy.</p>',
+        self::PAGE_URL . '?page=2'
+      )
+    ));
+
+    $this->assertStringContainsString('Unpaged', $markdown);
+  }
+
+  /**
+   * The standalone node render Search API indexes, in miniature.
+   *
+   * The bookmark heading core emits above the node's fields, then the meta
+   * block's own h1 - the two copies of the title that made a chunk repeat it.
+   * Core's node.html.twig indents the anchor inside the heading, which is why
+   * the whitespace here is not tidied away: the "entire content" test has to
+   * hold with the heading's real text nodes present.
+   *
+   * @return string
+   *   Rendered HTML shaped like the indexed render of a page node.
+   */
+  private function standaloneNodeRender(): string {
+    return '<article>'
+      . "\n  <h2>\n    " . '<a href="/about/faq" rel="bookmark">Empty Testing Page</a>' . "\n  </h2>\n"
+      . '  <div><h1 class="page-title__heading">Empty Testing Page</h1>'
+      . '<p>Body copy.</p></div>'
+      . '</article>';
+  }
+
+  /**
    * Widest block-start indent in the markdown, measured in columns.
    *
    * Columns rather than characters, because CommonMark expands a tab to the
