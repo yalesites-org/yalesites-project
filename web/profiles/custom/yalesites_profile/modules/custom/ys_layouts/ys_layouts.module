@@ -13,6 +13,7 @@ use Drupal\Core\Plugin\Context\EntityContextDefinition;
 use Drupal\Core\Render\Element;
 use Drupal\ys_layouts\CloneBlockLinkBuilder;
 use Drupal\ys_layouts\Render\DetachContextualOperations;
+use Drupal\ys_layouts\SectionCloneLinkBuilder;
 use Drupal\ys_layouts\WebformResultsLinkBuilder;
 
 /**
@@ -461,10 +462,13 @@ function ys_layouts_form_ys_layouts_detach_reusable_block_alter(&$form, FormStat
  * new link.
  *
  * "Clone" is attached to inline blocks only (issue #190), and
- * "View form submissions" only to blocks that reference a webform.
+ * "View form submissions" only to blocks that reference a webform. The
+ * section-level "Clone" (issue #1638) is a plain link rather than a contextual
+ * one, because Layout Builder sections have no contextual link group.
  *
  * @see \Drupal\ys_layouts\Render\DetachContextualOperations
  * @see \Drupal\ys_layouts\CloneBlockLinkBuilder
+ * @see \Drupal\ys_layouts\SectionCloneLinkBuilder
  * @see \Drupal\ys_layouts\WebformResultsLinkBuilder
  */
 function ys_layouts_element_info_alter(array &$info) {
@@ -481,6 +485,12 @@ function ys_layouts_element_info_alter(array &$info) {
     ];
     $info['layout_builder']['#pre_render'][] = [
       WebformResultsLinkBuilder::class,
+      'preRender',
+    ];
+    // Sections carry no contextual links at all, so the "Clone" section action
+    // is injected straight into the built section render array instead.
+    $info['layout_builder']['#pre_render'][] = [
+      SectionCloneLinkBuilder::class,
       'preRender',
     ];
   }
