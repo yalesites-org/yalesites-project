@@ -22,6 +22,14 @@ use League\HTMLToMarkdown\HtmlConverter;
 class IndexableHtmlFilterTest extends UnitTestCase {
 
   /**
+   * The absolute URL of the page the fixtures are pretending to come from.
+   *
+   * Deep links have to be absolute, so the tests need a page to be absolute
+   * against.
+   */
+  const PAGE_URL = 'https://example.yale.edu/about/faq';
+
+  /**
    * The filter under test.
    *
    * @var \Drupal\ys_beacon\Service\IndexableHtmlFilter
@@ -375,6 +383,482 @@ class IndexableHtmlFilterTest extends UnitTestCase {
     $this->assertSame('', $this->filter->filter(''));
     $this->assertSame('', $this->filter->filter('   '));
     $this->assertSame('', $this->filter->filter("&nbsp;\xc2\xa0"));
+  }
+
+  /**
+   * One accordion item, shaped the way the component library renders it.
+   *
+   * Both halves of the accordion problem hang off this shape: the authored
+   * heading text sits inside a disclosure button, and the decorative
+   * angle-down icon sits inside that same button.
+   *
+   * @param string $heading
+   *   The authored heading text.
+   * @param string $id
+   *   The stable anchor id, or an empty string to omit it.
+   *
+   * @return string
+   *   The rendered markup for one accordion item.
+   */
+  private function accordionItem(string $heading, string $id = 'accordion-item-6'): string {
+    return '<div data-accordion-expanded="false" class="accordion-item">'
+      . '<h3 class="accordion-item__heading"' . ($id === '' ? '' : ' id="' . $id . '"') . '>'
+      . '<button aria-expanded="true" class="accordion-item__toggle">' . $heading
+      . '<svg class="accordion-item__icon" aria-hidden="true" role="img">'
+      . '<use xlink:href="/themes/contrib/atomic/icons.svg#angle-down"></use>'
+      . '</svg></button></h3>'
+      . '<div class="accordion-item__content"><p>You submit a request form.</p></div>'
+      . '</div>';
+  }
+
+  /**
+   * One gallery modal caption, shaped the way the library renders it.
+   *
+   * The caption toggle is a sibling of the caption prose rather than its
+   * parent, which is why gallery captions already reach the index and must
+   * keep doing so.
+   *
+   * @param string $heading
+   *   The authored caption heading.
+   * @param string $id
+   *   The stable anchor id, or an empty string to omit it.
+   *
+   * @return string
+   *   The rendered markup for one gallery modal caption.
+   */
+  private function galleryItem(string $heading, string $id = 'gallery-item-12'): string {
+    return '<div class="media-grid-modal__content" data-media-grid-modal-item="1">'
+      . '<button class="media-grid-modal__toggle-caption" aria-expanded="false">'
+      . '<svg class="media-grid-modal__icon"><use xlink:href="/i.svg#circle-plus"></use></svg>'
+      . '</button>'
+      . '<div class="media-grid-modal__content-wrapper">'
+      . '<h2 class="media-grid-modal__heading"' . ($id === '' ? '' : ' id="' . $id . '"') . '>'
+      . $heading . '</h2>'
+      . '<div class="media-grid-modal__text"><p>Built in 1931 by James Gamble Rogers.</p></div>'
+      . '</div></div>';
+  }
+
+  /**
+   * Filters HTML for a known page and converts it the way the indexer does.
+   *
+   * @param string $html
+   *   The rendered HTML to filter.
+   *
+   * @return string
+   *   The converted Markdown.
+   */
+  private function toMarkdownForPage(string $html): string {
+    return trim($this->productionConverter()->convert(
+      $this->filter->filter($html, self::PAGE_URL)
+    ));
+  }
+
+  /**
+   * The accordion item heading reaches the index at all.
+   *
+   * The bug this guards: button is in REMOVED_TAGS and that pass deletes an
+   * element together with its contents, so the authored heading went with the
+   * disclosure button and the emptied heading was then dropped as textless.
+   * Editors build FAQs out of accordions, so the question half of every
+   * question-and-answer pair was missing from the index.
+   */
+  public function testAccordionItemHeadingReachesTheIndex(): void {
+    $markdown = $this->toMarkdown($this->accordionItem('How do I request a new site?'));
+
+    $this->assertStringContainsString('How do I request a new site?', $markdown);
+    $this->assertStringContainsString('You submit a request form.', $markdown);
+  }
+
+  /**
+   * The heading is emitted as a heading, not as a bare line of text.
+   *
+   * Chunking splits on heading boundaries, so an item's body stays scoped to
+   * its own question only if the question is still structurally a heading.
+   */
+  public function testAccordionItemHeadingIsEmittedAsMarkdownHeading(): void {
+    $markdown = $this->toMarkdown($this->accordionItem('How do I request a new site?'));
+
+    $this->assertStringContainsString('### How do I request a new site?', $markdown);
+  }
+
+  /**
+   * The heading precedes its own body in document order.
+   */
+  public function testAccordionHeadingPrecedesItsBody(): void {
+    $markdown = $this->toMarkdown($this->accordionItem('How do I request a new site?'));
+
+    $this->assertLessThan(
+      strpos($markdown, 'You submit a request form.'),
+      strpos($markdown, 'How do I request a new site?')
+    );
+  }
+
+  /**
+   * The decorative icon inside the disclosure button does not leak.
+   *
+   * Keeping the button's text means the icon is momentarily exposed as a
+   * child of the heading, so the svg rule has to catch it there.
+   */
+  public function testDisclosureIconDoesNotLeakIntoTheIndex(): void {
+    $markdown = $this->toMarkdown($this->accordionItem('How do I request a new site?'));
+
+    $this->assertStringNotContainsString('angle-down', $markdown);
+    $this->assertStringNotContainsString('xlink', $markdown);
+    $this->assertStringNotContainsString('icons.svg', $markdown);
+  }
+
+  /**
+   * Every button that is page furniture is still removed with its contents.
+   *
+   * @param string $html
+   *   Markup holding one furniture button.
+   * @param string $needle
+   *   Text or an icon reference that must not survive.
+   *
+   * @dataProvider furnitureButtonProvider
+   */
+  public function testFurnitureButtonsAreRemovedWithTheirContents(string $html, string $needle): void {
+    $markdown = $this->toMarkdown('<p>Real content.</p>' . $html);
+
+    $this->assertStringContainsString('Real content.', $markdown);
+    $this->assertStringNotContainsString($needle, $markdown);
+  }
+
+  /**
+   * Every known furniture button, with the text that must not reach the index.
+   *
+   * This is the recorded decision for each button case on the platform. A
+   * component that adds a new button should be added here rather than
+   * discovered later in an indexed chunk.
+   *
+   * @return array<string, array{string, string}>
+   *   Markup and the needle that must be absent, keyed by case name.
+   */
+  public function furnitureButtonProvider(): array {
+    return [
+      'accordion expand all' => [
+        '<div class="accordion__controls"><button class="accordion__toggle-all" aria-expanded="false">Expand All</button></div>',
+        'Expand All',
+      ],
+      'accordion collapse all' => [
+        '<div class="accordion__controls"><button class="accordion__toggle-all" aria-expanded="true">Collapse All</button></div>',
+        'Collapse All',
+      ],
+      'media grid thumbnail wrapper' => [
+        '<li class="media-grid__item"><button class="media-grid__image"><img src="/a.jpg" alt=""><span class="visually-hidden">Open this image in a modal</span></button></li>',
+        'Open this image in a modal',
+      ],
+      'media grid caption toggle' => [
+        '<button class="media-grid-modal__toggle-caption"><svg><use xlink:href="/i.svg#circle-plus"></use></svg></button>',
+        'circle-plus',
+      ],
+      'media grid modal pager item' => [
+        '<button class="media-grid-modal__pager-item"><span class="visually-hidden">View item </span>1</button>',
+        'View item',
+      ],
+      'media grid modal previous' => [
+        '<button class="media-grid-modal__control"><span class="visually-hidden">Previous item</span></button>',
+        'Previous item',
+      ],
+      'media grid modal next' => [
+        '<button class="media-grid-modal__control"><span class="visually-hidden">Next item</span></button>',
+        'Next item',
+      ],
+      'media grid modal close' => [
+        '<button class="media-grid-modal__control"><span class="visually-hidden">Close Gallery</span></button>',
+        'Close Gallery',
+      ],
+      'mobile menu toggle' => [
+        '<button class="mobile-menu__toggle" aria-expanded="false">Menu</button>',
+        'Menu',
+      ],
+      'in this section toggle' => [
+        '<button class="in-this-section__toggle" aria-expanded="false">In This Section</button>',
+        'In This Section',
+      ],
+      'modal close' => [
+        '<button class="modal__close"><span class="visually-hidden">Close dialog</span></button>',
+        'Close dialog',
+      ],
+      'text copy' => [
+        '<button class="text-copy__button">Copy to clipboard</button>',
+        'Copy to clipboard',
+      ],
+      'alert dismiss' => [
+        '<button class="alert__dismiss"><span class="visually-hidden">Dismiss alert</span></button>',
+        'Dismiss alert',
+      ],
+    ];
+  }
+
+  /**
+   * Holding text is never on its own enough to make a button content.
+   *
+   * This is the test the classification rule exists to pass. Three of the
+   * buttons here hold real text, and a rule keyed on "the button has text
+   * content" would pull all of it into the index. The signal that separates
+   * the accordion from these is structural: the button is the entire content
+   * of a heading element.
+   */
+  public function testTextContentAloneNeverQualifiesButtonAsContent(): void {
+    $markdown = $this->toMarkdown(
+      '<li class="media-grid__item"><button class="media-grid__image"><span class="visually-hidden">Open this image in a modal</span></button></li>'
+      . '<button class="media-grid-modal__pager-item"><span class="visually-hidden">View item </span>1</button>'
+      . '<div class="accordion__controls"><button class="accordion__toggle-all">Expand All</button></div>'
+      . '<p>Real content.</p>'
+    );
+
+    $this->assertStringContainsString('Real content.', $markdown);
+    $this->assertStringNotContainsString('Open this image in a modal', $markdown);
+    $this->assertStringNotContainsString('View item', $markdown);
+    $this->assertStringNotContainsString('Expand All', $markdown);
+  }
+
+  /**
+   * A button sharing a heading with other text is still furniture.
+   *
+   * The rule is that the button is the *entire* content of the heading. A
+   * heading that also holds its own prose is not a disclosure heading, and
+   * the button in it has no claim to be authored content.
+   */
+  public function testButtonSharingHeadingWithOtherTextIsStillRemoved(): void {
+    $markdown = $this->toMarkdown('<h3>Kept prose <button class="text-copy__button">Copy heading</button></h3>');
+
+    $this->assertStringContainsString('Kept prose', $markdown);
+    $this->assertStringNotContainsString('Copy heading', $markdown);
+  }
+
+  /**
+   * The deep link is a real anchor element, never a literal Markdown string.
+   *
+   * TextConverter escapes `[`, `]`, `*`, `_` and `\` in text nodes, so a
+   * hand-written "[Heading](url)" would be stored as "\[Heading\](url)". Only
+   * an <a> element reaches LinkConverter and comes out as a working link.
+   */
+  public function testDeepLinkIsEmittedAsAnchorElement(): void {
+    $html = $this->filter->filter($this->accordionItem('How do I request a new site?'), self::PAGE_URL);
+
+    $this->assertStringContainsString(
+      '<a href="' . self::PAGE_URL . '#accordion-item-6">How do I request a new site?</a>',
+      $html
+    );
+    $this->assertStringNotContainsString('[How do I request a new site?](', $html);
+  }
+
+  /**
+   * The accordion heading is indexed as an absolute deep link.
+   *
+   * Absolute rather than a bare fragment: a relative "#id" in a chat answer
+   * would resolve against the chat page, not the source page.
+   *
+   * Asserted against the converter ai_search really builds, so that a contrib
+   * bump changing that configuration fails here. Nothing else in this repo
+   * would notice.
+   */
+  public function testAccordionHeadingIsIndexedAsAbsoluteDeepLink(): void {
+    $markdown = $this->toMarkdownForPage($this->accordionItem('How do I request a new site?'));
+
+    $this->assertStringContainsString(
+      '[How do I request a new site?](' . self::PAGE_URL . '#accordion-item-6)',
+      $markdown
+    );
+  }
+
+  /**
+   * The gallery caption heading is indexed as an absolute deep link.
+   *
+   * Same converter configuration and the same reason as the accordion case.
+   */
+  public function testGalleryCaptionHeadingIsIndexedAsAbsoluteDeepLink(): void {
+    $markdown = $this->toMarkdownForPage($this->galleryItem('Sterling Memorial Library'));
+
+    $this->assertStringContainsString(
+      '[Sterling Memorial Library](' . self::PAGE_URL . '#gallery-item-12)',
+      $markdown
+    );
+  }
+
+  /**
+   * Whitespace around the heading text is not carried into the link text.
+   *
+   * Real rendered markup indents the heading's text inside the disclosure
+   * button, so without trimming this every accordion link is emitted as
+   * "[ Heading ](url)". It resolves, but it reads as a typo in a chat answer.
+   */
+  public function testDeepLinkTextIsTrimmed(): void {
+    $markdown = $this->toMarkdownForPage(
+      '<h3 id="accordion-item-6">'
+      . "\n      <button class=\"accordion-item__toggle\">\n        Padded heading\n      </button>\n    "
+      . '</h3>'
+    );
+
+    $this->assertStringContainsString(
+      '[Padded heading](' . self::PAGE_URL . '#accordion-item-6)',
+      $markdown
+    );
+    $this->assertStringNotContainsString('[ Padded heading', $markdown);
+  }
+
+  /**
+   * Gallery caption prose still reaches the index exactly as before.
+   *
+   * Gallery captions were never the broken half; this guards against the
+   * accordion fix regressing them.
+   */
+  public function testGalleryCaptionProseStillReachesTheIndex(): void {
+    $markdown = $this->toMarkdownForPage($this->galleryItem('Sterling Memorial Library'));
+
+    $this->assertStringContainsString('Built in 1931 by James Gamble Rogers.', $markdown);
+  }
+
+  /**
+   * A deep link is never backslash-escaped into inert text.
+   */
+  public function testDeepLinkIsNotBackslashEscaped(): void {
+    $markdown = $this->toMarkdownForPage(
+      $this->accordionItem('How do I request a new site?') . $this->galleryItem('Sterling Memorial Library')
+    );
+
+    $this->assertStringNotContainsString('\\[', $markdown);
+    $this->assertStringNotContainsString('\\]', $markdown);
+  }
+
+  /**
+   * No deep link target is ever a bare fragment.
+   */
+  public function testDeepLinkTargetIsNeverBareFragment(): void {
+    $markdown = $this->toMarkdownForPage(
+      $this->accordionItem('How do I request a new site?') . $this->galleryItem('Sterling Memorial Library')
+    );
+
+    $this->assertStringNotContainsString('](#', $markdown);
+    $this->assertStringContainsString('](https://', $markdown);
+  }
+
+  /**
+   * Markdown punctuation in a heading is escaped inside the link text.
+   *
+   * Pins what correct escaping looks like: the brackets that delimit the link
+   * are structural and stay bare, while the author's own brackets, asterisks
+   * and underscores are escaped so they render literally. A later change that
+   * escaped the delimiters, or stopped escaping the author's punctuation,
+   * would break the link or mangle the text, and this is what catches it.
+   */
+  public function testDeepLinkTextKeepsItsOwnMarkdownPunctuation(): void {
+    $markdown = $this->toMarkdownForPage($this->accordionItem('Costs [2026] and *fees*'));
+
+    $this->assertStringContainsString(
+      '[Costs \\[2026\\] and \\*fees\\*](' . self::PAGE_URL . '#accordion-item-6)',
+      $markdown
+    );
+  }
+
+  /**
+   * The deep link survives strip_placeholder_links.
+   *
+   * That option drops a link whose target is empty, so this holds only while
+   * the href is a non-empty absolute URL. It is the reason the filter emits
+   * nothing at all rather than an empty-href anchor when it has no page URL.
+   */
+  public function testDeepLinkSurvivesStripPlaceholderLinks(): void {
+    $markdown = $this->toMarkdownForPage($this->accordionItem('How do I request a new site?'));
+
+    $this->assertStringContainsString('](' . self::PAGE_URL . '#accordion-item-6)', $markdown);
+  }
+
+  /**
+   * Without a page URL the heading is kept but not linked.
+   *
+   * The filter runs over values that have no entity behind them, and half a
+   * link is worse than none.
+   */
+  public function testHeadingIsNotLinkedWhenNoPageUrlIsGiven(): void {
+    $markdown = $this->toMarkdown($this->accordionItem('How do I request a new site?'));
+
+    $this->assertStringContainsString('### How do I request a new site?', $markdown);
+    $this->assertStringNotContainsString('](', $markdown);
+  }
+
+  /**
+   * A heading with no id is kept but not linked.
+   */
+  public function testHeadingWithoutIdIsNotLinked(): void {
+    $markdown = $this->toMarkdownForPage($this->accordionItem('How do I request a new site?', ''));
+
+    $this->assertStringContainsString('How do I request a new site?', $markdown);
+    $this->assertStringNotContainsString('#accordion-item', $markdown);
+  }
+
+  /**
+   * An id that is not a plain token is kept but never linked.
+   *
+   * The linking rule is deliberately general - any heading with an id - and
+   * basic_html lets an editor put an arbitrary id on an h2-h6 via the anchor
+   * plugin. That value would otherwise flow straight into a Markdown link
+   * destination that ends up rendered in a chat answer, where a stray ')' or
+   * '[' breaks the link syntax and a bidi control character can make the
+   * visible target disagree with the real one. Machine-generated ids
+   * (accordion-item-6, gallery-item-12) are unaffected.
+   *
+   * @param string $id
+   *   An id an editor could author.
+   *
+   * @dataProvider unsafeIdProvider
+   */
+  public function testHeadingWithUnsafeIdIsKeptButNotLinked(string $id): void {
+    $markdown = $this->toMarkdownForPage('<h2 id="' . $id . '">Costs and fees</h2>');
+
+    $this->assertStringContainsString('Costs and fees', $markdown);
+    $this->assertStringNotContainsString('](', $markdown);
+  }
+
+  /**
+   * Ids that must never reach a link destination.
+   *
+   * @return array<string, array{string}>
+   *   One editor-authorable id per case.
+   */
+  public function unsafeIdProvider(): array {
+    return [
+      'closing parenthesis ends the markdown destination' => ['faq)x'],
+      'opening bracket starts a new markdown link' => ['faq[x'],
+      'space breaks the destination' => ['my anchor'],
+      'angle bracket' => ['faq<x'],
+      'right-to-left override can spoof the visible target' => ["faq\u{202E}x"],
+    ];
+  }
+
+  /**
+   * A page with neither component indexes byte for byte as it did before.
+   */
+  public function testContentWithNeitherComponentIsUnaffectedByThePageUrl(): void {
+    $html = '<h2>Admissions</h2><p>Apply by January 2.</p><ul><li>One</li><li>Two</li></ul>'
+      . '<table><tr><th>Term</th><td>Fall</td></tr></table>';
+
+    $this->assertSame(
+      $this->filter->filter($html),
+      $this->filter->filter($html, self::PAGE_URL)
+    );
+  }
+
+  /**
+   * Pagination stays out of the index now that the button rule is relaxed.
+   *
+   * Pager links are anchors inside a nav, and nav is separately removed, so
+   * relaxing the button rule cannot let them back in. Asserted rather than
+   * reasoned about, because the two rules sit next to each other.
+   */
+  public function testPaginationIsStillExcluded(): void {
+    $markdown = $this->toMarkdownForPage(
+      '<p>Real content.</p>'
+      . '<nav role="navigation" aria-label="Pagination"><ul class="pager__items">'
+      . '<li><a href="?page=1">Page 2</a></li><li><a href="?page=2">Page 3</a></li>'
+      . '</ul></nav>'
+    );
+
+    $this->assertStringContainsString('Real content.', $markdown);
+    $this->assertStringNotContainsString('Page 2', $markdown);
+    $this->assertStringNotContainsString('?page=1', $markdown);
   }
 
   /**

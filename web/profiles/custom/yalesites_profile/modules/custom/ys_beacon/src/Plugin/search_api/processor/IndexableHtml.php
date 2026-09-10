@@ -2,9 +2,12 @@
 
 namespace Drupal\ys_beacon\Plugin\search_api\processor;
 
+use Drupal\Core\Entity\ContentEntityInterface;
 use Drupal\Core\StringTranslation\TranslatableMarkup;
 use Drupal\search_api\Attribute\SearchApiProcessor;
+use Drupal\search_api\Item\ItemInterface;
 use Drupal\search_api\Processor\FieldsProcessorPluginBase;
+use Drupal\ys_beacon\Service\EntityCitationResolver;
 use Drupal\ys_beacon\Service\IndexableHtmlFilter;
 use Symfony\Component\DependencyInjection\ContainerInterface;
 
@@ -44,20 +47,90 @@ class IndexableHtml extends FieldsProcessorPluginBase {
   protected IndexableHtmlFilter $indexableHtmlFilter;
 
   /**
+   * The citation URL resolver.
+   *
+   * @var \Drupal\ys_beacon\Service\EntityCitationResolver
+   */
+  protected EntityCitationResolver $citationResolver;
+
+  /**
+   * Absolute URL of the item being processed, or NULL when there is none.
+   *
+   * @var string|null
+   */
+  protected ?string $currentItemUrl = NULL;
+
+  /**
    * {@inheritdoc}
    */
   public static function create(ContainerInterface $container, array $configuration, $plugin_id, $plugin_definition) {
     $processor = parent::create($container, $configuration, $plugin_id, $plugin_definition);
     $processor->indexableHtmlFilter = $container->get('ys_beacon.indexable_html_filter');
+    $processor->citationResolver = $container->get('ys_beacon.entity_citation_resolver');
 
     return $processor;
   }
 
   /**
    * {@inheritdoc}
+   *
+   * Overridden only to make the item's own URL reachable from process(). The
+   * base class walks an item's fields and hands each value down as a bare
+   * string, but the filter needs the page a value was rendered from before it
+   * can turn an anchored heading into a deep link. Delegating one item at a
+   * time is the narrowest way to supply that without reimplementing the walk.
+   */
+  public function preprocessIndexItems(array $items) {
+    foreach ($items as $item) {
+      $this->currentItemUrl = $this->resolveItemUrl($item);
+      try {
+        parent::preprocessIndexItems([$item]);
+      }
+      finally {
+        // Cleared so the same instance cannot carry one item's URL into
+        // another item, or into the search-query path, which shares process().
+        $this->currentItemUrl = NULL;
+      }
+    }
+  }
+
+  /**
+   * Resolves the absolute URL of the page an item was rendered from.
+   *
+   * @param \Drupal\search_api\Item\ItemInterface $item
+   *   The item being indexed.
+   *
+   * @return string|null
+   *   An absolute URL, or NULL when the item has none to offer.
+   */
+  protected function resolveItemUrl(ItemInterface $item): ?string {
+    try {
+      $entity = $item->getOriginalObject()?->getValue();
+    }
+    catch (\Throwable $e) {
+      // Deep links are an enhancement to a chunk that indexes fine without
+      // them, so an item whose original object cannot be loaded is indexed
+      // unlinked rather than failing the batch it arrived in.
+      return NULL;
+    }
+
+    if (!$entity instanceof ContentEntityInterface) {
+      return NULL;
+    }
+
+    $url = $this->citationResolver->url($entity);
+
+    // The filter's contract is an absolute target: a relative one reaching a
+    // chat answer would resolve against the chat page, not the source page.
+    // EntityCitationResolver can return a relative file URL for some media.
+    return $url !== NULL && preg_match('#^https?://#i', $url) === 1 ? $url : NULL;
+  }
+
+  /**
+   * {@inheritdoc}
    */
   protected function process(&$value) {
-    $value = $this->indexableHtmlFilter->filter((string) $value);
+    $value = $this->indexableHtmlFilter->filter((string) $value, $this->currentItemUrl);
   }
 
 }
