@@ -3,7 +3,7 @@
 namespace Drupal\Tests\ys_integrations\Kernel;
 
 use Drupal\Core\Form\FormState;
-use Drupal\KernelTests\KernelTestBase;
+use Drupal\Tests\ys_core\Kernel\YsKernelTestBase;
 use Drupal\ys_integrations\Form\YsIntegrationSettingsForm;
 
 /**
@@ -21,7 +21,7 @@ use Drupal\ys_integrations\Form\YsIntegrationSettingsForm;
  * @group ys_integrations
  * @group yalesites
  */
-class YsIntegrationSettingsFormTest extends KernelTestBase {
+class YsIntegrationSettingsFormTest extends YsKernelTestBase {
 
   /**
    * {@inheritdoc}

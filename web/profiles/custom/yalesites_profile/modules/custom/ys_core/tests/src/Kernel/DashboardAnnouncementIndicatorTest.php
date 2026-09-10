@@ -3,7 +3,6 @@
 namespace Drupal\Tests\ys_core\Kernel;
 
 use Drupal\Core\Form\FormState;
-use Drupal\KernelTests\KernelTestBase;
 use Drupal\user\Entity\User;
 use Drupal\ys_core\Controller\DashboardController;
 use Drupal\ys_core\DashboardAnnouncements;
@@ -25,7 +24,7 @@ use Drupal\ys_core\Form\MarkAnnouncementsReadForm;
  * @group ys_core
  * @group yalesites
  */
-class DashboardAnnouncementIndicatorTest extends KernelTestBase {
+class DashboardAnnouncementIndicatorTest extends YsKernelTestBase {
 
   /**
    * {@inheritdoc}

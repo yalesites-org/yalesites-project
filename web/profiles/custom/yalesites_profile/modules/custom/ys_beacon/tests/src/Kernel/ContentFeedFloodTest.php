@@ -3,7 +3,7 @@
 namespace Drupal\Tests\ys_beacon\Kernel;
 
 use Drupal\Core\Cache\CacheableMetadata;
-use Drupal\KernelTests\KernelTestBase;
+use Drupal\Tests\ys_core\Kernel\YsKernelTestBase;
 use Drupal\ys_beacon\BeaconAuthorization;
 use Drupal\ys_beacon\Controller\ContentFeedController;
 use Drupal\ys_beacon\Service\ContentFeedBuilder;
@@ -21,7 +21,7 @@ use Symfony\Component\HttpFoundation\Request;
  * @group ys_beacon
  * @coversDefaultClass \Drupal\ys_beacon\Controller\ContentFeedController
  */
-class ContentFeedFloodTest extends KernelTestBase {
+class ContentFeedFloodTest extends YsKernelTestBase {
 
   /**
    * {@inheritdoc}
