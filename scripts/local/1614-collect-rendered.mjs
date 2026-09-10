@@ -273,7 +273,7 @@ try {
           timeout: 120000,
         }
       );
-      await page.waitForSelector(".yds-layout[data-component-theme]", {
+      await page.waitForSelector(".yds-layout[data-section-theme]", {
         timeout: 120000,
       });
 
