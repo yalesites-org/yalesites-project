@@ -6,6 +6,7 @@ use Drupal\Core\Controller\TitleResolver;
 use Drupal\Core\Form\FormState;
 use Drupal\Core\Routing\RouteMatchInterface;
 use Drupal\Tests\UnitTestCase;
+use Drupal\node\NodeInterface;
 use Drupal\ys_layouts\Plugin\Block\PageMetaBlock;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\RequestStack;
@@ -64,6 +65,22 @@ class PageMetaBlockTest extends UnitTestCase {
   }
 
   /**
+   * Builds a node mock that reports the given title.
+   *
+   * @param string $title
+   *   The node title.
+   *
+   * @return \Drupal\node\NodeInterface|\PHPUnit\Framework\MockObject\MockObject
+   *   The node mock.
+   */
+  protected function mockNode(string $title) {
+    $node = $this->createMock(NodeInterface::class);
+    $node->method('label')->willReturn($title);
+
+    return $node;
+  }
+
+  /**
    * With no route object, the page title stays empty.
    *
    * @covers ::build
@@ -78,11 +95,11 @@ class PageMetaBlockTest extends UnitTestCase {
   }
 
   /**
-   * The block resolves and renders the current route's title.
+   * Without a node in context, the block falls back to the route title.
    *
    * @covers ::build
    */
-  public function testBuildResolvesTitleFromRoute(): void {
+  public function testBuildFallsBackToRouteTitleWithoutNode(): void {
     $route = new Route('/about');
     $request = new Request();
     $this->routeMatch->method('getRouteObject')->willReturn($route);
@@ -93,6 +110,84 @@ class PageMetaBlockTest extends UnitTestCase {
 
     $this->assertSame('About Us', $build['#page_title']);
     $this->assertSame('visible', $build['#page_title_display']);
+  }
+
+  /**
+   * On the Layout Builder route the node title wins over "Edit layout for ...".
+   *
+   * Search API renders the node in the same request that saves it, so a route
+   * title leaks into the indexed content of the page.
+   *
+   * @covers ::build
+   */
+  public function testBuildIgnoresLayoutBuilderRouteTitle(): void {
+    $route = new Route('/node/{node}/layout');
+    $request = new Request();
+    $this->routeMatch->method('getRouteObject')->willReturn($route);
+    $this->routeMatch->method('getParameter')->willReturnMap([
+      ['node_revision', NULL],
+      ['node', $this->mockNode('My Page')],
+    ]);
+    $this->requestStack->method('getCurrentRequest')->willReturn($request);
+    $this->titleResolver->expects($this->never())->method('getTitle');
+
+    $build = $this->buildBlock()->build();
+
+    $this->assertSame('My Page', $build['#page_title']);
+  }
+
+  /**
+   * A non-node route parameter does not stand in for the entity.
+   *
+   * @covers ::build
+   */
+  public function testBuildFallsBackWhenRouteParameterIsNotNode(): void {
+    $route = new Route('/node/{node}');
+    $request = new Request();
+    $this->routeMatch->method('getRouteObject')->willReturn($route);
+    $this->routeMatch->method('getParameter')->willReturnMap([
+      ['node_revision', NULL],
+      ['node', '12'],
+    ]);
+    $this->requestStack->method('getCurrentRequest')->willReturn($request);
+    $this->titleResolver->method('getTitle')->with($request, $route)->willReturn('Some Route Title');
+
+    $build = $this->buildBlock()->build();
+
+    $this->assertSame('Some Route Title', $build['#page_title']);
+  }
+
+  /**
+   * Without a current request there is no route title to fall back to.
+   *
+   * @covers ::build
+   */
+  public function testBuildReturnsEmptyTitleWithoutRequest(): void {
+    $this->routeMatch->method('getRouteObject')->willReturn(new Route('/about'));
+    $this->requestStack->method('getCurrentRequest')->willReturn(NULL);
+    $this->titleResolver->expects($this->never())->method('getTitle');
+
+    $build = $this->buildBlock()->build();
+
+    $this->assertSame('', $build['#page_title']);
+  }
+
+  /**
+   * A revision route renders the revision, so its title wins.
+   *
+   * @covers ::build
+   */
+  public function testBuildPrefersTheRevisionBeingRendered(): void {
+    $this->routeMatch->method('getRouteObject')->willReturn(new Route('/node/{node}/revisions/{node_revision}/view'));
+    $this->routeMatch->method('getParameter')->willReturnMap([
+      ['node_revision', $this->mockNode('My Page, as it was')],
+      ['node', $this->mockNode('My Page')],
+    ]);
+    $this->titleResolver->expects($this->never())->method('getTitle');
+
+    $build = $this->buildBlock()->build();
+
+    $this->assertSame('My Page, as it was', $build['#page_title']);
   }
 
   /**

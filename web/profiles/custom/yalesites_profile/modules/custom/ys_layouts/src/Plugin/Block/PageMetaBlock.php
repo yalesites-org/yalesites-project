@@ -7,6 +7,7 @@ use Drupal\Core\Controller\TitleResolver;
 use Drupal\Core\Form\FormStateInterface;
 use Drupal\Core\Plugin\ContainerFactoryPluginInterface;
 use Drupal\Core\Routing\RouteMatchInterface;
+use Drupal\node\NodeInterface;
 use Symfony\Component\DependencyInjection\ContainerInterface;
 use Symfony\Component\HttpFoundation\RequestStack;
 
@@ -84,20 +85,55 @@ class PageMetaBlock extends BlockBase implements ContainerFactoryPluginInterface
    */
   public function build() {
 
-    $route = $this->routeMatch->getRouteObject();
-    $request = $this->requestStack->getCurrentRequest();
-    $page_title = '';
-
-    // Get the page title.
-    if ($route) {
-      $page_title = $this->titleResolver->getTitle($request, $route);
-    }
+    $page_title = $this->getPageTitle();
 
     return [
       '#theme' => 'ys_page_meta_block',
       '#page_title' => $page_title,
       '#page_title_display' => $this->configuration['page_title_display'] ?? '',
     ];
+  }
+
+  /**
+   * Gets the title to display for the page being rendered.
+   *
+   * The node is preferred over the route title because a node is rendered on
+   * routes other than its canonical one, where the two disagree. Search API
+   * renders the node in the request that saves it, so whatever this returns
+   * is indexed as part of the page's content: on /node/{node}/layout the
+   * route title is "Edit layout for <label>", and on a revision route it is
+   * "Revision of <label> from <date>".
+   *
+   * A revision route renders the revision rather than the default node, so
+   * that parameter is preferred where the route carries one.
+   *
+   * Known limitation: a node saved on a route that carries no node at all --
+   * /node/add/{type} for a new page, or a bulk operation from
+   * /admin/content -- still falls through to the route title. Closing that
+   * needs the block to know which entity it is rendering inside rather than
+   * which one the route names; see the issue for why that is a much larger
+   * change.
+   *
+   * @return array|string|\Stringable|null
+   *   The page title, or an empty string when neither source resolves one.
+   */
+  protected function getPageTitle() {
+    foreach (['node_revision', 'node'] as $parameter) {
+      $node = $this->routeMatch->getParameter($parameter);
+      if ($node instanceof NodeInterface) {
+        return $node->label();
+      }
+    }
+
+    // Fall back to the route title where there is no node in context, so the
+    // block keeps working on non-node pages.
+    $route = $this->routeMatch->getRouteObject();
+    $request = $this->requestStack->getCurrentRequest();
+    if ($route && $request) {
+      return $this->titleResolver->getTitle($request, $route);
+    }
+
+    return '';
   }
 
   /**
