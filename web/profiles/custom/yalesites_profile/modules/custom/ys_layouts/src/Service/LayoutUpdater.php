@@ -33,6 +33,13 @@ class LayoutUpdater {
   use StringTranslationTrait;
 
   /**
+   * The layout id of the Two column (70/30) section.
+   *
+   * Matches ys_layouts.layouts.yml.
+   */
+  const SEVENTY_THIRTY_LAYOUT_ID = 'ys_layout_two_column';
+
+  /**
    * The config factory service.
    *
    * @var \Drupal\Core\Config\ConfigFactoryInterface
@@ -232,6 +239,183 @@ class LayoutUpdater {
     foreach ($this->getContentTypes() as $bundle) {
       $this->updateLocks($bundle->id());
     }
+  }
+
+  /**
+   * Opts every existing Two column (70/30) section into its divider.
+   *
+   * The 70/30 separator used to be drawn unconditionally in the component
+   * library, so the Divider checkbox did nothing on that layout while 50/50
+   * and 33/33/33 respected it. Now that the separator is gated on the toggle
+   * (yalesites-project#1514), a stored `divider` of 0 -- which is what every
+   * 70/30 section on the platform has, since the control was inert -- would
+   * silently remove a line the section renders today.
+   *
+   * Turning it on preserves current rendering, and from here on the toggle
+   * behaves like it does on the other multi-column layouts: off by default on
+   * a new section, per YSLayoutOptions::defaultConfiguration().
+   *
+   * Only sections already carrying a truthy `divider` are skipped, so this is
+   * idempotent and re-running it saves nothing. Sections whose layout has
+   * never been overridden are not stored on the node at all -- those come
+   * from the content type's default display in config, which carries its own
+   * `divider` value.
+   *
+   * **The pending draft is migrated as well as the published revision.** The
+   * content types that offer this layout are under content moderation, so a
+   * node can have a published default revision plus an unpublished draft
+   * holding its own copy of the sections. Migrating only the default revision
+   * would look correct until the editor published that draft, at which point
+   * the separator would vanish -- the exact regression this exists to prevent.
+   * Only the default and the latest revision are touched: publishing promotes
+   * the latest one, and older revisions are history that nothing renders, so
+   * rewriting them would multiply the deploy's writes for no visible effect.
+   * A non-default revision is written in place, leaving the
+   * default-revision pointer and the moderation state alone.
+   *
+   * One window this does NOT cover: a layout an editor has open in Layout
+   * Builder but has not saved lives in the shared tempstore (see
+   * getTempStoreNids() / getTempStoreNodes()) with the old value, and saving
+   * it after the deploy writes that stale copy back. Deliberately left alone
+   * -- rewriting someone's unsaved work mid-edit is more surprising than the
+   * narrow risk, and re-ticking the box fixes it.
+   *
+   * @return int
+   *   The number of revisions saved.
+   */
+  public function enableSeventyThirtyDividers(): int {
+    $updated = 0;
+    /** @var \Drupal\node\NodeStorageInterface $nodeStorage */
+    $nodeStorage = $this->entityTypeManager->getStorage('node');
+
+    foreach ($this->getSeventyThirtyNodeIds() as $nid) {
+      $node = $nodeStorage->load($nid);
+      if (!$node instanceof NodeInterface) {
+        continue;
+      }
+
+      // The published revision, plus the pending draft when there is one.
+      $vids = [(int) $node->getRevisionId()];
+      $latest = (int) $nodeStorage->getLatestRevisionId($nid);
+      if ($latest && !in_array($latest, $vids, TRUE)) {
+        $vids[] = $latest;
+      }
+
+      foreach ($vids as $vid) {
+        $revision = $vid === (int) $node->getRevisionId()
+          ? $node
+          : $nodeStorage->loadRevision($vid);
+        if ($revision instanceof NodeInterface && $this->addDividerToSections($revision)) {
+          $updated++;
+        }
+      }
+
+      // This runs over every candidate node in one deploy request, so let the
+      // entity static cache go rather than accumulating loaded nodes -- the
+      // scale risk the class docblock's Batch API @todo is about.
+      $nodeStorage->resetCache([$nid]);
+    }
+
+    return $updated;
+  }
+
+  /**
+   * Opts one revision's 70/30 sections into the divider and saves it.
+   *
+   * @param \Drupal\node\NodeInterface $revision
+   *   The node revision to update.
+   *
+   * @return bool
+   *   TRUE when the revision needed the change and was saved.
+   */
+  protected function addDividerToSections(NodeInterface $revision): bool {
+    /** @var \Drupal\layout_builder\Field\LayoutSectionItemList $layout */
+    $layout = $revision->get('layout_builder__layout');
+    $changed = FALSE;
+
+    foreach ($layout->getSections() as $section) {
+      if ($section->getLayoutId() !== self::SEVENTY_THIRTY_LAYOUT_ID) {
+        continue;
+      }
+      $settings = $section->getLayoutSettings();
+      // Already opted in, so re-running this is a no-op.
+      if (!empty($settings['divider'])) {
+        continue;
+      }
+      $settings['divider'] = 1;
+      $section->setLayoutSettings($settings);
+      $changed = TRUE;
+    }
+
+    if (!$changed) {
+      return FALSE;
+    }
+
+    try {
+      // Update this revision in place: without setNewRevision(FALSE) the save
+      // spawns a revision, and the loaded revision already carries its own
+      // default-revision flag, so a draft stays a draft. setSyncing() keeps
+      // content_moderation from reading this as an editor's state change.
+      $revision->setNewRevision(FALSE);
+      $revision->setSyncing(TRUE);
+      $revision->save();
+
+      return TRUE;
+    }
+    catch (EntityStorageException $e) {
+      $this->logger->error(
+        'Error enabling the 70/30 divider on node revision @vid: @message',
+        ['@vid' => $revision->getRevisionId(), '@message' => $e->getMessage()]
+      );
+
+      return FALSE;
+    }
+  }
+
+  /**
+   * Gets the IDs of nodes whose stored layout holds a 70/30 section.
+   *
+   * A cheap pre-filter so enableSeventyThirtyDividers() does not load every
+   * node on the site to discover that most of them have nothing to change.
+   * Queries the layout field's own storage the way getTempStoreNids() queries
+   * the tempstore table, rather than through the entity API, because the
+   * layout section is a serialized blob that an entity query cannot filter on.
+   *
+   * Reads the REVISION table rather than the default-revision one, so a node
+   * whose 70/30 section exists only in an unpublished draft is still a
+   * candidate.
+   *
+   * The LIKE is a deliberate superset: it matches the layout id anywhere in
+   * the serialized sections, so `ys_layout_two_column_50_50` matches as well
+   * and the caller still checks each section's real layout id. A false
+   * positive costs one wasted load; a false negative would silently skip
+   * content, which this cannot produce.
+   *
+   * @return int[]
+   *   Node IDs, or an empty array when no node has an overridden layout.
+   */
+  protected function getSeventyThirtyNodeIds(): array {
+    $table = 'node_revision__layout_builder__layout';
+
+    // Absent until at least one node's layout is overridden.
+    if (!$this->database->schema()->tableExists($table)) {
+      return [];
+    }
+
+    $ids = $this->database->select($table, 'l')
+      ->distinct()
+      ->fields('l', ['entity_id'])
+      ->condition(
+        'l.layout_builder__layout_section',
+        '%' . $this->database->escapeLike(self::SEVENTY_THIRTY_LAYOUT_ID) . '%',
+        'LIKE'
+      )
+      ->execute()
+      ->fetchCol();
+
+    // fetchCol() returns strings; cast so the documented type is the real one,
+    // matching getTempStoreNids().
+    return array_map('intval', $ids);
   }
 
   /**

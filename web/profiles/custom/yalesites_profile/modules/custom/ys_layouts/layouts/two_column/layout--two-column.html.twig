@@ -1,7 +1,7 @@
 {#
 /**
  * @file
- * Default theme implementation to display a one-column layout.
+ * Default theme implementation to display a two-column (70/30) layout.
  *
  * Available variables:
  * - in_preview: Whether the plugin is being rendered in preview mode.
@@ -11,24 +11,28 @@
  * @ingroup themeable
  */
 #}
-
-{% set layout__base_class = layout__base_class|default('yds-two-column') %}
-
-{% set classes = ['layout', 'yds-two-column'] %}
-
 {% if content %}
-	<div{{ attributes.addClass(classes).setAttribute('data-component-padding', settings['padding']|default('default')).setAttribute('data-component-width', layout__width|default('site')).setAttribute('data-embedded-components', 'true') }}>
-		<div {{ bem('inner', [], layout__base_class)}}>
-			{% if content.content %}
-				<div {{ region_attributes.content.addClass('yds-two-column__primary') }}>
-					{{ content.content }}
-				</div>
-			{% endif %}
-			{% if content.sidebar %}
-				<div {{ region_attributes.sidebar.addClass('yds-two-column__secondary') }}>
-					{{ content.sidebar }}
-				</div>
-			{% endif %}
-		</div>
-	</div>
+  {% if in_preview %}
+    <div {{ attributes}}>
+  {% endif %}
+  {% embed "@organisms/layout/layout/yds-layout.twig" with {
+    component__layout: 'seventy-thirty',
+    layout__padding: settings.padding|default('default'),
+    layout__divider: settings.divider ? 'true' : 'false',
+    component__theme: settings.theme|default('default'),
+  } %}
+    {% block layout__primary %}
+      <div {{ region_attributes.content }}>
+        {{ content.content }}
+      </div>
+    {% endblock %}
+    {% block layout__secondary %}
+      <div {{ region_attributes.sidebar }}>
+        {{ content.sidebar }}
+      </div>
+    {% endblock %}
+  {% endembed %}
+  {% if in_preview %}
+    </div>
+  {% endif %}
 {% endif %}

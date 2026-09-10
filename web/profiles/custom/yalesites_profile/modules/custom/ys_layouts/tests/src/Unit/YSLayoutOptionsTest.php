@@ -46,12 +46,21 @@ class YSLayoutOptionsTest extends UnitTestCase {
   }
 
   /**
-   * The default configuration adds an empty divider setting.
+   * The default configuration adds an integer divider setting.
+   *
+   * The type matters, not just the falsiness: the module's config schema
+   * declares 'divider' as an integer for every layout this class backs, and a
+   * section can be written straight from defaultConfiguration() without ever
+   * passing through the form (a config entity's default section, e.g.
+   * core.entity_view_display.node.profile.default.yml, which ships a
+   * ys_layout_two_column section). A string default there fails strict schema
+   * checking with "variable type is string but applied schema class is
+   * IntegerData" -- trading a missing-schema error for a wrong-type one.
    *
    * @covers ::defaultConfiguration
    */
   public function testDefaultConfigurationAddsDivider(): void {
-    $this->assertSame('', $this->layout->defaultConfiguration()['divider']);
+    $this->assertSame(0, $this->layout->defaultConfiguration()['divider']);
   }
 
   /**
@@ -70,12 +79,12 @@ class YSLayoutOptionsTest extends UnitTestCase {
     $this->assertSame('select', $form['theme']['#type']);
     $this->assertSame('two', $form['theme']['#default_value']);
 
-    // Sections offer five colors plus "Default - no color", where block
-    // components offer six colors. This is deliberate (see #1506), so pin the
-    // list an editor actually sees rather than letting a sixth option appear
-    // silently.
+    // Sections offer six colors plus "Default - no color", matching every
+    // block component picker (#1518). Pin the list an editor actually sees --
+    // see ColorTokenResolver::getColorStylesForEntity() for everywhere else
+    // this list must stay in sync.
     $this->assertSame(
-      ['default', 'one', 'two', 'three', 'four', 'five'],
+      ['default', 'one', 'two', 'three', 'four', 'five', 'six'],
       array_keys($form['theme']['#options']),
     );
   }
