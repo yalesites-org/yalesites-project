@@ -398,6 +398,11 @@ class ColorTokenResolver {
     // this resolver only drives the admin swatches), that library's
     // layout-props.yml and theme-constants.js (Storybook/visreg coverage),
     // and the option-count callout in docs/color-theme.md.
+    //
+    // The rendered markup keeps section and block apart the same way this
+    // method does: a section emits `data-section-theme`, a block emits
+    // `data-component-theme`. See docs/color-theme.md, "Two colour dials, two
+    // attributes" (YaleSites-Internal#1630).
     if ($entity_type === 'layout_section' && $bundle === 'ys_layout_options') {
       return $this->buildColorStyles([
         'one' => 'one',

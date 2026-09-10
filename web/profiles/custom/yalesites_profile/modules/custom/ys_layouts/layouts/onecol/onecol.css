@@ -39,21 +39,21 @@
  * _yds-layout.scss's .yds-layout__inner behavior for the two/three-column
  * layouts.
  */
-.layout--onecol.yds-layout:not([data-component-theme="default"]) {
+.layout--onecol.yds-layout:not([data-section-theme="default"]) {
   --main-content-bottom-margin: var(--size-spacing-10);
 
   padding-block-start: var(--size-spacing-10);
   padding-block-end: var(--size-spacing-10);
 }
 
-.layout--onecol.yds-layout:not([data-component-theme="default"])[data-component-padding="no-top"],
-.layout--onecol.yds-layout:not([data-component-theme="default"])[data-component-padding="no-padding"] {
+.layout--onecol.yds-layout:not([data-section-theme="default"])[data-component-padding="no-top"],
+.layout--onecol.yds-layout:not([data-section-theme="default"])[data-component-padding="no-padding"] {
   margin-top: 0;
   padding-block-start: 0;
 }
 
-.layout--onecol.yds-layout:not([data-component-theme="default"])[data-component-padding="no-bottom"],
-.layout--onecol.yds-layout:not([data-component-theme="default"])[data-component-padding="no-padding"] {
+.layout--onecol.yds-layout:not([data-section-theme="default"])[data-component-padding="no-bottom"],
+.layout--onecol.yds-layout:not([data-section-theme="default"])[data-component-padding="no-padding"] {
   margin-bottom: 0;
   padding-block-end: 0;
 }

@@ -48,7 +48,7 @@ $sectionThemes = ['default', 'one', 'two', 'three', 'four', 'five', 'six'];
  * Transcribed from ys_themes.component_overrides.yml. Accordion is the only
  * one of the three whose picker offers "Default - No Color", and that value is
  * load-bearing: `_yds-accordion.scss` gates its whole themed treatment on
- * `:not([data-component-theme='default'])`, so the default and the dialled
+ * `:not([data-section-theme='default'])`, so the default and the dialled
  * accordion are two different components as far as contrast is concerned.
  */
 $blockTypes = [

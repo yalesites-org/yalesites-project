@@ -178,9 +178,9 @@
   const rows = [];
 
   for (const section of document.querySelectorAll(
-    ".yds-layout[data-component-theme]"
+    ".yds-layout[data-section-theme]"
   )) {
-    const sectionTheme = section.getAttribute("data-component-theme");
+    const sectionTheme = section.getAttribute("data-section-theme");
 
     for (const [component, spec] of Object.entries(COMPONENTS)) {
       const root = section.querySelector(spec.root);

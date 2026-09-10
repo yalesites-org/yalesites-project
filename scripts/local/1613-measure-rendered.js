@@ -10,7 +10,7 @@
  * Evaluated in the page by playwright-cli; returns JSON on stdout.
  */
 (() => {
-  const sections = [...document.querySelectorAll('.yds-layout[data-component-theme]')];
+  const sections = [...document.querySelectorAll('.yds-layout[data-section-theme]')];
 
   // A transparent background means "whatever is painted behind me"; walk up
   // until something actually paints, or we reach the document.
@@ -31,7 +31,7 @@
     const sidebar = section.querySelector('.yds-layout__secondary');
 
     return {
-      sectionTheme: section.getAttribute('data-component-theme'),
+      sectionTheme: section.getAttribute('data-section-theme'),
       layout: section.getAttribute('data-component-layout') || 'onecol',
       background: paintedBackground(section),
       heading: heading ? getComputedStyle(heading).color : null,

@@ -254,7 +254,7 @@ try {
           timeout: 120000,
         }
       );
-      await page.waitForSelector(".yds-layout[data-component-theme]", {
+      await page.waitForSelector(".yds-layout[data-section-theme]", {
         timeout: 120000,
       });
 
@@ -276,7 +276,7 @@ try {
         ([root, dial, sectionTheme]) =>
           [
             ...document.querySelectorAll(
-              `.yds-layout[data-component-theme='${sectionTheme}']`
+              `.yds-layout[data-section-theme='${sectionTheme}']`
             ),
           ].find((section) =>
             section.querySelector(`${root}[data-component-theme='${dial}']`)
@@ -307,7 +307,7 @@ try {
                 await cdp.send("DOM.getDocument", { depth: -1 })
               ).root.nodeId,
               selector:
-                `.yds-layout[data-component-theme='${cell.sectionTheme}']` +
+                `.yds-layout[data-section-theme='${cell.sectionTheme}']` +
                 `:has(${COMPONENT_ROOTS[cell.component]}` +
                 `[data-component-theme='${cell.dial}']) a`,
             })
