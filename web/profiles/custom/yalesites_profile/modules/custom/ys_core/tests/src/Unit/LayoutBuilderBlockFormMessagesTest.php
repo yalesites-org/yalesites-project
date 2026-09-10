@@ -1,8 +1,9 @@
 <?php
 
-namespace Drupal\Tests\ys_core\Kernel;
+namespace Drupal\Tests\ys_core\Unit;
 
 use Drupal\Core\Form\FormState;
+use Drupal\Tests\UnitTestCase;
 
 /**
  * Tests that Layout Builder block forms render their own validation messages.
@@ -24,18 +25,27 @@ use Drupal\Core\Form\FormState;
  * Placing a status_messages element in the form itself makes the message render
  * wherever the form is rendered, in the dialog or as a standalone page.
  *
+ * This is a Unit test rather than a kernel test because every branch
+ * ys_core_form_alter() takes for these inputs is plain array manipulation:
+ * ys_core_get_block_type() reads the plugin id out of the build info and
+ * only reaches the entity type manager for a 36-character UUID block type,
+ * and _ys_core_disable_event_fields() and _ys_core_attach_icon_preview()
+ * are no-ops for these form ids. Enabling ys_core bought nothing but
+ * loading the file the function lives in, which setUp() now does directly.
+ *
  * @group ys_core
+ * @group yalesites
  */
-class LayoutBuilderBlockFormMessagesTest extends YsKernelTestBase {
+class LayoutBuilderBlockFormMessagesTest extends UnitTestCase {
 
   /**
    * {@inheritdoc}
    */
-  protected static $modules = [
-    'system',
-    'user',
-    'ys_core',
-  ];
+  protected function setUp(): void {
+    parent::setUp();
+    // The function under test is procedural, so the file has to be loaded.
+    require_once dirname(__DIR__, 3) . '/ys_core.module';
+  }
 
   /**
    * Builds a Layout Builder block form array and its form state.
@@ -123,7 +133,9 @@ class LayoutBuilderBlockFormMessagesTest extends YsKernelTestBase {
 
     ys_core_form_alter($form, $form_state, 'user_login_form');
 
-    $this->assertArrayNotHasKey('ys_core_status_messages', $form);
+    // The key the alter writes is status_messages; asserting a name that
+    // never existed passed no matter what the alter did.
+    $this->assertArrayNotHasKey('status_messages', $form);
   }
 
 }
