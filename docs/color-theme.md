@@ -350,6 +350,106 @@ marker — name both attributes explicitly (`:is([data-component-theme='one'],
 [data-section-theme='one'])`). Specificity is unchanged, because `:is()` takes the weight of its
 heaviest argument and both are single attribute selectors.
 
+### The surface contract
+
+The two dials above answer "what colour is this thing". They do not answer the question that
+actually breaks pages: **when a block sits inside a section, whose foreground do the things
+inside the block use?**
+
+Before YaleSites-Internal#1631 the answer was "whichever one happens to be nearest in the
+inheritance chain", and that is frequently the wrong one. A section publishes a foreground for
+the background *it* painted. A block nested inside then paints its own background and says
+nothing — so everything inside the block goes on reading the *section's* foreground, against the
+background the *block* just painted. Neither palette is wrong on its own; the pairing that
+reaches the screen is one nobody chose. Measured across every (global theme x section theme x
+block theme) combination, 105 of 210 landed below 4.5:1.
+
+The rule that closes it is one sentence:
+
+> **If a component paints a background, it must publish the contract.**
+
+"The contract" is three custom properties, published on the same element that paints:
+
+| Property | Means |
+|---|---|
+| `--color-section-background` | what this surface painted |
+| `--color-section-foreground` | the approved foreground for that background |
+| `--color-section-accent` | the control/accent colour on this surface |
+
+Because a directly-matching declaration always beats an inherited one, re-declaring these at each
+boundary genuinely stops the leak: a descendant resolves them from the nearest surface rather than
+from one two containers away.
+
+#### Publishing it
+
+Use the shared mixin — do not hand-write the three declarations:
+
+```scss
+@each $theme, $value in $component-themes {
+  &[data-component-theme='#{$theme}'] {
+    --color-thing-background: var(--component-themes-#{$theme}-background);
+
+    @include tokens.publish-surface(
+      var(--color-thing-background),   // what this block paints
+      var(--color-text),               // the foreground that goes with it
+      var(--color-action)              // optional: the accent for controls
+    );
+  }
+}
+```
+
+Two things about *where* it goes are load-bearing:
+
+- **Include it from each block that actually paints**, not once under a blanket
+  `[data-component-theme]`. A theme value with no block of its own would leave the source
+  property unset, which makes the declarations invalid at computed-value time and *strips* the
+  contract from everything inside — worse than never publishing it, because the enclosing
+  surface's values stop being inherited too. Unthemed or unknown, doing nothing is the safe
+  outcome. In practice that means the dial loop **and** any hand-written theme block the loop does
+  not reach (theme `six` is not a `component-themes` key).
+- **Omit the accent argument** when the component has no control of its own, so the enclosing
+  surface's accent keeps being inherited rather than being reset to something arbitrary.
+
+#### Consuming it
+
+A component that paints *no* background of its own but needs a colour the enclosing surface should
+be able to set reads the contract with its previous colour as the fallback:
+
+```scss
+color: var(--color-section-foreground, var(--color-basic-brown-gray));
+```
+
+The fallback is what makes the change safe: where nothing publishes a contract, the component
+renders exactly as it did before, so unthemed rendering is unchanged by construction. Reading
+`var(--color-text)` is still correct for ordinary body copy — the block dial already re-points it
+per surface. Reach for the contract when the value would otherwise be a **fixed** colour that
+cannot follow the theme (that is also what the foreground-purity ratchet flags), or when it is a
+role a surface should be able to override.
+
+Register any new consumer in `SECTION_SURFACE_CONSUMERS` in
+`components/00-tokens/colors/section-background-contrast.test.mjs`.
+
+#### The guardrail
+
+`components/00-tokens/colors/surface-contract.mjs` scans every component stylesheet for a
+background painted at a themed scope and fails the build if it does not publish the contract.
+Surfaces still to convert are listed in `surface-contract-baseline.json`, each with a reason and
+an owning ticket; like the other baselines in that directory it is a ratchet that may only shrink,
+and adding an entry to turn a red build green is not a fix. Print the current state with:
+
+```sh
+node components/00-tokens/colors/surface-contract.mjs
+```
+
+#### A note on the name
+
+`--color-section-*` is deliberately not renamed to `--surface-*`. "Section" here means *any*
+surface that paints itself; the outermost one just happens to be a Layout Builder section. The
+name was already established by YaleSites-Internal#1613 and #1628 across dozens of consumers,
+several test files and a stylelint rule, so introducing a second vocabulary for the same idea
+would add a dialect rather than remove one.
+
+---
 ### Working with themes in CSS
 In each component that uses component themes and global themes, each theme should be iterated over so that each component can override its default values set in tokens. Rather, each component can get a new color-slot mapping from each global-theme. 
 
@@ -454,6 +554,8 @@ Next, we assign component theme attributes to specific global-theme color-slot v
     --color-heading: var(--color-basic-white);
   }
 ```
+
+If the component paints a background, this is also where it publishes the surface contract — see [The surface contract](#the-surface-contract) above; the build fails if it does not.
 
 Because every component theme assigns global theme color slots differently, some level of manual assignment is necessary. CSS variables should be created for any new component as name-spaced variables based on the component name. `--color-action` and `--color-action-secondary` come from the `component-library-twig/components/01-atoms/controls/cta/_yds-cta.scss` file. We re-assign them here.
 
