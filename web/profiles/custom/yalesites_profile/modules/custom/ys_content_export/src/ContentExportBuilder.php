@@ -58,7 +58,7 @@ class ContentExportBuilder {
    *
    * @return array
    *   Ordered map of column key (a node field name, or one of the pseudo keys
-   *   title/url/published/cas_protected) to its header label.
+   *   title/uuid/url/published/cas_protected) to its header label.
    */
   public static function getColumns(string $bundle): array {
     // The date column sits immediately after Title so the file reads in roughly
@@ -70,8 +70,16 @@ class ContentExportBuilder {
       'published' => 'Published',
       'cas_protected' => 'CAS Protected',
     ];
+    $columns += [
+      'field_teaser_title' => 'Teaser Title',
+      'field_teaser_text' => 'Teaser Text',
+    ];
     $columns += self::SHARED_TAXONOMY;
     $columns += self::BUNDLE_TAXONOMY[$bundle] ?? [];
+    // The UUID is what lets an edited export be imported back onto the same
+    // nodes instead of creating duplicates. It sits last, and is labelled, so
+    // that someone editing the file in a spreadsheet leaves it alone.
+    $columns += ['uuid' => 'UUID (do not edit)'];
     return $columns;
   }
 
@@ -106,6 +114,9 @@ class ContentExportBuilder {
       case 'title':
         return (string) $node->label();
 
+      case 'uuid':
+        return (string) $node->uuid();
+
       case 'url':
         return $node->toUrl()->toString();
 
@@ -115,6 +126,10 @@ class ContentExportBuilder {
       case 'cas_protected':
         return $node->hasField('field_login_required') && $node->get('field_login_required')->value
           ? 'Yes' : 'No';
+
+      case 'field_teaser_title':
+      case 'field_teaser_text':
+        return $node->hasField($key) ? (string) $node->get($key)->value : '';
 
       case 'field_event_date':
         return self::eventDates($node, $date_formatter);

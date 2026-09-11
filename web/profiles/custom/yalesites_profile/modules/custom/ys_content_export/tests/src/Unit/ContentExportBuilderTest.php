@@ -67,10 +67,13 @@ class ContentExportBuilderTest extends UnitTestCase {
         'url',
         'published',
         'cas_protected',
+        'field_teaser_title',
+        'field_teaser_text',
         'field_tags',
         'field_audience',
         'field_custom_vocab',
         'field_category',
+        'uuid',
       ],
       array_keys($page)
     );
@@ -78,6 +81,8 @@ class ContentExportBuilderTest extends UnitTestCase {
     $this->assertSame('URL', $page['url']);
     $this->assertSame('Published', $page['published']);
     $this->assertSame('CAS Protected', $page['cas_protected']);
+    $this->assertSame('UUID (do not edit)', $page['uuid']);
+    $this->assertSame('Teaser Text', $page['field_teaser_text']);
     $this->assertSame('Category', $page['field_category']);
 
     $this->assertSame('Event Category', ContentExportBuilder::getColumns('event')['field_category']);
