@@ -127,14 +127,19 @@ class MyServiceTest extends UnitTestCase {
 
 ### Kernel Tests
 
-If you need database access, create Kernel tests in `tests/src/Kernel/`:
+If you need database access, create Kernel tests in `tests/src/Kernel/`.
+
+Extend `YsKernelTestBase`, not `KernelTestBase` directly: it turns off PHPUnit
+process isolation and global-state backups, which is what keeps the kernel
+suite's runtime usable. See that class's docblock for the measurements and why
+the three properties have to move together.
 
 ```php
 <?php
 
 namespace Drupal\Tests\ys_ai_system_instructions\Kernel;
 
-use Drupal\KernelTests\KernelTestBase;
+use Drupal\Tests\ys_core\Kernel\YsKernelTestBase;
 
 /**
  * Kernel tests for MyService.
@@ -143,7 +148,7 @@ use Drupal\KernelTests\KernelTestBase;
  * @group ys_ai
  * @group yalesites
  */
-class MyServiceKernelTest extends KernelTestBase {
+class MyServiceKernelTest extends YsKernelTestBase {
 
   protected static $modules = ['ys_ai_system_instructions'];
 

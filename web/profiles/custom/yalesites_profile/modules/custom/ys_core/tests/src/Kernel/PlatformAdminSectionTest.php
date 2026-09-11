@@ -4,7 +4,6 @@ namespace Drupal\Tests\ys_core\Kernel;
 
 use Drupal\Core\Serialization\Yaml;
 use Drupal\Core\Session\AccountInterface;
-use Drupal\KernelTests\KernelTestBase;
 use Drupal\Tests\user\Traits\UserCreationTrait;
 
 /**
@@ -13,7 +12,7 @@ use Drupal\Tests\user\Traits\UserCreationTrait;
  * @group ys_core
  * @group yalesites
  */
-class PlatformAdminSectionTest extends KernelTestBase {
+class PlatformAdminSectionTest extends YsKernelTestBase {
 
   use UserCreationTrait;
 
