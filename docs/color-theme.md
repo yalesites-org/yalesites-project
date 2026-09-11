@@ -415,6 +415,54 @@ Two things about *where* it goes are load-bearing:
   measured, that puts 105 of 210 theme combinations below AA, worst case 1.03:1 — an invisible
   button label. Pass an explicit accent only when the component has a control colour of its own.
 
+#### Publishing a fixed surface
+
+Most surfaces paint a colour that moves with the dial, so the foreground they publish moves with
+it too. A surface can also paint a **fixed** colour — and then the foreground it publishes has to
+be fixed as well, because there is nothing for it to track. The meta chip/tag lists
+(`.event-meta__event-types__type`, `.event-meta__event-topics__topic`,
+`.publication-detail__taxonomy-list__item`) are the worked example: each paints a flat
+`--color-gray-100` chip at no themed scope at all.
+
+```scss
+.event-meta__event-types__type {
+  background-color: var(--color-gray-100);
+
+  @include tokens.publish-surface(
+    var(--color-gray-100),
+    var(--color-gray-700)
+  );
+
+  // A surface that paints its own background must also take back any link
+  // role the enclosing section re-pointed for ITS background.
+  --color-link-visited-base: var(--color-section-foreground);
+  --color-link-visited-hover: var(--color-section-foreground);
+}
+```
+
+Three things are easy to get wrong here:
+
+- **Pick a foreground the surface already renders, not the most contrasty one.** These chips
+  published `--color-gray-700` because `hsl(0, 0%, 29%)` is exactly what their anchors already
+  resolved to on every light theme, so light and unthemed pages render byte-identically and only
+  the failing combinations move. `--color-gray-800` would have measured better (15.03:1 against
+  8.27:1) and silently restyled every chip on every unthemed page in the platform.
+- **Publishing the contract is not enough on its own for link states.** `a:visited` and `a:hover`
+  come from `plain-link` as pseudo-class rules on the anchor, and those outrank a plain `color:`
+  on the same anchor. A dark themed section re-points `--color-link-visited-base` to the
+  near-white `--color-link-visited-light` for copy drawn on the *section* — inherited onto a chip
+  that stayed near-white, that measured 1.32:1. Re-point the affected role **on the surface**, so
+  the anchor's own pseudo-class rule resolves it from there. (`--color-link-hover` needs no such
+  treatment today only because `plain-link` self-declares it on the anchor itself; if that
+  self-declaration is ever removed, hover needs the same handling.)
+- **The guardrail cannot see this shape, so pin it in a test.** `surface-contract.mjs` detects a
+  background painted at a `[data-component-theme]` scope; a fixed background painted at no themed
+  scope is its documented blind spot, because catching it generally would mean flagging every
+  piece of flat chrome in the library. A fixed surface therefore does **not** appear in
+  `npm run contrast:surfaces`'s `converted` count — register it in `META_CHIP_SURFACES` in
+  `components/00-tokens/colors/section-background-contrast.test.mjs` instead, which asserts the
+  wiring per chip and holds the measured ratios.
+
 #### Consuming it
 
 A component that paints *no* background of its own but needs a colour the enclosing surface should
