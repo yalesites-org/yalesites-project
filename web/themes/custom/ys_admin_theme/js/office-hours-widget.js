@@ -2,16 +2,30 @@
  * @file
  * Editor affordances for the contrib Office Hours widget.
  *
- * The contrib widget stores exactly two states per weekday: a day with time
- * slots (open) or a day with none (closed). "All day" is stored as 00:00-00:00,
- * and there is no third column to record "closed" separately from "not filled
- * in yet". Rather than leave "empty" carrying that meaning silently, this adds
- * an explicit Closed checkbox per day that mirrors the stored state, and
- * collapses the three per-row operation links into one overflow menu.
+ * Adds an explicit Closed control per weekday and collapses the three per-row
+ * operation links into one overflow menu.
+ *
+ * The contrib field stores four columns per slot - `day`, `starthours`,
+ * `endhours` and `comment` (`OfficeHoursItemBase::schema()`). "All day" is not
+ * a column; it is encoded as `starthours = endhours = 0`. The `comment` column
+ * is what makes "closed" representable separately from "not filled in yet":
+ * `OfficeHoursItem::isValueEmpty()` treats a weekday with no hours but a
+ * non-empty comment as NOT empty, so that day persists, while a day the editor
+ * never touched is never stored. The formatter's `keepOpenDays()` then filters
+ * on whether a row exists rather than on whether it has hours, so under
+ * `show_closed: open` a deliberately-closed day renders and an untouched day
+ * does not.
+ *
+ * The Closed control therefore writes the day's comment instead of submitting a
+ * value of its own: ticking it clears that day's times and labels the day
+ * Closed, which is exactly the state the front end will render. With the
+ * comment column turned off in the field settings there is nowhere to record
+ * the state, so no control is added rather than one that cannot store anything.
  */
 
 ((Drupal) => {
   const TIME_FIELDS = "input.form-time, select.form-select";
+  const COMMENT_FIELD = 'input[data-drupal-selector$="-comment"]';
 
   /**
    * Collects the time inputs belonging to one weekday, across its slot rows.
@@ -26,6 +40,22 @@
     dayRows.reduce(
       (fields, row) =>
         fields.concat(Array.from(row.querySelectorAll(TIME_FIELDS))),
+      []
+    );
+
+  /**
+   * Collects the comment inputs belonging to one weekday, across its slot rows.
+   *
+   * @param {Array<HTMLTableRowElement>} dayRows
+   *   Every slot row for a single weekday.
+   *
+   * @return {Array<HTMLElement>}
+   *   The day's comment inputs.
+   */
+  const commentFields = (dayRows) =>
+    dayRows.reduce(
+      (fields, row) =>
+        fields.concat(Array.from(row.querySelectorAll(COMMENT_FIELD))),
       []
     );
 
@@ -67,9 +97,9 @@
   /**
    * Adds a Closed control to one weekday.
    *
-   * The control is not submitted: a closed day is stored as a day with no
-   * hours, which is what the checkbox reflects. Ticking it clears the day's
-   * times; entering a time unticks it again.
+   * The control has no form value of its own. It writes the day's `comment`
+   * column, which is what makes the closed day persist and render - see the
+   * file docblock.
    *
    * @param {Array<HTMLTableRowElement>} dayRows
    *   Every slot row for a single weekday, first slot first.
@@ -87,8 +117,21 @@
     if (!allDay) {
       return -1;
     }
+    // The comment column is optional too, and it is the only place a closed
+    // day can be recorded. Without it, offer no control rather than one that
+    // silently stores nothing.
+    const comment = firstRow.querySelector(COMMENT_FIELD);
+    if (!comment) {
+      return -1;
+    }
+    // Writes go to the first slot, where contrib shows a day-level note, but
+    // reads span every slot: a note the editor typed into a continuation row
+    // stores that day too, and the tick has to reflect that or it would
+    // misreport what the front end renders.
+    const dayComments = commentFields(dayRows);
     const allDayCell = allDay.closest("td");
     const allDayIndex = allDayCell.cellIndex;
+    const closedLabel = Drupal.t("Closed");
 
     const closed = document.createElement("input");
     closed.type = "checkbox";
@@ -121,35 +164,86 @@
       row.children[allDayIndex].after(spacer);
     });
 
+    const dayTimeFields = timeFields(dayRows);
+    const isBlank = (field) => field.value.trim() === "";
+    const hasHours = () => dayTimeFields.some((field) => field.value !== "");
+
+    // Retracts the label we wrote, and only that: an editor's own note is
+    // theirs to keep. Anything that makes the day not-closed calls this, or
+    // the label would outlive the state it describes and render publicly
+    // alongside the hours.
+    const retractLabel = () => {
+      if (comment.value.trim().toLowerCase() === closedLabel.toLowerCase()) {
+        comment.value = "";
+      }
+    };
+
+    // A note the editor wrote themselves, on any slot of this day.
+    const hasOwnNote = () =>
+      dayComments.some(
+        (field) =>
+          !isBlank(field) &&
+          field.value.trim().toLowerCase() !== closedLabel.toLowerCase()
+      );
+
     const sync = () => {
-      const hasHours = timeFields(dayRows).some((field) => field.value !== "");
-      closed.checked = !allDay.checked && !hasHours;
-      // A day cannot be both open around the clock and closed.
-      closed.disabled = allDay.checked;
+      const open = hasHours();
+      // A day with no hours persists only because some slot's comment is
+      // filled in, so that is exactly the stored state the tick reflects.
+      closed.checked = !allDay.checked && !open && !dayComments.every(isBlank);
+      // Closed cannot coexist with open around the clock. And a day closed by
+      // the editor's own note really is closed, but retracting it would mean
+      // deleting that note - so report the state and leave them to clear the
+      // note or enter hours, rather than let the tick fight them.
+      closed.disabled = allDay.checked || (!open && hasOwnNote());
     };
 
     closed.addEventListener("change", () => {
-      const fields = timeFields(dayRows);
       if (closed.checked) {
-        fields.forEach((field) => {
+        dayTimeFields.forEach((field) => {
           const input = field;
           input.value = "";
         });
+        // Label the day only when no slot already carries a note: an editor
+        // who wrote "Closed for renovation" said it better than we would, and
+        // adding ours alongside would render both.
+        if (dayComments.every(isBlank)) {
+          comment.value = closedLabel;
+        }
         return;
       }
-      // Unticking means "I am about to set hours". Deliberately do NOT re-sync
-      // here, or the box would immediately tick itself again; move the cursor
-      // to the day's first From field instead. Entering a time settles it.
-      if (fields.length) {
-        fields[0].focus();
+      // Unticking means "I am about to set hours", so drop our label and move
+      // the cursor to the day's first From field. No re-sync needed: the box
+      // is only ever enabled here when our label is the day's sole comment,
+      // so retracting it already leaves the state correct.
+      retractLabel();
+      if (dayTimeFields.length) {
+        dayTimeFields[0].focus();
       }
     });
 
-    // Contrib disables the time fields itself on All day, but leaves the
-    // Closed state stale on the way back out, so recompute both directions.
-    allDay.addEventListener("change", sync);
+    allDay.addEventListener("change", () => {
+      // Open around the clock contradicts our label, so retract it.
+      if (allDay.checked) {
+        retractLabel();
+      }
+      // Contrib disables the time fields itself on All day, but leaves the
+      // Closed state stale on the way back out, so recompute both directions.
+      sync();
+    });
 
-    timeFields(dayRows).forEach((field) => {
+    dayTimeFields.forEach((field) => {
+      field.addEventListener("change", () => {
+        // Entering hours contradicts our label as surely as All day does.
+        if (hasHours()) {
+          retractLabel();
+        }
+        sync();
+      });
+    });
+
+    // Typing a note on a day with no hours is itself a closed day.
+    dayComments.forEach((field) => {
       field.addEventListener("change", sync);
     });
 

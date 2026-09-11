@@ -21,7 +21,7 @@ content:
       compress: false
       grouped: false
       show_empty: false
-      show_closed: all
+      show_closed: open
       closed_format: Closed
       all_day_format: 'All day open'
       separator:
