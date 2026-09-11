@@ -11,11 +11,14 @@ acceptance criteria.
 
 | Test | Covers |
 |---|---|
-| `Unit/ListingBundleDefinitionTest` | The 13-bundle definition, (type, view_mode, thumbnail) resolution, throw-on-unknown, the `(type, view_mode)` migration mapping, and the predecessor presets. |
+| `Unit/ListingBundleDefinitionTest` | The 13-bundle definition, (type, view_mode, thumbnail, card-size) resolution, throw-on-unknown, the `(type, view_mode)` migration mapping, and the predecessor presets. |
 | `Unit/PostViewWidgetTest` | Post content type, bundle-driven view mode, the post-only year filter, the eyebrow option (no #states), stored `post_field_options`, and the detail-group form sectioning. |
 | `Unit/EventViewWidgetTest` | Event content type, excluded year filter, event field options + time period (no #states), stored `event_field_options` + `filters.event_time_period`. |
 | `Unit/PageViewWidgetTest` | Page content type, bundle-driven view modes, no entity-specific controls, excluded year filter. |
-| `Unit/ProfileViewWidgetTest` | Profile content type, "Show Affiliations" label, affiliation vocabulary, directory mode with disabled thumbnail. |
+| `Unit/ProfileViewWidgetTest` | Profile content type, "Show Affiliations" label, affiliation vocabulary, directory mode with disabled thumbnail, and the department/email/phone/pronouns options (#1648), which are offered on the card and list bundles only (not directory or condensed), plus their stored `profile_field_options`. |
+| `Unit/CardSizeTest` | The shared "Card size" dial (#1648): offered on every content type's card grid with large/small options defaulting to large, absent from list/condensed/directory, the declarative `supports_card_size` capability, and `normalizeCardSize()` (including the superseded numeric cards-per-row values). |
+| `Kernel/CardSizeMigrationTest` | `ys_views_basic_deploy_10003()` (#1648): converts stored `cards_per_row` 3/4 to `card_size` large/small across every bundle holding a `views_basic_params` field (enumerated by field type, so the legacy `view` bundle is included), preserves the rest of the params blob, saves in place without a new revision (Layout Builder references a specific block revision), skips an undecodable blob with a warning, re-saves nothing that has no stored value, and is idempotent. |
+| `Unit/ViewArgumentOrderTest` | The scaffold view argument order (#1648): the pinned list, one distinct index per name, throw-on-unknown, and that the params JSON is not the final argument (so it can never be recovered with `end($args)` again). |
 | `Unit/RenderIsolationTest` | Per-instance view cloning (#906), events scaffold selection, NULL on missing scaffold, deterministic pager element ids, the `show_current_entity` fall-through regression. |
 | `Kernel/ViewMigrationTest` | The `view` → bundle swap per (type, mode), field-table bundle patch, unmappable-skip, idempotency, and the predecessor migration swap + param pre-fill. |
 

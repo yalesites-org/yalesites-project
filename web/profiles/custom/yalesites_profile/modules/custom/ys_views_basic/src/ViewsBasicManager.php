@@ -165,6 +165,114 @@ class ViewsBasicManager extends ControllerBase implements ContainerInjectionInte
   const CONTENT_TYPE_PROFILE = 'profile';
 
   /**
+   * The card sizes a card grid may be set to (#1648).
+   *
+   * A size rather than a column count, because the column count is not ours to
+   * promise: the grid is driven by container queries on the cards wrapper, so
+   * the layout region works out how many cards of the chosen size actually fit.
+   * "large" is the 3/2/1 grid every card listing has always rendered; "small"
+   * is 4/3/2/1. Expressing it this way keeps every stored value valid when an
+   * author moves the block into a narrower region, which a stored column count
+   * could not.
+   */
+  const CARD_SIZE_OPTIONS = ['large', 'small'];
+
+  /**
+   * The card size used when a listing has not chosen one.
+   *
+   * Large, so every listing saved before the dial existed renders unchanged.
+   */
+  const CARD_SIZE_DEFAULT = 'large';
+
+  /**
+   * Card sizes keyed by the cards-per-row value they replaced (#1648).
+   *
+   * The dial was briefly a numeric "Cards per row" select before review
+   * settled on a size. Private so every conversion goes through
+   * ::normalizeCardSize(), which is what a caller actually wants: the map alone
+   * has no answer for a count that was never offered.
+   */
+  private const CARDS_PER_ROW_TO_CARD_SIZE = [
+    3 => 'large',
+    4 => 'small',
+  ];
+
+  /**
+   * The views ::setupView() packs arguments for, in ::VIEW_ARGUMENT_ORDER.
+   *
+   * Every positional read of a view argument has to be gated on this list:
+   * the style plugin, the pager, the sort and the taxonomy filters are shared
+   * with the content_resources view, which packs a different, shorter list of
+   * its own (ViewsContentResourcesManager::setupView()).
+   */
+  const SCAFFOLD_VIEWS = [
+    'views_basic_scaffold',
+    'views_basic_scaffold_events',
+  ];
+
+  /**
+   * The order of the arguments setupView() passes to the scaffold views.
+   *
+   * The scaffold views declare only two real contextual filters (type, tid),
+   * so everything past those is a side channel read back positionally by
+   * hook_views_pre_render(), hook_views_pre_view() and the style plugin.
+   * ::setupView() builds its argument array FROM this list, so what is written
+   * cannot drift from what those three read: they resolve every index through
+   * ::viewArgumentIndex().
+   *
+   * This is NOT yet true of the views plugins in Plugin/views (the sort, the
+   * pager, the taxonomy and time-period filters, and the style plugin's view
+   * mode lookup). They still read bare indices, and they cannot simply be
+   * converted: content_resources drives the same plugins from a different,
+   * shorter argument list, so a name resolved here would be the wrong
+   * argument there. Reordering this list therefore still needs those files
+   * checked by hand.
+   *
+   * Appending here is safe; reordering or removing an entry is not, and is
+   * what this constant exists to make obvious. (#1648 learned this the hard
+   * way: original_settings used to be last, and one caller recovered it with
+   * end($args) rather than by index, so appending an argument silently fed the
+   * wrong JSON into every pager and exposed-filter AJAX re-render.)
+   */
+  const VIEW_ARGUMENT_ORDER = [
+    'type',
+    'terms_include',
+    'terms_exclude',
+    'sort',
+    'view',
+    'items',
+    'event_time_period',
+    'offset',
+    'field_display_options',
+    'event_field_display_options',
+    'post_field_display_options',
+    'pin_settings',
+    'original_settings',
+    'profile_field_display_options',
+  ];
+
+  /**
+   * Returns the positional index of a scaffold view argument.
+   *
+   * @param string $name
+   *   An argument name from ::VIEW_ARGUMENT_ORDER.
+   *
+   * @return int
+   *   Its position in the argument list.
+   *
+   * @throws \InvalidArgumentException
+   *   When the name is not a known argument, so a typo fails loudly rather
+   *   than silently reading argument 0.
+   */
+  public static function viewArgumentIndex(string $name): int {
+    $index = array_search($name, self::VIEW_ARGUMENT_ORDER, TRUE);
+    if ($index === FALSE) {
+      throw new \InvalidArgumentException(sprintf('Unknown Views Basic view argument "%s".', $name));
+    }
+    return $index;
+  }
+
+  /**
    * Definition of every listing block content bundle.
    *
    * The bundle id encodes the (content type, display mode) pair. This single
@@ -181,6 +289,8 @@ class ViewsBasicManager extends ControllerBase implements ContainerInjectionInte
    * - view_mode: the node view mode used to render each result.
    * - supports_thumbnail: whether the "Show Teaser Image" option applies
    *   (card and list_item only).
+   * - supports_card_size: whether the "Card size" dial applies (card grid
+   *   only).
    *
    * The existing "event_calendar" bundle is intentionally absent: it uses a
    * different field type (event_calendar_basic_params) and its own widget.
@@ -190,66 +300,79 @@ class ViewsBasicManager extends ControllerBase implements ContainerInjectionInte
       'content_type' => self::CONTENT_TYPE_POST,
       'view_mode' => 'card',
       'supports_thumbnail' => TRUE,
+      'supports_card_size' => TRUE,
     ],
     'post_list_item' => [
       'content_type' => self::CONTENT_TYPE_POST,
       'view_mode' => 'list_item',
       'supports_thumbnail' => TRUE,
+      'supports_card_size' => FALSE,
     ],
     'post_condensed' => [
       'content_type' => self::CONTENT_TYPE_POST,
       'view_mode' => 'condensed',
       'supports_thumbnail' => FALSE,
+      'supports_card_size' => FALSE,
     ],
     'event_card' => [
       'content_type' => self::CONTENT_TYPE_EVENT,
       'view_mode' => 'card',
       'supports_thumbnail' => TRUE,
+      'supports_card_size' => TRUE,
     ],
     'event_list_item' => [
       'content_type' => self::CONTENT_TYPE_EVENT,
       'view_mode' => 'list_item',
       'supports_thumbnail' => TRUE,
+      'supports_card_size' => FALSE,
     ],
     'event_condensed' => [
       'content_type' => self::CONTENT_TYPE_EVENT,
       'view_mode' => 'condensed',
       'supports_thumbnail' => FALSE,
+      'supports_card_size' => FALSE,
     ],
     'page_card' => [
       'content_type' => self::CONTENT_TYPE_PAGE,
       'view_mode' => 'card',
       'supports_thumbnail' => TRUE,
+      'supports_card_size' => TRUE,
     ],
     'page_list_item' => [
       'content_type' => self::CONTENT_TYPE_PAGE,
       'view_mode' => 'list_item',
       'supports_thumbnail' => TRUE,
+      'supports_card_size' => FALSE,
     ],
     'page_condensed' => [
       'content_type' => self::CONTENT_TYPE_PAGE,
       'view_mode' => 'condensed',
       'supports_thumbnail' => FALSE,
+      'supports_card_size' => FALSE,
     ],
     'profile_card' => [
       'content_type' => self::CONTENT_TYPE_PROFILE,
       'view_mode' => 'card',
       'supports_thumbnail' => TRUE,
+      'supports_card_size' => TRUE,
     ],
     'profile_list_item' => [
       'content_type' => self::CONTENT_TYPE_PROFILE,
       'view_mode' => 'list_item',
       'supports_thumbnail' => TRUE,
+      'supports_card_size' => FALSE,
     ],
     'profile_condensed' => [
       'content_type' => self::CONTENT_TYPE_PROFILE,
       'view_mode' => 'condensed',
       'supports_thumbnail' => FALSE,
+      'supports_card_size' => FALSE,
     ],
     'profile_directory' => [
       'content_type' => self::CONTENT_TYPE_PROFILE,
       'view_mode' => 'directory',
       'supports_thumbnail' => FALSE,
+      'supports_card_size' => FALSE,
     ],
   ];
 
@@ -618,6 +741,12 @@ class ViewsBasicManager extends ControllerBase implements ContainerInjectionInte
       // card heading level in hook_views_pre_render() (H3 when nested under the
       // block heading, H2 when the cards are the first heading on the page).
       'block_has_heading' => (int) $blockHasHeading,
+      // Card-size dial (#1648). It rides the shared field_display_options
+      // bucket rather than taking a positional arg of its own because it
+      // applies to every content type's card grid, and because it is read by
+      // the style plugin that builds the collection wrapper rather than
+      // per result row.
+      'card_size' => $this->getDefaultParamValue('card_size', $params),
     ];
 
     $event_field_display_options = [
@@ -626,6 +755,15 @@ class ViewsBasicManager extends ControllerBase implements ContainerInjectionInte
 
     $post_field_display_options = [
       'show_eyebrow' => (int) !empty($paramsDecoded['post_field_options']['show_eyebrow']),
+    ];
+
+    // Profile data pass-throughs (#1648): department, email, phone and
+    // pronouns on any profile listing, not just the directory design option.
+    $profile_field_display_options = [
+      'show_department' => (int) !empty($paramsDecoded['profile_field_options']['show_department']),
+      'show_email' => (int) !empty($paramsDecoded['profile_field_options']['show_email']),
+      'show_phone' => (int) !empty($paramsDecoded['profile_field_options']['show_phone']),
+      'show_pronouns' => (int) !empty($paramsDecoded['profile_field_options']['show_pronouns']),
     ];
 
     $pin_label = $paramsDecoded['pin_label'] ?? self::DEFAULT_PIN_LABEL;
@@ -664,7 +802,7 @@ class ViewsBasicManager extends ControllerBase implements ContainerInjectionInte
      * End include current node.
      */
 
-    $view_args = [
+    $view_arg_values = [
       'type' => $filterType,
       'terms_include' => $termsInclude,
       'terms_exclude' => $termsExclude,
@@ -678,7 +816,16 @@ class ViewsBasicManager extends ControllerBase implements ContainerInjectionInte
       'post_field_display_options' => json_encode($post_field_display_options),
       'pin_settings' => json_encode($pin_options),
       'original_settings' => $params,
+      'profile_field_display_options' => json_encode($profile_field_display_options),
     ];
+
+    // Ordered by ::VIEW_ARGUMENT_ORDER rather than by the literal above, so
+    // the positions every reader resolves through ::viewArgumentIndex() cannot
+    // drift out of step with how they are written.
+    $view_args = [];
+    foreach (self::VIEW_ARGUMENT_ORDER as $arg_name) {
+      $view_args[$arg_name] = $view_arg_values[$arg_name];
+    }
 
     $view->setArguments($view_args);
     $view->execute();
@@ -701,6 +848,16 @@ class ViewsBasicManager extends ControllerBase implements ContainerInjectionInte
         $resultRow['#cache']['keys'][] = $field_display_options['block_has_heading'];
         $resultRow['#cache']['keys'][] = $event_field_display_options['hide_add_to_calendar'];
         $resultRow['#cache']['keys'][] = $post_field_display_options['show_eyebrow'];
+        // The profile options are row-scoped, so they belong here. The
+        // card-size dial deliberately is not: it only affects the
+        // collection wrapper the style plugin builds, so keying it per row
+        // would split identical row markup into a 3-up and a 4-up copy and
+        // cover nothing. The wrapper needs no key of its own either — the
+        // scaffold view sets `cache: type: none` and ys_views_basic_node_view()
+        // forces max-age 0 on these builds, so this path is not render-cached.
+        foreach ($profile_field_display_options as $profile_option) {
+          $resultRow['#cache']['keys'][] = $profile_option;
+        }
         $resultRow['#cache']['keys'][] = $pin_options['pinned_to_top'];
         $resultRow['#cache']['keys'][] = $pin_options['pin_label'];
 
@@ -816,7 +973,8 @@ class ViewsBasicManager extends ControllerBase implements ContainerInjectionInte
    *   The block content bundle id (e.g. "post_card").
    *
    * @return array
-   *   The definition row: content_type, view_mode, supports_thumbnail.
+   *   The definition row: content_type, view_mode, supports_thumbnail,
+   *   supports_card_size.
    *
    * @throws \InvalidArgumentException
    *   When the bundle is not a known listing bundle. A consumer asked about an
@@ -866,6 +1024,49 @@ class ViewsBasicManager extends ControllerBase implements ContainerInjectionInte
    */
   public static function bundleSupportsThumbnail(string $bundle): bool {
     return self::getListingBundleDefinition($bundle)['supports_thumbnail'];
+  }
+
+  /**
+   * Returns whether a listing bundle offers the "Card size" dial (#1648).
+   *
+   * Only the card grid takes one: list, condensed and the profile directory
+   * each lay themselves out, so the control would be clutter that does
+   * nothing. Declared per bundle rather than inferred from the view mode at
+   * call time, matching supports_thumbnail (ADR DR-2).
+   *
+   * @param string $bundle
+   *   The block content bundle id.
+   *
+   * @return bool
+   *   TRUE when the bundle renders a card grid.
+   */
+  public static function bundleSupportsCardSize(string $bundle): bool {
+    return self::getListingBundleDefinition($bundle)['supports_card_size'];
+  }
+
+  /**
+   * Coerces a stored card-size value to one this module can render (#1648).
+   *
+   * Accepts the numeric cards_per_row values the dial briefly used before
+   * review settled on a size, so a listing saved against that shape keeps its
+   * appearance whether or not the update hook has run for it yet. Anything else
+   * — absent, a stale string, a count with no SCSS rule — falls back to the
+   * grid every card listing rendered before the dial existed.
+   *
+   * @param mixed $value
+   *   A stored card_size string, a stored cards_per_row count, or NULL.
+   *
+   * @return string
+   *   A member of ::CARD_SIZE_OPTIONS.
+   */
+  public static function normalizeCardSize(mixed $value): string {
+    if (is_string($value) && in_array($value, self::CARD_SIZE_OPTIONS, TRUE)) {
+      return $value;
+    }
+    if (is_int($value) || (is_string($value) && ctype_digit($value))) {
+      return self::CARDS_PER_ROW_TO_CARD_SIZE[(int) $value] ?? self::CARD_SIZE_DEFAULT;
+    }
+    return self::CARD_SIZE_DEFAULT;
   }
 
   /**
@@ -1092,6 +1293,22 @@ class ViewsBasicManager extends ControllerBase implements ContainerInjectionInte
 
       case 'post_field_options':
         $defaultParam = (empty($paramsDecoded['post_field_options'])) ? [] : $paramsDecoded['post_field_options'];
+        break;
+
+      case 'profile_field_options':
+        $defaultParam = (empty($paramsDecoded['profile_field_options'])) ? [] : $paramsDecoded['profile_field_options'];
+        break;
+
+      case 'card_size':
+        // Listings saved before the dial existed carry no key and must keep
+        // their large (3-up) grid. An unrecognised stored value falls back too,
+        // rather than emitting a size the SCSS has no rule for. A listing still
+        // holding the numeric cards_per_row value the dial briefly used is
+        // converted on read as well as by ys_views_basic_deploy_10003(), so a
+        // block renders correctly before that hook has run for it.
+        $defaultParam = self::normalizeCardSize(
+          $paramsDecoded['card_size'] ?? $paramsDecoded['cards_per_row'] ?? NULL
+        );
         break;
 
       case 'exposed_filter_options':

@@ -6,6 +6,7 @@ use Drupal\Core\Entity\EntityDisplayRepository;
 use Drupal\Core\Plugin\ContainerFactoryPluginInterface;
 use Drupal\Core\Routing\RouteMatchInterface;
 use Drupal\views\Plugin\views\style\StylePluginBase;
+use Drupal\ys_views_basic\ViewsBasicManager;
 use Symfony\Component\DependencyInjection\ContainerInterface;
 
 /**
@@ -150,7 +151,48 @@ class ViewsBasicDynamicStyle extends StylePluginBase implements ContainerFactory
       '#card_collection_modifiers' => $cardCollectionModifiers,
       '#parentNode' => $parentNode,
       '#contentType' => $contentType,
+      '#card_size' => $this->cardSize(),
     ];
+  }
+
+  /**
+   * Returns the card size for this listing (#1648).
+   *
+   * The dial travels in the shared field_display_options argument because it
+   * describes the collection as a whole rather than an individual result row.
+   * Anything unexpected — another view using this style plugin, a view
+   * rendered outside setupView(), or a stored value the SCSS has no rule for
+   * — falls back to the large (3-up) grid every listing had before the dial
+   * existed. ViewsBasicManager::normalizeCardSize() also accepts the numeric
+   * cards_per_row value the dial briefly used, so an argument set built before
+   * the rename still resolves to the size it was rendering.
+   *
+   * The view-id guard matters: this style plugin also serves the
+   * content_resources view, which builds its own, shorter argument list in
+   * ViewsContentResourcesManager — index 8 is pin_settings there, not field
+   * display options — so reading the index blindly would decode a different
+   * argument entirely.
+   *
+   * @return string
+   *   A member of ViewsBasicManager::CARD_SIZE_OPTIONS.
+   */
+  protected function cardSize(): string {
+    if (!in_array($this->view->id(), ViewsBasicManager::SCAFFOLD_VIEWS, TRUE)) {
+      return ViewsBasicManager::CARD_SIZE_DEFAULT;
+    }
+
+    $field_display_options = json_decode($this->view->args[ViewsBasicManager::viewArgumentIndex('field_display_options')] ?? '', TRUE);
+    // Anything that is not the object setupView() writes — a stale argument
+    // set, or a JSON scalar — falls back. Tested with is_array() rather than
+    // a truthiness check, which would leave a decoded scalar to be indexed
+    // below and emit an "array offset on value of type int" warning.
+    if (!is_array($field_display_options)) {
+      $field_display_options = [];
+    }
+
+    return ViewsBasicManager::normalizeCardSize(
+      $field_display_options['card_size'] ?? $field_display_options['cards_per_row'] ?? NULL
+    );
   }
 
 }
