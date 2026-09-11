@@ -457,3 +457,105 @@ function _ys_views_basic_rewrite_placements($database, array $legacy_bundles, $l
   }
   return $rewritten;
 }
+
+/**
+ * Converts the numeric cards_per_row listing setting to card_size (#1648).
+ *
+ * The card grid dial was briefly a "Cards per row" select (3 or 4) before
+ * review settled on a card size, because a column count is not something the
+ * grid can promise: it is driven by container queries on the cards wrapper, so
+ * the layout region works out how many cards fit and a stored count goes stale
+ * the moment an author moves the block somewhere narrower. 3 was the 3-up grid
+ * and is now "large"; 4 was the 4-up grid and is now "small", so an author's
+ * listing keeps the appearance they chose.
+ *
+ * Only listings that actually carry the superseded key are re-saved. An absent
+ * key already resolves to the default on read
+ * (ViewsBasicManager::getDefaultParamValue()), so backfilling one would create
+ * a revision on every listing on every site and change nothing.
+ *
+ * Saved in place, with no new revision: a Layout Builder inline block is
+ * referenced by a specific block_revision_id and rendered via loadRevision(),
+ * so a new revision would leave every layout pointing at the pre-migration
+ * revision and this sweep would silently change nothing on any page.
+ *
+ * Scope: the default revision of each block. An older node revision, or a
+ * pending layout draft whose block revision predates this run, keeps the
+ * superseded key — which is why ViewsBasicDynamicStyle::cardSize() converts it
+ * on read too rather than trusting this hook to have reached everything.
+ */
+function ys_views_basic_deploy_10003() {
+  $logger = \Drupal::logger('ys_views_basic');
+  $block_storage = \Drupal::entityTypeManager()->getStorage('block_content');
+
+  // Enumerated by field TYPE rather than from the card-grid bundles in
+  // ViewsBasicManager::LISTING_BUNDLES, so the superseded key is converted
+  // wherever a views_basic_params field holds it — including on the legacy
+  // "view" bundle and on a listing whose design option has since changed.
+  $field_map = \Drupal::service('entity_field.manager')
+    ->getFieldMapByFieldType('views_basic_params');
+
+  $converted = 0;
+  $scanned = 0;
+  foreach ($field_map['block_content'] ?? [] as $field_name => $info) {
+    foreach ($info['bundles'] ?? [] as $bundle) {
+      $ids = $block_storage->getQuery()
+        ->condition('type', $bundle)
+        ->accessCheck(FALSE)
+        ->execute();
+
+      foreach ($block_storage->loadMultiple($ids) as $block) {
+        if (!$block->hasField($field_name) || $block->get($field_name)->isEmpty()) {
+          continue;
+        }
+        $scanned++;
+
+        $stored = $block->get($field_name)->first()->getValue()['params'] ?? NULL;
+        $params = $stored ? json_decode($stored, TRUE) : NULL;
+        // A blob that is not the object the widget writes is reported rather
+        // than rewritten blind: this hook cannot know what an unparseable value
+        // meant, and nothing else inspects these blobs
+        // (ys_views_basic_requirements() only counts legacy "view" blocks), so
+        // staying silent here would lose the only chance to surface it.
+        if (!is_array($params)) {
+          $logger->warning('Card size migration: skipping block @id, its params are not a decodable object.', [
+            '@id' => $block->id(),
+          ]);
+          continue;
+        }
+        // The overwhelmingly common case: never had the superseded key.
+        if (!array_key_exists('cards_per_row', $params)) {
+          continue;
+        }
+
+        $params['card_size'] = ViewsBasicManager::normalizeCardSize($params['cards_per_row']);
+        unset($params['cards_per_row']);
+
+        $block->set($field_name, ['params' => json_encode($params)]);
+        $block->save();
+        $converted++;
+      }
+    }
+  }
+
+  if ($converted) {
+    // The size is baked into the rendered collection wrapper, so cached markup
+    // and any in-progress Layout Builder preview still show the old grid.
+    \Drupal::service('cache.render')->invalidateAll();
+    $database = \Drupal::database();
+    if ($database->schema()->tableExists('key_value_expire')) {
+      $database->delete('key_value_expire')
+        ->condition('collection', 'tempstore.shared.layout_builder.section_storage.overrides')
+        ->execute();
+    }
+    $logger->notice('Card size migration: converted @n of @s listings from cards_per_row to card_size.', [
+      '@n' => $converted,
+      '@s' => $scanned,
+    ]);
+  }
+
+  return t('Card size migration: converted @n of @s listings.', [
+    '@n' => $converted,
+    '@s' => $scanned,
+  ]);
+}

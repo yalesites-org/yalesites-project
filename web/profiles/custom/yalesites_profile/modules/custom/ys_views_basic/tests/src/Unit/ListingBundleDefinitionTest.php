@@ -20,10 +20,10 @@ class ListingBundleDefinitionTest extends UnitTestCase {
   /**
    * The capability row each bundle must map to.
    *
-   * `[content type, view mode, supports_thumbnail, supports_cards_per_row]`.
+   * `[content type, view mode, supports_thumbnail, supports_card_size]`.
    * This pins the full 13-bundle grid (ADR DR-2/DR-4). Card and list_item
    * support the teaser image; condensed and directory do not. Only the card
-   * grid takes a cards-per-row dial (#1648) — the other design options lay
+   * grid takes a card-size dial (#1648) — the other design options lay
    * themselves out.
    */
   const EXPECTED_BUNDLES = [
@@ -61,14 +61,14 @@ class ListingBundleDefinitionTest extends UnitTestCase {
    * @covers ::getContentTypeForBundle
    * @covers ::getViewModeForBundle
    * @covers ::bundleSupportsThumbnail
-   * @covers ::bundleSupportsCardsPerRow
+   * @covers ::bundleSupportsCardSize
    */
   public function testBundleResolution() {
-    foreach (self::EXPECTED_BUNDLES as $bundle => [$type, $view_mode, $thumbnail, $per_row]) {
+    foreach (self::EXPECTED_BUNDLES as $bundle => [$type, $view_mode, $thumbnail, $card_size]) {
       $this->assertSame($type, ViewsBasicManager::getContentTypeForBundle($bundle), "$bundle content type");
       $this->assertSame($view_mode, ViewsBasicManager::getViewModeForBundle($bundle), "$bundle view mode");
       $this->assertSame($thumbnail, ViewsBasicManager::bundleSupportsThumbnail($bundle), "$bundle thumbnail flag");
-      $this->assertSame($per_row, ViewsBasicManager::bundleSupportsCardsPerRow($bundle), "$bundle cards-per-row flag");
+      $this->assertSame($card_size, ViewsBasicManager::bundleSupportsCardSize($bundle), "$bundle card-size flag");
     }
   }
 

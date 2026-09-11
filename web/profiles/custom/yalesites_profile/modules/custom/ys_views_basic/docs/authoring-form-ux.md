@@ -45,7 +45,7 @@ sub-containers (`entity_and_view_mode`, `filter_and_sort`, `entity_specific`,
 | Number of Items to Display | `display` | select (all/limit/pager) | `buildDisplayControls` | all |
 | Items / Items per Page | `limit` | number | `buildDisplayControls` | all |
 | Ignore Number of Results | `offset` | number | `buildDisplayControls` | all |
-| Cards per row | `cards_per_row` | select (3/4) | `buildDisplayControls` | card grid bundles only (`supports_cards_per_row`) |
+| Card size | `card_size` | select (large/small) | `buildDisplayControls` | card grid bundles only (`supports_card_size`) |
 | Include this content in view | `show_current_entity` | checkbox | `buildDisplayControls` | all |
 
 ### Problems identified
@@ -94,7 +94,7 @@ copy only.
 | `pin_label` | Pinned-item label | Text shown on each pinned item (for example "Featured"). |
 | `show_current_entity` | Include the current page | When this block is placed on a content page, include that page in the results instead of excluding it. |
 | `display` | How many items to show | Choose all matching items, a fixed number, or a paginated list. |
-| `cards_per_row` | Cards per row | The most cards to place side by side. Narrower areas of the page still fit fewer. |
+| `card_size` | Card size | Smaller cards let more fit side by side. The area of the page this block sits in decides how many that is. |
 | `profile_field_options` | People options | (per option: "Show Department", "Show Email", "Show Phone", "Show Pronouns") |
 | `field_options` | Show on each result | (per option: "Category label", "Tags", "Teaser image") |
 | `terms_include` | Only show content tagged | Limit results to content using any of these tags or categories. |

@@ -430,9 +430,9 @@ abstract class ViewsBasicWidgetBase extends WidgetBase implements ContainerFacto
         'profile_field_options' => [],
         // Absent for every design option but the card grid, which is the only
         // one that offers the control (#1648).
-        'cards_per_row' => isset($selection['options']['cards_per_row'])
-          ? (int) $selection['options']['cards_per_row']['#value']
-          : ViewsBasicManager::CARDS_PER_ROW_DEFAULT,
+        'card_size' => isset($selection['options']['card_size'])
+          ? ViewsBasicManager::normalizeCardSize($selection['options']['card_size']['#value'])
+          : ViewsBasicManager::CARD_SIZE_DEFAULT,
         'exposed_filter_options' => $exposed_filter_options,
         'category_filter_label' => $built['category_filter_label']['#value'] ?? NULL,
         'category_included_terms' => $built['category_included_terms']['#value'] ?? NULL,
@@ -1353,22 +1353,29 @@ abstract class ViewsBasicWidgetBase extends WidgetBase implements ContainerFacto
       '#min' => 0,
       '#attributes' => ['placeholder' => 0],
     ];
-    // Cards-per-row dial (#1648), offered only by the card grid: the other
-    // design options lay themselves out, so the control would be clutter that
-    // does nothing. The capability is declared on the listing definition
-    // rather than tested against the view mode here (ADR DR-2).
-    if (ViewsBasicManager::bundleSupportsCardsPerRow($this->getBundle())) {
-      $form['group_user_selection']['options']['cards_per_row'] = [
+    // Card-size dial (#1648), offered only by the card grid: the other design
+    // options lay themselves out, so the control would be clutter that does
+    // nothing. The capability is declared on the listing definition rather than
+    // tested against the view mode here (ADR DR-2).
+    //
+    // A size rather than a number of columns, because the number of columns
+    // is not ours to promise: the grid is sized by the layout region the block
+    // sits in, so "4 per row" would read as an exact count while behaving as a
+    // maximum, and would go stale the moment an author moved the block into a
+    // narrower region. Asking how big the cards should be is always answerable
+    // and stays true after a move.
+    if (ViewsBasicManager::bundleSupportsCardSize($this->getBundle())) {
+      $form['group_user_selection']['options']['card_size'] = [
         '#type' => 'select',
-        '#title' => $this->t('Cards per row'),
-        '#description' => $this->t('The most cards to place side by side. Narrower areas of the page still fit fewer.'),
-        '#options' => array_combine(
-          ViewsBasicManager::CARDS_PER_ROW_OPTIONS,
-          ViewsBasicManager::CARDS_PER_ROW_OPTIONS
-        ),
+        '#title' => $this->t('Card size'),
+        '#description' => $this->t('Smaller cards let more fit side by side. The area of the page this block sits in decides how many that is.'),
+        '#options' => [
+          'large' => $this->t('Large'),
+          'small' => $this->t('Small'),
+        ],
         '#default_value' => $params
-          ? $this->viewsBasicManager->getDefaultParamValue('cards_per_row', $params)
-          : ViewsBasicManager::CARDS_PER_ROW_DEFAULT,
+          ? $this->viewsBasicManager->getDefaultParamValue('card_size', $params)
+          : ViewsBasicManager::CARD_SIZE_DEFAULT,
       ];
     }
     $form['group_user_selection']['options']['show_current_entity'] = [

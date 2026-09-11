@@ -165,19 +165,37 @@ class ViewsBasicManager extends ControllerBase implements ContainerInjectionInte
   const CONTENT_TYPE_PROFILE = 'profile';
 
   /**
-   * The cards-per-row values a card grid may be set to (#1648).
+   * The card sizes a card grid may be set to (#1648).
    *
-   * Three and four only: the grid is capped by the width of the region it sits
-   * in, so a fifth column would be narrower than a card can usefully be.
+   * A size rather than a column count, because the column count is not ours to
+   * promise: the grid is driven by container queries on the cards wrapper, so
+   * the layout region works out how many cards of the chosen size actually fit.
+   * "large" is the 3/2/1 grid every card listing has always rendered; "small"
+   * is 4/3/2/1. Expressing it this way keeps every stored value valid when an
+   * author moves the block into a narrower region, which a stored column count
+   * could not.
    */
-  const CARDS_PER_ROW_OPTIONS = [3, 4];
+  const CARD_SIZE_OPTIONS = ['large', 'small'];
 
   /**
-   * The cards-per-row value used when a listing has not chosen one.
+   * The card size used when a listing has not chosen one.
    *
-   * Three, so every listing saved before the dial existed renders unchanged.
+   * Large, so every listing saved before the dial existed renders unchanged.
    */
-  const CARDS_PER_ROW_DEFAULT = 3;
+  const CARD_SIZE_DEFAULT = 'large';
+
+  /**
+   * Card sizes keyed by the cards-per-row value they replaced (#1648).
+   *
+   * The dial was briefly a numeric "Cards per row" select before review
+   * settled on a size. Private so every conversion goes through
+   * ::normalizeCardSize(), which is what a caller actually wants: the map alone
+   * has no answer for a count that was never offered.
+   */
+  private const CARDS_PER_ROW_TO_CARD_SIZE = [
+    3 => 'large',
+    4 => 'small',
+  ];
 
   /**
    * The views ::setupView() packs arguments for, in ::VIEW_ARGUMENT_ORDER.
@@ -271,8 +289,8 @@ class ViewsBasicManager extends ControllerBase implements ContainerInjectionInte
    * - view_mode: the node view mode used to render each result.
    * - supports_thumbnail: whether the "Show Teaser Image" option applies
    *   (card and list_item only).
-   * - supports_cards_per_row: whether the "Cards per row" dial applies
-   *   (card grid only).
+   * - supports_card_size: whether the "Card size" dial applies (card grid
+   *   only).
    *
    * The existing "event_calendar" bundle is intentionally absent: it uses a
    * different field type (event_calendar_basic_params) and its own widget.
@@ -282,79 +300,79 @@ class ViewsBasicManager extends ControllerBase implements ContainerInjectionInte
       'content_type' => self::CONTENT_TYPE_POST,
       'view_mode' => 'card',
       'supports_thumbnail' => TRUE,
-      'supports_cards_per_row' => TRUE,
+      'supports_card_size' => TRUE,
     ],
     'post_list_item' => [
       'content_type' => self::CONTENT_TYPE_POST,
       'view_mode' => 'list_item',
       'supports_thumbnail' => TRUE,
-      'supports_cards_per_row' => FALSE,
+      'supports_card_size' => FALSE,
     ],
     'post_condensed' => [
       'content_type' => self::CONTENT_TYPE_POST,
       'view_mode' => 'condensed',
       'supports_thumbnail' => FALSE,
-      'supports_cards_per_row' => FALSE,
+      'supports_card_size' => FALSE,
     ],
     'event_card' => [
       'content_type' => self::CONTENT_TYPE_EVENT,
       'view_mode' => 'card',
       'supports_thumbnail' => TRUE,
-      'supports_cards_per_row' => TRUE,
+      'supports_card_size' => TRUE,
     ],
     'event_list_item' => [
       'content_type' => self::CONTENT_TYPE_EVENT,
       'view_mode' => 'list_item',
       'supports_thumbnail' => TRUE,
-      'supports_cards_per_row' => FALSE,
+      'supports_card_size' => FALSE,
     ],
     'event_condensed' => [
       'content_type' => self::CONTENT_TYPE_EVENT,
       'view_mode' => 'condensed',
       'supports_thumbnail' => FALSE,
-      'supports_cards_per_row' => FALSE,
+      'supports_card_size' => FALSE,
     ],
     'page_card' => [
       'content_type' => self::CONTENT_TYPE_PAGE,
       'view_mode' => 'card',
       'supports_thumbnail' => TRUE,
-      'supports_cards_per_row' => TRUE,
+      'supports_card_size' => TRUE,
     ],
     'page_list_item' => [
       'content_type' => self::CONTENT_TYPE_PAGE,
       'view_mode' => 'list_item',
       'supports_thumbnail' => TRUE,
-      'supports_cards_per_row' => FALSE,
+      'supports_card_size' => FALSE,
     ],
     'page_condensed' => [
       'content_type' => self::CONTENT_TYPE_PAGE,
       'view_mode' => 'condensed',
       'supports_thumbnail' => FALSE,
-      'supports_cards_per_row' => FALSE,
+      'supports_card_size' => FALSE,
     ],
     'profile_card' => [
       'content_type' => self::CONTENT_TYPE_PROFILE,
       'view_mode' => 'card',
       'supports_thumbnail' => TRUE,
-      'supports_cards_per_row' => TRUE,
+      'supports_card_size' => TRUE,
     ],
     'profile_list_item' => [
       'content_type' => self::CONTENT_TYPE_PROFILE,
       'view_mode' => 'list_item',
       'supports_thumbnail' => TRUE,
-      'supports_cards_per_row' => FALSE,
+      'supports_card_size' => FALSE,
     ],
     'profile_condensed' => [
       'content_type' => self::CONTENT_TYPE_PROFILE,
       'view_mode' => 'condensed',
       'supports_thumbnail' => FALSE,
-      'supports_cards_per_row' => FALSE,
+      'supports_card_size' => FALSE,
     ],
     'profile_directory' => [
       'content_type' => self::CONTENT_TYPE_PROFILE,
       'view_mode' => 'directory',
       'supports_thumbnail' => FALSE,
-      'supports_cards_per_row' => FALSE,
+      'supports_card_size' => FALSE,
     ],
   ];
 
@@ -723,12 +741,12 @@ class ViewsBasicManager extends ControllerBase implements ContainerInjectionInte
       // card heading level in hook_views_pre_render() (H3 when nested under the
       // block heading, H2 when the cards are the first heading on the page).
       'block_has_heading' => (int) $blockHasHeading,
-      // Cards-per-row dial (#1648). It rides the shared field_display_options
+      // Card-size dial (#1648). It rides the shared field_display_options
       // bucket rather than taking a positional arg of its own because it
       // applies to every content type's card grid, and because it is read by
       // the style plugin that builds the collection wrapper rather than
       // per result row.
-      'cards_per_row' => $this->getDefaultParamValue('cards_per_row', $params),
+      'card_size' => $this->getDefaultParamValue('card_size', $params),
     ];
 
     $event_field_display_options = [
@@ -831,7 +849,7 @@ class ViewsBasicManager extends ControllerBase implements ContainerInjectionInte
         $resultRow['#cache']['keys'][] = $event_field_display_options['hide_add_to_calendar'];
         $resultRow['#cache']['keys'][] = $post_field_display_options['show_eyebrow'];
         // The profile options are row-scoped, so they belong here. The
-        // cards-per-row dial deliberately is not: it only affects the
+        // card-size dial deliberately is not: it only affects the
         // collection wrapper the style plugin builds, so keying it per row
         // would split identical row markup into a 3-up and a 4-up copy and
         // cover nothing. The wrapper needs no key of its own either — the
@@ -956,7 +974,7 @@ class ViewsBasicManager extends ControllerBase implements ContainerInjectionInte
    *
    * @return array
    *   The definition row: content_type, view_mode, supports_thumbnail,
-   *   supports_cards_per_row.
+   *   supports_card_size.
    *
    * @throws \InvalidArgumentException
    *   When the bundle is not a known listing bundle. A consumer asked about an
@@ -1009,7 +1027,7 @@ class ViewsBasicManager extends ControllerBase implements ContainerInjectionInte
   }
 
   /**
-   * Returns whether a listing bundle offers the "Cards per row" dial (#1648).
+   * Returns whether a listing bundle offers the "Card size" dial (#1648).
    *
    * Only the card grid takes one: list, condensed and the profile directory
    * each lay themselves out, so the control would be clutter that does
@@ -1022,8 +1040,33 @@ class ViewsBasicManager extends ControllerBase implements ContainerInjectionInte
    * @return bool
    *   TRUE when the bundle renders a card grid.
    */
-  public static function bundleSupportsCardsPerRow(string $bundle): bool {
-    return self::getListingBundleDefinition($bundle)['supports_cards_per_row'];
+  public static function bundleSupportsCardSize(string $bundle): bool {
+    return self::getListingBundleDefinition($bundle)['supports_card_size'];
+  }
+
+  /**
+   * Coerces a stored card-size value to one this module can render (#1648).
+   *
+   * Accepts the numeric cards_per_row values the dial briefly used before
+   * review settled on a size, so a listing saved against that shape keeps its
+   * appearance whether or not the update hook has run for it yet. Anything else
+   * — absent, a stale string, a count with no SCSS rule — falls back to the
+   * grid every card listing rendered before the dial existed.
+   *
+   * @param mixed $value
+   *   A stored card_size string, a stored cards_per_row count, or NULL.
+   *
+   * @return string
+   *   A member of ::CARD_SIZE_OPTIONS.
+   */
+  public static function normalizeCardSize(mixed $value): string {
+    if (is_string($value) && in_array($value, self::CARD_SIZE_OPTIONS, TRUE)) {
+      return $value;
+    }
+    if (is_int($value) || (is_string($value) && ctype_digit($value))) {
+      return self::CARDS_PER_ROW_TO_CARD_SIZE[(int) $value] ?? self::CARD_SIZE_DEFAULT;
+    }
+    return self::CARD_SIZE_DEFAULT;
   }
 
   /**
@@ -1256,13 +1299,16 @@ class ViewsBasicManager extends ControllerBase implements ContainerInjectionInte
         $defaultParam = (empty($paramsDecoded['profile_field_options'])) ? [] : $paramsDecoded['profile_field_options'];
         break;
 
-      case 'cards_per_row':
+      case 'card_size':
         // Listings saved before the dial existed carry no key and must keep
-        // their 3-up grid. An unrecognised stored value falls back too, rather
-        // than emitting a column count the SCSS has no rule for.
-        $defaultParam = in_array((int) ($paramsDecoded['cards_per_row'] ?? 0), self::CARDS_PER_ROW_OPTIONS, TRUE)
-          ? (int) $paramsDecoded['cards_per_row']
-          : self::CARDS_PER_ROW_DEFAULT;
+        // their large (3-up) grid. An unrecognised stored value falls back too,
+        // rather than emitting a size the SCSS has no rule for. A listing still
+        // holding the numeric cards_per_row value the dial briefly used is
+        // converted on read as well as by ys_views_basic_deploy_10003(), so a
+        // block renders correctly before that hook has run for it.
+        $defaultParam = self::normalizeCardSize(
+          $paramsDecoded['card_size'] ?? $paramsDecoded['cards_per_row'] ?? NULL
+        );
         break;
 
       case 'exposed_filter_options':

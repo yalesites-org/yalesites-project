@@ -59,9 +59,9 @@ function ys_views_basic_theme($existing, $type, $theme, $path): array {
         'rows' => [],
         'parentNode' => NULL,
         'contentType' => NULL,
-        // Cards-per-row dial (#1648). Defaults to the 3-up grid so a listing
-        // rendered without the setting looks exactly as it always has.
-        'cards_per_row' => ViewsBasicManager::CARDS_PER_ROW_DEFAULT,
+        // Card-size dial (#1648). Defaults to large so a listing rendered
+        // without the setting looks exactly as it always has.
+        'card_size' => ViewsBasicManager::CARD_SIZE_DEFAULT,
       ],
     ],
     'views_basic_events_calendar' => [

@@ -15,18 +15,23 @@ use Drupal\ys_views_basic\Plugin\views\style\ViewsBasicDynamicStyle;
 use Drupal\ys_views_basic\ViewsBasicManager;
 
 /**
- * Tests the shared "Cards per row" control (#1648).
+ * Tests the shared "Card size" control (#1648).
  *
  * The 4-up grid used to be a property of the profile-only directory design
  * option. It is generalised here into a dial on the shared card grid, so it is
  * asserted against more than one content type: it belongs to the base widget,
  * not to profiles.
  *
+ * The dial is a size rather than a column count because the column count is not
+ * ours to promise — the grid is sized by the layout region the block sits in —
+ * so these tests assert sizes and the conversion from the numeric values the
+ * dial briefly used.
+ *
  * @coversDefaultClass \Drupal\ys_views_basic\Plugin\Field\FieldWidget\ViewsBasicWidgetBase
  *
  * @group yalesites
  */
-class CardsPerRowTest extends UnitTestCase {
+class CardSizeTest extends UnitTestCase {
 
   /**
    * Builds a widget of the given class bound to the given bundle.
@@ -83,19 +88,26 @@ class CardsPerRowTest extends UnitTestCase {
   }
 
   /**
-   * The card grid offers a 3-or-4 cards-per-row select, defaulting to 3.
+   * The card grid offers a large/small size select, defaulting to large.
    *
    * @covers ::buildDisplayControls
    */
-  public function testCardsPerRowOfferedOnCardGrid() {
-    $element = $this->displayControls(PageViewWidget::class, 'page_card')['cards_per_row'] ?? NULL;
+  public function testCardSizeOfferedOnCardGrid() {
+    $element = $this->displayControls(PageViewWidget::class, 'page_card')['card_size'] ?? NULL;
 
-    $this->assertIsArray($element, 'cards_per_row is added for a card grid bundle.');
+    $this->assertIsArray($element, 'card_size is added for a card grid bundle.');
     $this->assertSame('select', $element['#type']);
     // Plain language consistent with the rest of the form (#1648).
-    $this->assertSame('Cards per row', (string) $element['#title']);
-    $this->assertSame([3, 4], array_keys($element['#options']));
-    $this->assertSame(3, $element['#default_value'], 'Unset listings keep the current 3-up grid.');
+    $this->assertSame('Card size', (string) $element['#title']);
+    $this->assertSame(['large', 'small'], array_keys($element['#options']));
+    $this->assertSame(
+      ViewsBasicManager::CARD_SIZE_DEFAULT,
+      $element['#default_value'],
+      'Unset listings keep the large (3-up) grid they already had.'
+    );
+    // The label must not promise an exact number of columns: the region the
+    // block sits in decides that, so a count would be wrong after a move.
+    $this->assertStringNotContainsStringIgnoringCase('per row', (string) $element['#title']);
   }
 
   /**
@@ -103,18 +115,18 @@ class CardsPerRowTest extends UnitTestCase {
    *
    * @covers ::buildDisplayControls
    */
-  public function testCardsPerRowSharedAcrossContentTypes() {
+  public function testCardSizeSharedAcrossContentTypes() {
     foreach (['page_card', 'post_card', 'event_card'] as $bundle) {
       $this->assertArrayHasKey(
-        'cards_per_row',
+        'card_size',
         $this->displayControls(PageViewWidget::class, $bundle),
-        "$bundle offers cards per row"
+        "$bundle offers card size"
       );
     }
     $this->assertArrayHasKey(
-      'cards_per_row',
+      'card_size',
       $this->displayControls(ProfileViewWidget::class, 'profile_card'),
-      'profile_card offers cards per row'
+      'profile_card offers card size'
     );
   }
 
@@ -126,16 +138,16 @@ class CardsPerRowTest extends UnitTestCase {
    *
    * @covers ::buildDisplayControls
    */
-  public function testCardsPerRowHiddenForNonGridDesignOptions() {
+  public function testCardSizeHiddenForNonGridDesignOptions() {
     foreach (['page_list_item', 'page_condensed'] as $bundle) {
       $this->assertArrayNotHasKey(
-        'cards_per_row',
+        'card_size',
         $this->displayControls(PageViewWidget::class, $bundle),
-        "$bundle does not offer cards per row"
+        "$bundle does not offer card size"
       );
     }
     $this->assertArrayNotHasKey(
-      'cards_per_row',
+      'card_size',
       $this->displayControls(ProfileViewWidget::class, 'profile_directory'),
       'the directory design option keeps its own grid'
     );
@@ -160,15 +172,35 @@ class CardsPerRowTest extends UnitTestCase {
   /**
    * The style plugin reads the dial off the scaffold view's arguments.
    *
-   * @covers \Drupal\ys_views_basic\Plugin\views\style\ViewsBasicDynamicStyle::cardsPerRow
+   * @covers \Drupal\ys_views_basic\Plugin\views\style\ViewsBasicDynamicStyle::cardSize
    */
-  public function testStylePluginReadsCardsPerRow() {
+  public function testStylePluginReadsCardSize() {
+    $args = array_fill(0, 8, '');
+    $args[8] = json_encode(['card_size' => 'small']);
+
+    $this->assertSame('small', $this->invoke(
+      $this->stylePlugin('views_basic_scaffold', $args),
+      'cardSize'
+    ));
+  }
+
+  /**
+   * An argument set built before the rename still resolves to its size (#1648).
+   *
+   * A rendered listing is not re-saved by the deploy hook until the hook runs,
+   * and a cached argument set can outlive the deploy, so the reader accepts the
+   * numeric value the dial briefly used rather than silently reverting the
+   * author's 4-up grid to 3-up.
+   *
+   * @covers \Drupal\ys_views_basic\Plugin\views\style\ViewsBasicDynamicStyle::cardSize
+   */
+  public function testStylePluginConvertsTheSupersededCount() {
     $args = array_fill(0, 8, '');
     $args[8] = json_encode(['cards_per_row' => 4]);
 
-    $this->assertSame(4, $this->invoke(
+    $this->assertSame('small', $this->invoke(
       $this->stylePlugin('views_basic_scaffold', $args),
-      'cardsPerRow'
+      'cardSize'
     ));
   }
 
@@ -179,26 +211,54 @@ class CardsPerRowTest extends UnitTestCase {
    * where index 8 is pin_settings. Decoding that as field display options
    * would be reading a different argument entirely, so the plugin must not try.
    *
-   * @covers \Drupal\ys_views_basic\Plugin\views\style\ViewsBasicDynamicStyle::cardsPerRow
+   * @covers \Drupal\ys_views_basic\Plugin\views\style\ViewsBasicDynamicStyle::cardSize
    */
   public function testStylePluginIgnoresForeignViews() {
     $resource_args = array_fill(0, 8, '');
-    // Index 8 is pin_settings for this view. The fixture carries a
-    // cards_per_row key it would never really have, precisely so this asserts
-    // the view-id guard rather than passing by luck: without the guard the
-    // plugin would decode this argument and answer 4.
-    $resource_args[8] = json_encode(['cards_per_row' => 4, 'pinned_to_top' => TRUE]);
+    // Index 8 is pin_settings for this view. The fixture carries a card_size
+    // key it would never really have, precisely so this asserts the view-id
+    // guard rather than passing by luck: without the guard the plugin would
+    // decode this argument and answer "small".
+    $resource_args[8] = json_encode(['card_size' => 'small', 'pinned_to_top' => TRUE]);
 
-    $this->assertSame(3, $this->invoke(
+    $this->assertSame('large', $this->invoke(
       $this->stylePlugin('content_resources', $resource_args),
-      'cardsPerRow'
+      'cardSize'
     ));
 
-    // A scaffold view with no arguments at all still renders, at 3-up.
-    $this->assertSame(3, $this->invoke(
+    // A scaffold view with no arguments at all still renders, at large.
+    $this->assertSame('large', $this->invoke(
       $this->stylePlugin('views_basic_scaffold', []),
-      'cardsPerRow'
+      'cardSize'
     ));
+  }
+
+  /**
+   * Card sizes are normalised so only a value the SCSS has a rule for is used.
+   *
+   * @covers \Drupal\ys_views_basic\ViewsBasicManager::normalizeCardSize
+   *
+   * @dataProvider providerNormalizeCardSize
+   */
+  public function testNormalizeCardSize($stored, string $expected) {
+    $this->assertSame($expected, ViewsBasicManager::normalizeCardSize($stored));
+  }
+
+  /**
+   * Data provider for ::testNormalizeCardSize().
+   */
+  public static function providerNormalizeCardSize(): array {
+    return [
+      'a size passes through' => ['small', 'small'],
+      'the default passes through' => ['large', 'large'],
+      'the superseded 3-up count is large' => [3, 'large'],
+      'the superseded 4-up count is small' => [4, 'small'],
+      'a numeric string is read as a count' => ['4', 'small'],
+      'a count with no grid rule falls back' => [7, 'large'],
+      'an unknown size falls back' => ['enormous', 'large'],
+      'an absent value falls back' => [NULL, 'large'],
+      'a non-scalar falls back' => [['small'], 'large'],
+    ];
   }
 
   /**
@@ -207,13 +267,13 @@ class CardsPerRowTest extends UnitTestCase {
    * Mirrors supports_thumbnail: the listing definition is the single source of
    * truth for what a bundle can do (ADR DR-2).
    *
-   * @covers \Drupal\ys_views_basic\ViewsBasicManager::bundleSupportsCardsPerRow
+   * @covers \Drupal\ys_views_basic\ViewsBasicManager::bundleSupportsCardSize
    */
   public function testCapabilityIsDeclarative() {
-    $this->assertTrue(ViewsBasicManager::bundleSupportsCardsPerRow('post_card'));
-    $this->assertTrue(ViewsBasicManager::bundleSupportsCardsPerRow('profile_card'));
-    $this->assertFalse(ViewsBasicManager::bundleSupportsCardsPerRow('post_condensed'));
-    $this->assertFalse(ViewsBasicManager::bundleSupportsCardsPerRow('profile_directory'));
+    $this->assertTrue(ViewsBasicManager::bundleSupportsCardSize('post_card'));
+    $this->assertTrue(ViewsBasicManager::bundleSupportsCardSize('profile_card'));
+    $this->assertFalse(ViewsBasicManager::bundleSupportsCardSize('post_condensed'));
+    $this->assertFalse(ViewsBasicManager::bundleSupportsCardSize('profile_directory'));
   }
 
 }

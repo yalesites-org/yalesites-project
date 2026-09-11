@@ -428,24 +428,35 @@ class ViewsBasicManagerTest extends UnitTestCase {
   }
 
   /**
-   * GetDefaultParamValue('cards_per_row', ...) keeps the 3-up grid (#1648).
+   * GetDefaultParamValue('card_size', ...) keeps the large grid (#1648).
    *
-   * Listings saved before the dial existed carry no cards_per_row key and must
-   * keep rendering exactly as they did.
+   * Listings saved before the dial existed carry no card_size key and must keep
+   * rendering exactly as they did. A listing saved against the numeric dial the
+   * control briefly used resolves to the size that renders the same grid, so it
+   * reads correctly whether or not the deploy hook has converted it yet.
    *
    * @covers ::getDefaultParamValue
    */
-  public function testGetDefaultParamValueCardsPerRowDefaultsToThree() {
-    $this->assertSame(3, $this->manager->getDefaultParamValue('cards_per_row', json_encode([])));
+  public function testGetDefaultParamValueCardSizeDefaultsToLarge() {
+    $this->assertSame('large', $this->manager->getDefaultParamValue('card_size', json_encode([])));
     $this->assertSame(
-      4,
-      $this->manager->getDefaultParamValue('cards_per_row', json_encode(['cards_per_row' => 4]))
+      'small',
+      $this->manager->getDefaultParamValue('card_size', json_encode(['card_size' => 'small']))
+    );
+    // The superseded numeric values still resolve to the grid they rendered.
+    $this->assertSame(
+      'small',
+      $this->manager->getDefaultParamValue('card_size', json_encode(['cards_per_row' => 4]))
+    );
+    $this->assertSame(
+      'large',
+      $this->manager->getDefaultParamValue('card_size', json_encode(['cards_per_row' => 3]))
     );
     // Anything outside the offered set falls back rather than emitting a grid
     // the SCSS has no rule for.
     $this->assertSame(
-      3,
-      $this->manager->getDefaultParamValue('cards_per_row', json_encode(['cards_per_row' => 7]))
+      'large',
+      $this->manager->getDefaultParamValue('card_size', json_encode(['card_size' => 'enormous']))
     );
   }
 

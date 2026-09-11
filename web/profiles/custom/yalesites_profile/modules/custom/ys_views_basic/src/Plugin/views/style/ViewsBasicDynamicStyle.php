@@ -151,18 +151,21 @@ class ViewsBasicDynamicStyle extends StylePluginBase implements ContainerFactory
       '#card_collection_modifiers' => $cardCollectionModifiers,
       '#parentNode' => $parentNode,
       '#contentType' => $contentType,
-      '#cards_per_row' => $this->cardsPerRow(),
+      '#card_size' => $this->cardSize(),
     ];
   }
 
   /**
-   * Returns the cards-per-row setting for this listing (#1648).
+   * Returns the card size for this listing (#1648).
    *
    * The dial travels in the shared field_display_options argument because it
    * describes the collection as a whole rather than an individual result row.
    * Anything unexpected — another view using this style plugin, a view
    * rendered outside setupView(), or a stored value the SCSS has no rule for
-   * — falls back to the 3-up grid every listing had before the dial existed.
+   * — falls back to the large (3-up) grid every listing had before the dial
+   * existed. ViewsBasicManager::normalizeCardSize() also accepts the numeric
+   * cards_per_row value the dial briefly used, so an argument set built before
+   * the rename still resolves to the size it was rendering.
    *
    * The view-id guard matters: this style plugin also serves the
    * content_resources view, which builds its own, shorter argument list in
@@ -170,12 +173,12 @@ class ViewsBasicDynamicStyle extends StylePluginBase implements ContainerFactory
    * display options — so reading the index blindly would decode a different
    * argument entirely.
    *
-   * @return int
-   *   The maximum cards per row.
+   * @return string
+   *   A member of ViewsBasicManager::CARD_SIZE_OPTIONS.
    */
-  protected function cardsPerRow(): int {
+  protected function cardSize(): string {
     if (!in_array($this->view->id(), ViewsBasicManager::SCAFFOLD_VIEWS, TRUE)) {
-      return ViewsBasicManager::CARDS_PER_ROW_DEFAULT;
+      return ViewsBasicManager::CARD_SIZE_DEFAULT;
     }
 
     $field_display_options = json_decode($this->view->args[ViewsBasicManager::viewArgumentIndex('field_display_options')] ?? '', TRUE);
@@ -186,11 +189,10 @@ class ViewsBasicDynamicStyle extends StylePluginBase implements ContainerFactory
     if (!is_array($field_display_options)) {
       $field_display_options = [];
     }
-    $cards_per_row = (int) ($field_display_options['cards_per_row'] ?? 0);
 
-    return in_array($cards_per_row, ViewsBasicManager::CARDS_PER_ROW_OPTIONS, TRUE)
-      ? $cards_per_row
-      : ViewsBasicManager::CARDS_PER_ROW_DEFAULT;
+    return ViewsBasicManager::normalizeCardSize(
+      $field_display_options['card_size'] ?? $field_display_options['cards_per_row'] ?? NULL
+    );
   }
 
 }
