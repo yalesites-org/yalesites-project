@@ -4,7 +4,6 @@ namespace Drupal\Tests\ys_core\Kernel;
 
 use Drupal\Core\Form\FormInterface;
 use Drupal\Core\Form\FormStateInterface;
-use Drupal\KernelTests\KernelTestBase;
 
 /**
  * Tests the drupal selector applied to standalone linkit form elements.
@@ -21,7 +20,7 @@ use Drupal\KernelTests\KernelTestBase;
  * @group yalesites
  * @group ys_core
  */
-class LinkitUriSelectorTest extends KernelTestBase implements FormInterface {
+class LinkitUriSelectorTest extends YsKernelTestBase implements FormInterface {
 
   /**
    * {@inheritdoc}

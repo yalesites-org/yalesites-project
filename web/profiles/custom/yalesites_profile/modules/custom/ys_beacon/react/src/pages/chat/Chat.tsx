@@ -420,7 +420,7 @@ const Chat = () => {
                             conversationId={appStateContext?.state.currentChat?.id}
                         />
                     </Stack>
-                    <div style={{display: 'flex', flexFlow: 'row nowrap', gap: '1rem', justifyContent: 'flex-start', alignItems: 'center', width: '100%'}}>
+                    <div className={styles.chatActions}>
                         <button
                             type="button"
                             className={styles.newChatButton}

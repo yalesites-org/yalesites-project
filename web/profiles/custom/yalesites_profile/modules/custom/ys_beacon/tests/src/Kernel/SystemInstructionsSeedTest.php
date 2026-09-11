@@ -2,7 +2,7 @@
 
 namespace Drupal\Tests\ys_beacon\Kernel;
 
-use Drupal\KernelTests\KernelTestBase;
+use Drupal\Tests\ys_core\Kernel\YsKernelTestBase;
 
 /**
  * Tests the fresh-install default system-instructions seed.
@@ -13,7 +13,7 @@ use Drupal\KernelTests\KernelTestBase;
  *
  * @group ys_beacon
  */
-class SystemInstructionsSeedTest extends KernelTestBase {
+class SystemInstructionsSeedTest extends YsKernelTestBase {
 
   /**
    * {@inheritdoc}

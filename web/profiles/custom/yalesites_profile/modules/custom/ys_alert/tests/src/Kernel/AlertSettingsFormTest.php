@@ -3,7 +3,7 @@
 namespace Drupal\Tests\ys_alert\Kernel;
 
 use Drupal\Core\Form\FormState;
-use Drupal\KernelTests\KernelTestBase;
+use Drupal\Tests\ys_core\Kernel\YsKernelTestBase;
 use Drupal\path_alias\Entity\PathAlias;
 use Drupal\ys_alert\Form\AlertSettings;
 
@@ -13,7 +13,7 @@ use Drupal\ys_alert\Form\AlertSettings;
  * @group yalesites
  * @group ys_alert
  */
-class AlertSettingsFormTest extends KernelTestBase {
+class AlertSettingsFormTest extends YsKernelTestBase {
 
   /**
    * {@inheritdoc}
