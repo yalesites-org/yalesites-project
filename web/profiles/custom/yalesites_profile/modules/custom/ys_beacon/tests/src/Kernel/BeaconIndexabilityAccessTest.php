@@ -2,9 +2,9 @@
 
 namespace Drupal\Tests\ys_beacon\Kernel;
 
+use Drupal\Tests\ys_core\Kernel\YsKernelTestBase;
 use Drupal\field\Entity\FieldConfig;
 use Drupal\field\Entity\FieldStorageConfig;
-use Drupal\KernelTests\KernelTestBase;
 use Drupal\metatag\MetatagManager;
 use Drupal\node\Entity\Node;
 use Drupal\node\Entity\NodeType;
@@ -31,7 +31,7 @@ use Drupal\ys_beacon\Service\BeaconIndexability;
  * @group ys_beacon
  * @coversDefaultClass \Drupal\ys_beacon\Service\BeaconIndexability
  */
-class BeaconIndexabilityAccessTest extends KernelTestBase {
+class BeaconIndexabilityAccessTest extends YsKernelTestBase {
 
   /**
    * {@inheritdoc}
