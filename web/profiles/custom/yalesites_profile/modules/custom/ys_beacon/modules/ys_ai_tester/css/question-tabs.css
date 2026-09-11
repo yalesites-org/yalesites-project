@@ -1,0 +1,329 @@
+/**
+ * @file
+ * Vertical question tabs for the AI Tester.
+ *
+ * Kept in its own file rather than folded into compare.css, but note it is not
+ * independent of it: the status chip on each tab reuses the `.ys-compare-badge--*`
+ * rules, which live in compare.css, so the `question_tabs` library declares
+ * `ys_ai_tester/compare` as a dependency. Making these tabs genuinely standalone
+ * means moving the badge rules into a shared file first.
+ *
+ * Following compare.css: colors sitting on a surface of our own are pinned to
+ * literals rather than taken from Gin's text tokens, because Gin flips those for
+ * dark mode and pairing one with a background that does not flip is what rendered
+ * the caveat copy at 1.02:1. Dark mode is signalled by `html.gin--dark-mode`.
+ * Every pair below was computed against WCAG 2.1 AA (4.5:1) using Gin's real
+ * layer values (--gin-bg-layer is #fff light / #2a2a2d dark) and the ratio is
+ * recorded beside it.
+ */
+
+.ys-qtabs {
+  display: grid;
+  grid-template-columns: minmax(12rem, 18rem) minmax(0, 1fr);
+  gap: 1.5rem;
+  align-items: start;
+}
+
+/* Kept vertical at every width the view is visible at. Turning it into a
+   horizontal strip on narrower screens would contradict the
+   aria-orientation="vertical" the tab list declares and the up/down arrow model
+   the behavior implements. */
+/* The rail is a bounded, scrollable surface of its own, not a bare list on the
+   page background. That matters for more than looks: with no surface, the tab
+   clipped by the max-height below reads as the end of the list rather than as
+   content continuing past an edge, so a run with more questions than fit looked
+   like a run with exactly this many. The border and background give the clip
+   somewhere to happen. Same tokens as .ys-qtabs__panel, so the two halves of the
+   widget sit on one surface; hover stays on bg-layer2 so it still reads against
+   this. */
+.ys-qtabs__list {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+  max-height: 40rem;
+  padding: 0.5rem;
+  border: 1px solid var(--gin-border-color-table, #d4d4d8);
+  border-radius: 4px;
+  background: var(--gin-bg-layer, #fff);
+  /* `scroll` rather than `auto`, plus a stable gutter, so the scrollbar's space is
+     reserved whether or not the list currently overflows and adding a question
+     never shifts the tabs sideways. The scrollbar is made permanently visible by
+     the @supports blocks below — see the note there, the mechanism is fussier
+     than it looks. */
+  overflow-y: scroll;
+  scrollbar-gutter: stable;
+}
+
+html.gin--dark-mode .ys-qtabs__list {
+  border-color: var(--gin-border-color-table, #43454a);
+  background: var(--gin-bg-layer, #2a2a2d);
+}
+
+/* Making the scrollbar permanently visible, which the platform default is not:
+   macOS draws overlay scrollbars that fade out while idle, so a rail holding 19
+   questions looked like a rail holding the 6 you could see.
+
+   Styling ::-webkit-scrollbar is what opts Chromium and Safari out of overlay
+   scrollbars onto a custom one that is painted at rest. Confirmed by layout
+   rather than by eye: with these rules present the rail reserves a 12px gutter
+   (offsetWidth - clientWidth), and with them absent it reserves 0.
+
+   The @supports split is load-bearing, not decoration. Chromium ignores every
+   ::-webkit-scrollbar pseudo-element as soon as `scrollbar-color` is specified on
+   the element — even to `auto` — so declaring both together silently disables the
+   custom scrollbar and hands the overlay one back. Firefox implements
+   scrollbar-color and has no ::-webkit-scrollbar, so keying on
+   `selector(::-webkit-scrollbar)` gives each engine exactly the one it supports
+   and neither sees the other.
+
+   Thumb against track is a UI component boundary, so it is measured against WCAG
+   2.1 AA 1.4.11 (3:1) rather than the 4.5:1 the text pairs in this file use. */
+@supports selector(::-webkit-scrollbar) {
+  .ys-qtabs__list::-webkit-scrollbar {
+    width: 0.75rem;
+  }
+
+  .ys-qtabs__list::-webkit-scrollbar-track {
+    border-radius: 4px;
+    background: #e4e5e7;
+  }
+
+  .ys-qtabs__list::-webkit-scrollbar-thumb {
+    border-radius: 4px;
+    background: #6b6e70; /* 4.1:1 on its track. */
+  }
+
+  html.gin--dark-mode .ys-qtabs__list::-webkit-scrollbar-track {
+    background: #2f2f33;
+  }
+
+  html.gin--dark-mode .ys-qtabs__list::-webkit-scrollbar-thumb {
+    background: #8c9094; /* 4.2:1 on its track. */
+  }
+}
+
+@supports not selector(::-webkit-scrollbar) {
+  .ys-qtabs__list {
+    scrollbar-color: #6b6e70 #e4e5e7;
+  }
+
+  html.gin--dark-mode .ys-qtabs__list {
+    scrollbar-color: #8c9094 #2f2f33;
+  }
+}
+
+.ys-qtabs__tab {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 0.25rem;
+  width: 100%;
+  padding: 0.5rem 0.75rem;
+  border: 1px solid transparent;
+  /* The selected tab's indicator, transparent until then so selecting a tab does
+     not shift the label sideways. */
+  border-inline-start: 3px solid transparent;
+  border-radius: 4px;
+  background: none;
+  color: var(--gin-color-text, #1b1b1d);
+  font: inherit;
+  text-align: start;
+  cursor: pointer;
+}
+
+.ys-qtabs__tab:hover {
+  background: var(--gin-bg-layer2, #edeff5);
+}
+
+/* Every literal below is the *fallback* for a Gin token, and Gin's tokens differ
+   per mode, so the dark-mode block repeats them with dark values. Without this a
+   missing token leaves a light surface carrying light text — the same failure that
+   rendered the caveat copy at 1.02:1, arrived at from the other direction. */
+html.gin--dark-mode .ys-qtabs__tab {
+  color: var(--gin-color-text, #d2d3d3);
+}
+
+html.gin--dark-mode .ys-qtabs__tab:hover {
+  background: var(--gin-bg-layer2, #3b3b3f);
+}
+
+/* The leading `.ys-qtabs` is load-bearing, not redundant — do not simplify it
+   away. Gin ships `.page-wrapper :focus { outline: none }`, which is also
+   (0,2,0), and theme CSS loads after module CSS, so at equal specificity Gin
+   wins and the outline silently never paints. The extra class takes this to
+   (0,3,0) so it does. Gin substitutes a box-shadow ring, but in light mode that
+   ring is rgba(0,0,0,.4) and composites to only 2.77:1 against the selected
+   tab's own background; this outline measures 4.22:1 light / 7.17:1 dark, so it
+   is what actually carries focus visibility. Both are drawn — no conflict. */
+.ys-qtabs .ys-qtabs__tab:focus-visible {
+  outline: 2px solid var(--gin-color-primary, #2d2eff);
+  outline-offset: 1px;
+}
+
+.ys-qtabs__tab[aria-selected="true"] {
+  border-inline-start-color: #24418f;
+  background: #e7ecfb;
+  color: #24418f; /* 8.0:1 on the pinned surface. */
+  font-weight: 600;
+}
+
+html.gin--dark-mode .ys-qtabs__tab[aria-selected="true"] {
+  border-inline-start-color: #c3d3f7;
+  background: #1f2a44;
+  color: #c3d3f7; /* 9.5:1. */
+}
+
+.ys-qtabs__tab-number {
+  font-weight: 600;
+}
+
+.ys-qtabs__tab-preview {
+  font-size: 0.8125rem;
+  font-weight: 400;
+  color: #595c5e; /* 6.7:1 on --gin-bg-layer light. */
+}
+
+html.gin--dark-mode .ys-qtabs__tab-preview {
+  color: #b8b8bd; /* 7.2:1 on --gin-bg-layer dark. */
+}
+
+/* The selected tab has its own measured pair, so the preview rides that rather
+   than keeping a lighter color whose contrast on the selected surface would be a
+   third pair to maintain. */
+.ys-qtabs__tab[aria-selected="true"] .ys-qtabs__tab-preview {
+  color: inherit;
+}
+
+/* The template ships every panel unhidden so that without scripting the view is
+   a readable stacked list. Core sets `js` on <html> before paint
+   (core/misc/drupal.init.js), and question-tabs.js runs in the footer, so
+   without this a comparison of two dozen paragraph-length answers paints fully
+   expanded and then snaps shut. Scoped to :not([data-ys-qtabs-ready]) because
+   the behavior sets that attribute once it owns visibility — otherwise this
+   rule would keep a selected panel hidden whenever it is not the first. */
+html.js
+  .ys-qtabs:not([data-ys-qtabs-ready])
+  .ys-qtabs__panel:not(:first-of-type) {
+  display: none;
+}
+
+.ys-qtabs__panel {
+  padding: 1rem;
+  border: 1px solid var(--gin-border-color-table, #d4d4d8);
+  border-radius: 4px;
+  background: var(--gin-bg-layer, #fff);
+}
+
+html.gin--dark-mode .ys-qtabs__panel {
+  border-color: var(--gin-border-color-table, #43454a);
+  background: var(--gin-bg-layer, #2a2a2d);
+}
+
+/* Same specificity guard as the tab's focus ring above. */
+.ys-qtabs .ys-qtabs__panel:focus-visible {
+  outline: 2px solid var(--gin-color-primary, #2d2eff);
+  outline-offset: 2px;
+}
+
+/* The panel's headline: it is the question the answer or answers below it are
+   answering, so it has to outrank the .ys-qtabs__side-heading per-run headings
+   beneath it (0.9375rem). Deliberately 1.5rem, which is Gin's h3 step rather
+   than the 1.75rem it gives an h2 — this heading opens a panel, it is not the
+   page title. */
+.ys-qtabs__question {
+  margin-block: 0 1rem;
+  font-size: 1.5rem;
+}
+
+/* One equal column per side the panel was handed, rather than a fixed two: the
+   comparison passes two sides, the single-run view passes one. grid-auto-columns
+   over an explicit template so the count follows the markup — there is no value
+   to set and nothing to keep in step with the PHP.
+
+   minmax(0, 1fr) rather than 1fr: a long unbroken answer would otherwise force
+   the column wider than its share and overflow the panel. */
+.ys-qtabs__sides {
+  display: grid;
+  grid-auto-flow: column;
+  grid-auto-columns: minmax(0, 1fr);
+  gap: 1.5rem;
+}
+
+/* Answers are stored as plain text whose newlines are meaningful, so the
+   whitespace is preserved and long unbroken strings (a bare URL) wrap instead of
+   overflowing. compare.css's .ys-diff carries these same two declarations, and
+   only these — the per-run highlight colors live on its .ys-diff--a/--b
+   .diffchange descendants, not on .ys-diff itself. So this is a deliberate
+   restatement rather than a shared rule: the single-run answer is not a diff and
+   should not be labelled as one to borrow two lines of CSS. */
+.ys-qtabs__answer {
+  white-space: pre-wrap;
+  word-break: break-word;
+}
+
+/* Every source retrieved for the question, cited or not. Only the single-run
+   view renders this — the comparison lists just the sources unique to one side,
+   inside its own .ys-compare-unique line. */
+.ys-qtabs__sources {
+  margin-block-start: 1rem;
+  font-size: 0.8125rem;
+}
+
+/* Both h3s inside a panel — the per-run column heading the comparison renders
+   and the "Sources" heading the single-run view renders — are one heading tier
+   and share one rule, so they cannot be resized apart by accident. */
+.ys-qtabs__side-heading,
+.ys-qtabs__sources-heading {
+  margin-block: 0 0.25rem;
+  font-size: 0.9375rem;
+}
+
+.ys-qtabs__side-meta {
+  margin-block: 0 0.5rem;
+  font-size: 0.8125rem;
+  color: #595c5e; /* 6.7:1 on --gin-bg-layer light. */
+}
+
+html.gin--dark-mode .ys-qtabs__side-meta {
+  color: #b8b8bd; /* 7.2:1 on --gin-bg-layer dark. */
+}
+
+.ys-qtabs__empty {
+  font-style: italic;
+  color: #595c5e; /* 6.7:1 on --gin-bg-layer light. */
+}
+
+html.gin--dark-mode .ys-qtabs__empty {
+  color: #b8b8bd; /* 7.2:1 on --gin-bg-layer dark. */
+}
+
+/* Between the compare view's 768px floor and 1024px there is room for the tab
+   list but not for two answer columns beside it, so the answers stack while the
+   tab list stays vertical. A single-run panel has one side, so this only changes
+   what the comparison does. */
+@media (max-width: 1024px) {
+  .ys-qtabs {
+    grid-template-columns: minmax(0, 10rem) minmax(0, 1fr);
+  }
+
+  .ys-qtabs__sides {
+    grid-auto-flow: row;
+  }
+}
+
+/* Below 768px the comparison has already replaced itself with its notice, so
+   this only governs the single-run view — which stays usable and has to: the
+   table it replaced was #responsive. A 10rem rail beside the panel would leave a
+   paragraph-length answer about 9rem at 375px, so the rail moves above the panel
+   and takes the full width. The list itself stays vertical, so the
+   aria-orientation the tablist declares and the up/down arrow model both remain
+   honest. */
+@media (max-width: 768px) {
+  .ys-qtabs {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .ys-qtabs__list {
+    max-height: 15rem;
+  }
+}

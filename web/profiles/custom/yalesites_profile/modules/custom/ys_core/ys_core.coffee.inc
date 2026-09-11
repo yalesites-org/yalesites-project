@@ -184,7 +184,7 @@ function ys_core_coffee_commands() {
   // Add YaleSites settings commands.
   $commands[] = [
     'value' => Url::fromRoute('ys_core.admin_views_settings')->toString(),
-    'label' => 'Views Settings',
+    'label' => 'Search Settings',
     'command' => ':views_settings',
   ];
 

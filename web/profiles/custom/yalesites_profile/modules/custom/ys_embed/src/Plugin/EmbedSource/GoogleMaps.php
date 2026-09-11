@@ -21,7 +21,7 @@ class GoogleMaps extends EmbedSourceBase implements EmbedSourceInterface {
   /**
    * {@inheritdoc}
    */
-  protected static $pattern = '/^<iframe.+src=\"https:\/\/www\.google\.com\/maps\/embed(?<map_params>\?.+?)\".*$/';
+  protected static $pattern = '/^<iframe[^>]*src=\"https:\/\/www\.google\.com\/maps\/embed(?<map_params>\?.+?)\".*$/s';
 
   /**
    * {@inheritdoc}

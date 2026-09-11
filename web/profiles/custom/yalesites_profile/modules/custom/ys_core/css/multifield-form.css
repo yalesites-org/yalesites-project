@@ -11,9 +11,33 @@
   padding-left: 15px;
 }
 
+/*
+ * Accessibility (Issue #760): keep the paragraph reorder ("move") handle icon
+ * above the WCAG 2.1 AA non-text contrast minimum (3:1) in every state.
+ *
+ * Core paints this handle with a fixed-color background-image
+ * (core/misc/icons/787878/move.svg, a mid-gray). Because we hide Gin's
+ * recolorable ::after glyph (below) and show this .handle instead, none of
+ * Gin's or the Issue #1086 hover/focus recoloring reaches it, so it cannot
+ * adapt when the row background lightens on :hover / :focus-within. In dark
+ * mode that drops the icon to ~2.5:1 and it visually disappears.
+ *
+ * Repaint the glyph as a mask tinted with Gin's --gin-color-text, which
+ * auto-flips between light and dark admin modes (near-black on light,
+ * near-white on dark), so the handle stays high-contrast at rest, on hover,
+ * and on keyboard focus in both modes.
+ */
 .js .field--widget-paragraphs .tabledrag-handle .handle {
   width: 22px;
   margin-left: 8px;
+  background-color: var(--gin-color-text);
+  background-image: none;
+  mask-image: url("/core/misc/icons/787878/move.svg");
+  mask-repeat: no-repeat;
+  mask-position: 6px 7px;
+  -webkit-mask-image: url("/core/misc/icons/787878/move.svg");
+  -webkit-mask-repeat: no-repeat;
+  -webkit-mask-position: 6px 7px;
 }
 
 .js .field--widget-paragraphs .draggable .tabledrag-handle::after {

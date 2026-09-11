@@ -1,0 +1,52 @@
+<?php
+
+/**
+ * @file
+ * Site media handling for a YaleSite.
+ */
+
+use Drupal\imagemagick\ImagemagickExecArguments;
+
+/**
+ * Implements hook_page_attachments().
+ */
+function ys_media_page_attachments(array &$page) {
+  // Custom or fallback favicons.
+  $favicons = \Drupal::service('ys_media.media_manager')->getFavicons();
+  foreach ($favicons as $name => $favicon) {
+    $page['#attached']['html_head'][] = [$favicon, $name];
+  }
+}
+
+/**
+ * Implements hook_imagemagick_arguments_alter().
+ *
+ * Preserves PNG transparency across all image style operations.
+ */
+function ys_media_imagemagick_arguments_alter(ImagemagickExecArguments $arguments, $command) {
+  // Only process 'convert' operations (image transformations).
+  if ($command !== 'convert') {
+    return;
+  }
+
+  // Get the source image path to check if it's a PNG.
+  $source = $arguments->getSource();
+  if (!$source) {
+    return;
+  }
+
+  // Check if source is a PNG file.
+  $source_extension = strtolower(pathinfo($source, PATHINFO_EXTENSION));
+  $source_mime = mime_content_type($source);
+
+  if ($source_extension === 'png' || $source_mime === 'image/png') {
+    // Add transparency preservation arguments for PNG files.
+    // Use ImageMagick v6 compatible syntax.
+    $arguments->add('-alpha on');
+    $arguments->add('-channel RGBA');
+
+    // Ensure PNG compression is optimized while preserving transparency.
+    $arguments->add('-define png:preserve-colormap=true');
+    $arguments->add('-define png:exclude-chunks=date');
+  }
+}

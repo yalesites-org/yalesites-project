@@ -1,0 +1,32 @@
+diff --git a/src/Element/MediaLibrary.php b/src/Element/MediaLibrary.php
+index d122a42..8aa169d 100644
+--- a/src/Element/MediaLibrary.php
++++ b/src/Element/MediaLibrary.php
+@@ -301,10 +301,24 @@ class MediaLibrary extends FormElementBase {
+     // items, the button needs to be disabled. Since we can't shift the focus to
+     // disabled elements, the focus is set back to the open button via
+     // JavaScript by adding the 'data-disabled-focus' attribute.
+-    // @see Drupal.behaviors.MediaLibraryWidgetDisableButton
++    // @see Drupal.behaviors.MediaLibraryFormElementDisableButton
+     if (!$cardinality_unlimited && $remaining === 0) {
+-      $element['media_library_open_button']['#attributes']['data-disabled-focus'] = 'true';
+-      $element['media_library_open_button']['#attributes']['class'][] = 'visually-hidden';
++      $triggering_element = $form_state->getTriggeringElement();
++      $trigger_parents = $triggering_element['#array_parents'] ?? [];
++      if ($trigger_parents && end($trigger_parents) === 'media_library_update_widget') {
++        // The element is being rebuilt from a selection change, so shift the
++        // focus back to the button the user left from before disabling it.
++        $element['media_library_open_button']['#attributes']['data-disabled-focus'] = 'true';
++        $element['media_library_open_button']['#attributes']['class'][] = 'visually-hidden';
++      }
++      else {
++        // The element is being built without a selection change, so it can be
++        // disabled right away and there is no need to set the focus first.
++        // Flagging it for focus here would make the browser scroll the
++        // visually-hidden button into view on a plain page load.
++        $element['media_library_open_button']['#disabled'] = TRUE;
++        $element['media_library_open_button']['#attributes']['class'][] = 'visually-hidden';
++      }
+     }
+ 
+     // This hidden field and button are used to add new items to the widget.

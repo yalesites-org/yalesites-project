@@ -111,7 +111,7 @@ class DcnFieldItem extends FieldItemBase {
     $dcn_type = $this->get('dcn_type_target_id')->getValue();
     $dcn_identifier = $this->get('dcn_identifier')->getValue();
 
-    return empty($dcn_type) && empty($dcn_identifier);
+    return empty($dcn_type) && ($dcn_identifier === NULL || $dcn_identifier === '');
   }
 
   /**

@@ -6,3 +6,4 @@ ys_ai.settings:
   requirements:
     _permission: 'configure ys ai user settings'
     _custom_access: 'ys_ai.settings_enabled_access_check::access'
+    _ys_ai_not_superseded: 'TRUE'

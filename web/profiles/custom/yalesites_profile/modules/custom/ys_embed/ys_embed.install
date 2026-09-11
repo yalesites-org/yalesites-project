@@ -215,6 +215,9 @@ function ys_embed_update_9007() {
  * Copy SpringShare LibCal icon.
  */
 function ys_embed_update_10001() {
+  // The LibCal embed source and its springshare-libcal.png icon were removed in
+  // issue #1371. This historical update hook is retained as migration history;
+  // _copy_embed_file() tolerates the now-missing source file, so it is a no-op.
   _copy_embed_file('springshare-libcal.png');
 }
 

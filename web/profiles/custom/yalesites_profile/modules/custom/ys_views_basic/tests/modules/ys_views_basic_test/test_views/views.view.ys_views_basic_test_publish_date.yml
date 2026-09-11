@@ -1,0 +1,57 @@
+langcode: en
+status: true
+dependencies:
+  module:
+    - node
+    - ys_views_basic
+id: ys_views_basic_test_publish_date
+label: 'YS Views Basic Test Publish Date'
+module: views
+description: 'Fixture view exercising the post_publish_date filter.'
+tag: ''
+base_table: node_field_data
+base_field: nid
+display:
+  default:
+    id: default
+    display_title: Default
+    display_plugin: default
+    position: 0
+    display_options:
+      access:
+        type: none
+        options: {  }
+      cache:
+        type: none
+        options: {  }
+      query:
+        type: views_query
+        options:
+          disable_sql_rewrite: true
+      pager:
+        type: none
+        options: {  }
+      exposed_form:
+        type: basic
+        options: {  }
+      style:
+        type: default
+      row:
+        type: fields
+      fields:
+        nid:
+          id: nid
+          table: node_field_data
+          field: nid
+          entity_type: node
+          entity_field: nid
+          plugin_id: field
+      filters:
+        post_publish_date:
+          id: post_publish_date
+          table: node_field_data
+          field: post_publish_date
+          plugin_id: post_publish_date
+          group: 1
+      sorts: {  }
+      arguments: {  }

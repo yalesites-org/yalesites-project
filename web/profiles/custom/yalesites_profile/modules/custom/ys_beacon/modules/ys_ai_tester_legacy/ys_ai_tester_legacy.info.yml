@@ -1,0 +1,7 @@
+name: YS AI Tester legacy assistant
+type: module
+description: 'Temporary: lets the AI Tester also run its question list against the legacy ai_engine Azure assistant, so Beacon answers can be compared side by side to defend the cutover. Uninstall to remove the option.'
+core_version_requirement: ^10 || ^11
+package: YaleSites
+dependencies:
+  - ys_ai_tester

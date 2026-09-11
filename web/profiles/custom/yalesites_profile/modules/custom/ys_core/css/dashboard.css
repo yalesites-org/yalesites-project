@@ -1,0 +1,167 @@
+/**
+ * Editorial dashboard layout.
+ *
+ * @see web/profiles/custom/yalesites_profile/modules/custom/ys_core/templates/ys-dashboard.html.twig
+ */
+
+.ys-dashboard__section {
+  margin-block-end: 2.5rem;
+}
+
+.ys-dashboard__section > h2 {
+  margin-block-end: 0.75rem;
+}
+
+/* 50/50 grids that collapse to one column on narrow screens: the top row
+   (announcements + resources/feedback/platform) and the two-up area below
+   (Latest edits / Recent drafts). */
+.ys-dashboard__top,
+.ys-dashboard__columns {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(20rem, 1fr));
+  gap: 2.5rem;
+}
+
+.ys-dashboard__top {
+  margin-block-end: 2.5rem;
+}
+
+.ys-dashboard__top-main > .ys-dashboard__section {
+  margin-block-end: 0;
+}
+
+/* Keep the stacked cards in the right column close together. */
+.ys-dashboard__top-aside > .ys-dashboard__section {
+  margin-block-end: 1rem;
+}
+
+/* Platform information and the action stack sit side-by-side beneath
+   Resources, collapsing to one column when there isn't room. */
+.ys-dashboard__aside-split {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(10rem, 1fr));
+  gap: 1.5rem;
+}
+
+.ys-dashboard__aside-split .ys-dashboard__section {
+  margin-block-end: 0;
+}
+
+.ys-dashboard__action-button {
+  display: inline-block;
+  margin-block-end: 0.75rem;
+}
+
+.ys-dashboard__action-help {
+  margin: 0 0 1rem;
+  font-size: 0.875rem;
+  color: var(--gin-color-text-light, #4a4a4a);
+}
+
+.ys-dashboard__columns .ys-dashboard__section {
+  margin-block-end: 0;
+}
+
+/* Header row: the Announcements heading and the "mark all as read" control,
+   wrapping onto separate lines when the column is too narrow for both. */
+.ys-dashboard__announcements-header {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 0.5rem 1rem;
+  margin-block-end: 0.75rem;
+}
+
+/* The header row carries the gap below itself now. */
+.ys-dashboard__announcements-header > h2 {
+  margin-block-end: 0;
+}
+
+/* Gin spaces form actions for the bottom of a settings form; inline in a
+   section header that margin pushes the button out of line. */
+.ys-dashboard__announcements-header .form-actions {
+  margin: 0;
+}
+
+/* Placement of the "New" pill against an announcement title. The pill itself is
+   .ys-dashboard-badge (css/badge.css), shared with the toolbar count. */
+.ys-dashboard__announcement-new {
+  vertical-align: middle;
+}
+
+.ys-dashboard__announcement-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+.ys-dashboard__announcement {
+  padding-block: 1rem;
+  border-block-end: 1px solid var(--gin-border-color, #d6d6d6);
+}
+
+.ys-dashboard__announcement:first-child {
+  padding-block-start: 0;
+}
+
+.ys-dashboard__announcement-title {
+  margin: 0 0 0.25rem;
+}
+
+.ys-dashboard__announcement-date {
+  margin: 0 0 0.5rem;
+  font-size: 0.875rem;
+  color: var(--gin-color-text-light, #4a4a4a);
+}
+
+.ys-dashboard__announcement-categories {
+  margin: 0 0 0.5rem;
+}
+
+/* .ys-dashboard-badge carries a leading margin-inline-start meant for
+   trailing inline title text (see badge.css); zero it on the first pill in
+   this row so the row itself is not indented. */
+.ys-dashboard__announcement-categories .ys-dashboard-badge:first-child {
+  margin-inline-start: 0;
+}
+
+.ys-dashboard__announcement-summary {
+  margin: 0;
+}
+
+/* Keep the embedded Views tables fluid within their column. */
+.ys-dashboard table {
+  width: 100%;
+}
+
+.ys-dashboard__resources .more-link {
+  margin-block-start: 0.75rem;
+}
+
+/* Atomic's link-purpose library marks up new-tab links on front-end pages, but
+   it ships in atomic/global and the dashboard is admin-themed, so it never runs
+   here. Draw its "opens in new window" icon ourselves, keyed on the attribute so
+   any new-tab link on the page is covered. The glyph is the same Font Awesome
+   arrow-up-right-from-square link-purpose uses, inlined as a mask so it takes
+   the link's own color (including Gin dark mode) without pulling Font Awesome
+   into the admin UI. The matching screen reader text lives in the template --
+   generated content is not a reliable way to expose it.
+   Glyph: Font Awesome Free 6 "arrow-up-right-from-square" (CC BY 4.0).
+   @see component-library-twig/lib/link-treatment/link-treatment.js */
+.ys-dashboard a[target="_blank"]::after {
+  --ys-dashboard-new-tab-icon: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 512 512'%3E%3Cpath d='M304 24c0 13.3 10.7 24 24 24H430.1L207 271c-9.4 9.4-9.4 24.6 0 33.9s24.6 9.4 33.9 0l223-223V184c0 13.3 10.7 24 24 24s24-10.7 24-24V24c0-13.3-10.7-24-24-24H328c-13.3 0-24 10.7-24 24zM72 32C32.2 32 0 64.2 0 104V440c0 39.8 32.2 72 72 72H408c39.8 0 72-32.2 72-72V312c0-13.3-10.7-24-24-24s-24 10.7-24 24V440c0 13.3-10.7 24-24 24H72c-13.3 0-24-10.7-24-24V104c0-13.3 10.7-24 24-24H200c13.3 0 24-10.7 24-24s-10.7-24-24-24H72z'/%3E%3C/svg%3E");
+
+  content: "";
+  display: inline-block;
+  inline-size: 0.7em;
+  block-size: 0.7em;
+  margin-inline-start: 0.35em;
+  background-color: currentColor;
+  -webkit-mask-image: var(--ys-dashboard-new-tab-icon);
+  -webkit-mask-repeat: no-repeat;
+  -webkit-mask-size: contain;
+  mask-image: var(--ys-dashboard-new-tab-icon);
+  mask-repeat: no-repeat;
+  mask-size: contain;
+}

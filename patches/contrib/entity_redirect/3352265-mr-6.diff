@@ -1,0 +1,13 @@
+diff --git a/entity_redirect.module b/entity_redirect.module
+index 6df9514e6377be3d9169ff64ec9d2aea14a39533..94f8fe3918fe60399622f2c55b870f6669125bcc 100644
+--- a/entity_redirect.module
++++ b/entity_redirect.module
+@@ -286,7 +286,7 @@ function entity_redirect_submit($form, FormStateInterface $form_state) {
+         break;
+ 
+       case 'layout_builder':
+-        $form_state->setRedirectUrl(Url::fromUri($entity->toUrl('canonical', ['absolute' => TRUE])->toString() . '/layout'));
++        $form_state->setRedirect("layout_builder.overrides.{$entity_type->id()}.view", [$entity_type->id() => $entity->id()]);
+         break;
+ 
+       case 'external':

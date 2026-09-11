@@ -1,0 +1,36 @@
+uuid: 253bb404-abb0-4bcd-b672-c3103af30b79
+langcode: en
+status: true
+dependencies:
+  config:
+    - core.entity_view_mode.media.gallery_modal
+    - field.field.media.image.field_media_image
+    - field.field.media.image.field_tags
+    - media.type.image
+    - responsive_image.styles.image_max_width
+  module:
+    - responsive_image
+id: media.image.gallery_modal
+targetEntityType: media
+bundle: image
+mode: gallery_modal
+content:
+  field_media_image:
+    type: responsive_image
+    label: hidden
+    settings:
+      responsive_image_style: image_max_width
+      image_link: ''
+      image_loading:
+        attribute: lazy
+    third_party_settings: {  }
+    weight: 0
+    region: content
+hidden:
+  addtoany: true
+  created: true
+  field_tags: true
+  name: true
+  search_api_excerpt: true
+  thumbnail: true
+  uid: true

@@ -8,3 +8,15 @@ The View Basic module is a custom utility, built on Drupal Views, that gives adv
 - **Field Widget**: Users interact with a specialized form for constructing queries and render logic using a user-friendly, no-code interface. Natural language and intuitive icons simplify query building, requiring minimal training for authors.
 - **Field Formatter**: Metadata is rendered consistently through custom templates, blocks, display modes, and a Drupal View. This consistency ensures that content creators construct Views that align with the YaleSites Design System.
 - **View Plugins**: The module incorporates numerous view plugins that interpret view definitions into sorts, filters, pagers, and styles compatible with the core Drupal Views module, enhancing functionality and flexibility.
+
+## Running tests
+
+This module has PHPUnit tests under `tests/src/` covering ViewsBasicManager, the EventsCalendar service, and several Views plugins. Run them from the project root on the local Lando environment, passing the module's `tests` path so PHPUnit only discovers this module's tests (not Drupal core/contrib):
+
+```bash
+lando ssh -c "env SIMPLETEST_DB=mysql://pantheon:pantheon@database/pantheon \
+  php /app/vendor/bin/phpunit -c /app/phpunit.xml \
+  /app/web/profiles/custom/yalesites_profile/modules/custom/ys_views_basic/tests"
+```
+
+Add `--testdox` for readable output.

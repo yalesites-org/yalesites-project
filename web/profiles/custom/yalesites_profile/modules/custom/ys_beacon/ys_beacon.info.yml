@@ -1,0 +1,17 @@
+name: YaleSites Beacon
+type: module
+description: 'AI chat with retrieval-augmented answers built on the Drupal AI ecosystem.'
+package: YaleSites
+core_version_requirement: ^10 || ^11
+configure: ys_beacon.settings
+dependencies:
+  - drupal:media
+  - drupal:node
+  - search_api:search_api
+  - ai:ai
+  - ai:ai_search
+  - ai_vdb_provider_azure_ai_search:ai_vdb_provider_azure_ai_search
+  - key:key
+  - metatag:metatag
+  - ys_integrations:ys_integrations
+  - ys_beacon:ys_beacon_portkey

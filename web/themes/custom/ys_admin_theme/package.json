@@ -3,7 +3,9 @@
   "version": "0.0.0-development",
   "description": "Admin theme for YaleSites projects.",
   "scripts": {
-    "develop": "sass --watch scss:css",
+    "build": "sass --no-source-map scss:css",
+    "develop": "sass --no-source-map --watch scss:css",
+    "develop:maps": "sass --watch scss:css",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "devDependencies": {

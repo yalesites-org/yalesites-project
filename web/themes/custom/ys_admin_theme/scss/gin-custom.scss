@@ -116,11 +116,75 @@ a.focal-point-preview-link {
   background-color: var(--gin-bg-layer2);
 }
 
-// Form elements were not scaling to the larger height that 
+// Form elements were not scaling to the larger height that
 // other items adhere to, like chosen and the title of a
 // drupal form.  This allows it to closer match them.
 .form-element {
-  min-height: calc(var(--input-padding-vertical) * 3 + var(--input-line-height)) !important;
+  min-height: calc(var(--input-padding-vertical) * 3 + var(--input-line-height));
+}
+
+// Safari: inflating min-height on single-line inputs can make long URLs appear to wrap.
+// Inputs win over `.form-element` via higher specificity (no !important).
+input.form-element:not([type="checkbox"]):not([type="radio"]):not([type="file"]) {
+  min-height: calc(var(--input-padding-vertical) * 2 + var(--input-line-height));
+}
+
+// Long URLs in Linkit / entity autocomplete: keep suggestions on one line and wide
+// enough to read. jQuery UI sets inline `width` on `.ui-autocomplete`; using
+// `min-width: max-content` grows the used width past that inline value without
+// !important (width + min-width interaction).
+//
+// Linkit adds `.linkit-ui-autocomplete` and sets `max-width: inherit` on
+// `.linkit-ui-autocomplete.ui-widget` (see linkit.autocomplete.css); this theme
+// loads after Linkit so equal specificity overrides without !important.
+
+.ui-autocomplete,
+.linkit-ui-autocomplete {
+  min-width: max-content;
+  max-width: calc(100vw - 2rem);
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+}
+
+.linkit-ui-autocomplete.ui-widget {
+  max-width: none;
+}
+
+.ui-autocomplete .ui-menu-item {
+  white-space: nowrap;
+}
+
+.ui-autocomplete .ui-menu-item-wrapper {
+  display: block;
+  box-sizing: border-box;
+  min-width: 100%;
+  white-space: nowrap;
+  word-break: normal;
+  overflow-wrap: normal;
+  // Intrinsic width (Safari needs fit-content / vendor variants reliably).
+  width: -webkit-fit-content;
+  width: -moz-fit-content;
+  width: fit-content;
+  max-width: none;
+}
+
+// Linkit renders custom rows (`.linkit-result-line-wrapper`); keep URL/title lines unbroken.
+.linkit-ui-autocomplete .linkit-result-line-wrapper,
+.linkit-ui-autocomplete .linkit-result-line--title,
+.linkit-ui-autocomplete .linkit-result-line--description {
+  white-space: nowrap;
+}
+
+// Linkit URI fields use `.form-linkit-autocomplete` only (not `.form-autocomplete`).
+// Extra specificity (element + two classes / attribute) beats Gin defaults without !important.
+input.form-element.form-linkit-autocomplete,
+.claro-autocomplete input.form-element.form-autocomplete,
+input.form-element[type="url"],
+input.form-element.form-autocomplete {
+  overflow-x: auto;
+  white-space: nowrap;
+  word-break: keep-all;
+  overflow-wrap: normal;
 }
 
 /* 
@@ -279,6 +343,22 @@ a.focal-point-preview-link {
         border-color: var(--gin-bg-layer) !important;
       }
     }
+  }
+
+  /**
+   * "Skip to main content" link contrast (Issue #1048)
+   *
+   * Gin sets the skip link's text to --gin-color-button-text, which flips to
+   * #111 (near-black) in dark mode, while Claro keeps the skip-link background
+   * at --color-gray-800 (#55565b). That pairing is only 2.58:1, failing WCAG
+   * 2.1 AA. Restore Claro's intended light text (--color-white), which Claro
+   * itself uses for the skip link in every state, for 7.32:1.
+   *
+   * Scoping under .gin--dark-mode gives (0,3,0) specificity, beating Gin's
+   * .visually-hidden.skip-link rule (0,2,0) without needing !important.
+   */
+  .visually-hidden.skip-link {
+    color: var(--color-white);
   }
 
 }

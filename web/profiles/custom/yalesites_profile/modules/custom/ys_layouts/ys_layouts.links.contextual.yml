@@ -1,0 +1,31 @@
+ys_layouts_block_detach:
+  title: 'Make non-reusable'
+  route_name: 'ys_layouts.detach_reusable_block'
+  group: 'layout_builder_block'
+  weight: 5
+  options:
+    attributes:
+      class: ['use-ajax']
+      data-dialog-type: dialog
+      data-dialog-renderer: off_canvas
+
+layout_builder_block_clone:
+  title: 'Clone'
+  route_name: 'ys_layouts.clone_block'
+  group: 'layout_builder_block_clone'
+  # Sorts after core's unweighted Configure/Move but before Remove, which
+  # ys_layouts_contextual_links_plugins_alter() weights last.
+  weight: 5
+  options:
+    attributes:
+      class: ['use-ajax']
+
+ys_layouts_webform_results:
+  # Worded for editors rather than reusing Webform's own "Results" label, which
+  # says nothing about forms out of context.
+  title: 'View form submissions'
+  route_name: 'entity.webform.results_submissions'
+  group: 'ys_layouts_webform_results'
+  # Sorts after the in-place layout actions and before Remove, which
+  # ys_layouts_contextual_links_plugins_alter() weights last.
+  weight: 6

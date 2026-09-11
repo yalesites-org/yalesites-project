@@ -68,6 +68,7 @@ third_party_settings:
               provider: ys_layouts
               context_mapping: {  }
               page_title_display: visible
+              breadcrumb_display: visible
             weight: 0
             additional: {  }
         third_party_settings:

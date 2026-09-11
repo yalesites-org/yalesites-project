@@ -45,8 +45,8 @@ class LocalistJson extends Json implements ContainerFactoryPluginInterface, Data
     $reformattedSource = [];
 
     while ($i <= $numPages) {
-      $url = "$url&page=$i";
-      $response = $this->getDataFetcherPlugin()->getResponseContent($url);
+      $pageUrl = "$url&page=$i";
+      $response = $this->getDataFetcherPlugin()->getResponseContent($pageUrl);
       $source_data = json_decode($response, TRUE, 512, JSON_THROW_ON_ERROR);
 
       // If json_decode() has returned NULL, it might be that the data isn't

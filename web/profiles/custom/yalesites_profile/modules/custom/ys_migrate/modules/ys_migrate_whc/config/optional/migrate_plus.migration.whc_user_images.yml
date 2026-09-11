@@ -1,0 +1,45 @@
+langcode: en
+status: true
+id: whc_user_images
+label: 'Whitney User Images'
+migration_group: ys_whc
+migration_tags:
+  - whc_media
+source:
+  plugin: whc_user
+  get_media: true
+  toggle_media_mapping: true
+  d7_file_url: 'https://whc.yale.edu/sites/default/files/'
+process:
+  bundle:
+    plugin: default_value
+    default_value: image
+  name:
+    plugin: media_name
+    source: file_name
+  # This process plugin will skip the whole row if a existing media is found.
+  _check_existing_media_file:
+    plugin: check_media_duplicate
+    source: fid
+  # This process plugin will skip the whole row if a duplicate image is found.
+  _check_unique_file_id:
+    plugin: check_duplicate
+    source: fid
+  field_media_image/alt: alt
+  field_media_image/title: title
+  field_media_image/target_id:
+    plugin: media_file_copy
+    move: FALSE
+    reuse: TRUE
+    source: file_path
+destination:
+  plugin: entity:media
+
+migration_dependencies:
+  required: [  ]
+  optional: [  ]
+
+dependencies:
+  enforced:
+    module:
+      - ys_migrate_whc

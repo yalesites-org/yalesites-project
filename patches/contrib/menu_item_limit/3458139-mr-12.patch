@@ -1,0 +1,34 @@
+From c323e222f79f3036ae3e437e4d430206a79a1a3f Mon Sep 17 00:00:00 2001
+From: Marc Berger <marc@fourkitchens.com>
+Date: Thu, 9 Jan 2025 15:50:16 -0800
+Subject: [PATCH] feat(3458139): Add permission check against core administer
+ menu permission
+
+---
+ menu_item_limit.module | 10 ++++++----
+ 1 file changed, 6 insertions(+), 4 deletions(-)
+
+diff --git a/menu_item_limit.module b/menu_item_limit.module
+index a8ed69a..476ad34 100644
+--- a/menu_item_limit.module
++++ b/menu_item_limit.module
+@@ -16,10 +16,12 @@ use Drupal\Core\Menu\MenuLinkTreeInterface;
+ function menu_item_limit_form_alter(&$form, FormStateInterface &$form_state, $form_id) {
+   switch ($form_id) {
+     case 'menu_edit_form':
+-      // Extend menu_edit_menu with the limit form.
+-      $form['menu_item_limit'] = menu_item_limit_config_menu($form, $form_state->getBuildInfo()['callback_object']);
+-      $form['#validate'][] = 'menu_item_limit_config_menu_validate';
+-      array_unshift($form['actions']['submit']['#submit'], 'menu_item_limit_config_menu_submit');
++      if (\Drupal::currentUser()->hasPermission('administer menu')) {
++        // Extend menu_edit_menu with the limit form.
++        $form['menu_item_limit'] = menu_item_limit_config_menu($form, $form_state->getBuildInfo()['callback_object']);
++        $form['#validate'][] = 'menu_item_limit_config_menu_validate';
++        array_unshift($form['actions']['submit']['#submit'], 'menu_item_limit_config_menu_submit');
++      }
+       break;
+ 
+     default:
+-- 
+GitLab
+

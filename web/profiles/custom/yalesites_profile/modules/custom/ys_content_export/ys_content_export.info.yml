@@ -1,0 +1,7 @@
+name: YaleSites Content Export
+type: module
+description: 'Adds an "Export to CSV" action to the Manage Content admin pages, downloading a content list (title, URL, published status, and taxonomy columns).'
+core_version_requirement: '^10 || ^11'
+package: YaleSites
+dependencies:
+  - drupal:node

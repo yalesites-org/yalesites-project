@@ -25,6 +25,18 @@ class TaxonomyResolverService {
   protected $loggerFactory;
 
   /**
+   * Terms already resolved this request, keyed "vocabulary:name".
+   *
+   * A CSV import repeats the same category, audience and tag names across most
+   * of its rows, and each lookup is an uncached entity query. Remembering the
+   * terms resolved so far turns "one query per occurrence" into "one query per
+   * distinct name" for the life of the request.
+   *
+   * @var \Drupal\taxonomy\TermInterface[]
+   */
+  protected $resolvedTerms = [];
+
+  /**
    * Constructs a TaxonomyResolverService object.
    *
    * @param \Drupal\Core\Entity\EntityTypeManagerInterface $entity_type_manager
@@ -76,6 +88,11 @@ class TaxonomyResolverService {
    *   The term or null on failure.
    */
   public function findOrCreateTerm($name, $vocabulary) {
+    $cache_key = $vocabulary . ':' . $name;
+    if (isset($this->resolvedTerms[$cache_key])) {
+      return $this->resolvedTerms[$cache_key];
+    }
+
     // First, try to find existing term.
     $query = $this->entityTypeManager->getStorage('taxonomy_term')->getQuery()
       ->condition('vid', $vocabulary)
@@ -86,7 +103,9 @@ class TaxonomyResolverService {
     $tids = $query->execute();
 
     if (!empty($tids)) {
-      return $this->entityTypeManager->getStorage('taxonomy_term')->load(reset($tids));
+      $term = $this->entityTypeManager->getStorage('taxonomy_term')->load(reset($tids));
+      $this->resolvedTerms[$cache_key] = $term;
+      return $term;
     }
 
     // Create new term if it doesn't exist.
@@ -96,9 +115,11 @@ class TaxonomyResolverService {
         'name' => $name,
       ]);
       $term->save();
+      $this->resolvedTerms[$cache_key] = $term;
       return $term;
     }
     catch (\Exception $e) {
+      // Deliberately not cached: a failure should be retried, not remembered.
       $this->loggerFactory->get('ys_migrate')->error('Failed to create taxonomy term @name in @vocabulary: @error', [
         '@name' => $name,
         '@vocabulary' => $vocabulary,
@@ -122,8 +143,11 @@ class TaxonomyResolverService {
       return [];
     }
 
-    $values = explode(',', $value);
-    return array_map('trim', array_filter($values));
+    // Trim before discarding empties: filtering first lets a whitespace-only
+    // segment through, which then trims to '' and has findOrCreateTerm()
+    // create a nameless term in the vocabulary. 'strlen' rather than the
+    // default callback so a term legitimately named "0" survives.
+    return array_values(array_filter(array_map('trim', explode(',', $value)), 'strlen'));
   }
 
 }

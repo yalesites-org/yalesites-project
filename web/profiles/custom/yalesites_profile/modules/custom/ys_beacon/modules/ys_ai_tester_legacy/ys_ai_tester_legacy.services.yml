@@ -1,0 +1,18 @@
+services:
+  ys_ai_tester_legacy.conversation_client:
+    class: Drupal\ys_ai_tester_legacy\LegacyConversationClient
+    arguments:
+      - '@http_client'
+      - '@config.factory'
+      - '@module_handler'
+      - '@uuid'
+      - '@datetime.time'
+
+  # Lower priority than the Beacon backend so Beacon sorts first and becomes
+  # Run A when a submission runs against both assistants.
+  ys_ai_tester_legacy.backend:
+    class: Drupal\ys_ai_tester_legacy\LegacyAnswerBackend
+    arguments:
+      - '@ys_ai_tester_legacy.conversation_client'
+    tags:
+      - { name: ys_ai_tester.answer_backend, priority: 0 }

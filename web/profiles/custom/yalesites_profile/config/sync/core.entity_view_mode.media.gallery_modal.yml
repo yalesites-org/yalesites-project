@@ -1,0 +1,11 @@
+uuid: b6b193e9-fcbe-4ea5-8b5d-5340bceb538c
+langcode: en
+status: true
+dependencies:
+  module:
+    - media
+id: media.gallery_modal
+label: 'Gallery Modal'
+description: ''
+targetEntityType: media
+cache: true

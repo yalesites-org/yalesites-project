@@ -1,10 +1,13 @@
-# Editorial dashboard added to 'Content' section of admin menu.
+# Editorial dashboard, surfaced as a top-level admin menu item.
 ys_core.admin_dashboard:
   description: "Editorial dashboard"
-  parent: system.admin_content
+  parent: system.admin
   route_name: ys_core.admin_dashboard
   title: "Dashboard"
-  weight: -20
+  weight: 60
+  options:
+    attributes:
+      class: ['toolbar-icon', 'toolbar-icon-dashboard', 'dashboard-menu-item']
 # Creates new section in the admin menu for YaleSites settings.
 ys_core.admin_yalesites:
   description: "Administer YaleSites settings."
@@ -12,6 +15,17 @@ ys_core.admin_yalesites:
   route_name: ys_core.admin_yalesites
   title: Settings
   weight: -7
+# Platform-admin-only section, surfaced as a top-level admin menu item.
+# Platform-admin-only screens hang here rather than under the settings section
+# above, which is for settings site admins use every day.
+ys_core.admin_platform_admin:
+  description: "Screens only the YaleSites platform team can reach."
+  parent: system.admin
+  route_name: ys_core.admin_platform_admin
+  title: "Platform Admin"
+  # Matches the pinned weight in the profile's exported
+  # core.menu.static_menu_link_overrides, which is what a built site honours.
+  weight: -38
 # Redirects menu links
 ys_core.admin_redirects:
   description: "Manages redirects for the site."
@@ -42,11 +56,18 @@ ys_core.admin_footer_settings:
   weight: 20
 # Views settings form.
 ys_core.admin_views_settings:
-  description: "Views settings."
+  description: "Site search settings."
   parent: ys_core.admin_yalesites
   route_name: ys_core.admin_views_settings
-  title: "Views Settings"
+  title: "Search Settings"
   weight: 25
+# Dashboard settings form.
+ys_core.admin_dashboard_settings:
+  description: "Editorial dashboard settings, including the announcements feed."
+  parent: ys_core.admin_yalesites
+  route_name: ys_core.admin_dashboard_settings
+  title: "Dashboard Settings"
+  weight: 27
 # Google Tag settings form.
 ys_core.admin_google_tag_settings:
   description: "Google Tag settings."
@@ -54,6 +75,14 @@ ys_core.admin_google_tag_settings:
   route_name: entity.google_tag_container.single_form
   title: "Google Tag Settings"
   weight: 30
+# Platform-admin-only settings form. Titled just "Settings" because the parent
+# section already names the audience.
+ys_core.platform_admin_settings:
+  description: "Platform-admin-only settings, such as authorizing integrations per site."
+  parent: ys_core.admin_platform_admin
+  route_name: ys_core.platform_admin_settings
+  title: "Settings"
+  weight: 10
 # Menu interface
 ys_core.menu_interface:
   description: "Manage menus"

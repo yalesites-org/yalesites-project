@@ -1,0 +1,9 @@
+# Deliberately its own permission rather than reusing 'administer platform admin
+# settings' or 'administer site configuration': this one authorises deleting
+# editor-created block content, so it should be re-scopable on its own without
+# dragging unrelated capabilities along. Granted to platform_admin only (user 1
+# bypasses permission checks).
+administer orphaned inline blocks:
+  title: 'Administer orphaned inline blocks'
+  description: 'Review Layout Builder inline blocks that no page layout references any more, and delete them.'
+  restrict access: true

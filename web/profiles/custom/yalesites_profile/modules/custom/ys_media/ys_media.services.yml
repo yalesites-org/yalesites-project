@@ -1,0 +1,10 @@
+services:
+  # Custom media (favicons, site name image) associated with a YaleSite.
+  ys_media.media_manager:
+    class: Drupal\ys_media\YaleSitesMediaManager
+    arguments: ['@config.factory', '@entity_type.manager', '@file_url_generator']
+
+  # Backwards-compatible alias for the pre-extraction service id. The class
+  # lived in ys_core until Phase 1 of yalesites-org/YaleSites-Internal#579.
+  ys_core.media_manager:
+    alias: ys_media.media_manager

@@ -34,6 +34,21 @@ function ys_node_access_node_grants($account, $op) {
       ];
     }
 
+    // Mirror Drupal core's unpublished-content permissions here too -- see
+    // the fuller rationale in ys_node_access_node_access_records() below.
+    if ($account->isAuthenticated()) {
+      if ($account->hasPermission('view any unpublished content')) {
+        $grants[$nodeAccessManager::YS_NODE_ACCESS_UNPUBLISHED_REALM] = [
+          $nodeAccessManager::YS_NODE_ACCESS_GRANT_ID_UNPUBLISHED_ANY,
+        ];
+      }
+      if ($account->hasPermission('view own unpublished content')) {
+        $grants[$nodeAccessManager::YS_NODE_ACCESS_UNPUBLISHED_OWNER_REALM] = [
+          $account->id(),
+        ];
+      }
+    }
+
     return $grants;
   }
 }
@@ -43,45 +58,59 @@ function ys_node_access_node_grants($account, $op) {
  */
 function ys_node_access_node_access_records($node) {
 
-  $private = FALSE;
-
   $nodeAccessManager = new NodeAccessManager();
-  // Saving a node, check login required field to set the appropriate grants.
+
+  // Unpublished nodes are gated by Drupal core's unpublished-content
+  // permissions, not by field_login_required -- a draft is not live yet, so
+  // CAS gating does not apply. Core's own default-grant fallback
+  // (NodeAccessControlHandler::acquireGrants()) only fires for published
+  // nodes, so it cannot be relied on here: this module must grant view
+  // access itself to the node's owner and to "view any unpublished content"
+  // holders, matching hook_node_grants() above, or every node-access-gated
+  // listing (admin/content, "Manage <type>") hides the node from everyone.
+  if (!$node->isPublished()) {
+    return [
+      [
+        'realm' => $nodeAccessManager::YS_NODE_ACCESS_UNPUBLISHED_REALM,
+        'gid' => $nodeAccessManager::YS_NODE_ACCESS_GRANT_ID_UNPUBLISHED_ANY,
+        'grant_view' => 1,
+        'grant_update' => 0,
+        'grant_delete' => 0,
+        'priority' => 0,
+      ],
+      [
+        'realm' => $nodeAccessManager::YS_NODE_ACCESS_UNPUBLISHED_OWNER_REALM,
+        'gid' => $node->getOwnerId(),
+        'grant_view' => 1,
+        'grant_update' => 0,
+        'grant_delete' => 0,
+        'priority' => 0,
+      ],
+    ];
+  }
+
+  // Published nodes: gate on field_login_required. Login-required pages get the
+  // PRIVATE grant (authenticated/CAS users only); everything else is PUBLIC.
+  $login_required = FALSE;
   if ($node->hasField('field_login_required')) {
     $login_required_value = $node->get('field_login_required')->getValue();
     $login_required = !empty($login_required_value) && $login_required_value[0]['value'] == 1;
-
-    if ($login_required || !$node->isPublished()) {
-      $private = TRUE;
-    }
-    else {
-      $private = FALSE;
-    }
   }
 
-  // Update the node_access table for this node with the correct grants.
-  if ($private) {
-    $grants[] = [
+  $gid = $login_required
+    ? $nodeAccessManager::YS_NODE_ACCESS_GRANT_ID_PRIVATE
+    : $nodeAccessManager::YS_NODE_ACCESS_GRANT_ID_PUBLIC;
+
+  return [
+    [
       'realm' => $nodeAccessManager::YS_NODE_ACCESS_REALM,
-      'gid' => $nodeAccessManager::YS_NODE_ACCESS_GRANT_ID_PRIVATE,
+      'gid' => $gid,
       'grant_view' => 1,
       'grant_update' => 0,
       'grant_delete' => 0,
       'priority' => 0,
-    ];
-  }
-  else {
-    $grants[] = [
-      'realm' => $nodeAccessManager::YS_NODE_ACCESS_REALM,
-      'gid' => $nodeAccessManager::YS_NODE_ACCESS_GRANT_ID_PUBLIC,
-      'grant_view' => 1,
-      'grant_update' => 0,
-      'grant_delete' => 0,
-      'priority' => 0,
-    ];
-  }
-
-  return $grants;
+    ],
+  ];
 }
 
 /**

@@ -1,6 +1,0 @@
-ys_servicenow.settings:
-  title: 'ServiceNow settings'
-  description: 'Configure ServiceNow sync settings'
-  route_name: ys_servicenow.settings
-  parent: system.admin_config_services
-  weight: 0

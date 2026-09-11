@@ -1,0 +1,41 @@
+# Schema for the configuration files of the YS DCN Field module.
+
+field.storage_settings.dcn_field:
+  type: mapping
+  label: 'DCN field storage settings'
+  mapping: {}
+
+field.field_settings.dcn_field:
+  type: mapping
+  label: 'DCN field settings'
+  mapping:
+    dcn_type_vocabulary:
+      type: string
+      label: 'DCN type vocabulary'
+
+field.value.dcn_field:
+  type: mapping
+  label: 'DCN field default value'
+  mapping:
+    dcn_type_target_id:
+      type: integer
+      label: 'DCN type term ID'
+    dcn_identifier:
+      type: string
+      label: 'DCN identifier'
+
+field.formatter.settings.dcn_field_default:
+  type: mapping
+  label: 'DCN field default formatter settings'
+  mapping:
+    separator:
+      type: string
+      label: 'Separator'
+    show_label:
+      type: boolean
+      label: 'Show DCN type label'
+
+field.widget.settings.dcn_field_default:
+  type: mapping
+  label: 'DCN field default widget settings'
+  mapping: {}
