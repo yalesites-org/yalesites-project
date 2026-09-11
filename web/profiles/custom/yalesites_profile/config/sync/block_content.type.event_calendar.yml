@@ -28,6 +28,6 @@ third_party_settings:
         url: ''
         external: ''
 id: event_calendar
-label: 'Event Calendar'
+label: 'Events - Calendar View'
 revision: false
 description: 'Displays events in a calendar view.'

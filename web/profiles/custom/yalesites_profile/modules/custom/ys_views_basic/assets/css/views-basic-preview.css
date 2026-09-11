@@ -1,0 +1,351 @@
+/**
+ * @file
+ * Styling for the Views Basic authoring-form mockup preview (#1318).
+ *
+ * The preview is a compact, inline placeholder card shown below the field
+ * display options. It is intentionally simple — a visual aid, not a faithful
+ * theme render — but it reflects the bundle's display mode (card, list,
+ * condensed, directory) so the layout matches what the block will produce.
+ *
+ * Only the card itself (.vb-preview) is styled as a "mockup" — a dashed-border
+ * stage (.vb-preview-wrapper__stage) around it signals it's a placeholder, not
+ * live content. The "Preview" label and its helper note above it
+ * (.vb-preview-wrapper__header) are plain form label/description text, not
+ * part of the mockup chrome.
+ *
+ * The card is pinned to light-mode colors regardless of the admin theme's mode:
+ * it represents front-facing content, which the live site always renders in
+ * light mode. Gin's color custom properties are re-declared with fixed light
+ * values on the stage below (not the outer wrapper), so every var(--gin-*)
+ * usage inside the card resolves to those regardless of Gin's dark mode. The
+ * header text sits outside that pin, on Gin's real background, so it keeps
+ * inheriting Gin's actual (theme-aware) color vars and stays readable in dark
+ * mode too.
+ */
+
+.vb-preview-wrapper {
+  margin-top: 1rem;
+}
+
+.vb-preview-wrapper__header {
+  margin-bottom: 0.75rem;
+}
+
+/*
+ * Label/note are qualified with the .vb-preview-wrapper__header ancestor
+ * (rather than left as bare classes) to outrank gin_lb's `.ui-dialog p {
+ * margin: 1em 0; }` — both are <p> tags, and that rule's extra specificity
+ * (one class + one type selector beats our one class) would otherwise
+ * override these margins with 1em of each element's own (much larger)
+ * font-size.
+ */
+.vb-preview-wrapper__header .vb-preview-wrapper__label {
+  margin: 0 0 0.25rem;
+  font-size: 1.125rem;
+  font-weight: 700;
+  color: var(--gin-color-title, inherit);
+}
+
+.vb-preview-wrapper__header .vb-preview-wrapper__note {
+  margin: 0;
+  font-size: 0.875rem;
+  color: var(--gin-color-text-light, #555);
+}
+
+/*
+ * --gin-color-text-light isn't reliably readable here: Gin's off-canvas
+ * dialog chrome re-declares it to a low-contrast value for this scope
+ * (unlike --gin-color-title, which does resolve correctly), so the note
+ * inherits a light-mode-tuned gray even in dark mode. Pin it explicitly to
+ * the color Gin's own .description text actually renders at in dark-mode
+ * dialogs, rather than trust the variable.
+ */
+.gin--dark-mode .vb-preview-wrapper__note {
+  color: #d2d3d3;
+}
+
+.vb-preview-wrapper__stage {
+  /* Pin the card mockup to light mode — see file header. */
+  --gin-bg-app: #f7f7f7;
+  --gin-bg-layer: #fff;
+  --gin-bg-input: #e9edf2;
+  --gin-border-color: #b3b3b3;
+  --gin-border-color-layer: #d4d4d4;
+  --gin-color-title: #1b1b1b;
+  --gin-color-text: #1b1b1b;
+  --gin-color-text-light: #555;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0.75rem;
+  border: 1px dashed var(--gin-border-color, #b3b3b3);
+  border-radius: 4px;
+  background: var(--gin-bg-app, #f7f7f7);
+}
+
+.vb-preview {
+  position: relative;
+  width: 100%;
+  max-width: 22rem;
+  padding: 0.75rem;
+  border: 1px solid var(--gin-border-color-layer, #d4d4d4);
+  border-radius: 4px;
+  background: var(--gin-bg-layer, #fff);
+  color: var(--gin-color-text, inherit);
+  font-family: "Mallory", sans-serif;
+}
+
+.vb-preview[data-font-pairing='mallory'] .vb-preview__title {
+  font-family: "Mallory", sans-serif;
+}
+
+.vb-preview:not([data-font-pairing='mallory']) .vb-preview__title {
+  font-family: "YaleNew", serif;
+}
+
+/*
+ * The preview panel lives inside .grouped-items (ViewsBasicWidgetBase's
+ * styling hook, see views-basic.css), and views-basic-form-tabs.css sets
+ * `.grouped-items img { width: auto; }` to keep the Display Type tab's
+ * icon-radio images from stretching. That rule excludes .vb-preview__image
+ * explicitly, so this placeholder image can keep filling its container width
+ * instead of collapsing to the 1x1 GIF's natural size.
+ */
+.vb-preview__image {
+  display: block;
+  width: 100%;
+  aspect-ratio: 3 / 2;
+  height: auto;
+  /* Matches the real reference-card's image-to-content gap (--size-spacing-4). */
+  margin-bottom: 0.75rem;
+  border-radius: 2px;
+  background: var(--gin-bg-input, #dcdcdc);
+  object-fit: cover;
+}
+
+.vb-preview__pinned {
+  position: absolute;
+  top: 0.5rem;
+  right: 0.5rem;
+  padding: 0.1rem 0.45rem;
+  border-radius: 2px;
+  background: #00356b; /* Yale blue (brand badge — same in both modes). */
+  color: #fff;
+  font-size: 0.7rem;
+  font-weight: 700;
+  text-transform: uppercase;
+}
+
+/*
+ * Small-caps + lowercase + letter-spacing matches the real reference-card's
+ * overline/eyebrow treatment (_yds-reference-card.scss) — the mockup
+ * previously rendered this as plain bold text.
+ */
+.vb-preview__eyebrow {
+  display: block;
+  font-size: 0.8125rem;
+  font-weight: 700;
+  font-variant-caps: small-caps;
+  text-transform: lowercase;
+  letter-spacing: 0.5px;
+  color: var(--gin-color-text-light, #555);
+}
+
+/*
+ * font-size/line-height copy the real reference-card heading's fluid scale
+ * (grid, non-featured variant, _yds-reference-card.scss) verbatim, so it
+ * scales the same way relative to the viewport. margin-top matches
+ * --size-spacing-3; font-family stays controlled by the data-font-pairing
+ * rules above.
+ *
+ * Qualified with the .vb-preview__body ancestor (rather than left bare) to
+ * outrank gin_lb's `.ui-dialog p { margin: 1em 0; }` — title is a <p> tag,
+ * and that rule's extra specificity would otherwise replace this margin
+ * with 1em of the title's own (much larger, fluid) font-size, which is what
+ * was pushing the title out of alignment with the list-view thumbnail.
+ */
+.vb-preview__body .vb-preview__title {
+  margin: 0.5rem 0 0;
+  font-size: clamp(1.3125rem, calc(0.49vw + 1.1377rem), 1.5625rem);
+  line-height: 1.14;
+  font-weight: 700;
+  color: var(--gin-color-title, inherit);
+}
+
+.vb-preview__meta {
+  display: block;
+  margin-top: 0.5rem;
+  font-size: 0.8rem;
+  color: var(--gin-color-text-light, #555);
+}
+
+/*
+ * Categories render as plain pipe-separated text, matching tags — the design
+ * system has no pill/badge treatment for either field. margin-top matches
+ * the real component's --size-spacing-3 snippet/list spacing.
+ */
+.vb-preview__category {
+  display: block;
+  margin-top: 0.5rem;
+  font-size: 0.75rem;
+  color: var(--gin-color-text-light, #555);
+}
+
+.vb-preview__tags {
+  display: block;
+  margin-top: 0.5rem;
+  font-size: 0.75rem;
+  color: var(--gin-color-text-light, #555);
+}
+
+/*
+ * Family/weight/line-height match the real reference-card snippet
+ * (body-default-condensed mixin, _yds-reference-card.scss) — no
+ * clamp/truncation: the real card has none either (text_default formatter,
+ * no max length on the field), so the teaser just wraps like this. Font
+ * stays Mallory Compact regardless of data-font-pairing, matching the real
+ * component (unlike the title).
+ *
+ * Size is a fixed 0.875rem rather than the real component's fluid
+ * clamp(1.0625rem, calc(0.36vw + 0.9314rem), 1.25rem): that clamp scales
+ * with viewport width, which only makes sense at the real card's full-page
+ * scale. Inside this compact, fixed-width (max-width: 22rem) mockup box it
+ * just renders large and stretches the vw term meaninglessly, so a smaller,
+ * fixed size reads better here without claiming a false pixel match.
+ */
+.vb-preview__teaser {
+  margin: 0.5rem 0 0;
+  font: 400 0.875rem/1.4 "Mallory Compact", sans-serif;
+  color: var(--gin-color-text, inherit);
+}
+
+.vb-preview__calendar {
+  display: inline-block;
+  margin-top: 0.5rem;
+  font-size: 0.78rem;
+  text-decoration: underline;
+}
+
+/* Parts hidden via the [hidden] attribute toggled by the preview behavior. */
+.vb-preview [hidden] {
+  display: none;
+}
+
+/*
+ * Per-display-mode layouts (#1318 QA). The bundle fixes the display mode, so
+ * data-view-mode is constant for a given block; each mode arranges the same
+ * parts differently to mirror the rendered listing.
+ */
+
+/* List: horizontal row with the thumbnail on the left. */
+.vb-preview[data-view-mode='list_item'] {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.75rem;
+  max-width: 26rem;
+}
+
+/*
+ * flex-basis sizes the thumbnail; height stays auto so the inherited
+ * aspect-ratio: 3/2 (base .vb-preview__image rule) computes it, rather than
+ * a fixed height that (at the old 5rem width) actually rendered closer to
+ * 5:4 than the real card_list_3_2 ratio.
+ */
+.vb-preview[data-view-mode='list_item'] .vb-preview__image {
+  flex: 0 0 8rem;
+  margin-bottom: 0;
+}
+
+.vb-preview[data-view-mode='list_item'] .vb-preview__body {
+  flex: 1 1 auto;
+}
+
+/* Condensed: title and meta only — no teaser image. */
+.vb-preview[data-view-mode='condensed'] {
+  max-width: 26rem;
+}
+
+.vb-preview[data-view-mode='condensed'] .vb-preview__image {
+  display: none;
+}
+
+/* Directory (profiles): portrait grid — taller image, centered text. */
+.vb-preview[data-view-mode='directory'] {
+  max-width: 12rem;
+  text-align: center;
+}
+
+.vb-preview[data-view-mode='directory'] .vb-preview__image {
+  height: 11rem;
+}
+
+/*
+ * Two-column layout for the "Field display & filters" tab on the block-create
+ * form (#1318, revised for #1337).
+ *
+ * Only the "Result content" fieldset (the per-result field options) sits
+ * beside the preview, in the display row that
+ * ViewsBasicWidgetBase::groupFieldDisplayRow() builds; the exposed filters are
+ * a separate full-width row below and are deliberately outside this grid.
+ * That separation is the fix for the empty-panel bug: the preview's column can
+ * only ever be as tall as a row of checkboxes, so disclosing a filter's
+ * settings — which used to grow the shared left column and stretch the dashed
+ * preview stage with it — no longer affects the preview at all.
+ *
+ * Anchored with :has() to a display row that actually carries a preview, so it
+ * only takes effect on the create form (the preview is not built when
+ * reconfiguring an existing block), and gated behind a container query so the
+ * single-column stack is kept where two columns will not fit — e.g. the narrow
+ * (~460px) Layout Builder off-canvas tray. Layout only (no colors), so it needs
+ * no dark-mode handling; the preview card's colors are pinned to light above.
+ */
+.views-basic--entity-view-mode:has(.vb-display-row > .vb-preview-wrapper) {
+  container-type: inline-size;
+}
+
+@container (min-width: 40rem) {
+  .vb-display-row:has(> .vb-preview-wrapper) {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+    gap: 0 1.5rem;
+    align-items: start;
+  }
+
+  /* Field controls stack down the left column. */
+  .vb-display-row:has(> .vb-preview-wrapper) > * {
+    grid-column: 1;
+    min-width: 0;
+  }
+
+  /*
+   * Preview occupies the right half, spanning the control rows rather than
+   * owning one so its height never forces a single tall row that would gap the
+   * left column. align-items: start above keeps it sized to its content, so
+   * the dashed stage stays wrapped around the card. No sticky positioning — it
+   * scrolls with the form instead of floating pinned to the corner.
+   */
+  .vb-display-row > .vb-preview-wrapper {
+    grid-column: 2;
+    grid-row: 1 / span 20;
+    margin-top: 0;
+  }
+
+  /*
+   * Without this, the "Preview" label sits flush against the tab strip's
+   * bottom edge, because margin-top: 0 above removes the stacked-layout
+   * offset (.vb-preview-wrapper's own margin-top: 1rem) entirely once the
+   * preview moves into this grid row. Restore an offset here instead, sized
+   * to land the label's baseline level with the "Result content" legend
+   * that starts the left column: gin_lb's stylesheet positions a fieldset's
+   * <legend> 20px from the top of its border
+   * (`fieldset:not(.fieldgroup) > legend { top: 20px }`, gin_lb.css), on top
+   * of the ~4px of its own padding-top the pane wrapper already adds
+   * (`.glb-claro-details__wrapper`, gin_lb.css) — roughly 1.5rem in total.
+   * Scoped to this container query so the single-column fallback (where the
+   * preview stacks below the controls, not beside them) keeps its own
+   * smaller, already-correct margin-top instead of gaining this offset too.
+   */
+  .vb-display-row > .vb-preview-wrapper .vb-preview-wrapper__header {
+    padding-top: 1.5rem;
+  }
+}

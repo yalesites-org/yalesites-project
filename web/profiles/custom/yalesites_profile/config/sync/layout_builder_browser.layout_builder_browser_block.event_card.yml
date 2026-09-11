@@ -1,0 +1,11 @@
+uuid: e0bab5e4-ee9e-4161-8510-a649daeb8ce4
+langcode: en
+status: true
+dependencies: {  }
+id: event_card
+block_id: 'inline_block:event_card'
+category: event_listings
+label: 'Events - Card Grid View'
+image_path: ''
+image_alt: ''
+weight: 0
