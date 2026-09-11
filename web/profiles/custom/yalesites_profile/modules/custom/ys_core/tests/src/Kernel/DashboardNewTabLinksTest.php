@@ -2,8 +2,6 @@
 
 namespace Drupal\Tests\ys_core\Kernel;
 
-use Drupal\KernelTests\KernelTestBase;
-
 /**
  * Tests the new-tab behaviour of the editorial dashboard's outbound links.
  *
@@ -22,7 +20,7 @@ use Drupal\KernelTests\KernelTestBase;
  * @group ys_core
  * @group yalesites
  */
-class DashboardNewTabLinksTest extends KernelTestBase {
+class DashboardNewTabLinksTest extends YsKernelTestBase {
 
   /**
    * {@inheritdoc}

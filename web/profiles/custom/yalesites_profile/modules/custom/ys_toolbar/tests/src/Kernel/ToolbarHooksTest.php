@@ -2,7 +2,7 @@
 
 namespace Drupal\Tests\ys_toolbar\Kernel;
 
-use Drupal\KernelTests\KernelTestBase;
+use Drupal\Tests\ys_core\Kernel\YsKernelTestBase;
 
 /**
  * Tests ys_toolbar's procedural hook implementations and service wiring.
@@ -10,7 +10,7 @@ use Drupal\KernelTests\KernelTestBase;
  * @group ys_toolbar
  * @group yalesites
  */
-class ToolbarHooksTest extends KernelTestBase {
+class ToolbarHooksTest extends YsKernelTestBase {
 
   /**
    * {@inheritdoc}

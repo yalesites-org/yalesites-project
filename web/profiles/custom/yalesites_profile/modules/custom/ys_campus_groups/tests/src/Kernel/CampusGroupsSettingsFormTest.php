@@ -3,7 +3,7 @@
 namespace Drupal\Tests\ys_campus_groups\Kernel;
 
 use Drupal\Core\Form\FormState;
-use Drupal\KernelTests\KernelTestBase;
+use Drupal\Tests\ys_core\Kernel\YsKernelTestBase;
 use Drupal\ys_campus_groups\Form\CampusGroupsSettings;
 
 /**
@@ -14,7 +14,7 @@ use Drupal\ys_campus_groups\Form\CampusGroupsSettings;
  * @group ys_campus_groups
  * @group yalesites
  */
-class CampusGroupsSettingsFormTest extends KernelTestBase {
+class CampusGroupsSettingsFormTest extends YsKernelTestBase {
 
   /**
    * {@inheritdoc}

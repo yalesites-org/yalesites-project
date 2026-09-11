@@ -4,9 +4,9 @@ namespace Drupal\Tests\ys_taxonomy_manager\Kernel;
 
 use Drupal\Core\Form\FormState;
 use Drupal\Core\Url;
+use Drupal\Tests\ys_core\Kernel\YsKernelTestBase;
 use Drupal\field\Entity\FieldConfig;
 use Drupal\field\Entity\FieldStorageConfig;
-use Drupal\KernelTests\KernelTestBase;
 use Drupal\node\Entity\Node;
 use Drupal\node\Entity\NodeType;
 use Drupal\taxonomy\Entity\Term;
@@ -22,7 +22,7 @@ use Drupal\ys_taxonomy_manager\Form\AddTermsToNodesForm;
  * @group ys_taxonomy_manager
  * @group yalesites
  */
-class AddTermsToNodesFormTest extends KernelTestBase {
+class AddTermsToNodesFormTest extends YsKernelTestBase {
 
   /**
    * {@inheritdoc}
