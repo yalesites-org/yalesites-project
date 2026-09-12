@@ -6,19 +6,32 @@ use Drupal\Core\Block\BlockBase;
 use Drupal\Core\Plugin\ContainerFactoryPluginInterface;
 use Drupal\Core\Routing\RouteMatchInterface;
 use Drupal\node\NodeInterface;
+use Drupal\ys_core\Plugin\Block\LayoutBuilderEntityContextTrait;
 use Drupal\ys_localist\MetaFieldsManager;
 use Symfony\Component\DependencyInjection\ContainerInterface;
 
 /**
  * Block for event meta data that appears above events.
  *
+ * The "layout_builder.entity" context slot and its name are explained on
+ * \Drupal\ys_core\Plugin\Block\LayoutBuilderEntityContextTrait. An
+ * annotation cannot be inherited from a trait, so the slot is declared here.
+ *
  * @Block(
  *   id = "event_meta_block",
  *   admin_label = @Translation("Event Meta Block"),
  *   category = @Translation("YaleSites Layouts"),
+ *   context_definitions = {
+ *     "layout_builder.entity" = @ContextDefinition("entity",
+ *       label = @Translation("Entity being viewed"),
+ *       required = FALSE
+ *     )
+ *   }
  * )
  */
 class EventMetaBlock extends BlockBase implements ContainerFactoryPluginInterface {
+
+  use LayoutBuilderEntityContextTrait;
 
   /**
    * The current route match.
@@ -79,9 +92,8 @@ class EventMetaBlock extends BlockBase implements ContainerFactoryPluginInterfac
    */
   public function build() {
 
-    /** @var \Drupal\node\NodeInterface $node */
-    $node = $this->routeMatch->getParameter('node');
-    if (!($node instanceof NodeInterface) || $node->bundle() !== 'event') {
+    $node = $this->getCurrentNode();
+    if (!$node || $node->bundle() !== 'event') {
       return [];
     }
 
@@ -117,6 +129,22 @@ class EventMetaBlock extends BlockBase implements ContainerFactoryPluginInterfac
       '#event_featured_date' => $eventFieldData['event_featured_date'],
       '#event_featured_index' => $eventFieldData['event_featured_index'],
     ];
+  }
+
+  /**
+   * Gets the node being rendered.
+   *
+   * The entity Layout Builder hands over is preferred over the node named by
+   * the route; the route lookup is kept as a fallback tier for the contexts
+   * Layout Builder offers nothing in.
+   *
+   * @return \Drupal\node\NodeInterface|null
+   *   The node being rendered, or NULL when neither source resolves one.
+   */
+  protected function getCurrentNode(): ?NodeInterface {
+    $node = $this->getRenderedEntitySavedNode() ?: $this->routeMatch->getParameter('node');
+
+    return $node instanceof NodeInterface ? $node : NULL;
   }
 
 }
