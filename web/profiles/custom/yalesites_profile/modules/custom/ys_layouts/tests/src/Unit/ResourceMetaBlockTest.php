@@ -2,14 +2,13 @@
 
 namespace Drupal\Tests\ys_layouts\Unit;
 
-use Drupal\Core\Controller\TitleResolver;
 use Drupal\Core\Datetime\DateFormatter;
 use Drupal\Core\Entity\EntityStorageInterface;
 use Drupal\Core\Entity\EntityTypeManager;
 use Drupal\Core\Field\FieldItemListInterface;
-use Drupal\Core\Routing\RouteMatchInterface;
 use Drupal\Core\Url;
 use Drupal\Tests\UnitTestCase;
+use Drupal\Tests\ys_core\Traits\LayoutBuilderEntityContextTestTrait;
 use Drupal\link\LinkItemInterface;
 use Drupal\node\Entity\Node;
 use Drupal\node\NodeInterface;
@@ -19,7 +18,6 @@ use Drupal\ys_layouts\Service\ResourceAuthorBuilder;
 use Symfony\Component\DependencyInjection\ContainerBuilder;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\RequestStack;
-use Symfony\Component\Routing\Route;
 
 /**
  * Tests the resource meta block.
@@ -31,19 +29,7 @@ use Symfony\Component\Routing\Route;
  */
 class ResourceMetaBlockTest extends UnitTestCase {
 
-  /**
-   * The route match mock.
-   *
-   * @var \Drupal\Core\Routing\RouteMatchInterface|\PHPUnit\Framework\MockObject\MockObject
-   */
-  protected $routeMatch;
-
-  /**
-   * The title resolver mock.
-   *
-   * @var \Drupal\Core\Controller\TitleResolver|\PHPUnit\Framework\MockObject\MockObject
-   */
-  protected $titleResolver;
+  use LayoutBuilderEntityContextTestTrait;
 
   /**
    * The request stack mock.
@@ -93,20 +79,22 @@ class ResourceMetaBlockTest extends UnitTestCase {
   protected function setUp(): void {
     parent::setUp();
 
-    $this->routeMatch = $this->createMock(RouteMatchInterface::class);
-    $this->titleResolver = $this->createMock(TitleResolver::class);
     $this->requestStack = $this->createMock(RequestStack::class);
     $this->dateFormatter = $this->createMock(DateFormatter::class);
     $this->entityTypeManager = $this->createMock(EntityTypeManager::class);
     $this->resourceAuthorBuilder = $this->createMock(ResourceAuthorBuilder::class);
     $this->mediaAltResolver = $this->createMock(MediaAltResolver::class);
 
+    $this->setUpLayoutBuilderEntityContextContainer();
+
     $this->block = new ResourceMetaBlock(
       [],
       'resource_meta_block',
-      ['provider' => 'ys_layouts'],
-      $this->routeMatch,
-      $this->titleResolver,
+      [
+        'provider' => 'ys_layouts',
+        'admin_label' => 'Resource Meta Block',
+        'context_definitions' => $this->layoutBuilderEntityContextDefinitions(ResourceMetaBlock::class),
+      ],
       $this->requestStack,
       $this->dateFormatter,
       $this->entityTypeManager,
@@ -238,7 +226,6 @@ class ResourceMetaBlockTest extends UnitTestCase {
     $node->method('get')->with('field_external_source')->willReturn($externalSourceField);
 
     $this->resourceAuthorBuilder->method('build')->willReturn([]);
-    $this->routeMatch->method('getRouteObject')->willReturn(new Route('/node/1'));
 
     $request = new Request();
     $request->attributes->set('node', $node);
@@ -284,6 +271,130 @@ class ResourceMetaBlockTest extends UnitTestCase {
 
     $this->assertContains('route', $contexts);
     $this->assertContains('user.permissions', $contexts);
+  }
+
+  /**
+   * The entity being rendered beats a request that names no node at all.
+   *
+   * This is the reported bug: /node/add/resource (every new resource's first
+   * save) and a bulk operation from /admin/content carry no node on the
+   * request, so getCurrentNode() found nothing, build() returned an empty
+   * render array and the resource's heading was missing from what Beacon
+   * indexes.
+   *
+   * getCacheTags() is the observable seam: it merges in whatever node
+   * getCurrentNode() resolves, without needing the whole field-heavy build()
+   * path.
+   *
+   * @covers ::getCurrentNode
+   */
+  public function testGetCurrentNodeUsesRenderedEntityWhenRequestHasNoNode(): void {
+    $node = $this->createMock(NodeInterface::class);
+    $node->method('getCacheTags')->willReturn(['node:99']);
+    $this->requestStack->method('getCurrentRequest')->willReturn(Request::create('/node/add/resource'));
+    $this->entityTypeManager->expects($this->never())->method('getStorage');
+
+    $this->setRenderedEntity($this->block, $node);
+
+    $this->assertContains('node:99', $this->block->getCacheTags());
+  }
+
+  /**
+   * The entity being rendered beats a DIFFERENT node named by the request.
+   *
+   * @covers ::getCurrentNode
+   */
+  public function testGetCurrentNodePrefersRenderedEntityOverRequestNode(): void {
+    $rendered = $this->createMock(NodeInterface::class);
+    $rendered->method('getCacheTags')->willReturn(['node:99']);
+    $other = $this->createMock(NodeInterface::class);
+    $other->method('getCacheTags')->willReturn(['node:11']);
+
+    $request = new Request();
+    $request->attributes->set('node', $other);
+    $this->requestStack->method('getCurrentRequest')->willReturn($request);
+
+    $this->setRenderedEntity($this->block, $rendered);
+    $tags = $this->block->getCacheTags();
+
+    $this->assertContains('node:99', $tags);
+    $this->assertNotContains('node:11', $tags);
+  }
+
+  /**
+   * A context holding something other than a node falls through to the request.
+   *
+   * Layout Builder hands over whatever entity the display belongs to, so the
+   * context is not guaranteed to hold a node -- the defaults layout screen
+   * passes a generated sample entity of the display's own type.
+   *
+   * @covers ::getCurrentNode
+   *
+   * @dataProvider providerNonNodeContextValues
+   */
+  public function testGetCurrentNodeIgnoresNonNodeEntityContext($value): void {
+    $other = $this->createMock(NodeInterface::class);
+    $other->method('getCacheTags')->willReturn(['node:11']);
+    $request = new Request();
+    $request->attributes->set('node', $other);
+    $this->requestStack->method('getCurrentRequest')->willReturn($request);
+
+    $this->setRenderedEntity($this->block, $value);
+
+    $this->assertContains('node:11', $this->block->getCacheTags());
+  }
+
+  /**
+   * The ANNOTATION declares the slot Layout Builder actually publishes.
+   */
+  public function testAnnotationDeclaresTheLayoutBuilderEntitySlot(): void {
+    $this->assertDeclaresLayoutBuilderEntitySlot(ResourceMetaBlock::class);
+  }
+
+  /**
+   * The context-assignment select is kept off the editor's block form.
+   *
+   * @covers ::buildConfigurationForm
+   */
+  public function testConfigurationFormHasNoContextAssignmentSelect(): void {
+    $this->assertNoContextAssignmentSelect($this->block);
+  }
+
+  /**
+   * A resource node's title renders as the block's heading.
+   *
+   * There is no route object at all when Search API indexes from cron or from
+   * drush, and the block used to gate every field read -- including the title
+   * -- on one, so the heading was blank on the path that does most of the
+   * indexing.
+   *
+   * @covers ::build
+   */
+  public function testBuildRendersHeadingForResourceNode(): void {
+    $build = $this->buildForResourceNodeWithExternalSource('https://example.com/a');
+
+    $this->assertSame('A resource', $build['#resource_meta__heading']);
+  }
+
+  /**
+   * An unsaved sample entity does not stand in for real content.
+   *
+   * Layout Builder's Defaults layout screen offers a generated sample entity
+   * that core never saves (LayoutBuilderSampleEntityGenerator::get() calls
+   * createWithSampleValues() and stashes it in a tempstore). Before this block
+   * declared a context it rendered nothing there.
+   *
+   * @covers ::getCurrentNode
+   */
+  public function testGetCurrentNodeIgnoresUnsavedSampleEntity(): void {
+    $sample = $this->createMock(NodeInterface::class);
+    $sample->method('isNew')->willReturn(TRUE);
+    $sample->method('getCacheTags')->willReturn(['node:99']);
+    $this->requestStack->method('getCurrentRequest')->willReturn(new Request());
+
+    $this->setRenderedEntity($this->block, $sample);
+
+    $this->assertNotContains('node:99', $this->block->getCacheTags());
   }
 
 }

@@ -4,6 +4,7 @@ namespace Drupal\Tests\ys_layouts\Unit;
 
 use Drupal\Core\Routing\RouteMatchInterface;
 use Drupal\Tests\UnitTestCase;
+use Drupal\Tests\ys_core\Traits\LayoutBuilderEntityContextTestTrait;
 use Drupal\node\NodeInterface;
 use Drupal\ys_layouts\Plugin\Block\EventMetaBlock;
 use Drupal\ys_localist\MetaFieldsManager;
@@ -17,6 +18,8 @@ use Drupal\ys_localist\MetaFieldsManager;
  * @group ys_layouts
  */
 class EventMetaBlockTest extends UnitTestCase {
+
+  use LayoutBuilderEntityContextTestTrait;
 
   /**
    * The route match mock.
@@ -47,6 +50,8 @@ class EventMetaBlockTest extends UnitTestCase {
 
     $this->routeMatch = $this->createMock(RouteMatchInterface::class);
     $this->metaFieldsManager = $this->createMock(MetaFieldsManager::class);
+
+    $this->setUpLayoutBuilderEntityContextContainer();
 
     $this->eventFieldData = [
       'title' => 'Fall Concert',
@@ -85,7 +90,13 @@ class EventMetaBlockTest extends UnitTestCase {
    *   The block plugin.
    */
   protected function buildBlock(): EventMetaBlock {
-    return new EventMetaBlock([], 'event_meta_block', ['provider' => 'ys_layouts'], $this->routeMatch, $this->metaFieldsManager);
+    $definition = [
+      'provider' => 'ys_layouts',
+      'admin_label' => 'Event Meta Block',
+      'context_definitions' => $this->layoutBuilderEntityContextDefinitions(EventMetaBlock::class),
+    ];
+
+    return new EventMetaBlock([], 'event_meta_block', $definition, $this->routeMatch, $this->metaFieldsManager);
   }
 
   /**
@@ -135,6 +146,130 @@ class EventMetaBlockTest extends UnitTestCase {
     $build = $this->buildBlock()->build();
 
     $this->assertSame([], $build);
+  }
+
+  /**
+   * Builds an event node mock.
+   *
+   * @param string $title
+   *   The node title.
+   *
+   * @return \Drupal\node\NodeInterface|\PHPUnit\Framework\MockObject\MockObject
+   *   The node mock.
+   */
+  protected function mockEventNode(string $title) {
+    $node = $this->createMock(NodeInterface::class);
+    $node->method('bundle')->willReturn('event');
+    $node->method('label')->willReturn($title);
+
+    return $node;
+  }
+
+  /**
+   * The entity being rendered beats a route that names no node at all.
+   *
+   * This is the reported bug: /node/add/event (every new event's first save)
+   * and a bulk operation from /admin/content carry no node on the route, so
+   * the block rendered nothing and the event's heading was missing from what
+   * Beacon indexes.
+   *
+   * @covers ::build
+   */
+  public function testBuildUsesRenderedEntityWhenRouteHasNoNode(): void {
+    $node = $this->mockEventNode('Fall Concert');
+    $this->routeMatch->method('getParameter')->with('node')->willReturn(NULL);
+    $this->metaFieldsManager->expects($this->once())
+      ->method('getEventData')
+      ->with($node)
+      ->willReturn($this->eventFieldData);
+
+    $block = $this->buildBlock();
+    $this->setRenderedEntity($block, $node);
+
+    $build = $block->build();
+
+    $this->assertSame('ys_event_meta_block', $build['#theme']);
+    $this->assertSame('Fall Concert', $build['#event_title__heading']);
+  }
+
+  /**
+   * The entity being rendered beats a DIFFERENT node named by the route.
+   *
+   * @covers ::build
+   */
+  public function testBuildPrefersRenderedEntityOverRouteNode(): void {
+    $node = $this->mockEventNode('Fall Concert');
+    $this->routeMatch->method('getParameter')->with('node')->willReturn($this->mockEventNode('Some Other Event'));
+    $this->metaFieldsManager->expects($this->once())
+      ->method('getEventData')
+      ->with($node)
+      ->willReturn($this->eventFieldData);
+
+    $block = $this->buildBlock();
+    $this->setRenderedEntity($block, $node);
+
+    $this->assertSame('Fall Concert', $block->build()['#event_title__heading']);
+  }
+
+  /**
+   * A context holding something other than a node falls through to the route.
+   *
+   * Layout Builder hands over whatever entity the display belongs to, so the
+   * context is not guaranteed to hold a node -- the defaults layout screen
+   * passes a generated sample entity of the display's own type.
+   *
+   * @covers ::build
+   *
+   * @dataProvider providerNonNodeContextValues
+   */
+  public function testBuildIgnoresNonNodeEntityContext($value): void {
+    $this->routeMatch->method('getParameter')->with('node')->willReturn(NULL);
+    $this->metaFieldsManager->expects($this->never())->method('getEventData');
+
+    $block = $this->buildBlock();
+    $this->setRenderedEntity($block, $value);
+
+    $this->assertSame([], $block->build());
+  }
+
+  /**
+   * The ANNOTATION declares the slot Layout Builder actually publishes.
+   */
+  public function testAnnotationDeclaresTheLayoutBuilderEntitySlot(): void {
+    $this->assertDeclaresLayoutBuilderEntitySlot(EventMetaBlock::class);
+  }
+
+  /**
+   * The context-assignment select is kept off the editor's block form.
+   *
+   * @covers ::buildConfigurationForm
+   */
+  public function testConfigurationFormHasNoContextAssignmentSelect(): void {
+    $this->assertNoContextAssignmentSelect($this->buildBlock());
+  }
+
+  /**
+   * An unsaved sample entity does not stand in for real content.
+   *
+   * Layout Builder's Defaults layout screen offers a generated sample entity
+   * that core never saves (LayoutBuilderSampleEntityGenerator::get() calls
+   * createWithSampleValues() and stashes it in a tempstore). MetaFieldsManager
+   * derives a canonical URL from the node, which cannot work without an ID.
+   * Before this block declared a context it rendered nothing there.
+   *
+   * @covers ::build
+   */
+  public function testBuildIgnoresUnsavedSampleEntity(): void {
+    $this->routeMatch->method('getParameter')->with('node')->willReturn(NULL);
+    $this->metaFieldsManager->expects($this->never())->method('getEventData');
+
+    $sample = $this->mockEventNode('Sample Event');
+    $sample->method('isNew')->willReturn(TRUE);
+
+    $block = $this->buildBlock();
+    $this->setRenderedEntity($block, $sample);
+
+    $this->assertSame([], $block->build());
   }
 
 }

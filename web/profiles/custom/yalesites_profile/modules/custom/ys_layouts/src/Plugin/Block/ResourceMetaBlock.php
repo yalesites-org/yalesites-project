@@ -4,14 +4,13 @@ namespace Drupal\ys_layouts\Plugin\Block;
 
 use Drupal\Core\Block\BlockBase;
 use Drupal\Core\Cache\Cache;
-use Drupal\Core\Controller\TitleResolver;
 use Drupal\Core\Datetime\DateFormatter;
 use Drupal\Core\Entity\EntityTypeManager;
 use Drupal\Core\Plugin\ContainerFactoryPluginInterface;
-use Drupal\Core\Routing\RouteMatchInterface;
 use Drupal\Component\Utility\UrlHelper;
 use Drupal\Core\Url;
 use Drupal\node\NodeInterface;
+use Drupal\ys_core\Plugin\Block\LayoutBuilderEntityContextTrait;
 use Drupal\ys_layouts\Service\MediaAltResolver;
 use Drupal\ys_layouts\Service\ResourceAuthorBuilder;
 use Symfony\Component\DependencyInjection\ContainerInterface;
@@ -20,27 +19,25 @@ use Symfony\Component\HttpFoundation\RequestStack;
 /**
  * Block for resource meta data that appears above resources.
  *
+ * The "layout_builder.entity" context slot and its name are explained on
+ * \Drupal\ys_core\Plugin\Block\LayoutBuilderEntityContextTrait. An
+ * annotation cannot be inherited from a trait, so the slot is declared here.
+ *
  * @Block(
  *   id = "resource_meta_block",
  *   admin_label = @Translation("Resource Meta Block"),
  *   category = @Translation("YaleSites Layouts"),
+ *   context_definitions = {
+ *     "layout_builder.entity" = @ContextDefinition("entity",
+ *       label = @Translation("Entity being viewed"),
+ *       required = FALSE
+ *     )
+ *   }
  * )
  */
 class ResourceMetaBlock extends BlockBase implements ContainerFactoryPluginInterface {
 
-  /**
-   * The current route match.
-   *
-   * @var \Drupal\Core\Routing\RouteMatchInterface
-   */
-  protected $routeMatch;
-
-  /**
-   * The current route match.
-   *
-   * @var \Drupal\Core\Controller\TitleResolver
-   */
-  protected $titleResolver;
+  use LayoutBuilderEntityContextTrait;
 
   /**
    * The request stack.
@@ -86,10 +83,6 @@ class ResourceMetaBlock extends BlockBase implements ContainerFactoryPluginInter
    *   The plugin_id for the plugin instance.
    * @param mixed $plugin_definition
    *   The plugin implementation definition.
-   * @param \Drupal\Core\Routing\RouteMatchInterface $route_match
-   *   The route match.
-   * @param \Drupal\Core\Controller\TitleResolver $title_resolver
-   *   The title resolver.
    * @param \Symfony\Component\HttpFoundation\RequestStack $request_stack
    *   The request stack.
    * @param \Drupal\Core\Datetime\DateFormatter $date_formatter
@@ -105,8 +98,6 @@ class ResourceMetaBlock extends BlockBase implements ContainerFactoryPluginInter
     array $configuration,
     $plugin_id,
     $plugin_definition,
-    RouteMatchInterface $route_match,
-    TitleResolver $title_resolver,
     RequestStack $request_stack,
     DateFormatter $date_formatter,
     EntityTypeManager $entity_type_manager,
@@ -115,8 +106,6 @@ class ResourceMetaBlock extends BlockBase implements ContainerFactoryPluginInter
   ) {
     parent::__construct($configuration, $plugin_id, $plugin_definition);
 
-    $this->routeMatch = $route_match;
-    $this->titleResolver = $title_resolver;
     $this->requestStack = $request_stack;
     $this->dateFormatter = $date_formatter;
     $this->entityTypeManager = $entity_type_manager;
@@ -132,8 +121,6 @@ class ResourceMetaBlock extends BlockBase implements ContainerFactoryPluginInter
       $configuration,
       $plugin_id,
       $plugin_definition,
-      $container->get('current_route_match'),
-      $container->get('title_resolver'),
       $container->get('request_stack'),
       $container->get('date.formatter'),
       $container->get('entity_type.manager'),
@@ -147,13 +134,11 @@ class ResourceMetaBlock extends BlockBase implements ContainerFactoryPluginInter
    */
   public function build() {
 
-    /** @var \Drupal\node\NodeInterface $node */
     $node = $this->getCurrentNode();
-    if (!($node instanceof NodeInterface) || $node->bundle() !== 'resource') {
+    if (!$node || $node->bundle() !== 'resource') {
       return [];
     }
 
-    $title = NULL;
     $categoryName = NULL;
     $publishDate = NULL;
     $metadata = [];
@@ -167,209 +152,204 @@ class ResourceMetaBlock extends BlockBase implements ContainerFactoryPluginInter
     $abstract = NULL;
     $journalPublicationName = NULL;
     $journalPublicationIssue = NULL;
-    $authors = [];
     $authorCacheTags = [];
     $externalSource = [];
 
-    $route = $this->routeMatch->getRouteObject();
+    // Get Resource fields.
+    $title = $node->getTitle();
+    $fieldPublishDate = $node?->field_publish_date;
+    $fieldDateFormat = $node?->field_date_format?->first()?->getString();
+    $fieldCategory = $node?->field_category?->first()?->getValue();
+    $fieldMedia = $node?->field_media?->first()?->getValue();
+    $fieldDescription = $node?->field_content_description?->first()?->getValue();
 
-    if ($route) {
-      // Get Resource fields.
-      $title = $node->getTitle();
-      $fieldPublishDate = $node?->field_publish_date;
-      $fieldDateFormat = $node?->field_date_format?->first()?->getString();
-      $fieldCategory = $node?->field_category?->first()?->getValue();
-      $fieldMedia = $node?->field_media?->first()?->getValue();
-      $fieldDescription = $node?->field_content_description?->first()?->getValue();
+    $date_formats = [
+      'date' => 'F j, Y',
+      'month_year' => 'F Y',
+      'year_only' => 'Y',
+    ];
 
-      $date_formats = [
-        'date' => 'F j, Y',
-        'month_year' => 'F Y',
-        'year_only' => 'Y',
-      ];
+    // Set PUBLISH DATE variables.
+    if ($fieldPublishDate->getValue() and $fieldDateFormat) {
+      $publishDateValue = strtotime($fieldPublishDate->first()->getValue()['value']);
+      $publishDate = $this->dateFormatter->format($publishDateValue, '', $date_formats[$fieldDateFormat]);
+    }
 
-      // Set PUBLISH DATE variables.
-      if ($fieldPublishDate->getValue() and $fieldDateFormat) {
-        $publishDateValue = strtotime($fieldPublishDate->first()->getValue()['value']);
-        $publishDate = $this->dateFormatter->format($publishDateValue, '', $date_formats[$fieldDateFormat]);
+    // Set DESCRIPTION variable.
+    if ($fieldDescription) {
+      // Process the text through the text format filters.
+      $description = check_markup(
+        $fieldDescription['value'],
+        $fieldDescription['format']
+      );
+    }
+
+    // Get CATEGORY term.
+    if ($fieldCategory) {
+      /** @var \Drupal\taxonomy\Entity\Term $categoryTerm */
+      $categoryTerm = $this->entityTypeManager->getStorage('taxonomy_term')->load($fieldCategory['target_id']);
+      if ($categoryTerm) {
+        $categoryName = $categoryTerm->getName();
       }
+    }
 
-      // Set DESCRIPTION variable.
-      if ($fieldDescription) {
-        // Process the text through the text format filters.
-        $description = check_markup(
-          $fieldDescription['value'],
-          $fieldDescription['format']
-        );
-      }
+    // Select specific taxonomy fields to show in the METADATA grid.
+    // field_authors is handled separately below as first-class data so the
+    // template can render it as a full-width cell with comma-joined links.
+    $selected_term_fields = [
+      'field_discipline',
+      'field_audience',
+      'field_areas_of_study',
+      'field_academic_years',
+      'field_geographic_areas',
+      'field_tags',
+      'field_custom_vocab',
+    ];
 
-      // Get CATEGORY term.
-      if ($fieldCategory) {
-        /** @var \Drupal\taxonomy\Entity\Term $categoryTerm */
-        $categoryTerm = $this->entityTypeManager->getStorage('taxonomy_term')->load($fieldCategory['target_id']);
-        if ($categoryTerm) {
-          $categoryName = $categoryTerm->getName();
-        }
-      }
-
-      // Select specific taxonomy fields to show in the METADATA grid.
-      // field_authors is handled separately below as first-class data so the
-      // template can render it as a full-width cell with comma-joined links.
-      $selected_term_fields = [
-        'field_discipline',
-        'field_audience',
-        'field_areas_of_study',
-        'field_academic_years',
-        'field_geographic_areas',
-        'field_tags',
-        'field_custom_vocab',
-      ];
-
-      foreach ($selected_term_fields as $field_name) {
-        if ($node->hasField($field_name)) {
-          $field = $node->get($field_name);
-          $field_label = $field->getFieldDefinition()->getLabel();
-          $terms = [];
-
-          foreach ($field->referencedEntities() as $term) {
-            $terms[] = [
-              '#type' => 'link',
-              '#title' => $term->label(),
-              '#url' => $term->toUrl(),
-            ];
-          }
-
-          // Only set metadata if there are terms.
-          if ($terms) {
-            $metadata[$field_name] = [
-              'label' => $field_label,
-              'items' => $terms,
-            ];
-          }
-        }
-      }
-
-      // Handle DCN field (cf_dcn) - custom field type.
-      if ($node->hasField('field_cf_dcn') && !$node->get('field_cf_dcn')->isEmpty()) {
-        $field = $node->get('field_cf_dcn');
+    foreach ($selected_term_fields as $field_name) {
+      if ($node->hasField($field_name)) {
+        $field = $node->get($field_name);
         $field_label = $field->getFieldDefinition()->getLabel();
-        $dcn_items = [];
+        $terms = [];
 
-        foreach ($field as $item) {
-          $dcn_type = $item->getDcnType();
-          $dcn_identifier = $item->dcn_identifier;
-
-          if ($dcn_type && $dcn_identifier !== NULL && $dcn_identifier !== '') {
-            $dcn_items[] = [
-              '#plain_text' => $dcn_type->getName() . ' ' . $dcn_identifier,
-            ];
-          }
+        foreach ($field->referencedEntities() as $term) {
+          $terms[] = [
+            '#type' => 'link',
+            '#title' => $term->label(),
+            '#url' => $term->toUrl(),
+          ];
         }
 
-        if ($dcn_items) {
-          $metadata['field_cf_dcn'] = [
+        // Only set metadata if there are terms.
+        if ($terms) {
+          $metadata[$field_name] = [
             'label' => $field_label,
-            'items' => $dcn_items,
+            'items' => $terms,
+          ];
+        }
+      }
+    }
+
+    // Handle DCN field (cf_dcn) - custom field type.
+    if ($node->hasField('field_cf_dcn') && !$node->get('field_cf_dcn')->isEmpty()) {
+      $field = $node->get('field_cf_dcn');
+      $field_label = $field->getFieldDefinition()->getLabel();
+      $dcn_items = [];
+
+      foreach ($field as $item) {
+        $dcn_type = $item->getDcnType();
+        $dcn_identifier = $item->dcn_identifier;
+
+        if ($dcn_type && $dcn_identifier !== NULL && $dcn_identifier !== '') {
+          $dcn_items[] = [
+            '#plain_text' => $dcn_type->getName() . ' ' . $dcn_identifier,
           ];
         }
       }
 
-      // Combined author list: affiliated profile refs + non-affiliated rows,
-      // merged and sorted last-then-first. Same service feeds the view-row
-      // templates via atomic_preprocess_node() so output stays consistent.
-      $authors = $this->resourceAuthorBuilder->build($node, $authorCacheTags);
-
-      // Handle External Source link field.
-      if ($node->hasField('field_external_source') && !$node->get('field_external_source')->isEmpty()) {
-        $linkItem = $node->get('field_external_source')->first();
-        $url = UrlHelper::filterBadProtocol($linkItem->getUrl()->toString());
-        if ($url) {
-          // The link title sub-field is disabled for this field, so the label
-          // is always this fixed string -- matching the Download CTA below.
-          // Never fall back to the URL: a raw URL is not a meaningful link
-          // name (WCAG 2.4.4) and reads as broken with long URLs.
-          $externalSource = [
-            'url' => $url,
-            'title' => $this->t('Visit Source'),
-          ];
-        }
+      if ($dcn_items) {
+        $metadata['field_cf_dcn'] = [
+          'label' => $field_label,
+          'items' => $dcn_items,
+        ];
       }
+    }
 
-      // Handle Citation field as a standalone text block.
-      if ($node->hasField('field_citation') && !$node->get('field_citation')->isEmpty()) {
-        $field_value = $node->get('field_citation')->first()->getValue();
-        if (!empty($field_value['value'])) {
-          $citation = check_markup($field_value['value'], $field_value['format'] ?? 'basic_html');
-        }
+    // Combined author list: affiliated profile refs + non-affiliated rows,
+    // merged and sorted last-then-first. Same service feeds the view-row
+    // templates via atomic_preprocess_node() so output stays consistent.
+    $authors = $this->resourceAuthorBuilder->build($node, $authorCacheTags);
+
+    // Handle External Source link field.
+    if ($node->hasField('field_external_source') && !$node->get('field_external_source')->isEmpty()) {
+      $linkItem = $node->get('field_external_source')->first();
+      $url = UrlHelper::filterBadProtocol($linkItem->getUrl()->toString());
+      if ($url) {
+        // The link title sub-field is disabled for this field, so the label
+        // is always this fixed string -- matching the Download CTA below.
+        // Never fall back to the URL: a raw URL is not a meaningful link
+        // name (WCAG 2.4.4) and reads as broken with long URLs.
+        $externalSource = [
+          'url' => $url,
+          'title' => $this->t('Visit Source'),
+        ];
       }
+    }
 
-      // Handle Abstract field as a standalone text block.
-      if ($node->hasField('field_abstract') && !$node->get('field_abstract')->isEmpty()) {
-        $field_value = $node->get('field_abstract')->first()->getValue();
-        if (!empty($field_value['value'])) {
-          $abstract = check_markup($field_value['value'], $field_value['format'] ?? 'basic_html');
-        }
+    // Handle Citation field as a standalone text block.
+    if ($node->hasField('field_citation') && !$node->get('field_citation')->isEmpty()) {
+      $field_value = $node->get('field_citation')->first()->getValue();
+      if (!empty($field_value['value'])) {
+        $citation = check_markup($field_value['value'], $field_value['format'] ?? 'basic_html');
       }
+    }
 
-      // Handle Journal Publication Name.
-      if ($node->hasField('field_journal_publication_name') && !$node->get('field_journal_publication_name')->isEmpty()) {
-        $field_value = $node->get('field_journal_publication_name')->first()->getString();
-        if (!empty($field_value)) {
-          $journalPublicationName = $field_value;
-        }
+    // Handle Abstract field as a standalone text block.
+    if ($node->hasField('field_abstract') && !$node->get('field_abstract')->isEmpty()) {
+      $field_value = $node->get('field_abstract')->first()->getValue();
+      if (!empty($field_value['value'])) {
+        $abstract = check_markup($field_value['value'], $field_value['format'] ?? 'basic_html');
       }
+    }
 
-      // Handle Journal Publication Issue.
-      if ($node->hasField('field_journal_publication_issue') && !$node->get('field_journal_publication_issue')->isEmpty()) {
-        $field_value = $node->get('field_journal_publication_issue')->first()->getString();
-        if (!empty($field_value)) {
-          $journalPublicationIssue = $field_value;
-        }
+    // Handle Journal Publication Name.
+    if ($node->hasField('field_journal_publication_name') && !$node->get('field_journal_publication_name')->isEmpty()) {
+      $field_value = $node->get('field_journal_publication_name')->first()->getString();
+      if (!empty($field_value)) {
+        $journalPublicationName = $field_value;
       }
+    }
 
-      // Set MEDIA.
-      if ($fieldMedia) {
-        /** @var \Drupal\media\Entity\Media $media */
-        $media = $this->entityTypeManager->getStorage('media')->load($fieldMedia['target_id']);
-        if ($media) {
-          $mediaBundle = $media->bundle();
-          $mediaLabel = $media->label();
-          $mediaId = $media->id();
+    // Handle Journal Publication Issue.
+    if ($node->hasField('field_journal_publication_issue') && !$node->get('field_journal_publication_issue')->isEmpty()) {
+      $field_value = $node->get('field_journal_publication_issue')->first()->getString();
+      if (!empty($field_value)) {
+        $journalPublicationIssue = $field_value;
+      }
+    }
 
-          if ($mediaBundle === 'document') {
-            $fieldMediaFile = $media->field_media_file->first()->getValue();
+    // Set MEDIA.
+    if ($fieldMedia) {
+      /** @var \Drupal\media\Entity\Media $media */
+      $media = $this->entityTypeManager->getStorage('media')->load($fieldMedia['target_id']);
+      if ($media) {
+        $mediaBundle = $media->bundle();
+        $mediaLabel = $media->label();
+        $mediaId = $media->id();
 
-            /** @var \Drupal\file\Entity\File $file */
-            $file = $this->entityTypeManager->getStorage('file')->load($fieldMediaFile['target_id']);
-            if ($file) {
-              $fileUrl = Url::fromRoute('ys_layouts.resource_download', ['file_id' => $file->id()])->toString();
-            }
+        if ($mediaBundle === 'document') {
+          $fieldMediaFile = $media->field_media_file->first()->getValue();
+
+          /** @var \Drupal\file\Entity\File $file */
+          $file = $this->entityTypeManager->getStorage('file')->load($fieldMediaFile['target_id']);
+          if ($file) {
+            $fileUrl = Url::fromRoute('ys_layouts.resource_download', ['file_id' => $file->id()])->toString();
           }
+        }
 
-          // Build a thumbnail render array for non-video media bundles that
-          // expose a usable thumbnail (document, image, etc.). Video bundles
-          // are excluded because the embedded player itself is the visual,
-          // and the auto-generated YouTube preview alongside it is redundant.
-          $thumbnail = $media?->thumbnail;
+        // Build a thumbnail render array for non-video media bundles that
+        // expose a usable thumbnail (document, image, etc.). Video bundles
+        // are excluded because the embedded player itself is the visual,
+        // and the auto-generated YouTube preview alongside it is redundant.
+        $thumbnail = $media?->thumbnail;
 
-          if ($mediaBundle !== 'video' && $thumbnail) {
-            /** @var \Drupal\file\Entity\File $thumbnail_file */
-            $referenced_entities = $thumbnail->referencedEntities();
-            $thumbnail_file = reset($referenced_entities);
+        if ($mediaBundle !== 'video' && $thumbnail) {
+          /** @var \Drupal\file\Entity\File $thumbnail_file */
+          $referenced_entities = $thumbnail->referencedEntities();
+          $thumbnail_file = reset($referenced_entities);
 
-            if ($thumbnail_file) {
-              $documentImage = [
-                '#theme' => 'responsive_image',
-                '#uri' => $thumbnail_file->getFileUri(),
-                '#responsive_image_style_id' => 'resource_thumbnail',
-                '#height' => $thumbnail?->height,
-                '#width' => $thumbnail?->width,
-                '#attributes' => [
-                  'loading' => 'lazy',
-                  'alt' => $this->mediaAltResolver->resolve($media),
-                ],
-              ];
-            }
+          if ($thumbnail_file) {
+            $documentImage = [
+              '#theme' => 'responsive_image',
+              '#uri' => $thumbnail_file->getFileUri(),
+              '#responsive_image_style_id' => 'resource_thumbnail',
+              '#height' => $thumbnail?->height,
+              '#width' => $thumbnail?->width,
+              '#attributes' => [
+                'loading' => 'lazy',
+                'alt' => $this->mediaAltResolver->resolve($media),
+              ],
+            ];
           }
         }
       }
@@ -425,11 +405,25 @@ class ResourceMetaBlock extends BlockBase implements ContainerFactoryPluginInter
   }
 
   /**
-   * Get the current node from either route match or Layout Builder context.
+   * Gets the node being rendered.
+   *
+   * The entity Layout Builder hands over is preferred over anything the
+   * request names; the request tiers below it are kept for the contexts
+   * Layout Builder offers nothing in.
+   *
+   * @return \Drupal\node\NodeInterface|null
+   *   The node being rendered, or NULL when no source resolves one.
    */
-  protected function getCurrentNode() {
+  protected function getCurrentNode(): ?NodeInterface {
+    $node = $this->getRenderedEntitySavedNode();
+    if ($node) {
+      return $node;
+    }
 
     $request = $this->requestStack->getCurrentRequest();
+    if (!$request) {
+      return NULL;
+    }
     $node = $request->attributes->get('node');
 
     // When removing the contact block when one already exists,
@@ -444,7 +438,7 @@ class ResourceMetaBlock extends BlockBase implements ContainerFactoryPluginInter
       }
     }
 
-    return $node ?? NULL;
+    return $node instanceof NodeInterface ? $node : NULL;
   }
 
 }
