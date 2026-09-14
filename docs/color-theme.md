@@ -352,6 +352,19 @@ heaviest argument and both are single attribute selectors.
 
 ### The surface contract
 
+> **Where the implementation lives.** Every file, mixin, npm script and JavaScript constant
+> named in this section belongs to **`component-library-twig`**, not to this repository —
+> including `_surface-contract.scss` and its `publish-surface` mixin, `surface-contract.mjs`,
+> `surface-contract-baseline.json`, `section-background-contrast.test.mjs`,
+> `META_CHIP_SURFACES`, `SECTION_SURFACE_CONSUMERS`, `npm run contrast:surfaces`, and the
+> `_yds-callout.scss` / `_yds-cta.scss` references below. Nothing checks any of those names from
+> here: this is prose in one repo describing code in another. Several of them are
+> *instructions* — "use the shared mixin", "register it in `META_CHIP_SURFACES`", "register any
+> new consumer in `SECTION_SURFACE_CONSUMERS`" — so a name that has moved sends the next person
+> to edit something that is no longer there. **If a name here no longer resolves,
+> `component-library-twig` is authoritative — go read it and correct this document**, rather
+> than assuming the code is wrong.
+
 The two dials above answer "what colour is this thing". They do not answer the question that
 actually breaks pages: **when a block sits inside a section, whose foreground do the things
 inside the block use?**
@@ -486,9 +499,14 @@ Register any new consumer in `SECTION_SURFACE_CONSUMERS` in
 
 `components/00-tokens/colors/surface-contract.mjs` scans every component stylesheet for a
 background painted at a themed scope and fails the build if it does not publish the contract.
-Surfaces still to convert are listed in `surface-contract-baseline.json`, each with a reason and
-an owning ticket; like the other baselines in that directory it is a ratchet that may only shrink,
-and adding an entry to turn a red build green is not a fix. Print the current state with:
+Surfaces still to convert are listed in `surface-contract-baseline.json` under `pending`, each
+with a reason and an owning ticket; like the other baselines in that directory it is a ratchet
+that may only shrink, and adding an entry to turn a red build green is not a fix. A second
+section, `out_of_scope`, holds site chrome that paints at a themed scope but cannot be placed
+inside a themed section, so the leak is unreachable there — those entries carry the condition
+that would move them back into `pending` instead of a ticket, and are kept out of the pending
+count so the burn-down measures real contrast debt. The gate treats both alike. Print the current
+state, with the pending count and how old the baseline is, with:
 
 ```sh
 npm run contrast:surfaces
