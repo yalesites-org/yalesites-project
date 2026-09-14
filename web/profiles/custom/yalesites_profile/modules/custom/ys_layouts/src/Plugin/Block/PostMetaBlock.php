@@ -120,8 +120,8 @@ class PostMetaBlock extends BlockBase implements ContainerFactoryPluginInterface
   /**
    * Gets the node being rendered.
    *
-   * The entity Layout Builder hands over is preferred over the node named by
-   * the request; the request lookup is kept as a fallback tier for the
+   * The entity Layout Builder hands over is preferred over anything the
+   * request names; the request lookup is kept as a fallback tier for the
    * contexts Layout Builder offers nothing in.
    *
    * @return \Drupal\node\NodeInterface|null
@@ -134,7 +134,11 @@ class PostMetaBlock extends BlockBase implements ContainerFactoryPluginInterface
     }
 
     $request = $this->requestStack->getCurrentRequest();
-    $node = $request ? $request->attributes->get('node') : NULL;
+    if (!$request) {
+      return NULL;
+    }
+
+    $node = $request->attributes->get('node');
 
     return $node instanceof NodeInterface ? $node : NULL;
   }

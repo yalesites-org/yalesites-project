@@ -2,12 +2,13 @@
 
 namespace Drupal\Tests\ys_layouts\Unit;
 
-use Drupal\Core\Routing\RouteMatchInterface;
 use Drupal\Tests\UnitTestCase;
 use Drupal\Tests\ys_core\Traits\LayoutBuilderEntityContextTestTrait;
 use Drupal\node\NodeInterface;
 use Drupal\ys_layouts\Plugin\Block\EventMetaBlock;
 use Drupal\ys_localist\MetaFieldsManager;
+use Symfony\Component\HttpFoundation\Request;
+use Symfony\Component\HttpFoundation\RequestStack;
 
 /**
  * Tests the event meta block.
@@ -22,11 +23,11 @@ class EventMetaBlockTest extends UnitTestCase {
   use LayoutBuilderEntityContextTestTrait;
 
   /**
-   * The route match mock.
+   * The request stack mock.
    *
-   * @var \Drupal\Core\Routing\RouteMatchInterface|\PHPUnit\Framework\MockObject\MockObject
+   * @var \Symfony\Component\HttpFoundation\RequestStack|\PHPUnit\Framework\MockObject\MockObject
    */
-  protected $routeMatch;
+  protected $requestStack;
 
   /**
    * The meta fields manager mock.
@@ -48,7 +49,7 @@ class EventMetaBlockTest extends UnitTestCase {
   protected function setUp(): void {
     parent::setUp();
 
-    $this->routeMatch = $this->createMock(RouteMatchInterface::class);
+    $this->requestStack = $this->createMock(RequestStack::class);
     $this->metaFieldsManager = $this->createMock(MetaFieldsManager::class);
 
     $this->setUpLayoutBuilderEntityContextContainer();
@@ -96,16 +97,16 @@ class EventMetaBlockTest extends UnitTestCase {
       'context_definitions' => $this->layoutBuilderEntityContextDefinitions(EventMetaBlock::class),
     ];
 
-    return new EventMetaBlock([], 'event_meta_block', $definition, $this->routeMatch, $this->metaFieldsManager);
+    return new EventMetaBlock([], 'event_meta_block', $definition, $this->requestStack, $this->metaFieldsManager);
   }
 
   /**
-   * With no node on the route, the block renders nothing.
+   * With no node on the request, the block renders nothing.
    *
    * @covers ::build
    */
   public function testBuildReturnsEmptyWithNoNode(): void {
-    $this->routeMatch->method('getParameter')->with('node')->willReturn(NULL);
+    $this->requestStack->method('getCurrentRequest')->willReturn(new Request());
     $this->metaFieldsManager->expects($this->never())->method('getEventData');
 
     $build = $this->buildBlock()->build();
@@ -121,7 +122,9 @@ class EventMetaBlockTest extends UnitTestCase {
   public function testBuildRendersEventDataForEventNode(): void {
     $node = $this->createMock(NodeInterface::class);
     $node->method('bundle')->willReturn('event');
-    $this->routeMatch->method('getParameter')->with('node')->willReturn($node);
+    $request = new Request();
+    $request->attributes->set('node', $node);
+    $this->requestStack->method('getCurrentRequest')->willReturn($request);
     $this->metaFieldsManager->method('getEventData')->with($node)->willReturn($this->eventFieldData);
 
     $build = $this->buildBlock()->build();
@@ -140,7 +143,9 @@ class EventMetaBlockTest extends UnitTestCase {
   public function testBuildShouldReturnEmptyForNonEventNode(): void {
     $node = $this->createMock(NodeInterface::class);
     $node->method('bundle')->willReturn('page');
-    $this->routeMatch->method('getParameter')->with('node')->willReturn($node);
+    $request = new Request();
+    $request->attributes->set('node', $node);
+    $this->requestStack->method('getCurrentRequest')->willReturn($request);
     $this->metaFieldsManager->expects($this->never())->method('getEventData');
 
     $build = $this->buildBlock()->build();
@@ -166,18 +171,18 @@ class EventMetaBlockTest extends UnitTestCase {
   }
 
   /**
-   * The entity being rendered beats a route that names no node at all.
+   * The entity being rendered beats a request that names no node at all.
    *
    * This is the reported bug: /node/add/event (every new event's first save)
-   * and a bulk operation from /admin/content carry no node on the route, so
+   * and a bulk operation from /admin/content carry no node on the request, so
    * the block rendered nothing and the event's heading was missing from what
    * Beacon indexes.
    *
    * @covers ::build
    */
-  public function testBuildUsesRenderedEntityWhenRouteHasNoNode(): void {
+  public function testBuildUsesRenderedEntityWhenRequestHasNoNode(): void {
     $node = $this->mockEventNode('Fall Concert');
-    $this->routeMatch->method('getParameter')->with('node')->willReturn(NULL);
+    $this->requestStack->method('getCurrentRequest')->willReturn(new Request());
     $this->metaFieldsManager->expects($this->once())
       ->method('getEventData')
       ->with($node)
@@ -193,13 +198,15 @@ class EventMetaBlockTest extends UnitTestCase {
   }
 
   /**
-   * The entity being rendered beats a DIFFERENT node named by the route.
+   * The entity being rendered beats a DIFFERENT node named by the request.
    *
    * @covers ::build
    */
-  public function testBuildPrefersRenderedEntityOverRouteNode(): void {
+  public function testBuildPrefersRenderedEntityOverRequestNode(): void {
     $node = $this->mockEventNode('Fall Concert');
-    $this->routeMatch->method('getParameter')->with('node')->willReturn($this->mockEventNode('Some Other Event'));
+    $request = new Request();
+    $request->attributes->set('node', $this->mockEventNode('Some Other Event'));
+    $this->requestStack->method('getCurrentRequest')->willReturn($request);
     $this->metaFieldsManager->expects($this->once())
       ->method('getEventData')
       ->with($node)
@@ -212,7 +219,7 @@ class EventMetaBlockTest extends UnitTestCase {
   }
 
   /**
-   * A context holding something other than a node falls through to the route.
+   * A context holding something other than a node falls through to the request.
    *
    * Layout Builder hands over whatever entity the display belongs to, so the
    * context is not guaranteed to hold a node -- the defaults layout screen
@@ -223,13 +230,29 @@ class EventMetaBlockTest extends UnitTestCase {
    * @dataProvider providerNonNodeContextValues
    */
   public function testBuildIgnoresNonNodeEntityContext($value): void {
-    $this->routeMatch->method('getParameter')->with('node')->willReturn(NULL);
+    $this->requestStack->method('getCurrentRequest')->willReturn(new Request());
     $this->metaFieldsManager->expects($this->never())->method('getEventData');
 
     $block = $this->buildBlock();
     $this->setRenderedEntity($block, $value);
 
     $this->assertSame([], $block->build());
+  }
+
+  /**
+   * With no current request at all, the block resolves no node.
+   *
+   * There is no HTTP request in a drush or cron process, so the request tier
+   * has nothing to read. The guard is what keeps that path from calling
+   * attributes->get() on NULL.
+   *
+   * @covers ::getCurrentNode
+   */
+  public function testBuildWithNoCurrentRequestResolvesNoNode(): void {
+    $this->requestStack->method('getCurrentRequest')->willReturn(NULL);
+    $this->metaFieldsManager->expects($this->never())->method('getEventData');
+
+    $this->assertSame([], $this->buildBlock()->build());
   }
 
   /**
@@ -260,7 +283,7 @@ class EventMetaBlockTest extends UnitTestCase {
    * @covers ::build
    */
   public function testBuildIgnoresUnsavedSampleEntity(): void {
-    $this->routeMatch->method('getParameter')->with('node')->willReturn(NULL);
+    $this->requestStack->method('getCurrentRequest')->willReturn(new Request());
     $this->metaFieldsManager->expects($this->never())->method('getEventData');
 
     $sample = $this->mockEventNode('Sample Event');

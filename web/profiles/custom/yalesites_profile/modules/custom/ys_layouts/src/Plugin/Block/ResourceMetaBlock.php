@@ -424,17 +424,19 @@ class ResourceMetaBlock extends BlockBase implements ContainerFactoryPluginInter
     if (!$request) {
       return NULL;
     }
+
     $node = $request->attributes->get('node');
 
     // When removing the contact block when one already exists,
     // it no longer has access to the node object. Therefore, we must load it
     // manually via the ajaxified path.
     if (!$node) {
+      // The Layout Builder ajax path names the entity as "node.<nid>." --
+      // e.g. /layout_builder/update/overrides/node.42.default.en/0/content.
       $layoutBuilderPath = $request->getPathInfo();
-      preg_match('/(node\.+(\d+))/', $layoutBuilderPath, $matches);
-      if (!empty($matches)) {
+      if (preg_match('/node\.(\d+)/', $layoutBuilderPath, $matches)) {
         $nodeStorage = $this->entityTypeManager->getStorage('node');
-        $node = $nodeStorage->load($matches[2]);
+        $node = $nodeStorage->load($matches[1]);
       }
     }
 

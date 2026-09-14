@@ -235,9 +235,9 @@ class PostMetaBlockTest extends UnitTestCase {
    */
   public function testBuildIgnoresNonNodeEntityContext($value): void {
     // The request node must be a real POST, so the assertion can only pass by
-    // falling through to it. Asserting an empty render array instead would
-    // pass whether or not the guard works: an EntityInterface mock's bundle()
-    // returns '', which fails the bundle check too.
+    // falling through to it. Asserting an empty render array instead would be
+    // the weaker test: it would also pass if the guard let the context value
+    // through and build() merely errored or bailed on the bundle check.
     $request = new Request();
     $request->attributes->set('node', $this->mockPostNode('From The Request'));
     $this->requestStack->method('getCurrentRequest')->willReturn($request);
@@ -246,6 +246,21 @@ class PostMetaBlockTest extends UnitTestCase {
     $this->setRenderedEntity($this->block, $value);
 
     $this->assertSame('From The Request', $this->block->build()['#label']);
+  }
+
+  /**
+   * With no current request at all, the block resolves no node.
+   *
+   * There is no HTTP request in a drush or cron process, so the request tier
+   * has nothing to read. The guard is what keeps that path from calling
+   * attributes->get() on NULL.
+   *
+   * @covers ::getCurrentNode
+   */
+  public function testBuildWithNoCurrentRequestResolvesNoNode(): void {
+    $this->requestStack->method('getCurrentRequest')->willReturn(NULL);
+
+    $this->assertSame([], $this->block->build());
   }
 
   /**

@@ -134,6 +134,26 @@ class ResourceMetaBlockTest extends UnitTestCase {
   }
 
   /**
+   * A path naming no node loads nothing rather than guessing an id.
+   *
+   * The ajax-path tier reads the entity id out of the Layout Builder path with
+   * a regex, so the guard that matters is the negative one: on a path with no
+   * "node.<nid>" segment it must not reach storage at all. Pairs with
+   * ::testBuildFallsBackToLoadingNodeFromAjaxPath(), which pins the positive
+   * case, so the pattern cannot be loosened in either direction unnoticed.
+   *
+   * @covers ::getCurrentNode
+   */
+  public function testBuildIgnoresPathWithNoNodeSegment(): void {
+    $path = '/admin/config/content/layout_builder/update/overrides/block_content.7.default.en/0/content';
+    $this->requestStack->method('getCurrentRequest')->willReturn(Request::create($path));
+
+    $this->entityTypeManager->expects($this->never())->method('getStorage');
+
+    $this->assertSame([], $this->block->build());
+  }
+
+  /**
    * With no node attribute, the Layout Builder ajax path is used to load one.
    *
    * The full success path of build() reads many entity fields via magic
@@ -342,6 +362,21 @@ class ResourceMetaBlockTest extends UnitTestCase {
     $this->setRenderedEntity($this->block, $value);
 
     $this->assertContains('node:11', $this->block->getCacheTags());
+  }
+
+  /**
+   * With no current request at all, the block resolves no node.
+   *
+   * There is no HTTP request in a drush or cron process, so the request tier
+   * has nothing to read. The guard is what keeps that path from calling
+   * attributes->get() on NULL.
+   *
+   * @covers ::getCurrentNode
+   */
+  public function testBuildWithNoCurrentRequestResolvesNoNode(): void {
+    $this->requestStack->method('getCurrentRequest')->willReturn(NULL);
+
+    $this->assertSame([], $this->block->build());
   }
 
   /**

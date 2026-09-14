@@ -7,7 +7,6 @@ use Drupal\Core\Block\Annotation\Block;
 use Drupal\Core\Block\BlockPluginInterface;
 use Drupal\Core\Cache\Cache;
 use Drupal\Core\DependencyInjection\ContainerBuilder;
-use Drupal\Core\Entity\EntityInterface;
 use Drupal\Core\Form\FormState;
 use Drupal\Core\Plugin\Context\ContextDefinition;
 use Drupal\Core\Plugin\Context\ContextHandler;
@@ -132,12 +131,18 @@ trait LayoutBuilderEntityContextTestTrait {
    * also declared as a generic entity, so the consuming block's guard is what
    * keeps a non-node out of its node handling.
    *
+   * Static, and builds no test doubles: PHPUnit 10 deprecates both a
+   * non-static data provider and creating a mock inside one, and PHPUnit 11 --
+   * which Drupal 11 requires -- makes them errors. The assertion each case
+   * feeds is only "this is not a NodeInterface", so a plain object carries it
+   * without needing the mocking framework at all.
+   *
    * @return array<string, array{mixed}>
    *   Test cases of a context value.
    */
-  public function providerNonNodeContextValues(): array {
+  public static function providerNonNodeContextValues(): array {
     return [
-      'an entity that is not a node' => [$this->createMock(EntityInterface::class)],
+      'an object that is not a node' => [new \stdClass()],
       'no entity at all' => ['not-an-entity'],
     ];
   }

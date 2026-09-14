@@ -4,11 +4,11 @@ namespace Drupal\ys_layouts\Plugin\Block;
 
 use Drupal\Core\Block\BlockBase;
 use Drupal\Core\Plugin\ContainerFactoryPluginInterface;
-use Drupal\Core\Routing\RouteMatchInterface;
 use Drupal\node\NodeInterface;
 use Drupal\ys_core\Plugin\Block\LayoutBuilderEntityContextTrait;
 use Drupal\ys_localist\MetaFieldsManager;
 use Symfony\Component\DependencyInjection\ContainerInterface;
+use Symfony\Component\HttpFoundation\RequestStack;
 
 /**
  * Block for event meta data that appears above events.
@@ -34,11 +34,11 @@ class EventMetaBlock extends BlockBase implements ContainerFactoryPluginInterfac
   use LayoutBuilderEntityContextTrait;
 
   /**
-   * The current route match.
+   * The request stack.
    *
-   * @var \Drupal\Core\Routing\RouteMatchInterface
+   * @var \Symfony\Component\HttpFoundation\RequestStack
    */
-  protected $routeMatch;
+  protected $requestStack;
 
   /**
    * The meta fields manager service.
@@ -56,8 +56,8 @@ class EventMetaBlock extends BlockBase implements ContainerFactoryPluginInterfac
    *   The plugin_id for the plugin instance.
    * @param mixed $plugin_definition
    *   The plugin implementation definition.
-   * @param \Drupal\Core\Routing\RouteMatchInterface $route_match
-   *   The current route match.
+   * @param \Symfony\Component\HttpFoundation\RequestStack $request_stack
+   *   The request stack.
    * @param \Drupal\ys_localist\MetaFieldsManager $meta_fields_manager
    *   The meta fields manager service.
    */
@@ -65,12 +65,12 @@ class EventMetaBlock extends BlockBase implements ContainerFactoryPluginInterfac
     array $configuration,
     $plugin_id,
     $plugin_definition,
-    RouteMatchInterface $route_match,
+    RequestStack $request_stack,
     MetaFieldsManager $meta_fields_manager,
   ) {
     parent::__construct($configuration, $plugin_id, $plugin_definition);
 
-    $this->routeMatch = $route_match;
+    $this->requestStack = $request_stack;
     $this->metaFieldsManager = $meta_fields_manager;
   }
 
@@ -82,7 +82,7 @@ class EventMetaBlock extends BlockBase implements ContainerFactoryPluginInterfac
       $configuration,
       $plugin_id,
       $plugin_definition,
-      $container->get('current_route_match'),
+      $container->get('request_stack'),
       $container->get('ys_localist.meta_fields_manager'),
     );
   }
@@ -134,15 +134,25 @@ class EventMetaBlock extends BlockBase implements ContainerFactoryPluginInterfac
   /**
    * Gets the node being rendered.
    *
-   * The entity Layout Builder hands over is preferred over the node named by
-   * the route; the route lookup is kept as a fallback tier for the contexts
-   * Layout Builder offers nothing in.
+   * The entity Layout Builder hands over is preferred over anything the
+   * request names; the request lookup is kept as a fallback tier for the
+   * contexts Layout Builder offers nothing in.
    *
    * @return \Drupal\node\NodeInterface|null
    *   The node being rendered, or NULL when neither source resolves one.
    */
   protected function getCurrentNode(): ?NodeInterface {
-    $node = $this->getRenderedEntitySavedNode() ?: $this->routeMatch->getParameter('node');
+    $node = $this->getRenderedEntitySavedNode();
+    if ($node) {
+      return $node;
+    }
+
+    $request = $this->requestStack->getCurrentRequest();
+    if (!$request) {
+      return NULL;
+    }
+
+    $node = $request->attributes->get('node');
 
     return $node instanceof NodeInterface ? $node : NULL;
   }
