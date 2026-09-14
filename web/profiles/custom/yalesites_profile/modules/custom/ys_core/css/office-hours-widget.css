@@ -1,0 +1,84 @@
+/**
+ * @file
+ * Contrib Office Hours widget (the Office Hours block's Hours field).
+ *
+ * js/office-hours-widget.js adds the Closed column and the per-row operations
+ * menu; the rules below style those, separate the field description from the
+ * details summary, and fix the disabled treatment in Gin dark mode.
+ *
+ * Authored as plain CSS, matching every other stylesheet in this module -- no
+ * custom module in the profile carries SCSS or a sass build step. The Gin
+ * rules below are all either scoped to `.gin--dark-mode` or use a var()
+ * fallback, so they no-op under a different admin theme.
+ */
+
+/* Claro renders the field description flush against the details summary. */
+.field--type-office-hours .claro-details__description {
+  margin-top: 0.75rem;
+}
+
+.field--type-office-hours .office-hours-closed {
+  text-align: center;
+  vertical-align: middle;
+}
+
+.field--type-office-hours .ys-office-hours-actions {
+  position: relative;
+  display: inline-block;
+}
+
+.field--type-office-hours .ys-office-hours-actions__toggle {
+  display: inline-block;
+  padding: 0.25rem 0.5rem;
+  cursor: pointer;
+  border-radius: 4px;
+  list-style: none;
+}
+
+/* Safari still paints the default disclosure triangle without this. */
+.field--type-office-hours
+  .ys-office-hours-actions__toggle::-webkit-details-marker {
+  display: none;
+}
+
+.field--type-office-hours .ys-office-hours-actions__toggle::after {
+  content: "\22ef";
+  font-size: 1.25rem;
+  line-height: 1;
+}
+
+.field--type-office-hours .ys-office-hours-actions__toggle:hover {
+  background-color: var(--gin-bg-layer2, rgb(0 0 0 / 6%));
+}
+
+/**
+ * Claro/Gin strip the browser default ring from summary elements, so reinstate
+ * Gin's own focus treatment rather than a bespoke one.
+ */
+.field--type-office-hours .ys-office-hours-actions__toggle:focus-visible {
+  outline: none;
+  box-shadow: 0 0 0 1px var(--gin-color-focus-border, #fff),
+    0 0 0 4px var(--gin-color-focus, #26a769);
+}
+
+.field--type-office-hours .ys-office-hours-actions__menu {
+  position: absolute;
+  z-index: 1;
+  inset-inline-end: 0;
+  min-width: 11rem;
+  padding: 0.5rem;
+  border: 1px solid var(--gin-border-color, #d3d4d9);
+  border-radius: 4px;
+  background-color: var(--gin-bg-layer, #fff);
+  box-shadow: 0 2px 6px rgb(0 0 0 / 15%);
+}
+
+/**
+ * Gin's disabled background sits within a few percent of its input background
+ * in dark mode, so an all-day-disabled From/To field still reads as editable.
+ * Recess it onto the layer colour instead. Gin sets its own background-color
+ * with !important, so overriding it needs the same.
+ */
+.gin--dark-mode .field--type-office-hours .form-element[disabled] {
+  background-color: var(--gin-bg-layer) !important;
+}
