@@ -2,7 +2,7 @@
 
 namespace Drupal\Tests\ys_beacon\Kernel\Service;
 
-use Drupal\KernelTests\KernelTestBase;
+use Drupal\Tests\ys_core\Kernel\YsKernelTestBase;
 use Drupal\ai\OperationType\Chat\ChatInput;
 use Drupal\ai\OperationType\Chat\ChatMessage;
 use Drupal\ai\OperationType\Chat\StreamedChatMessageIterator;
@@ -23,7 +23,7 @@ use Psr\Log\NullLogger;
  * @group ys_beacon
  * @coversDefaultClass \Drupal\ys_beacon\Service\ToolCallHandler
  */
-class ToolCallHandlerTest extends KernelTestBase {
+class ToolCallHandlerTest extends YsKernelTestBase {
 
   /**
    * {@inheritdoc}

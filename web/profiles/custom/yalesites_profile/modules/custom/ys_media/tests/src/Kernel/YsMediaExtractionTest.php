@@ -2,7 +2,7 @@
 
 namespace Drupal\Tests\ys_media\Kernel;
 
-use Drupal\KernelTests\KernelTestBase;
+use Drupal\Tests\ys_core\Kernel\YsKernelTestBase;
 use Drupal\ys_media\YaleSitesMediaManager;
 
 /**
@@ -17,7 +17,7 @@ use Drupal\ys_media\YaleSitesMediaManager;
  * @group ys_media
  * @group yalesites
  */
-class YsMediaExtractionTest extends KernelTestBase {
+class YsMediaExtractionTest extends YsKernelTestBase {
 
   /**
    * {@inheritdoc}

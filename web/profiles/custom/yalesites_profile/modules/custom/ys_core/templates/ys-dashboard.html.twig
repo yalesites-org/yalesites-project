@@ -35,6 +35,16 @@
                     <span class="ys-dashboard-badge ys-dashboard__announcement-new">{{ 'New'|t }}<span class="visually-hidden"> {{ 'announcement'|t }}</span></span>
                   {% endif %}
                 </h3>
+                {% if announcement.categories|default([]) is not empty %}
+                  {# Text carries the meaning (WCAG 1.4.1), same as the "New"
+                     badge above; one consistent color for every category
+                     rather than a color-per-category mapping. #}
+                  <p class="ys-dashboard__announcement-categories">
+                    {% for category in announcement.categories %}
+                      <span class="ys-dashboard-badge ys-dashboard-badge--category">{{ category }}</span>
+                    {% endfor %}
+                  </p>
+                {% endif %}
                 {% if announcement.date %}
                   <p class="ys-dashboard__announcement-date">
                     <time{% if announcement.timestamp %} datetime="{{ announcement.timestamp|date('c') }}"{% endif %}>{{ announcement.date }}</time>

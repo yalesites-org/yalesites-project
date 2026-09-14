@@ -4,10 +4,10 @@ namespace Drupal\Tests\ys_beacon\Kernel;
 
 use Drupal\Core\Config\ConfigFactoryInterface;
 use Drupal\Core\Config\ImmutableConfig;
+use Drupal\Tests\ys_core\Kernel\YsKernelTestBase;
 use Drupal\field\Entity\FieldConfig;
 use Drupal\field\Entity\FieldStorageConfig;
 use Drupal\file\Entity\File;
-use Drupal\KernelTests\KernelTestBase;
 use Drupal\media\Entity\Media;
 use Drupal\media\Entity\MediaType;
 use Drupal\ys_beacon\Service\BeaconIndexability;
@@ -24,7 +24,7 @@ use Drupal\ys_beacon\Service\PdfTextIndexer;
  * @group ys_beacon
  * @coversDefaultClass \Drupal\ys_beacon\Service\PdfTextIndexer
  */
-class PdfTextIndexerTest extends KernelTestBase {
+class PdfTextIndexerTest extends YsKernelTestBase {
 
   /**
    * {@inheritdoc}

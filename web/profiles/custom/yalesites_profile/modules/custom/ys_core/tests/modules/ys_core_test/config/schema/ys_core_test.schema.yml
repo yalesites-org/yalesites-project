@@ -1,0 +1,16 @@
+ys_core_test.media_library.settings:
+  type: config_object
+  label: 'YS Core test media library settings'
+  mapping:
+    single:
+      type: string
+      label: 'Bare element, one item allowed'
+    multiple_partial:
+      type: string
+      label: 'Two items allowed, one selected'
+    multiple_full:
+      type: string
+      label: 'Two items allowed, both selected'
+    unlimited:
+      type: string
+      label: 'Unlimited items'

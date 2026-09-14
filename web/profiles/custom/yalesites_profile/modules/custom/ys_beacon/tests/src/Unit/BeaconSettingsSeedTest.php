@@ -6,6 +6,7 @@ use Drupal\Core\Config\Config;
 use Drupal\Core\Config\ConfigFactoryInterface;
 use Drupal\Core\Extension\ModuleExtensionList;
 use Drupal\Tests\UnitTestCase;
+use Drupal\ys_beacon\Service\RagRetriever;
 use Symfony\Component\DependencyInjection\ContainerBuilder;
 use Symfony\Component\Yaml\Yaml;
 
@@ -165,12 +166,29 @@ class BeaconSettingsSeedTest extends UnitTestCase {
 
     // Everything the partial write never set is restored.
     $this->assertTrue($captured['streaming'], 'Streaming comes back on.');
-    $this->assertSame(5, $captured['top_k'], 'top_k comes back.');
+    $this->assertSame(10, $captured['top_k'], 'top_k comes back.');
     $shipped_keys = array_keys($this->shippedDefaults());
     $captured_keys = array_keys($captured);
     sort($shipped_keys);
     sort($captured_keys);
     $this->assertSame($shipped_keys, $captured_keys, 'The full shipped key set is present.');
+  }
+
+  /**
+   * The runtime fallback constant matches the shipped top_k default.
+   *
+   * The two are duplicated by necessity - the shipped file cannot reference a
+   * PHP constant, and RagRetriever cannot read the file on every query - so
+   * this is what makes the "keep in sync" comment on top_k enforceable rather
+   * than aspirational. A site missing the key must behave like a fresh
+   * install.
+   */
+  public function testRuntimeFallbackMatchesShippedTopK(): void {
+    $this->assertSame(
+      $this->shippedDefaults()['top_k'],
+      RagRetriever::DEFAULT_TOP_K,
+      'RagRetriever::DEFAULT_TOP_K drifted from the shipped top_k default.'
+    );
   }
 
   /**

@@ -4,8 +4,8 @@ namespace Drupal\Tests\ys_book\Kernel;
 
 use Drupal\Core\Form\FormState;
 use Drupal\Core\Routing\RouteObjectInterface;
-use Drupal\KernelTests\KernelTestBase;
 use Drupal\Tests\user\Traits\UserCreationTrait;
+use Drupal\Tests\ys_core\Kernel\YsKernelTestBase;
 use Drupal\node\Entity\Node;
 use Drupal\node\Entity\NodeType;
 use Symfony\Component\HttpFoundation\Request;
@@ -35,7 +35,7 @@ use Symfony\Component\Routing\Route;
  * @group ys_book
  * @group yalesites
  */
-class BookLinkRepeatSaveTest extends KernelTestBase {
+class BookLinkRepeatSaveTest extends YsKernelTestBase {
 
   use UserCreationTrait;
 

@@ -20,3 +20,8 @@ ys_core.dashboard_settings:
     announcements_source_term:
       type: string
       label: 'Taxonomy term name used to tag announcement posts'
+    announcements_source_categories:
+      type: sequence
+      label: 'Category names allowed to appear on downstream dashboards'
+      sequence:
+        type: string

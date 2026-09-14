@@ -2,7 +2,7 @@
 
 namespace Drupal\Tests\ys_campus_groups\Kernel;
 
-use Drupal\KernelTests\KernelTestBase;
+use Drupal\Tests\ys_core\Kernel\YsKernelTestBase;
 use Drupal\migrate\Plugin\MigrationInterface;
 use Drupal\taxonomy\Entity\Vocabulary;
 use Drupal\ys_campus_groups\CampusGroupsManager;
@@ -18,7 +18,7 @@ use Drupal\ys_campus_groups\CampusGroupsManager;
  * @group ys_campus_groups
  * @group yalesites
  */
-class CampusGroupsManagerTest extends KernelTestBase {
+class CampusGroupsManagerTest extends YsKernelTestBase {
 
   /**
    * {@inheritdoc}

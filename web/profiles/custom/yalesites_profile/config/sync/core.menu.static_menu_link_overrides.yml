@@ -129,8 +129,8 @@ definitions:
     enabled: true
   system__admin_reports:
     menu_name: admin
-    parent: system.admin
-    weight: -42
+    parent: ys_core.admin_platform_admin
+    weight: 20
     expanded: false
     enabled: true
   help__main:
@@ -143,5 +143,11 @@ definitions:
     menu_name: admin
     parent: system.admin
     weight: -40
+    expanded: false
+    enabled: true
+  ys_core__admin_platform_admin:
+    menu_name: admin
+    parent: system.admin
+    weight: -38
     expanded: false
     enabled: true

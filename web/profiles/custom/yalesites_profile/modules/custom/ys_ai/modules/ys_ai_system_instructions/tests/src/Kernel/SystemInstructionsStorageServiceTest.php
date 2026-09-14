@@ -4,7 +4,7 @@ namespace Drupal\Tests\ys_ai_system_instructions\Kernel;
 
 use Drupal\Component\Datetime\TimeInterface;
 use Drupal\Core\Session\AccountProxyInterface;
-use Drupal\KernelTests\KernelTestBase;
+use Drupal\Tests\ys_core\Kernel\YsKernelTestBase;
 use Drupal\ys_ai_system_instructions\Service\SystemInstructionsStorageService;
 use Drupal\ys_ai_system_instructions\Service\TextFormatDetectionService;
 
@@ -21,7 +21,7 @@ use Drupal\ys_ai_system_instructions\Service\TextFormatDetectionService;
  * @group ys_ai
  * @group yalesites
  */
-class SystemInstructionsStorageServiceTest extends KernelTestBase {
+class SystemInstructionsStorageServiceTest extends YsKernelTestBase {
 
   /**
    * {@inheritdoc}

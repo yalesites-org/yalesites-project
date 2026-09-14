@@ -13,7 +13,7 @@ import supersub from 'remark-supersub'
 
 interface Props {
     answer: AskResponse;
-    onCitationClicked: (citedDocument: Citation) => void;
+    onCitationClicked: (citedDocument: Citation, citationIndex: number) => void;
 }
 
 export const Answer = ({
@@ -36,10 +36,10 @@ export const Answer = ({
                                     <button
                                     className={styles.citationContainer}
                                     title={citationLabel}
-                                    onClick={() => onCitationClicked(citation)}
+                                    onClick={() => onCitationClicked(citation, idx + 1)}
                                     aria-label={citationLabel}>
+                                        Citation
                                         <div className={styles.citation}>{idx + 1}</div>
-                                        {citationLabel}
                                     </button>
                                 </li>);
                         })}
@@ -69,7 +69,7 @@ export const Answer = ({
                                         <button
                                             type="button"
                                             className={styles.clickableSup}
-                                            onClick={() => onCitationClicked(citation)}
+                                            onClick={() => onCitationClicked(citation, n)}
                                             aria-label={`View citation ${n}${citation.title ? `: ${citation.title}` : ""}`}
                                             title={`Citation ${n}`}
                                         >

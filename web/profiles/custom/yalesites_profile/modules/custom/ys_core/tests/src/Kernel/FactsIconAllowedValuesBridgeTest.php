@@ -3,7 +3,6 @@
 namespace Drupal\Tests\ys_core\Kernel;
 
 use Drupal\Core\Field\FieldStorageDefinitionInterface;
-use Drupal\KernelTests\KernelTestBase;
 use Symfony\Component\Yaml\Yaml;
 
 /**
@@ -29,7 +28,7 @@ use Symfony\Component\Yaml\Yaml;
  * @see ys_core_facts_icon_allowed_values()
  * @see \Drupal\ys_core\FactsAndFiguresIconManager
  */
-class FactsIconAllowedValuesBridgeTest extends KernelTestBase {
+class FactsIconAllowedValuesBridgeTest extends YsKernelTestBase {
 
   /**
    * {@inheritdoc}

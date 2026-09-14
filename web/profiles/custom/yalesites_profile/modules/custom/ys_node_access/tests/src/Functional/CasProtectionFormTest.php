@@ -2,9 +2,9 @@
 
 namespace Drupal\Tests\ys_node_access\Functional;
 
+use Drupal\Tests\ys_core\Kernel\YsKernelTestBase;
 use Drupal\field\Entity\FieldConfig;
 use Drupal\field\Entity\FieldStorageConfig;
-use Drupal\KernelTests\KernelTestBase;
 use Drupal\node\Entity\Node;
 use Drupal\node\Entity\NodeType;
 
@@ -13,7 +13,7 @@ use Drupal\node\Entity\NodeType;
  *
  * @group yalesites
  */
-class CasProtectionFormTest extends KernelTestBase {
+class CasProtectionFormTest extends YsKernelTestBase {
 
   /**
    * Modules to enable.

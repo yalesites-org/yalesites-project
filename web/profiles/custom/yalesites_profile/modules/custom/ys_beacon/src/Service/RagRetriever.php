@@ -18,6 +18,15 @@ use Psr\Log\LoggerInterface;
  */
 class RagRetriever {
 
+  /**
+   * Chunks retrieved per question when the site stores no top_k.
+   *
+   * Mirrors the top_k value shipped in ys_beacon.settings, so a site whose
+   * settings object is missing the key retrieves the same number a fresh
+   * install would. BeaconSettingsSeedTest asserts the two stay equal.
+   */
+  public const DEFAULT_TOP_K = 10;
+
   public function __construct(
     protected EntityTypeManagerInterface $entityTypeManager,
     protected ConfigFactoryInterface $configFactory,
@@ -59,7 +68,7 @@ class RagRetriever {
 
     try {
       $query = $index->query([
-        'limit' => (int) ($settings->get('top_k') ?: 5),
+        'limit' => (int) ($settings->get('top_k') ?: self::DEFAULT_TOP_K),
       ]);
       $query->setOption('search_api_ai_get_chunks_result', TRUE);
       // Reading beyond this site's own documents - a read-only borrow or a

@@ -2,7 +2,7 @@
 
 namespace Drupal\Tests\ys_alert\Kernel;
 
-use Drupal\KernelTests\KernelTestBase;
+use Drupal\Tests\ys_core\Kernel\YsKernelTestBase;
 use Drupal\ys_alert\AlertManager;
 
 /**
@@ -11,7 +11,7 @@ use Drupal\ys_alert\AlertManager;
  * @group yalesites
  * @group ys_alert
  */
-class AlertManagerServiceTest extends KernelTestBase {
+class AlertManagerServiceTest extends YsKernelTestBase {
 
   /**
    * {@inheritdoc}

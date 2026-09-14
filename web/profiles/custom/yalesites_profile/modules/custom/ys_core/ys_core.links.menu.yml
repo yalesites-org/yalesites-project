@@ -15,6 +15,17 @@ ys_core.admin_yalesites:
   route_name: ys_core.admin_yalesites
   title: Settings
   weight: -7
+# Platform-admin-only section, surfaced as a top-level admin menu item.
+# Platform-admin-only screens hang here rather than under the settings section
+# above, which is for settings site admins use every day.
+ys_core.admin_platform_admin:
+  description: "Screens only the YaleSites platform team can reach."
+  parent: system.admin
+  route_name: ys_core.admin_platform_admin
+  title: "Platform Admin"
+  # Matches the pinned weight in the profile's exported
+  # core.menu.static_menu_link_overrides, which is what a built site honours.
+  weight: -38
 # Redirects menu links
 ys_core.admin_redirects:
   description: "Manages redirects for the site."
@@ -64,13 +75,14 @@ ys_core.admin_google_tag_settings:
   route_name: entity.google_tag_container.single_form
   title: "Google Tag Settings"
   weight: 30
-# Platform-admin-only settings form.
+# Platform-admin-only settings form. Titled just "Settings" because the parent
+# section already names the audience.
 ys_core.platform_admin_settings:
   description: "Platform-admin-only settings, such as authorizing integrations per site."
-  parent: ys_core.admin_yalesites
+  parent: ys_core.admin_platform_admin
   route_name: ys_core.platform_admin_settings
-  title: "Platform Admin Settings"
-  weight: 35
+  title: "Settings"
+  weight: 10
 # Menu interface
 ys_core.menu_interface:
   description: "Manage menus"

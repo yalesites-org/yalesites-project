@@ -14,7 +14,14 @@ azure_search_url_key: ''
 read_only: false
 query_entire_index: false
 pdf_extraction_max_bytes: 20971520
-top_k: 5
+# Excerpts retrieved per question. 10 rather than 5 because the larger
+# retrieval set gives an answer more of the site's content to ground itself
+# in, which yields more citations. Each one adds up to chunk_size characters
+# to every question's prompt, so this trades cost and latency for answer
+# quality. The administration form accepts 1-20. Keep in sync with
+# RagRetriever::DEFAULT_TOP_K, the runtime fallback used when this value is
+# absent.
+top_k: 10
 score_threshold: 0.0
 streaming: true
 # Context window (in tokens) of the model Portkey currently routes to. Used to
@@ -82,3 +89,20 @@ fallback_system_prompt: |-
   - Support accessibility through clear communication
   - Prioritize helping users accomplish their goals efficiently
 guardrail_supplement: ''
+# Milliseconds the AI Tester pauses between questions. The tester is the only
+# path that issues a long burst of upstream requests - the chat widget answers
+# one question per visitor - so pacing lives here rather than in the shared
+# provider. Small by default because each question already costs seconds of
+# model latency; raise it if an upstream per-minute ceiling is suspected. Clamped
+# to 0-10000 by AiTesterRetry::questionDelayMs(); 0 disables pacing.
+#
+# Read and written only by the ys_ai_tester submodule, which is a deliberate
+# exception to keeping a module's settings in its own config object. It lives
+# here because this object is covered by the 'ys_beacon*' config_ignore pattern
+# and is therefore absent from the profile's config/sync: a value an operator
+# tunes during an incident survives the next `drush deploy` config import. A
+# ys_ai_tester.settings object would be exported and re-imported instead,
+# resetting the knob on every deploy unless a second ignore pattern were added
+# to chase it. Being here also means _ys_beacon_seed_settings() backfills this
+# default on existing sites for free, since it unions the whole shipped file.
+ai_tester_question_delay_ms: 500

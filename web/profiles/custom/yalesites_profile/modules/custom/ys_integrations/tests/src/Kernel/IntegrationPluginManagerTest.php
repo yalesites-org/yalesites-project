@@ -3,7 +3,7 @@
 namespace Drupal\Tests\ys_integrations\Kernel;
 
 use Drupal\Core\Plugin\DefaultPluginManager;
-use Drupal\KernelTests\KernelTestBase;
+use Drupal\Tests\ys_core\Kernel\YsKernelTestBase;
 use Drupal\ys_integrations\IntegrationPluginBase;
 use Drupal\ys_integrations\IntegrationPluginInterface;
 use Drupal\ys_integrations\IntegrationPluginManager;
@@ -20,7 +20,7 @@ use Drupal\ys_integrations\IntegrationPluginManager;
  * @group ys_integrations
  * @group yalesites
  */
-class IntegrationPluginManagerTest extends KernelTestBase {
+class IntegrationPluginManagerTest extends YsKernelTestBase {
 
   /**
    * {@inheritdoc}

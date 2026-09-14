@@ -3,7 +3,6 @@
 namespace Drupal\Tests\ys_core\Kernel;
 
 use Drupal\Core\Serialization\Yaml;
-use Drupal\KernelTests\KernelTestBase;
 
 /**
  * Tests that the Basic HTML text format permits aria-level on headings.
@@ -18,7 +17,7 @@ use Drupal\KernelTests\KernelTestBase;
  * @group ys_core
  * @group yalesites
  */
-class BasicHtmlAriaLevelTest extends KernelTestBase {
+class BasicHtmlAriaLevelTest extends YsKernelTestBase {
 
   /**
    * {@inheritdoc}

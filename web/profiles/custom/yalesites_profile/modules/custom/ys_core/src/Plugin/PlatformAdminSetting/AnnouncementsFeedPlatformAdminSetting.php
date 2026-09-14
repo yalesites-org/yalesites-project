@@ -33,6 +33,7 @@ use Symfony\Component\DependencyInjection\ContainerInterface;
 #[PlatformAdminSetting(
   id: 'announcements_feed',
   label: new TranslatableMarkup('Dashboard Announcements Feed'),
+  weight: 10,
 )]
 class AnnouncementsFeedPlatformAdminSetting extends PlatformAdminSettingBase {
 

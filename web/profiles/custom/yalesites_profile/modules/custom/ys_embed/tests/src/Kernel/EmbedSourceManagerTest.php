@@ -3,7 +3,7 @@
 namespace Drupal\Tests\ys_embed\Kernel;
 
 use Drupal\Core\Plugin\DefaultPluginManager;
-use Drupal\KernelTests\KernelTestBase;
+use Drupal\Tests\ys_core\Kernel\YsKernelTestBase;
 use Drupal\ys_embed\Plugin\EmbedSource\Broken;
 use Drupal\ys_embed\Plugin\EmbedSource\Twitter;
 use Drupal\ys_embed\Plugin\EmbedSourceInterface;
@@ -17,7 +17,7 @@ use Drupal\ys_embed\Plugin\EmbedSourceManager;
  * @group yalesites
  * @group ys_embed
  */
-class EmbedSourceManagerTest extends KernelTestBase {
+class EmbedSourceManagerTest extends YsKernelTestBase {
 
   /**
    * {@inheritdoc}

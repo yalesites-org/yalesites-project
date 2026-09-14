@@ -2,7 +2,7 @@
 
 namespace Drupal\Tests\ys_beacon\Kernel;
 
-use Drupal\KernelTests\KernelTestBase;
+use Drupal\Tests\ys_core\Kernel\YsKernelTestBase;
 use Drupal\search_api\Entity\Server;
 
 /**
@@ -22,7 +22,7 @@ use Drupal\search_api\Entity\Server;
  *
  * @group ys_beacon
  */
-class BeaconServerImportTest extends KernelTestBase {
+class BeaconServerImportTest extends YsKernelTestBase {
 
   /**
    * {@inheritdoc}

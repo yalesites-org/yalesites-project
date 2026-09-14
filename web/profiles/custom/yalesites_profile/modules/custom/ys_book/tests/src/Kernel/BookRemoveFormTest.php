@@ -4,8 +4,8 @@ namespace Drupal\Tests\ys_book\Kernel;
 
 use Drupal\Core\Cache\Cache;
 use Drupal\Core\Form\FormState;
-use Drupal\KernelTests\KernelTestBase;
 use Drupal\Tests\user\Traits\UserCreationTrait;
+use Drupal\Tests\ys_core\Kernel\YsKernelTestBase;
 use Drupal\book\Form\BookRemoveForm;
 use Drupal\node\Entity\Node;
 use Drupal\node\Entity\NodeType;
@@ -21,7 +21,7 @@ use Drupal\node\NodeInterface;
  * @group ys_book
  * @group yalesites
  */
-class BookRemoveFormTest extends KernelTestBase {
+class BookRemoveFormTest extends YsKernelTestBase {
 
   use UserCreationTrait;
 

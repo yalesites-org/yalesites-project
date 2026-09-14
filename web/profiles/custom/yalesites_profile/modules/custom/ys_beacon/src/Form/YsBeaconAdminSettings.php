@@ -8,6 +8,7 @@ use Drupal\Core\Form\FormStateInterface;
 use Drupal\ys_beacon\Config\YsBeaconConfigOverrides;
 use Drupal\ys_beacon\Controller\ChatApiController;
 use Drupal\ys_beacon\Service\BeaconIndexManager;
+use Drupal\ys_beacon\Service\RagRetriever;
 use Drupal\ys_beacon\Service\SystemPromptBuilder;
 use Symfony\Component\DependencyInjection\ContainerInterface;
 
@@ -115,7 +116,7 @@ class YsBeaconAdminSettings extends ConfigFormBase {
       '#type' => 'number',
       '#title' => $this->t('Sources per answer'),
       '#description' => $this->t('How many content chunks are retrieved as sources for each answer.'),
-      '#default_value' => $config->get('top_k') ?: 5,
+      '#default_value' => $config->get('top_k') ?: RagRetriever::DEFAULT_TOP_K,
       '#min' => 1,
       '#max' => 20,
       '#required' => TRUE,

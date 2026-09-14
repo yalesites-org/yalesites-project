@@ -5,6 +5,96 @@
  * Contains ys_ai_tester.module functions.
  */
 
+use Drupal\Core\Form\FormStateInterface;
+use Drupal\ys_ai_tester\AiTesterRetry;
+
+/**
+ * Implements hook_form_FORM_ID_alter() for ys_beacon_admin_settings.
+ *
+ * Adds the tester's pacing knob to the Beacon administration form, which is
+ * where the platform team already tunes assistant behaviour, and which is
+ * restricted to platform operators.
+ *
+ * The field is added from here rather than declared in the Beacon form so the
+ * dependency runs the way the module dependency does - the tester depends on
+ * Beacon, never the reverse. It also means the field simply is not there when
+ * this submodule is uninstalled, with no module-exists guard on either side,
+ * and nothing can write NULL over the stored value on a site that lacks the
+ * tester.
+ */
+function ys_ai_tester_form_ys_beacon_admin_settings_alter(array &$form, FormStateInterface $form_state): void {
+  $form['tester'] = [
+    '#type' => 'details',
+    '#title' => t('AI Tester'),
+    '#open' => FALSE,
+  ];
+  $form['tester']['ai_tester_question_delay_ms'] = [
+    '#type' => 'number',
+    '#title' => t('Pause between questions (milliseconds)'),
+    '#description' => t('How long the AI Tester waits before each question after the first. A tester run is the only thing on this site that sends a long burst of requests to the assistants - the chat widget answers one question per visitor - so this is where a run is slowed down if an upstream rate limit is suspected. Raise it if long runs report questions that fail here but answer fine when asked on their own. Defaults to @default ms, which is negligible against the time a question already takes; 0 turns the pause off. This does not affect the chat widget.', [
+      '@default' => AiTesterRetry::DEFAULT_QUESTION_DELAY_MS,
+    ]),
+    // Clamped rather than read raw, so a site that predates this setting shows
+    // the real default instead of an empty field.
+    '#default_value' => AiTesterRetry::questionDelayMs(
+      \Drupal::config('ys_beacon.settings')->get('ai_tester_question_delay_ms')
+    ),
+    '#min' => 0,
+    '#max' => AiTesterRetry::MAX_QUESTION_DELAY_MS,
+    '#step' => 50,
+    // Required so clearing the field is rejected rather than quietly falling
+    // back to the default: an operator who empties it means zero, and would
+    // otherwise be shown 500 again on the next load as though it had saved.
+    // Zero has to be typed.
+    '#required' => TRUE,
+  ];
+
+  // Appended to the form-level handlers, which already hold the config form's
+  // own '::submitForm' by the time alters run.
+  $form['#submit'][] = 'ys_ai_tester_admin_settings_submit';
+}
+
+/**
+ * Saves the AI Tester pacing setting added by the form alter above.
+ *
+ * Writes through its own editable config object: the Beacon form has already
+ * saved by the time this runs, so keeping the two writes separate keeps each
+ * module responsible for its own setting.
+ *
+ * The key deliberately lives in ys_beacon.settings rather than a
+ * ys_ai_tester.settings of its own, even though only this module reads it. That
+ * object is covered by the 'ys_beacon*' config_ignore pattern and so is absent
+ * from the profile's config/sync, which is what lets an operator's tuned value
+ * survive the next `drush deploy` config import. See the comment on the key in
+ * ys_beacon/config/install/ys_beacon.settings.yml.
+ *
+ * @param array $form
+ *   The form structure.
+ * @param \Drupal\Core\Form\FormStateInterface $form_state
+ *   The form state.
+ */
+function ys_ai_tester_admin_settings_submit(array &$form, FormStateInterface $form_state): void {
+  \Drupal::configFactory()->getEditable('ys_beacon.settings')
+    ->set(
+      'ai_tester_question_delay_ms',
+      AiTesterRetry::questionDelayMs($form_state->getValue('ai_tester_question_delay_ms'))
+    )
+    ->save();
+}
+
+/**
+ * Implements hook_cron().
+ *
+ * Reconciles runs whose batch died without reporting, so the repair is tied to
+ * the condition rather than to someone opening the tester. The forms reconcile
+ * on their own read paths too, because a user recovering a run should not have
+ * to wait for cron - but the run and comparison views do not, so without this a
+ * directly linked run keeps showing 'processing' indefinitely.
+ */
+function ys_ai_tester_cron(): void {
+  \Drupal::service('ys_ai_tester.stale_run_reconciler')->reconcile();
+}
+
 /**
  * Implements hook_theme().
  */

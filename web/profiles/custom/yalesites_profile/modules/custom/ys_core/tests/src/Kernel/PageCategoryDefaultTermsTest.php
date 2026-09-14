@@ -2,7 +2,6 @@
 
 namespace Drupal\Tests\ys_core\Kernel;
 
-use Drupal\KernelTests\KernelTestBase;
 use Drupal\taxonomy\Entity\Vocabulary;
 
 /**
@@ -16,7 +15,7 @@ use Drupal\taxonomy\Entity\Vocabulary;
  * @group ys_core
  * @group yalesites
  */
-class PageCategoryDefaultTermsTest extends KernelTestBase {
+class PageCategoryDefaultTermsTest extends YsKernelTestBase {
 
   /**
    * {@inheritdoc}

@@ -311,3 +311,145 @@ function ys_core_deploy_10007(&$sandbox) {
 
   return t('Backfilled the default icon on @count In-Line Message block revision(s).', ['@count' => $sandbox['backfilled']]);
 }
+
+/**
+ * Implements hook_deploy_NAME().
+ *
+ * Repairs Resource text values whose stored text format the field forbids.
+ *
+ * field_abstract, field_citation and field_content_description have declared
+ * `allowed_formats: [restricted_html]` since the day they were created
+ * (YISP-101); the restriction was never narrowed after the fact. Content
+ * written by a third-party migration bypassed the platform's own importer
+ * (ResourceImportService::textFormat(), which derives the format from
+ * allowed_formats) and stored some other format instead.
+ *
+ * Core's \Drupal\filter\Element\TextFormat::processFormat() intersects the
+ * user's usable formats with the field's allowed_formats and then tests the
+ * stored format against that intersection, so those values disable the widget
+ * outright — "This field has been disabled because you do not have sufficient
+ * permissions to edit it." — for every user without 'administer filters'. No
+ * YaleSites role holds that permission (it allows creating arbitrary text
+ * formats, a stored-XSS vector), so core's intended remedy of "an
+ * administrator reassigns the format" is unavailable through the UI and has to
+ * happen here.
+ *
+ * Only the format name changes; the stored markup is untouched, so the repair
+ * is reversible. Values authored under a more permissive format may render
+ * with less markup afterwards — restricted_html is what these fields were
+ * always contracted to render as, so this brings rendering into line with the
+ * field's configuration rather than away from it.
+ *
+ * Every node field instance that restricts allowed_formats is covered, not
+ * just the three that were reported: the import that damaged Resources ran
+ * against the whole site, so Profiles and Events can carry the same damage,
+ * and clearing it in one pass beats waiting for the next report. The list is
+ * discovered from config rather than written out here, so a field that gains a
+ * restriction later is covered without anyone editing this hook.
+ *
+ * Discovery is only safe because the repair refuses to lose markup. Some of
+ * those fields have a NARROWER contract than what is stored — field_teaser_text
+ * is heading_html, which permits neither <a> nor <br> — so repairing a teaser
+ * authored with a link would stop the link rendering. TextFormatRepair measures
+ * that per value and, unless the loss has been accepted for the field, reports
+ * it instead of performing it. $accepted_lossy below is that acceptance, and
+ * holds only the three Resource fields the reviewer signed off on.
+ *
+ * The repair writes the format column directly instead of re-saving nodes.
+ * content_moderation's presave handler rewrites publication status whenever a
+ * revision's stored status disagrees with its moderation state, and that
+ * branch is NOT inside its isSyncing() guard, so re-saving every Resource
+ * revision could silently unpublish live pages wherever an import left that
+ * divergence behind. A column write cannot create revisions, change the
+ * default revision, alter moderation state, or bump 'changed'.
+ *
+ * @see \Drupal\content_moderation\Entity\Handler\ModerationHandler::onPresave()
+ * @see yalesites-org/YaleSites-Internal#1646
+ */
+function ys_core_deploy_10008() {
+  /** @var \Drupal\ys_core\TextFormatRepair $repair */
+  $repair = \Drupal::service('ys_core.text_format_repair');
+
+  // Fields where losing markup to the repair has been accepted. These are the
+  // reported ones: their contract has always been restricted_html, so anything
+  // richer was never going to render, and unlocking the widget is worth more
+  // than markup that was already dead on output. Every other field defers a
+  // lossy repair for a human instead.
+  $accepted_lossy = [
+    'resource' => ['field_abstract', 'field_citation', 'field_content_description'],
+  ];
+
+  $repaired = [];
+  $deferred = [];
+
+  foreach ($repair->findRestrictedFields('node') as $bundle => $field_names) {
+    foreach ($field_names as $field_name) {
+      $allow_lossy = in_array($field_name, $accepted_lossy[$bundle] ?? [], TRUE);
+      $result = $repair->repairFieldStorage('node', $bundle, $field_name, $allow_lossy);
+
+      if ($result->repaired > 0) {
+        $repaired[$bundle . '.' . $field_name] = $result->repaired;
+      }
+      if ($result->deferred !== []) {
+        $deferred[$bundle . '.' . $field_name] = $result;
+      }
+    }
+  }
+
+  return ys_core_text_format_repair_message($repaired, $deferred);
+}
+
+/**
+ * Formats the deploy log message for the text format repair.
+ *
+ * Split out so the reporting can be read (and tested) on its own, and so
+ * ys_core_deploy_10008() stays about the repair rather than about phrasing.
+ *
+ * @param array $repaired
+ *   Row counts keyed by "bundle.field_name".
+ * @param \Drupal\ys_core\TextFormatRepairResult[] $deferred
+ *   Results carrying deferrals, keyed by "bundle.field_name".
+ *
+ * @return string
+ *   A multi-line summary naming what was touched where.
+ *
+ * @see yalesites-org/YaleSites-Internal#1646
+ */
+function ys_core_text_format_repair_message(array $repaired, array $deferred) {
+  $lines = [];
+
+  // Counts are of storage rows, not of values: one node contributes a row per
+  // revision carrying the bad format, so the totals here are larger than the
+  // number of pages an editor would notice.
+  if ($repaired === [] && $deferred === []) {
+    $lines[] = (string) t('No node values had an out-of-contract text format.');
+  }
+  elseif ($repaired !== []) {
+    $lines[] = (string) t('Repaired the stored text format on @count row(s):', [
+      '@count' => array_sum($repaired),
+    ]);
+    foreach ($repaired as $field => $count) {
+      $lines[] = '  ' . (string) t('node.@field: @count row(s)', [
+        '@field' => $field,
+        '@count' => $count,
+      ]);
+    }
+  }
+
+  if ($deferred !== []) {
+    $lines[] = (string) t('Left @count row(s) alone because repairing them would drop markup an author wrote. These stay locked for editors until someone decides whether the narrower format is right. Markup is listed as "element" or "element@attribute":', [
+      '@count' => array_sum(array_map(static fn($result) => count($result->deferred), $deferred)),
+    ]);
+    foreach ($deferred as $field => $result) {
+      $lines[] = '  ' . (string) t('node.@field: @count row(s) across @nodes node(s) (@nids), would lose @tags', [
+        '@field' => $field,
+        '@count' => count($result->deferred),
+        '@nodes' => $result->deferredEntityCount(),
+        '@nids' => implode(', ', $result->deferredEntityIds()),
+        '@tags' => implode(', ', $result->droppedTags()),
+      ]);
+    }
+  }
+
+  return implode("\n", $lines);
+}

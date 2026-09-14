@@ -4,7 +4,6 @@ namespace Drupal\Tests\ys_core\Kernel;
 
 use Drupal\Core\File\FileSystemInterface;
 use Drupal\Core\StreamWrapper\PublicStream;
-use Drupal\KernelTests\KernelTestBase;
 use Drupal\block_content\Entity\BlockContent;
 use Drupal\block_content\Entity\BlockContentType;
 use Drupal\field\Entity\FieldConfig;
@@ -25,7 +24,7 @@ use Drupal\field\Entity\FieldStorageConfig;
  * @group ys_core
  * @group yalesites
  */
-class RestorePlusLinkUriTest extends KernelTestBase {
+class RestorePlusLinkUriTest extends YsKernelTestBase {
 
   /**
    * {@inheritdoc}

@@ -2,7 +2,7 @@
 
 namespace Drupal\Tests\ys_views_content_resources\Kernel\Plugin\Field\FieldFormatter;
 
-use Drupal\KernelTests\KernelTestBase;
+use Drupal\Tests\ys_core\Kernel\YsKernelTestBase;
 use Drupal\field\Entity\FieldConfig;
 use Drupal\field\Entity\FieldStorageConfig;
 use Drupal\ys_views_content_resources\ViewsContentResourcesManager;
@@ -19,7 +19,7 @@ use Drupal\ys_views_content_resources\ViewsContentResourcesManager;
  * @group ys_views_content_resources
  * @group yalesites
  */
-class ViewsContentResourcesDefaultFormatterTest extends KernelTestBase {
+class ViewsContentResourcesDefaultFormatterTest extends YsKernelTestBase {
 
   /**
    * {@inheritdoc}

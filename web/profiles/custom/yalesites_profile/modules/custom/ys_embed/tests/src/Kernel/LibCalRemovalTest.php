@@ -2,7 +2,7 @@
 
 namespace Drupal\Tests\ys_embed\Kernel;
 
-use Drupal\KernelTests\KernelTestBase;
+use Drupal\Tests\ys_core\Kernel\YsKernelTestBase;
 
 /**
  * Confirms the LibCal embed source has been fully removed.
@@ -15,7 +15,7 @@ use Drupal\KernelTests\KernelTestBase;
  * @group ys_embed
  * @group yalesites
  */
-class LibCalRemovalTest extends KernelTestBase {
+class LibCalRemovalTest extends YsKernelTestBase {
 
   /**
    * {@inheritdoc}
