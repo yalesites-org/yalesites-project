@@ -1,0 +1,24 @@
+uuid: 90fd992c-2dce-4fc7-89b5-6b7237308d1d
+langcode: en
+status: true
+dependencies:
+  config:
+    - field.storage.node.field_address_additional_info
+    - filter.format.basic_html
+    - node.type.event
+  module:
+    - text
+id: node.event.field_address_additional_info
+field_name: field_address_additional_info
+entity_type: node
+bundle: event
+label: 'Additional Address Information'
+description: 'Free-form location details (address, building, virtual link, hybrid instructions, etc.) for native (non-Localist) events.'
+required: false
+translatable: null
+default_value: {  }
+default_value_callback: ''
+settings:
+  allowed_formats:
+    - basic_html
+field_type: text_long
