@@ -27,6 +27,26 @@
  *    (e.g. an image URL string) — verify against the block template;
  *  - the shim's slot forwarding for anything beyond the standard pattern.
  *
+ * STATUS — read before running with --write.
+ *
+ * This is the Wave 0 pilot and it has NOT kept pace with the migration.
+ * components.config.js carries specs for FOUR components (divider, callout,
+ * accordion, lists) while atomic/components/ holds 48 committed schemas, so 44
+ * of them were authored by hand and this script knows nothing about them.
+ *
+ * For the four it does know, its output no longer matches what is committed --
+ * those files have been refined by hand since, exactly as intended above. The
+ * divergence is substantive, not cosmetic: accordion.component.yml carries a
+ * `libraryOverrides: { dependencies: [atomic/accordion] }` block this script
+ * does not emit, and that block is what attaches the component JS (include and
+ * embed bypass the Render API's #attached). Re-running --write over it would
+ * silently drop the library and the component's JS would stop loading.
+ *
+ * So: --write is for seeding a NEW component's first draft only. Never run
+ * `--all --write`, and diff before writing over a file that already exists.
+ * Bringing this back to parity (44 more specs, plus libraryOverrides and
+ * hand-written description support) is a real piece of work, not a tidy-up.
+ *
  * Usage:
  *   node scripts/sdc/generate-sdc.js <name> [--write] [--shim]
  *   node scripts/sdc/generate-sdc.js --all [--write] [--shim]
@@ -233,6 +253,18 @@ function run() {
     console.error('Usage: node generate-sdc.js <name>|--all [--write]');
     process.exit(1);
   }
+  // `--all --write` would rewrite every spec'd component at once, and the four
+  // this script still knows have all been refined by hand since it produced
+  // them (accordion's libraryOverrides block, which attaches its JS, is not
+  // something this script emits). Seeding one new component is the supported
+  // use; bulk-overwriting existing ones is not. See the STATUS note on top.
+  if (all && write) {
+    console.error(
+      '--all --write is refused: it would overwrite hand-refined schemas.\n' +
+      'Run it per component, and diff before writing over an existing file.'
+    );
+    process.exit(1);
+  }
   for (const name of names) {
     const spec = SPECS[name];
     if (!spec) { console.error(`No spec for "${name}" in components.config.js`); continue; }
@@ -240,9 +272,19 @@ function run() {
     const ymlText = dumpYaml(obj);
     if (write) {
       const dir = path.join(ATOMIC_COMPONENTS, name);
+      const target = path.join(dir, `${name}.component.yml`);
+      // Refuse to clobber silently. The existing file is very likely the
+      // hand-refined version; --force is the deliberate opt-in.
+      if (fs.existsSync(target) && !args.includes('--force')) {
+        console.error(
+          `${path.relative(ROOT, target)} already exists; refusing to overwrite.\n` +
+          'Diff it against a dry run first, then pass --force if you really mean it.'
+        );
+        continue;
+      }
       fs.mkdirSync(dir, { recursive: true });
-      fs.writeFileSync(path.join(dir, `${name}.component.yml`), ymlText);
-      console.log(`wrote ${path.relative(ROOT, path.join(dir, `${name}.component.yml`))}`);
+      fs.writeFileSync(target, ymlText);
+      console.log(`wrote ${path.relative(ROOT, target)}`);
     } else {
       console.log(`# ===== ${name}.component.yml (dry run) =====`);
       console.log(ymlText);
