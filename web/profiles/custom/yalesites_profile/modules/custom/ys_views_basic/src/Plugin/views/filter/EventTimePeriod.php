@@ -3,6 +3,7 @@
 namespace Drupal\ys_views_basic\Plugin\views\filter;
 
 use Drupal\views\Plugin\views\filter\FilterPluginBase;
+use Drupal\ys_views_basic\ViewsBasicManager;
 
 /**
  * Filter events by date.
@@ -18,12 +19,13 @@ class EventTimePeriod extends FilterPluginBase {
    */
   public function query() {
 
-    if (!isset($this->view->args[6])) {
+    $period_index = ViewsBasicManager::viewArgumentIndex('event_time_period');
+    if (!isset($this->view->args[$period_index])) {
       return;
     }
     else {
 
-      switch ($this->view->args[6]) {
+      switch ($this->view->args[$period_index]) {
         case 'future':
           $operator = '>=';
           break;

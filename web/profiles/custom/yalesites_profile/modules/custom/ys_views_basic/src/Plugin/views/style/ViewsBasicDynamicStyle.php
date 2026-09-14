@@ -92,8 +92,9 @@ class ViewsBasicDynamicStyle extends StylePluginBase implements ContainerFactory
     if (!empty($this->view->rowPlugin)) {
 
       // Gets passed view mode from ViewsBasicDefaultFormatter and sets per row.
-      if (isset($this->view->args[4])) {
-        $viewMode = $this->view->args[4];
+      $view_mode_index = ViewsBasicManager::viewArgumentIndex('view');
+      if (isset($this->view->args[$view_mode_index])) {
+        $viewMode = $this->view->args[$view_mode_index];
         $validViewModes = $this->entityDisplay->getViewModeOptions('node');
         if (array_key_exists($viewMode, $validViewModes)) {
           $this->view->rowPlugin->options['view_mode'] = $viewMode;
@@ -134,7 +135,7 @@ class ViewsBasicDynamicStyle extends StylePluginBase implements ContainerFactory
 
     $type = $viewModesMap[$this->view->rowPlugin->options['view_mode']];
 
-    $contentType = $this->view->args[0];
+    $contentType = $this->view->args[ViewsBasicManager::viewArgumentIndex('type')];
     $cardCollectionModifiers = [];
     if ($contentType === 'resource' && $this->view->rowPlugin->options['view_mode'] === 'portrait_grid') {
       $cardCollectionModifiers[] = 'resource-portrait';
@@ -163,9 +164,7 @@ class ViewsBasicDynamicStyle extends StylePluginBase implements ContainerFactory
    * Anything unexpected — another view using this style plugin, a view
    * rendered outside setupView(), or a stored value the SCSS has no rule for
    * — falls back to the large (3-up) grid every listing had before the dial
-   * existed. ViewsBasicManager::normalizeCardSize() also accepts the numeric
-   * cards_per_row value the dial briefly used, so an argument set built before
-   * the rename still resolves to the size it was rendering.
+   * existed.
    *
    * The view-id guard matters: this style plugin also serves the
    * content_resources view, which builds its own, shorter argument list in
@@ -190,9 +189,7 @@ class ViewsBasicDynamicStyle extends StylePluginBase implements ContainerFactory
       $field_display_options = [];
     }
 
-    return ViewsBasicManager::normalizeCardSize(
-      $field_display_options['card_size'] ?? $field_display_options['cards_per_row'] ?? NULL
-    );
+    return ViewsBasicManager::normalizeCardSize($field_display_options['card_size'] ?? NULL);
   }
 
 }
