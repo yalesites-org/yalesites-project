@@ -1,0 +1,11 @@
+uuid: 8fa412cb-e855-43de-9913-dfed01d5dfe8
+langcode: en
+status: true
+dependencies: {  }
+id: post_card
+block_id: 'inline_block:post_card'
+category: post_listings
+label: 'Posts - Card Grid View'
+image_path: ''
+image_alt: ''
+weight: 0

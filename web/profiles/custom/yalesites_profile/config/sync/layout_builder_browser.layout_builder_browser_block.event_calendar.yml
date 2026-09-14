@@ -4,8 +4,8 @@ status: true
 dependencies: {  }
 id: event_calendar
 block_id: 'inline_block:event_calendar'
-category: dynamic_content
-label: 'Event Calendar'
+category: event_listings
+label: 'Events - Calendar View'
 image_path: /profiles/custom/yalesites_profile/modules/custom/ys_views_basic/assets/icons/event-calendar.svg
 image_alt: 'View of a calendar that displays events'
 weight: null
