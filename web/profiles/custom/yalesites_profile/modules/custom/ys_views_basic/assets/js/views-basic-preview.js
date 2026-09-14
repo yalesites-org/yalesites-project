@@ -43,6 +43,27 @@
       suffix: "[pinned_to_top]",
       showWhenChecked: true,
     },
+    // Profile data pass-throughs (#1648).
+    {
+      part: ".vb-preview__department",
+      suffix: "[profile_field_options][show_department]",
+      showWhenChecked: true,
+    },
+    {
+      part: ".vb-preview__email",
+      suffix: "[profile_field_options][show_email]",
+      showWhenChecked: true,
+    },
+    {
+      part: ".vb-preview__phone",
+      suffix: "[profile_field_options][show_phone]",
+      showWhenChecked: true,
+    },
+    {
+      part: ".vb-preview__pronouns",
+      suffix: "[profile_field_options][show_pronouns]",
+      showWhenChecked: true,
+    },
   ];
 
   /**

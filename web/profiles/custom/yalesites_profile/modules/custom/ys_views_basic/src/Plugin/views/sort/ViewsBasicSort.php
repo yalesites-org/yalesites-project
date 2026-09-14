@@ -3,6 +3,7 @@
 namespace Drupal\ys_views_basic\Plugin\views\sort;
 
 use Drupal\views\Plugin\views\sort\SortPluginBase;
+use Drupal\ys_views_basic\ViewsBasicManager;
 
 /**
  * Sort that receives JSON overrides from a Views Basic field.
@@ -23,8 +24,8 @@ class ViewsBasicSort extends SortPluginBase {
     $query = $this->query;
 
     // Split out the field and the sort direction.
-    if (isset($this->view->args[3])) {
-      $sortBy = $this->view->args[3];
+    if (isset($this->view->args[ViewsBasicManager::viewArgumentIndex('sort')])) {
+      $sortBy = $this->view->args[ViewsBasicManager::viewArgumentIndex('sort')];
       if (str_contains($sortBy, ':')) {
         $sortQueryOptions = explode(":", $sortBy);
         if (str_starts_with($sortQueryOptions[0], 'field')) {

@@ -180,6 +180,23 @@
 }
 
 /*
+ * Profile data pass-throughs (#1648), given the same muted treatment as
+ * .vb-preview__meta so the mockup reads like the rendered card. The real card
+ * links the email and phone; this is a static mockup, so they stay plain text.
+ * `display: block` is safe against the `hidden` attribute these start with:
+ * `.vb-preview [hidden]` below is more specific and wins.
+ */
+.vb-preview__pronouns,
+.vb-preview__department,
+.vb-preview__email,
+.vb-preview__phone {
+  display: block;
+  margin-top: 0.5rem;
+  font-size: 0.8rem;
+  color: var(--gin-color-text-light, #555);
+}
+
+/*
  * Categories render as plain pipe-separated text, matching tags — the design
  * system has no pill/badge treatment for either field. margin-top matches
  * the real component's --size-spacing-3 snippet/list spacing.

@@ -4,6 +4,7 @@ namespace Drupal\ys_views_basic\Plugin\views\filter;
 
 use Drupal\views\Plugin\views\filter\FilterPluginBase;
 use Drupal\views\Views;
+use Drupal\ys_views_basic\ViewsBasicManager;
 
 /**
  * Excludes taxonomy terms by ID.
@@ -19,11 +20,12 @@ class ExcludeTaxonomyTerms extends FilterPluginBase {
    */
   public function query() {
 
-    if (!isset($this->view->args[2])) {
+    $terms_index = ViewsBasicManager::viewArgumentIndex('terms_exclude');
+    if (!isset($this->view->args[$terms_index])) {
       return;
     }
     else {
-      $excludedTerms = $this->view->args[2];
+      $excludedTerms = $this->view->args[$terms_index];
       switch ($excludedTerms) {
         case str_contains($excludedTerms, ','):
           $excludedTermsArray = explode(',', $excludedTerms);

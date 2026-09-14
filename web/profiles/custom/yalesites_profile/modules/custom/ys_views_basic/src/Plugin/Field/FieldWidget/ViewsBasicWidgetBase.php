@@ -427,6 +427,12 @@ abstract class ViewsBasicWidgetBase extends WidgetBase implements ContainerFacto
         'field_options' => $built['field_options']['#value'],
         'event_field_options' => [],
         'post_field_options' => [],
+        'profile_field_options' => [],
+        // Absent for every design option but the card grid, which is the only
+        // one that offers the control (#1648).
+        'card_size' => isset($selection['options']['card_size'])
+          ? ViewsBasicManager::normalizeCardSize($selection['options']['card_size']['#value'])
+          : ViewsBasicManager::CARD_SIZE_DEFAULT,
         'exposed_filter_options' => $exposed_filter_options,
         'category_filter_label' => $built['category_filter_label']['#value'] ?? NULL,
         'category_included_terms' => $built['category_included_terms']['#value'] ?? NULL,
@@ -811,14 +817,14 @@ abstract class ViewsBasicWidgetBase extends WidgetBase implements ContainerFacto
    * exposed filters grow as their settings are disclosed, and they are no
    * longer in the same row.
    *
-   * The field_options, event_field_options and post_field_options groups (each
-   * built separately — the last two only by the per-type widgets) are gathered
-   * into one "Result content" fieldset here rather than at build time, so the
-   * per-type widgets keep writing their sibling groups exactly as before; only
-   * the render tree changes. flattenBuiltElements() already descends through
-   * any structural wrapper, so massageFormValues() and
-   * massageEntitySpecificParams() find these values whether they sit at the
-   * top level or inside this fieldset.
+   * The field_options, event_field_options, post_field_options and
+   * profile_field_options groups (each built separately — all but the first
+   * only by the per-type widgets) are gathered into one "Result content"
+   * fieldset here rather than at build time, so the per-type widgets keep
+   * writing their sibling groups exactly as before; only the render tree
+   * changes. flattenBuiltElements() already descends through any structural
+   * wrapper, so massageFormValues() and massageEntitySpecificParams() find
+   * these values whether they sit at the top level or inside this fieldset.
    *
    * Runs as an #after_build for the same reason as
    * ::buildExposedFilterAccordion(): every #parents is fixed by this point, so
@@ -833,7 +839,7 @@ abstract class ViewsBasicWidgetBase extends WidgetBase implements ContainerFacto
    *   The group with a display row wrapping the field options and preview.
    */
   public static function groupFieldDisplayRow(array $element, FormStateInterface $form_state): array {
-    $field_option_keys = ['field_options', 'event_field_options', 'post_field_options'];
+    $field_option_keys = ['field_options', 'event_field_options', 'post_field_options', 'profile_field_options'];
     $field_options = [];
     foreach ($field_option_keys as $key) {
       if (isset($element[$key])) {
@@ -849,9 +855,9 @@ abstract class ViewsBasicWidgetBase extends WidgetBase implements ContainerFacto
         '#title' => t('Result content'),
         '#attributes' => ['class' => ['vb-result-content']],
         // gin_lb ignores #description_display: 'before' on a fieldset
-        // (always renders it after field_options/event_field_options/
-        // post_field_options instead of introducing them), so the intro is a
-        // #markup child with a negative #weight instead — the same pattern
+        // (always renders it after the field option groups instead of
+        // introducing them), so the intro is a #markup child with a negative
+        // #weight instead — the same pattern
         // ViewsBasicWidgetBase::buildTermIncludeExclude() uses for
         // tag_filters_intro (#1481).
         'result_content_intro' => [
@@ -1347,6 +1353,31 @@ abstract class ViewsBasicWidgetBase extends WidgetBase implements ContainerFacto
       '#min' => 0,
       '#attributes' => ['placeholder' => 0],
     ];
+    // Card-size dial (#1648), offered only by the card grid: the other design
+    // options lay themselves out, so the control would be clutter that does
+    // nothing. The capability is declared on the listing definition rather than
+    // tested against the view mode here (ADR DR-2).
+    //
+    // A size rather than a number of columns, because the number of columns
+    // is not ours to promise: the grid is sized by the layout region the block
+    // sits in, so "4 per row" would read as an exact count while behaving as a
+    // maximum, and would go stale the moment an author moved the block into a
+    // narrower region. Asking how big the cards should be is always answerable
+    // and stays true after a move.
+    if (ViewsBasicManager::bundleSupportsCardSize($this->getBundle())) {
+      $form['group_user_selection']['options']['card_size'] = [
+        '#type' => 'select',
+        '#title' => $this->t('Card size'),
+        '#description' => $this->t('Smaller cards let more fit side by side. The area of the page this block sits in decides how many that is.'),
+        '#options' => [
+          'large' => $this->t('Large'),
+          'small' => $this->t('Small'),
+        ],
+        '#default_value' => $params
+          ? $this->viewsBasicManager->getDefaultParamValue('card_size', $params)
+          : ViewsBasicManager::CARD_SIZE_DEFAULT,
+      ];
+    }
     $form['group_user_selection']['options']['show_current_entity'] = [
       '#title' => $this->t('Include the current page'),
       '#description' => $this->t('When this block is placed on a content page, include that page in the results instead of excluding it.'),

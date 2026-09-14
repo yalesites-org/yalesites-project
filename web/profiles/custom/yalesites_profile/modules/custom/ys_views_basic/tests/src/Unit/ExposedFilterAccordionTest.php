@@ -2,6 +2,7 @@
 
 namespace Drupal\Tests\ys_views_basic\Unit;
 
+use Drupal\Core\DependencyInjection\ContainerBuilder;
 use Drupal\Core\Form\FormStateInterface;
 use Drupal\Tests\UnitTestCase;
 use Drupal\ys_views_basic\Plugin\Field\FieldWidget\EventViewWidget;
@@ -21,6 +22,20 @@ use Drupal\ys_views_basic\Plugin\Field\FieldWidget\EventViewWidget;
  * @group yalesites
  */
 class ExposedFilterAccordionTest extends UnitTestCase {
+
+  /**
+   * {@inheritdoc}
+   */
+  protected function setUp(): void {
+    parent::setUp();
+    // ::groupFieldDisplayRow() is a static #after_build callback, so it labels
+    // the "Result content" fieldset with the global t() rather than $this->t().
+    // Casting the TranslatableMarkup that returns needs a string_translation
+    // service, and UnitTestCase::setUp() deliberately unsets the container.
+    $container = new ContainerBuilder();
+    $container->set('string_translation', $this->getStringTranslationStub());
+    \Drupal::setContainer($container);
+  }
 
   /**
    * Builds a group resembling the built "Field display & filters" tab.

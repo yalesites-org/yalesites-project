@@ -3,6 +3,7 @@
 namespace Drupal\ys_views_basic\Plugin\views\filter;
 
 use Drupal\views\Plugin\views\filter\FilterPluginBase;
+use Drupal\ys_views_basic\ViewsBasicManager;
 
 /**
  * Excludes posts whose publish date has not yet been reached.
@@ -20,7 +21,7 @@ class PostPublishDate extends FilterPluginBase {
     // Only gate post listings. Pages and profiles share this scaffold view but
     // have no publish date, and events use a separate scaffold, so leave any
     // non-post listing untouched.
-    if (($this->view->args[0] ?? NULL) !== 'post') {
+    if (($this->view->args[ViewsBasicManager::viewArgumentIndex('type')] ?? NULL) !== 'post') {
       return;
     }
 

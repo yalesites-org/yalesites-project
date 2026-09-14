@@ -411,12 +411,51 @@ class ViewsBasicManagerTest extends UnitTestCase {
   public function testGetDefaultParamValueSimpleArrayOptionsDefaultAndPassThrough() {
     $this->assertSame([], $this->manager->getDefaultParamValue('event_field_options', json_encode([])));
     $this->assertSame([], $this->manager->getDefaultParamValue('post_field_options', json_encode([])));
+    $this->assertSame([], $this->manager->getDefaultParamValue('profile_field_options', json_encode([])));
     $this->assertSame([], $this->manager->getDefaultParamValue('exposed_filter_options', json_encode([])));
 
     $params = json_encode(['event_field_options' => ['hide_add_to_calendar' => 1]]);
     $this->assertSame(
       ['hide_add_to_calendar' => 1],
       $this->manager->getDefaultParamValue('event_field_options', $params)
+    );
+
+    $profile_params = json_encode(['profile_field_options' => ['show_email' => 'show_email']]);
+    $this->assertSame(
+      ['show_email' => 'show_email'],
+      $this->manager->getDefaultParamValue('profile_field_options', $profile_params)
+    );
+  }
+
+  /**
+   * GetDefaultParamValue('card_size', ...) keeps the large grid (#1648).
+   *
+   * Listings saved before the dial existed carry no card_size key and must keep
+   * rendering exactly as they did. A listing saved against the numeric dial the
+   * control briefly used resolves to the size that renders the same grid, so it
+   * reads correctly whether or not the deploy hook has converted it yet.
+   *
+   * @covers ::getDefaultParamValue
+   */
+  public function testGetDefaultParamValueCardSizeDefaultsToLarge() {
+    $this->assertSame('large', $this->manager->getDefaultParamValue('card_size', json_encode([])));
+    $this->assertSame(
+      'small',
+      $this->manager->getDefaultParamValue('card_size', json_encode(['card_size' => 'small']))
+    );
+    // A stray cards_per_row key is not read at all: that shape never shipped
+    // (absent from develop and from this PR's base), so there is no stored
+    // data to honour and no conversion to make. It is simply an absent
+    // card_size, which takes the default.
+    $this->assertSame(
+      'large',
+      $this->manager->getDefaultParamValue('card_size', json_encode(['cards_per_row' => 4]))
+    );
+    // Anything outside the offered set falls back rather than emitting a grid
+    // the SCSS has no rule for.
+    $this->assertSame(
+      'large',
+      $this->manager->getDefaultParamValue('card_size', json_encode(['card_size' => 'enormous']))
     );
   }
 
