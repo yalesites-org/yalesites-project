@@ -23,9 +23,12 @@
  * the state, so no control is added rather than one that cannot store anything.
  */
 
-((Drupal) => {
+((Drupal, once) => {
   const TIME_FIELDS = "input.form-time, select.form-select";
   const COMMENT_FIELD = 'input[data-drupal-selector$="-comment"]';
+  // Marks a comment whose value WE wrote, so retraction never deletes an
+  // editor's own prose. Read via dataset, removed via removeAttribute.
+  const MARKER_ATTR = "data-ys-closed-marker";
 
   /**
    * Collects the time inputs belonging to one weekday, across its slot rows.
@@ -168,22 +171,37 @@
     const isBlank = (field) => field.value.trim() === "";
     const hasHours = () => dayTimeFields.some((field) => field.value !== "");
 
-    // Retracts the label we wrote, and only that: an editor's own note is
-    // theirs to keep. Anything that makes the day not-closed calls this, or
-    // the label would outlive the state it describes and render publicly
-    // alongside the hours.
+    // Retracts the label we wrote, and ONLY that.
+    //
+    // Provenance is tracked out of band, on a data attribute set at the moment
+    // we write the label, rather than inferred by comparing the stored string
+    // to the current translation of "Closed". Comparing the string cannot tell
+    // our marker from an editor who simply typed "Closed" -- and this function
+    // deletes what it matches, so that guess destroyed their note. It also
+    // silently stopped matching whenever the interface language or the
+    // translation changed, orphaning a marker we had written ourselves.
+    //
+    // The rule is now: never delete a string we did not write, as far as this
+    // DOM knows. Two cases therefore go un-retracted rather than risking an
+    // editor's note: a marker written before an earlier save, and one written
+    // before contrib's "Add time slot" AJAX replaced this table (the attribute
+    // does not survive the rebuild, the stored value does). In both, a stale
+    // "Closed" can render beside hours -- visible, and the editor can clear
+    // it. Silently eating their prose was neither. Fixing it properly needs
+    // the marker to stop being the rendered value at all; see the deferred
+    // half of this finding in the run log.
     const retractLabel = () => {
-      if (comment.value.trim().toLowerCase() === closedLabel.toLowerCase()) {
+      if (comment.dataset.ysClosedMarker === "1") {
         comment.value = "";
+        comment.removeAttribute(MARKER_ATTR);
       }
     };
 
-    // A note the editor wrote themselves, on any slot of this day.
+    // A note the editor wrote themselves, on any slot of this day -- anything
+    // non-blank that is not a marker we wrote this session.
     const hasOwnNote = () =>
       dayComments.some(
-        (field) =>
-          !isBlank(field) &&
-          field.value.trim().toLowerCase() !== closedLabel.toLowerCase()
+        (field) => !isBlank(field) && field.dataset.ysClosedMarker !== "1"
       );
 
     const sync = () => {
@@ -207,8 +225,17 @@
         // Label the day only when no slot already carries a note: an editor
         // who wrote "Closed for renovation" said it better than we would, and
         // adding ours alongside would render both.
+        //
+        // The value written is the translated word, because it is what the
+        // front end renders: contrib applies its own `closed_format` label
+        // only when the comment is EMPTY
+        // (OfficeHoursItemListFormatter, the `empty($info['comments'])` case),
+        // and the comment cannot be empty or the day is not stored at all
+        // (OfficeHoursItem::isValueEmpty()). The data attribute is what marks
+        // it as ours, so provenance no longer depends on the string.
         if (dayComments.every(isBlank)) {
           comment.value = closedLabel;
+          comment.dataset.ysClosedMarker = "1";
         }
         return;
       }
@@ -244,6 +271,13 @@
 
     // Typing a note on a day with no hours is itself a closed day.
     dayComments.forEach((field) => {
+      // The moment the editor edits a comment it is theirs, even if what they
+      // typed happens to match our label -- so drop our claim on it. Bound on
+      // `input` rather than `change` so the claim is released as they type,
+      // before anything else can read the stale provenance.
+      field.addEventListener("input", () => {
+        field.removeAttribute(MARKER_ATTR);
+      });
       field.addEventListener("change", sync);
     });
 
@@ -386,4 +420,4 @@
       ).forEach(collapseOperations);
     },
   };
-})(Drupal);
+})(Drupal, once);
