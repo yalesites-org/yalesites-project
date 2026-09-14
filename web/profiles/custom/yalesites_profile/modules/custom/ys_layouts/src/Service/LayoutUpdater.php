@@ -26,6 +26,9 @@ use Psr\Log\LoggerInterface;
  * future to accommodate other types of updates, such as adding or removing
  * default sections or blocks.
  *
+ * ::enableSeventyThirtyDividers() is batched (it takes a $sandbox and slices
+ * DIVIDER_BATCH_SIZE nodes per pass). updateLocks() is not yet.
+ *
  * @todo Consider using the Batch API to execute updateLocks in smaller chunks.
  */
 class LayoutUpdater {
@@ -38,6 +41,21 @@ class LayoutUpdater {
    * Matches ys_layouts.layouts.yml.
    */
   const SEVENTY_THIRTY_LAYOUT_ID = 'ys_layout_two_column';
+
+  /**
+   * Nodes converted per batch pass by ::enableSeventyThirtyDividers().
+   *
+   * Each node costs up to two revision loads and two saves, so the slice is
+   * sized for a comfortable request rather than for throughput -- a deploy
+   * that takes a few more passes is cheaper than one that times out half way
+   * through and leaves the platform with some sections converted and some not.
+   *
+   * A constant rather than config, matching the sibling service
+   * OrphanedInlineBlockCleaner::BATCH_SIZE (also 50): ys_layouts ships no
+   * settings object, so there is no form this could be read from. If one is
+   * ever added, this is a value to move into it.
+   */
+  const DIVIDER_BATCH_SIZE = 50;
 
   /**
    * The config factory service.
@@ -283,12 +301,52 @@ class LayoutUpdater {
    * @return int
    *   The number of revisions saved.
    */
-  public function enableSeventyThirtyDividers(): int {
+  public function enableSeventyThirtyDividers(?array &$sandbox = NULL): int {
+    // Unbatched call -- no $sandbox handed in. Converts the whole set in one
+    // pass, which is what the tests and any manual drush invocation want.
+    if ($sandbox === NULL) {
+      return $this->convertSeventyThirtyRevisions($this->getSeventyThirtyNodeIds());
+    }
+
+    // First pass: enumerate the work once and keep it in the sandbox. The
+    // query is a LIKE over every stored layout section, so it is not something
+    // to re-run on each pass.
+    if (!isset($sandbox['ids'])) {
+      $sandbox['ids'] = $this->getSeventyThirtyNodeIds();
+      $sandbox['total'] = count($sandbox['ids']);
+      $sandbox['updated'] = 0;
+    }
+
+    $slice = array_splice($sandbox['ids'], 0, self::DIVIDER_BATCH_SIZE);
+    $sandbox['updated'] += $this->convertSeventyThirtyRevisions($slice);
+
+    // Drush's deploy:hook reads '#finished'; 1 ends the batch. Guard the
+    // divide so an empty candidate set finishes rather than dividing by zero.
+    $sandbox['#finished'] = $sandbox['total'] > 0
+      ? 1 - (count($sandbox['ids']) / $sandbox['total'])
+      : 1;
+
+    return $sandbox['updated'];
+  }
+
+  /**
+   * Opts the given nodes' 70/30 sections into their divider.
+   *
+   * Split out of ::enableSeventyThirtyDividers() so the batched and unbatched
+   * paths share one implementation rather than drifting apart.
+   *
+   * @param int[] $nids
+   *   Node ids to convert.
+   *
+   * @return int
+   *   The number of revisions saved.
+   */
+  protected function convertSeventyThirtyRevisions(array $nids): int {
     $updated = 0;
     /** @var \Drupal\node\NodeStorageInterface $nodeStorage */
     $nodeStorage = $this->entityTypeManager->getStorage('node');
 
-    foreach ($this->getSeventyThirtyNodeIds() as $nid) {
+    foreach ($nids as $nid) {
       $node = $nodeStorage->load($nid);
       if (!$node instanceof NodeInterface) {
         continue;
@@ -310,9 +368,9 @@ class LayoutUpdater {
         }
       }
 
-      // This runs over every candidate node in one deploy request, so let the
-      // entity static cache go rather than accumulating loaded nodes -- the
-      // scale risk the class docblock's Batch API @todo is about.
+      // Release each node from the entity static cache as we go. The batch
+      // above bounds how many nodes one request touches; this bounds how much
+      // memory those touches accumulate within the request.
       $nodeStorage->resetCache([$nid]);
     }
 

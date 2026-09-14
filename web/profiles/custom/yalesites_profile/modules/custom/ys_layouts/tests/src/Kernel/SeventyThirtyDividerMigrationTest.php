@@ -257,7 +257,17 @@ class SeventyThirtyDividerMigrationTest extends KernelTestBase {
       ->loadInclude('ys_layouts', 'php', 'ys_layouts.deploy');
     $this->assertTrue(function_exists('ys_layouts_deploy_9005'));
 
-    $message = (string) ys_layouts_deploy_9005();
+    // Drive it the way `drush deploy:hook` does: hand it a $sandbox by
+    // reference and call until it reports itself finished. Calling it once
+    // would pass here (one node fits in a single slice) while silently not
+    // covering the batch contract the hook now relies on.
+    $sandbox = [];
+    $passes = 0;
+    do {
+      $message = (string) ys_layouts_deploy_9005($sandbox);
+      $passes++;
+      $this->assertLessThan(10, $passes, 'The deploy hook never reported finished.');
+    } while (($sandbox['#finished'] ?? 1) < 1);
 
     // The whole string, not just the digit: `assertStringContainsString('1')`
     // would also pass for 10, 21 or 1613, so it would not pin the count at all.
@@ -370,6 +380,86 @@ class SeventyThirtyDividerMigrationTest extends KernelTestBase {
 
     $this->assertTrue($node->get('layout_builder__layout')->isEmpty());
     $this->assertSame(0, $this->updater()->enableSeventyThirtyDividers());
+  }
+
+  /**
+   * The batched path converts the same sections the unbatched one does.
+   *
+   * The deploy hook hands the service a $sandbox so a large site does not
+   * convert every 70/30 node in one request. Both paths share
+   * ::convertSeventyThirtyRevisions(), so this is really asserting that the
+   * sandbox plumbing does not lose work -- the failure mode being a deploy
+   * that reports success having converted only the first slice.
+   *
+   * @covers ::enableSeventyThirtyDividers
+   */
+  public function testBatchedRunConvertsAndReportsFinished(): void {
+    $nodes = [];
+    foreach (['a', 'b', 'c'] as $suffix) {
+      $nodes[] = $this->createNodeWithSections("70/30 {$suffix}", [
+        new Section('ys_layout_two_column', ['label' => "Section {$suffix}"]),
+      ]);
+    }
+
+    $sandbox = [];
+    $updated = $this->updater()->enableSeventyThirtyDividers($sandbox);
+
+    // Three nodes is well inside one slice, so a single pass finishes.
+    $this->assertSame(3, $updated);
+    $this->assertSame(1, (int) $sandbox['#finished']);
+    $this->assertSame(3, $sandbox['total']);
+    $this->assertSame(3, $sandbox['updated']);
+    $this->assertSame([], $sandbox['ids'], 'The queue was not drained.');
+
+    foreach ($nodes as $node) {
+      $settings = $this->reloadSections((int) $node->id())[0]->getLayoutSettings();
+      $this->assertSame(1, $settings['divider'], 'A batched node was skipped.');
+    }
+  }
+
+  /**
+   * An empty candidate set finishes instead of dividing by zero.
+   *
+   * `#finished` is computed from how much of the queue is left over the total.
+   * On a site with no overridden 70/30 layout the total is zero, and an
+   * unguarded divide would make the batch never finish.
+   *
+   * @covers ::enableSeventyThirtyDividers
+   */
+  public function testBatchedRunFinishesWithNothingToConvert(): void {
+    $sandbox = [];
+    $updated = $this->updater()->enableSeventyThirtyDividers($sandbox);
+
+    $this->assertSame(0, $updated);
+    $this->assertSame(1, (int) $sandbox['#finished']);
+    $this->assertSame(0, $sandbox['total']);
+  }
+
+  /**
+   * The queue is enumerated once, not re-queried on every pass.
+   *
+   * The candidate query is a LIKE across every stored layout section, so
+   * re-running it per pass would make a batched deploy slower than the
+   * unbatched one it replaced. Asserted by draining the sandbox by hand: a
+   * second pass over an already-empty queue must convert nothing further and
+   * must not repopulate `ids`.
+   *
+   * @covers ::enableSeventyThirtyDividers
+   */
+  public function testTheQueueIsNotRebuiltOnLaterPasses(): void {
+    $this->createNodeWithSections('70/30 once', [
+      new Section('ys_layout_two_column'),
+    ]);
+
+    $sandbox = [];
+    $this->updater()->enableSeventyThirtyDividers($sandbox);
+    $this->assertSame(1, $sandbox['updated']);
+
+    // A further pass on the drained sandbox: nothing left, nothing re-queried.
+    $this->updater()->enableSeventyThirtyDividers($sandbox);
+    $this->assertSame([], $sandbox['ids']);
+    $this->assertSame(1, $sandbox['updated'], 'A later pass re-converted work.');
+    $this->assertSame(1, (int) $sandbox['#finished']);
   }
 
 }

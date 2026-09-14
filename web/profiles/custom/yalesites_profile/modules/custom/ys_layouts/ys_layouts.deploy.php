@@ -50,9 +50,12 @@ function ys_layouts_deploy_9004() {
  * today. Covers the published revision and any pending draft. See
  * LayoutUpdater::enableSeventyThirtyDividers().
  */
-function ys_layouts_deploy_9005() {
-  $updated = \Drupal::service('ys_layouts.updater')->enableSeventyThirtyDividers();
+function ys_layouts_deploy_9005(array &$sandbox) {
+  $updated = \Drupal::service('ys_layouts.updater')
+    ->enableSeventyThirtyDividers($sandbox);
 
+  // Only the final pass's return value is surfaced by drush, so the running
+  // total in the sandbox is what the message should report.
   return \Drupal::translation()->formatPlural(
     $updated,
     'Enabled the 70/30 divider on 1 node revision.',
