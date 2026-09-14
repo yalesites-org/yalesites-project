@@ -24,8 +24,9 @@ use Drupal\ys_views_basic\ViewsBasicManager;
  *
  * The dial is a size rather than a column count because the column count is not
  * ours to promise — the grid is sized by the layout region the block sits in —
- * so these tests assert sizes and the conversion from the numeric values the
- * dial briefly used.
+ * so these tests assert sizes, and that anything which is not one of the
+ * offered sizes falls back to large rather than emitting a grid the SCSS has no
+ * rule for.
  *
  * @coversDefaultClass \Drupal\ys_views_basic\Plugin\Field\FieldWidget\ViewsBasicWidgetBase
  *
@@ -185,20 +186,22 @@ class CardSizeTest extends UnitTestCase {
   }
 
   /**
-   * An argument set built before the rename still resolves to its size (#1648).
+   * A numeric stored value is not a card size and falls back (#1648).
    *
-   * A rendered listing is not re-saved by the deploy hook until the hook runs,
-   * and a cached argument set can outlive the deploy, so the reader accepts the
-   * numeric value the dial briefly used rather than silently reverting the
-   * author's 4-up grid to 3-up.
+   * The dial was briefly a numeric "Cards per row" select on this branch
+   * before review settled on a size, but that shape never shipped -- it is
+   * absent from develop and from this PR's base -- so there is no stored data
+   * to convert and nothing accepts a count. A blob still carrying one is just
+   * an unrecognised value, and an unrecognised value takes the default rather
+   * than emitting a size the SCSS has no rule for.
    *
    * @covers \Drupal\ys_views_basic\Plugin\views\style\ViewsBasicDynamicStyle::cardSize
    */
-  public function testStylePluginConvertsTheSupersededCount() {
+  public function testStylePluginFallsBackOnNumericValue() {
     $args = array_fill(0, 8, '');
-    $args[8] = json_encode(['cards_per_row' => 4]);
+    $args[8] = json_encode(['card_size' => 4]);
 
-    $this->assertSame('small', $this->invoke(
+    $this->assertSame('large', $this->invoke(
       $this->stylePlugin('views_basic_scaffold', $args),
       'cardSize'
     ));
@@ -251,10 +254,15 @@ class CardSizeTest extends UnitTestCase {
     return [
       'a size passes through' => ['small', 'small'],
       'the default passes through' => ['large', 'large'],
-      'the superseded 3-up count is large' => [3, 'large'],
-      'the superseded 4-up count is small' => [4, 'small'],
-      'a numeric string is read as a count' => ['4', 'small'],
-      'a count with no grid rule falls back' => [7, 'large'],
+      // A count is not a card size. The dial was briefly numeric on this
+      // branch before review settled on a size, but that shape never shipped
+      // -- it is absent from develop and from this PR's base -- so there is no
+      // stored data to convert and nothing to accept. Counts are therefore
+      // just unrecognised values, and an unrecognised value takes the default
+      // rather than emitting a size the SCSS has no rule for.
+      'an int is not a size' => [3, 'large'],
+      'another int is not a size' => [4, 'large'],
+      'a numeric string is not a size' => ['4', 'large'],
       'an unknown size falls back' => ['enormous', 'large'],
       'an absent value falls back' => [NULL, 'large'],
       'a non-scalar falls back' => [['small'], 'large'],

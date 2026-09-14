@@ -443,14 +443,13 @@ class ViewsBasicManagerTest extends UnitTestCase {
       'small',
       $this->manager->getDefaultParamValue('card_size', json_encode(['card_size' => 'small']))
     );
-    // The superseded numeric values still resolve to the grid they rendered.
-    $this->assertSame(
-      'small',
-      $this->manager->getDefaultParamValue('card_size', json_encode(['cards_per_row' => 4]))
-    );
+    // A stray cards_per_row key is not read at all: that shape never shipped
+    // (absent from develop and from this PR's base), so there is no stored
+    // data to honour and no conversion to make. It is simply an absent
+    // card_size, which takes the default.
     $this->assertSame(
       'large',
-      $this->manager->getDefaultParamValue('card_size', json_encode(['cards_per_row' => 3]))
+      $this->manager->getDefaultParamValue('card_size', json_encode(['cards_per_row' => 4]))
     );
     // Anything outside the offered set falls back rather than emitting a grid
     // the SCSS has no rule for.

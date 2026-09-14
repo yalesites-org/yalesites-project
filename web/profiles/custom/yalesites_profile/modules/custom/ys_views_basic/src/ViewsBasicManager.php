@@ -185,19 +185,6 @@ class ViewsBasicManager extends ControllerBase implements ContainerInjectionInte
   const CARD_SIZE_DEFAULT = 'large';
 
   /**
-   * Card sizes keyed by the cards-per-row value they replaced (#1648).
-   *
-   * The dial was briefly a numeric "Cards per row" select before review
-   * settled on a size. Private so every conversion goes through
-   * ::normalizeCardSize(), which is what a caller actually wants: the map alone
-   * has no answer for a count that was never offered.
-   */
-  private const CARDS_PER_ROW_TO_CARD_SIZE = [
-    3 => 'large',
-    4 => 'small',
-  ];
-
-  /**
    * The views ::setupView() packs arguments for, in ::VIEW_ARGUMENT_ORDER.
    *
    * Every positional read of a view argument has to be gated on this list:
@@ -1047,14 +1034,13 @@ class ViewsBasicManager extends ControllerBase implements ContainerInjectionInte
   /**
    * Coerces a stored card-size value to one this module can render (#1648).
    *
-   * Accepts the numeric cards_per_row values the dial briefly used before
-   * review settled on a size, so a listing saved against that shape keeps its
-   * appearance whether or not the update hook has run for it yet. Anything else
-   * — absent, a stale string, a count with no SCSS rule — falls back to the
-   * grid every card listing rendered before the dial existed.
+   * Anything that is not one of ::CARD_SIZE_OPTIONS — absent, a stale string,
+   * a decoded scalar — falls back to the grid every card listing rendered
+   * before the dial existed, rather than emitting a size the SCSS has no rule
+   * for.
    *
    * @param mixed $value
-   *   A stored card_size string, a stored cards_per_row count, or NULL.
+   *   A stored card_size string, or NULL.
    *
    * @return string
    *   A member of ::CARD_SIZE_OPTIONS.
@@ -1062,9 +1048,6 @@ class ViewsBasicManager extends ControllerBase implements ContainerInjectionInte
   public static function normalizeCardSize(mixed $value): string {
     if (is_string($value) && in_array($value, self::CARD_SIZE_OPTIONS, TRUE)) {
       return $value;
-    }
-    if (is_int($value) || (is_string($value) && ctype_digit($value))) {
-      return self::CARDS_PER_ROW_TO_CARD_SIZE[(int) $value] ?? self::CARD_SIZE_DEFAULT;
     }
     return self::CARD_SIZE_DEFAULT;
   }
@@ -1302,13 +1285,8 @@ class ViewsBasicManager extends ControllerBase implements ContainerInjectionInte
       case 'card_size':
         // Listings saved before the dial existed carry no key and must keep
         // their large (3-up) grid. An unrecognised stored value falls back too,
-        // rather than emitting a size the SCSS has no rule for. A listing still
-        // holding the numeric cards_per_row value the dial briefly used is
-        // converted on read as well as by ys_views_basic_deploy_10003(), so a
-        // block renders correctly before that hook has run for it.
-        $defaultParam = self::normalizeCardSize(
-          $paramsDecoded['card_size'] ?? $paramsDecoded['cards_per_row'] ?? NULL
-        );
+        // rather than emitting a size the SCSS has no rule for.
+        $defaultParam = self::normalizeCardSize($paramsDecoded['card_size'] ?? NULL);
         break;
 
       case 'exposed_filter_options':
