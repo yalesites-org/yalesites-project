@@ -1,0 +1,49 @@
+/**
+ * The Dashboard admin menu link that carries the unread-announcements pill.
+ *
+ * The pill itself is `ys_core/badge`, shared with the dashboard page; every
+ * rule here is specific to rendering it inside the admin toolbar.
+ *
+ * @see \Drupal\ys_core\Toolbar\DashboardToolbarLazyBuilders::renderBadge()
+ */
+
+/* FontAwesome Free "gauge" icon (v7.3.0, CC BY 4.0). Positioned absolutely so
+   the icon sits vertically centered relative to the link's own box (matching
+   how Gin places its other top-bar icons), regardless of the current
+   line-height. The mask image lets the icon inherit `currentColor`, so it
+   follows light/dark themes and hover states. */
+/* Selector uses the toolbar tray ID so its specificity (1,3,2) beats Gin's
+   own `.toolbar .toolbar-bar #toolbar-item-administration-tray .toolbar-icon::before`
+   rule (1,3,1) that would otherwise pin width/height to `--gin-icon-size-toolbar`. */
+#toolbar-item-administration-tray a.toolbar-icon.toolbar-icon-dashboard.dashboard-menu-item {
+  position: relative;
+  padding-inline-start: 53px;
+}
+
+#toolbar-item-administration-tray a.toolbar-icon.toolbar-icon-dashboard.dashboard-menu-item::before {
+  content: "";
+  position: absolute;
+  inset-inline-start: 18px;
+  inset-block-start: 50%;
+  width: 20px;
+  height: 20px;
+  transform: translateY(-50%);
+  background-color: currentColor;
+  /* Query string forces browsers/CDN to re-fetch after the SVG contents
+     changed under the same filename. Bump the value if you swap the icon
+     again. */
+  -webkit-mask-image: url("../images/icons/gauge.svg?v=3");
+  mask-image: url("../images/icons/gauge.svg?v=3");
+  -webkit-mask-repeat: no-repeat;
+  mask-repeat: no-repeat;
+  -webkit-mask-position: center;
+  mask-position: center;
+  -webkit-mask-size: contain;
+  mask-size: contain;
+}
+
+/* Gin toolbar's `.toolbar .toolbar-menu .toolbar-menu span` color rule wins
+   on specificity, so re-assert the badge's white text inside the toolbar. */
+.toolbar-menu .menu-item .ys-dashboard-badge.ys-dashboard-badge--unread {
+  color: #fff;
+}

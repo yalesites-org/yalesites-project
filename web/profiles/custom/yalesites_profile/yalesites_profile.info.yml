@@ -63,6 +63,7 @@ install:
   - views_ui
   - workflows
   - ys_alert
+  - ys_beacon
   - ys_core
   - ys_mail
 

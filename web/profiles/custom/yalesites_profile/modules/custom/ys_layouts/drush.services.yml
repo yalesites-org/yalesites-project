@@ -1,0 +1,6 @@
+services:
+  ys_layouts.commands:
+    class: \Drupal\ys_layouts\Commands\YaleSitesLayoutsCommands
+    arguments: ['@entity_type.manager', '@ys_layouts.orphaned_inline_block_cleaner']
+    tags:
+      - { name: drush.command }

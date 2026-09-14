@@ -1,0 +1,40 @@
+/**
+ * The unread-announcements pill.
+ *
+ * Modeled on Drupal core's announcements_feed bell-icon dot, but rendered as a
+ * small red pill so editors can see what is waiting. Two consumers, which is
+ * why this is its own library rather than living in either one's stylesheet:
+ * the Dashboard admin menu link shows the unread count in it, and each unread
+ * announcement on the dashboard itself shows the word "New" in it.
+ *
+ * @see web/profiles/custom/yalesites_profile/modules/custom/ys_core/templates/ys-dashboard.html.twig
+ * @see \Drupal\ys_core\Toolbar\DashboardToolbarLazyBuilders::renderBadge()
+ */
+
+.ys-dashboard-badge {
+  display: inline-block;
+  min-width: 1.25em;
+  margin-inline-start: 0.4em;
+  padding: 0 0.4em;
+  border-radius: 999px;
+  background-color: #d72c0d;
+  color: #fff;
+  font-size: 0.75rem;
+  font-weight: 600;
+  line-height: 1.4;
+  text-align: center;
+  vertical-align: baseline;
+}
+
+/**
+ * The announcement category pill (yalesites-org/YaleSites-Internal#1559).
+ *
+ * A distinct color from the red "New" pill above, so the two read as
+ * different kinds of information rather than just different positions. Uses
+ * Gin's own info/button-text token pair, which the theme ships pre-matched
+ * for contrast in both light and dark admin-theme modes.
+ */
+.ys-dashboard-badge--category {
+  background-color: var(--gin-color-info, #082538);
+  color: var(--gin-color-button-text, #fff);
+}

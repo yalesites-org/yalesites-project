@@ -2,3 +2,8 @@
 yalesites manage settings:
   title: 'Manage YaleSite Settings'
   description: 'Access the settings forms in the YaleSites section of the admin menu.'
+# Permission to reach the platform-admin-only settings page.
+administer platform admin settings:
+  title: 'Administer Platform Admin Settings'
+  description: 'Access the platform-admin-only settings page (for example, authorizing integrations such as Beacon per site).'
+  restrict access: true

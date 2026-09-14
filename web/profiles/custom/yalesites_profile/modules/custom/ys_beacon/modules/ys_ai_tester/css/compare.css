@@ -1,0 +1,284 @@
+/**
+ * @file
+ * AI Tester run comparison styling.
+ *
+ * Layered on the ys_admin_theme (base theme Gin). The comparison itself is the
+ * question-tabs widget (see question-tabs.css); what lives here is the material
+ * around and inside it — the diff highlight colors, the status badges the tabs
+ * reuse, the header blocks, the export modal and the small-screen notice —
+ * expressed with Gin CSS custom properties and safe literal fallbacks.
+ *
+ * Colors that sit on a surface of our own are pinned to literals rather than
+ * taken from Gin's text tokens. Gin flips those tokens for dark mode, so pairing
+ * one with a background that does not flip silently destroys the contrast — that
+ * is what rendered the caveat copy at 1.02:1. Dark mode is signalled by
+ * `html.gin--dark-mode`, which Gin sets for its `auto` setting too. Every pair
+ * below was measured against WCAG 2.1 AA (4.5:1) in both modes and the resulting
+ * ratio is recorded beside it.
+ */
+
+.ys-compare {
+  /* One source of truth for the highlight colors, so the highlights and the
+     legend swatches cannot drift apart and dark mode is a single override
+     block. Keyed by run — a highlight identifies the run it sits in, Run A
+     green and Run B blue — rather than by diff direction: a word missing from
+     the other run is neither an addition nor a removal, and neither run is the
+     baseline the other is measured against — and so neither of them is red.
+     Red would read as "this answer is wrong" when both answers are valid.
+
+     Run B's blue is held off the #e7ecfb that the only_a/only_b badges and the
+     selected question tab both use, so one hue does not have to mean both
+     "Run B" and "answered by one run only". The two blues are close, though, so
+     what really separates them is shape and place — an inline run of words
+     inside an answer versus a chip in the tab rail — plus the label beside
+     each. Hue is not doing that work alone. */
+  --ys-diff-a-bg: #e6f4ea;
+  --ys-diff-a-fg: #14663f; /* 6.2:1. */
+  --ys-diff-b-bg: #dbe8fb;
+  --ys-diff-b-fg: #0f4c8a; /* 7.0:1. */
+}
+
+html.gin--dark-mode .ys-compare {
+  --ys-diff-a-bg: #12351f;
+  --ys-diff-a-fg: #9be3b4; /* 9.0:1. */
+  --ys-diff-b-bg: #12294a;
+  --ys-diff-b-fg: #a9cff5; /* 9.0:1. */
+}
+
+.ys-compare-summary {
+  margin-block-end: 1rem;
+  font-weight: 600;
+}
+
+/* Shown only when the two runs were answered by different assistants, so a
+   high "differs" count is not misread as a regression. */
+.ys-compare-caveat {
+  margin-block-end: 1rem;
+  padding: 0.75rem 1rem;
+  border-inline-start: 4px solid var(--gin-color-warning, #e5a611);
+  background: var(--gin-color-warning-light, #fdf3da);
+  color: #1b1b1d; /* 11.3:1 on Gin's warning-light. */
+}
+
+/* Dark mode keeps the warning accent but moves to a dark surface, the way Gin
+   renders its own messages, so the copy can stay light. */
+html.gin--dark-mode .ys-compare-caveat {
+  background: #3a2f10;
+  color: #f5e6b8; /* 10.7:1. */
+}
+
+.ys-compare-meta {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 1rem;
+  margin-block-end: 1rem;
+}
+
+.ys-compare-meta__run {
+  flex: 1 1 14rem;
+  padding: 0.75rem 1rem;
+  border: 1px solid var(--gin-border-color-table, #d4d4d8);
+  border-radius: var(--gin-border-radius, 4px);
+  background: var(--gin-bg-layer2, #fff);
+}
+
+/* Explains what the highlighting in the answer columns means. The highlights
+   are deliberately not individually focusable: a paragraph-length answer
+   produces dozens of changed-word spans, and turning each into a tab stop would
+   cost keyboard users far more than a per-word tooltip would give them, so the
+   explanation is made once, above the tabs, for the whole comparison. */
+.ys-compare-help {
+  max-width: 60rem;
+  margin-block-end: 0.5rem;
+}
+
+.ys-compare-legend {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 1rem;
+  margin-block-end: 1rem;
+  font-size: 0.8125rem;
+}
+
+.ys-compare-legend__item {
+  display: flex;
+  align-items: center;
+  gap: 0.375rem;
+}
+
+/* The swatch only repeats a highlight color, so it is decorative and hidden
+   from assistive technology; the adjacent text carries the meaning. */
+.ys-compare-legend__swatch {
+  display: inline-block;
+  width: 1.5rem;
+  height: 0.875rem;
+  border-radius: 2px;
+}
+
+.ys-compare-legend__swatch--a {
+  border: 1px solid var(--ys-diff-a-fg);
+  background: var(--ys-diff-a-bg);
+}
+
+.ys-compare-legend__swatch--b {
+  border: 1px solid var(--ys-diff-b-fg);
+  background: var(--ys-diff-b-bg);
+}
+
+/* Word-level diff: core WordLevelDiff marks changed words with .diffchange in
+   both columns; the wrapper colors each column by the run it belongs to. */
+.ys-diff {
+  white-space: pre-wrap;
+  word-break: break-word;
+}
+
+/* No line-through here: striking the text out made the very words a reviewer
+   needs to read the hardest to read. The background carries the signal alone.
+   Color is never the only cue either — a highlight's run is already given by
+   which column it is in, and named in the legend beside the matching swatch. */
+.ys-diff--a .diffchange {
+  background: var(--ys-diff-a-bg);
+  color: var(--ys-diff-a-fg);
+}
+
+.ys-diff--b .diffchange {
+  background: var(--ys-diff-b-bg);
+  color: var(--ys-diff-b-fg);
+}
+
+/* Shared with the single-run view, despite the `compare-` prefix: runSide() uses
+   these for a question that failed or came back blank. Do NOT scope them under
+   `.ys-compare` to tighten specificity — that would silently drop the styling
+   from the run page, which has no such wrapper. */
+.ys-compare-side-meta {
+  margin-block-start: 0.5rem;
+  font-size: 0.8125rem;
+  color: var(--gin-color-text-light, #595c5e);
+}
+
+.ys-compare-side-meta--empty {
+  color: var(--gin-color-danger, #d72222);
+  font-weight: 600;
+}
+
+/* Gin's danger token flips for dark mode, but only to rgb(206, 96, 96), which is
+   3.7:1 on --gin-bg-layer dark — below AA. This is the same trap the caveat copy
+   fell into, arrived at from the other side: the token moves, just not far
+   enough. Pinned for dark mode at 8.5:1, in the same lightness family as this
+   file's dark diff colors. Light mode is left on the token, where it resolves to
+   rgb(204, 61, 61) for 4.9:1 and passes — that is the tightest measured pair in
+   this file, so pinning it too is worth doing if Gin's palette ever moves. */
+html.gin--dark-mode .ys-compare-side-meta--empty {
+  color: #f4b8b8; /* 8.5:1 on --gin-bg-layer dark. */
+}
+
+.ys-compare-unique {
+  margin-block-start: 0.25rem;
+  font-size: 0.8125rem;
+}
+
+.ys-compare-not-asked {
+  font-style: italic;
+  color: var(--gin-color-text-light, #595c5e);
+}
+
+/* Status badges. Light chips with dark text in both modes: the backgrounds are
+   pinned rather than themed, so one value per badge passes AA in both. Two
+   vocabularies share these rules, because one badge in one template renders
+   both: identical/differs/only_a/only_b are comparison pair states, and
+   answered/empty/error are single-run result states. Grouped by what the chip is
+   telling you rather than by which view it came from. */
+.ys-compare-badge {
+  display: inline-block;
+  padding: 0.125rem 0.5rem;
+  border-radius: 1rem;
+  font-size: 0.75rem;
+  font-weight: 600;
+  white-space: nowrap;
+}
+
+/* Nothing to look at: the two runs agree, or the question got an answer. */
+.ys-compare-badge--identical,
+.ys-compare-badge--answered {
+  background: #e6f4ea;
+  color: #14663f; /* 6.2:1. */
+}
+
+/* Worth a look: the answers differ, or one came back blank. */
+.ys-compare-badge--differs,
+.ys-compare-badge--empty {
+  background: #efcf64;
+  color: #5a4114; /* 6.2:1. */
+}
+
+/* Answered by one run only, or - on a source inside the panel's Sources list -
+   retrieved by one run only. Same chip because it is the same statement about
+   the same two runs, one about the answer and one about a source. */
+.ys-compare-badge--only_a,
+.ys-compare-badge--only_b,
+.ys-compare-badge--only_here {
+  background: #e7ecfb;
+  color: #24418f; /* 8.0:1. */
+}
+
+/* Sits after a source's cited/not-cited flag rather than on its own line, so it
+   needs the gap the flag's leading em dash gives the text before it. */
+.ys-compare-badge--only_here {
+  margin-inline-start: 0.375rem;
+}
+
+/* The only red left in the AI Tester, and the one place it is the right message:
+   the backend recorded an error instead of answering. Red was dropped from the
+   diff palette because there a highlight marked one of two valid answers, not a
+   fault — a failed question genuinely is one. Same pair .ys-compare-side-meta
+   --empty already uses Gin's danger colour for, pinned so it passes AA on a
+   chip. */
+.ys-compare-badge--error {
+  background: #fde2e2;
+  color: #8f1a1a; /* 7.4:1. */
+}
+
+/* AI-analysis export modal. */
+.ys-compare-export__prompt {
+  width: 100%;
+  min-height: 14rem;
+  font-family: var(--gin-font-mono, monospace);
+  font-size: 0.8125rem;
+}
+
+.ys-compare-export__actions {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.5rem;
+  margin-block-start: 1rem;
+}
+
+.ys-compare-export__status {
+  font-size: 0.8125rem;
+  font-weight: 600;
+}
+
+/* The comparison sets a tab list beside two columns of paragraph-length answers
+   and has no usable small-screen layout, so below the breakpoint the whole view
+   is replaced by an explanation. 768px matches the breakpoint the sibling
+   ys_beacon admin stylesheets already use. The selector is deliberately generic
+   (every direct child but the notice), so it keeps covering the comparison
+   whatever it is built from. Scoped to the compare view only — the rest of the
+   AI Tester stays usable at small widths. */
+.ys-compare-mobile-notice {
+  display: none;
+}
+
+@media (max-width: 768px) {
+  .ys-compare > *:not(.ys-compare-mobile-notice) {
+    display: none;
+  }
+
+  .ys-compare-mobile-notice {
+    display: block;
+    padding: 1rem;
+    border-inline-start: 4px solid var(--gin-color-primary, #2d2eff);
+    background: var(--gin-bg-layer2, #fff);
+  }
+}

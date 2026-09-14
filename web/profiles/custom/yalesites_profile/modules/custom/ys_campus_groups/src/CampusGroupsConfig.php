@@ -28,7 +28,7 @@ class CampusGroupsConfig implements ContainerInjectionInterface {
    *   The config factory service.
    */
   public function __construct(ConfigFactoryInterface $config_factory) {
-    $this->configFactory = $config_factory->getEditable('ys_campus_group.settings');
+    $this->configFactory = $config_factory->getEditable('ys_campus_groups.settings');
   }
 
   /**

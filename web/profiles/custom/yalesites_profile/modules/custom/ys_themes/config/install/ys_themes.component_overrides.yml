@@ -6,6 +6,7 @@ callout:
       three: Three
       four: Four
       five: Five
+      six: Six
     default: one
   field_style_alignment:
     values:
@@ -20,6 +21,7 @@ cta_banner:
       three: Three
       four: Four
       five: Five
+      six: Six
     default: one
   field_style_position:
     values:
@@ -27,6 +29,11 @@ cta_banner:
       left: Left
       right: Right
     default: bottom
+  field_style_width:
+    values:
+      site: Contained
+      full: 'Full Width'
+    default: site
 pull_quote:
   field_style_variation:
     values:
@@ -58,6 +65,7 @@ content_spotlight:
       three: 'Three'
       four: 'Four'
       five: 'Five'
+      six: 'Six'
     default: default
   field_style_alignment:
     values:
@@ -119,6 +127,7 @@ wrapped_text_callout:
       three: 'Three'
       four: 'Four'
       five: 'Five'
+      six: 'Six'
     default: one
 grand_hero:
   field_style_position:
@@ -138,7 +147,13 @@ grand_hero:
       three: Three
       four: Four
       five: Five
+      six: Six
     default: one
+  field_style_width:
+    values:
+      site: Contained
+      full: 'Full Width'
+    default: site
 divider:
   field_style_position:
     values:
@@ -171,6 +186,7 @@ content_spotlight_portrait:
       three: 'Three'
       four: 'Four'
       five: 'Five'
+      six: 'Six'
     default: default
   field_style_alignment:
     values:
@@ -198,6 +214,7 @@ tile:
       three: 'Three'
       four: 'Four'
       five: 'Five'
+      six: 'Six'
     default: one
 tiles:
   field_style_width:
@@ -231,6 +248,7 @@ facts:
       three: 'Three'
       four: 'Four'
       five: 'Five'
+      six: 'Six'
     default: one
   field_style_alignment:
     values:
@@ -245,6 +263,7 @@ quote_callout:
       three: 'Three'
       four: 'Four'
       five: 'Five'
+      six: 'Six'
     default: one
   field_style_variation:
     values:
@@ -264,6 +283,7 @@ link_grid:
       three: 'Three'
       four: 'Four'
       five: 'Five'
+      six: 'Six'
     default: one
 inline_message:
   field_style_color:
@@ -273,6 +293,7 @@ inline_message:
       three: Three
       four: 'Four'
       five: 'Five'
+      six: 'Six'
     default: one
 video:
   field_style_alignment:
@@ -287,6 +308,11 @@ image_banner:
       short: Short
       mini: Mini
     default: tall
+  field_style_width:
+    values:
+      site: Contained
+      full: 'Full Width'
+    default: site
 accordion:
   field_style_color:
     values:
@@ -296,6 +322,7 @@ accordion:
       three: 'Three'
       four: 'Four'
       five: 'Five'
+      six: 'Six'
     default: default
 video_banner:
   field_style_width:

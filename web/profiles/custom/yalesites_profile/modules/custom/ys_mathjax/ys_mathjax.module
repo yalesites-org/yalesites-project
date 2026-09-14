@@ -1,0 +1,20 @@
+<?php
+
+/**
+ * @file
+ * Hook implementations for the YaleSites MathJax module.
+ */
+
+use Drupal\ys_mathjax\Plugin\Filter\YsTypogrifyFilter;
+
+/**
+ * Implements hook_filter_info_alter().
+ *
+ * Swaps in a typogrify filter that leaves math notation alone, so LaTeX still
+ * reaches MathJax intact in every text format that runs typogrify.
+ */
+function ys_mathjax_filter_info_alter(&$info) {
+  if (isset($info['typogrify'])) {
+    $info['typogrify']['class'] = YsTypogrifyFilter::class;
+  }
+}

@@ -1,0 +1,17 @@
+diff --git a/src/Plugin/Field/FieldWidget/LinkitWidget.php b/src/Plugin/Field/FieldWidget/LinkitWidget.php
+index c9e4620..0585d09 100644
+--- a/src/Plugin/Field/FieldWidget/LinkitWidget.php
++++ b/src/Plugin/Field/FieldWidget/LinkitWidget.php
+@@ -216,7 +216,11 @@ class LinkitWidget extends LinkWidget {
+    */
+   public function massageFormValues(array $values, array $form, FormStateInterface $form_state) {
+     foreach ($values as &$value) {
+-      $value['uri'] = LinkitHelper::uriFromUserInput($value['uri']);
++      $uri = LinkitHelper::uriFromUserInput($value['uri']);
++      // rawurldecode() rather than urldecode(): a URL path is not form data, so
++      // a "+" in it is a literal plus and not an encoded space. urldecode()
++      // turned a link to "a+b.pdf" into one to "a b.pdf", which then 404s.
++      $value['uri'] = !empty($uri) ? rawurldecode($uri) : NULL;
+       $value += ['options' => $value['attributes']];
+     }
+     return $values;

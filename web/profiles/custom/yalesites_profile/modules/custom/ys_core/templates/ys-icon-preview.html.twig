@@ -1,0 +1,21 @@
+{#
+/**
+ * @file
+ * Renders a single decorative icon for the admin icon-picker preview.
+ *
+ * Shared by every icon field that uses the icon picker (Facts and Figures,
+ * In-Line Message, ...), so it is intentionally not scoped to any one block.
+ *
+ * Available variables:
+ * - icon_name: machine name of the icon to render (matches an icon sprite id).
+ */
+#}
+{# Use a dedicated, inert base class: the sizing comes from the JS wrapper's
+ # `.icon-preview-icon svg` rule, and a generic name like `icon-preview` would
+ # collide with the preview container box in facts-icon-preview.css. #}
+{% include "@atoms/images/icons/_yds-icon.twig" with {
+  icon__name: icon_name,
+  icon__base_class: 'ys-icon-preview__glyph',
+  icon__decorative: true,
+  directory: 'themes/contrib/atomic',
+} %}

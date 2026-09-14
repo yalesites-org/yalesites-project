@@ -1,0 +1,376 @@
+diff --git a/quick_node_clone.services.yml b/quick_node_clone.services.yml
+index 2e1cf1e8b0430d1ece631e7d3a3a41b7ca2153c4..fcc5db13d9ed0fc17862abf36bbbd7c12bd4f91b 100644
+--- a/quick_node_clone.services.yml
++++ b/quick_node_clone.services.yml
+@@ -10,6 +10,7 @@ services:
+       - '@current_user'
+       - '@tempstore.private'
+       - '@string_translation'
++      - '@uuid'
+ 
+   quick_node_clone.address_event_subscriber:
+     class: Drupal\quick_node_clone\EventSubscriber\AddressEventSubscriber
+diff --git a/src/Entity/QuickNodeCloneEntityFormBuilder.php b/src/Entity/QuickNodeCloneEntityFormBuilder.php
+index 367899927241fdd26c70d4bac81ea86807b89c8a..7cf5bf75a873f3cfd874a62ad99a9e6056600efa 100755
+--- a/src/Entity/QuickNodeCloneEntityFormBuilder.php
++++ b/src/Entity/QuickNodeCloneEntityFormBuilder.php
+@@ -2,11 +2,13 @@
+ 
+ namespace Drupal\quick_node_clone\Entity;
+ 
++use Drupal\Component\Uuid\UuidInterface;
+ use Drupal\Core\Config\ConfigFactoryInterface;
+ use Drupal\Core\Entity\EntityFormBuilder;
+ use Drupal\Core\Entity\EntityInterface;
+ use Drupal\Core\Entity\EntityTypeBundleInfoInterface;
+ use Drupal\Core\Entity\EntityTypeManagerInterface;
++use Drupal\Core\Entity\FieldableEntityInterface;
+ use Drupal\Core\Extension\ModuleHandlerInterface;
+ use Drupal\Core\Form\FormBuilderInterface;
+ use Drupal\Core\Form\FormState;
+@@ -16,7 +18,9 @@ use Drupal\Core\StringTranslation\TranslationInterface;
+ use Drupal\Core\TempStore\PrivateTempStoreFactory;
+ use Drupal\group\Entity\GroupContent;
+ use Drupal\group\Entity\GroupRelationship;
+-use Drupal\node\Entity\Node;
++use Drupal\layout_builder\Plugin\Block\InlineBlock;
++use Drupal\layout_builder\Section;
++use Drupal\layout_builder\SectionComponent;
+ use Drupal\Core\Render\Markup;
+ 
+ /**
+@@ -68,6 +72,13 @@ class QuickNodeCloneEntityFormBuilder extends EntityFormBuilder {
+    */
+   protected $privateTempStoreFactory;
+ 
++  /**
++   * The UUID service.
++   *
++   * @var \Drupal\Component\Uuid\UuidInterface
++   */
++  protected $uuid;
++
+   /**
+    * QuickNodeCloneEntityFormBuilder constructor.
+    *
+@@ -87,8 +98,10 @@ class QuickNodeCloneEntityFormBuilder extends EntityFormBuilder {
+    *   Private temp store factory.
+    * @param \Drupal\Core\StringTranslation\TranslationInterface $stringTranslation
+    *   The string translation service.
++   * @param \Drupal\Component\Uuid\UuidInterface $uuid
++   *   The UUID service.
+    */
+-  public function __construct(FormBuilderInterface $formBuilder, EntityTypeBundleInfoInterface $entityTypeBundleInfo, ConfigFactoryInterface $configFactory, ModuleHandlerInterface $moduleHandler, EntityTypeManagerInterface $entityTypeManager, AccountInterface $currentUser, PrivateTempStoreFactory $privateTempStoreFactory, TranslationInterface $stringTranslation) {
++  public function __construct(FormBuilderInterface $formBuilder, EntityTypeBundleInfoInterface $entityTypeBundleInfo, ConfigFactoryInterface $configFactory, ModuleHandlerInterface $moduleHandler, EntityTypeManagerInterface $entityTypeManager, AccountInterface $currentUser, PrivateTempStoreFactory $privateTempStoreFactory, TranslationInterface $stringTranslation, ?UuidInterface $uuid = NULL) {
+     $this->formBuilder = $formBuilder;
+     $this->entityTypeBundleInfo = $entityTypeBundleInfo;
+     $this->configFactory = $configFactory;
+@@ -96,6 +109,13 @@ class QuickNodeCloneEntityFormBuilder extends EntityFormBuilder {
+     $this->entityTypeManager = $entityTypeManager;
+     $this->currentUser = $currentUser;
+     $this->privateTempStoreFactory = $privateTempStoreFactory;
++    if (is_null($uuid)) {
++      @trigger_error('Calling ' . __METHOD__ . '() without the $uuid argument is deprecated in quick_node_clone:1.20.0 and will be required in quick_node_clone:2.0.0. See https://www.drupal.org/node/3486344', E_USER_DEPRECATED);
++
++      // @phpstan-ignore-next-line
++      $uuid = \Drupal::service('uuid');
++    }
++    $this->uuid = $uuid;
+     $this->setStringTranslation($stringTranslation);
+   }
+ 
+@@ -131,6 +151,8 @@ class QuickNodeCloneEntityFormBuilder extends EntityFormBuilder {
+       /** @var \Drupal\node\Entity\Node $translated_node */
+       $translated_node = $new_node->getTranslation($langcode);
+       $translated_node = $this->cloneParagraphs($translated_node);
++      $this->cloneInlineBlocks($translated_node);
++      $this->moduleHandler->alter('cloned_node', $translated_node, $original_entity);
+ 
+       // Unset excluded fields.
+       $config_name = 'exclude.node.' . $translated_node->getType();
+@@ -201,25 +223,25 @@ class QuickNodeCloneEntityFormBuilder extends EntityFormBuilder {
+   }
+ 
+   /**
+-   * Clone the paragraphs of a node.
++   * Clone the paragraphs of an entity.
+    *
+-   * If we do not clone the paragraphs attached to the node, the linked
+-   * paragraphs would be linked to two nodes which is not ideal.
++   * If we do not clone the paragraphs attached to the entity, the linked
++   * paragraphs would be linked to two entities which is not ideal.
+    *
+-   * @param \Drupal\node\Entity\Node $node
+-   *   The node to clone.
++   * @param \Drupal\Core\Entity\FieldableEntityInterface $entity
++   *   The entity to clone.
+    *
+-   * @return \Drupal\node\Entity\Node
+-   *   The node with cloned paragraph fields.
++   * @return \Drupal\Core\Entity\FieldableEntityInterface
++   *   The entity with cloned paragraph fields.
+    */
+-  public function cloneParagraphs(Node $node) {
+-    foreach ($node->getFieldDefinitions() as $field_definition) {
++  public function cloneParagraphs(FieldableEntityInterface $entity) {
++    foreach ($entity->getFieldDefinitions() as $field_definition) {
+       $field_storage_definition = $field_definition->getFieldStorageDefinition();
+       $field_settings = $field_storage_definition->getSettings();
+       $field_name = $field_storage_definition->getName();
+       if (isset($field_settings['target_type']) && $field_settings['target_type'] == "paragraph") {
+-        if (!$node->get($field_name)->isEmpty()) {
+-          foreach ($node->get($field_name) as $value) {
++        if (!$entity->get($field_name)->isEmpty()) {
++          foreach ($entity->get($field_name) as $value) {
+             if ($value->entity) {
+               $value->entity = $value->entity->createDuplicate();
+               foreach ($value->entity->getFieldDefinitions() as $field_definition) {
+@@ -240,7 +262,93 @@ class QuickNodeCloneEntityFormBuilder extends EntityFormBuilder {
+       }
+     }
+ 
+-    return $node;
++    return $entity;
++  }
++
++  /**
++   * Clone the inline blocks of a node's layout.
++   *
++   * For nodes that have layout builder enabled, the inline blocks needs
++   * be to cloned as well.
++   *
++   * @param \Drupal\Core\Entity\FieldableEntityInterface $entity
++   *   The entity being cloned.
++   */
++  public function cloneInlineBlocks(FieldableEntityInterface $entity) {
++    $field_name = 'layout_builder__layout';
++
++    if (!$entity->hasField($field_name)) {
++      return;
++    }
++
++    /** @var \Drupal\layout_builder\SectionListInterface $layout_field */
++    $layout_field = $entity->$field_name;
++
++    foreach ($layout_field->getSections() as $sid => $section) {
++      $section = $this->cloneLayoutSection($section);
++      $layout_field->insertSection($sid, $section);
++      $layout_field->removeSection($sid + 1);
++    }
++  }
++
++  /**
++   * Clone a layout section.
++   *
++   * For nodes that have layout builder enabled, the inline blocks in a section
++   * need be to cloned as well.
++   *
++   * @param \Drupal\layout_builder\Section $section
++   *   The section being cloned.
++   */
++  public function cloneLayoutSection(Section $section) {
++    // Create a duplicate of each component.
++    foreach ($section->getComponents() as $component) {
++      $block = $component->getPlugin();
++
++      // Only clone inline blocks.
++      if (!$block instanceof InlineBlock) {
++        continue;
++      }
++
++      $component_array = $component->toArray();
++      $configuration = $component_array['configuration'];
++
++      // Fetch the block content.
++      $block_content = NULL;
++      if (!empty($configuration['block_serialized'])) {
++        $block_content = unserialize($configuration['block_serialized']);
++      }
++      elseif (!empty($configuration['block_revision_id'])) {
++        $block_content = $this->entityTypeManager->getStorage('block_content')
++          ->loadRevision($configuration['block_revision_id']);
++      }
++
++      // Create a duplicate block.
++      if ($block_content) {
++        /** @var \Drupal\block_content\BlockContentInterface $block_content */
++        $cloned_block_content = $block_content->createDuplicate();
++
++        // Recursively clone blocks stored in entity reference fields
++        $this->cloneNestedBlocks($cloned_block_content);
++
++        // Unset the revision and add the serialized block content.
++        $configuration['block_revision_id'] = NULL;
++        $configuration['block_serialized'] = serialize($cloned_block_content);
++      }
++
++      $new_component = new SectionComponent(
++        $this->uuid->generate(),
++        $component_array['region'],
++        $configuration,
++        $component_array['additional']
++      );
++
++      // Remove existing components from the section and append a fresh copy.
++      $section->insertAfterComponent($component->getUuid(), $new_component);
++      $section->removeComponent($component->getUuid());
++    }
++
++    return $section;
+   }
+ 
+   /**
+@@ -277,4 +385,36 @@ class QuickNodeCloneEntityFormBuilder extends EntityFormBuilder {
+     return $settings;
+   }
+ 
++  /**
++   * Recursively clone blocks stored in entity reference fields pointing to content blocks.
++   *
++   * @param \Drupal\Core\Entity\FieldableEntityInterface $entity The entity being cloned.
++   */
++  public function cloneNestedBlocks(FieldableEntityInterface $entity) {
++    foreach ($entity->getFieldDefinitions() as $field_definition) {
++      $field_storage_definition = $field_definition->getFieldStorageDefinition();
++      $field_settings = $field_storage_definition->getSettings();
++      $field_name = $field_storage_definition->getName();
++
++      if (
++        $field_storage_definition->getType() === 'entity_reference' &&
++        isset($field_settings['target_type']) &&
++        $field_settings['target_type'] === 'block_content'
++      ) {
++        if (!$entity->get($field_name)->isEmpty()) {
++          foreach ($entity->get($field_name) as $value) {
++            if ($value->entity) {
++              $cloned_entity = $value->entity->createDuplicate();
++              $this->cloneParagraphs($cloned_entity);
++
++              // Recursive clone nested entity reference fields.
++              $this->cloneNestedBlocks($cloned_entity);
++
++              $value->entity = $cloned_entity;
++            }
++          }
++        }
++      }
++    }
++  }
+ }
+diff --git a/src/Form/QuickNodeCloneNodeForm.php b/src/Form/QuickNodeCloneNodeForm.php
+index cee725795afeb887a8d93e8757eaada0d46e38d7..f7a7daa3894cf6c57d1eb4a3511c18dc4d425537 100644
+--- a/src/Form/QuickNodeCloneNodeForm.php
++++ b/src/Form/QuickNodeCloneNodeForm.php
+@@ -2,8 +2,17 @@
+ 
+ namespace Drupal\quick_node_clone\Form;
+ 
++use Drupal\Component\Datetime\TimeInterface;
++use Drupal\Core\Datetime\DateFormatterInterface;
++use Drupal\Core\DependencyInjection\ClassResolverInterface;
++use Drupal\Core\Entity\EntityRepositoryInterface;
++use Drupal\Core\Entity\EntityTypeBundleInfoInterface;
+ use Drupal\Core\Form\FormStateInterface;
++use Drupal\Core\Session\AccountInterface;
++use Drupal\Core\TempStore\PrivateTempStoreFactory;
++use Drupal\layout_builder\InlineBlockEntityOperations;
+ use Drupal\node\NodeForm;
++use Symfony\Component\DependencyInjection\ContainerInterface;
+ 
+ /**
+  * Form controller for Quick Node Clone edit forms.
+@@ -12,6 +21,51 @@ use Drupal\node\NodeForm;
+  */
+ class QuickNodeCloneNodeForm extends NodeForm {
+ 
++  /**
++   * The class resolver service.
++   *
++   * @var \Drupal\Core\DependencyInjection\ClassResolverInterface
++   */
++  protected $classResolver;
++
++  /**
++   * Constructs a NodeForm object.
++   *
++   * @param \Drupal\Core\Entity\EntityRepositoryInterface $entity_repository
++   *   The entity repository.
++   * @param \Drupal\Core\TempStore\PrivateTempStoreFactory $temp_store_factory
++   *   The factory for the temp store object.
++   * @param \Drupal\Core\Entity\EntityTypeBundleInfoInterface $entity_type_bundle_info
++   *   The entity type bundle service.
++   * @param \Drupal\Component\Datetime\TimeInterface $time
++   *   The time service.
++   * @param \Drupal\Core\Session\AccountInterface $current_user
++   *   The current user.
++   * @param \Drupal\Core\Datetime\DateFormatterInterface $date_formatter
++   *   The date formatter service.
++   * @param \Drupal\Core\DependencyInjection\ClassResolverInterface $class_resolver
++   *   The class resolver service.
++   */
++  public function __construct(EntityRepositoryInterface $entity_repository, PrivateTempStoreFactory $temp_store_factory, EntityTypeBundleInfoInterface $entity_type_bundle_info, TimeInterface $time, AccountInterface $current_user, DateFormatterInterface $date_formatter, ClassResolverInterface $class_resolver) {
++    parent::__construct($entity_repository, $temp_store_factory, $entity_type_bundle_info, $time, $current_user, $date_formatter);
++    $this->classResolver = $class_resolver;
++  }
++
++  /**
++   * {@inheritdoc}
++   */
++  public static function create(ContainerInterface $container) {
++    return new static(
++      $container->get('entity.repository'),
++      $container->get('tempstore.private'),
++      $container->get('entity_type.bundle.info'),
++      $container->get('datetime.time'),
++      $container->get('current_user'),
++      $container->get('date.formatter'),
++      $container->get('class_resolver')
++    );
++  }
++
+   /**
+    * {@inheritdoc}
+    */
+@@ -38,7 +92,42 @@ class QuickNodeCloneNodeForm extends NodeForm {
+     /** @var \Drupal\node\NodeInterface $node */
+     $node = $this->entity;
+     $insert = $node->isNew();
++
++    // Temporarily create a copy of the layout builder field for all
++    // translations since we need an entity ID to correctly create block usage.
++    // For the first save we clear the field so layout_builder_entity_presave()
++    // doesn't try to save our cloned blocks without an entity ID.
++    $layout_values = [];
++    if ($node->hasField('layout_builder__layout') && !$node->get('layout_builder__layout')->isEmpty()) {
++      foreach (array_keys($node->getTranslationLanguages()) as $langcode) {
++        $translation = $node->getTranslation($langcode);
++        $layout_values[$langcode] = clone $translation->get('layout_builder__layout');
++        $translation->set('layout_builder__layout', NULL);
++      }
++    }
++
+     $node->save();
++
++    // When using layout builder, we need to make sure that all cloned blocks
++    // in all translations are saved to the database before we save the node.
++    // Since we need a node ID to properly link the usage, we unfortunately need
++    // to save the node twice. We use SynchronizableEntityTrait to allow modules
++    // to detect the duplicate save in other entity hooks.
++    if ($layout_values && $this->moduleHandler->moduleExists('layout_builder') && $this->moduleHandler->moduleExists('block_content')) {
++      /** @var \Drupal\layout_builder\InlineBlockEntityOperations $entity_operations */
++      $entity_operations = $this->classResolver->getInstanceFromDefinition(InlineBlockEntityOperations::class);
++      foreach (array_keys($node->getTranslationLanguages()) as $langcode) {
++        $translation = $node->getTranslation($langcode);
++        // Restore the cloned layout builder field.
++        if (!$layout_values[$langcode]->isEmpty()) {
++          $translation->set('layout_builder__layout', $layout_values[$langcode]->getValue());
++          $entity_operations->handlePreSave($translation);
++          $translation->setNewRevision(FALSE);
++        }
++      }
++      $node->setSyncing(TRUE)->save();
++    }
++
+     $node_link = $node->toLink($this->t('View'))->toString();
+     $context = [
+       '@type' => $node->getType(),

@@ -27,8 +27,8 @@ definitions:
     enabled: true
   ys_core__admin_dashboard:
     menu_name: admin
-    parent: system.admin_content
-    weight: 2
+    parent: system.admin
+    weight: -39
     expanded: false
     enabled: true
   'admin_toolbar_tools__extra_links:node__add':
@@ -79,3 +79,75 @@ definitions:
     weight: 0
     expanded: false
     enabled: false
+  admin_toolbar_tools__help:
+    menu_name: admin
+    parent: system.admin
+    weight: -50
+    expanded: false
+    enabled: true
+  system__admin_content:
+    menu_name: admin
+    parent: system.admin
+    weight: -49
+    expanded: false
+    enabled: true
+  system__admin_structure:
+    menu_name: admin
+    parent: system.admin
+    weight: -48
+    expanded: false
+    enabled: true
+  ys_core__admin_yalesites:
+    menu_name: admin
+    parent: system.admin
+    weight: -47
+    expanded: false
+    enabled: true
+  system__themes_page:
+    menu_name: admin
+    parent: system.admin
+    weight: -46
+    expanded: false
+    enabled: true
+  system__modules_list:
+    menu_name: admin
+    parent: system.admin
+    weight: -45
+    expanded: false
+    enabled: true
+  system__admin_config:
+    menu_name: admin
+    parent: system.admin
+    weight: -44
+    expanded: false
+    enabled: true
+  entity__user__collection:
+    menu_name: admin
+    parent: system.admin
+    weight: -43
+    expanded: false
+    enabled: true
+  system__admin_reports:
+    menu_name: admin
+    parent: ys_core.admin_platform_admin
+    weight: 20
+    expanded: false
+    enabled: true
+  help__main:
+    menu_name: admin
+    parent: system.admin
+    weight: -41
+    expanded: false
+    enabled: true
+  ys_core__coffee:
+    menu_name: admin
+    parent: system.admin
+    weight: -40
+    expanded: false
+    enabled: true
+  ys_core__admin_platform_admin:
+    menu_name: admin
+    parent: system.admin
+    weight: -38
+    expanded: false
+    enabled: true

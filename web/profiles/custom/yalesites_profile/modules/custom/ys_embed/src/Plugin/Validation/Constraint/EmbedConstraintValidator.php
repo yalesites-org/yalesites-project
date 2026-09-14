@@ -78,28 +78,39 @@ class EmbedConstraintValidator extends ConstraintValidator implements ContainerI
    *   TRUE if the embed code matches one of the remote video providers.
    */
   protected function isVideo(string $input): bool {
-    $p1 = "^https:\/\/\S+.youtube.com\/\S+";
-    $p2 = "^https:\/\/youtu.be\/\S+";
-    $p3 = "^https:\/\/vimeo.com\/\S+";
-    $pattern = "/{$p1}|{$p2}|{$p3}/";
-    return (bool) preg_match($pattern, $input, $matches);
+    $host = parse_url(trim($input), PHP_URL_HOST);
+    if (!$host) {
+      return FALSE;
+    }
+    $host = strtolower($host);
+    foreach (['youtube.com', 'youtu.be', 'vimeo.com'] as $video_host) {
+      if ($host === $video_host || str_ends_with($host, '.' . $video_host)) {
+        return TRUE;
+      }
+    }
+    return FALSE;
   }
 
   /**
-   * Check if the embed code matches a track.
+   * Check if the embed code is a supported SoundCloud audio embed.
+   *
+   * SoundCloud embeds are limited to single tracks and playlists (the two forms
+   * captured by SoundCloud::$pattern's track_or_playlist group); any other
+   * SoundCloud form is rejected. Non-SoundCloud embeds are unaffected.
    *
    * @param string $input
    *   The user provided embed code.
    *
    * @return bool
-   *   TRUE if the embed code matches a track.
+   *   TRUE if the embed code is a SoundCloud track or playlist, or is not a
+   *   SoundCloud embed at all.
    */
   protected function isTrack(string $input): bool {
     if (!$this->isSoundcloud($input)) {
       return TRUE;
     }
 
-    $p1 = "https:\/\/\S+.soundcloud.com\/tracks\S+";
+    $p1 = "https:\/\/\S+.soundcloud.com\/(?:tracks|playlists)\S+";
     $pattern = "/{$p1}/";
     return (bool) preg_match($pattern, $input, $matches);
   }

@@ -180,6 +180,36 @@
         "unique_id": 36,
         "vocabulary": "dcn_types",
         "name": "Report Number"
+      },
+      {
+        "unique_id": 37,
+        "vocabulary": "page_category",
+        "name": "Featured"
+      },
+      {
+        "unique_id": 38,
+        "vocabulary": "page_category",
+        "name": "About"
+      },
+      {
+        "unique_id": 39,
+        "vocabulary": "page_category",
+        "name": "Research"
+      },
+      {
+        "unique_id": 40,
+        "vocabulary": "page_category",
+        "name": "Academics"
+      },
+      {
+        "unique_id": 41,
+        "vocabulary": "page_category",
+        "name": "Contact"
+      },
+      {
+        "unique_id": 42,
+        "vocabulary": "page_category",
+        "name": "Landing Page"
       }
     ]
   }
