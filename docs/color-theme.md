@@ -478,6 +478,25 @@ npm run contrast:gate           # every declared pairing, with the report
 npm run contrast:foregrounds    # hardcoded colors in foreground position
 ```
 
+### Rendered evidence, when a token-only computation is not enough
+
+Both checks above reason about the token structure. That is the right default, but it cannot
+see a value that only resolves correctly by inheriting from an ancestor — which is exactly the
+failure mode YaleSites-Internal#1614 hit, where a token-only computation reported a passing
+pairing that the browser resolved to something else.
+
+Where a finding needs proof from a real Drupal render rather than from the tokens, the captured
+evidence and the method for reproducing it live in the component library, not here:
+`docs/review/1614-section-color/README.md`. It records the four things that will silently
+produce wrong images if skipped (capture at ≥1400px or a 70/30 section renders stacked;
+cache-bust the URL; read `data-global-theme` back after each capture; take "before" from the
+branch base rather than a stash).
+
+The one-off fixture builders that produced it were deleted after the audit — they were named
+for their tickets, wired into no script, and are recoverable from git history; that README says
+where. Deliberately not restated here: this document and that README would drift apart, and the
+library is the side that owns the measuring.
+
 Both carry a committed baseline of the failures that already existed when they landed, each with a reason and an owning ticket. The baselines may only ever shrink — adding to one to turn a red build green is not a fix. See "The contrast gate" in the `component-library-twig` README for how to retire a baseline entry.
 
 ---
