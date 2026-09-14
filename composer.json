@@ -183,7 +183,7 @@
       "DrupalProject\\composer\\ScriptHandler::createRequiredFiles"
     ],
     "test:sdc": [
-      "./vendor/bin/phpunit --group sdc web/themes/contrib/atomic/tests"
+      "./vendor/bin/phpunit -c /app/phpunit.xml --group sdc web/themes/contrib/atomic/tests"
     ]
   }
 }
