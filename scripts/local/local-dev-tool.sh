@@ -9,7 +9,7 @@
 #
 # You can also change the default below from "lando" to "ddev" for your local
 # checkout if you prefer DDEV for all local scripts.
-YALESITES_LOCAL_DOCKER_TOOL="${YALESITES_LOCAL_DOCKER_TOOL:-ddev}"
+YALESITES_LOCAL_DOCKER_TOOL="${YALESITES_LOCAL_DOCKER_TOOL:-lando}"
 
 function ys_local_validate_tool() {
   case "$YALESITES_LOCAL_DOCKER_TOOL" in
