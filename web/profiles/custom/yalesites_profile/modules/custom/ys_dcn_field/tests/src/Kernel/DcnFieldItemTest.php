@@ -3,9 +3,9 @@
 namespace Drupal\Tests\ys_dcn_field\Kernel;
 
 use Drupal\Core\Form\FormState;
+use Drupal\Tests\ys_core\Kernel\YsKernelTestBase;
 use Drupal\field\Entity\FieldConfig;
 use Drupal\field\Entity\FieldStorageConfig;
-use Drupal\KernelTests\KernelTestBase;
 use Drupal\taxonomy\Entity\Term;
 use Drupal\taxonomy\Entity\Vocabulary;
 use Drupal\ys_dcn_field\Plugin\Field\FieldType\DcnFieldItem;
@@ -17,7 +17,7 @@ use Drupal\ys_dcn_field\Plugin\Field\FieldType\DcnFieldItem;
  * @group ys_dcn_field
  * @group yalesites
  */
-class DcnFieldItemTest extends KernelTestBase {
+class DcnFieldItemTest extends YsKernelTestBase {
 
   /**
    * {@inheritdoc}

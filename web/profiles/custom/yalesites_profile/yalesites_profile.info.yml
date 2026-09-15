@@ -1,6 +1,6 @@
 name: YaleSites Profile
 type: profile
-version: 2.25.0
+version: 2.25.1
 description: 'Install profile for managing YaleSites platform sites.'
 core_version_requirement: '^9 || ^10'
 
@@ -63,6 +63,7 @@ install:
   - views_ui
   - workflows
   - ys_alert
+  - ys_beacon
   - ys_core
   - ys_mail
 

@@ -10,6 +10,7 @@ use Drupal\Core\Render\RendererInterface;
 use Drupal\Core\Session\AccountInterface;
 use Drupal\Tests\UnitTestCase;
 use Drupal\file\FileInterface;
+use Drupal\ys_migrate\Batch\CsvImportBatch;
 use Drupal\ys_migrate\Form\ProfileCsvImportForm;
 use Drupal\ys_migrate\Service\CsvValidatorService;
 use Drupal\ys_migrate\Service\ProfileImportService;
@@ -59,6 +60,20 @@ class ProfileCsvImportFormTest extends UnitTestCase {
   protected $renderer;
 
   /**
+   * The current user mock.
+   *
+   * @var \Drupal\Core\Session\AccountInterface|\PHPUnit\Framework\MockObject\MockObject
+   */
+  protected $currentUser;
+
+  /**
+   * The entity type manager mock.
+   *
+   * @var \Drupal\Core\Entity\EntityTypeManagerInterface|\PHPUnit\Framework\MockObject\MockObject
+   */
+  protected $entityTypeManager;
+
+  /**
    * The form under test.
    *
    * @var \Drupal\ys_migrate\Form\ProfileCsvImportForm
@@ -79,25 +94,48 @@ class ProfileCsvImportFormTest extends UnitTestCase {
     parent::setUp();
 
     $this->messenger = $this->createMock(MessengerInterface::class);
-    $current_user = $this->createMock(AccountInterface::class);
+    $this->currentUser = $this->createMock(AccountInterface::class);
     $this->csvValidator = $this->createMock(CsvValidatorService::class);
     $this->profileImport = $this->createMock(ProfileImportService::class);
 
     $this->fileStorage = $this->createMock(EntityStorageInterface::class);
-    $entity_type_manager = $this->createMock(EntityTypeManagerInterface::class);
-    $entity_type_manager->method('getStorage')->with('file')->willReturn($this->fileStorage);
+    $this->entityTypeManager = $this->createMock(EntityTypeManagerInterface::class);
+    $this->entityTypeManager->method('getStorage')->with('file')->willReturn($this->fileStorage);
 
     $this->renderer = $this->createMock(RendererInterface::class);
 
     $this->form = new ProfileCsvImportForm(
       $this->messenger,
-      $current_user,
+      $this->currentUser,
       $this->csvValidator,
       $this->profileImport,
-      $entity_type_manager,
+      $this->entityTypeManager,
       $this->renderer
     );
     $this->form->setStringTranslation($this->getStringTranslationStub());
+  }
+
+  /**
+   * Builds a partial mock isolating submitForm() from the real batch_set().
+   *
+   * Setting a real batch requires a full Drupal batch API, unavailable in a
+   * unit test, so setBatch() is mocked out here to capture what it was
+   * called with.
+   */
+  protected function partialForm(array $onlyMethods): ProfileCsvImportForm {
+    $form = $this->getMockBuilder(ProfileCsvImportForm::class)
+      ->setConstructorArgs([
+        $this->messenger,
+        $this->currentUser,
+        $this->csvValidator,
+        $this->profileImport,
+        $this->entityTypeManager,
+        $this->renderer,
+      ])
+      ->onlyMethods($onlyMethods)
+      ->getMock();
+    $form->setStringTranslation($this->getStringTranslationStub());
+    return $form;
   }
 
   /**
@@ -136,13 +174,33 @@ class ProfileCsvImportFormTest extends UnitTestCase {
    * @covers ::buildForm
    */
   public function testBuildForm() {
+    $this->csvValidator->method('getExpectedColumns')->willReturn(['display name' => 'Display Name']);
+
     $form = $this->form->buildForm([], new FormState());
 
+    $this->assertEquals('table', $form['columns']['#type']);
+    $this->assertEquals(['Column', 'Notes'], $form['columns']['#header']);
     $this->assertEquals('managed_file', $form['csv_file']['#type']);
     $this->assertTrue($form['csv_file']['#required']);
     $this->assertTrue($form['preview']['#default_value']);
     $this->assertTrue($form['skip_duplicates']['#default_value']);
     $this->assertEquals('submit', $form['actions']['submit']['#type']);
+  }
+
+  /**
+   * BuildForm() gives every recognised column a note, none left blank.
+   *
+   * @covers ::buildForm
+   * @covers ::columnNotes
+   */
+  public function testBuildFormAddsNoteForEveryColumn() {
+    $this->csvValidator->method('getExpectedColumns')->willReturn(CsvValidatorService::EXPECTED_COLUMNS);
+
+    $form = $this->form->buildForm([], new FormState());
+
+    foreach ($form['columns']['#rows'] as $row) {
+      $this->assertNotSame('', $row[1], "{$row[0]} should not have a blank notes cell.");
+    }
   }
 
   /**
@@ -291,39 +349,88 @@ class ProfileCsvImportFormTest extends UnitTestCase {
   }
 
   /**
-   * SubmitForm() processes the import and reports created/skipped/errors.
+   * SubmitForm() preview cleanup tolerates a file entity that is already gone.
    *
    * @covers ::submitForm
    */
-  public function testSubmitFormProcessImport() {
-    $file = $this->createMock(FileInterface::class);
-    $file->expects($this->once())->method('delete');
-    $this->fileStorage->method('load')->with(123)->willReturn($file);
+  public function testSubmitFormPreviewOnlyToleratesMissingFile() {
+    $this->fileStorage->method('load')->with(123)->willReturn(NULL);
 
-    $this->profileImport->method('processImport')->willReturn([
-      'created' => 2,
-      'skipped' => 1,
-      'errors' => ['Row 4: Something went wrong.'],
+    $this->profileImport->method('previewImport')->willReturn([
+      'valid_profiles' => [],
+      'duplicates' => [],
+      'total' => 0,
     ]);
-
-    $this->messenger->expects($this->once())->method('addStatus');
-    $this->messenger->expects($this->once())->method('addWarning');
-    $this->messenger->expects($this->once())->method('addError')->with('Row 4: Something went wrong.');
 
     $form = [];
     $form_state = new FormState();
     $form_state->setValue('csv_file', [123]);
+    $form_state->setValue('preview', TRUE);
+    $form_state->setValue('skip_duplicates', TRUE);
+    $form_state->set('csv_validation', ['data' => []]);
+
+    // No exception, nothing to assert beyond "this does not throw".
+    $this->form->submitForm($form, $form_state);
+    $this->addToAssertionCount(1);
+  }
+
+  /**
+   * SubmitForm() schedules a batch instead of processing synchronously.
+   *
+   * A real import runs through the Batch API so a large CSV cannot time out
+   * a single request; created/skipped/error reporting and file cleanup move
+   * to CsvImportBatch's operations and finished callback (covered by
+   * CsvImportBatchTest), so submitForm() itself no longer calls
+   * processImport(), the messenger, or delete() directly.
+   *
+   * @covers ::submitForm
+   */
+  public function testSubmitFormProcessImportSchedulesBatch() {
+    $file = $this->createMock(FileInterface::class);
+    $file->expects($this->never())->method('delete');
+    $this->fileStorage->method('load')->with(123)->willReturn($file);
+
+    $this->profileImport->expects($this->never())->method('processImport');
+    $this->messenger->expects($this->never())->method('addStatus');
+
+    $captured = NULL;
+    $form = $this->partialForm(['setBatch']);
+    $form->expects($this->once())->method('setBatch')->with($this->callback(function ($batch) use (&$captured) {
+      $captured = $batch;
+      return TRUE;
+    }));
+
+    $data = [
+      ['display name' => 'Jane Doe'],
+      ['display name' => 'John Smith'],
+      ['display name' => 'Extra'],
+    ];
+
+    $form_array = [];
+    $form_state = new FormState();
+    $form_state->setValue('csv_file', [123]);
     $form_state->setValue('preview', FALSE);
     $form_state->setValue('skip_duplicates', TRUE);
-    $form_state->set('csv_validation', [
-      'data' => [
-        ['display name' => 'Jane Doe'],
-        ['display name' => 'John Smith'],
-        ['display name' => 'Extra'],
-      ],
-    ]);
+    $form_state->set('csv_validation', ['data' => $data]);
 
-    $this->form->submitForm($form, $form_state);
+    $form->submitForm($form_array, $form_state);
+
+    $this->assertSame([CsvImportBatch::class, 'finished'], $captured['finished']);
+    // 3 rows is a single chunk, plus the trailing file-cleanup operation.
+    $this->assertCount(2, $captured['operations']);
+
+    [$chunk_callback, $chunk_args] = $captured['operations'][0];
+    $this->assertSame([CsvImportBatch::class, 'processChunk'], $chunk_callback);
+    $this->assertSame([
+      'import_service_id' => 'ys_migrate.profile_import',
+      'skip_duplicates' => TRUE,
+      'entity_label' => 'profile',
+    ], $chunk_args[0]);
+    $this->assertSame($data, $chunk_args[1]);
+
+    [$cleanup_callback, $cleanup_args] = $captured['operations'][1];
+    $this->assertSame([CsvImportBatch::class, 'deleteUploadedFile'], $cleanup_callback);
+    $this->assertSame([123], $cleanup_args);
   }
 
 }

@@ -6,8 +6,12 @@ use Drupal\Core\Controller\TitleResolver;
 use Drupal\Core\Datetime\DateFormatter;
 use Drupal\Core\Entity\EntityStorageInterface;
 use Drupal\Core\Entity\EntityTypeManager;
+use Drupal\Core\Field\FieldItemListInterface;
 use Drupal\Core\Routing\RouteMatchInterface;
+use Drupal\Core\Url;
 use Drupal\Tests\UnitTestCase;
+use Drupal\link\LinkItemInterface;
+use Drupal\node\Entity\Node;
 use Drupal\node\NodeInterface;
 use Drupal\ys_layouts\Plugin\Block\ResourceMetaBlock;
 use Drupal\ys_layouts\Service\MediaAltResolver;
@@ -15,6 +19,7 @@ use Drupal\ys_layouts\Service\ResourceAuthorBuilder;
 use Symfony\Component\DependencyInjection\ContainerBuilder;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\RequestStack;
+use Symfony\Component\Routing\Route;
 
 /**
  * Tests the resource meta block.
@@ -164,6 +169,82 @@ class ResourceMetaBlockTest extends UnitTestCase {
     $build = $this->block->build();
 
     $this->assertSame([], $build);
+  }
+
+  /**
+   * The external source CTA is labelled, never the raw URL.
+   *
+   * The link field's title sub-field is disabled in config
+   * (field.field.node.resource.field_external_source: settings.title = 0), so
+   * the label always comes from here.
+   *
+   * @covers ::build
+   */
+  public function testExternalSourceUsesFixedLabelNotTheUrl(): void {
+    $url = 'https://example.com/a/very/long/path/that/should/not/be/a/button/label';
+    $build = $this->buildForResourceNodeWithExternalSource($url);
+
+    $this->assertSame($url, $build['#resource_meta__external_source']['url']);
+    $this->assertSame('Visit Source', (string) $build['#resource_meta__external_source']['title']);
+  }
+
+  /**
+   * The sibling Download CTA keeps its own fixed label.
+   *
+   * @covers ::build
+   */
+  public function testDownloadLabelIsUnchanged(): void {
+    $build = $this->buildForResourceNodeWithExternalSource('https://example.com/');
+
+    $this->assertSame('Download', (string) $build['#resource_meta__download_label']);
+  }
+
+  /**
+   * Builds the block for a resource node carrying an external source link.
+   *
+   * @param string $url
+   *   The external source URL.
+   *
+   * @return array
+   *   The block's render array.
+   */
+  protected function buildForResourceNodeWithExternalSource(string $url): array {
+    $this->block->setStringTranslation($this->getStringTranslationStub());
+
+    $urlObject = $this->createMock(Url::class);
+    $urlObject->method('toString')->willReturn($url);
+
+    $linkItem = $this->createMock(LinkItemInterface::class);
+    $linkItem->method('getUrl')->willReturn($urlObject);
+
+    $externalSourceField = $this->createMock(FieldItemListInterface::class);
+    $externalSourceField->method('isEmpty')->willReturn(FALSE);
+    $externalSourceField->method('first')->willReturn($linkItem);
+
+    // Every other field build() reads is left empty.
+    $emptyField = $this->createMock(FieldItemListInterface::class);
+    $emptyField->method('getValue')->willReturn([]);
+    $emptyField->method('first')->willReturn(NULL);
+
+    // Node is mocked as the concrete class so build()'s magic property reads
+    // (e.g. $node?->field_publish_date) resolve through a stubbed __get.
+    $node = $this->createMock(Node::class);
+    $node->method('bundle')->willReturn('resource');
+    $node->method('getTitle')->willReturn('A resource');
+    $node->method('__get')->willReturn($emptyField);
+    $node->method('hasField')->willReturnCallback(
+      fn (string $name): bool => $name === 'field_external_source'
+    );
+    $node->method('get')->with('field_external_source')->willReturn($externalSourceField);
+
+    $this->resourceAuthorBuilder->method('build')->willReturn([]);
+    $this->routeMatch->method('getRouteObject')->willReturn(new Route('/node/1'));
+
+    $request = new Request();
+    $request->attributes->set('node', $node);
+    $this->requestStack->method('getCurrentRequest')->willReturn($request);
+
+    return $this->block->build();
   }
 
   /**

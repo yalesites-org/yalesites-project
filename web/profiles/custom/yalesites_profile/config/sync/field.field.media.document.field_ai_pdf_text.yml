@@ -1,0 +1,19 @@
+uuid: b112c442-e612-4e89-91c0-fb51ebb6d9dd
+langcode: en
+status: true
+dependencies:
+  config:
+    - field.storage.media.field_ai_pdf_text
+    - media.type.document
+id: media.document.field_ai_pdf_text
+field_name: field_ai_pdf_text
+entity_type: media
+bundle: document
+label: 'AI extracted text'
+description: 'Text extracted from the uploaded PDF for AI search indexing. Populated automatically; not edited by hand.'
+required: false
+translatable: true
+default_value: {  }
+default_value_callback: ''
+settings: {  }
+field_type: string_long

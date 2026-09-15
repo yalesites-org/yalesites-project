@@ -1,0 +1,24 @@
+diff --git a/modules/ai_search/src/Plugin/EmbeddingStrategy/EmbeddingBase.php b/modules/ai_search/src/Plugin/EmbeddingStrategy/EmbeddingBase.php
+--- a/modules/ai_search/src/Plugin/EmbeddingStrategy/EmbeddingBase.php
++++ b/modules/ai_search/src/Plugin/EmbeddingStrategy/EmbeddingBase.php
+@@ -181,8 +181,18 @@
+         $value = implode(', ', $value);
+       }
+ 
+-      // The title field.
+-      if ($field->getFieldIdentifier() == $label_key) {
++      // The title field. Only use it as the automatic chunk heading when it
++      // is not also configured as contextual content, otherwise the title
++      // ends up in the chunk twice: once as the heading, once again as the
++      // "Title: ..." contextual-content line below (YaleSites-Internal#1617).
++      // Upstream fixed this differently (drupal.org #3547137, MR !890) with
++      // an admin-facing toggle; this index's field config is module-owned
++      // YAML, not something a site builder edits, so that toggle has no
++      // surface to attach to here and isn't ported.
++      if (
++        $field->getFieldIdentifier() == $label_key
++        && $indexing_options[$field->getFieldIdentifier()]['indexing_option'] !== EmbeddingStrategyIndexingOptions::ContextualContent->getKey()
++      ) {
+         $title = $value;
+       }
+ 

@@ -1,0 +1,20 @@
+.footerContainer {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: .5rem;
+}
+.footerText {
+  font-style: italic;
+  font-size: 0.7rem;
+  font-family: 'Mallory', sans-serif;
+}
+.footerText a {
+  color: #00356B;
+  font-weight: 600;
+  text-decoration: underline;
+  text-underline-offset: 0.25rem;
+}
+.footerText a:hover {
+  text-decoration: none;
+}

@@ -3,7 +3,7 @@
 namespace Drupal\Tests\ys_alert\Kernel;
 
 use Drupal\Core\Form\FormState;
-use Drupal\KernelTests\KernelTestBase;
+use Drupal\Tests\ys_core\Kernel\YsKernelTestBase;
 use Drupal\path_alias\Entity\PathAlias;
 use Drupal\ys_alert\Form\AlertSettings;
 
@@ -13,7 +13,7 @@ use Drupal\ys_alert\Form\AlertSettings;
  * @group yalesites
  * @group ys_alert
  */
-class AlertSettingsFormTest extends KernelTestBase {
+class AlertSettingsFormTest extends YsKernelTestBase {
 
   /**
    * {@inheritdoc}
@@ -67,6 +67,41 @@ class AlertSettingsFormTest extends KernelTestBase {
     $this->assertEquals($config->get('alert.link_title'), $form['link_wrapper']['link_title']['#default_value']);
     // The generic "Save configuration" submit action is present.
     $this->assertArrayHasKey('actions', $form);
+  }
+
+  /**
+   * Tests the live region that announces a paused emergency save.
+   *
+   * Saving an emergency alert is deliberately held back until the editor
+   * confirms it in a modal. The form renders an empty live region so the
+   * JavaScript has somewhere to write that warning: a screen reader only
+   * announces changes made inside a live region that already existed, so the
+   * region cannot be created at the same moment its text appears.
+   *
+   * @covers ::buildForm
+   */
+  public function testBuildFormRendersEmergencyConfirmationLiveRegion() {
+    $form_state = new FormState();
+    $form = $this->buildFormObject()->buildForm([], $form_state);
+
+    $this->assertArrayHasKey('emergency_confirm_notice', $form);
+    $notice = $form['emergency_confirm_notice'];
+    $this->assertContains('ys-alert-emergency-notice', $notice['#attributes']['class']);
+
+    // Rendered empty; the JavaScript supplies the message.
+    $this->assertArrayNotHasKey('#markup', $notice);
+
+    // The cue belongs with the alert type control it is about, not at the
+    // bottom of the form where an editor would never look for it.
+    $keys = array_keys($form);
+    $this->assertGreaterThan(
+      array_search('type', $keys, TRUE),
+      array_search('emergency_confirm_notice', $keys, TRUE)
+    );
+    $this->assertLessThan(
+      array_search('headline', $keys, TRUE),
+      array_search('emergency_confirm_notice', $keys, TRUE)
+    );
   }
 
   /**

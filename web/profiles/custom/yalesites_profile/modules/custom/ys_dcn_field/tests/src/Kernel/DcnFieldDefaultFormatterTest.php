@@ -3,9 +3,9 @@
 namespace Drupal\Tests\ys_dcn_field\Kernel;
 
 use Drupal\Core\Entity\FieldableEntityInterface;
+use Drupal\Tests\ys_core\Kernel\YsKernelTestBase;
 use Drupal\field\Entity\FieldConfig;
 use Drupal\field\Entity\FieldStorageConfig;
-use Drupal\KernelTests\KernelTestBase;
 use Drupal\taxonomy\Entity\Term;
 use Drupal\taxonomy\Entity\Vocabulary;
 
@@ -16,7 +16,7 @@ use Drupal\taxonomy\Entity\Vocabulary;
  * @group ys_dcn_field
  * @group yalesites
  */
-class DcnFieldDefaultFormatterTest extends KernelTestBase {
+class DcnFieldDefaultFormatterTest extends YsKernelTestBase {
 
   /**
    * {@inheritdoc}

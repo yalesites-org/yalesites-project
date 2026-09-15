@@ -6,9 +6,7 @@ use Drupal\Core\Cache\CacheBackendInterface;
 use Drupal\Core\Config\ConfigFactoryInterface;
 use Drupal\Core\Form\ConfigFormBase;
 use Drupal\Core\Form\FormStateInterface;
-use Drupal\Core\Session\AccountProxy;
 use Drupal\Core\Url;
-use Drupal\ys_core\YaleSitesMediaManager;
 use Symfony\Component\DependencyInjection\ContainerInterface;
 
 /**
@@ -33,41 +31,19 @@ class HeaderSettingsForm extends ConfigFormBase {
   protected $cacheRender;
 
   /**
-   * Current user session.
-   *
-   * @var \Drupal\Core\Session\AccountProxy
-   */
-  protected $currentUserSession;
-
-  /**
-   * The ys media manager.
-   *
-   * @var \Drupal\ys_core\YaleSitesMediaManager
-   */
-  protected $ysMediaManager;
-
-  /**
    * Constructs the object.
    *
    * @param \Drupal\Core\Config\ConfigFactoryInterface $config_factory
    *   The factory for configuration objects.
    * @param \Drupal\Core\Path\CacheBackendInterface $cache_render
    *   The Cache backend interface.
-   * @param \Drupal\Core\Session\AccountProxy $current_user_session
-   *   The current user session.
-   * @param \Drupal\ys_core\YaleSitesMediaManager $ys_media_manager
-   *   The media manager.
    */
   public function __construct(
     ConfigFactoryInterface $config_factory,
     CacheBackendInterface $cache_render,
-    AccountProxy $current_user_session,
-    YaleSitesMediaManager $ys_media_manager,
   ) {
     parent::__construct($config_factory);
     $this->cacheRender = $cache_render;
-    $this->currentUserSession = $current_user_session;
-    $this->ysMediaManager = $ys_media_manager;
   }
 
   /**
@@ -77,8 +53,6 @@ class HeaderSettingsForm extends ConfigFormBase {
     return new static(
       $container->get('config.factory'),
       $container->get('cache.render'),
-      $container->get('current_user'),
-      $container->get('ys_core.media_manager'),
     );
   }
 
@@ -146,18 +120,6 @@ class HeaderSettingsForm extends ConfigFormBase {
         ],
       ],
     ];
-
-    if (ys_core_allow_secret_items($this->currentUserSession)) {
-      $form['site_name_image_container'] = [
-        '#type' => 'details',
-        '#title' => $this->t('Site Name Image'),
-      ];
-
-      $form['site_wide_container'] = [
-        '#type' => 'details',
-        '#title' => $this->t('Sitewide Branding'),
-      ];
-    }
 
     $form['site_search_container'] = [
       '#type' => 'details',
@@ -236,45 +198,6 @@ class HeaderSettingsForm extends ConfigFormBase {
       '#prefix' => '<h2>Focus Nav</h2>',
       '#markup' => '<p>' . $this->t('The focus nav combines a full image landing page with a single level of navigation.') . '</p>',
     ];
-
-    if (ys_core_allow_secret_items($this->currentUserSession)) {
-      $form['site_name_image_container']['site_name_image'] = [
-        '#type' => 'managed_file',
-        '#upload_location' => 'public://site-name-images',
-        '#multiple' => FALSE,
-        '#description' => $this->t('Replaces the site name text with an image.<br>Allowed extensions: svg'),
-        '#upload_validators' => [
-          'file_validate_extensions' => ['svg'],
-        ],
-        '#title' => $this->t('Site Name Image'),
-        '#default_value' => ($headerConfig->get('site_name_image')) ? $headerConfig->get('site_name_image') : NULL,
-        '#theme' => 'image_widget',
-        '#preview_image_style' => 'media_library',
-        '#use_preview' => TRUE,
-        '#use_svg_preview' => TRUE,
-      ];
-
-      $form['site_wide_container']['site_wide_branding_name'] = [
-        '#type' => 'textfield',
-        '#title' => $this->t('Site-wide branding name'),
-        '#description' => $this->t('Enter the name of the site to be displayed in the header.'),
-        '#default_value' => $headerConfig->get('site_wide_branding_name') ?? 'Yale University',
-        '#required' => TRUE,
-      ];
-
-      $form['site_wide_container']['site_wide_branding_link'] = [
-        '#type' => 'textfield',
-        '#title' => $this->t('Site-wide branding link'),
-        '#description' => $this->t('Enter the URL that the site-wide branding name should link to.'),
-        '#default_value' => $headerConfig->get('site_wide_branding_link') ?? 'https://www.yale.edu',
-        '#autocomplete_route_name' => 'linkit.autocomplete',
-        '#autocomplete_route_parameters' => [
-          'linkit_profile_id' => 'default',
-        ],
-        '#required' => TRUE,
-      ];
-
-    }
 
     $form['site_search_container']['enable_cas_search'] = [
       '#type' => 'checkbox',
@@ -427,19 +350,6 @@ class HeaderSettingsForm extends ConfigFormBase {
 
     $headerConfig->set('header_variation', $form_state->getValue('header_variation'));
 
-    // Only platform admins see (and may change) these fields; skip saving them
-    // for other roles to prevent overwriting existing values with NULL.
-    if (ys_core_allow_secret_items($this->currentUserSession)) {
-      // Handle the filesystem if needed.
-      $this->ysMediaManager->handleMediaFilesystem(
-        $form_state->getValue('site_name_image'),
-        $headerConfig->get('site_name_image')
-      );
-
-      $headerConfig->set('site_name_image', $form_state->getValue('site_name_image'));
-      $headerConfig->set('site_wide_branding_name', $form_state->getValue('site_wide_branding_name'));
-      $headerConfig->set('site_wide_branding_link', $form_state->getValue('site_wide_branding_link'));
-    }
     $headerConfig->set('nav_position', $form_state->getValue('nav_position'));
     $headerConfig->set('dropdown_button_title', $form_state->getValue('dropdown_button_title'));
     $headerConfig->set('cta_content', $form_state->getValue('cta_content'));

@@ -137,6 +137,17 @@ class AlertSettings extends ConfigFormBase {
       ],
     ];
 
+    // Holds the warning shown when an emergency save is paused for
+    // confirmation. Rendered empty on purpose: the JavaScript writes the
+    // message into it, and a screen reader only announces changes made inside
+    // a live region that was already on the page.
+    $form['emergency_confirm_notice'] = [
+      '#type' => 'container',
+      '#attributes' => [
+        'class' => ['ys-alert-emergency-notice'],
+      ],
+    ];
+
     // The description is rebuilt with a callback when type field changes.
     $type = $form_state->getValue('type') ?? $config->get('alert.type') ?? '';
 

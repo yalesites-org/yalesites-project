@@ -1,25 +1,11 @@
 /**
- * Unread-announcements badge on the Dashboard admin menu link.
+ * The Dashboard admin menu link that carries the unread-announcements pill.
  *
- * Modeled on Drupal core's announcements_feed bell-icon dot, but rendered as
- * a small red pill containing the count so editors can see how many items
- * are waiting before they click through.
+ * The pill itself is `ys_core/badge`, shared with the dashboard page; every
+ * rule here is specific to rendering it inside the admin toolbar.
+ *
+ * @see \Drupal\ys_core\Toolbar\DashboardToolbarLazyBuilders::renderBadge()
  */
-
-.ys-dashboard-badge {
-  display: inline-block;
-  min-width: 1.25em;
-  margin-inline-start: 0.4em;
-  padding: 0 0.4em;
-  border-radius: 999px;
-  background-color: #d72c0d;
-  color: #fff;
-  font-size: 0.75rem;
-  font-weight: 600;
-  line-height: 1.4;
-  text-align: center;
-  vertical-align: baseline;
-}
 
 /* FontAwesome Free "gauge" icon (v7.3.0, CC BY 4.0). Positioned absolutely so
    the icon sits vertically centered relative to the link's own box (matching

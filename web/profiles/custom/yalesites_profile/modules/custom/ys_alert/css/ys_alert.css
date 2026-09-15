@@ -54,9 +54,19 @@
 }
 
 /* Module custom styles */
+
+/*
+ * The title bar lays the emergency icon out beside the title. "align-items"
+ * centres the two against each other and "gap" supplies the separation: Gin
+ * sets "margin: 0" on .ui-dialog-title at the same specificity as the
+ * ".confirm-dialog .ui-dialog-title" this file used to rely on, and loads after
+ * it, so a margin set that way is silently dropped.
+ */
 .confirm-dialog.ui-dialog .ui-dialog-titlebar {
   background-color: #D52020;
   display: flex;
+  align-items: center;
+  gap: 19px;
 }
 
 .confirm-dialog .ui-dialog-titlebar::before {
@@ -67,15 +77,8 @@
   width: 28px;
   height: 24px;
   display: inline-block;
-}
-
-.confirm-dialog .ui-dialog-title {
-  margin-left: 19px;
-  padding-top: 3px;
-}
-
-.confirm-dialog.ui-dialog .ui-dialog-titlebar-close {
-  top: 12px;
+  /* The title is width:100%, so the icon is squashed without this. */
+  flex-shrink: 0;
 }
 
 .confirm-dialog.ui-dialog .ui-widget-content.ui-dialog-content {

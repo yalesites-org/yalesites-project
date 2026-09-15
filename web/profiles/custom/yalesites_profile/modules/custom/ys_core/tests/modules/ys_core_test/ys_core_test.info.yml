@@ -1,0 +1,7 @@
+name: 'YS Core Test'
+type: module
+description: 'Provides fixtures for ys_core kernel tests.'
+package: Testing
+core_version_requirement: ^10 || ^11
+dependencies:
+  - media_library_form_element:media_library_form_element

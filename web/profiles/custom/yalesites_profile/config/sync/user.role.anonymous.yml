@@ -6,6 +6,7 @@ dependencies:
     - media
     - media_entity_download
     - system
+    - ys_beacon
 _core:
   default_config_hash: j5zLMOdJBqC0bMvSdth5UebkprJB8g_2FXHqhfpJzow
 id: anonymous
