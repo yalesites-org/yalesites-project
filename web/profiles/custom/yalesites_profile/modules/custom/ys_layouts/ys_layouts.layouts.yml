@@ -16,6 +16,7 @@ ys_layout_two_column:
   path: layouts/two_column
   template: layout--two-column
   library: ys_layouts/ys_layout_two_column
+  class: '\Drupal\ys_layouts\Plugin\Layout\YSLayoutOptions'
   category: 'Columns: 2'
   default_region: content
   icon_map:
