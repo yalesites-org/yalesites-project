@@ -1,0 +1,405 @@
+uuid: 0acd554b-ba04-42d7-bd47-be3780caf218
+langcode: en
+status: true
+dependencies:
+  config:
+    - core.base_field_override.node.profile.title
+    - field.field.node.profile.field_address
+    - field.field.node.profile.field_affiliation
+    - field.field.node.profile.field_audience
+    - field.field.node.profile.field_department
+    - field.field.node.profile.field_email
+    - field.field.node.profile.field_first_name
+    - field.field.node.profile.field_honorific_prefix
+    - field.field.node.profile.field_last_name
+    - field.field.node.profile.field_position
+    - field.field.node.profile.field_pronouns
+    - field.field.node.profile.field_teaser_text
+    - field.field.node.profile.field_teaser_title
+    - field.field.node.profile.field_telephone
+    - node.type.profile
+  module:
+    - feeds_tamper
+    - node
+    - ys_feeds_demo
+  enforced:
+    module:
+      - ys_feeds_demo
+third_party_settings:
+  feeds_tamper:
+    tampers:
+      539d1668-757f-480b-ab15-6d8a098c419c:
+        text: '[first_name] [last_name]'
+        uuid: 539d1668-757f-480b-ab15-6d8a098c419c
+        plugin: rewrite
+        source: display_name
+        weight: 0
+        label: 'Build display name from first and last name'
+        description: ''
+      14eeff59-c8f0-4a96-9f9b-5ad40bd52258:
+        find: /\s+/
+        replace: ' '
+        limit: null
+        uuid: 14eeff59-c8f0-4a96-9f9b-5ad40bd52258
+        plugin: find_replace_regex
+        source: display_name
+        weight: 1
+        label: 'Collapse repeated whitespace'
+        description: ''
+      3aefdaf4-2f09-438b-9f36-b5aa87c196cd:
+        character: ''
+        side: trim
+        uuid: 3aefdaf4-2f09-438b-9f36-b5aa87c196cd
+        plugin: trim
+        source: display_name
+        weight: 2
+        label: 'Trim stray whitespace'
+        description: ''
+      5aa9fadd-f6eb-4482-a883-f7fee00859eb:
+        character: ''
+        side: trim
+        uuid: 5aa9fadd-f6eb-4482-a883-f7fee00859eb
+        plugin: trim
+        source: first_name
+        weight: 0
+        label: Trim
+        description: ''
+      50549609-f8fb-4a27-af13-83c9f8dd3f5a:
+        character: ''
+        side: trim
+        uuid: 50549609-f8fb-4a27-af13-83c9f8dd3f5a
+        plugin: trim
+        source: last_name
+        weight: 0
+        label: Trim
+        description: ''
+      04ba4022-9b65-4425-9827-63e3c62f7c6b:
+        character: ''
+        side: trim
+        uuid: 04ba4022-9b65-4425-9827-63e3c62f7c6b
+        plugin: trim
+        source: position
+        weight: 0
+        label: Trim
+        description: ''
+      0ddd6ab9-bef4-4fbc-ab67-2c08bd5de3a5:
+        operation: strtolower
+        uuid: 0ddd6ab9-bef4-4fbc-ab67-2c08bd5de3a5
+        plugin: convert_case
+        source: position
+        weight: 1
+        label: 'Flatten ALL CAPS to lower case'
+        description: ''
+      beddf75e-5f20-41ce-9673-452d683004c9:
+        operation: ucwords
+        uuid: beddf75e-5f20-41ce-9673-452d683004c9
+        plugin: convert_case
+        source: position
+        weight: 2
+        label: 'Capitalise each word'
+        description: ''
+      891fe1b0-b548-4e46-98d8-1df16dc4b9ce:
+        find: Of
+        replace: of
+        case_sensitive: true
+        word_boundaries: true
+        whole: false
+        uuid: 891fe1b0-b548-4e46-98d8-1df16dc4b9ce
+        plugin: find_replace
+        source: position
+        weight: 3
+        label: 'Lower-case "of"'
+        description: ''
+      c1cbb008-6eb9-405a-b648-beae763f4a98:
+        find: And
+        replace: and
+        case_sensitive: true
+        word_boundaries: true
+        whole: false
+        uuid: c1cbb008-6eb9-405a-b648-beae763f4a98
+        plugin: find_replace
+        source: position
+        weight: 4
+        label: 'Lower-case "and"'
+        description: ''
+      2373cd3b-3906-4408-a54f-84a52119221a:
+        uuid: 2373cd3b-3906-4408-a54f-84a52119221a
+        plugin: skip_on_empty
+        source: affiliations
+        weight: -1
+        label: 'Drop empty cells before splitting'
+        description: ''
+      9af52515-692a-42e4-9e33-faa9896801a2:
+        separator: ;
+        limit: null
+        uuid: 9af52515-692a-42e4-9e33-faa9896801a2
+        plugin: explode
+        source: affiliations
+        weight: 0
+        label: 'Split on semicolons'
+        description: ''
+      407c627d-269c-4faf-bdfb-674320d928e0:
+        character: ''
+        side: trim
+        uuid: 407c627d-269c-4faf-bdfb-674320d928e0
+        plugin: trim
+        source: affiliations
+        weight: 1
+        label: 'Trim each affiliation'
+        description: ''
+      60e833e3-404d-47a5-afea-b4ab08cedcab:
+        uuid: 60e833e3-404d-47a5-afea-b4ab08cedcab
+        plugin: skip_on_empty
+        source: audience
+        weight: -1
+        label: 'Drop empty cells before splitting'
+        description: ''
+      4cee6e0e-384f-4548-b5e6-f4423b1f7b94:
+        separator: ','
+        limit: null
+        uuid: 4cee6e0e-384f-4548-b5e6-f4423b1f7b94
+        plugin: explode
+        source: audience
+        weight: 0
+        label: 'Split on commas'
+        description: ''
+      7d85536a-cafb-4895-b31c-cf2a5409e68a:
+        character: ''
+        side: trim
+        uuid: 7d85536a-cafb-4895-b31c-cf2a5409e68a
+        plugin: trim
+        source: audience
+        weight: 1
+        label: 'Trim each audience term'
+        description: ''
+      d4f4f2d4-8871-4e8f-9510-e279f4755358:
+        allowed_tags: ''
+        uuid: d4f4f2d4-8871-4e8f-9510-e279f4755358
+        plugin: strip_tags
+        source: teaser_summary
+        weight: 0
+        label: 'Strip HTML'
+        description: ''
+      89af0c7e-1e9a-46b0-9856-79edb4e4f91f:
+        character: ''
+        side: trim
+        uuid: 89af0c7e-1e9a-46b0-9856-79edb4e4f91f
+        plugin: trim
+        source: teaser_summary
+        weight: 1
+        label: Trim
+        description: ''
+      0e37e207-fff7-4296-b400-addf278939de:
+        num_char: 150
+        ellipses: true
+        wordsafe: true
+        uuid: 0e37e207-fff7-4296-b400-addf278939de
+        plugin: truncate_text
+        source: teaser_summary
+        weight: 2
+        label: 'Truncate to 150 characters'
+        description: ''
+      e9d17899-f2c2-4db0-8150-dc9faa2cbd03:
+        character: ''
+        side: trim
+        uuid: e9d17899-f2c2-4db0-8150-dc9faa2cbd03
+        plugin: trim
+        source: email
+        weight: 0
+        label: Trim
+        description: ''
+      4ae8c6c4-9e56-4a81-975c-5f64dfd746c0:
+        invert: false
+        uuid: 4ae8c6c4-9e56-4a81-975c-5f64dfd746c0
+        plugin: required
+        source: email
+        weight: 1
+        label: 'Skip rows with no email address'
+        description: ''
+label: 'Demo: department staff roster (spreadsheet sync)'
+id: demo_staff_roster
+description: 'Keeps Profile nodes in step with a roster spreadsheet. Point it at a Google Sheet published as CSV and it will follow that sheet on cron: edited rows update the matching profile in place, and rows that disappear are archived rather than deleted.'
+help: 'The source URL must return CSV. For a Google Sheet use File > Share > Publish to web, choose the sheet, and select Comma-separated values (.csv).'
+import_period: 3600
+import_period_per_feed: false
+fetcher: http
+fetcher_configuration:
+  auto_detect_feeds: false
+  use_pubsubhubbub: false
+  always_download: true
+  fallback_hub: ''
+  request_timeout: 30
+parser: csv
+parser_configuration:
+  delimiter: ','
+  no_headers: false
+  line_limit: 100
+processor: 'entity:node'
+processor_configuration:
+  values:
+    type: profile
+  langcode: en
+  insert_new: 1
+  update_existing: 2
+  update_non_existent: ys_feeds_demo_archive_moderated_node
+  skip_hash_check: false
+  skip_validation: false
+  skip_validation_types: {  }
+  authorize: false
+  revision: false
+  expire: -1
+  owner_feed_author: false
+  owner_id: 1
+custom_sources:
+  email:
+    value: email
+    label: email
+    machine_name: email
+    type: csv
+  prefix:
+    value: prefix
+    label: prefix
+    machine_name: prefix
+    type: csv
+  first_name:
+    value: first_name
+    label: first_name
+    machine_name: first_name
+    type: csv
+  last_name:
+    value: last_name
+    label: last_name
+    machine_name: last_name
+    type: csv
+  pronouns:
+    value: pronouns
+    label: pronouns
+    machine_name: pronouns
+    type: csv
+  position:
+    value: position
+    label: position
+    machine_name: position
+    type: csv
+  department:
+    value: department
+    label: department
+    machine_name: department
+    type: csv
+  phone:
+    value: phone
+    label: phone
+    machine_name: phone
+    type: csv
+  office:
+    value: office
+    label: office
+    machine_name: office
+    type: csv
+  affiliations:
+    value: affiliations
+    label: affiliations
+    machine_name: affiliations
+    type: csv
+  audience:
+    value: audience
+    label: audience
+    machine_name: audience
+    type: csv
+  teaser_title:
+    value: teaser_title
+    label: teaser_title
+    machine_name: teaser_title
+    type: csv
+  teaser_summary:
+    value: teaser_summary
+    label: teaser_summary
+    machine_name: teaser_summary
+    type: csv
+  display_name:
+    value: display_name
+    label: display_name
+    machine_name: display_name
+    type: blank
+mappings:
+  -
+    target: title
+    map:
+      value: display_name
+    settings:
+      language: null
+  -
+    target: field_email
+    map:
+      value: email
+    settings: {  }
+    unique:
+      value: true
+  -
+    target: field_first_name
+    map:
+      value: first_name
+    settings: {  }
+  -
+    target: field_last_name
+    map:
+      value: last_name
+    settings: {  }
+  -
+    target: field_honorific_prefix
+    map:
+      value: prefix
+    settings: {  }
+  -
+    target: field_pronouns
+    map:
+      value: pronouns
+    settings: {  }
+  -
+    target: field_position
+    map:
+      value: position
+    settings: {  }
+  -
+    target: field_department
+    map:
+      value: department
+    settings: {  }
+  -
+    target: field_telephone
+    map:
+      value: phone
+    settings: {  }
+  -
+    target: field_address
+    map:
+      value: office
+    settings:
+      format: restricted_html
+  -
+    target: field_teaser_title
+    map:
+      value: teaser_title
+    settings: {  }
+  -
+    target: field_teaser_text
+    map:
+      value: teaser_summary
+    settings:
+      format: restricted_html
+  -
+    target: field_affiliation
+    map:
+      target_id: affiliations
+    settings:
+      reference_by: name
+      autocreate: true
+      autocreate_bundle: affiliation
+  -
+    target: field_audience
+    map:
+      target_id: audience
+    settings:
+      reference_by: name
+      autocreate: true
+      autocreate_bundle: audience

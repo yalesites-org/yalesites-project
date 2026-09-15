@@ -3,6 +3,7 @@ langcode: en
 status: true
 dependencies:
   config:
+    - field.field.node.profile.feeds_item
     - field.field.node.profile.field_address
     - field.field.node.profile.field_affiliation
     - field.field.node.profile.field_audience
@@ -453,6 +454,7 @@ content:
     region: content
 hidden:
   addtoany: true
+  feeds_item: true
   layout_builder__layout: true
   search_api_excerpt: true
   workflow_buttons: true
