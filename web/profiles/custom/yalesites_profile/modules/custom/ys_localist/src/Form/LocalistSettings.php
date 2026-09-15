@@ -183,12 +183,29 @@ class LocalistSettings extends ConfigFormBase {
    */
   public function submitForm(array &$form, FormStateInterface $form_state) {
 
-    $this->configFactory->getEditable('ys_localist.settings')
+    $config = $this->configFactory->getEditable('ys_localist.settings')
       // Set the submitted configuration setting.
       ->set('enable_localist_sync', $form_state->getValue('enable_localist_sync'))
-      ->set('localist_endpoint', rtrim($form_state->getValue('localist_endpoint'), "/"))
-      ->set('localist_group', $form_state->getValue('localist_group'))
-      ->save();
+      ->set('localist_endpoint', rtrim($form_state->getValue('localist_endpoint'), "/"));
+
+    // The group is only written when its picker was genuinely editable on the
+    // submitted form (yalesites-org/YaleSites-Internal#1610):
+    // - buildForm() omits the picker unless sync is enabled and the groups
+    //   migration has run. Saving with sync off therefore carried no value at
+    //   all, and writing it anyway blanked the site's selected group. That is
+    //   the bug this guard exists for.
+    // - A '#disabled' picker carries no user intent either: FormBuilder
+    //   discards input for it, so the value derives from '#default_value',
+    //   which buildForm() sets to NULL when the stored term ID no longer
+    //   loads. A non-platform-admin save would then blank a still-meaningful
+    //   ID. (The ticket blames skipped '#element_validate' for this; that is
+    //   not the mechanism - EntityAutocomplete's validator does run on
+    //   disabled elements.)
+    if (isset($form['localist_group']) && empty($form['localist_group']['#disabled'])) {
+      $config->set('localist_group', $form_state->getValue('localist_group'));
+    }
+
+    $config->save();
 
     parent::submitForm($form, $form_state);
   }

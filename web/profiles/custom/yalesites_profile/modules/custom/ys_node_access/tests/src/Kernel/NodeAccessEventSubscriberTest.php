@@ -4,9 +4,9 @@ namespace Drupal\Tests\ys_node_access\Kernel;
 
 use Drupal\Core\Routing\TrustedRedirectResponse;
 use Drupal\Core\Session\AnonymousUserSession;
+use Drupal\Tests\ys_core\Kernel\YsKernelTestBase;
 use Drupal\field\Entity\FieldConfig;
 use Drupal\field\Entity\FieldStorageConfig;
-use Drupal\KernelTests\KernelTestBase;
 use Drupal\node\Entity\Node;
 use Drupal\node\Entity\NodeType;
 use Drupal\user\Entity\User;
@@ -28,7 +28,7 @@ use Symfony\Component\HttpKernel\HttpKernelInterface;
  * @group yalesites
  * @group ys_node_access
  */
-class NodeAccessEventSubscriberTest extends KernelTestBase {
+class NodeAccessEventSubscriberTest extends YsKernelTestBase {
 
   /**
    * {@inheritdoc}

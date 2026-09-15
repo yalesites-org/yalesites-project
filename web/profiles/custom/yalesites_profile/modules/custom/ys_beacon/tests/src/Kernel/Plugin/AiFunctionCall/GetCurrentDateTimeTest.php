@@ -3,7 +3,7 @@
 namespace Drupal\Tests\ys_beacon\Kernel\Plugin\AiFunctionCall;
 
 use Drupal\Component\Datetime\TimeInterface;
-use Drupal\KernelTests\KernelTestBase;
+use Drupal\Tests\ys_core\Kernel\YsKernelTestBase;
 use Drupal\ai\Attribute\FunctionCall;
 use Drupal\ys_beacon\Plugin\AiFunctionCall\GetCurrentDateTime;
 
@@ -16,10 +16,18 @@ use Drupal\ys_beacon\Plugin\AiFunctionCall\GetCurrentDateTime;
  * search, Portkey keys) just to exercise one small tool - the same reasoning
  * GuardrailTelemetryTest uses to avoid installing the whole module.
  *
+ * Deliberately stays a kernel test rather than being converted to a Unit test
+ * (yalesites-org/YaleSites-Internal#1660). The three container services the
+ * plugin() helper passes in - ai.context_definition_normalizer,
+ * plugin.manager.ai_data_type_converter and date.formatter - are what make it
+ * exercise real context defaulting and value conversion rather than a
+ * simulation of them. Replacing them with mocks would hollow out the very
+ * behaviour these tests exist to cover.
+ *
  * @group ys_beacon
  * @coversDefaultClass \Drupal\ys_beacon\Plugin\AiFunctionCall\GetCurrentDateTime
  */
-class GetCurrentDateTimeTest extends KernelTestBase {
+class GetCurrentDateTimeTest extends YsKernelTestBase {
 
   /**
    * {@inheritdoc}

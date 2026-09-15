@@ -3,7 +3,6 @@
 namespace Drupal\Tests\ys_core\Kernel;
 
 use Drupal\Core\Form\FormState;
-use Drupal\KernelTests\KernelTestBase;
 use Drupal\Tests\media\Traits\MediaTypeCreationTrait;
 use Drupal\Tests\user\Traits\UserCreationTrait;
 use Drupal\media\Entity\Media;
@@ -37,7 +36,7 @@ use Drupal\media\Entity\Media;
  * @group ys_core
  * @group yalesites
  */
-class MediaLibraryOpenButtonFocusTest extends KernelTestBase {
+class MediaLibraryOpenButtonFocusTest extends YsKernelTestBase {
 
   use MediaTypeCreationTrait;
   use UserCreationTrait;
