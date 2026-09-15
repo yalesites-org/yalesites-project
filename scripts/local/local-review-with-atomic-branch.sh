@@ -3,6 +3,7 @@
 
 [ -e "./scripts/local/util/say.sh" ] || (echo -e "[$0] Say utility not found.  You must run this from the yalesites root directory: " && exit 1)
 source ./scripts/local/util/say.sh
+source ./scripts/local/local-dev-tool.sh
 
 read -p "Which branch of the atomic repo do you need? " BRANCH
 
@@ -16,4 +17,4 @@ _say "npm ci"
 npm ci
 _say "Clear Drupal's cache"
 cd ../../../..
-lando drush cr
+ys_local_drush cr
