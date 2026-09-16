@@ -8,6 +8,7 @@ use Drupal\Core\Controller\ControllerBase;
 use Drupal\Core\DependencyInjection\ContainerInjectionInterface;
 use Drupal\Core\Entity\EntityTypeManager;
 use Drupal\Core\Extension\ModuleHandler;
+use Drupal\Core\Logger\LoggerChannelFactoryInterface;
 use Drupal\Core\Messenger\MessengerInterface;
 use Drupal\migrate\MigrateExecutable;
 use Drupal\migrate\MigrateMessage;
@@ -144,6 +145,7 @@ class LocalistManager extends ControllerBase implements ContainerInjectionInterf
     ModuleHandler $module_handler,
     TimeInterface $time,
     MessengerInterface $messenger,
+    LoggerChannelFactoryInterface $logger_factory,
   ) {
     $this->localistConfig = $config_factory->get('ys_localist.settings');
     $this->endpointBase = $this->localistConfig->get('localist_endpoint');
@@ -153,6 +155,9 @@ class LocalistManager extends ControllerBase implements ContainerInjectionInterf
     $this->moduleHandler = $module_handler;
     $this->time = $time;
     $this->messenger = $messenger;
+    // Satisfies LoggerChannelTrait (via ControllerBase) so getLogger() below
+    // resolves from the injected factory instead of reaching for \Drupal.
+    $this->setLoggerFactory($logger_factory);
   }
 
   /**
@@ -167,6 +172,7 @@ class LocalistManager extends ControllerBase implements ContainerInjectionInterf
       $container->get('module_handler'),
       $container->get('datetime.time'),
       $container->get('messenger'),
+      $container->get('logger.factory'),
     );
   }
 
@@ -422,6 +428,15 @@ class LocalistManager extends ControllerBase implements ContainerInjectionInterf
       ]);
     }
     catch (\Throwable $th) {
+      // Without this the failure is invisible: the empty return below is
+      // byte-identical to an event that genuinely has no tickets, and
+      // MetaFieldsManager reads it as "no registration" and lets it be cached,
+      // so a timed-out registration link silently disappears until the node is
+      // re-saved. See yalesites-org/YaleSites-Internal#1701.
+      $this->getLogger('ys_localist')->warning('Could not retrieve Localist ticket info for event @event_id: @message', [
+        '@event_id' => $eventId,
+        '@message' => $th->getMessage(),
+      ]);
     }
 
     if ($response) {
