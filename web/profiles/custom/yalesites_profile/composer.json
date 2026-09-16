@@ -145,6 +145,12 @@
         "Ajax exposed filters not working for multiple instances": "patches/drupal-core/3163299-140.patch",
         "Fix removeClass() on array in claro_preprocess_field_multiple_value_form when Paragraphs restructures the multi-value form header (Gallery add-block WSOD) https://www.drupal.org/project/drupal/issues/3099026": "patches/drupal-core/3099026-claro-field-multiple-value-form-instanceof.patch"
       },
+      "drupal/ai": {
+        "Don't duplicate a title configured as contextual content (YaleSites-Internal#1617, drupal.org #3547137)": "patches/contrib/ai/ai-3547137-title-duplication.patch"
+      },
+      "drupal/ai_vdb_provider_azure_ai_search": {
+        "Throw on a rejected document upload instead of reporting a silent success (YaleSites-Internal#1392)": "patches/contrib/ai_vdb_provider_azure_ai_search/yalesites-1392-insert-throws-on-failed-write.patch"
+      },
       "drupal/entity_redirect": {
         "fix layout route https://www.drupal.org/project/entity_redirect/issues/3352265": "patches/contrib/entity_redirect/3352265-mr-6.diff"
       },
