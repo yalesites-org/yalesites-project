@@ -20,9 +20,9 @@ use Drupal\ys_core\PlatformAdminCheckerInterface;
  * permission bypass. Since Drupal 10.3 that bypass lives in
  * SuperUserAccessPolicy behind the security.enable_super_user container
  * parameter, so hasPermission() alone would stop being true for user 1 the day
- * anyone hardens that parameter off. That guarantee covers callers of this
- * service only, not routes gated declaratively on the bare permission - see
- * PlatformAdminCheckerInterface.
+ * anyone hardens that parameter off. Routes share that guarantee because they
+ * gate on \Drupal\ys_core\Access\PlatformAdminAccessCheck rather than on the
+ * bare permission - see PlatformAdminAccessCheckTest.
  *
  * @group ys_core
  * @coversDefaultClass \Drupal\ys_core\PlatformAdminChecker
@@ -123,11 +123,17 @@ class PlatformAdminCheckerTest extends UnitTestCase {
   }
 
   /**
-   * The constant is the permission the module's own YAML declares and requires.
+   * The constant is the permission the module's own YAML declares.
    *
-   * Neither YAML file can reference a PHP constant, so this reads them both
-   * rather than restating the literal - a rename in one place alone silently
-   * unhooks the route from the gate, and that is the failure this pins.
+   * The ys_core.permissions.yml file cannot reference a PHP constant, so this
+   * reads it rather than restating the literal: renaming the constant alone
+   * would leave hasPermission() asking about a permission nobody can hold, and
+   * only user 1 would still be a platform admin.
+   *
+   * The route is no longer part of this pin. It gates on
+   * PlatformAdminAccessCheck rather than on the permission
+   * (yalesites-org/YaleSites-Internal#1695), and
+   * PlatformAdminAccessCheckTest pins that wiring instead.
    */
   public function testThePermissionStringIsTheOneDeclaredInYaml(): void {
     $module = dirname(__DIR__, 3);
@@ -139,15 +145,6 @@ class PlatformAdminCheckerTest extends UnitTestCase {
       PlatformAdminCheckerInterface::PERMISSION,
       $permissions,
       'ys_core.permissions.yml must declare the permission the checker uses.'
-    );
-
-    $routes = Yaml::decode(
-      file_get_contents($module . '/ys_core.routing.yml')
-    );
-    $this->assertSame(
-      PlatformAdminCheckerInterface::PERMISSION,
-      $routes['ys_core.platform_admin_settings']['requirements']['_permission'],
-      'The Platform Admin Settings route must require that same permission.'
     );
   }
 

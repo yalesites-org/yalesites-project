@@ -661,6 +661,24 @@ class BeaconIndexManagerTest extends UnitTestCase {
   }
 
   /**
+   * Tests every Azure request carries both a request and a connect timeout.
+   *
+   * See yalesites-org/YaleSites-Internal#1701.
+   *
+   * @covers ::request
+   * @covers ::countIndexes
+   */
+  public function testRequestSetsBoundedTimeouts(): void {
+    $captured = [];
+    $manager = $this->buildManagerWithHttpBody('{"value":[]}', $captured);
+
+    $manager->countIndexes();
+
+    $this->assertSame(BeaconIndexManager::REQUEST_TIMEOUT, $captured['timeout'] ?? NULL);
+    $this->assertSame(BeaconIndexManager::CONNECT_TIMEOUT, $captured['connect_timeout'] ?? NULL);
+  }
+
+  /**
    * Repin() refuses an endpoint that has no key in the map.
    *
    * Moving a site to a service it cannot authenticate against would strand it,
@@ -767,11 +785,14 @@ class BeaconIndexManagerTest extends UnitTestCase {
    *
    * @param string $json
    *   The JSON body the stubbed HTTP client returns.
+   * @param array|null $captured
+   *   Receives the Guzzle options the manager sent, for callers asserting on
+   *   the request itself rather than on the decoded response.
    *
    * @return \Drupal\ys_beacon\Service\BeaconIndexManager
    *   The manager under test with its request() dependencies wired.
    */
-  private function buildManagerWithHttpBody(string $json): BeaconIndexManager {
+  private function buildManagerWithHttpBody(string $json, ?array &$captured = NULL): BeaconIndexManager {
     $vdb = $this->createMock(Config::class);
     $vdb->method('get')->willReturnCallback(fn (string $key) => match ($key) {
       'url' => 'https://svc.search.windows.net',
@@ -789,7 +810,12 @@ class BeaconIndexManagerTest extends UnitTestCase {
     $response = $this->createMock(ResponseInterface::class);
     $response->method('getBody')->willReturn(Utils::streamFor($json));
     $http_client = $this->createMock(ClientInterface::class);
-    $http_client->method('request')->willReturn($response);
+    $http_client->method('request')->willReturnCallback(
+      function (string $method, string $uri, array $options) use (&$captured, $response) {
+        $captured = $options;
+        return $response;
+      },
+    );
 
     $manager = (new \ReflectionClass(BeaconIndexManager::class))->newInstanceWithoutConstructor();
     $this->setProperty($manager, 'configFactory', $config_factory);

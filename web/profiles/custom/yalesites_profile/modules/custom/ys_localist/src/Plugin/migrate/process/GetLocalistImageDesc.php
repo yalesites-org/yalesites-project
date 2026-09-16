@@ -87,6 +87,13 @@ class GetLocalistImageDesc extends ProcessPluginBase implements ContainerFactory
     $photoDesc = NULL;
     $endPointURL = $this->localistManager->getEndpointUrls('photos');
     $url = "$endPointURL[0]/$value";
+    // Runs once per migrated row, and unlike the rest of ys_localist it has no
+    // try/catch - a timeout here fails the row and loses that event's image
+    // caption, so this is deliberately left on the platform-wide defaults in
+    // settings.php rather than bounded tighter. Two caveats: those defaults
+    // arrive with a Pantheon upstream update rather than the profile release,
+    // and they bound each row, not the import - a dead photos endpoint still
+    // costs rows x connect_timeout overall.
     $response = $this->httpClient->get($url);
     if ($response) {
       $data = json_decode($response->getBody()->getContents(), TRUE);
