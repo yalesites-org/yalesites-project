@@ -1,178 +1,179 @@
 {
-  "name": "pantheon-upstreams/drupal-project",
-  "description": "Pantheon upstream with dependencies share by all YaleSites",
-  "type": "project",
-  "repositories": {
-    "yalesites-org/yalesites_profile": {
-      "type": "path",
-      "url": "web/profiles/custom/yalesites_profile"
-    },
-    "drupal": {
-      "type": "composer",
-      "url": "https://packages.drupal.org/8"
-    },
-    "chosen": {
-      "type": "package",
-      "package": {
-        "name": "jjj/chosen",
-        "version": "2.2.1",
-        "type": "drupal-library",
-        "source": {
-          "url": "https://github.com/JJJ/chosen.git",
-          "type": "git",
-          "reference": "2.2.1"
-        }
-      }
-    },
-    "mathjax": {
-      "type": "package",
-      "package": {
-        "name": "mathjax/mathjax",
-        "version": "2.7.9",
-        "type": "drupal-library",
-        "license": "Apache-2.0",
-        "dist": {
-          "url": "https://registry.npmjs.org/mathjax/-/mathjax-2.7.9.tgz",
-          "type": "tar",
-          "shasum": "d6b67955c173e7d719fcb2fc0288662884eb7d3d"
+    "name": "pantheon-upstreams/drupal-project",
+    "description": "Pantheon upstream with dependencies share by all YaleSites",
+    "type": "project",
+    "repositories": {
+        "yalesites-org/yalesites_profile": {
+            "type": "path",
+            "url": "web/profiles/custom/yalesites_profile"
         },
-        "extra": {
-          "installer-name": "MathJax"
+        "drupal": {
+            "type": "composer",
+            "url": "https://packages.drupal.org/8"
+        },
+        "chosen": {
+            "type": "package",
+            "package": {
+                "name": "jjj/chosen",
+                "version": "2.2.1",
+                "type": "drupal-library",
+                "source": {
+                    "url": "https://github.com/JJJ/chosen.git",
+                    "type": "git",
+                    "reference": "2.2.1"
+                }
+            }
+        },
+        "mathjax": {
+            "type": "package",
+            "package": {
+                "name": "mathjax/mathjax",
+                "version": "2.7.9",
+                "type": "drupal-library",
+                "license": "Apache-2.0",
+                "dist": {
+                    "url": "https://registry.npmjs.org/mathjax/-/mathjax-2.7.9.tgz",
+                    "type": "tar",
+                    "shasum": "d6b67955c173e7d719fcb2fc0288662884eb7d3d"
+                },
+                "extra": {
+                    "installer-name": "MathJax"
+                }
+            }
         }
-      }
-    }
-  },
-  "require": {
-    "composer/installers": "^1.9",
-    "cweagans/composer-patches": "^1.7",
-    "drupal/core-composer-scaffold": "10.6.17",
-    "drupal/core-project-message": "10.6.17",
-    "drupal/core-recommended": "10.6.17",
-    "drush/drush": "^13",
-    "league/commonmark": "^2.0",
-    "league/html-to-markdown": "^5.1",
-    "pantheon-systems/drupal-integrations": "^10",
-    "yalesites-org/yalesites_profile": "*"
-  },
-  "require-dev": {
-    "drupal/core-dev": "^10"
-  },
-  "conflict": {
-    "drupal/drupal": "*"
-  },
-  "minimum-stability": "dev",
-  "prefer-stable": true,
-  "autoload": {
-    "classmap": [
-      "scripts/composer/ScriptHandler.php"
-    ]
-  },
-  "extra": {
-    "drupal-scaffold": {
-      "locations": {
-        "web-root": "./web"
-      },
-      "allowed-packages": [
-        "pantheon-systems/drupal-integrations"
-      ],
-      "file-mapping": {
-        "[project-root]/.editorconfig": false,
-        "[project-root]/pantheon.upstream.yml": false,
-        "[project-root]/.gitattributes": false,
-        "[web-root]/robots.txt": {
-          "append": "patches/robots.txt"
-        }
-      }
     },
-    "installer-paths": {
-      "web/core": [
-        "type:drupal-core"
-      ],
-      "web/libraries/{$name}": [
-        "type:drupal-library"
-      ],
-      "web/modules/contrib/{$name}": [
-        "type:drupal-module"
-      ],
-      "web/profiles/contrib/{$name}": [
-        "type:drupal-profile"
-      ],
-      "web/themes/contrib/{$name}": [
-        "type:drupal-theme"
-      ],
-      "drush/Commands/contrib/{$name}": [
-        "type:drupal-drush"
-      ],
-      "web/modules/custom/{$name}": [
-        "type:drupal-custom-module"
-      ],
-      "web/profiles/custom/{$name}": [
-        "type:drupal-custom-profile"
-      ],
-      "web/themes/custom/{$name}": [
-        "type:drupal-custom-theme"
-      ],
-      "web/private/scripts/quicksilver/{$name}/": [
-        "type:quicksilver-script"
-      ],
-      "web/libraries/chosen": [
-        "jjj/chosen"
-      ]
+    "require": {
+        "composer/installers": "^1.9",
+        "cweagans/composer-patches": "^1.7",
+        "drupal/core-composer-scaffold": "10.6.17",
+        "drupal/core-project-message": "10.6.17",
+        "drupal/core-recommended": "10.6.17",
+        "drush/drush": "^13",
+        "league/commonmark": "^2.0",
+        "league/html-to-markdown": "^5.1",
+        "pantheon-systems/drupal-integrations": "^10",
+        "yalesites-org/yalesites_profile": "*"
     },
-    "enable-patching": true,
-    "composer-exit-on-patch-failure": true,
-    "patchLevel": {
-      "drupal/core": "-p2"
-    }
-  },
-  "config": {
-    "policy": {
-      "advisories": {
-        "ignore-id":[
-          "SA-CONTRIB-2025-060"
+    "require-dev": {
+        "drupal/core-dev": "^10"
+    },
+    "conflict": {
+        "drupal/drupal": "*"
+    },
+    "minimum-stability": "dev",
+    "prefer-stable": true,
+    "autoload": {
+        "classmap": [
+            "scripts/composer/ScriptHandler.php"
         ]
-      }
     },
-    "preferred-install": "dist",
-    "sort-packages": true,
-    "platform": {
-      "php": "8.3"
+    "extra": {
+        "drupal-scaffold": {
+            "locations": {
+                "web-root": "./web"
+            },
+            "allowed-packages": [
+                "pantheon-systems/drupal-integrations"
+            ],
+            "file-mapping": {
+                "[project-root]/.editorconfig": false,
+                "[project-root]/pantheon.upstream.yml": false,
+                "[project-root]/.gitattributes": false,
+                "[web-root]/robots.txt": {
+                    "append": "patches/robots.txt"
+                }
+            }
+        },
+        "installer-paths": {
+            "web/core": [
+                "type:drupal-core"
+            ],
+            "web/libraries/{$name}": [
+                "type:drupal-library"
+            ],
+            "web/modules/contrib/{$name}": [
+                "type:drupal-module"
+            ],
+            "web/profiles/contrib/{$name}": [
+                "type:drupal-profile"
+            ],
+            "web/themes/contrib/{$name}": [
+                "type:drupal-theme"
+            ],
+            "drush/Commands/contrib/{$name}": [
+                "type:drupal-drush"
+            ],
+            "web/modules/custom/{$name}": [
+                "type:drupal-custom-module"
+            ],
+            "web/profiles/custom/{$name}": [
+                "type:drupal-custom-profile"
+            ],
+            "web/themes/custom/{$name}": [
+                "type:drupal-custom-theme"
+            ],
+            "web/private/scripts/quicksilver/{$name}/": [
+                "type:quicksilver-script"
+            ],
+            "web/libraries/chosen": [
+                "jjj/chosen"
+            ]
+        },
+        "enable-patching": true,
+        "composer-exit-on-patch-failure": true,
+        "patchLevel": {
+            "drupal/core": "-p2"
+        }
     },
-    "allow-plugins": {
-      "composer/installers": true,
-      "cweagans/composer-patches": true,
-      "dealerdirect/phpcodesniffer-composer-installer": true,
-      "drupal/core-composer-scaffold": true,
-      "drupal/core-project-message": true,
-      "php-http/discovery": true,
-      "phpstan/extension-installer": true,
-      "tbachert/spi": true
+    "config": {
+        "policy": {
+            "advisories": {
+                "ignore-id": [
+                    "SA-CONTRIB-2025-060"
+                ]
+            }
+        },
+        "preferred-install": "dist",
+        "sort-packages": true,
+        "platform": {
+            "php": "8.3"
+        },
+        "allow-plugins": {
+            "composer/installers": true,
+            "cweagans/composer-patches": true,
+            "dealerdirect/phpcodesniffer-composer-installer": true,
+            "drupal/core-composer-scaffold": true,
+            "drupal/core-project-message": true,
+            "php-http/discovery": true,
+            "phpstan/extension-installer": true,
+            "tbachert/spi": true,
+            "symfony/runtime": true
+        }
+    },
+    "scripts": {
+        "build-assets": [
+            "@prepare-for-pantheon",
+            "composer install --optimize-autoloader --no-dev"
+        ],
+        "prepare-for-pantheon": "DrupalProject\\composer\\ScriptHandler::prepareForPantheon",
+        "unit-test": "echo 'No unit test step defined.'",
+        "code-sniff": [
+            "./vendor/bin/phpcs --standard=Drupal --extensions=php,module,inc,install,test,profile,theme,info,txt --colors --ignore=node_modules,bower_components,vendor ./web/modules/custom ./web/themes/custom ./web/profiles/custom",
+            "./vendor/bin/phpcs --standard=DrupalPractice --extensions=php,module,inc,install,test,profile,theme,info,txt --colors --ignore=node_modules,bower_components,vendor ./web/modules/custom ./web/themes/custom ./web/profiles/custom"
+        ],
+        "code-fix": [
+            "./vendor/bin/phpcbf --standard=Drupal --extensions=php,module,inc,install,test,profile,theme,info,txt --colors --ignore=node_modules,bower_components,vendor ./web/modules/custom ./web/themes/custom ./web/profiles/custom",
+            "./vendor/bin/phpcbf --standard=DrupalPractice --extensions=php,module,inc,install,test,profile,theme,info,txt --colors --ignore=node_modules,bower_components,vendor ./web/modules/custom ./web/themes/custom ./web/profiles/custom"
+        ],
+        "lint:php": "./.ci/test/static/lint_php",
+        "post-install-cmd": [
+            "DrupalProject\\composer\\ScriptHandler::createRequiredFiles"
+        ],
+        "post-update-cmd": [
+            "DrupalProject\\composer\\ScriptHandler::createRequiredFiles"
+        ],
+        "post-create-project-cmd": [
+            "DrupalProject\\composer\\ScriptHandler::createRequiredFiles"
+        ]
     }
-  },
-  "scripts": {
-    "build-assets": [
-      "@prepare-for-pantheon",
-      "composer install --optimize-autoloader --no-dev"
-    ],
-    "prepare-for-pantheon": "DrupalProject\\composer\\ScriptHandler::prepareForPantheon",
-    "unit-test": "echo 'No unit test step defined.'",
-    "code-sniff": [
-      "./vendor/bin/phpcs --standard=Drupal --extensions=php,module,inc,install,test,profile,theme,info,txt --colors --ignore=node_modules,bower_components,vendor ./web/modules/custom ./web/themes/custom ./web/profiles/custom",
-      "./vendor/bin/phpcs --standard=DrupalPractice --extensions=php,module,inc,install,test,profile,theme,info,txt --colors --ignore=node_modules,bower_components,vendor ./web/modules/custom ./web/themes/custom ./web/profiles/custom"
-    ],
-    "code-fix": [
-      "./vendor/bin/phpcbf --standard=Drupal --extensions=php,module,inc,install,test,profile,theme,info,txt --colors --ignore=node_modules,bower_components,vendor ./web/modules/custom ./web/themes/custom ./web/profiles/custom",
-      "./vendor/bin/phpcbf --standard=DrupalPractice --extensions=php,module,inc,install,test,profile,theme,info,txt --colors --ignore=node_modules,bower_components,vendor ./web/modules/custom ./web/themes/custom ./web/profiles/custom"
-    ],
-    "lint:php": "./.ci/test/static/lint_php",
-    "post-install-cmd": [
-      "DrupalProject\\composer\\ScriptHandler::createRequiredFiles"
-    ],
-    "post-update-cmd": [
-      "DrupalProject\\composer\\ScriptHandler::createRequiredFiles"
-    ],
-    "post-create-project-cmd": [
-      "DrupalProject\\composer\\ScriptHandler::createRequiredFiles"
-    ]
-  }
 }
