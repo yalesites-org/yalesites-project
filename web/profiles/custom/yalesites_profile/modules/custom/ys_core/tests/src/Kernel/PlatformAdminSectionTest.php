@@ -95,6 +95,11 @@ class PlatformAdminSectionTest extends YsKernelTestBase {
    * hook_menu_links_discovered_alter() and is what actually takes effect on a
    * built site, so the two must not drift. Kernel tests do not load the
    * profile's config/sync, hence reading the exported file directly.
+   *
+   * "Agree" means the same parent and the same resulting position - not the
+   * same weight number. See the comment at the weight assertions, and
+   * \Drupal\Tests\ys_core\Unit\AdminMenuLinkWeightTest for the module-default
+   * ordering this pairs with.
    */
   public function testExportedOverrideAgreesWithTheHook(): void {
     // .../yalesites_profile/modules/custom/ys_core -> .../yalesites_profile.
@@ -108,13 +113,41 @@ class PlatformAdminSectionTest extends YsKernelTestBase {
       $definitions['system__admin_reports']['parent']
     );
 
-    // The section's own link is pinned there too, so its parent and weight must
-    // match what ys_core.links.menu.yml declares.
+    // The section's own link is pinned there too, so its parent must match
+    // what ys_core.links.menu.yml declares.
     $declared = $this->container->get('plugin.manager.menu.link')
       ->getDefinition('ys_core.admin_platform_admin');
     $override = $definitions['ys_core__admin_platform_admin'];
     $this->assertSame($declared['parent'], $override['parent']);
-    $this->assertSame((int) $declared['weight'], $override['weight']);
+
+    // The weights must NOT be asserted equal. The two live on different
+    // scales: this file's export renumbers the whole top level onto -49..-38,
+    // while ys_core.links.menu.yml competes with core's own defaults, which
+    // run -10 (Content) to 10 (announcements_feed). Requiring equality is what
+    // previously put a -38 in the module default, where it sorted Platform
+    // Admin *first* instead of last - invisible on any site carrying this
+    // override, and wrong everywhere else.
+    //
+    // What has to agree is the resulting position: last in both. The check
+    // below is only a floor - a weight of 11 would clear it and still sort
+    // Platform Admin ahead of the Dashboard - so AdminMenuLinkWeightTest
+    // asserts the full ordering. The two are load-bearing as a pair.
+    $this->assertGreaterThan(
+      10,
+      (int) $declared['weight'],
+      'The module default must sort Platform Admin after the highest weight core declares for a top-level admin link (announcements_feed.announcement at 10).'
+    );
+    $top_level_override_weights = [];
+    foreach ($definitions as $key => $definition) {
+      if (($definition['parent'] ?? NULL) === 'system.admin' && isset($definition['weight'])) {
+        $top_level_override_weights[$key] = $definition['weight'];
+      }
+    }
+    $this->assertSame(
+      'ys_core__admin_platform_admin',
+      array_search(max($top_level_override_weights), $top_level_override_weights, TRUE),
+      'The exported override must also place Platform Admin last among top-level admin links.'
+    );
   }
 
   /**
