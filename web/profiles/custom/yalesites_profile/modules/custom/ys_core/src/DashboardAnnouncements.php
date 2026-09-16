@@ -53,6 +53,24 @@ class DashboardAnnouncements {
   const FAILURE_MAX_AGE = 300;
 
   /**
+   * Seconds to wait for the whole feed request.
+   *
+   * Short because the admin-menu badge puts this fetch on every admin page's
+   * render path, where ClientFactory's 30s default would stall the page.
+   *
+   * @see \Drupal\Core\Http\ClientFactory
+   */
+  const FEED_TIMEOUT = 5;
+
+  /**
+   * Seconds to wait for the connection itself.
+   *
+   * Set explicitly because ClientFactory leaves it unset, which is what lets
+   * a host that drops packets run to the full request timeout.
+   */
+  const FEED_CONNECT_TIMEOUT = 2;
+
+  /**
    * The canonical platform announcements feed URL.
    *
    * Used when `ys_core.dashboard_settings:announcements_feed_url` is empty,
@@ -246,7 +264,10 @@ class DashboardAnnouncements {
         return '{"items":[]}';
       }
     }
-    return (string) $this->httpClient->get($feed_url)->getBody();
+    return (string) $this->httpClient->get($feed_url, [
+      'timeout' => self::FEED_TIMEOUT,
+      'connect_timeout' => self::FEED_CONNECT_TIMEOUT,
+    ])->getBody();
   }
 
   /**
