@@ -5,6 +5,7 @@ namespace Drupal\ys_themes\Form;
 use Drupal\Core\Config\ConfigFactoryInterface;
 use Drupal\Core\Form\ConfigFormBase;
 use Drupal\Core\Form\FormStateInterface;
+use Drupal\ys_themes\ColorTokenResolver;
 use Drupal\ys_themes\ThemeSettingsManager;
 use Symfony\Component\DependencyInjection\ContainerInterface;
 
@@ -28,6 +29,13 @@ class ThemesSettingsForm extends ConfigFormBase {
    * @var \Drupal\ys_themes\Service\ThemeSettingsManager
    */
   protected $themeSettingsManager;
+
+  /**
+   * Color Token Resolver.
+   *
+   * @var \Drupal\ys_themes\ColorTokenResolver
+   */
+  protected $colorTokenResolver;
 
   /**
    * Settings configuration form.
@@ -79,6 +87,9 @@ class ThemesSettingsForm extends ConfigFormBase {
     }
 
     $form['#attached']['library'][] = 'ys_themes/levers';
+    // Every palette's colors, so selecting one can re-tint the swatches of the
+    // settings that follow it without a round trip.
+    $form['#attached']['drupalSettings']['ysThemes']['paletteColors'] = $this->colorTokenResolver->getSlotHexMap();
 
     return $form;
   }
@@ -116,6 +127,7 @@ class ThemesSettingsForm extends ConfigFormBase {
     return new static(
       $container->get('config.factory'),
       $container->get('ys_themes.theme_settings_manager'),
+      $container->get('ys_themes.color_token_resolver'),
     );
   }
 
@@ -126,10 +138,13 @@ class ThemesSettingsForm extends ConfigFormBase {
    *   The factory for configuration objects.
    * @param \Drupal\ys_themes\ThemeSettingsManager $theme_settings_manager
    *   The Theme Settings Manager.
+   * @param \Drupal\ys_themes\ColorTokenResolver $color_token_resolver
+   *   The Color Token Resolver.
    */
-  public function __construct(ConfigFactoryInterface $config_factory, ThemeSettingsManager $theme_settings_manager) {
+  public function __construct(ConfigFactoryInterface $config_factory, ThemeSettingsManager $theme_settings_manager, ColorTokenResolver $color_token_resolver) {
     parent::__construct($config_factory);
     $this->themeSettingsManager = $theme_settings_manager;
+    $this->colorTokenResolver = $color_token_resolver;
   }
 
 }

@@ -303,39 +303,29 @@ function ys_themes_form_alter(&$form, $form_state, $form_id) {
  * Implements hook_preprocess_form_element().
  */
 function ys_themes_preprocess_form_element(array &$variables) {
-  //
-  // Insert the global theme value into the attribute to pass to twig.
-  // Used for the color palettes on the theme settings form.
-  //
-  if (isset($variables['element']['#formdazzle'])) {
-    if ($variables['element']['#formdazzle']['form_id'] == 'ys_themes_settings_form') {
-
-      $config = \Drupal::config('ys_themes.theme_settings');
-      $globalTheme = $config->get('global_theme');
-      $allOptions = \Drupal::service('ys_themes.theme_settings_manager')->getOptions();
-
-      $elementName = $variables['name'];
-      $value = $variables['element']['#return_value'];
-
-      // Sets various values related to current element as well as global theme
-      // to twig for cleaner twig templates.
-      if (isset($allOptions[$elementName]['values'][$value]['color_theme'])) {
-        $variables['label']['#context']['color_theme'] = $allOptions[$elementName]['values'][$value]['color_theme'];
-      }
-      if (isset($allOptions[$elementName]['values'][$value]['color_theme_2'])) {
-        $variables['label']['#context']['color_theme_2'] = $allOptions[$elementName]['values'][$value]['color_theme_2'];
-      }
-      $variables['label']['#context']['current_global_theme'] = $globalTheme;
-      $variables['label']['#context']['value'] = $value;
-    }
+  // Hand the label template the colors for this option, so the theme settings
+  // form can show a palette swatch beside each radio.
+  if (($variables['element']['#formdazzle']['form_id'] ?? NULL) !== 'ys_themes_settings_form') {
+    return;
   }
+
+  // Not every element on the form is an option with a value of its own, so
+  // both reads are guarded; an unknown setting or option gets no swatches.
+  $setting_name = $variables['name'] ?? '';
+  $variables['label']['#context']['swatches'] = \Drupal::service('ys_themes.color_token_resolver')
+    ->buildThemeSettingSwatches($setting_name, $variables['element']['#return_value'] ?? '');
+
+  // Only the component settings follow the selected palette; a global_theme
+  // option is a palette in its own right and must keep its own colors when a
+  // different palette is previewed.
+  $variables['label']['#context']['swatches_follow_palette'] = ($setting_name !== 'global_theme');
 }
 
 /**
  * Implements hook_theme().
  */
 function ys_themes_theme($existing, $type, $theme, $path) {
-  return [
+  $items = [
     'component_color_picker' => [
       'variables' => [
         'palette_options' => [],
@@ -346,6 +336,22 @@ function ys_themes_theme($existing, $type, $theme, $path) {
       'template' => 'component-color-picker',
     ],
   ];
+
+  // Swatch labels for the theme settings form. Formdazzle sets each radio's
+  // label hook to form_element_label__ys_themes_settings_form__<setting>, and
+  // core strips trailing __ segments until it finds a registered hook, so this
+  // single entry serves every setting on the form, including any added later.
+  //
+  // Registered by the module rather than by a theme so that it is in every
+  // theme's registry: the form is an admin route, so it renders in the admin
+  // theme, and the equivalent templates that lived in the front-end theme were
+  // never picked up at all (#1700).
+  $items['form_element_label__ys_themes_settings_form'] = [
+    'base hook' => 'form_element_label',
+    'template' => 'form/theme-settings-swatch-label',
+  ];
+
+  return $items;
 }
 
 /**
