@@ -1,6 +1,6 @@
 <?php
 
-namespace Drupal\Tests\ys_layouts\Unit;
+namespace Drupal\Tests\ys_core\Unit;
 
 use Drupal\Component\Annotation\Doctrine\SimpleAnnotationReader;
 use Drupal\Core\Block\Annotation\Block;
@@ -14,20 +14,20 @@ use Drupal\Core\Plugin\Context\ContextInterface;
 use Drupal\Core\Routing\RouteMatchInterface;
 use Drupal\Tests\UnitTestCase;
 use Drupal\node\NodeInterface;
-use Drupal\ys_layouts\Plugin\Block\PageMetaBlock;
+use Drupal\ys_core\Plugin\Block\YaleSitesTitleBreadcrumbBlock;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\RequestStack;
 use Symfony\Component\Routing\Route;
 
 /**
- * Tests the page meta block.
+ * Tests the page title and breadcrumb block.
  *
- * @coversDefaultClass \Drupal\ys_layouts\Plugin\Block\PageMetaBlock
+ * @coversDefaultClass \Drupal\ys_core\Plugin\Block\YaleSitesTitleBreadcrumbBlock
  *
  * @group yalesites
- * @group ys_layouts
+ * @group ys_core
  */
-class PageMetaBlockTest extends UnitTestCase {
+class YaleSitesTitleBreadcrumbBlockTest extends UnitTestCase {
 
   /**
    * The route match mock.
@@ -72,33 +72,36 @@ class PageMetaBlockTest extends UnitTestCase {
   /**
    * Builds the block plugin under test.
    *
-   * @return \Drupal\ys_layouts\Plugin\Block\PageMetaBlock
+   * @param array $configuration
+   *   The block configuration.
+   *
+   * @return \Drupal\ys_core\Plugin\Block\YaleSitesTitleBreadcrumbBlock
    *   The block plugin.
    */
-  protected function buildBlock(array $configuration = []): PageMetaBlock {
+  protected function buildBlock(array $configuration = []): YaleSitesTitleBreadcrumbBlock {
     $definition = [
-      'provider' => 'ys_layouts',
-      'admin_label' => 'Page Meta Block',
+      'provider' => 'ys_core',
+      'admin_label' => 'YaleSites Page Title and Breadcrumb Block',
       'context_definitions' => [
-        PageMetaBlock::ENTITY_CONTEXT => new ContextDefinition('entity', NULL, FALSE),
+        YaleSitesTitleBreadcrumbBlock::ENTITY_CONTEXT => new ContextDefinition('entity', NULL, FALSE),
       ],
     ];
 
-    return new PageMetaBlock($configuration, 'page_meta_block', $definition, $this->routeMatch, $this->titleResolver, $this->requestStack);
+    return new YaleSitesTitleBreadcrumbBlock($configuration, 'ys_title_breadcrumb_block', $definition, $this->routeMatch, $this->titleResolver, $this->requestStack);
   }
 
   /**
    * Puts an entity into the block's Layout Builder entity context.
    *
-   * @param \Drupal\ys_layouts\Plugin\Block\PageMetaBlock $block
+   * @param \Drupal\ys_core\Plugin\Block\YaleSitesTitleBreadcrumbBlock $block
    *   The block plugin.
    * @param mixed $value
    *   The context value, normally a node.
    */
-  protected function setRenderedEntity(PageMetaBlock $block, $value): void {
+  protected function setRenderedEntity(YaleSitesTitleBreadcrumbBlock $block, $value): void {
     $context = $this->createMock(ContextInterface::class);
     $context->method('getContextValue')->willReturn($value);
-    $block->setContext(PageMetaBlock::ENTITY_CONTEXT, $context);
+    $block->setContext(YaleSitesTitleBreadcrumbBlock::ENTITY_CONTEXT, $context);
   }
 
   /**
@@ -118,17 +121,60 @@ class PageMetaBlockTest extends UnitTestCase {
   }
 
   /**
-   * With no route object, the page title stays empty.
+   * The node's title is used rather than the route title.
    *
    * @covers ::build
    */
-  public function testBuildWithNoRouteReturnsEmptyTitle(): void {
-    $this->routeMatch->method('getRouteObject')->willReturn(NULL);
+  public function testBuildUsesNodeTitle(): void {
+    $this->routeMatch->method('getRouteObject')->willReturn(new Route('/node/{node}'));
+    $this->routeMatch->method('getParameter')->willReturnMap([
+      ['node_revision', NULL],
+      ['node', $this->mockNode('My Page')],
+    ]);
+    $this->titleResolver->expects($this->never())->method('getTitle');
 
     $build = $this->buildBlock()->build();
 
-    $this->assertSame('ys_page_meta_block', $build['#theme']);
-    $this->assertSame('', $build['#page_title']);
+    $this->assertSame('ys_title_breadcrumb', $build['#theme']);
+    $this->assertSame('My Page', $build['#page_title']);
+    $this->assertSame([], $build['#breadcrumbs_placeholder']);
+  }
+
+  /**
+   * On the Layout Builder route the title is the node's, not the route's.
+   *
+   * @covers ::build
+   */
+  public function testBuildIgnoresLayoutBuilderRouteTitle(): void {
+    $this->routeMatch->method('getRouteObject')->willReturn(new Route('/node/{node}/layout'));
+    $this->routeMatch->method('getParameter')->willReturnMap([
+      ['node_revision', NULL],
+      ['node', $this->mockNode('My Page')],
+    ]);
+    $this->titleResolver->expects($this->never())->method('getTitle');
+
+    $build = $this->buildBlock()->build();
+
+    $this->assertSame('My Page', $build['#page_title']);
+  }
+
+  /**
+   * The example breadcrumb trail only appears on a layout route.
+   *
+   * @covers ::build
+   */
+  public function testBuildAddsPlaceholderBreadcrumbsOnLayoutRoute(): void {
+    $this->routeMatch->method('getRouteObject')->willReturn(new Route('/node/{node}/layout'));
+    $this->routeMatch->method('getParameter')->willReturnMap([
+      ['node_revision', NULL],
+      ['node', $this->mockNode('My Page')],
+    ]);
+
+    $build = $this->buildBlock()->build();
+
+    $this->assertCount(4, $build['#breadcrumbs_placeholder']);
+    $this->assertSame('Home', $build['#breadcrumbs_placeholder'][0]['title']);
+    $this->assertTrue($build['#breadcrumbs_placeholder'][3]['is_active']);
   }
 
   /**
@@ -150,51 +196,6 @@ class PageMetaBlockTest extends UnitTestCase {
   }
 
   /**
-   * On the Layout Builder route the node title wins over "Edit layout for ...".
-   *
-   * Search API renders the node in the same request that saves it, so a route
-   * title leaks into the indexed content of the page.
-   *
-   * @covers ::build
-   */
-  public function testBuildIgnoresLayoutBuilderRouteTitle(): void {
-    $route = new Route('/node/{node}/layout');
-    $request = new Request();
-    $this->routeMatch->method('getRouteObject')->willReturn($route);
-    $this->routeMatch->method('getParameter')->willReturnMap([
-      ['node_revision', NULL],
-      ['node', $this->mockNode('My Page')],
-    ]);
-    $this->requestStack->method('getCurrentRequest')->willReturn($request);
-    $this->titleResolver->expects($this->never())->method('getTitle');
-
-    $build = $this->buildBlock()->build();
-
-    $this->assertSame('My Page', $build['#page_title']);
-  }
-
-  /**
-   * A non-node route parameter does not stand in for the entity.
-   *
-   * @covers ::build
-   */
-  public function testBuildFallsBackWhenRouteParameterIsNotNode(): void {
-    $route = new Route('/node/{node}');
-    $request = new Request();
-    $this->routeMatch->method('getRouteObject')->willReturn($route);
-    $this->routeMatch->method('getParameter')->willReturnMap([
-      ['node_revision', NULL],
-      ['node', '12'],
-    ]);
-    $this->requestStack->method('getCurrentRequest')->willReturn($request);
-    $this->titleResolver->method('getTitle')->with($request, $route)->willReturn('Some Route Title');
-
-    $build = $this->buildBlock()->build();
-
-    $this->assertSame('Some Route Title', $build['#page_title']);
-  }
-
-  /**
    * Without a current request there is no route title to fall back to.
    *
    * @covers ::build
@@ -210,21 +211,17 @@ class PageMetaBlockTest extends UnitTestCase {
   }
 
   /**
-   * A revision route renders the revision, so its title wins.
+   * With no route object there is no title and no example breadcrumbs.
    *
    * @covers ::build
    */
-  public function testBuildPrefersTheRevisionBeingRendered(): void {
-    $this->routeMatch->method('getRouteObject')->willReturn(new Route('/node/{node}/revisions/{node_revision}/view'));
-    $this->routeMatch->method('getParameter')->willReturnMap([
-      ['node_revision', $this->mockNode('My Page, as it was')],
-      ['node', $this->mockNode('My Page')],
-    ]);
-    $this->titleResolver->expects($this->never())->method('getTitle');
+  public function testBuildWithNoRouteReturnsEmptyTitle(): void {
+    $this->routeMatch->method('getRouteObject')->willReturn(NULL);
 
     $build = $this->buildBlock()->build();
 
-    $this->assertSame('My Page, as it was', $build['#page_title']);
+    $this->assertSame('', $build['#page_title']);
+    $this->assertSame([], $build['#breadcrumbs_placeholder']);
   }
 
   /**
@@ -349,14 +346,14 @@ class PageMetaBlockTest extends UnitTestCase {
     $reader->addNamespace('Drupal\Core\Annotation');
 
     $annotation = $reader->getClassAnnotation(
-      new \ReflectionClass(PageMetaBlock::class),
+      new \ReflectionClass(YaleSitesTitleBreadcrumbBlock::class),
       Block::class
     );
     $definition = $annotation->get();
 
-    $this->assertSame('layout_builder.entity', PageMetaBlock::ENTITY_CONTEXT);
-    $this->assertArrayHasKey(PageMetaBlock::ENTITY_CONTEXT, $definition['context_definitions']);
-    $this->assertFalse($definition['context_definitions'][PageMetaBlock::ENTITY_CONTEXT]->isRequired());
+    $this->assertSame('layout_builder.entity', YaleSitesTitleBreadcrumbBlock::ENTITY_CONTEXT);
+    $this->assertArrayHasKey(YaleSitesTitleBreadcrumbBlock::ENTITY_CONTEXT, $definition['context_definitions']);
+    $this->assertFalse($definition['context_definitions'][YaleSitesTitleBreadcrumbBlock::ENTITY_CONTEXT]->isRequired());
   }
 
   /**
@@ -378,38 +375,6 @@ class PageMetaBlockTest extends UnitTestCase {
     $form = $block->buildConfigurationForm([], new FormState());
 
     $this->assertArrayNotHasKey('context_mapping', $form);
-  }
-
-  /**
-   * The title display select carries the configured default value.
-   *
-   * @covers ::blockForm
-   */
-  public function testBlockFormUsesConfiguredTitleDisplay(): void {
-    $block = $this->buildBlock(['page_title_display' => 'hidden']);
-    $block->setStringTranslation($this->getStringTranslationStub());
-    $form_state = new FormState();
-
-    $form = $block->blockForm([], $form_state);
-
-    $this->assertSame('select', $form['page_title_display']['#type']);
-    $this->assertSame('hidden', $form['page_title_display']['#default_value']);
-  }
-
-  /**
-   * Submitting the form stores the selected title display in configuration.
-   *
-   * @covers ::blockSubmit
-   */
-  public function testBlockSubmitStoresTitleDisplay(): void {
-    $block = $this->buildBlock();
-    $form_state = new FormState();
-    $form_state->setValue('page_title_display', 'visually-hidden');
-
-    $block->blockSubmit([], $form_state);
-
-    $configuration = $block->getConfiguration();
-    $this->assertSame('visually-hidden', $configuration['page_title_display']);
   }
 
 }

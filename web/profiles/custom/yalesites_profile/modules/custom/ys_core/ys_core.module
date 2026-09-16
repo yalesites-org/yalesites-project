@@ -19,6 +19,7 @@ use Drupal\node\NodeInterface;
 use Drupal\Component\Utility\NestedArray;
 use Drupal\ys_core\Editoria11yRouteSuppressor;
 use Drupal\ys_core\Plugin\PlatformAdminSetting\EnvironmentIndicatorPlatformAdminSetting;
+use Drupal\ys_core\SiteMail;
 use Drupal\ys_core\SiteimproveRouteChecker;
 use Drupal\ys_core\WebformContextualLinksSuppressor;
 
@@ -145,16 +146,32 @@ function ys_core_form_alter(&$form, FormStateInterface $form_state, $form_id) {
     $block_type = ys_core_get_block_type($form, $form_state);
 
     if ($block_type === 'webform') {
-      $siteMail = \Drupal::config('system.site')->get('mail');
+      // Submissions are sent From the site email, so a site email nobody can
+      // receive at - or that the platform is not authorized to send from at
+      // all - means this form silently delivers nothing. Warn where the editor
+      // is placing the form, because nothing at submission time will tell them.
+      // Tightening the Site email validation only guards the next save, so an
+      // address stored before that still has to be surfaced here.
+      // @see yalesites-org/YaleSites-Internal#1669
+      $siteMail = (string) \Drupal::config('system.site')->get('mail');
+      $warning = NULL;
       if ($siteMail === 'noreply@noreply.yale.edu') {
-        $settingsUrl = Url::fromRoute('ys_core.admin_site_settings')->toString();
+        $warning = t('Form submissions will be sent to the default no-reply address and will not be received. <a href=":url">Update the site email in Site Settings</a> to receive submissions.', [':url' => Url::fromRoute('ys_core.admin_site_settings')->toString()]);
+      }
+      elseif (!SiteMail::isAuthorized($siteMail)) {
+        $warning = t('The site email %mail is not an address this platform is authorized to send from, so submissions to this form will never be delivered. <a href=":url">Update the site email in Site Settings</a> to an address at @domains.', [
+          '%mail' => $siteMail,
+          '@domains' => SiteMail::allowedDomainsLabel(),
+          ':url' => Url::fromRoute('ys_core.admin_site_settings')->toString(),
+        ]);
+      }
+
+      if ($warning !== NULL) {
         $form['settings']['block_form']['email_warning'] = [
           '#type' => 'container',
           '#attributes' => ['class' => ['messages', 'messages--warning']],
           '#weight' => -100,
-          'message' => [
-            '#markup' => t('Form submissions will be sent to the default no-reply address and will not be received. <a href="@url">Update the site email in Site Settings</a> to receive submissions.', ['@url' => $settingsUrl]),
-          ],
+          'message' => ['#markup' => $warning],
         ];
       }
     }

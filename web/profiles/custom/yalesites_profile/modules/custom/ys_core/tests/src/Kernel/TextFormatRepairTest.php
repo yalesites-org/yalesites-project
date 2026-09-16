@@ -3,7 +3,6 @@
 namespace Drupal\Tests\ys_core\Kernel;
 
 use Drupal\Core\Field\FieldStorageDefinitionInterface;
-use Drupal\KernelTests\KernelTestBase;
 use Drupal\field\Entity\FieldConfig;
 use Drupal\field\Entity\FieldStorageConfig;
 use Drupal\filter\Entity\FilterFormat;
@@ -30,7 +29,7 @@ use Drupal\ys_core\TextFormatRepair;
  *
  * @see yalesites-org/YaleSites-Internal#1646
  */
-class TextFormatRepairTest extends KernelTestBase {
+class TextFormatRepairTest extends YsKernelTestBase {
 
   /**
    * {@inheritdoc}
