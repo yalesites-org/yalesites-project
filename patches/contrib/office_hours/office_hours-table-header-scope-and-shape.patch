@@ -1,0 +1,196 @@
+Subject: [PATCH] Make the table formatter's header describe the table it heads
+
+The "Table" formatter built a header row that did not describe the table it sat
+on top of. Three things were wrong, and all of them are invisible in normal use
+because the header row is `visually-hidden` -- they only ever surface for a
+screen reader user or an audit. All three undermine WCAG 2.1 AA success
+criterion 1.3.1 Info and Relationships.
+
+1. No header cell carried a `scope` attribute, so nothing told assistive
+   technology which header belonged to which cell.
+
+2. The day cell was a plain `<td>`, so even with column headers an hours cell
+   was announced with its column name and nothing tied it to its day -- which
+   in a schedule is the association that carries the meaning. The existing
+   `'header' => !$row_columns['label']` could never be TRUE, because that
+   branch only runs when the same value is truthy, so the day was always a
+   plain cell. It is now a `<th scope="row">`, and the CSS keeps its
+   left alignment so it does not inherit the browser's centred `th` default.
+
+3. The first header cell declared `colspan="3"` while the body rows have one
+   cell per column, so a three-column table declared five columns.
+
+The colspan existed to let the season / exception section title span the table,
+but the other column headers were still emitted beside it, so it never spanned
+anything -- it only inflated the declared column count. That title is a title
+*for the table*, which is what `<caption>` is for, and `buildTable()` already
+accepted one, so it moves there. Doing that also stops the title from
+overwriting the 'Day' column header, which had left exception and season tables
+with no header for their first column at all.
+
+`buildTable()`'s caption parameter is widened to accept `MarkupInterface`. The
+exceptions title arrives as a `TranslatableMarkup` wrapping already-escaped
+text; coercing it to `?string` would strip the interface that tells Twig the
+value needs no further escaping, so a title containing an ampersand would
+render as `&amp;`. That did not happen while the title lived in a header cell,
+because `template_preprocess_table()` leaves a cell's `data` as an object.
+
+The `$multiple` parameter of `buildTableHeader()` existed only to switch the
+label cell between the section title and the 'Day' header. With the title in
+the caption there is nothing left for it to decide, so it is dropped; both call
+sites are in this file, and no subclass overrides the method.
+
+The CSS rule that indented the section title follows it to the caption.
+
+Reported against drupal/office_hours 8.x-1.29.
+See https://github.com/yalesites-org/YaleSites-Internal/issues/1706
+
+--- a/src/Plugin/Field/FieldFormatter/OfficeHoursFormatterTable.php
++++ b/src/Plugin/Field/FieldFormatter/OfficeHoursFormatterTable.php
+@@ -2,6 +2,7 @@
+ 
+ namespace Drupal\office_hours\Plugin\Field\FieldFormatter;
+ 
++use Drupal\Component\Render\MarkupInterface;
+ use Drupal\Component\Utility\Html;
+ use Drupal\Core\Field\FieldDefinitionInterface;
+ use Drupal\Core\Field\FieldItemListInterface;
+@@ -77,7 +78,7 @@
+     $table_weight = $hours_formatter['#weight'];
+     $table_index = $key;
+     // Build the table header for each column.
+-    $header = $this->buildTableHeader($row_columns, FALSE);
++    $header = $this->buildTableHeader($row_columns);
+     // Build a table element with 0 rows.
+     $table_caption = '';
+     $table_class = '';
+@@ -124,13 +125,14 @@
+       if ($create_new_table) {
+         $create_new_table = FALSE;
+ 
+-        $header = $this->buildTableHeader($row_columns, TRUE);
+-        // Retroactively, update the first table. (or not, leave 'Day' title empty)
+-        // $elements[$key]['#table']['#header'] = $header;
+-        // Prepare the next table.
+-        $header['label']['data'] = $table_caption;
+-        $table_caption = '';
++        $header = $this->buildTableHeader($row_columns);
++        // Prepare the next table. The section title is the table's caption:
++        // <caption> is the element for a table's own title, whereas putting it
++        // in the first header cell replaced the 'Day' column header and, with
++        // the other column headers still emitted beside it, declared more
++        // columns than the body rows fill.
+         $table = $this->buildTable($table_caption, $field_definition, $header, $table_rows = [], $table_class);
++        $table_caption = '';
+ 
+         // Insert new formatter table in correct position.
+         array_splice($elements, $table_index, 0, [$hours_formatter]);
+@@ -155,8 +157,12 @@
+   /**
+    * Returns a render array for an empty table. Rows are added later.
+    *
+-   * @param string $table_caption
+-   *   The table caption, if needed.
++   * @param string|\Drupal\Component\Render\MarkupInterface|null $table_caption
++   *   The table caption, if needed. Accepts MarkupInterface as well as a
++   *   string: the exceptions title arrives as a TranslatableMarkup, and
++   *   coercing it to string here would strip the interface that tells Twig the
++   *   value is already escaped, so Html::escape()'s output would be escaped a
++   *   second time and an '&' in the title would render as '&amp;'.
+    * @param \Drupal\Core\Field\FieldDefinitionInterface $field_definition
+    *   The field definition.
+    * @param array $table_header
+@@ -169,7 +175,7 @@
+    * @return array
+    *   The render array.
+    */
+-  public function buildTable(?string $table_caption, FieldDefinitionInterface $field_definition, array $table_header, array $table_rows, ?string $table_class): array {
++  public function buildTable(string|MarkupInterface|null $table_caption, FieldDefinitionInterface $field_definition, array $table_header, array $table_rows, ?string $table_class): array {
+     return [
+       '#theme' => 'table',
+       '#parent' => $field_definition,
+@@ -191,15 +197,18 @@
+   /**
+    * Returns a render array for a table header.
+    *
++   * One cell per column the rows fill, each naming the column it heads, so
++   * assistive technology can associate an hours cell with its day. Without
++   * scope that association is left to guesswork, and in a schedule it is the
++   * content. A colspan here would declare a table shape the rows do not have.
++   *
+    * @param array $row_columns
+    *   The details of the row.
+-   * @param bool $multiple
+-   *   IF TRUE, multiple tables, so some more column headers are displayed.
+    *
+    * @return array
+    *   The render array.
+    */
+-  protected function buildTableHeader(array $row_columns, bool $multiple): array {
++  protected function buildTableHeader(array $row_columns): array {
+     // Add a label/header/title for accessibility (a11y) screen readers.
+     // Superfluous comments are removed. @see #3110755 for examples.
+     $element = [];
+@@ -209,20 +218,22 @@
+     if ($row_columns['label']) {
+       $element['label'] = [
+         'data' => $labels['day']['data'],
+-        'colspan' => 3,
+-        'class' => $multiple ? 'inline' : 'visually-hidden',
++        'class' => 'visually-hidden',
++        'scope' => 'col',
+       ];
+     }
+     if ($row_columns['slots']) {
+       $element['slots'] = [
+         'data' => $labels['slots']['data'],
+         'class' => 'visually-hidden',
++        'scope' => 'col',
+       ];
+     }
+     if ($row_columns['comments']) {
+       $element['comments'] = [
+         'data' => $labels['comment']['data'],
+         'class' => 'visually-hidden',
++        'scope' => 'col',
+       ];
+     }
+     return $element;
+@@ -257,8 +268,15 @@
+     if ($row_columns['label'] && $this->getSettings()['day_format'] !== 'none') {
+       $element['data']['label'] = [
+         'data' => ['#markup' => $info['label']],
+-        // Switch 'Day' between <th> and <tr>.
+-        'header' => !$row_columns['label'],
++        // The day is the row's header. Column headers alone are not enough:
++        // they let assistive technology announce an hours cell with its
++        // column name, but nothing ties that cell to its day, which in a
++        // schedule is the association that carries the meaning.
++        // The previous 'header' => !$row_columns['label'] could never be
++        // TRUE, because this branch only runs when that same value is
++        // truthy, so the day was always rendered as a plain cell.
++        'header' => TRUE,
++        'scope' => 'row',
+         'class' => ['office-hours__item-label'],
+       ];
+     }
+--- a/css/office_hours.css
++++ b/css/office_hours.css
+@@ -45,6 +45,9 @@
+   vertical-align: text-top;
+   white-space: nowrap;
+   font-weight: bold;
++  /* The day cell is a row header, so it would otherwise inherit the
++     browser's centred th alignment. */
++  text-align: left;
+ }
+ .office-hours__item-caption {
+   /* Style section caption/header for weekday, exception, season */
+@@ -65,6 +68,7 @@
+ }
+ 
+ /* Formatter settings - table formatter */
++.office-hours__table caption,
+ .office-hours__table thead tr {
+   /* Style table caption/header for weekday, exception, season */
+   text-align: left;
