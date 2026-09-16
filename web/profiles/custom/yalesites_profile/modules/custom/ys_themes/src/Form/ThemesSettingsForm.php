@@ -3,6 +3,7 @@
 namespace Drupal\ys_themes\Form;
 
 use Drupal\Core\Config\ConfigFactoryInterface;
+use Drupal\Core\Config\TypedConfigManagerInterface;
 use Drupal\Core\Form\ConfigFormBase;
 use Drupal\Core\Form\FormStateInterface;
 use Drupal\ys_themes\ColorTokenResolver;
@@ -90,6 +91,10 @@ class ThemesSettingsForm extends ConfigFormBase {
     // Every palette's colors, so selecting one can re-tint the swatches of the
     // settings that follow it without a round trip.
     $form['#attached']['drupalSettings']['ysThemes']['paletteColors'] = $this->colorTokenResolver->getSlotHexMap();
+    // The swatches of every setting but global_theme are resolved against the
+    // saved palette, so a cached render of this form goes stale when it
+    // changes.
+    $form['#cache']['tags'][] = 'config:ys_themes.theme_settings';
 
     return $form;
   }
@@ -126,6 +131,7 @@ class ThemesSettingsForm extends ConfigFormBase {
   public static function create(ContainerInterface $container) {
     return new static(
       $container->get('config.factory'),
+      $container->get('config.typed'),
       $container->get('ys_themes.theme_settings_manager'),
       $container->get('ys_themes.color_token_resolver'),
     );
@@ -136,13 +142,15 @@ class ThemesSettingsForm extends ConfigFormBase {
    *
    * @param \Drupal\Core\Config\ConfigFactoryInterface $config_factory
    *   The factory for configuration objects.
+   * @param \Drupal\Core\Config\TypedConfigManagerInterface $typed_config_manager
+   *   The typed config manager, which ConfigFormBase has required since 10.2.
    * @param \Drupal\ys_themes\ThemeSettingsManager $theme_settings_manager
    *   The Theme Settings Manager.
    * @param \Drupal\ys_themes\ColorTokenResolver $color_token_resolver
    *   The Color Token Resolver.
    */
-  public function __construct(ConfigFactoryInterface $config_factory, ThemeSettingsManager $theme_settings_manager, ColorTokenResolver $color_token_resolver) {
-    parent::__construct($config_factory);
+  public function __construct(ConfigFactoryInterface $config_factory, TypedConfigManagerInterface $typed_config_manager, ThemeSettingsManager $theme_settings_manager, ColorTokenResolver $color_token_resolver) {
+    parent::__construct($config_factory, $typed_config_manager);
     $this->themeSettingsManager = $theme_settings_manager;
     $this->colorTokenResolver = $color_token_resolver;
   }

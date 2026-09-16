@@ -348,7 +348,7 @@ function ys_themes_theme($existing, $type, $theme, $path) {
   // never picked up at all (#1700).
   $items['form_element_label__ys_themes_settings_form'] = [
     'base hook' => 'form_element_label',
-    'template' => 'form/theme-settings-swatch-label',
+    'template' => 'form/form-element-label--ys-themes-settings-form',
   ];
 
   return $items;

@@ -15,10 +15,14 @@
  * - element['#context']['swatches_follow_palette']: TRUE when the colors track
  *   the selected palette, which is what levers.js re-tints on palette change.
  *
- * The swatches are decorative: the option's name is always rendered, so color
- * is never the only means of conveying the choice (WCAG 1.4.1). Announcing six
- * chips per radio would be noise without information, so they are hidden from
- * assistive technology and the token name is exposed as a tooltip instead.
+ * Accessibility: the chips are hidden from assistive technology, because a
+ * color is not something to announce. What matters is whether the visible
+ * label already says what the option is. For the palettes it does ("Old
+ * Blues"), so the name alone is enough. For the settings that follow the
+ * palette the label is a bare ordinal ("One", "Two"), where the color *is* the
+ * information -- so the token name is added as visually hidden text and the
+ * option announces as "Two, Blue Yale". Either way color is never the only
+ * means of conveying the choice (WCAG 1.4.1).
  *
  * @see template_preprocess_form_element_label()
  *
@@ -35,15 +39,20 @@
   ]
 %}
 {% set swatches = element['#context']['swatches'] %}
-{% set swatch_classes = element['#context']['swatches_follow_palette'] ? 'color component-color' : 'color' %}
+{% set follows_palette = element['#context']['swatches_follow_palette'] %}
 
 {% if title is not empty or required -%}
   <label{{ attributes.addClass(classes) }}>
     {{ title }}
     {% if swatches is not empty %}
+      {% if follows_palette %}
+        <span class="visually-hidden">
+          {%- for swatch in swatches %}{{ swatch.token_name }}{{ loop.last ? '' : ', ' }}{% endfor -%}
+        </span>
+      {% endif %}
       <span class="colors" aria-hidden="true">
         {% for swatch in swatches %}
-          <span class="{{ swatch_classes }}" data-slot="{{ swatch.slot }}" style="background: {{ swatch.hex }};" title="{{ swatch.token_name }}"></span>
+          <span class="{{ follows_palette ? 'color component-color' : 'color' }}" data-slot="{{ swatch.slot }}" style="background: {{ swatch.hex }};" title="{{ swatch.token_name }}"></span>
         {% endfor %}
       </span>
     {% endif %}

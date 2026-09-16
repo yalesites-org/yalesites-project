@@ -16,7 +16,10 @@ class ColorTokenResolver {
    * The palette slots an editor can select, in the order they are shown.
    *
    * Slots six to eight are internal, and slot nine is the secondary
-   * background, which is selectable -- hence the gap.
+   * background, which is selectable -- hence the gap. This is the swatch
+   * display order only; the component option-to-slot mapping in
+   * getColorStylesForEntity() states the same six slots for itself, so that a
+   * change here cannot repaint every component.
    */
   const PALETTE_SWATCH_SLOTS = ['one', 'two', 'three', 'four', 'five', 'nine'];
 
@@ -518,12 +521,18 @@ class ColorTokenResolver {
 
     // Base mapping: options map directly to global slots (1:1).
     // This matches accordion, wrapped_callout, tile, and most components.
-    // Its slots are the same six an editor can select on the theme settings
-    // form; keep it in step with self::PALETTE_SWATCH_SLOTS.
-    $base_mapping = array_combine(
-      ['one', 'two', 'three', 'four', 'five', 'six'],
-      self::PALETTE_SWATCH_SLOTS
-    );
+    // These are the same six slots as self::PALETTE_SWATCH_SLOTS, but stated
+    // separately on purpose: that constant is a display order for the theme
+    // settings swatches, and reordering it must not remap the color every
+    // component renders.
+    $base_mapping = [
+      'one' => 'one',
+      'two' => 'two',
+      'three' => 'three',
+      'four' => 'four',
+      'five' => 'five',
+      'six' => 'nine',
+    ];
     $all_color_styles = $this->buildColorStyles($base_mapping, $global_themes);
 
     // Callout mapping: one→slot-one, two→slot-four, three→slot-five,

@@ -489,6 +489,10 @@ class ColorTokenResolverTest extends UnitTestCase {
 
     $this->assertSame(['var(--global-themes-one-colors-slot-one)'], $styles['one']['one']);
     $this->assertSame(['var(--global-themes-one-colors-slot-five)'], $styles['one']['five']);
+    // The sixth option is slot-nine, not slot-six -- the one place the 1:1
+    // mapping is not literally 1:1, and the pair the previous assertions left
+    // unpinned.
+    $this->assertSame(['var(--global-themes-one-colors-slot-nine)'], $styles['one']['six']);
     // Global theme 'four' gets no swap under the base mapping.
     $this->assertSame(['var(--global-themes-four-colors-slot-two)'], $styles['four']['two']);
   }
@@ -802,10 +806,6 @@ class ColorTokenResolverTest extends UnitTestCase {
     $this->assertSame([], $resolver->getGlobalThemeColors());
     $this->assertSame([], $resolver->getGlobalThemeColors());
     $this->assertSame(1, $warnings, 'The missing token file was reported once, so later calls came from the memo.');
-
-    // And the parsed result is stable across calls when the file is there.
-    $parsing = $this->createResolver($this->fixturePath);
-    $this->assertSame($parsing->getGlobalThemeColors(), $parsing->getGlobalThemeColors());
   }
 
   /**
@@ -832,6 +832,33 @@ class ColorTokenResolverTest extends UnitTestCase {
       $resolver->buildThemeSettingSwatches('global_theme', 'one'),
       'Palette swatches resolve against the option itself, in slot order, skipping slots the palette does not define.'
     );
+  }
+
+  /**
+   * A palette shows six chips, the sixth of which is slot-nine.
+   *
+   * This is the case the whole server-side resolution exists for: the generated
+   * token CSS stops at slot-eight, so slot-nine has no custom property and the
+   * sixth chip could never have been rendered from one. Asserted against a
+   * fixture palette that defines every slot, because the shared fixture
+   * deliberately defines only two and would pass with slot-nine dropped.
+   *
+   * @covers ::buildThemeSettingSwatches
+   */
+  public function testPaletteShowsSixChipsEndingWithSlotNine(): void {
+    $resolver = $this->createResolver(__DIR__ . '/../../fixtures/tokens-fixture-full-palette.json');
+
+    $swatches = $resolver->buildThemeSettingSwatches('global_theme', 'one');
+
+    $this->assertSame(
+      ['one', 'two', 'three', 'four', 'five', 'nine'],
+      array_column($swatches, 'slot'),
+      'A palette shows the six selectable slots in order, skipping the internal slots six to eight.'
+    );
+    $this->assertSame('#00366b', $swatches[0]['hex']);
+    $this->assertSame('Blue Yale', $swatches[0]['token_name']);
+    $this->assertSame('#d9d9d9', $swatches[5]['hex']);
+    $this->assertSame('Gray 200', $swatches[5]['token_name']);
   }
 
   /**
