@@ -75,7 +75,7 @@ The module is installed on every site and is off by default.
 2. User 1 (the platform superadmin) sets the per-site Azure index name at
    `/admin/config/yalesites/ys-beacon/admin`. This administration form is
    restricted to user 1 only — no other role, however privileged, can reach it
-   (`\Drupal\ys_beacon\Access\BeaconAdminAccessCheck`). Until the index name is
+   (`\Drupal\ys_beacon\Access\BeaconSuperadminOnlyAccessCheck`). Until the index name is
    set, the Beacon search index stays disabled at runtime and no Azure traffic
    occurs.
 3. A site administrator enables the chat widget at
