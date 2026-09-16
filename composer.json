@@ -146,7 +146,8 @@
       "drupal/core-project-message": true,
       "php-http/discovery": true,
       "phpstan/extension-installer": true,
-      "tbachert/spi": true
+      "tbachert/spi": true,
+      "symfony/runtime": true
     }
   },
   "scripts": {
