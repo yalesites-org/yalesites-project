@@ -378,6 +378,30 @@ class LocalistManagerTest extends UnitTestCase {
   }
 
   /**
+   * Tests the render-path ticket lookup bounds itself tighter than the default.
+   *
+   * It runs once per event teaser against a cache-busted URL, so it must not
+   * fall back to the platform-wide timeouts
+   * (yalesites-org/YaleSites-Internal#1701).
+   *
+   * @covers ::getTicketInfo
+   */
+  public function testGetTicketInfoSendsRenderPathTimeouts(): void {
+    $captured = [];
+    $this->httpClient->method('get')->willReturnCallback(
+      function (string $url, array $options) use (&$captured) {
+        $captured = $options;
+        return $this->jsonResponse(['tickets' => []]);
+      },
+    );
+
+    $this->createManager()->getTicketInfo(555);
+
+    $this->assertSame(LocalistManager::TICKET_REQUEST_TIMEOUT, $captured['timeout'] ?? NULL);
+    $this->assertSame(LocalistManager::TICKET_CONNECT_TIMEOUT, $captured['connect_timeout'] ?? NULL);
+  }
+
+  /**
    * @covers ::getTicketInfo
    */
   public function testGetTicketInfoReturnsEmptyArrayOnThrowable(): void {

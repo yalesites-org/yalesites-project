@@ -19,8 +19,48 @@ use Symfony\Component\DependencyInjection\ContainerInterface;
 
 /**
  * Service for Localist functions.
+ *
+ * On outbound timeouts (yalesites-org/YaleSites-Internal#1701,
+ * docs/development.md): getMultiPageUrls() runs on the cron/migrate path and
+ * checkGroupsEndpoint() on an admin request, so both are left to the
+ * platform-wide defaults in settings.php rather than bounding themselves.
+ * Note those defaults arrive with a Pantheon upstream update, not with the
+ * profile release, so on a site that has taken the profile bump but not yet
+ * the upstream merge these two calls still inherit core's unbounded connect.
+ * getTicketInfo() is the exception - it runs on the front-end render path, so
+ * it bounds itself explicitly below and does not depend on that rollout.
  */
 class LocalistManager extends ControllerBase implements ContainerInjectionInterface {
+
+  /**
+   * Seconds to wait for a response on the render path.
+   *
+   * This lookup runs from ys_localist_preprocess_node() once per event teaser,
+   * and its URL is deliberately cache-busted, so a slow Localist multiplies
+   * across a listing page instead of being absorbed by a cache. Hence tighter
+   * than the platform-wide default.
+   *
+   * Not tighter still, though, and the reason is measured rather than guessed:
+   * this host answered a list endpoint in 4.7s during testing, so a bound in
+   * the low single digits would trip on a merely slow response. That matters
+   * more than usual here because the degraded result is not transient - an
+   * empty return reads downstream as "this event has no registration" and gets
+   * frozen into the node's render cache, so an over-tight bound silently drops
+   * a registration link until the node is re-saved. See
+   * yalesites-org/YaleSites-Internal#1701.
+   */
+  const TICKET_REQUEST_TIMEOUT = 10;
+
+  /**
+   * Seconds to wait for the connection itself on the render path.
+   *
+   * Only DNS, TCP and the TLS handshake happen inside this window, and this is
+   * a CDN-fronted host; taking longer than this to answer the door on a page
+   * render is a fault rather than a slow success. Kept well below
+   * TICKET_REQUEST_TIMEOUT so an unreachable host fails fast while a reachable
+   * but slow one still gets its full response budget.
+   */
+  const TICKET_CONNECT_TIMEOUT = 3;
 
   /**
    * List of migrations to run. Place migrations from first to last.
@@ -365,6 +405,9 @@ class LocalistManager extends ControllerBase implements ContainerInjectionInterf
 
   /**
    * Returns ticket info for a given event ID.
+   *
+   * Runs on the render path, so it is bounded tighter than the platform
+   * default - see TICKET_REQUEST_TIMEOUT.
    */
   public function getTicketInfo($eventId) {
     $ticketData = [];
@@ -373,7 +416,10 @@ class LocalistManager extends ControllerBase implements ContainerInjectionInterf
     $version = time();
     $url = "$ticketEndpoint[0]/$eventId/tickets?v=$version";
     try {
-      $response = $this->httpClient->get($url);
+      $response = $this->httpClient->get($url, [
+        'timeout' => self::TICKET_REQUEST_TIMEOUT,
+        'connect_timeout' => self::TICKET_CONNECT_TIMEOUT,
+      ]);
     }
     catch (\Throwable $th) {
     }
