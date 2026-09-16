@@ -23,6 +23,23 @@
           "reference": "2.2.1"
         }
       }
+    },
+    "mathjax": {
+      "type": "package",
+      "package": {
+        "name": "mathjax/mathjax",
+        "version": "2.7.9",
+        "type": "drupal-library",
+        "license": "Apache-2.0",
+        "dist": {
+          "url": "https://registry.npmjs.org/mathjax/-/mathjax-2.7.9.tgz",
+          "type": "tar",
+          "shasum": "d6b67955c173e7d719fcb2fc0288662884eb7d3d"
+        },
+        "extra": {
+          "installer-name": "MathJax"
+        }
+      }
     }
   },
   "require": {
@@ -33,6 +50,7 @@
     "drupal/core-recommended": "10.6.15",
     "drush/drush": "^13",
     "league/commonmark": "^2.0",
+    "league/html-to-markdown": "^5.1",
     "pantheon-systems/drupal-integrations": "^10",
     "yalesites-org/yalesites_profile": "*"
   },
@@ -105,6 +123,14 @@
     "composer-exit-on-patch-failure": true,
     "patchLevel": {
       "drupal/core": "-p2"
+    },
+    "patches": {
+      "drupal/ai_vdb_provider_azure_ai_search": {
+        "Throw on a rejected document upload instead of reporting a silent success (YaleSites-Internal#1392)": "patches/ai_vdb_provider_azure_ai_search/insert-throws-on-failed-write.patch"
+      },
+      "drupal/ai": {
+        "Don't duplicate a title configured as contextual content (YaleSites-Internal#1617, drupal.org #3547137)": "patches/ai/embedding-base-title-duplication.patch"
+      }
     }
   },
   "config": {

@@ -8,6 +8,7 @@ dependencies:
     - field.field.block_content.tabs.field_padding_options
     - field.field.block_content.tabs.field_tabs
   module:
+    - hide_revision_field
     - markup
     - paragraphs
     - paragraphs_features
@@ -45,6 +46,7 @@ content:
       features:
         add_above: add_above
         collapse_edit_all: collapse_edit_all
+        convert: '0'
         duplicate: duplicate
     third_party_settings:
       paragraphs_features:
@@ -52,6 +54,7 @@ content:
         add_in_between_link_count: 3
         delete_confirmation: true
         show_drag_and_drop: true
+        show_collapse_all: true
   info:
     type: string_textfield
     weight: 2

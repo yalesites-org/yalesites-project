@@ -6,9 +6,13 @@
  */
 
 use Drupal\Core\Entity\EntityInterface;
+use Drupal\Core\Entity\FieldableEntityInterface;
 use Drupal\Core\Form\FormStateInterface;
 use Drupal\Core\Plugin\Context\Context;
 use Drupal\Core\Plugin\Context\EntityContextDefinition;
+use Drupal\ys_layouts\CloneBlockLinkBuilder;
+use Drupal\ys_layouts\Render\DetachContextualOperations;
+use Drupal\ys_layouts\WebformResultsLinkBuilder;
 
 /**
  * Add template files.
@@ -235,6 +239,90 @@ function ys_layouts_form_alter(&$form, $form_state, $form_id) {
 }
 
 /**
+ * Implements hook_form_FORM_ID_alter() for 'ys_layouts_detach_reusable_block'.
+ *
+ * Gin_lb only themes a hardcoded set of Layout Builder form IDs (see
+ * \Drupal\gin_lb\Service\ContextValidator::$formIds); our custom "Make
+ * non-reusable" confirm form is not in it, so its off-canvas dialog otherwise
+ * falls back to the front-end (atomic) theme - rendering the primary button as
+ * dark text on a blue background (a WCAG AA contrast failure) with cramped
+ * spacing. Opt the form into gin_lb's theming so it matches core's Remove/Move
+ * confirm dialogs, mirroring what gin_lb's own FormAlter does for a recognized
+ * form.
+ */
+function ys_layouts_form_ys_layouts_detach_reusable_block_alter(&$form, FormStateInterface $form_state, $form_id) {
+  if (!\Drupal::moduleHandler()->moduleExists('gin_lb')) {
+    return;
+  }
+  /** @var \Drupal\gin_lb\Service\ContextValidatorInterface $context_validator */
+  $context_validator = \Drupal::service('gin_lb.context_validator');
+  // gin_lb only restyles when a non-Gin default theme is active (its whole
+  // purpose is to bring Gin's look to the front-end-themed off-canvas).
+  if (!$context_validator->isValidTheme()) {
+    return;
+  }
+  $form['#gin_lb_form'] = TRUE;
+  $form['#attributes']['class'][] = 'glb-form';
+  // Propagate the flag to child elements after build so their theme hooks pick
+  // up gin_lb's suggestions (e.g. the primary submit button gets glb-button).
+  $form['#after_build'][] = [
+    'Drupal\gin_lb\HookHandler\FormAlter',
+    'afterBuildAttachGinLbForm',
+  ];
+  // Give the confirm form the same off-canvas "canvas-form" layout gin_lb
+  // applies to core's Remove/Move confirm dialogs (see FormAlter::alter,
+  // layout_builder_remove_block branch): the canvas-form class spaces the body
+  // below the header, and the description/actions containers align with it -
+  // otherwise the description sits cramped against the header.
+  $form['#attributes']['class'][] = 'canvas-form';
+  if (isset($form['description'])) {
+    $form['description']['#type'] = 'container';
+    $form['description']['#attributes']['class'][] = 'canvas-form__settings';
+  }
+  if (isset($form['actions'])) {
+    $form['actions']['#attributes']['class'][] = 'canvas-form__actions';
+  }
+  // gin_lb's confirm-dialog top spacing is keyed to core's own remove form IDs,
+  // so extend the same padding to this form's off-canvas dialog.
+  $form['#attached']['library'][] = 'ys_layouts/detach_reusable_block';
+}
+
+/**
+ * Implements hook_element_info_alter().
+ *
+ * Registers the "Make non-reusable", "Clone" and "View form submissions"
+ * actions in Layout Builder's contextual link metadata. Without this, adding an
+ * action never changes the contextual link id, so browsers keep replaying the
+ * previously cached menu out of sessionStorage and never ask the server for the
+ * new link.
+ *
+ * "Clone" is attached to inline blocks only (issue #190), and
+ * "View form submissions" only to blocks that reference a webform.
+ *
+ * @see \Drupal\ys_layouts\Render\DetachContextualOperations
+ * @see \Drupal\ys_layouts\CloneBlockLinkBuilder
+ * @see \Drupal\ys_layouts\WebformResultsLinkBuilder
+ */
+function ys_layouts_element_info_alter(array &$info) {
+  if (isset($info['layout_builder'])) {
+    // Appended so they run after Layout Builder's own pre_render has built the
+    // sections, and before the theme layer derives the contextual link id.
+    $info['layout_builder']['#pre_render'][] = [
+      DetachContextualOperations::class,
+      'addDetachOperation',
+    ];
+    $info['layout_builder']['#pre_render'][] = [
+      CloneBlockLinkBuilder::class,
+      'preRender',
+    ];
+    $info['layout_builder']['#pre_render'][] = [
+      WebformResultsLinkBuilder::class,
+      'preRender',
+    ];
+  }
+}
+
+/**
  * To aids in styling per section, set layout_section if using layout builder.
  *
  * For now this is only used with the link grid component:
@@ -353,5 +441,47 @@ function ys_layouts_preprocess_layout(&$variables) {
       $padding_options = str_replace('_', '-', $config['padding_options']);
       $variables['settings']['padding'] = $padding_options;
     }
+  }
+}
+
+/**
+ * Implements hook_preprocess_HOOK() for the page_meta layout.
+ *
+ * Reads the breadcrumb visibility setting from the Page Meta block and exposes
+ * it to the layout template, which renders the breadcrumb block at the layout
+ * level rather than inside the block itself. Breadcrumbs default to visible so
+ * existing pages are unaffected.
+ */
+function ys_layouts_preprocess_layout__page_meta(&$variables) {
+  $variables['show_breadcrumbs'] = TRUE;
+
+  $entity = $variables['content']['#entity'] ?? NULL;
+  if ($entity instanceof FieldableEntityInterface && $entity->hasField('layout_builder__layout')) {
+    foreach ($entity->get('layout_builder__layout')->getSections() as $section) {
+      foreach ($section->getComponents() as $component) {
+        $configuration = $component->get('configuration');
+        if (($configuration['id'] ?? '') === 'page_meta_block' && ($configuration['breadcrumb_display'] ?? 'visible') === 'hidden') {
+          $variables['show_breadcrumbs'] = FALSE;
+        }
+      }
+    }
+  }
+}
+
+/**
+ * Implements hook_contextual_links_plugins_alter().
+ *
+ * Keeps "Remove" the last action in a Layout Builder block's contextual menu,
+ * and trims "block" from its label to match "Clone" (issue #190).
+ *
+ * Core ships no weight on Configure/Move/Remove, so every link sorts equal and
+ * the order falls out of which group was attached first — which put the "Clone"
+ * link this module adds after the destructive "Remove". Weighting Remove past
+ * Clone makes that order explicit instead of incidental.
+ */
+function ys_layouts_contextual_links_plugins_alter(array &$contextual_links) {
+  if (isset($contextual_links['layout_builder_block_remove'])) {
+    $contextual_links['layout_builder_block_remove']['title'] = t('Remove');
+    $contextual_links['layout_builder_block_remove']['weight'] = 10;
   }
 }

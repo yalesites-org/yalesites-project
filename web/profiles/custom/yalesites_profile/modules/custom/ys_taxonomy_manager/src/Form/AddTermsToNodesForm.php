@@ -107,13 +107,18 @@ class AddTermsToNodesForm extends FormBase {
       }
     }
 
-    // Get nodes of the relevant bundles.
-    $query = $this->nodeStorage->getQuery()
-      ->condition('status', 1)
-      ->condition('type', array_unique($relevantBundles), 'IN')
-      ->accessCheck(TRUE);
+    // Get nodes of the relevant bundles. Only query when a bundle references
+    // the vocabulary; an empty $relevantBundles would build an invalid
+    // `type IN ()` condition and throw InvalidQueryException.
+    $nids = [];
+    if (!empty($relevantBundles)) {
+      $query = $this->nodeStorage->getQuery()
+        ->condition('status', 1)
+        ->condition('type', array_unique($relevantBundles), 'IN')
+        ->accessCheck(TRUE);
 
-    $nids = $query->execute();
+      $nids = $query->execute();
+    }
 
     // If no nodes are found, show a message and return.
     if (empty($nids)) {

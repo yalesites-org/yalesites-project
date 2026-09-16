@@ -1,6 +1,6 @@
 uuid: e028a28f-6a60-4b9c-b646-c60c91a5e034
 langcode: en
-status: false
+status: true
 dependencies:
   config:
     - core.entity_view_mode.media.token

@@ -1,0 +1,368 @@
+<?php
+
+/**
+ * @file
+ * Contains ys_beacon.module functions.
+ */
+
+use Drupal\config_ignore\ConfigIgnoreConfig;
+use Drupal\Core\Cache\Cache;
+use Drupal\Core\Entity\EntityInterface;
+use Drupal\Core\Form\FormStateInterface;
+use Drupal\Core\Url;
+use Drupal\media\MediaInterface;
+use Drupal\search_api\Entity\Index;
+use Drupal\search_api\Utility\Utility;
+use Drupal\ys_beacon\Form\YsBeaconSettings;
+
+/**
+ * Implements hook_theme().
+ */
+function ys_beacon_theme() {
+  return [
+    'ys_beacon_chat_button' => [
+      'variables' => [
+        'button_text' => NULL,
+        'icon_class' => NULL,
+      ],
+    ],
+    'ys_beacon_telemetry_chart' => [
+      'variables' => [
+        'bars' => [],
+        'max' => 0,
+        'days' => 0,
+        'total' => 0,
+      ],
+    ],
+  ];
+}
+
+/**
+ * Determines whether the legacy ai_engine chat widget is active.
+ *
+ * Beacon and the legacy chat must never render together. The condition itself
+ * lives in LegacyAiEngine::chatActive(); this wrapper exists only because the
+ * two render hooks below are procedural and cannot be injected into, and it
+ * keeps the \Drupal::service() call to a single place.
+ *
+ * @return bool
+ *   TRUE when the legacy chat widget is installed and enabled.
+ */
+function ys_beacon_legacy_chat_active(): bool {
+  return \Drupal::service('ys_beacon.legacy_ai_engine')->chatActive();
+}
+
+/**
+ * Implements hook_page_attachments_alter().
+ */
+function ys_beacon_page_attachments_alter(array &$attachments) {
+  // If the chat widget is enabled, attach the React app to all pages and pass
+  // configuration via drupalSettings.
+  $config = \Drupal::config('ys_beacon.settings');
+
+  // Whether or not the widget renders depends on this config (and on the
+  // legacy chat toggle), so the cache tags belong on every page response,
+  // including the early-return paths.
+  $attachments['#cache']['tags'] = Cache::mergeTags(
+    $attachments['#cache']['tags'] ?? [],
+    $config->getCacheTags(),
+    \Drupal::config('ai_engine_chat.settings')->getCacheTags()
+  );
+
+  if (!$config->get('enable_chat')) {
+    return;
+  }
+
+  // Never advertise an assistant that cannot answer. Without an index name the
+  // search index is forced off at runtime, so retrieval returns nothing and
+  // every reply would be an ungrounded, uncited guess. The chat toggle is not
+  // enough on its own: the override only folds authorization into it, not the
+  // index (yalesites-org/YaleSites-Internal#1459).
+  if (!$config->get('azure_index_name')) {
+    return;
+  }
+
+  // Never render two chat widgets: if the legacy ai_engine chat is enabled on
+  // this site, it wins until it is turned off.
+  if (ys_beacon_legacy_chat_active()) {
+    return;
+  }
+
+  $attachments['#attached']['drupalSettings']['ys_beacon'] = [
+    'conversation_url' => Url::fromRoute('ys_beacon.conversation')->toString(),
+    'initial_questions' => json_encode($config->get('prompts') ?? []),
+    'disclaimer' => $config->get('disclaimer'),
+    'footer' => $config->get('footer'),
+  ];
+  $attachments['#attached']['library'][] = 'ys_beacon/chat_widget';
+}
+
+/**
+ * Implements hook_entity_update().
+ *
+ * Removes an entity's chunks from the vector database the moment it stops
+ * being indexable (unpublished, access-restricted, or AI-disabled), instead
+ * of waiting for the next indexing run. This mirrors the legacy pipeline's
+ * synchronous removal: an editor pulling content from the assistant expects
+ * it gone immediately, not after cron. Deletion is a single cheap HTTP call;
+ * embedding work stays out of the save path.
+ */
+function ys_beacon_entity_update(EntityInterface $entity) {
+  $original = $entity->original ?? NULL;
+
+  if ($entity instanceof MediaInterface) {
+    // One rule covers every way a document comes to be owed extraction: an
+    // editor opting it in to AI indexing, a bulk opt-in action, and a file
+    // replacement are all plain media updates, and the fid-comparison this
+    // replaced saw only the last of them. PdfTextIndexer::needsExtraction()
+    // records its attempt before writing the extracted text back, so that
+    // save - itself an update - does not re-queue the work.
+    _ys_beacon_queue_pdf_extraction($entity);
+  }
+
+  if (!in_array($entity->getEntityTypeId(), ['node', 'media'], TRUE)) {
+    return;
+  }
+  // Cheap gate: skip everything on sites where a platform admin has not
+  // authorized Beacon, or where Beacon indexing is not configured.
+  if (!\Drupal::service('ys_beacon.authorization')->isAuthorized()
+    || !\Drupal::config('ys_beacon.settings')->get('azure_index_name')) {
+    return;
+  }
+  if (!$original) {
+    return;
+  }
+
+  /** @var \Drupal\ys_beacon\Service\BeaconIndexability $indexability */
+  $indexability = \Drupal::service('ys_beacon.indexability');
+  // Only act on the transition from indexable to non-indexable; anything
+  // else is handled by normal Search API tracking.
+  if ($indexability->isIndexable($entity) || !$indexability->isIndexable($original)) {
+    return;
+  }
+
+  try {
+    $index_id = \Drupal::config('ys_beacon.settings')->get('search_index_id') ?: 'ys_beacon';
+    $index = Index::load($index_id);
+    // A read-only site borrows another site's collection and must never write
+    // to it, so skip the immediate removal just as Search API's own
+    // Index::trackItemsDeleted() skips the server delete for a read-only index.
+    if (!$index || !$index->status() || $index->isReadOnly() || !$index->isServerEnabled()) {
+      return;
+    }
+    $datasource_id = 'entity:' . $entity->getEntityTypeId();
+    if (!$index->isValidDatasource($datasource_id)) {
+      return;
+    }
+    $item_ids = [];
+    foreach (array_keys($entity->getTranslationLanguages()) as $langcode) {
+      $item_ids[] = Utility::createCombinedId($datasource_id, $entity->id() . ':' . $langcode);
+    }
+    $index->getServerInstance()->deleteItems($index, $item_ids);
+  }
+  catch (\Throwable $e) {
+    \Drupal::logger('ys_beacon')->warning('Immediate removal from the Beacon index failed for @type @id: @message', [
+      '@type' => $entity->getEntityTypeId(),
+      '@id' => $entity->id(),
+      '@message' => $e->getMessage(),
+    ]);
+  }
+}
+
+/**
+ * Implements hook_metatag_groups_alter().
+ *
+ * While the legacy ai_engine_metadata module is still installed, its
+ * ai_engine group definition remains but is empty: this module's tag
+ * definitions (same IDs, group ys_beacon) win plugin discovery. Metatag logs
+ * an error for every tagless group on each metatag form build, so drop the
+ * leftover group until ai_engine is uninstalled.
+ */
+function ys_beacon_metatag_groups_alter(&$definitions) {
+  unset($definitions['ai_engine']);
+}
+
+/**
+ * Implements hook_config_ignore_ignored_alter().
+ *
+ * Registers the Search API keys holding per-site Beacon values as
+ * config-ignored on every direction and operation except import-create.
+ * BeaconIndexManager::propagateConnection() and ::pinSearchUrl() write the
+ * site's own Azure index name, endpoint and read-only flag onto the shared
+ * Search API config, so all three must survive config import on a provisioned
+ * site and must never be exported.
+ *
+ * These ignores are added here rather than listed in config_ignore.settings so
+ * they exist only while ys_beacon does. config_ignore transforms the import
+ * storage from the synced settings list before any module is installed, so an
+ * entry in that list also applies to a site that has never had Beacon. There
+ * the server config is created, not updated, and config_ignore's create
+ * handling unsets an ignored key outright rather than blanking it
+ * (ConfigIgnoreEventSubscriber::ignoreParts()). ai_search's
+ * NewServerEventSubscriber then reads the missing database_name as NULL and
+ * aborts the whole config import with a TypeError, which is what broke the
+ * platform-wide deploy (yalesites-org/YaleSites-Internal#1393). An earlier fix
+ * scoped the entry away from import-create in this same hook, but the hook
+ * cannot run on the sites that hit the bug: ys_beacon is not installed yet when
+ * the transform happens.
+ *
+ * Skipping import-create is still required for the case where Beacon is
+ * installed but the server config is absent, so a fresh import keeps the
+ * shipped empty default - a present, harmless value. Import-update keeps a
+ * provisioned site's persisted values across every later deploy
+ * (yalesites-org/YaleSites-Internal#1387).
+ *
+ * Every operation is needed, not just update: the pinned endpoint URL is absent
+ * from synced config entirely, so on import it is a delete-shaped key that
+ * survives via the delete list, and on export it is a create-shaped one that
+ * the export-create entry strips. Dropping either would silently lose a site's
+ * endpoint or leak it into synced config.
+ */
+function ys_beacon_config_ignore_ignored_alter(ConfigIgnoreConfig $ignored) {
+  // Both machine names are configurable (ys_beacon.settings:search_server_id
+  // and :search_index_id), so resolve them the way every other consumer does
+  // rather than hardcoding the defaults. Raw storage is read rather than the
+  // config factory because this runs during the import storage transformation,
+  // where YsBeaconConfigOverrides is resolving overrides off the same object.
+  $settings = \Drupal::service('config.storage')->read('ys_beacon.settings') ?: [];
+  $server = 'search_api.server.' . (($settings['search_server_id'] ?? '') ?: 'ys_beacon');
+  $index = 'search_api.index.' . (($settings['search_index_id'] ?? '') ?: 'ys_beacon');
+
+  $per_site_keys = [
+    $server . ':backend_config.database_settings.database_name',
+    $server . ':backend_config.database_settings.url',
+    $index . ':read_only',
+  ];
+
+  foreach (['import', 'export'] as $direction) {
+    foreach (['create', 'update', 'delete'] as $operation) {
+      if ($direction === 'import' && $operation === 'create') {
+        continue;
+      }
+      $list = array_merge($ignored->getList($direction, $operation), $per_site_keys);
+      $ignored->setList($direction, $operation, array_values(array_unique($list)));
+    }
+  }
+}
+
+/**
+ * Implements hook_field_widget_single_element_WIDGET_TYPE_form_alter().
+ *
+ * Shows the AI Metadata group on entity forms only when the platform-level
+ * toggle is on, and defaults new media to excluded from the AI index.
+ */
+function ys_beacon_field_widget_single_element_metatag_firehose_form_alter(&$field_widget_complete_form, FormStateInterface $form_state, $context) {
+  $config = \Drupal::config('ys_beacon.settings');
+  /** @var \Drupal\Core\Entity\EntityForm $form_object */
+  $form_object = $form_state->getFormObject();
+  $entity = $form_object->getEntity();
+  if (!$config->get('enable_metadata_fields')) {
+    unset($field_widget_complete_form['ys_beacon']);
+  }
+  elseif (_ys_beacon_is_new_media_with_ai_tags($entity, $field_widget_complete_form)) {
+    $field_widget_complete_form['ys_beacon']['ai_disable_indexing']['#default_value'] = 'disabled';
+  }
+}
+
+/**
+ * Determines if the entity is a new media entity with AI metatags.
+ *
+ * @param \Drupal\Core\Entity\EntityInterface $entity
+ *   The entity to check.
+ * @param array $field_widget_complete_form
+ *   The form array to check.
+ */
+function _ys_beacon_is_new_media_with_ai_tags($entity, $field_widget_complete_form) {
+  return $entity->isNew() &&
+    $entity->getEntityTypeId() == 'media' &&
+    isset($field_widget_complete_form['ys_beacon']['ai_disable_indexing']);
+}
+
+/**
+ * Implements hook_page_bottom().
+ */
+function ys_beacon_page_bottom(array &$page_bottom) {
+  $config = \Drupal::config('ys_beacon.settings');
+  $current_theme = \Drupal::theme()->getActiveTheme()->getName();
+  $frontend_theme = \Drupal::config('system.theme')->get('default');
+
+  if (
+    $config->get('floating_button')
+    && $config->get('enable_chat')
+    // Same guard as the widget attach: no index means no grounded answer, so
+    // the button must not invite one.
+    && $config->get('azure_index_name')
+    && !ys_beacon_legacy_chat_active()
+    && $current_theme === $frontend_theme
+  ) {
+    $page_bottom[] = [
+      '#theme' => 'ys_beacon_chat_button',
+      '#button_text' => $config->get('floating_button_text'),
+      '#icon_class' => $config->get('floating_button_icon') ?? YsBeaconSettings::FLOATING_BUTTON_ICON,
+    ];
+  }
+}
+
+/**
+ * Implements hook_entity_insert().
+ *
+ * Queues PDF text extraction for a newly uploaded document.
+ */
+function ys_beacon_entity_insert(EntityInterface $entity) {
+  if ($entity instanceof MediaInterface) {
+    _ys_beacon_queue_pdf_extraction($entity);
+  }
+}
+
+/**
+ * Implements hook_entity_delete().
+ *
+ * Forgets the media's PDF extraction attempt record, which would otherwise
+ * outlive the media it describes.
+ */
+function ys_beacon_entity_delete(EntityInterface $entity) {
+  if ($entity instanceof MediaInterface) {
+    \Drupal::service('ys_beacon.pdf_text_indexer')->forgetAttempt($entity->id());
+  }
+}
+
+/**
+ * Queues background PDF text extraction for a media entity when appropriate.
+ *
+ * @param \Drupal\media\MediaInterface $media
+ *   The media entity that may hold a PDF.
+ *
+ * @return bool
+ *   TRUE when an extraction item was queued.
+ */
+function _ys_beacon_queue_pdf_extraction(MediaInterface $media): bool {
+  // Nothing runs on sites where a platform admin has not authorized Beacon.
+  if (!\Drupal::service('ys_beacon.authorization')->isAuthorized()) {
+    return FALSE;
+  }
+  // Only extract on sites where Beacon indexing is configured; without an
+  // index there is nothing to feed the extracted text into.
+  if (!\Drupal::config('ys_beacon.settings')->get('azure_index_name')) {
+    return FALSE;
+  }
+  /** @var \Drupal\ys_beacon\Service\PdfTextIndexer $indexer */
+  $indexer = \Drupal::service('ys_beacon.pdf_text_indexer');
+  if (!$indexer->needsExtraction($media)) {
+    return FALSE;
+  }
+  \Drupal::queue('ys_beacon_pdf_text_extraction')->createItem(['media_id' => $media->id()]);
+  return TRUE;
+}
+
+/**
+ * Implements hook_cron().
+ *
+ * Expires flagged turns past their retention window. SuspectTurnLog also prunes
+ * when it records, but a site where no further injection attempt is ever made
+ * would otherwise keep its last rows indefinitely - and the report page tells
+ * administrators that flagged turns are deleted after 90 days, so something has
+ * to make that true without depending on new traffic.
+ */
+function ys_beacon_cron() {
+  \Drupal::service('ys_beacon.suspect_turn_log')->pruneExpired();
+}

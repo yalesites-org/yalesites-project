@@ -7,6 +7,15 @@
   display: none !important;
 }
 
+/* Layout Builder stacking budget: block overlay 99 < .contextual 100 < open menu
+101 < #toolbar-bar 102. Nothing here creates a stacking context, so these compete
+in the root one and equal values fall back to DOM order -- which let the next
+block's overlay and pencil paint over an open menu, making Clone and Remove
+unclickable. Gin sets .contextual to 100 (lowering core's 500); gin_lb owns the
+neighbouring values. 101 is forced rather than free: it has to clear 100 and stay
+under 102. It ties gin_lb's .glb-sidebar and wins on DOM order, which is harmless
+-- the sidebar is fixed to the right edge while a menu tracks its own block, so
+the two cannot overlap at any canvas width. */
 .layout-builder .prevent-operation,
 .ys-layout-builder--drag-drop {
   position: absolute;
@@ -14,8 +23,12 @@
   left: 0;
   width: 100%;
   height: 100%;
-  z-index: 100;
+  z-index: 99;
   display: block !important;
+}
+
+.layout-builder .contextual.open {
+  z-index: 101;
 }
 
 .ys-layout-builder--drag-drop {

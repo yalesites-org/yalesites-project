@@ -7,6 +7,8 @@
  * This modules holds YaleSites Alerts functionality.
  */
 
+use Drupal\Core\Block\BlockPluginInterface;
+
 /**
  * Implements hook_theme().
  */
@@ -36,4 +38,18 @@ function ys_alert_preprocess_page(&$variables) {
   // Via: https://drupal.stackexchange.com/questions/266379/how-to-clear-cache-for-config-entity-after-making-changes
   // Also used: https://github.com/yalesites-org/yalesites-project/blob/4cd183c8f568b771d656478adb3b76985501c3a1/web/profiles/custom/yalesites_profile/modules/custom/ys_themes/ys_themes.module#LL144C1-L144C1
   \Drupal::service('renderer')->addCacheableDependency($variables, $config);
+}
+
+/**
+ * Implements hook_block_view_BASE_ID_alter() for the alert_block plugin.
+ */
+function ys_alert_block_view_alert_block_alter(array &$build, BlockPluginInterface $block) {
+  // Core gives every placed block a "Configure block" contextual link, putting
+  // an edit pencil on the sitewide alert for anyone who can administer blocks.
+  // That form only exposes the block label and visibility conditions, not the
+  // alert content, which is managed in Alert Settings (/admin/yalesites/alert).
+  // Dropping the group leaves #contextual_links empty, so core renders no
+  // placeholder for any role. The form stays reachable from
+  // /admin/structure/block.
+  unset($build['#contextual_links']['block']);
 }

@@ -94,3 +94,15 @@ GitHub Applets integrate with the broader ys_embed system through:
 - **EmbedSource Plugin**: `GitHubApplet.php` handles validation and rendering
 - **Embed Field**: Stores GitHub Pages URL and validates format
 - **MediaSource Plugin**: Integrates with Drupal's media library system
+
+## Running tests
+
+This module has PHPUnit tests under `tests/src/` covering the embed source plugins (regex/validation/render), the source-plugin manager, and the embed constraint validator. Run them from the project root on the local Lando environment, passing the module's `tests` path so PHPUnit only discovers this module's tests (not Drupal core/contrib):
+
+```bash
+lando ssh -c "env SIMPLETEST_DB=mysql://pantheon:pantheon@database/pantheon \
+  php /app/vendor/bin/phpunit -c /app/phpunit.xml \
+  /app/web/profiles/custom/yalesites_profile/modules/custom/ys_embed/tests"
+```
+
+Add `--testdox` for readable output.

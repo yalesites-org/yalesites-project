@@ -4,3 +4,56 @@
  * @file
  * Install and update functions for the ys_book module.
  */
+
+/**
+ * Implements hook_install().
+ */
+function ys_book_install(): void {
+  _ys_book_add_book_title_column();
+}
+
+/**
+ * Add title column to book table for custom menu link titles.
+ *
+ * Numbered 10005 rather than 10001 because 10001 through 10004 were previously
+ * taken by microsite-rename hooks that were later removed. An environment that
+ * deployed while those existed is stamped at 10004, so it would skip a re-used
+ * lower number and never get the column. Nothing below 10005 ever reached a
+ * release tag, and the add is guarded, so this is safe to run anywhere.
+ */
+function ys_book_update_10005(): void {
+  _ys_book_add_book_title_column();
+}
+
+/**
+ * Adds this module's title column to the book module's table.
+ *
+ * Both hook_install() and hook_update_N() need this. Nothing in Drupal adds the
+ * column on its own: hook_schema() only creates a module's own tables, and
+ * installing a module stamps its schema version at the highest update it
+ * provides, so ys_book_update_10005() is treated as already applied and skipped
+ * on every fresh install. Without the hook_install() path a new site ends up
+ * with the unmodified contrib book table, and the first page saved into a
+ * collection fails in _ys_book_save_menu_link_title() with "Unknown column
+ * 'title'".
+ *
+ * There is deliberately no matching hook_uninstall() dropping the column: it
+ * holds editor-authored menu link titles, so dropping it would silently destroy
+ * content on an uninstall/reinstall cycle. Leaving it behind is harmless, since
+ * it is nullable and contrib book inserts an explicit field list.
+ */
+function _ys_book_add_book_title_column(): void {
+  $schema = \Drupal::database()->schema();
+  $table_name = 'book';
+
+  // Check if the column already exists.
+  if (!$schema->fieldExists($table_name, 'title')) {
+    $spec = [
+      'type' => 'varchar',
+      'length' => 255,
+      'not null' => FALSE,
+      'description' => 'Custom menu link title for the book page. If NULL, uses node title.',
+    ];
+    $schema->addField($table_name, 'title', $spec);
+  }
+}

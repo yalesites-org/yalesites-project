@@ -1,0 +1,13 @@
+diff --git a/core/modules/views/src/ViewExecutable.php b/core/modules/views/src/ViewExecutable.php
+index 359c9159a3..c225ac83d9 100644
+--- a/core/modules/views/src/ViewExecutable.php
++++ b/core/modules/views/src/ViewExecutable.php
+@@ -709,7 +709,7 @@ public function getExposedInput() {
+         // multiple displays in the same view can share the same filters and
+         // remember settings.
+         $display_id = ($this->display_handler->isDefaulted('filters')) ? 'default' : $this->current_display;
+-        if (!empty($session->get('views')[$this->storage->id()][$display_id])) {
++        if ((!headers_sent() || $session->isStarted()) && !empty($session->get('views')[$this->storage->id()][$display_id])) {
+           $this->exposed_input = $session->get('views')[$this->storage->id()][$display_id];
+         }
+       }
