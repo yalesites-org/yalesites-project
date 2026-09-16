@@ -23,9 +23,20 @@ ys_core.admin_platform_admin:
   parent: system.admin
   route_name: ys_core.admin_platform_admin
   title: "Platform Admin"
-  # Matches the pinned weight in the profile's exported
-  # core.menu.static_menu_link_overrides, which is what a built site honours.
-  weight: -38
+  # Last item in the admin menu, after Find (50) and Dashboard (60).
+  #
+  # Deliberately NOT the -38 pinned in the profile's exported
+  # core.menu.static_menu_link_overrides. That export renumbers the whole top
+  # level onto a -49..-38 scale where -38 sorts last, but this file competes
+  # with Drupal core's defaults, which run -10 (Content) to 10
+  # (announcements_feed, not enabled here; help.main at 9 is the highest in
+  # play). A -38
+  # here sorts Platform Admin *first*, ahead of Content - and because the
+  # override wins wherever it is applied, that only shows up on an environment
+  # that lacks it. Keep this on the core scale; the override still pins the
+  # built-site ordering.
+  # @see \Drupal\Tests\ys_core\Unit\AdminMenuLinkWeightTest
+  weight: 70
 # Redirects menu links
 ys_core.admin_redirects:
   description: "Manages redirects for the site."
