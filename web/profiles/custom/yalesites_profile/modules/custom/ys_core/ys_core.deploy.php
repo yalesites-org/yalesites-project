@@ -453,3 +453,80 @@ function ys_core_text_format_repair_message(array $repaired, array $deferred) {
 
   return implode("\n", $lines);
 }
+
+/**
+ * Implements hook_deploy_NAME().
+ *
+ * Brings stored values into line with the schema added for
+ * ys_core.header_settings, ys_core.footer_settings, ys_core.site and
+ * ys_core.social_links.
+ *
+ * Two shapes predate that schema. environment_indicator.show is written as a
+ * boolean now, but sites that last saved it through the old SiteSettingsForm
+ * hold int 1. custom_favicon and site_name_image are managed_file values, so a
+ * list of file IDs, but config/install shipped them as an empty string - a site
+ * that has never saved either form still holds that string.
+ *
+ * Neither repair changes rendered behaviour: every reader of these keys is a
+ * truthiness test or an explicit (bool) cast, so int 1 and TRUE, and '' and [],
+ * already behave the same. The point is that active config matches the declared
+ * schema, so strict-schema tests can run.
+ *
+ * This is a deploy hook rather than an update hook because it edits active
+ * config, and drush deploy runs config:import after updatedb - an update hook's
+ * edits here would be overwritten on every deploy.
+ *
+ * @see yalesites-org/YaleSites-Internal#1697
+ */
+function ys_core_deploy_10009() {
+  $messages = [];
+
+  // One editable object per config name, each saved at most once, so a site
+  // needing both ys_core.site repairs does not write and invalidate it twice.
+  $configs = [
+    'ys_core.site' => \Drupal::configFactory()->getEditable('ys_core.site'),
+    'ys_core.header_settings' => \Drupal::configFactory()->getEditable('ys_core.header_settings'),
+  ];
+  $changed = [];
+
+  $show = $configs['ys_core.site']->get('environment_indicator.show');
+  if ($show !== NULL && !is_bool($show)) {
+    $configs['ys_core.site']->set('environment_indicator.show', (bool) $show);
+    $changed['ys_core.site'] = TRUE;
+    $messages[] = (string) t('Cast ys_core.site environment_indicator.show from @type to boolean.', [
+      '@type' => gettype($show),
+    ]);
+  }
+
+  // Both are managed_file values: a list of file IDs, never a scalar.
+  $file_lists = [
+    'ys_core.site' => 'custom_favicon',
+    'ys_core.header_settings' => 'site_name_image',
+  ];
+  foreach ($file_lists as $name => $key) {
+    $value = $configs[$name]->get($key);
+    if ($value !== NULL && !is_array($value)) {
+      // An unset image is '' in config and [] from the element, so filtering
+      // the cast covers both; array_values() keeps it a real list for the
+      // sequence schema. Readers index [0], so a scalar left here resolves to
+      // that string's first character rather than the file ID.
+      // @see \Drupal\ys_core\Plugin\PlatformAdminSetting\SiteBrandingPlatformAdminSetting::normalize()
+      $configs[$name]->set($key, array_values(array_filter((array) $value)));
+      $changed[$name] = TRUE;
+      $messages[] = (string) t('Normalised @name @key from a scalar to a list of file IDs.', [
+        '@name' => $name,
+        '@key' => $key,
+      ]);
+    }
+  }
+
+  foreach (array_keys($changed) as $name) {
+    $configs[$name]->save();
+  }
+
+  if ($messages === []) {
+    return (string) t('All ys_core config values already match the new schema.');
+  }
+
+  return implode("\n", $messages);
+}
