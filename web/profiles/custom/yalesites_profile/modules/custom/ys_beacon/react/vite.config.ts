@@ -10,12 +10,27 @@ export default defineConfig(({ command }) => ({
   base: "/profiles/custom/yalesites_profile/modules/custom/ys_beacon/react/static/",
   plugins: [react()],
   // This bundle is committed and served to every site visitor, so debug output
-  // must not ship. Stripping at build time (rather than deleting the calls)
-  // keeps console logging available under `npm run dev`. Note this drops ALL
-  // console.* from production, the two console.error calls in Chat.tsx
-  // included - a deliberate trade of live-devtools diagnosability for a clean
-  // visitor console.
-  esbuild: command === "build" ? { drop: ["console", "debugger"] } : {},
+  // must not ship. The noisy levels are marked pure, which lets minification
+  // drop them from production while leaving them working under `npm run dev`.
+  //
+  // console.error is deliberately NOT stripped: Chat.tsx's "Conversation not
+  // found" branch returns with no UI feedback at all, so the console is the
+  // only trace such a failure leaves, and the source map we ship on purpose
+  // (see "Source map decision" in ../README.md) is worth little if nothing
+  // ever reaches the console.
+  esbuild:
+    command === "build"
+      ? {
+          pure: [
+            "console.log",
+            "console.debug",
+            "console.info",
+            "console.warn",
+            "console.trace",
+          ],
+          drop: ["debugger"],
+        }
+      : {},
   build: {
     outDir: "static",
     emptyOutDir: true,

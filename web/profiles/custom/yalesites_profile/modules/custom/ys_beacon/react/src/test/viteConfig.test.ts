@@ -26,11 +26,16 @@ const proxyTarget = (config: UserConfig): string | undefined => {
   return typeof entry === "string" ? entry : entry?.target;
 };
 
-const dropped = (config: UserConfig): string[] => {
+const esbuildOptions = (config: UserConfig) => {
   const esbuild = config.esbuild;
-  if (!esbuild || typeof esbuild === "boolean") return [];
-  return esbuild.drop ?? [];
+  return !esbuild || typeof esbuild === "boolean" ? {} : esbuild;
 };
+
+const dropped = (config: UserConfig): string[] =>
+  esbuildOptions(config).drop ?? [];
+
+const pured = (config: UserConfig): string[] =>
+  esbuildOptions(config).pure ?? [];
 
 // Cleared both before and after: before, so an ambient YS_BEACON_PROXY_TARGET in
 // the developer's shell cannot fail the fallback test (and a `-t`-filtered run
@@ -43,14 +48,32 @@ beforeEach(clearProxyTarget);
 afterEach(clearProxyTarget);
 
 describe("Beacon vite config — production bundle hygiene (#1691)", () => {
-  it("drops console and debugger calls from the production bundle", () => {
-    expect(dropped(resolve("build"))).toEqual(
-      expect.arrayContaining(["console", "debugger"])
+  it("marks the noisy console levels pure so minification removes them", () => {
+    expect(pured(resolve("build"))).toEqual(
+      expect.arrayContaining([
+        "console.log",
+        "console.debug",
+        "console.info",
+        "console.warn",
+        "console.trace",
+      ])
     );
   });
 
-  it("keeps console calls working in the dev server", () => {
+  // Deliberate: some failure paths return without telling the visitor
+  // anything, so console.error is the only trace they leave.
+  it("keeps console.error in the production bundle", () => {
+    expect(pured(resolve("build"))).not.toContain("console.error");
+    expect(dropped(resolve("build"))).not.toContain("console");
+  });
+
+  it("drops debugger statements from the production bundle", () => {
+    expect(dropped(resolve("build"))).toContain("debugger");
+  });
+
+  it("leaves every console call working in the dev server", () => {
     expect(dropped(resolve("serve"))).not.toContain("console");
+    expect(pured(resolve("serve"))).toEqual([]);
   });
 });
 

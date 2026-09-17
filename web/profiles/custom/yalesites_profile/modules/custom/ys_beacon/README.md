@@ -710,10 +710,18 @@ npm run build      # tsc && vite build -> react/static/assets
 
 Commit the regenerated `react/static` output together with the source change.
 
-`vite build` strips `console.*` and `debugger` statements from the bundle
-(`esbuild.drop`), because it is served to every site visitor. This includes
-`console.error`, so a production problem cannot be diagnosed from the browser
-console - reproduce it under `npm run dev`, where console output still works.
+`vite build` keeps debug output out of the bundle, because it is served to
+every site visitor: `console.log`, `console.debug`, `console.info`,
+`console.warn` and `console.trace` are marked `esbuild.pure` so minification
+removes them, and `debugger` statements are dropped. They all still work under
+`npm run dev`, so keep using them while developing - just do not rely on one
+being present in production.
+
+**`console.error` is intentionally kept.** Some failure paths (for example the
+"Conversation not found" branch in `Chat.tsx`) return without showing the
+visitor anything, so the console is the only trace they leave - and the source
+map this bundle ships is only useful if something reaches the console. Use
+`console.error` for anything you would want to see in a production report.
 
 The `.github/workflows/verify_beacon_bundle.yml` CI check rebuilds the bundle
 from source on every pull request that touches `react/` and fails if the
