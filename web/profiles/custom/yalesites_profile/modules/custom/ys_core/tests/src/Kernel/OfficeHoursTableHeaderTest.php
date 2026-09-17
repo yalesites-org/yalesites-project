@@ -23,11 +23,17 @@ use Drupal\office_hours\OfficeHoursDateHelper;
  *   in a schedule is the association that carries the meaning.
  * - The first header cell declared colspan="3" while the body rows have one
  *   cell per column, so a three-column table declared five.
+ * - The header and the row each decided separately whether a 'Day' column
+ *   existed, on conditions that did not match, so at day_format 'none' with
+ *   exceptions or seasons on the header declared a column no row filled.
  *
- * All three are fixed by a patch on drupal/office_hours declared in the
- * profile's composer.json. These tests therefore also assert the patch is
- * applied: a checkout or a CI run that resolved dependencies without it fails
- * here rather than shipping an inaccessible table.
+ * All four are fixed by a patch on drupal/office_hours declared in the
+ * profile's composer.json, so these tests also assert that patch is applied
+ * and fail if a dependency resolve ever drops it.
+ *
+ * They are NOT a CI gate, and nothing here should be read as one: this repo's
+ * `.ci/test/static/run` calls `composer unit-test`, which is
+ * `echo 'No unit test step defined.'`, so PHPUnit runs locally only.
  *
  * WCAG 2.1 AA, 1.3.1 Info and Relationships.
  *
@@ -145,11 +151,48 @@ class OfficeHoursTableHeaderTest extends YsKernelTestBase {
       'An exception day should start a second table'
     );
 
+    $this->assertShapeIsConsistent($html);
+  }
+
+  /**
+   * The shape still holds when the day label is hidden.
+   *
+   * Setting day_format to 'none' is a supported option on the formatter's
+   * settings form, and with exceptions or seasons enabled it used to be the
+   * one reachable configuration where the header and the rows disagreed: the
+   * header emitted a 'Day' cell that no row filled. Both sides now read one
+   * shared flag, so they cannot drift apart again.
+   *
+   * Not reachable on YaleSites today - the shipped display sets
+   * day_format 'long' and editors cannot change formatter settings - but the
+   * patch is meant to go upstream, where every supported option counts.
+   */
+  public function testHeaderShapeHoldsWithTheDayLabelHidden(): void {
+    $html = $this->renderSchedule($this->everyRowShape(), ['day_format' => 'none']);
+
+    $this->assertShapeIsConsistent($html);
+
+    foreach ($this->tables($html) as $index => $table) {
+      $this->assertCount(
+        2,
+        $this->headerCells($table),
+        "Table $index should drop the Day column entirely, leaving slots and comments"
+      );
+    }
+  }
+
+  /**
+   * Asserts every rendered table declares as many columns as its rows fill.
+   */
+  protected function assertShapeIsConsistent(string $html): void {
+    $tables = $this->tables($html);
+    $this->assertNotEmpty($tables, 'The formatter should render at least one table');
+
     foreach ($tables as $index => $table) {
-      // Sum colspans rather than counting cells: the defect under test was a
-      // header cell with colspan="3" beside two ordinary ones, which a flat
-      // cell count reads as three-against-three and passes. Do not reduce
-      // this to assertCount() - it would stop detecting the bug.
+      // Sum colspans rather than counting cells: one of the defects under test
+      // was a header cell with colspan="3" beside two ordinary ones, which a
+      // flat cell count reads as three-against-three and passes. Do not reduce
+      // this to assertCount() - it would stop detecting that bug.
       $declared = $this->columnsSpannedBy($this->headerCells($table));
 
       $rows = $this->bodyRows($table);
@@ -177,7 +220,7 @@ class OfficeHoursTableHeaderTest extends YsKernelTestBase {
    */
   public function testSectionTitleRendersAsCaptionEscapedOnce(): void {
     $title = 'Holidays & Closures';
-    $html = $this->renderSchedule($this->everyRowShape(), ['title' => $title]);
+    $html = $this->renderSchedule($this->everyRowShape(), ['exceptions' => ['title' => $title]]);
 
     $tables = $this->tables($html);
     $exceptions = end($tables);
@@ -210,13 +253,15 @@ class OfficeHoursTableHeaderTest extends YsKernelTestBase {
    *
    * @param array $values
    *   Office hours field values.
-   * @param array $exceptions
-   *   Overrides to merge into the formatter's 'exceptions' settings.
+   * @param array $overrides
+   *   Formatter settings to override. An 'exceptions' key is merged into the
+   *   shipped sub-array rather than replacing it, because the formatter
+   *   back-fills that sub-array's own defaults.
    *
    * @return string
    *   The rendered markup.
    */
-  protected function renderSchedule(array $values, array $exceptions = []): string {
+  protected function renderSchedule(array $values, array $overrides = []): string {
     $entity = EntityTest::create([
       'name' => 'Office hours',
       self::FIELD_NAME => array_values($values),
@@ -224,7 +269,10 @@ class OfficeHoursTableHeaderTest extends YsKernelTestBase {
 
     $display = $this->readConfig('core.entity_view_display.block_content.office_hours.default');
     $settings = $display['content']['field_office_hours']['settings'];
-    $settings['exceptions'] = $exceptions + $settings['exceptions'];
+    if (isset($overrides['exceptions'])) {
+      $overrides['exceptions'] += $settings['exceptions'];
+    }
+    $settings = $overrides + $settings;
 
     $build = $entity->get(self::FIELD_NAME)->view([
       'type' => 'office_hours_table',
