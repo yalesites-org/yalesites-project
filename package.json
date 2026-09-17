@@ -35,8 +35,7 @@
     "eslint-plugin-react": "^7.29.4",
     "eslint-plugin-yml": "^0.14.0",
     "semantic-release": "^24.0.0",
-    "semantic-release-replace-plugin": "^1.2.7",
-    "shelljs": "^0.8.5"
+    "semantic-release-replace-plugin": "^1.2.7"
   },
   "lint-staged": {
     "{web/modules/custom,web/themes/contrib/atomic,web/themes/custom,web/profiles/custom}/**/*.scss": [
