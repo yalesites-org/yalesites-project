@@ -35,7 +35,7 @@ class ConditionalMediaDeleteFormTest extends YsKernelTestBase {
   /**
    * The media file deleter service.
    *
-   * @var \Drupal\ys_file_management\Service\MediaFileDeleterInterface
+   * @var \Drupal\ys_file_management\Service\MediaFileDeleter
    */
   protected $mediaFileDeleter;
 
@@ -113,13 +113,6 @@ class ConditionalMediaDeleteFormTest extends YsKernelTestBase {
    * @covers \Drupal\ys_file_management\Service\MediaFileDeleter
    */
   public function testServiceExists() {
-    $this->assertNotNull($this->mediaFileDeleter);
-    // Check that it implements the interface.
-    $this->assertInstanceOf(
-      'Drupal\ys_file_management\Service\MediaFileDeleterInterface',
-      $this->mediaFileDeleter
-    );
-    // Check that it's the concrete implementation.
     $this->assertInstanceOf(
       'Drupal\ys_file_management\Service\MediaFileDeleter',
       $this->mediaFileDeleter
@@ -239,7 +232,7 @@ class ConditionalMediaDeleteFormTest extends YsKernelTestBase {
     $deleter_property = $reflection->getProperty('mediaFileDeleter');
     $deleter_property->setAccessible(TRUE);
     $this->assertInstanceOf(
-      'Drupal\ys_file_management\Service\MediaFileDeleterInterface',
+      'Drupal\ys_file_management\Service\MediaFileDeleter',
       $deleter_property->getValue($form_object)
     );
 
