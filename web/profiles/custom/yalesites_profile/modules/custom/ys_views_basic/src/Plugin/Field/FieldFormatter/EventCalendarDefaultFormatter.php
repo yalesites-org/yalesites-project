@@ -5,7 +5,7 @@ namespace Drupal\ys_views_basic\Plugin\Field\FieldFormatter;
 use Drupal\Core\Field\FieldItemListInterface;
 use Drupal\Core\Field\FieldDefinitionInterface;
 use Symfony\Component\DependencyInjection\ContainerInterface;
-use Drupal\ys_views_basic\Service\EventsCalendarInterface;
+use Drupal\ys_views_basic\Service\EventsCalendar;
 use Drupal\ys_views_basic\ViewsBasicManager;
 use Drupal\Core\Form\FormBuilderInterface;
 
@@ -38,7 +38,7 @@ class EventCalendarDefaultFormatter extends ViewsBasicDefaultFormatter {
     $view_mode,
     array $third_party_settings,
     ViewsBasicManager $viewsBasicManager,
-    EventsCalendarInterface $eventsCalendar,
+    EventsCalendar $eventsCalendar,
     FormBuilderInterface $formBuilder,
   ) {
     parent::__construct(

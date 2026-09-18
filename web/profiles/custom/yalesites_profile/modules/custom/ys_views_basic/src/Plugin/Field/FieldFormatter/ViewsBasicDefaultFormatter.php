@@ -6,7 +6,7 @@ use Drupal\Core\Field\FieldDefinitionInterface;
 use Drupal\Core\Field\FieldItemListInterface;
 use Drupal\Core\Field\FormatterBase;
 use Drupal\Core\Plugin\ContainerFactoryPluginInterface;
-use Drupal\ys_views_basic\Service\EventsCalendarInterface;
+use Drupal\ys_views_basic\Service\EventsCalendar;
 use Drupal\ys_views_basic\ViewsBasicManager;
 use Symfony\Component\DependencyInjection\ContainerInterface;
 
@@ -33,9 +33,9 @@ class ViewsBasicDefaultFormatter extends FormatterBase implements ContainerFacto
   /**
    * The Events Calendar service.
    *
-   * @var \Drupal\ys_views_basic\Service\EventsCalendarInterface
+   * @var \Drupal\ys_views_basic\Service\EventsCalendar
    */
-  protected EventsCalendarInterface $eventsCalendar;
+  protected EventsCalendar $eventsCalendar;
 
   /**
    * Constructs an views basic default formatter object.
@@ -56,7 +56,7 @@ class ViewsBasicDefaultFormatter extends FormatterBase implements ContainerFacto
    *   Any third party settings.
    * @param \Drupal\ys_views_basic\ViewsBasicManager $viewsBasicManager
    *   The views basic manager service.
-   * @param \Drupal\ys_views_basic\Service\EventsCalendarInterface $eventsCalendar
+   * @param \Drupal\ys_views_basic\Service\EventsCalendar $eventsCalendar
    *   The Events Calendar service.
    */
   public function __construct(
@@ -68,7 +68,7 @@ class ViewsBasicDefaultFormatter extends FormatterBase implements ContainerFacto
     string $view_mode,
     array $third_party_settings,
     ViewsBasicManager $viewsBasicManager,
-    EventsCalendarInterface $eventsCalendar,
+    EventsCalendar $eventsCalendar,
   ) {
     parent::__construct(
       $plugin_id,
