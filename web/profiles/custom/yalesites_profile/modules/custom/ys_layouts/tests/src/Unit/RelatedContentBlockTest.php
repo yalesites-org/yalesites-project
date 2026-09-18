@@ -8,6 +8,7 @@ use Drupal\Core\Field\FieldItemListInterface;
 use Drupal\Core\Form\FormState;
 use Drupal\Core\Routing\RouteMatchInterface;
 use Drupal\Tests\UnitTestCase;
+use Drupal\Tests\ys_core\Traits\LayoutBuilderEntityContextTestTrait;
 use Drupal\node\NodeInterface;
 use Drupal\ys_layouts\Plugin\Block\RelatedContentBlock;
 use Symfony\Component\DependencyInjection\ContainerBuilder;
@@ -23,6 +24,8 @@ use Symfony\Component\HttpFoundation\RequestStack;
  * @group ys_layouts
  */
 class RelatedContentBlockTest extends UnitTestCase {
+
+  use LayoutBuilderEntityContextTestTrait;
 
   /**
    * The route match mock.
@@ -62,10 +65,16 @@ class RelatedContentBlockTest extends UnitTestCase {
     $this->requestStack = $this->createMock(RequestStack::class);
     $this->entityTypeManager = $this->createMock(EntityTypeManagerInterface::class);
 
+    $this->setUpLayoutBuilderEntityContextContainer();
+
     $this->block = new RelatedContentBlock(
       [],
       'related_content_block',
-      ['provider' => 'ys_layouts'],
+      [
+        'provider' => 'ys_layouts',
+        'admin_label' => 'Related Content',
+        'context_definitions' => $this->layoutBuilderEntityContextDefinitions(RelatedContentBlock::class),
+      ],
       $this->routeMatch,
       $this->requestStack,
       $this->entityTypeManager
@@ -216,6 +225,120 @@ class RelatedContentBlockTest extends UnitTestCase {
     $tags = $this->block->getCacheTags();
 
     $this->assertContains('node:9', $tags);
+  }
+
+  /**
+   * The entity being rendered is used when the route names no node.
+   *
+   * A node is rendered on routes other than its canonical one, and Search API
+   * renders it in the request that saves it. On /node/add/{type} (every new
+   * page's first save) and on a bulk operation from /admin/content the route
+   * named no node, so the related-content list was missing from what Beacon
+   * indexes.
+   *
+   * getCacheTags() is the observable seam: it merges in whatever node
+   * getCurrentNode() resolves, without needing the view-building path.
+   *
+   * @covers ::getCurrentNode
+   */
+  public function testGetCurrentNodeUsesRenderedEntityWhenRouteHasNoNode(): void {
+    $node = $this->createMock(NodeInterface::class);
+    $node->method('getCacheTags')->willReturn(['node:99']);
+    $this->routeMatch->method('getParameter')->with('node')->willReturn(NULL);
+    $this->entityTypeManager->expects($this->never())->method('getStorage');
+
+    $this->setRenderedEntity($this->block, $node);
+
+    $this->assertContains('node:99', $this->block->getCacheTags());
+  }
+
+  /**
+   * The entity being rendered beats a DIFFERENT node named by the route.
+   *
+   * @covers ::getCurrentNode
+   */
+  public function testGetCurrentNodePrefersRenderedEntityOverRouteNode(): void {
+    $rendered = $this->createMock(NodeInterface::class);
+    $rendered->method('getCacheTags')->willReturn(['node:99']);
+    $other = $this->createMock(NodeInterface::class);
+    $other->method('getCacheTags')->willReturn(['node:11']);
+    $this->routeMatch->method('getParameter')->with('node')->willReturn($other);
+
+    $this->setRenderedEntity($this->block, $rendered);
+    $tags = $this->block->getCacheTags();
+
+    $this->assertContains('node:99', $tags);
+    $this->assertNotContains('node:11', $tags);
+  }
+
+  /**
+   * A context holding something other than a node falls through to the route.
+   *
+   * @covers ::getCurrentNode
+   *
+   * @dataProvider providerNonNodeContextValues
+   */
+  public function testGetCurrentNodeIgnoresNonNodeEntityContext($value): void {
+    $other = $this->createMock(NodeInterface::class);
+    $other->method('getCacheTags')->willReturn(['node:11']);
+    $this->routeMatch->method('getParameter')->with('node')->willReturn($other);
+
+    $this->setRenderedEntity($this->block, $value);
+
+    $this->assertContains('node:11', $this->block->getCacheTags());
+  }
+
+  /**
+   * An unsaved sample entity does not stand in for real content.
+   *
+   * Layout Builder's Defaults layout screen offers a generated sample entity
+   * that core never saves, so its reference items can target nothing. Before
+   * this block declared a context it rendered nothing there.
+   *
+   * @covers ::getCurrentNode
+   */
+  public function testGetCurrentNodeIgnoresUnsavedSampleEntity(): void {
+    $sample = $this->createMock(NodeInterface::class);
+    $sample->method('isNew')->willReturn(TRUE);
+    $sample->method('getCacheTags')->willReturn(['node:99']);
+    $this->routeMatch->method('getParameter')->with('node')->willReturn(NULL);
+    $this->requestStack->method('getCurrentRequest')->willReturn(new Request());
+
+    $this->setRenderedEntity($this->block, $sample);
+
+    $this->assertNotContains('node:99', $this->block->getCacheTags());
+  }
+
+  /**
+   * With no route node and no current request, the block resolves no node.
+   *
+   * There is no HTTP request in a drush or cron process, so the ajax-path tier
+   * has nothing to read. The guard is what keeps that path from calling
+   * getPathInfo() on NULL.
+   *
+   * @covers ::getCurrentNode
+   */
+  public function testBuildWithNoCurrentRequestResolvesNoNode(): void {
+    $this->routeMatch->method('getParameter')->with('node')->willReturn(NULL);
+    $this->requestStack->method('getCurrentRequest')->willReturn(NULL);
+
+    $this->assertSame([], $this->block->build());
+  }
+
+  /**
+   * The ANNOTATION declares the slot Layout Builder actually publishes.
+   */
+  public function testAnnotationDeclaresTheLayoutBuilderEntitySlot(): void {
+    $this->assertDeclaresLayoutBuilderEntitySlot(RelatedContentBlock::class);
+  }
+
+  /**
+   * The context-assignment select is kept off the editor's block form.
+   *
+   * @covers ::buildConfigurationForm
+   */
+  public function testConfigurationFormHasNoContextAssignmentSelect(): void {
+    $this->assertNoContextAssignmentSelect($this->block);
   }
 
   /**

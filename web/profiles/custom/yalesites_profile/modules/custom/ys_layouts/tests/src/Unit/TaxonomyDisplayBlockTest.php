@@ -7,10 +7,10 @@ use Drupal\Core\Entity\EntityTypeManagerInterface;
 use Drupal\Core\Field\EntityReferenceFieldItemListInterface;
 use Drupal\Core\Field\FieldDefinitionInterface;
 use Drupal\Core\Form\FormState;
-use Drupal\Core\Routing\CurrentRouteMatch;
 use Drupal\Core\Url;
 use Drupal\Tests\UnitTestCase;
-use Drupal\node\Entity\Node;
+use Drupal\Tests\ys_core\Traits\LayoutBuilderEntityContextTestTrait;
+use Drupal\node\NodeInterface;
 use Drupal\taxonomy\TermInterface;
 use Drupal\taxonomy\VocabularyInterface;
 use Drupal\ys_layouts\Plugin\Block\TaxonomyDisplayBlock;
@@ -28,19 +28,14 @@ use Symfony\Component\HttpFoundation\RequestStack;
  */
 class TaxonomyDisplayBlockTest extends UnitTestCase {
 
+  use LayoutBuilderEntityContextTestTrait;
+
   /**
    * The entity type manager mock.
    *
    * @var \Drupal\Core\Entity\EntityTypeManagerInterface|\PHPUnit\Framework\MockObject\MockObject
    */
   protected $entityTypeManager;
-
-  /**
-   * The current route match mock.
-   *
-   * @var \Drupal\Core\Routing\CurrentRouteMatch|\PHPUnit\Framework\MockObject\MockObject
-   */
-  protected $routeMatch;
 
   /**
    * The request stack mock.
@@ -70,16 +65,16 @@ class TaxonomyDisplayBlockTest extends UnitTestCase {
     parent::setUp();
 
     $this->entityTypeManager = $this->createMock(EntityTypeManagerInterface::class);
-    $this->routeMatch = $this->createMock(CurrentRouteMatch::class);
     $this->requestStack = $this->createMock(RequestStack::class);
     $this->colorTokenResolver = $this->createMock(ColorTokenResolver::class);
+
+    $this->setUpLayoutBuilderEntityContextContainer();
 
     $this->block = new TaxonomyDisplayBlock(
       [],
       'ys_taxonomy_display_block',
-      ['provider' => 'ys_layouts'],
+      $this->blockDefinition(),
       $this->entityTypeManager,
-      $this->routeMatch,
       $this->requestStack,
       $this->colorTokenResolver
     );
@@ -118,30 +113,10 @@ class TaxonomyDisplayBlockTest extends UnitTestCase {
    * @covers ::build
    */
   public function testBuildRendersSelectedVocabularyFields(): void {
-    $term = $this->createMock(TermInterface::class);
-    $term->method('label')->willReturn('Undergraduate');
-    $term->method('toUrl')->willReturn($this->createMock(Url::class));
-
-    $field = $this->createMock(EntityReferenceFieldItemListInterface::class);
-    $field->method('getFieldDefinition')->willReturn($this->makeFieldDefinition('Audience'));
-    $field->method('referencedEntities')->willReturn([$term]);
-
-    $node = $this->createMock(Node::class);
-    $node->method('hasField')->with('field_audience')->willReturn(TRUE);
-    $node->method('get')->with('field_audience')->willReturn($field);
-
-    $block = new TaxonomyDisplayBlock(
-      ['vocabulary_fields' => ['field_audience' => 'field_audience']],
-      'ys_taxonomy_display_block',
-      ['provider' => 'ys_layouts'],
-      $this->entityTypeManager,
-      $this->routeMatch,
-      $this->requestStack,
-      $this->colorTokenResolver
-    );
+    $block = $this->blockWithAudienceField();
 
     $request = new Request();
-    $request->attributes->set('node', $node);
+    $request->attributes->set('node', $this->nodeWithAudienceTerm('Undergraduate'));
     $this->requestStack->method('getCurrentRequest')->willReturn($request);
 
     $build = $block->build();
@@ -168,7 +143,7 @@ class TaxonomyDisplayBlockTest extends UnitTestCase {
       $this->makeFieldDefinition('Audience', 'entity_reference', 'taxonomy_term', ['target_bundles' => ['audience']])
     );
 
-    $node = $this->createMock(Node::class);
+    $node = $this->createMock(NodeInterface::class);
     $node->method('bundle')->willReturn('page');
     $node->method('getFields')->willReturn(['field_audience' => $field]);
 
@@ -189,7 +164,7 @@ class TaxonomyDisplayBlockTest extends UnitTestCase {
    * @covers ::blockForm
    */
   public function testBlockFormWithNoVocabularyFieldsShowsMessage(): void {
-    $node = $this->createMock(Node::class);
+    $node = $this->createMock(NodeInterface::class);
     $node->method('bundle')->willReturn('page');
     $node->method('getFields')->willReturn([]);
 
@@ -239,6 +214,179 @@ class TaxonomyDisplayBlockTest extends UnitTestCase {
     $result = $this->block->processColorPicker($element, $form_state, $complete_form);
 
     $this->assertTrue($result['#processed']);
+  }
+
+  /**
+   * The entity being rendered is used when the request names no node.
+   *
+   * A node is rendered on routes other than its canonical one, and Search API
+   * renders it in the request that saves it. On /node/{node}/layout, on a
+   * revision route, on /node/add/{type} (every new page's first save) and on a
+   * bulk operation from /admin/content the request named the wrong node or
+   * none, so the block rendered no taxonomy terms at all -- and that empty
+   * result is what got indexed.
+   *
+   * @covers ::getCurrentNode
+   */
+  public function testBuildUsesRenderedEntityWhenRequestHasNoNode(): void {
+    $block = $this->blockWithAudienceField();
+    $this->requestStack->method('getCurrentRequest')->willReturn(Request::create('/node/add/page'));
+    $this->entityTypeManager->expects($this->never())->method('getStorage');
+
+    $this->setRenderedEntity($block, $this->nodeWithAudienceTerm('Undergraduate'));
+
+    $build = $block->build();
+
+    $this->assertSame('Undergraduate', $build['#items']['field_audience']['terms'][0]['#title']);
+  }
+
+  /**
+   * The entity being rendered beats a DIFFERENT node named by the request.
+   *
+   * @covers ::getCurrentNode
+   */
+  public function testBuildPrefersRenderedEntityOverRequestNode(): void {
+    $block = $this->blockWithAudienceField();
+
+    $request = new Request();
+    $request->attributes->set('node', $this->nodeWithAudienceTerm('Staff'));
+    $this->requestStack->method('getCurrentRequest')->willReturn($request);
+
+    $this->setRenderedEntity($block, $this->nodeWithAudienceTerm('Undergraduate'));
+
+    $build = $block->build();
+
+    $this->assertSame('Undergraduate', $build['#items']['field_audience']['terms'][0]['#title']);
+  }
+
+  /**
+   * A context holding something other than a node falls through to the request.
+   *
+   * @covers ::getCurrentNode
+   *
+   * @dataProvider providerNonNodeContextValues
+   */
+  public function testBuildIgnoresNonNodeEntityContext($value): void {
+    $block = $this->blockWithAudienceField();
+
+    $request = new Request();
+    $request->attributes->set('node', $this->nodeWithAudienceTerm('Staff'));
+    $this->requestStack->method('getCurrentRequest')->willReturn($request);
+
+    $this->setRenderedEntity($block, $value);
+
+    $build = $block->build();
+
+    $this->assertSame('Staff', $build['#items']['field_audience']['terms'][0]['#title']);
+  }
+
+  /**
+   * An unsaved sample entity does not stand in for real content.
+   *
+   * Layout Builder's Defaults layout screen offers a generated sample entity
+   * that core never saves, so it has no ID and a referenced term's toUrl()
+   * cannot be built. Before this block declared a context it rendered nothing
+   * there, and it deliberately still does.
+   *
+   * @covers ::getCurrentNode
+   */
+  public function testBuildIgnoresUnsavedSampleEntity(): void {
+    $block = $this->blockWithAudienceField();
+    $sample = $this->nodeWithAudienceTerm('Undergraduate');
+    $sample->method('isNew')->willReturn(TRUE);
+    $this->requestStack->method('getCurrentRequest')->willReturn(new Request());
+
+    $this->setRenderedEntity($block, $sample);
+
+    $this->assertSame([], $block->build()['#items']);
+  }
+
+  /**
+   * With no current request at all, the block resolves no node.
+   *
+   * There is no HTTP request in a drush or cron process, so the request tier
+   * has nothing to read. The guard is what keeps that path from calling
+   * attributes->get() on NULL.
+   *
+   * @covers ::getCurrentNode
+   */
+  public function testBuildWithNoCurrentRequestResolvesNoNode(): void {
+    $block = $this->blockWithAudienceField();
+    $this->requestStack->method('getCurrentRequest')->willReturn(NULL);
+
+    $this->assertSame([], $block->build()['#items']);
+  }
+
+  /**
+   * The ANNOTATION declares the slot Layout Builder actually publishes.
+   */
+  public function testAnnotationDeclaresTheLayoutBuilderEntitySlot(): void {
+    $this->assertDeclaresLayoutBuilderEntitySlot(TaxonomyDisplayBlock::class);
+  }
+
+  /**
+   * The context-assignment select is kept off the editor's block form.
+   *
+   * @covers ::buildConfigurationForm
+   */
+  public function testConfigurationFormHasNoContextAssignmentSelect(): void {
+    $this->assertNoContextAssignmentSelect($this->block);
+  }
+
+  /**
+   * Builds the block configured to display the audience vocabulary field.
+   *
+   * @return \Drupal\ys_layouts\Plugin\Block\TaxonomyDisplayBlock
+   *   The block plugin.
+   */
+  protected function blockWithAudienceField(): TaxonomyDisplayBlock {
+    return new TaxonomyDisplayBlock(
+      ['vocabulary_fields' => ['field_audience' => 'field_audience']],
+      'ys_taxonomy_display_block',
+      $this->blockDefinition(),
+      $this->entityTypeManager,
+      $this->requestStack,
+      $this->colorTokenResolver
+    );
+  }
+
+  /**
+   * Builds a saved node mock carrying one audience term.
+   *
+   * @param string $termLabel
+   *   The label of the referenced term.
+   *
+   * @return \Drupal\node\NodeInterface|\PHPUnit\Framework\MockObject\MockObject
+   *   The mock node.
+   */
+  protected function nodeWithAudienceTerm(string $termLabel): NodeInterface {
+    $term = $this->createMock(TermInterface::class);
+    $term->method('label')->willReturn($termLabel);
+    $term->method('toUrl')->willReturn($this->createMock(Url::class));
+
+    $field = $this->createMock(EntityReferenceFieldItemListInterface::class);
+    $field->method('getFieldDefinition')->willReturn($this->makeFieldDefinition('Audience'));
+    $field->method('referencedEntities')->willReturn([$term]);
+
+    $node = $this->createMock(NodeInterface::class);
+    $node->method('hasField')->with('field_audience')->willReturn(TRUE);
+    $node->method('get')->with('field_audience')->willReturn($field);
+
+    return $node;
+  }
+
+  /**
+   * The plugin definition, matching the keys the real annotation supplies.
+   *
+   * @return array
+   *   The plugin definition.
+   */
+  protected function blockDefinition(): array {
+    return [
+      'provider' => 'ys_layouts',
+      'admin_label' => 'Taxonomy Display Block',
+      'context_definitions' => $this->layoutBuilderEntityContextDefinitions(TaxonomyDisplayBlock::class),
+    ];
   }
 
   /**
