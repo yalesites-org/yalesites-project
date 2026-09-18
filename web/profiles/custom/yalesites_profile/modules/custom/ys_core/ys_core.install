@@ -1870,3 +1870,53 @@ function ys_core_update_10020() {
     '@left_alone' => $report['left_alone'],
   ]);
 }
+
+/**
+ * Splits the single font_pairing setting into three independent choices.
+ *
+ * The old three-way radio conflated two unrelated decisions - which font
+ * headings use, and whether numerals are old-style or lining - so a site could
+ * never mix and match them (yalesites-org/YaleSites-Internal#1238). The map
+ * below reflects what each old value actually rendered, per the
+ * heading()/body-oldstyle-nums Sass mixins in component-library-twig: only the
+ * old 'yalenew-oldstyle' value (misleadingly named - it is the LINING numerals
+ * option) ever produced lining numerals; 'yalenew' and 'mallory' both rendered
+ * old-style numerals throughout.
+ */
+function ys_core_update_10021() {
+  $config = \Drupal::configFactory()->getEditable('ys_core.site');
+  $old_value = $config->get('font_pairing');
+
+  if (!is_string($old_value)) {
+    // Nothing to migrate: a new site, or one this update already ran on.
+    return t('No legacy font_pairing value found; nothing to migrate.');
+  }
+
+  $map = [
+    'yalenew' => [
+      'heading_font' => 'yalenew',
+      'heading_numerals' => 'oldstyle',
+      'body_numerals' => 'oldstyle',
+    ],
+    'mallory' => [
+      'heading_font' => 'mallory',
+      'heading_numerals' => 'oldstyle',
+      'body_numerals' => 'oldstyle',
+    ],
+    'yalenew-oldstyle' => [
+      'heading_font' => 'yalenew',
+      'heading_numerals' => 'lining',
+      'body_numerals' => 'lining',
+    ],
+  ];
+  $new_values = $map[$old_value] ?? $map['yalenew'];
+
+  $config->set('font_pairing', $new_values)->save();
+
+  return t('Migrated font_pairing (%old) to heading_font=%hf, heading_numerals=%hn, body_numerals=%bn.', [
+    '%old' => $old_value,
+    '%hf' => $new_values['heading_font'],
+    '%hn' => $new_values['heading_numerals'],
+    '%bn' => $new_values['body_numerals'],
+  ]);
+}
