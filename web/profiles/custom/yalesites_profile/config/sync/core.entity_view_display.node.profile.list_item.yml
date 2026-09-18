@@ -54,6 +54,21 @@ content:
     third_party_settings: {  }
     weight: 8
     region: content
+  field_department:
+    type: string
+    label: hidden
+    settings:
+      link_to_entity: false
+    third_party_settings: {  }
+    weight: 10
+    region: content
+  field_email:
+    type: basic_string
+    label: hidden
+    settings: {  }
+    third_party_settings: {  }
+    weight: 12
+    region: content
   field_external_source:
     type: link_separate
     label: hidden
@@ -82,6 +97,14 @@ content:
       link_to_entity: false
     third_party_settings: {  }
     weight: 5
+    region: content
+  field_pronouns:
+    type: string
+    label: hidden
+    settings:
+      link_to_entity: false
+    third_party_settings: {  }
+    weight: 11
     region: content
   field_subtitle:
     type: text_default
@@ -122,20 +145,24 @@ content:
     third_party_settings: {  }
     weight: 3
     region: content
+  field_telephone:
+    type: string
+    label: hidden
+    settings:
+      link_to_entity: false
+    third_party_settings: {  }
+    weight: 13
+    region: content
 hidden:
   addtoany: true
   field_address: true
   field_audience: true
   field_custom_vocab: true
-  field_department: true
-  field_email: true
   field_first_name: true
   field_honorific_prefix: true
   field_last_name: true
   field_login_required: true
   field_metatags: true
-  field_pronouns: true
-  field_telephone: true
   layout_builder__layout: true
   links: true
   search_api_excerpt: true
