@@ -4,6 +4,7 @@ status: true
 dependencies:
   config:
     - core.entity_view_mode.node.single
+    - field.field.node.profile.feeds_item
     - field.field.node.profile.field_address
     - field.field.node.profile.field_affiliation
     - field.field.node.profile.field_audience
@@ -295,6 +296,7 @@ content:
     region: content
 hidden:
   addtoany: true
+  feeds_item: true
   field_audience: true
   field_custom_vocab: true
   field_login_required: true

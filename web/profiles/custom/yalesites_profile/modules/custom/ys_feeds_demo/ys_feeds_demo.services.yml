@@ -1,0 +1,7 @@
+services:
+  ys_feeds_demo.moderation_subscriber:
+    class: Drupal\ys_feeds_demo\EventSubscriber\ModerationStateSubscriber
+    arguments:
+      - '@content_moderation.moderation_information'
+    tags:
+      - { name: event_subscriber }

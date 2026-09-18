@@ -1,0 +1,12 @@
+name: YaleSites Feeds Demo
+type: module
+description: 'Proof of concept: Feeds + Tamper demo feed types, fixtures and custom targets. Not intended for production; uninstall to remove all demo feed types.'
+core_version_requirement: '^10 || ^11'
+package: YaleSites
+dependencies:
+  - drupal:node
+  - drupal:content_moderation
+  - drupal:media
+  - drupal:taxonomy
+  - feeds:feeds
+  - feeds_tamper:feeds_tamper
