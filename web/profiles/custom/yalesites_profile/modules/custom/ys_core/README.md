@@ -51,6 +51,27 @@ the code:
   the hook. Change both, or the override silently wins; `PlatformAdminSectionTest`
   asserts they agree.
 
+## Search indexing is theme-registry sensitive
+
+Our search indexes carry a "Rendered HTML output" (`rendered_item`) field, so
+**saving a node renders the entire page** to extract its text — and with
+`index_directly` on, Search API performs that render at the end of the process.
+Under `drush deploy` that lands inside the update kernel, whose theme registry is
+deliberately incomplete, and the page gets indexed with its body stripped.
+
+Anything that changes when or where indexing happens needs to account for this.
+Two pieces handle it, and the full explanation lives at each of them rather than
+here:
+
+- `\Drupal\ys_core\Search\UpdateKernelDeferredIndexing` — skips direct indexing
+  under the update kernel and leaves the items for cron. Read its docblock before
+  touching the indexing path; it also records what to delete if Search API fixes
+  this upstream.
+- `ys_core_deploy_10009()` in `ys_core.deploy.php` — the one-off repair for
+  entries a deploy already wrote thin.
+
+See yalesites-org/YaleSites-Internal#1727.
+
 ## Running tests
 
 This module has PHPUnit tests under `tests/src/` (`Unit/` and `Kernel/`). Run them from the project root on the local Lando environment, passing the module's `tests` path so PHPUnit only discovers this module's tests (not Drupal core/contrib):
