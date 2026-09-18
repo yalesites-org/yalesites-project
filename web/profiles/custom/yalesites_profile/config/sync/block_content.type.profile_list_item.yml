@@ -1,0 +1,8 @@
+uuid: f1bf3713-cbc9-4318-b415-f4a37d9b0eb3
+langcode: en
+status: true
+dependencies: {  }
+id: profile_list_item
+label: 'People - List View'
+revision: true
+description: 'People - List listing block.'

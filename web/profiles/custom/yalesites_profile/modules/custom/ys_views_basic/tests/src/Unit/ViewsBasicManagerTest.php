@@ -9,6 +9,7 @@ use Drupal\Core\Form\FormStateInterface;
 use Drupal\Core\Routing\RouteMatchInterface;
 use Drupal\Tests\UnitTestCase;
 use Drupal\taxonomy\TermStorageInterface;
+use Drupal\views\ViewExecutableFactory;
 use Drupal\ys_views_basic\ViewsBasicManager;
 
 /**
@@ -68,6 +69,13 @@ class ViewsBasicManagerTest extends UnitTestCase {
   protected $cacheTagsInvalidator;
 
   /**
+   * The view executable factory mock.
+   *
+   * @var \Drupal\views\ViewExecutableFactory|\PHPUnit\Framework\MockObject\MockObject
+   */
+  protected $viewExecutableFactory;
+
+  /**
    * The manager under test.
    *
    * @var \Drupal\ys_views_basic\ViewsBasicManager
@@ -93,12 +101,14 @@ class ViewsBasicManagerTest extends UnitTestCase {
     $this->entityDisplayRepository = $this->createMock(EntityDisplayRepository::class);
     $this->routeMatch = $this->createMock(RouteMatchInterface::class);
     $this->cacheTagsInvalidator = $this->createMock(CacheTagsInvalidatorInterface::class);
+    $this->viewExecutableFactory = $this->createMock(ViewExecutableFactory::class);
 
     $this->manager = new ViewsBasicManager(
       $this->entityTypeManager,
       $this->entityDisplayRepository,
       $this->routeMatch,
-      $this->cacheTagsInvalidator
+      $this->cacheTagsInvalidator,
+      $this->viewExecutableFactory
     );
   }
 
@@ -157,6 +167,7 @@ class ViewsBasicManagerTest extends UnitTestCase {
         ['entity_display.repository', 1, $this->entityDisplayRepository],
         ['current_route_match', 1, $this->routeMatch],
         ['cache_tags.invalidator', 1, $this->cacheTagsInvalidator],
+        ['views.executable', 1, $this->viewExecutableFactory],
       ]);
 
     $manager = ViewsBasicManager::create($container);
@@ -428,6 +439,70 @@ class ViewsBasicManagerTest extends UnitTestCase {
   }
 
   /**
+   * GetDefaultParamValue() for include/exclude operators falls back per #1316.
+   *
+   * A block saved after the split reads its own key; one saved before it
+   * (only the legacy 'operator' key) falls back to that for both; one with
+   * neither key defaults to "+" (OR).
+   *
+   * @covers ::getDefaultParamValue
+   */
+  public function testGetDefaultParamValueOperatorSplitFallsBackToLegacy() {
+    $split = json_encode(['include_operator' => ',', 'exclude_operator' => '+']);
+    $this->assertSame(',', $this->manager->getDefaultParamValue('include_operator', $split));
+    $this->assertSame('+', $this->manager->getDefaultParamValue('exclude_operator', $split));
+
+    $legacy = json_encode(['operator' => ',']);
+    $this->assertSame(',', $this->manager->getDefaultParamValue('include_operator', $legacy));
+    $this->assertSame(',', $this->manager->getDefaultParamValue('exclude_operator', $legacy));
+
+    $neither = json_encode([]);
+    $this->assertSame('+', $this->manager->getDefaultParamValue('include_operator', $neither));
+    $this->assertSame('+', $this->manager->getDefaultParamValue('exclude_operator', $neither));
+  }
+
+  /**
+   * ResolveTermOperators() resolves each operator independently, per #1316.
+   *
+   * This is the fix for the correctness bug the split addresses: a shared
+   * operator meant choosing "All" made includes stricter and excludes
+   * *looser* at the same time (implode() joining the exclude list with ","
+   * only excludes a node carrying every excluded term, not any one).
+   * Resolving them independently is what setupView() joins each term list
+   * with, so proving this returns the right pair per input is what proves
+   * the two lists can no longer affect each other's behavior.
+   *
+   * @covers ::resolveTermOperators
+   */
+  public function testResolveTermOperatorsAreIndependent() {
+    // Both explicit, and different from each other.
+    $this->assertSame(
+      [',', '+'],
+      $this->manager->resolveTermOperators(['include_operator' => ',', 'exclude_operator' => '+'])
+    );
+    $this->assertSame(
+      ['+', ','],
+      $this->manager->resolveTermOperators(['include_operator' => '+', 'exclude_operator' => ','])
+    );
+
+    // Legacy 'operator' key applies to both (pre-#1316 saved block).
+    $this->assertSame([',', ','], $this->manager->resolveTermOperators(['operator' => ',']));
+
+    // Neither key present defaults both to "+" (OR).
+    $this->assertSame(['+', '+'], $this->manager->resolveTermOperators([]));
+
+    // The new keys win over a legacy key present alongside them.
+    $this->assertSame(
+      [',', '+'],
+      $this->manager->resolveTermOperators([
+        'operator' => '+',
+        'include_operator' => ',',
+        'exclude_operator' => '+',
+      ])
+    );
+  }
+
+  /**
    * GetDefaultParamValue('pin_label', ...) defaults to the "Pinned" constant.
    *
    * @covers ::getDefaultParamValue
@@ -545,6 +620,45 @@ class ViewsBasicManagerTest extends UnitTestCase {
     $this->assertSame('Lecture (event_category)', $tags[1]);
     $this->assertSame('Music (tags)', $tags[3]);
     $this->assertSame('Students (audience)', $tags[2]);
+  }
+
+  /**
+   * GetTagsForVocabularies() groups terms under their vocabulary's label.
+   *
+   * @covers ::getTagsForVocabularies
+   */
+  public function testGetTagsForVocabulariesGroupsByVocabularyLabel() {
+    $this->vocabularyStorage->method('load')->willReturnMap([
+      ['post_category', $this->createVocabularyMock('post_category', 'Post Category')],
+      ['tags', $this->createVocabularyMock('tags', 'Tags')],
+    ]);
+    $this->termStorage->method('loadTree')
+      ->willReturnMap([
+        ['post_category', 0, NULL, FALSE, [$this->createTreeItem(1, 'Announcements')]],
+        ['tags', 0, NULL, FALSE, [$this->createTreeItem(3, 'Zebra'), $this->createTreeItem(2, 'Apple')]],
+      ]);
+
+    $tags = $this->manager->getTagsForVocabularies(['post_category', 'tags']);
+
+    // Groups appear in the order the vocabulary ids were given.
+    $this->assertSame(['Post Category', 'Tags'], array_keys($tags));
+    $this->assertSame([1 => 'Announcements'], $tags['Post Category']);
+    // Terms within a group are alphabetical (asort preserves keys).
+    $this->assertSame([2, 3], array_keys($tags['Tags']));
+    $this->assertSame('Apple', $tags['Tags'][2]);
+  }
+
+  /**
+   * GetTagsForVocabularies() skips a vocabulary id that fails to load.
+   *
+   * @covers ::getTagsForVocabularies
+   */
+  public function testGetTagsForVocabulariesSkipsMissingVocabulary() {
+    $this->vocabularyStorage->method('load')->willReturn(NULL);
+
+    $tags = $this->manager->getTagsForVocabularies(['not_a_real_vocabulary']);
+
+    $this->assertSame([], $tags);
   }
 
   /**

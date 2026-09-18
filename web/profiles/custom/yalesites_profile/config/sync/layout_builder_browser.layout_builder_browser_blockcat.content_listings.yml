@@ -1,0 +1,15 @@
+uuid: d25d0d19-255d-4a78-b586-2a399decdccf
+langcode: en
+status: true
+dependencies:
+  enforced:
+    module:
+      - ys_views_wizard
+_core:
+  default_config_hash: 5sO96a2fRTzZ6J4-zRuJZ-Wjwz6GwP937oa62UP4dsI
+id: content_listings
+label: 'Content Listings'
+weight: 1
+opened: true
+image_path: /profiles/custom/yalesites_profile/modules/custom/ys_core/images/preview-icons/view-placeholder.svg
+image_alt: 'Placeholder listing icon'
