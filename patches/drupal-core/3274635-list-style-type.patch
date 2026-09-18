@@ -1,0 +1,312 @@
+--- a/core/modules/ckeditor5/ckeditor5.ckeditor5.yml
++++ b/core/modules/ckeditor5/ckeditor5.ckeditor5.yml
+@@ -394,11 +394,8 @@
+     plugins:
+       - list.List
+       - list.ListProperties
+-    config:
+-      list:
+-        properties:
+-          # @todo Make this configurable in https://www.drupal.org/project/drupal/issues/3274635
+-          styles: false
++    # @see \Drupal\ckeditor5\Plugin\CKEditor5Plugin\ListPlugin::getDynamicPluginConfig()
++    config: {}
+   drupal:
+     label: List
+     library: core/ckeditor5.list
+@@ -414,6 +411,8 @@
+       - <ol>
+       - <ol reversed start>
+       - <li>
++      - <ol type>
++      - <ul type>
+ 
+ ckeditor5_horizontalLine:
+   ckeditor5:
+--- a/core/modules/ckeditor5/ckeditor5.module
++++ b/core/modules/ckeditor5/ckeditor5.module
+@@ -696,7 +696,32 @@
+         ->diff($ol_reversed)
+         ->toCKEditor5ElementsArray();
+     }
++
++    // @see ckeditor5_post_update_list_type()
++    if (array_key_exists('ckeditor5_list', $settings['plugins']) && array_key_exists('ckeditor5_sourceEditing', $settings['plugins'])) {
++      $source_edited = HTMLRestrictions::fromString(implode(' ', $settings['plugins']['ckeditor5_sourceEditing']['allowed_tags']));
++      $format_restrictions = HTMLRestrictions::fromTextFormat($editor->getFilterFormat());
+ 
++      // If neither <ol type> nor <ul type> is allowed through Source Editing
++      // (the only way it could possibly be supported until now), and it is
++      // not an unrestricted text format (such as "Full HTML"), then set the
++      // new "styles" setting for the List plugin to false.
++      $ol_type = HTMLRestrictions::fromString('<ol type>');
++      $ul_type = HTMLRestrictions::fromString('<ul type>');
++      if (!array_key_exists('styles', $settings['plugins']['ckeditor5_list']['properties'])) {
++        $settings['plugins']['ckeditor5_list']['properties']['styles'] =
++          $ol_type->diff($source_edited)->allowsNothing() ||
++          $ul_type->diff($source_edited)->allowsNothing() ||
++          $format_restrictions->isUnrestricted();
++      }
++
++      // Update the Source Editing configuration too.
++      $settings['plugins']['ckeditor5_sourceEditing']['allowed_tags'] = $source_edited
++        ->diff($ol_type)
++        ->diff($ul_type)
++        ->toCKEditor5ElementsArray();
++    }
++
+     $editor->setSettings($settings);
+   }
+ }
+--- a/core/modules/ckeditor5/ckeditor5.post_update.php
++++ b/core/modules/ckeditor5/ckeditor5.post_update.php
+@@ -142,3 +142,21 @@
+       && array_key_exists('ckeditor5_sourceEditing', $settings['plugins']);
+   });
+ }
++
++/**
++ * Updates Text Editors using CKEditor 5 to native List "type" functionality.
++ */
++function ckeditor5_post_update_list_type(&$sandbox = []) {
++  $config_entity_updater = \Drupal::classResolver(ConfigEntityUpdater::class);
++  $config_entity_updater->update($sandbox, 'editor', function (Editor $editor): bool {
++    // Only try to update editors using CKEditor 5.
++    if ($editor->getEditor() !== 'ckeditor5') {
++      return FALSE;
++    }
++    $settings = $editor->getSettings();
++
++    // @see ckeditor5_editor_presave()
++    return array_key_exists('ckeditor5_list', $settings['plugins'])
++      && array_key_exists('ckeditor5_sourceEditing', $settings['plugins']);
++  });
++}
+--- a/core/modules/ckeditor5/config/schema/ckeditor5.schema.yml
++++ b/core/modules/ckeditor5/config/schema/ckeditor5.schema.yml
+@@ -150,6 +150,11 @@
+           label: 'Allow start index'
+           constraints:
+             NotNull: []
++        styles:
++          type: boolean
++          label: 'Allow list style type'
++          constraints:
++            NotNull: []
+     multiBlock:
+       type: boolean
+       label: 'Allow blocks to be created in list items'
+--- a/core/modules/ckeditor5/js/ckeditor5.js
++++ b/core/modules/ckeditor5/js/ckeditor5.js
+@@ -324,7 +324,7 @@
+       const addedCss = [
+         `${prefix} .ck.ck-content * {display:revert;background:revert;color:initial;padding:revert;}`,
+         `${prefix} .ck.ck-content li {display:list-item}`,
+-        `${prefix} .ck.ck-content ol li {list-style-type: decimal}`,
++        `${prefix} .ck.ck-content ol:not([type]) li {list-style-type: decimal}`,
+       ];
+ 
+       const prefixedCss = [...addedCss].join('\n');
+@@ -625,6 +625,97 @@
+     },
+   };
+ 
++  Drupal.behaviors.editorStyleFix = {
++    attach(context) {
++      // CKEditor's DLL injects <style data-cke> tags that override native
++      // list "type" attribute styling in the editing area. The following
++      // finds the style(s) causing the problem and removes them.
++      // @todo remove this entire behavior when this issue is fixed
++      //  https://github.com/ckeditor/ckeditor5/issues/14613
++      //
++      // CKEditor creates its editor instance (and injects these style tags)
++      // asynchronously, well after Drupal's synchronous attachBehaviors()
++      // pass runs, so a one-time DOM query at attach-time misses them. Use a
++      // MutationObserver instead, set up once per page, so this keeps
++      // working regardless of when (or how many times) CKEditor5 finishes
++      // initializing an editor instance.
++      function fixListStyleOverride(sheet) {
++        // Defensively wrapped: a stylesheet's cssRules can throw a
++        // SecurityError for a cross-origin sheet. An uncaught exception
++        // here would be an uncaught exception in a Drupal behavior,
++        // aborting attachment of every behavior queued after this one.
++        let rules;
++        try {
++          rules = [...sheet.cssRules];
++        } catch (e) {
++          return;
++        }
++        rules.forEach((rule) => {
++          if (
++            rule?.selectorText &&
++            (rule.selectorText.includes(' ol') ||
++              rule.selectorText.includes(' ul')) &&
++            !rule.selectorText.includes('type')
++          ) {
++            // Scope the rule to untyped lists only (append :not([type]) to
++            // the list element the rule actually styles, i.e. the last
++            // token), rather than deleting the declaration outright. These
++            // rules implement CKEditor's own nesting-depth cascade
++            // (decimal -> lower-latin -> lower-roman), which is worth
++            // keeping for untyped sub-items; the only bug is that it
++            // unconditionally overrides a list that has an explicit `type`
++            // attribute, e.g. from the List Style dropdown.
++            try {
++              rule.selectorText = rule.selectorText.replace(
++                /\b(ol|ul)$/,
++                '$1:not([type])',
++              );
++            } catch (e) {
++              // Ignore: worst case this specific rule keeps overriding an
++              // explicit type attribute, same as before this fix existed.
++            }
++          }
++        });
++      }
++
++      function processCkeStyleNode(node) {
++        if (node.sheet) {
++          fixListStyleOverride(node.sheet);
++        } else {
++          node.addEventListener(
++            'load',
++            () => fixListStyleOverride(node.sheet),
++            { once: true },
++          );
++        }
++      }
++
++      // No `context` argument: this must run exactly once globally, the
++      // first time any editor attaches, regardless of whether that attach
++      // came from the initial page load or an AJAX/off-canvas response
++      // (whose fragment never contains an <html> element to match against).
++      if (once('editorStyleFix', 'html').length) {
++        document
++          .querySelectorAll('style[data-cke]')
++          .forEach(processCkeStyleNode);
++
++        new MutationObserver((mutations) => {
++          mutations.forEach((mutation) => {
++            mutation.addedNodes.forEach((node) => {
++              if (
++                node.nodeType === Node.ELEMENT_NODE &&
++                node.tagName === 'STYLE' &&
++                node.hasAttribute('data-cke')
++              ) {
++                processCkeStyleNode(node);
++              }
++            });
++          });
++        }).observe(document.head, { childList: true });
++      }
++    },
++  };
++
+   // Redirect on hash change when the original hash has an associated CKEditor 5.
+   function redirectTextareaFragmentToCKEditor5Instance() {
+     const hash = window.location.hash.substring(1);
+--- a/core/modules/ckeditor5/src/Plugin/CKEditor4To5Upgrade/Core.php
++++ b/core/modules/ckeditor5/src/Plugin/CKEditor4To5Upgrade/Core.php
+@@ -274,14 +274,16 @@
+       case 'ckeditor5_list':
+         $restrictions = $text_format->getHtmlRestrictions();
+         if ($restrictions === FALSE) {
+-          // The default is to allow a reversed list and a start index, which makes sense when there
+-          // are no restrictions.
+-          // @see \Drupal\ckeditor5\Plugin\CKEditor5Plugin\ListPlugin::default_configuration()
++          // The default is to allow a reversed list, a start index and the
++          // list style type, which makes sense when there are no
++          // restrictions.
++          // @see \Drupal\ckeditor5\Plugin\CKEditor5Plugin\ListPlugin::defaultConfiguration()
+           return NULL;
+         }
+         $configuration = [];
+         $configuration['properties']['reversed'] = !empty($restrictions['allowed']['ol']['reversed']);
+         $configuration['properties']['startIndex'] = !empty($restrictions['allowed']['ol']['start']);
++        $configuration['properties']['styles'] = !empty($restrictions['allowed']['ol']['type']) || !empty($restrictions['allowed']['ul']['type']);
+         return $configuration;
+ 
+       case 'media_media':
+--- a/core/modules/ckeditor5/src/Plugin/CKEditor5Plugin/ListPlugin.php
++++ b/core/modules/ckeditor5/src/Plugin/CKEditor5Plugin/ListPlugin.php
+@@ -26,7 +26,11 @@
+    */
+   public function defaultConfiguration() {
+     return [
+-      'properties' => ['reversed' => TRUE, 'startIndex' => TRUE],
++      'properties' => [
++        'reversed' => TRUE,
++        'startIndex' => TRUE,
++        'styles' => TRUE,
++      ],
+       'multiBlock' => TRUE,
+     ];
+   }
+@@ -50,6 +54,12 @@
+       '#title' => $this->t('Allow the user to create paragraphs in list items (or other block elements)'),
+       '#default_value' => $this->configuration['multiBlock'],
+     ];
++    $form['styles'] = [
++      '#type' => 'checkbox',
++      '#title' => $this->t('Allow the user to choose a list style type'),
++      '#description' => $this->t('Available list style types for ordered lists: letters and Roman numerals instead of only numbers. Available list style types for unordered lists: circles and squares instead of only discs.'),
++      '#default_value' => $this->configuration['properties']['styles'],
++    ];
+ 
+     return $form;
+   }
+@@ -62,6 +72,8 @@
+     $form_state->setValue('reversed', (bool) $form_value);
+     $form_value = $form_state->getValue('startIndex');
+     $form_state->setValue('startIndex', (bool) $form_value);
++    $form_value = $form_state->getValue('styles');
++    $form_state->setValue('styles', (bool) $form_value);
+     $form_value = $form_state->getValue('multiBlock');
+     $form_state->setValue('multiBlock', (bool) $form_value);
+   }
+@@ -72,6 +84,7 @@
+   public function submitConfigurationForm(array &$form, FormStateInterface $form_state) {
+     $this->configuration['properties']['reversed'] = $form_state->getValue('reversed');
+     $this->configuration['properties']['startIndex'] = $form_state->getValue('startIndex');
++    $this->configuration['properties']['styles'] = $form_state->getValue('styles');
+     $this->configuration['multiBlock'] = $form_state->getValue('multiBlock');
+   }
+ 
+@@ -79,7 +92,23 @@
+    * {@inheritdoc}
+    */
+   public function getDynamicPluginConfig(array $static_plugin_config, EditorInterface $editor): array {
+-    $static_plugin_config['list']['properties'] = $this->getConfiguration()['properties'] + $static_plugin_config['list']['properties'];
++    $static_plugin_config['list']['properties'] = $this->getConfiguration()['properties'];
++    // Generate configuration to use `type` attribute-based list styles on
++    // <ul> and <ol> elements.
++    // @see https://ckeditor.com/docs/ckeditor5/latest/api/module_list_listconfig-ListPropertiesStyleConfig.html#member-useAttribute
++    if ($this->getConfiguration()['properties']['styles']) {
++      $static_plugin_config['list']['properties']['styles'] = [
++        'useAttribute' => TRUE,
++        // Limit ordered list styles to the ones YaleSites' design system
++        // actually themes (decimal/lower-roman/lower-alpha, by nesting
++        // depth); CKEditor 5's own default also offers decimal-leading-zero
++        // and the upper-case roman/alpha variants, none of which have
++        // corresponding CSS.
++        'listStyleTypes' => [
++          'numbered' => ['decimal', 'lower-roman', 'lower-latin'],
++        ],
++      ];
++    }
+     $static_plugin_config['list']['multiBlock'] = $this->getConfiguration()['multiBlock'];
+     return $static_plugin_config;
+   }
+@@ -89,6 +118,12 @@
+    */
+   public function getElementsSubset(): array {
+     $subset = $this->getPluginDefinition()->getElements();
++    if (!$this->getConfiguration()['properties']['styles']) {
++      $subset = array_diff($subset, [
++        '<ul type>',
++        '<ol type>',
++      ]);
++    }
+     $subset = array_diff($subset, ['<ol reversed start>']);
+     $reversed_enabled = $this->getConfiguration()['properties']['reversed'];
+     $start_index_enabled = $this->getConfiguration()['properties']['startIndex'];
