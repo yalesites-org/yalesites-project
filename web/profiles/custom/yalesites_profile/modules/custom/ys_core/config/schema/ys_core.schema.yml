@@ -72,11 +72,15 @@ ys_core.header_settings:
       label: 'Focus header image'
     site_name_image:
       # A managed_file element returns a list of file IDs, and every reader
-      # indexes [0]. See ys_core_deploy_10009().
+      # indexes [0]. The IDs are integers - core casts with (int) in
+      # \Drupal\file\Element\ManagedFile::valueCallback() and otherwise appends
+      # $file->id() - so declaring strings here would report a schema error on
+      # every site that has ever uploaded one, and would rewrite the stored IDs
+      # to numeric strings on the next save. See ys_core_deploy_10009().
       type: sequence
       label: 'Site name image'
       sequence:
-        type: string
+        type: integer
     site_wide_branding_name:
       type: label
       label: 'Site-wide branding name'
@@ -183,11 +187,12 @@ ys_core.site:
           type: string
           label: 'Teaser fallback image media ID'
     custom_favicon:
-      # A managed_file element returns a list of file IDs; readers index [0].
+      # A managed_file element returns a list of integer file IDs; readers
+      # index [0]. See the note on header_settings site_name_image.
       type: sequence
       label: 'Custom favicon'
       sequence:
-        type: string
+        type: integer
     environment_indicator:
       type: mapping
       label: 'Environment indicator'
