@@ -13,7 +13,7 @@ use Drupal\office_hours\OfficeHoursDateHelper;
  *
  * The Office Hours block renders the schedule with the contrib module's
  * "Table" formatter, and that formatter built a header row that did not
- * describe the table it sat on top of. Three things were wrong, all invisible
+ * describe the table it sat on top of. Four things were wrong, all invisible
  * in normal use because the header row is visually-hidden:
  *
  * - No header cell carried a scope attribute, so nothing told assistive
