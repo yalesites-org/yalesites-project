@@ -31,6 +31,22 @@ $config['config_split.config_split.local_config']['status'] = FALSE;
 $config['config_split.config_split.production_config']['status'] = TRUE;
 
 /**
+ * Platform-wide defaults for every outbound HTTP request.
+ *
+ * Core's \Drupal\Core\Http\ClientFactory merges this over its own defaults, so
+ * these apply to every caller of the `http_client` service - core, contrib and
+ * custom - without each one having to remember. `connect_timeout` is the one
+ * that matters: core leaves it unset entirely, so a host that drops packets
+ * rather than refusing the connection was bounded only by the request timeout.
+ * See yalesites-org/YaleSites-Internal#1701 and docs/development.md.
+ *
+ * Set before the local/site-specific includes below so either can override it.
+ */
+// Core's current default, pinned explicitly so both bounds read as a pair.
+$settings['http_client_config']['timeout'] = 30;
+$settings['http_client_config']['connect_timeout'] = 10;
+
+/**
  * If there is a local settings file, then include it.
  */
 $local_settings = __DIR__ . "/settings.local.php";

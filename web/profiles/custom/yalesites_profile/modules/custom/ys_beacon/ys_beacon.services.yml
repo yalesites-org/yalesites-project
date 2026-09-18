@@ -152,10 +152,12 @@ services:
     tags:
       - { name: access_check, applies_to: _ys_beacon_authorized }
 
-  ys_beacon.admin_access_check:
-    class: Drupal\ys_beacon\Access\BeaconAdminAccessCheck
+  # Stricter than the platform-admin gate: user 1 only. The applies_to value
+  # must match the requirement used in ys_beacon.routing.yml.
+  ys_beacon.superadmin_only_access_check:
+    class: Drupal\ys_beacon\Access\BeaconSuperadminOnlyAccessCheck
     tags:
-      - { name: access_check, applies_to: _ys_beacon_admin_access }
+      - { name: access_check, applies_to: _ys_beacon_superadmin_only }
 
   ys_beacon.config_overrides:
     class: Drupal\ys_beacon\Config\YsBeaconConfigOverrides
