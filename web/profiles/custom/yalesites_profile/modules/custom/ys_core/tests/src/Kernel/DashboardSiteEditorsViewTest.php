@@ -113,15 +113,17 @@ class DashboardSiteEditorsViewTest extends ViewsKernelTestBase {
   }
 
   /**
-   * Executes the view and returns the uid of every result row, in order.
+   * Executes a display and returns the uid of every result row, in order.
+   *
+   * @param string $display_id
+   *   Defaults to the block the dashboard template renders.
    *
    * @return string[]
    *   One entry per row, so duplicate rows show up as repeated uids.
    */
-  private function executedUids(): array {
+  private function executedUids(string $display_id = 'block_1'): array {
     $view = Views::getView(self::VIEW_ID);
-    // The display ys-dashboard.html.twig renders.
-    $view->setDisplay('block_1');
+    $view->setDisplay($display_id);
     $this->executeView($view);
     return array_map(static fn($row) => (string) $row->uid, $view->result);
   }
@@ -176,6 +178,27 @@ class DashboardSiteEditorsViewTest extends ViewsKernelTestBase {
       array_slice($expected, 0, 10),
       $uids,
       'The 10 rows should be the 10 most recently logged-in distinct users.'
+    );
+  }
+
+  /**
+   * The page display reaches the users the block's 10-row cap hides.
+   *
+   * The block is capped at 10 by a "some" pager, so the dashboard links to this
+   * display to get at the rest. The assertion that matters is that the page is
+   * NOT subject to that cap: a page returning 10 would mean the display's pager
+   * override silently failed and it had inherited the block's.
+   */
+  public function testPageDisplayReachesUsersPastTheBlockCap(): void {
+    $expected = [];
+    for ($i = 0; $i < 12; $i++) {
+      $expected[] = $this->createEditor("editor-$i", ['contributor', 'editor'], 9000 - $i)->id();
+    }
+
+    $this->assertSame(
+      $expected,
+      $this->executedUids('page_1'),
+      'The page display should list every qualifying user, not just the block cap of 10.'
     );
   }
 
