@@ -57,23 +57,78 @@ class BlockCloner {
    */
   public function cloneComponent(Section $section, string $uuid): ?SectionComponent {
     $component = $section->getComponent($uuid);
-
-    // Only inline blocks are cloneable. Reusable blocks use the block_content
-    // plugin and are excluded by design: they are already shared across
-    // placements, so cloning them would create a disconnected copy.
-    if (!$component->getPlugin() instanceof InlineBlock) {
+    if (!$this->isInlineBlock($component)) {
       return NULL;
     }
 
+    $new_component = $this->duplicateComponent($component);
+    if (!$new_component) {
+      return NULL;
+    }
+
+    // insertAfterComponent() re-weights the component it inserts, so the weight
+    // duplicateComponent() carried over from the original is overwritten here.
+    $section->insertAfterComponent($uuid, $new_component);
+
+    return $new_component;
+  }
+
+  /**
+   * Determines whether a component's plugin is an inline (non-reusable) block.
+   *
+   * @param \Drupal\layout_builder\SectionComponent $component
+   *   The component to inspect.
+   *
+   * @return bool
+   *   TRUE when the component is an inline block. FALSE for reusable and other
+   *   non-inline placements, and for a component whose plugin cannot be
+   *   resolved at all — a missing plugin already renders as a broken block, and
+   *   treating it as non-inline keeps one bad component from aborting a clone.
+   */
+  public function isInlineBlock(SectionComponent $component): bool {
+    try {
+      return $component->getPlugin() instanceof InlineBlock;
+    }
+    catch (\Exception $e) {
+      $this->logger->warning('Could not resolve the block plugin for component %uuid: @message', [
+        '%uuid' => $component->getUuid(),
+        '@message' => $e->getMessage(),
+      ]);
+      return FALSE;
+    }
+  }
+
+  /**
+   * Deep-copies an inline block into a new, detached component.
+   *
+   * The copy is not attached to any section: callers decide where it goes.
+   * Cloning a single block inserts it after the original (::cloneComponent),
+   * while cloning a whole section collects the copies into a new section.
+   *
+   * Callers must establish that the component is an inline block first, with
+   * ::isInlineBlock(). Keeping the predicate out of here means the block plugin
+   * is resolved once per component rather than twice — SectionComponent's
+   * ::getPlugin() is not memoised, so each call builds a fresh plugin instance
+   * — and it leaves a NULL return meaning exactly one thing: the block content
+   * could not be resolved.
+   *
+   * @param \Drupal\layout_builder\SectionComponent $component
+   *   The inline-block component to duplicate.
+   *
+   * @return \Drupal\layout_builder\SectionComponent|null
+   *   A new component with a fresh UUID carrying a deep copy of the original's
+   *   block content, or NULL when that block content cannot be resolved.
+   */
+  public function duplicateComponent(SectionComponent $component): ?SectionComponent {
     $component_array = $component->toArray();
     $configuration = $component_array['configuration'];
 
     $block_content = $this->loadBlockContent($configuration);
     if (!$block_content) {
       // An inline block whose content cannot be resolved is a data anomaly.
-      // Refuse to clone rather than insert a component that would silently
+      // Refuse to clone rather than produce a component that would silently
       // share the original's block revision instead of a deep copy.
-      $this->logger->error('Cannot clone inline block %uuid: its block content could not be loaded.', ['%uuid' => $uuid]);
+      $this->logger->error('Cannot clone inline block %uuid: its block content could not be loaded.', ['%uuid' => $component->getUuid()]);
       return NULL;
     }
 
@@ -88,15 +143,12 @@ class BlockCloner {
     $configuration['block_revision_id'] = NULL;
     $configuration['block_serialized'] = serialize($cloned_block_content);
 
-    $new_component = new SectionComponent(
-      $this->uuidGenerator->generate(),
-      $component_array['region'],
-      $configuration,
-      $component_array['additional']
-    );
-    $section->insertAfterComponent($uuid, $new_component);
+    // fromArray() keeps the region, weight and additional data verbatim; only
+    // the identity and the block content differ from the original.
+    $component_array['uuid'] = $this->uuidGenerator->generate();
+    $component_array['configuration'] = $configuration;
 
-    return $new_component;
+    return SectionComponent::fromArray($component_array);
   }
 
   /**
