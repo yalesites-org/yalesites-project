@@ -710,6 +710,19 @@ npm run build      # tsc && vite build -> react/static/assets
 
 Commit the regenerated `react/static` output together with the source change.
 
+`vite build` keeps debug output out of the bundle, because it is served to
+every site visitor: `console.log`, `console.debug`, `console.info`,
+`console.warn` and `console.trace` are marked `esbuild.pure` so minification
+removes them, and `debugger` statements are dropped. They all still work under
+`npm run dev`, so keep using them while developing - just do not rely on one
+being present in production.
+
+**`console.error` is intentionally kept.** Some failure paths (for example the
+"Conversation not found" branch in `Chat.tsx`) return without showing the
+visitor anything, so the console is the only trace they leave - and the source
+map this bundle ships is only useful if something reaches the console. Use
+`console.error` for anything you would want to see in a production report.
+
 The `.github/workflows/verify_beacon_bundle.yml` CI check rebuilds the bundle
 from source on every pull request that touches `react/` and fails if the
 result differs from the committed `react/static` output, so a source change
@@ -749,10 +762,22 @@ lando drush cset ys_beacon.settings azure_index_name <dev-index> -y
 lando drush cset ys_beacon.settings enable_chat 1 -y
 lando drush sapi-rt ys_beacon   # rebuild tracking after setting the index name via CLI
 lando drush sapi-i ys_beacon
-curl -sN -X POST https://yalesites-fable.lndo.site/api/ys-beacon/v1/conversation \
+curl -sN -X POST https://<your-lando-host>/api/ys-beacon/v1/conversation \
   -H 'Content-Type: application/json' \
   -d '{"messages":[{"id":"1","role":"user","content":"What is this site about?","date":"2026-01-01T00:00:00Z"}]}'
 ```
 
+(`<your-lando-host>` is `<name>.lndo.site` for the `name` in your
+`.lando.local.yml` at the repo root.)
+
 For frontend work, `npm run dev` serves the widget with `/api/ys-beacon`
-proxied to the Lando site (see `react/vite.config.ts`).
+proxied to the Lando site. Point it at your own instance with
+`YS_BEACON_PROXY_TARGET`, since every checkout has a different host:
+
+```
+cd react
+YS_BEACON_PROXY_TARGET=https://<your-lando-host> npm run dev
+```
+
+Unset, it falls back to `https://yalesites-platform.lndo.site` - the host
+shipped in `.lando.local.example.yml`.
