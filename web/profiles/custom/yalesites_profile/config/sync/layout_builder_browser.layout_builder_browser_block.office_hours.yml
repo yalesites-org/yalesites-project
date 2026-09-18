@@ -1,0 +1,11 @@
+uuid: 7755b16e-6721-4378-b3f4-1e6307a70283
+langcode: en
+status: true
+dependencies: {  }
+id: office_hours
+block_id: 'inline_block:office_hours'
+category: text_and_content
+label: 'Office Hours'
+image_path: /profiles/custom/yalesites_profile/modules/custom/ys_core/images/preview-icons/office-hours.svg
+image_alt: ''
+weight: -10
