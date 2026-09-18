@@ -144,7 +144,6 @@ The module uses a service-oriented architecture to separate concerns and follows
 
 **Service Layer:**
 - `MediaFileDeleter` - Business logic for file deletion
-  - Implements `MediaFileDeleterInterface` for better testability
   - Uses typed properties and constructor property promotion (PHP 8.0+)
   - Validates file objects and URIs
   - Handles immediate filesystem deletion
@@ -163,15 +162,10 @@ The module uses a service-oriented architecture to separate concerns and follows
 
 ### Class Structure
 
-**`MediaFileDeleterInterface`**
-- Interface for the file deletion service
-- Defines contract for `validateFile()`, `validateFileUri()`, `deleteFile()`
-- Allows for alternative implementations and improved testing
-
 **`ConditionalMediaDeleteForm`**
 - Extends: `ContentEntityDeleteForm` (Drupal Core)
 - Services:
-  - `ys_file_management.media_file_deleter` (injected as `MediaFileDeleterInterface`)
+  - `ys_file_management.media_file_deleter` (injected as `MediaFileDeleter`)
   - `file.usage` (injected as `\Drupal\file\FileUsage\FileUsageInterface`)
 - Constants: `PERMISSION_MANAGE_FILES` (public, for reusability)
 - Methods:
@@ -183,13 +177,13 @@ The module uses a service-oriented architecture to separate concerns and follows
 
 **`MediaFileDeleter`** (Service)
 - Service ID: `ys_file_management.media_file_deleter`
-- Interface: `MediaFileDeleterInterface`
 - Dependencies (via constructor property promotion):
   - `FileSystemInterface $fileSystem`
   - `MessengerInterface $messenger`
   - `LoggerChannelFactoryInterface $loggerFactory`
   - `StreamWrapperManagerInterface $streamWrapperManager`
   - `CacheTagsInvalidatorInterface $cacheTagsInvalidator`
+  - `ModuleHandlerInterface $moduleHandler`
 - Public Methods:
   - `validateFile(mixed $file): bool` - Validates FileInterface objects
   - `validateFileUri(string $file_uri): bool` - Security check for URI schemes
@@ -267,10 +261,8 @@ This module follows modern development practices for Drupal 10+:
 - **Mixed Type**: The `validateFile()` method uses `mixed` type for flexible validation
 
 **Drupal 10+ Best Practices:**
-- **Interface-Based Design**: `MediaFileDeleterInterface` follows SOLID principles (Dependency Inversion)
-- **Service Aliasing**: The service definition includes an interface alias for type-hinting flexibility
 - **Constant Visibility**: Public constants (e.g., `PERMISSION_MANAGE_FILES`) allow reuse across classes
-- **Helper Methods**: Private helper methods (`getLogger()`, `getFileCacheTags()`) reduce code duplication
+- **Helper Methods**: Protected helper methods (`getLogger()`, `getFileCacheTags()`) reduce code duplication
 - **Comprehensive Documentation**: All methods include detailed PHPDoc blocks explaining the "why" not just the "what"
 
 **Code Quality:**
@@ -302,7 +294,6 @@ lando composer code-fix    # Auto-fix violations
 The module includes comprehensive test coverage:
 
 **Unit Tests** (`tests/src/Unit/MediaFileDeleterTest.php`):
-- Service implements MediaFileDeleterInterface
 - File object validation (valid, null, invalid objects)
 - URI validation (valid schemes, invalid schemes)
 - Successful file deletion with cache invalidation
@@ -314,13 +305,13 @@ The module includes comprehensive test coverage:
 - Invalid URI handling
 
 **Kernel Tests** (`tests/src/Kernel/ConditionalMediaDeleteFormTest.php`):
-- Service availability and interface implementation
+- Service availability
 - Service registration in container
 - File validation integration
 - URI validation with stream wrapper manager
 - Permission constant definition and visibility
 - User permissions and role assignments
-- Form instantiation via dependency injection (catches interface namespace issues)
+- Form instantiation via dependency injection
 - Form builds correctly for file managers (checkbox displayed)
 - Form builds correctly for regular users (no file deletion options)
 
