@@ -93,7 +93,7 @@
     "drupal/paragraphs_features": "2.2.0",
     "drupal/pathauto": "1.15.0",
     "drupal/quick_node_clone": "1.22.0",
-    "drupal/recaptcha": "3.4.0",
+    "drupal/recaptcha": "3.5.0",
     "drupal/recaptcha_v3": "2.0.5",
     "drupal/redirect": "1.13",
     "drupal/redis": "1.11.0",
