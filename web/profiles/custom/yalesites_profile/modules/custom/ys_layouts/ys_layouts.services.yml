@@ -63,7 +63,3 @@ services:
   ys_layouts.orphaned_inline_block_cleaner:
     class: Drupal\ys_layouts\Service\OrphanedInlineBlockCleaner
     arguments: ['@entity_type.manager', '@entity_field.manager', '@inline_block.usage', '@logger.channel.ys_layouts']
-
-  # Alias to allow type-hinting against the interface.
-  Drupal\ys_layouts\Service\OrphanedInlineBlockCleanerInterface:
-    alias: ys_layouts.orphaned_inline_block_cleaner
