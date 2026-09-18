@@ -47,7 +47,7 @@ class WebformBlockSiteMailWarningTest extends UnitTestCase {
   public static function warnedProvider(): array {
     return [
       'default no-reply address' => ['noreply@noreply.yale.edu'],
-      'unauthorized yale subdomain' => ['yalegsa@elilists.yale.edu'],
+      'unverified yale subdomain' => ['user@lists.yale.edu'],
       'not a yale address at all' => ['forms@example.com'],
     ];
   }
@@ -72,10 +72,10 @@ class WebformBlockSiteMailWarningTest extends UnitTestCase {
    * quote the value so they can recognise and correct it.
    */
   public function testUnauthorizedDomainWarningNamesTheAddress(): void {
-    $warning = $this->warningFor('yalegsa@elilists.yale.edu');
+    $warning = $this->warningFor('user@lists.yale.edu');
 
     $this->assertStringContainsString(
-      'yalegsa@elilists.yale.edu',
+      'user@lists.yale.edu',
       (string) $warning['message']['#markup']
     );
   }
@@ -86,13 +86,15 @@ class WebformBlockSiteMailWarningTest extends UnitTestCase {
   public function testAuthorizedSiteMailIsNotWarnedAbout(): void {
     $this->assertNull($this->warningFor('forms@yale.edu'));
     $this->assertNull($this->warningFor('Forms@YALE.EDU'));
+    // Verified for gsa.yale.edu in yalesites-org/YaleSites-Internal#1735.
+    $this->assertNull($this->warningFor('yalegsa@elilists.yale.edu'));
   }
 
   /**
    * Only Pre-Built Form blocks carry the warning.
    */
   public function testOtherBlockTypesAreNotWarnedAbout(): void {
-    $this->assertNull($this->warningFor('yalegsa@elilists.yale.edu', 'quick_links'));
+    $this->assertNull($this->warningFor('user@lists.yale.edu', 'quick_links'));
   }
 
   /**
