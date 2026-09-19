@@ -10,14 +10,14 @@ id: node.event.field_event_place
 field_name: field_event_place
 entity_type: node
 bundle: event
-label: 'Yale Location'
+label: 'Localist location'
 description: ''
 required: false
 translatable: false
 default_value: {  }
 default_value_callback: ''
 settings:
-  handler: 'default:taxonomy_term'
+  handler: 'default:filter_existing_terms'
   handler_settings:
     target_bundles:
       event_place: event_place
