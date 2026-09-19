@@ -103,6 +103,47 @@ A well-structured data model ensures efficiency, maintainability, and scalabilit
 - **Build with Blocks**: Embrace the power of the layout builder by utilizing blocks to define new components. YaleSites relies on blocks for editorial controls and mapping content to the component library. This includes both custom blocks (content entities) and programmatically defined blocks (plugins).
 - **Use Paragraphs for Nested Content**: Paragraphs remain a valuable tool, particularly when dealing with components that contain an indeterminate number of children, such as accordion items, tab items, or gallery items. The Paragraphs module provides intuitive widgets that offer an effective editorial interface for managing reference content within these complex components.
 
+## Making outbound HTTP requests
+
+Every outbound request must be bounded in **two** ways: `timeout` caps the whole response, and `connect_timeout` caps establishing the connection. Only bounding `timeout` is not enough — a host that silently drops packets instead of refusing the connection holds the request open for the full request timeout, which is how a third-party outage becomes a slow page on every YaleSites site.
+
+Drupal core sets `timeout` to 30 seconds and **leaves `connect_timeout` unset entirely**. The platform therefore sets both centrally, in `web/sites/default/settings.php`:
+
+```php
+$settings['http_client_config']['timeout'] = 30;
+$settings['http_client_config']['connect_timeout'] = 10;
+```
+
+Core's `\Drupal\Core\Http\ClientFactory` merges that over its own defaults, so **you get it for free** — a new call site needs no timeout options at all:
+
+```php
+$response = $this->httpClient->get($url);
+```
+
+Override it per call site only when that call genuinely needs different numbers, and when you do, name them as class constants rather than inlining a magic number — Guzzle merges per-request options over the client defaults, so your value wins:
+
+```php
+public const REQUEST_TIMEOUT = 15;
+public const CONNECT_TIMEOUT = 5;
+
+// ...
+$response = $this->httpClient->request('GET', $url, [
+  'timeout' => self::REQUEST_TIMEOUT,
+  'connect_timeout' => self::CONNECT_TIMEOUT,
+]);
+```
+
+Document *why* the call site deviates in the constant's docblock — that is the part a reader cannot reconstruct. A service that already names its timeouts with a different prefix (`API_TIMEOUT`) should stay internally consistent rather than half-renaming.
+
+Rules of thumb for choosing:
+
+- **Request path** (anything rendering a page or responding to a form): bound aggressively, and prefer degrading gracefully over blocking the response.
+- **Cron or batch path**: the platform default is usually right. Wrap the call in `try`/`catch` so one bad response does not abort the run.
+- **Migrate process plugin**: remember it runs once per row, so a stall multiplies. Do not tighten the *request* timeout so far that a legitimately slow response fails the row and loses data — the connect bound is the safe one to tighten.
+- Always assert the options in a unit test, so the bound cannot be dropped silently. The clearest example is `ys_beacon/modules/ys_ai_tester_legacy/tests/src/Unit/LegacyConversationClientTest.php`, which captures the options and asserts both constants; `ys_beacon/tests/src/Unit/BeaconIndexManagerTest.php` and `ys_localist/tests/src/Unit/LocalistManagerTest.php` do the same via a by-reference capture.
+
+Note on rollout: these defaults live in `web/sites/default/settings.php`, which reaches existing sites through a **Pantheon upstream update** (a git merge into each site repo), not through the `yalesites_profile` semantic-release bump that carries module code. A released profile version does not by itself mean the default is live everywhere.
+
 ## Adding a 'dial' for theming a component
 
 This project features custom fields for block theming. For example, the divider block includes settings for position, width, and animation style. In contrast to traditional Drupal projects using predefined list-field options in the configuration file, we've chosen a distinct approach. Our approach prioritizes the ability to add, remove, and dynamically adjust these options in future YaleSites themes and platform iterations, ensuring enduring flexibility. This system accommodates unique values for each field instance and supports changes over time, avoiding database integrity concerns. To add a dial:

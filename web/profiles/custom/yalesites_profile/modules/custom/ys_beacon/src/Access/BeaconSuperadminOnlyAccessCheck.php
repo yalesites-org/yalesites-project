@@ -18,8 +18,28 @@ use Drupal\Core\Session\AccountInterface;
  * forbidden (rather than a neutral result) keeps the route denied for all
  * others under any access-combination mode and stays robust if it later gains
  * additional access checks, since a forbidden result always wins.
+ *
+ * "Superadmin only" is in the name because this is deliberately stricter than
+ * the platform's general platform-admin definition
+ * (yalesites-org/YaleSites-Internal#1695): a platform admin holding
+ * 'administer platform admin settings' satisfies
+ * \Drupal\ys_core\PlatformAdminCheckerInterface but is refused here. Anything
+ * wanting the broader audience should gate on
+ * \Drupal\ys_core\Access\PlatformAdminAccessCheck instead of on this.
  */
-class BeaconAdminAccessCheck implements AccessInterface {
+class BeaconSuperadminOnlyAccessCheck implements AccessInterface {
+
+  /**
+   * The route requirement this check applies to.
+   *
+   * Repeated in ys_beacon.routing.yml and in the service tag in
+   * ys_beacon.services.yml, since YAML cannot reference this constant.
+   * BeaconSuperadminOnlyAccessCheckTest pins both to this value: a route
+   * requirement with no matching check resolves to no access check at all,
+   * which AccessManager treats as neutral, so the form would 403 for user 1
+   * too.
+   */
+  const REQUIREMENT = '_ys_beacon_superadmin_only';
 
   /**
    * Checks access to the Beacon administration form.

@@ -76,32 +76,27 @@
             });
           }
 
-          // Get each component-color span element
-          const targetElements = document.querySelectorAll(
-            'span.component-color'
-          );
+          // Re-tint the swatches that follow the palette (button, header,
+          // footer, book navigation) so they preview the palette just picked
+          // rather than the saved one. The palette swatches themselves are
+          // excluded: each one shows its own palette.
+          //
+          // The newly selected palette is this radio's own value -- the page
+          // used to be asked for it via div[data-global-theme], which only
+          // exists on front-end pages and so is null on the settings page.
+          const slotColors = (settings.ysThemes || {}).paletteColors || {};
+          const paletteColors = slotColors[this.value];
 
-          // Read active global theme and capture the number in a variable and
-          // update it on radio input paletter selection change.
-          targetElements.forEach((targetElement) => {
-            const globalTheme = document.querySelector(
-              'div[data-global-theme]'
-            );
-            const currentTheme = globalTheme.getAttribute('data-global-theme');
-            const originalBackground = targetElement.style.background;
-
-            // Construct the regular expression pattern dynamically
-            const regexPattern = new RegExp(`--global-themes-(\\w+)-`);
-
-            // Replace the --global-themes-${globalTheme}- portion
-            const updatedBackground = originalBackground.replace(
-              regexPattern,
-              `--global-themes-${currentTheme}-`
-            );
-
-            // Update the inline style with the modified background value
-            targetElement.style.background = updatedBackground;
-          });
+          if (paletteColors) {
+            document
+              .querySelectorAll('span.component-color[data-slot]')
+              .forEach((swatch) => {
+                const hex = paletteColors[`slot-${swatch.dataset.slot}`];
+                if (hex) {
+                  swatch.style.background = hex;
+                }
+              });
+          }
         });
       });
 
