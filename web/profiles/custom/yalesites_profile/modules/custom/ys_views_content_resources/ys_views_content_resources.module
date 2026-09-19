@@ -58,6 +58,28 @@ function ys_views_content_resources_views_data_alter(array &$data) {
     ],
   ];
 
+  // Expose the non-affiliated authors double_field name columns as discrete
+  // Views fields. The field is a multi-value double_field (first/second name
+  // columns); out of the box only the first-name column is reachable, so the
+  // resource search combine filter cannot match on last names. Registering
+  // both columns lets the search handlers in ViewsContentResourcesManager feed
+  // them to the combine filter.
+  if (isset($data['node__field_nonaffiliated_authors'])) {
+    $columns = [
+      'field_nonaffiliated_authors_first' => t('Non-affiliated author first name'),
+      'field_nonaffiliated_authors_second' => t('Non-affiliated author last name'),
+    ];
+    foreach ($columns as $column => $label) {
+      $data['node__field_nonaffiliated_authors'][$column] = [
+        'title' => $label,
+        'help' => t('A name column of the non-affiliated authors field, for search.'),
+        'field' => [
+          'id' => 'standard',
+        ],
+      ];
+    }
+  }
+
 }
 
 /**
