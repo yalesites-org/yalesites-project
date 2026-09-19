@@ -4,7 +4,9 @@
 - [Adding a new color value](#adding-a-new-color-value)
 - [Adding a new component theme](#adding-a-new-component-theme)
 - [Adding a new global theme](#adding-a-new-global-theme)
+- [Two colour dials, two attributes](#two-colour-dials-two-attributes)
 - [Working with themes in CSS](#working-with-themes-in-css)
+- [The contrast gate](#the-contrast-gate)
 
 ---
 
@@ -108,7 +110,29 @@ global-themes:
       slot-nine:
         value: "{color.gray.100.value}"
   ```
-  - `slot-nine` is reserved for the secondary background variant in our global theme palettes. In the current implementation, ONHA uses `soft-oceanic` and the other themes use a neutral gray background.
+  - `slot-nine` is reserved for the secondary background variant in our global theme palettes. In the current implementation, ONHA uses `soft-oceanic` and the other themes use a neutral gray background. It is always paired with `slot-seven` as the foreground/text color — that pairing is contrast-safe (AA) across all 7 global themes; see the Storybook contrast matrix story (`?path=/docs/tokens-colors-contrast-matrix--docs`) rather than a hardcoded table here, since it recomputes live from `tokens.json`.
+  - Layout Section's "Component theme" picker exposes this as option `'five'` (labeled "Five" in the admin UI) — Sections now offer six options, matching every block-level component picker (#1518; see `ColorTokenResolver::getColorStylesForEntity()`'s `layout_section` case). Don't be misled by the option label: `'five'` resolves to `slot-nine`, not `slot-five`.
+  - **Layout Builder Sections** expose the "Component theme" picker on any layout in `ys_layouts.layouts.yml` whose `class` is (or extends) `\Drupal\ys_layouts\Plugin\Layout\YSLayoutOptions`: Two Column (50/50), Two Column (70/30), and Three Column (33/33/33). **One column** (`layout_onecol`) also has it, but it's a core `layout_discovery` plugin rather than one `ys_layouts` declares, so its class is attached at runtime via `ys_layouts_layout_alter()` (`\Drupal\ys_layouts\Plugin\Layout\YSLayoutOneColumn`) instead of the YAML `class` key. **Three of the four render through `@organisms/layout/layout` (`yds-layout.twig`)**, which is the place the section signature is emitted:
+
+    ```html
+    <div class="yds-layout layout" data-section-theme="X" data-component-layout="Y" …>
+    ```
+
+    **One column is the exception.** `atomic/templates/layouts/layout--onecol.html.twig` sets `yds-layout` and the section attributes itself, via `attributes.setAttribute()`, rather than embedding the organism — it needs the section wrapper to appear even when the section holds no blocks. So there are two emitters, and a change to the section signature has to be made in both. That template's docblock says so at the point of the change.
+
+    `data-section-theme` is **not** `data-component-theme`. See "Two colour dials, two attributes" below — they used to be one attribute and that was a bug.
+
+    where `X` is the section colour and `Y` is the layout (`one-column`, `seventy-thirty`, `fifty-fifty`, `thirty-thirty-thirty`). **Adding a new section type — a 30/70, say — means adding a `component__layout` value and its flex-basis rules in `_yds-layout.scss`, not a new template.** Nothing else should hand-roll those classes or data attributes.
+
+    Two details are specific to One column, because it is a single-region layout and it is the generic main-content section every page gets:
+
+    - The organism skips its `.yds-layout__inner` flex row and `.yds-layout__primary` column for a single region — there is no row of columns to lay out, and `__inner`'s `> * > * { max-width: 100% }` would stop the full-bleed components a One column section is expected to host from breaking out. A themed section's vertical padding therefore comes from a small scoped rule in `ys_layouts/layouts/onecol/onecol.css` rather than from `__inner`.
+    - **An unthemed One column section carries no section markup at all.** `layout--onecol.html.twig` puts both the `yds-layout` class and the section attributes inside `{% if theme != 'default' %}`, so a section left on "Default - no color" renders `<div class="layout layout--onecol">` — no `yds-layout`, no `data-section-theme`, no `data-component-layout`. (Verified against a rendered page, not inferred.) Two consequences worth knowing before you rely on the other direction:
+      - Nothing needs excluding from the `[data-section-theme='default']` section-margin rule on One column's behalf, and `_yds-layout.scss`'s `:not([data-component-layout='one-column'])` guard on that rule is therefore unreachable for a real One column section — only a Storybook fixture emits `data-component-layout="one-column"` alongside a `default` theme. The guard is kept because it becomes load-bearing the moment One column renders through the organism; it is not doing anything today. One column's page-level margins come from `.main-content > *:first-child` (`page-layouts.scss`) and `.main-content .layout.layout--onecol:last-of-type` (atomic's `layout-builder.css`).
+      - Everything `--color-layout-border` feeds (the CTA atom's fill, the divider atom, tabs, pull-quote) is guarded on `[data-section-theme]:not([data-section-theme='default'])`, so an unthemed section picks up none of it — and for One column the attribute is absent entirely, which reaches the same result by a different route.
+
+    One column also hides the inherited Divider checkbox: it has a single region, so there is nothing to divide. A 70/30 section suppresses the opt-in divider element too, because that layout already draws an always-on column separator as a border on `.yds-layout__secondary` and rendering both drew the line twice.
+  - **Banner is not themed.** It's locked out of "Configure Section" for content editors, and where it isn't, its components (hero image/video) typically fill the section, so a background color would rarely be visible.
   - Add your new theme, following the same convention shown above. If there are `three` themes already entered, and yours would be number `four`, name it accordingly.
   - For example (say we wanted to use the new `brown` value we added above): 
 
@@ -289,8 +313,220 @@ The process of updating these, more specific, component themes is the same as wh
 
   ---
 
+### Two colour dials, two attributes
+
+There are two colour dials on a YaleSites page, and they are **different mappings of the same
+option names**. Section option `two` is `slot-four`; block option `two` is a different slot
+entirely. Each has its own attribute:
+
+| Dial | Attribute | Emitted by | Mapped in |
+|---|---|---|---|
+| **Block** | `data-component-theme` | each component's own `.twig` (`callout__background_color`, `tabs__theme`, …) | `00-tokens/colors/_color-component-themes.scss`, from the `component-themes` token layer |
+| **Section** | `data-section-theme` | `03-organisms/layout/layout/yds-layout.twig` and atomic's `layout--onecol.html.twig` | `03-organisms/layout/layout/_yds-layout.scss`, from `--color-layout-theme` / `--color-layout-content` |
+
+Until YaleSites-Internal#1630 both were spelled `data-component-theme`, and because the block
+rule's selector is a bare `[data-component-theme='…']`, it also landed on the **section** wrapper —
+handing the section a `--color-background` / `--color-text` pair from a mapping that had nothing to
+do with the colour the section actually painted. On section theme two that meant white text on a
+near-white background in all seven global themes (1.07:1 to 1.91:1). One attribute carrying two
+mappings is why no colour reset could be correct for both.
+
+Two rules follow from the split:
+
+- **Never add `[data-section-theme]` to `_color-component-themes.scss`.** Section colours belong in
+  `_yds-layout.scss`, derived from `--color-layout-*`.
+- **A selector that reaches *into* a section from outside it** — the
+  `.yds-layout[data-section-theme] …` shape — must use the section attribute. These silently stop
+  matching if they use the wrong one: the page still builds and lints clean, the colour just
+  reverts. `component-library-twig`'s
+  `components/03-organisms/layout/layout/section-dial-split.test.mjs` fails that repo's unit suite
+  if any `.yds-layout…[data-component-theme…]` selector reappears — but **it only walks
+  `component-library-twig/components/`.** Two hand-written stylesheets carry the same shape and are
+  outside its reach, so check them by hand: `atomic/css/layout-builder.css` (atomic has no test
+  runner at all) and `web/profiles/custom/yalesites_profile/modules/custom/ys_themes/css/ys-themes.css`.
+
+When a rule is genuinely about *either* surface being dark — `<code>`'s border, a required-field
+marker — name both attributes explicitly (`:is([data-component-theme='one'],
+[data-section-theme='one'])`). Specificity is unchanged, because `:is()` takes the weight of its
+heaviest argument and both are single attribute selectors.
+
+### The surface contract
+
+> **Where the implementation lives.** Every file, mixin, npm script and JavaScript constant
+> named in this section belongs to **`component-library-twig`**, not to this repository —
+> including `_surface-contract.scss` and its `publish-surface` mixin, `surface-contract.mjs`,
+> `surface-contract-baseline.json`, `section-background-contrast.test.mjs`,
+> `META_CHIP_SURFACES`, `SECTION_SURFACE_CONSUMERS`, `npm run contrast:surfaces`, and the
+> `_yds-callout.scss` / `_yds-cta.scss` references below. Nothing checks any of those names from
+> here: this is prose in one repo describing code in another. Several of them are
+> *instructions* — "use the shared mixin", "register it in `META_CHIP_SURFACES`", "register any
+> new consumer in `SECTION_SURFACE_CONSUMERS`" — so a name that has moved sends the next person
+> to edit something that is no longer there. **If a name here no longer resolves,
+> `component-library-twig` is authoritative — go read it and correct this document**, rather
+> than assuming the code is wrong.
+
+The two dials above answer "what colour is this thing". They do not answer the question that
+actually breaks pages: **when a block sits inside a section, whose foreground do the things
+inside the block use?**
+
+Before YaleSites-Internal#1631 the answer was "whichever one happens to be nearest in the
+inheritance chain", and that is frequently the wrong one. A section publishes a foreground for
+the background *it* painted. A block nested inside then paints its own background and says
+nothing — so everything inside the block goes on reading the *section's* foreground, against the
+background the *block* just painted. Neither palette is wrong on its own; the pairing that
+reaches the screen is one nobody chose. Measured across every (global theme x section theme x
+block theme) combination, 105 of 210 landed below 4.5:1.
+
+The rule that closes it is one sentence:
+
+> **If a component paints a background, it must publish the contract.**
+
+"The contract" is three custom properties, published on the same element that paints:
+
+| Property | Means |
+|---|---|
+| `--color-section-background` | what this surface painted |
+| `--color-section-foreground` | the approved foreground for that background |
+| `--color-section-accent` | the control/accent colour on this surface |
+
+Because a directly-matching declaration always beats an inherited one, re-declaring these at each
+boundary genuinely stops the leak: a descendant resolves them from the nearest surface rather than
+from one two containers away.
+
+#### Publishing it
+
+Use the shared mixin — do not hand-write the three declarations:
+
+```scss
+@each $theme, $value in $component-themes {
+  &[data-component-theme='#{$theme}'] {
+    --color-thing-background: var(--component-themes-#{$theme}-background);
+
+    @include tokens.publish-surface(
+      var(--color-thing-background),   // what this block paints
+      var(--color-text),               // the foreground that goes with it
+      var(--color-action)              // the accent; defaults to the foreground
+    );
+  }
+}
+```
+
+Two things about *where* it goes are load-bearing:
+
+- **Include it from each block that actually paints**, not once under a blanket
+  `[data-component-theme]`. A theme value with no block of its own would leave the source
+  property unset, which makes the declarations invalid at computed-value time and *strips* the
+  contract from everything inside — worse than never publishing it, because the enclosing
+  surface's values stop being inherited too. Unthemed or unknown, doing nothing is the safe
+  outcome. In practice that means the dial loop **and** any hand-written theme block the loop does
+  not reach (theme `six` is not a `component-themes` key).
+- **Never publish a background without an accent.** All three properties are emitted together and
+  `$accent` defaults to `$foreground` precisely so this cannot be got wrong. `_yds-cta.scss` reads
+  `--color-section-background` and `--color-section-accent` as a *matched pair* — a filled
+  button's label comes from one, the fill underneath it from the other. Publish only the
+  background and the label comes from your block while the fill still comes from the section:
+  measured, that puts 105 of 210 theme combinations below AA, worst case 1.03:1 — an invisible
+  button label. Pass an explicit accent only when the component has a control colour of its own.
+
+#### Publishing a fixed surface
+
+Most surfaces paint a colour that moves with the dial, so the foreground they publish moves with
+it too. A surface can also paint a **fixed** colour — and then the foreground it publishes has to
+be fixed as well, because there is nothing for it to track. The meta chip/tag lists
+(`.event-meta__event-types__type`, `.event-meta__event-topics__topic`,
+`.publication-detail__taxonomy-list__item`) are the worked example: each paints a flat
+`--color-gray-100` chip at no themed scope at all.
+
+```scss
+.event-meta__event-types__type {
+  background-color: var(--color-gray-100);
+
+  @include tokens.publish-surface(
+    var(--color-gray-100),
+    var(--color-gray-700)
+  );
+
+  // A surface that paints its own background must also take back any link
+  // role the enclosing section re-pointed for ITS background.
+  --color-link-visited-base: var(--color-section-foreground);
+  --color-link-visited-hover: var(--color-section-foreground);
+}
+```
+
+Three things are easy to get wrong here:
+
+- **Pick a foreground the surface already renders, not the most contrasty one.** These chips
+  published `--color-gray-700` because `hsl(0, 0%, 29%)` is exactly what their anchors already
+  resolved to on every light theme, so light and unthemed pages render byte-identically and only
+  the failing combinations move. `--color-gray-800` would have measured better (15.03:1 against
+  8.27:1) and silently restyled every chip on every unthemed page in the platform.
+- **Publishing the contract is not enough on its own for link states.** `a:visited` and `a:hover`
+  come from `plain-link` as pseudo-class rules on the anchor, and those outrank a plain `color:`
+  on the same anchor. A dark themed section re-points `--color-link-visited-base` to the
+  near-white `--color-link-visited-light` for copy drawn on the *section* — inherited onto a chip
+  that stayed near-white, that measured 1.32:1. Re-point the affected role **on the surface**, so
+  the anchor's own pseudo-class rule resolves it from there. (`--color-link-hover` needs no such
+  treatment today only because `plain-link` self-declares it on the anchor itself; if that
+  self-declaration is ever removed, hover needs the same handling.)
+- **The guardrail cannot see this shape, so pin it in a test.** `surface-contract.mjs` detects a
+  background painted at a `[data-component-theme]` scope; a fixed background painted at no themed
+  scope is its documented blind spot, because catching it generally would mean flagging every
+  piece of flat chrome in the library. A fixed surface therefore does **not** appear in
+  `npm run contrast:surfaces`'s `converted` count — register it in `META_CHIP_SURFACES` in
+  `components/00-tokens/colors/section-background-contrast.test.mjs` instead, which asserts the
+  wiring per chip and holds the measured ratios.
+
+#### Consuming it
+
+A component that paints *no* background of its own but needs a colour the enclosing surface should
+be able to set reads the contract with its previous colour as the fallback:
+
+```scss
+color: var(--color-section-foreground, var(--color-basic-brown-gray));
+```
+
+The fallback is what makes the change safe: where nothing publishes a contract, the component
+renders exactly as it did before, so unthemed rendering is unchanged by construction. Reading
+`var(--color-text)` is still correct for ordinary body copy — the block dial already re-points it
+per surface. Reach for the contract when the value would otherwise be a **fixed** colour that
+cannot follow the theme (that is also what the foreground-purity ratchet flags), or when it is a
+role a surface should be able to override.
+
+Register any new consumer in `SECTION_SURFACE_CONSUMERS` in
+`components/00-tokens/colors/section-background-contrast.test.mjs`.
+
+#### The guardrail
+
+`components/00-tokens/colors/surface-contract.mjs` scans every component stylesheet for a
+background painted at a themed scope and fails the build if it does not publish the contract.
+Surfaces still to convert are listed in `surface-contract-baseline.json` under `pending`, each
+with a reason and an owning ticket; like the other baselines in that directory it is a ratchet
+that may only shrink, and adding an entry to turn a red build green is not a fix. A second
+section, `out_of_scope`, holds site chrome that paints at a themed scope but cannot be placed
+inside a themed section, so the leak is unreachable there — those entries carry the condition
+that would move them back into `pending` instead of a ticket, and are kept out of the pending
+count so the burn-down measures real contrast debt. The gate treats both alike. Print the current
+state, with the pending count and how old the baseline is, with:
+
+```sh
+npm run contrast:surfaces
+```
+
+#### A note on the name
+
+`--color-section-*` is deliberately not renamed to `--surface-*`. "Section" here means *any*
+surface that paints itself; the outermost one just happens to be a Layout Builder section. The
+name was already established by YaleSites-Internal#1613 and #1628 across dozens of consumers,
+several test files and a stylelint rule, so introducing a second vocabulary for the same idea
+would add a dialect rather than remove one.
+
+---
 ### Working with themes in CSS
 In each component that uses component themes and global themes, each theme should be iterated over so that each component can override its default values set in tokens. Rather, each component can get a new color-slot mapping from each global-theme. 
+
+The worked example below is the **block** dial (`_yds-callout.scss`), so every selector in it is
+`data-component-theme`. The section dial's counterpart lives only in `_yds-layout.scss` and is not
+something a component author writes.
 
 #### Part one
 For example, in our `_yds-callout.scss` file (https://github.com/yalesites-org/component-library-twig/blob/develop/components/02-molecules/callout/_yds-callout.scss), at the top we include our tokens and the map function. Then we set variables to out `component` and `global` theme objects.
@@ -346,9 +582,10 @@ Next, we set the component-theme slot values, based on the global theme:
       --color-slot-three: var(--global-themes-#{$globalTheme}-colors-slot-three);
       --color-slot-four: var(--global-themes-#{$globalTheme}-colors-slot-four);
       --color-slot-five: var(--global-themes-#{$globalTheme}-colors-slot-five);
-      --color-slot-six: var(--component-themes-#{$theme}-slot-six);
-      --color-slot-seven: var(--component-themes-#{$theme}-slot-seven);
-      --color-slot-eight: var(--component-themes-#{$theme}-slot-eight);
+      --color-slot-six: var(--global-themes-#{$globalTheme}-colors-slot-six);
+      --color-slot-seven: var(--global-themes-#{$globalTheme}-colors-slot-seven);
+      --color-slot-eight: var(--global-themes-#{$globalTheme}-colors-slot-eight);
+      --color-slot-nine: var(--global-themes-#{$globalTheme}-colors-slot-nine);
     }
   }
 ```
@@ -389,11 +626,51 @@ Next, we assign component theme attributes to specific global-theme color-slot v
   }
 ```
 
+If the component paints a background, this is also where it publishes the surface contract — see [The surface contract](#the-surface-contract) above; the build fails if it does not.
+
 Because every component theme assigns global theme color slots differently, some level of manual assignment is necessary. CSS variables should be created for any new component as name-spaced variables based on the component name. `--color-action` and `--color-action-secondary` come from the `component-library-twig/components/01-atoms/controls/cta/_yds-cta.scss` file. We re-assign them here.
 
 ---
 #### Part five
 Commit your changes and open a PR.
+
+---
+## The contrast gate
+
+Adding a color, a component theme or a global theme is also a WCAG decision, and since YaleSites-Internal#1632 it is one the build checks rather than one a reviewer is expected to catch. Two checks run in `component-library-twig` as part of `npm run test`, so they gate every pull request in that repo:
+
+- **The pairing gate** computes the WCAG 2.1 contrast ratio for every pairing the token structure declares — each surface's background against the foreground meant to sit on it — across all seven global themes, and fails below **4.5:1 for text** and **3:1 for non-text** (currently section borders). Surfaces are derived from the token package, so a theme you add here is checked automatically, with no gate change.
+- **The foreground-purity ratchet** catches what the gate cannot see: a color hardcoded in foreground position, either as a literal (`color: #fff`) or as a raw palette token (`color: var(--color-gray-700)`). A palette token is a fixed swatch that cannot follow the theme, so it never enters a pairing and is never measured.
+
+The practical consequence when following the steps above: the `background` / `text` / `heading` values you give a new component theme have to clear 4.5:1 against each other, and any slot you point a component's foreground at has to clear 4.5:1 against the background that component paints. If a new theme fails, the build tells you which pairing and by how much before the theme reaches a site.
+
+Run them locally from a `component-library-twig` checkout:
+
+```sh
+npm run contrast:gate           # every declared pairing, with the report
+npm run contrast:foregrounds    # hardcoded colors in foreground position
+```
+
+### Rendered evidence, when a token-only computation is not enough
+
+Both checks above reason about the token structure. That is the right default, but it cannot
+see a value that only resolves correctly by inheriting from an ancestor — which is exactly the
+failure mode YaleSites-Internal#1614 hit, where a token-only computation reported a passing
+pairing that the browser resolved to something else.
+
+Where a finding needs proof from a real Drupal render rather than from the tokens, the captured
+evidence and the method for reproducing it live in the component library, not here:
+`docs/review/1614-section-color/README.md`. It records the four things that will silently
+produce wrong images if skipped (capture at ≥1400px or a 70/30 section renders stacked;
+cache-bust the URL; read `data-global-theme` back after each capture; take "before" from the
+branch base rather than a stash).
+
+The one-off fixture builders that produced it were deleted after the audit — they were named
+for their tickets, wired into no script, and are recoverable from git history; that README says
+where. Deliberately not restated here: this document and that README would drift apart, and the
+library is the side that owns the measuring.
+
+Both carry a committed baseline of the failures that already existed when they landed, each with a reason and an owning ticket. The baselines may only ever shrink — adding to one to turn a red build green is not a fix. See "The contrast gate" in the `component-library-twig` README for how to retire a baseline entry.
 
 ---
 ### Other color use information
