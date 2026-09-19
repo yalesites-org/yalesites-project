@@ -44,16 +44,17 @@ use Drupal\node\NodeInterface;
  * layout_builder__layout field of every node with an overridden layout on
  * every site, and any node the update missed would silently keep the bug.
  *
- * An annotation cannot be inherited from a trait, so each using plugin must
+ * An attribute cannot be inherited from a trait, so each using plugin must
  * still declare the slot itself:
  *
  * @code
- * context_definitions = {
- *   "layout_builder.entity" = @ContextDefinition("entity",
- *     label = @Translation("Entity being viewed"),
- *     required = FALSE
- *   )
- * }
+ * context_definitions: [
+ *   'layout_builder.entity' => new ContextDefinition(
+ *     data_type: 'entity',
+ *     label: new TranslatableMarkup('Entity being viewed'),
+ *     required: FALSE,
+ *   ),
+ * ],
  * @endcode
  */
 trait LayoutBuilderEntityContextTrait {
@@ -62,7 +63,7 @@ trait LayoutBuilderEntityContextTrait {
    * Name of the context slot holding the entity Layout Builder is rendering.
    *
    * Matches the context ID Layout Builder publishes, so that an empty stored
-   * context_mapping still resolves. Keep in sync with the plugin annotations,
+   * context_mapping still resolves. Keep in sync with the plugin attributes,
    * which cannot reference this constant.
    */
   const ENTITY_CONTEXT = 'layout_builder.entity';

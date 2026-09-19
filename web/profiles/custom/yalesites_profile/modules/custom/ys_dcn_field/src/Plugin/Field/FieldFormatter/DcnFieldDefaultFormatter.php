@@ -2,21 +2,20 @@
 
 namespace Drupal\ys_dcn_field\Plugin\Field\FieldFormatter;
 
+use Drupal\Core\Field\Attribute\FieldFormatter;
 use Drupal\Core\Field\FieldItemListInterface;
 use Drupal\Core\Field\FormatterBase;
 use Drupal\Core\Form\FormStateInterface;
+use Drupal\Core\StringTranslation\TranslatableMarkup;
 
 /**
  * Plugin implementation of the 'dcn_field_default' formatter.
- *
- * @FieldFormatter(
- *   id = "dcn_field_default",
- *   label = @Translation("Default"),
- *   field_types = {
- *     "dcn_field"
- *   }
- * )
  */
+#[FieldFormatter(
+  id: 'dcn_field_default',
+  label: new TranslatableMarkup('Default'),
+  field_types: ['dcn_field'],
+)]
 class DcnFieldDefaultFormatter extends FormatterBase {
 
   /**

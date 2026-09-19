@@ -2,10 +2,13 @@
 
 namespace Drupal\ys_layouts\Plugin\Block;
 
+use Drupal\Core\Block\Attribute\Block;
 use Drupal\Core\Block\BlockBase;
 use Drupal\Core\Entity\EntityTypeManagerInterface;
 use Drupal\Core\Form\FormStateInterface;
 use Drupal\Core\Plugin\ContainerFactoryPluginInterface;
+use Drupal\Core\Plugin\Context\ContextDefinition;
+use Drupal\Core\StringTranslation\TranslatableMarkup;
 use Drupal\node\NodeInterface;
 use Drupal\ys_core\Plugin\Block\LayoutBuilderEntityContextTrait;
 use Symfony\Component\DependencyInjection\ContainerInterface;
@@ -16,20 +19,20 @@ use Symfony\Component\HttpFoundation\RequestStack;
  *
  * The "layout_builder.entity" context slot and its name are explained on
  * \Drupal\ys_core\Plugin\Block\LayoutBuilderEntityContextTrait. An
- * annotation cannot be inherited from a trait, so the slot is declared here.
- *
- * @Block(
- *   id = "profile_meta_block",
- *   admin_label = @Translation("Profile Meta Block"),
- *   category = @Translation("YaleSites Layouts"),
- *   context_definitions = {
- *     "layout_builder.entity" = @ContextDefinition("entity",
- *       label = @Translation("Entity being viewed"),
- *       required = FALSE
- *     )
- *   }
- * )
+ * attribute cannot be inherited from a trait, so the slot is declared here.
  */
+#[Block(
+  id: 'profile_meta_block',
+  admin_label: new TranslatableMarkup('Profile Meta Block'),
+  category: new TranslatableMarkup('YaleSites Layouts'),
+  context_definitions: [
+    'layout_builder.entity' => new ContextDefinition(
+      data_type: 'entity',
+      label: new TranslatableMarkup('Entity being viewed'),
+      required: FALSE,
+    ),
+  ],
+)]
 class ProfileMetaBlock extends BlockBase implements ContainerFactoryPluginInterface {
 
   use LayoutBuilderEntityContextTrait;

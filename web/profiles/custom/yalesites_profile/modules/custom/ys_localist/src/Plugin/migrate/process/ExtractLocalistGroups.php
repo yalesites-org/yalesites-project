@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Drupal\ys_localist\Plugin\migrate\process;
 
+use Drupal\migrate\Attribute\MigrateProcess;
 use Drupal\migrate\MigrateExecutableInterface;
 use Drupal\migrate\ProcessPluginBase;
 use Drupal\migrate\Row;
@@ -11,17 +12,16 @@ use Drupal\migrate\Row;
 /**
  * Extracts groups from Localist events to prepare for entity reference.
  *
- * @MigrateProcessPlugin(
- *   id = "extract_localist_groups",
- *   handle_multiples = TRUE
- * )
- *
  * @code
  *   field_event_type:
  *     plugin: extract_localist_groups
  *     source: event_groups
  * @endcode
  */
+#[MigrateProcess(
+  id: 'extract_localist_groups',
+  handle_multiples: TRUE,
+)]
 class ExtractLocalistGroups extends ProcessPluginBase {
 
   /**

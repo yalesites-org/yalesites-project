@@ -2,22 +2,22 @@
 
 namespace Drupal\ys_views_basic\Plugin\Field\FieldType;
 
+use Drupal\Core\Field\Attribute\FieldType;
 use Drupal\Core\Field\FieldItemBase;
 use Drupal\Core\Field\FieldStorageDefinitionInterface as StorageDefinition;
+use Drupal\Core\StringTranslation\TranslatableMarkup;
 use Drupal\Core\TypedData\DataDefinition;
 
 /**
  * Plugin implementation of the 'views_basic_params' field type.
- *
- * @FieldType(
- *   id = "views_basic_params",
- *   label = @Translation("Views Basic Params"),
- *   description = @Translation("Stores parameters to pass to Views"),
- *   category = @Translation("Custom"),
- *   default_widget = "views_basic_default_widget",
- *   default_formatter = "views_basic_default_formatter"
- * )
  */
+#[FieldType(
+  id: 'views_basic_params',
+  label: new TranslatableMarkup('Views Basic Params'),
+  description: new TranslatableMarkup('Stores parameters to pass to Views'),
+  default_widget: 'views_basic_default_widget',
+  default_formatter: 'views_basic_default_formatter',
+)]
 class ViewsBasicParams extends FieldItemBase {
 
   /**
