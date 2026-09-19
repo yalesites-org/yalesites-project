@@ -3,28 +3,27 @@
 namespace Drupal\ys_views_basic\Plugin\Field\FieldWidget;
 
 use Drupal\Core\Ajax\AjaxResponse;
-use Drupal\Core\Ajax\ReplaceCommand;
 use Drupal\Core\Ajax\InvokeCommand;
+use Drupal\Core\Ajax\ReplaceCommand;
+use Drupal\Core\Entity\EntityTypeManagerInterface;
+use Drupal\Core\Field\Attribute\FieldWidget;
 use Drupal\Core\Field\FieldDefinitionInterface;
 use Drupal\Core\Field\FieldItemListInterface;
 use Drupal\Core\Field\WidgetBase;
 use Drupal\Core\Form\FormStateInterface;
 use Drupal\Core\Plugin\ContainerFactoryPluginInterface;
+use Drupal\Core\StringTranslation\TranslatableMarkup;
 use Drupal\ys_views_basic\ViewsBasicManager;
 use Symfony\Component\DependencyInjection\ContainerInterface;
-use Drupal\Core\Entity\EntityTypeManagerInterface;
 
 /**
  * Plugin implementation of the 'views_basic_default' widget.
- *
- * @FieldWidget(
- *   id = "views_basic_default_widget",
- *   label = @Translation("Views basic default widget"),
- *   field_types = {
- *     "views_basic_params"
- *   }
- * )
  */
+#[FieldWidget(
+  id: 'views_basic_default_widget',
+  label: new TranslatableMarkup('Views basic default widget'),
+  field_types: ['views_basic_params'],
+)]
 class ViewsBasicDefaultWidget extends WidgetBase implements ContainerFactoryPluginInterface {
 
   /**
