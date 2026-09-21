@@ -39,9 +39,10 @@ class ProfileViewWidget extends ViewsBasicWidgetBase {
    * Deliberately excludes "directory": that mode renders the separate
    * directory-listing card, which shows department, email and phone
    * unconditionally and would ignore the checkboxes. Offering controls there
-   * would be exactly the clutter this ticket set out to remove. Whether the
-   * directory bundle survives at all is the open question flagged on #1648
-   * for the team, so nothing about it is changed here.
+   * would be exactly the clutter this ticket set out to remove. The team
+   * decided on 2026-09-11 that the directory bundle stays; deprecating it and
+   * migrating existing listings onto the card grid is tracked as #1682, so
+   * nothing about it is changed here.
    */
   const PROFILE_FIELD_VIEW_MODES = ['card', 'list_item'];
 
