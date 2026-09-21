@@ -7,3 +7,10 @@ services:
   ys_views_basic.events_calendar:
     class: Drupal\ys_views_basic\Service\EventsCalendar
     arguments: ['@entity_type.manager', '@path_alias.manager']
+
+  # Drops core's scroll-to-top command from scaffold-view pager responses so
+  # paging does not move the reader (#1648).
+  ys_views_basic.pager_scroll_subscriber:
+    class: Drupal\ys_views_basic\EventSubscriber\PagerScrollSubscriber
+    tags:
+      - { name: event_subscriber }
