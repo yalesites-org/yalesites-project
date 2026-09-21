@@ -34,6 +34,11 @@ header_footer_settings:
       css/header-footer-settings.css: {}
   js:
     js/header-footer-settings.js: {}
+  dependencies:
+    - core/drupal
+    - core/drupal.states
+    - core/jquery
+    - core/once
 block_form:
   js:
     js/block-form.js: {}
