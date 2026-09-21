@@ -457,6 +457,102 @@ function ys_core_text_format_repair_message(array $repaired, array $deferred) {
 /**
  * Implements hook_deploy_NAME().
  *
+ * Brings stored values into line with the schema added for
+ * ys_core.header_settings, ys_core.footer_settings, ys_core.site and
+ * ys_core.social_links.
+ *
+ * Three shapes predate that schema. environment_indicator.show is written as a
+ * boolean now, but sites that last saved it through the old SiteSettingsForm
+ * hold int 1. custom_favicon and site_name_image are managed_file values, so a
+ * list of file IDs, but config/install shipped them as an empty string - a site
+ * that has never saved either form still holds that string. A site that HAS
+ * saved one can hold the list with its IDs as strings rather than the integers
+ * a managed_file element produces, which is the shape the schema's integer
+ * sequence members reject; this was found in a real database, not reasoned
+ * about (yalesites-org/yalesites-project#1557 review).
+ *
+ * No repair here changes rendered behaviour: the boolean reader is a truthiness
+ * test or an explicit (bool) cast, so int 1 and TRUE already behave the same,
+ * and the file ID readers index [0] and hand the result to file storage, which
+ * accepts '50' and 50 alike. The point is that active config matches the
+ * declared schema, so strict-schema tests can run.
+ *
+ * This is a deploy hook rather than an update hook because it edits active
+ * config, and drush deploy runs config:import after updatedb - an update hook's
+ * edits here would be overwritten on every deploy.
+ *
+ * @see yalesites-org/YaleSites-Internal#1697
+ */
+function ys_core_deploy_10009() {
+  $messages = [];
+
+  // One editable object per config name, each saved at most once, so a site
+  // needing both ys_core.site repairs does not write and invalidate it twice.
+  $configs = [
+    'ys_core.site' => \Drupal::configFactory()->getEditable('ys_core.site'),
+    'ys_core.header_settings' => \Drupal::configFactory()->getEditable('ys_core.header_settings'),
+  ];
+  $changed = [];
+
+  $show = $configs['ys_core.site']->get('environment_indicator.show');
+  if ($show !== NULL && !is_bool($show)) {
+    $configs['ys_core.site']->set('environment_indicator.show', (bool) $show);
+    $changed['ys_core.site'] = TRUE;
+    $messages[] = (string) t('Cast ys_core.site environment_indicator.show from @type to boolean.', [
+      '@type' => gettype($show),
+    ]);
+  }
+
+  // Both are managed_file values: a list of integer file IDs, never a scalar.
+  $file_lists = [
+    'ys_core.site' => 'custom_favicon',
+    'ys_core.header_settings' => 'site_name_image',
+  ];
+  foreach ($file_lists as $name => $key) {
+    $value = $configs[$name]->get($key);
+    if ($value === NULL) {
+      continue;
+    }
+    // Two shapes need repairing and one normalisation covers both. An unset
+    // image is '' in config and [] from the element, so filtering the cast
+    // handles the scalar case, and array_values() keeps it a real list for
+    // the sequence schema - a scalar left here would have readers index [0]
+    // into that string's first character rather than the file ID. A value
+    // that is already a list can still hold its IDs as strings, written
+    // before this module had any schema to cast them, which the sequence's
+    // integer members reject; intval() brings those into line. Comparing the
+    // result is what keeps this a no-op on the sites that are already right.
+    // @see \Drupal\ys_core\Plugin\PlatformAdminSetting\SiteBrandingPlatformAdminSetting::normalize()
+    $normalised = array_values(array_map('intval', array_filter((array) $value)));
+    if ($normalised !== $value) {
+      $configs[$name]->set($key, $normalised);
+      $changed[$name] = TRUE;
+      $messages[] = is_array($value)
+        ? (string) t('Cast the file IDs in @name @key to integers.', [
+          '@name' => $name,
+          '@key' => $key,
+        ])
+        : (string) t('Normalised @name @key from a scalar to a list of file IDs.', [
+          '@name' => $name,
+          '@key' => $key,
+        ]);
+    }
+  }
+
+  foreach (array_keys($changed) as $name) {
+    $configs[$name]->save();
+  }
+
+  if ($messages === []) {
+    return (string) t('All ys_core config values already match the new schema.');
+  }
+
+  return implode("\n", $messages);
+}
+
+/**
+ * Implements hook_deploy_NAME().
+ *
  * Repairs search index entries an earlier deploy wrote with the page body
  * stripped out.
  *

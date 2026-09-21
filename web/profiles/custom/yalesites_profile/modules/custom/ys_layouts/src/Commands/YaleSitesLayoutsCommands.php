@@ -3,7 +3,7 @@
 namespace Drupal\ys_layouts\Commands;
 
 use Drupal\Core\Entity\EntityTypeManagerInterface;
-use Drupal\ys_layouts\Service\OrphanedInlineBlockCleanerInterface;
+use Drupal\ys_layouts\Service\OrphanedInlineBlockCleaner;
 use Drush\Commands\DrushCommands;
 
 /**
@@ -16,12 +16,12 @@ class YaleSitesLayoutsCommands extends DrushCommands {
    *
    * @param \Drupal\Core\Entity\EntityTypeManagerInterface $entityTypeManager
    *   The entity type manager.
-   * @param \Drupal\ys_layouts\Service\OrphanedInlineBlockCleanerInterface $cleaner
+   * @param \Drupal\ys_layouts\Service\OrphanedInlineBlockCleaner $cleaner
    *   The orphaned inline block cleaner.
    */
   public function __construct(
     protected EntityTypeManagerInterface $entityTypeManager,
-    protected OrphanedInlineBlockCleanerInterface $cleaner,
+    protected OrphanedInlineBlockCleaner $cleaner,
   ) {
     parent::__construct();
   }

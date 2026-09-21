@@ -101,24 +101,24 @@ someone runs them locally.
 Recorded here so they are visible to anyone working in this module, particularly
 during the staged cleanup tracked in yalesites-org/YaleSites-Internal#579.
 
-- **No config schema for this module's settings objects.** `config/schema/ys_core.schema.yml`
-  covers only `ys_core.dashboard_settings`. `ys_core.site`, `ys_core.header_settings`,
-  `ys_core.footer_settings`, and `ys_core.social_links` have none, so a kernel test
-  that installs this module's config fails with `SchemaIncompleteException` under
-  PHPUnit's default strict schema checking. That blocks kernel-level characterization
-  of every service that reads these objects, so the tests here work around it by
-  exercising only code paths that need no config save. Adding the schema is not
-  test-only work: `environment_indicator.show` ships as boolean `true` in
-  `config/install`, and a site that saved it through `SiteSettingsForm` before it
-  moved to the Platform Admin Settings page
-  (yalesites-org/YaleSites-Internal#1560) holds integer `1`; `custom_favicon` /
-  `site_name_image` are declared as `''` but hold arrays of file IDs. So no schema
-  type validates both the install defaults and real saved values without also
-  correcting those.
+- ~~**No config schema for this module's settings objects.**~~ **Resolved** in
+  yalesites-org/YaleSites-Internal#1697. `config/schema/ys_core.schema.yml` now covers
+  every settings object this module owns - `ys_core.site`, `ys_core.header_settings`,
+  `ys_core.footer_settings`, `ys_core.social_links` and `ys_core.views_settings` as well
+  as `ys_core.dashboard_settings` - so a kernel test that
+  saves this module's config no longer needs `$strictConfigSchema = FALSE` —
+  `SiteSettingsFormGroupingTest` runs with core's default strict checking. The two
+  mismatches that blocked it were corrected in the same change: `custom_favicon` and
+  `site_name_image` are `managed_file` values, so `config/install` now declares each as
+  `[]` rather than `''`, and `ys_core_deploy_10009()` casts the legacy integer
+  `environment_indicator.show` (from sites that saved it through `SiteSettingsForm`
+  before it moved to the Platform Admin Settings page,
+  yalesites-org/YaleSites-Internal#1560) to boolean.
 - **`getFavicons()` custom-favicon branch is only partly pinned.** The test for it
   stubs a single image style for all four sizes, so it cannot show that each size
   resolves to its own distinct URL. Verifying that needs a real image style and a
-  saved `custom_favicon` value, so it is blocked on the missing schema above. The
+  saved `custom_favicon` value. That is no longer blocked now the schema above
+  exists, so it is a straightforward kernel test whenever someone picks it up. The
   fallback branch is covered against the real filesystem and the shipped image
   style config in `YaleSitesMediaManagerTest`. That method and its test now live in
   the `ys_media` module (Phase 1 of #579), but the blocker is recorded here because

@@ -2,23 +2,23 @@
 
 namespace Drupal\ys_views_content_resources\Plugin\Field\FieldType;
 
+use Drupal\Core\Field\Attribute\FieldType;
 use Drupal\Core\Field\FieldItemBase;
 use Drupal\Core\Field\FieldStorageDefinitionInterface as StorageDefinition;
+use Drupal\Core\StringTranslation\TranslatableMarkup;
 use Drupal\Core\TypedData\DataDefinition;
 
 /**
  * Plugin implementation of the 'views_content_resources_params' field type.
- *
- * @FieldType(
- *   id = "views_content_resources_params",
- *   label = @Translation("Views Content Resources Params"),
- *   description = @Translation("Stores parameters to pass to Views"),
- *   category = @Translation("Custom"),
- *   default_widget = "views_content_resources_default_widget",
- *   default_formatter = "views_content_resources_default_formatter",
- *   cardinality = 1,
- * )
  */
+#[FieldType(
+  id: 'views_content_resources_params',
+  label: new TranslatableMarkup('Views Content Resources Params'),
+  description: new TranslatableMarkup('Stores parameters to pass to Views'),
+  default_widget: 'views_content_resources_default_widget',
+  default_formatter: 'views_content_resources_default_formatter',
+  cardinality: 1,
+)]
 class ViewsContentResourcesParams extends FieldItemBase {
 
   /**
