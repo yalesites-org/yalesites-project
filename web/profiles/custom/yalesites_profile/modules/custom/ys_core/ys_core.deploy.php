@@ -549,3 +549,112 @@ function ys_core_deploy_10009() {
 
   return implode("\n", $messages);
 }
+
+/**
+ * Implements hook_deploy_NAME().
+ *
+ * Repairs search index entries an earlier deploy wrote with the page body
+ * stripped out.
+ *
+ * \Drupal\ys_core\Search\UpdateKernelDeferredIndexing stops this from
+ * happening again, but it cannot mend what is already stored: Search API
+ * recorded those items as successfully indexed, so cron never revisits them
+ * and they stay thin until the content is edited. The search results view
+ * renders no body excerpt, so a thin entry looks identical to a healthy one
+ * and there is no symptom for anyone to chase.
+ *
+ * Thinness is not detectable from Drupal - the stored value lives in the
+ * backend and there is no threshold that separates a stripped page from a
+ * genuinely short one - so every item on the affected indexes is marked for
+ * reindexing rather than a guessed subset. Index::reindex() only resets the
+ * tracker; it does not clear what is already stored, so existing entries stay
+ * searchable until cron replaces each one. The catch-up is therefore gradual:
+ * cron indexes cron_limit items per index per run - 50 on node_index and
+ * secure_index, 20 on ys_beacon - bounded per run by cron_worker_runtime, so a
+ * site with thousands of nodes takes dozens of cron runs rather than a few to
+ * finish re-rendering.
+ *
+ * That load is not new. Adding a field to an index changes index config, which
+ * config:import turns into exactly this same full reindex through
+ * Index::postSave() - 61e778a3a ("add resource field to node and secure
+ * indexes") did it - so every site has already absorbed it during an ordinary
+ * release.
+ *
+ * Has to be a deploy hook rather than a post-update hook: it reads each index's
+ * field list to decide what to repair, and that only settles after
+ * config:import, which runs after updatedb. A post-update hook would read the
+ * pre-import config and skip an index that this very release gives a
+ * rendered_item field to.
+ *
+ * @see yalesites-org/YaleSites-Internal#1727
+ */
+function ys_core_deploy_10010() {
+  if (!\Drupal::moduleHandler()->moduleExists('search_api')) {
+    return t('Search API is not installed; no index entries to repair.');
+  }
+
+  $indexes = ys_core_search_indexes_needing_rerender(
+    \Drupal::entityTypeManager()->getStorage('search_api_index')->loadMultiple()
+  );
+
+  if ($indexes === []) {
+    return t('No enabled search index renders page content; nothing to repair.');
+  }
+
+  foreach ($indexes as $index) {
+    $index->reindex();
+  }
+
+  return t('Marked @indexes for reindexing so cron re-renders every item with a complete theme registry, replacing any entry a past deploy wrote with an empty body. Existing entries stay searchable until each one is replaced.', [
+    '@indexes' => implode(', ', array_keys($indexes)),
+  ]);
+}
+
+/**
+ * Returns the indexes whose entries a deploy could have written without a body.
+ *
+ * Split out so the selection can be read and tested on its own: marking an
+ * index that never needed it costs every site a full reindex, so both halves of
+ * the guard are worth pinning down.
+ *
+ * @param \Drupal\search_api\IndexInterface[] $indexes
+ *   Search API indexes, keyed by index ID.
+ *
+ * @return \Drupal\search_api\IndexInterface[]
+ *   The subset that is enabled and renders whole pages, keys preserved.
+ *
+ * @see yalesites-org/YaleSites-Internal#1727
+ */
+function ys_core_search_indexes_needing_rerender(array $indexes) {
+  return array_filter($indexes, static function ($index) {
+    // Both halves are site-editable on Search API's index form, so neither is
+    // theoretical: config/sync ships ys_beacon as status: true, yet sites
+    // without Beacon have it disabled in the database.
+    //
+    // Disabled is the mild case - reindex() no-ops on it, so selecting one
+    // would only make the deploy log claim work it did not do. Read-only is a
+    // trap: reindex() does NOT check it, but cron deliberately tracks
+    // read-only indexes without indexing them (SearchApiHooks::cron()), so
+    // marking one leaves every item queued with nothing that will ever clear
+    // it. This matches cron's own filter.
+    if (!$index->status() || $index->isReadOnly()) {
+      return FALSE;
+    }
+
+    foreach ($index->getFields() as $field) {
+      // Matched on the property path rather than the field ID, because the ID
+      // is editable per site while the property path is what makes Search API
+      // render the whole page to extract its text. The NULL datasource is part
+      // of the identity, not belt-and-braces: RenderedItem only defines the
+      // property when there is no datasource, so a datasource-scoped field
+      // that happens to share the path is a different field. Same test as
+      // search_api.fields_helper's filterForPropertyPath(), which is what the
+      // RenderedItem processor itself uses to find its own fields.
+      if ($field->getPropertyPath() === 'rendered_item' && $field->getDatasourceId() === NULL) {
+        return TRUE;
+      }
+    }
+
+    return FALSE;
+  });
+}
