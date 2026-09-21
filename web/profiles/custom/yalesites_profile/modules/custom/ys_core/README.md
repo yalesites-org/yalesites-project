@@ -67,7 +67,7 @@ here:
   under the update kernel and leaves the items for cron. Read its docblock before
   touching the indexing path; it also records what to delete if Search API fixes
   this upstream.
-- `ys_core_deploy_10009()` in `ys_core.deploy.php` — the one-off repair for
+- `ys_core_deploy_10010()` in `ys_core.deploy.php` — the one-off repair for
   entries a deploy already wrote thin.
 
 See yalesites-org/YaleSites-Internal#1727.

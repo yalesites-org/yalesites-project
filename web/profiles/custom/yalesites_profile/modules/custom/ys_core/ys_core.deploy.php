@@ -492,7 +492,7 @@ function ys_core_text_format_repair_message(array $repaired, array $deferred) {
  *
  * @see yalesites-org/YaleSites-Internal#1727
  */
-function ys_core_deploy_10009() {
+function ys_core_deploy_10010() {
   if (!\Drupal::moduleHandler()->moduleExists('search_api')) {
     return t('Search API is not installed; no index entries to repair.');
   }
