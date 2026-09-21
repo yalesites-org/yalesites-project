@@ -236,6 +236,47 @@ class RunExporterTest extends UnitTestCase {
   }
 
   /**
+   * A cell cannot break out of its own field and smuggle in a formula.
+   *
+   * The csvCell() guard only inspects the start of each value, which is only a
+   * guard at all if every value stays inside its own field. PHP's default
+   * backslash escape breaks that: a value containing a backslash-quote is
+   * written with an un-doubled quote, which ends the field early for an RFC
+   * 4180 reader and lets the rest of the value be re-parsed as extra cells that
+   * never saw csvCell(). Parsing here uses an empty $escape, which is how
+   * Excel, Numbers and Google Sheets read a CSV. Restoring the default escape
+   * in buildCsv() fails this test.
+   *
+   * Asserts the same guarantee ys_content_export makes for its own export. The
+   * symbol that carries it there is deliberately not named: it arrives with
+   * yalesites-org/YaleSites-Internal#1759, which is a separate branch.
+   *
+   * @covers ::runCsv
+   */
+  public function testRunCsvKeepsEachCellInsideItsOwnField(): void {
+    $payload = '\\",=1+1,"x';
+    $csv = $this->exporterFor((object) ['id' => 3], [
+      $this->resultRow('Eligible?', $payload),
+    ])->runCsv(3);
+
+    $handle = fopen('php://temp', 'r+');
+    fwrite($handle, substr($csv, strlen("\xEF\xBB\xBF")));
+    rewind($handle);
+    $rows = [];
+    while (($row = fgetcsv($handle, 0, ',', '"', '')) !== FALSE) {
+      $rows[] = $row;
+    }
+    fclose($handle);
+
+    $header = $rows[0];
+    $this->assertCount(count($header), $rows[1], 'The payload must not add cells.');
+    $this->assertContains($payload, $rows[1], 'The payload must survive whole.');
+    foreach ($rows[1] as $field) {
+      $this->assertNotSame('=', substr((string) $field, 0, 1), 'No field may start a live formula.');
+    }
+  }
+
+  /**
    * The run CSV lists only the sources that carry a URL.
    *
    * A URL-less citation has nothing to put in the Sources column, and the

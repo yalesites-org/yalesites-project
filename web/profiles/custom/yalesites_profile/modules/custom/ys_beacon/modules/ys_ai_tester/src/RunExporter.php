@@ -221,6 +221,17 @@ class RunExporter {
    * spreadsheet formula injection. Multiline answers are quoted by fputcsv and
    * stay in one cell.
    *
+   * The empty $escape passed to fputcsv matters for security, and is what makes
+   * csvCell() a guard at all. csvCell() only inspects the start of a value, so
+   * it is only sound while every value stays inside its own field. With PHP's
+   * default escape a value containing a backslash-quote is written with an
+   * un-doubled quote, which terminates the field early for an RFC 4180 reader
+   * such as Excel, Numbers or Google Sheets; everything after it is re-parsed
+   * as extra cells that never passed through csvCell(). Disabling the escape
+   * always doubles the quote, so a value cannot leave its own field. It also
+   * removes a PHP 8.4 deprecation warning. Covered by
+   * RunExporterTest::testRunCsvKeepsEachCellInsideItsOwnField().
+   *
    * Both CSV exports go through here. They previously each carried their own
    * copy of this loop, and had already drifted: the comparison export was
    * missing the BOM, so an answer containing a curly quote or an em dash -
@@ -236,9 +247,9 @@ class RunExporter {
    */
   protected function buildCsv(array $header, array $rows): string {
     $handle = fopen('php://temp', 'r+');
-    fputcsv($handle, $header);
+    fputcsv($handle, $header, ',', '"', '');
     foreach ($rows as $row) {
-      fputcsv($handle, array_map([$this, 'csvCell'], $row));
+      fputcsv($handle, array_map([$this, 'csvCell'], $row), ',', '"', '');
     }
     rewind($handle);
     $csv = stream_get_contents($handle);
