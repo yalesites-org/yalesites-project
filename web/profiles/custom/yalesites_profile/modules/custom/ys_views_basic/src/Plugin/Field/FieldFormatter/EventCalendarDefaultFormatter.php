@@ -2,24 +2,23 @@
 
 namespace Drupal\ys_views_basic\Plugin\Field\FieldFormatter;
 
-use Drupal\Core\Field\FieldItemListInterface;
+use Drupal\Core\Field\Attribute\FieldFormatter;
 use Drupal\Core\Field\FieldDefinitionInterface;
-use Symfony\Component\DependencyInjection\ContainerInterface;
+use Drupal\Core\Field\FieldItemListInterface;
+use Drupal\Core\Form\FormBuilderInterface;
+use Drupal\Core\StringTranslation\TranslatableMarkup;
 use Drupal\ys_views_basic\Service\EventsCalendar;
 use Drupal\ys_views_basic\ViewsBasicManager;
-use Drupal\Core\Form\FormBuilderInterface;
+use Symfony\Component\DependencyInjection\ContainerInterface;
 
 /**
  * Plugin implementation of the 'event_calendar_default' formatter.
- *
- * @FieldFormatter(
- *   id = "event_calendar_default_formatter",
- *   label = @Translation("Event Calendar View"),
- *   field_types = {
- *     "event_calendar_basic_params"
- *   }
- * )
  */
+#[FieldFormatter(
+  id: 'event_calendar_default_formatter',
+  label: new TranslatableMarkup('Event Calendar View'),
+  field_types: ['event_calendar_basic_params'],
+)]
 class EventCalendarDefaultFormatter extends ViewsBasicDefaultFormatter {
 
   /**

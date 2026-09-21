@@ -2,25 +2,24 @@
 
 namespace Drupal\ys_views_basic\Plugin\Field\FieldFormatter;
 
+use Drupal\Core\Field\Attribute\FieldFormatter;
 use Drupal\Core\Field\FieldDefinitionInterface;
 use Drupal\Core\Field\FieldItemListInterface;
 use Drupal\Core\Field\FormatterBase;
 use Drupal\Core\Plugin\ContainerFactoryPluginInterface;
+use Drupal\Core\StringTranslation\TranslatableMarkup;
 use Drupal\ys_views_basic\Service\EventsCalendar;
 use Drupal\ys_views_basic\ViewsBasicManager;
 use Symfony\Component\DependencyInjection\ContainerInterface;
 
 /**
  * Plugin implementation of the 'views_basic_default' formatter.
- *
- * @FieldFormatter(
- *   id = "views_basic_default_formatter",
- *   label = @Translation("Views Basic View"),
- *   field_types = {
- *     "views_basic_params"
- *   }
- * )
  */
+#[FieldFormatter(
+  id: 'views_basic_default_formatter',
+  label: new TranslatableMarkup('Views Basic View'),
+  field_types: ['views_basic_params'],
+)]
 class ViewsBasicDefaultFormatter extends FormatterBase implements ContainerFactoryPluginInterface {
 
   /**
