@@ -120,7 +120,10 @@ class TelemetryController extends ControllerBase {
     $build['totals'] = [
       '#type' => 'table',
       '#caption' => $this->t('Event totals'),
-      '#header' => [$this->t('Event'), $this->t('Count')],
+      '#header' => [
+        ['data' => $this->t('Event'), 'scope' => 'col'],
+        ['data' => $this->t('Count'), 'scope' => 'col'],
+      ],
       '#rows' => $totals,
     ];
 
@@ -133,7 +136,10 @@ class TelemetryController extends ControllerBase {
     $build['breakdowns'] = [
       '#type' => 'table',
       '#caption' => $this->t('Breakdowns'),
-      '#header' => [$this->t('Event key'), $this->t('Count')],
+      '#header' => [
+        ['data' => $this->t('Event key'), 'scope' => 'col'],
+        ['data' => $this->t('Count'), 'scope' => 'col'],
+      ],
       '#rows' => $breakdowns,
       '#empty' => $this->t('No breakdowns recorded in this window.'),
     ];
@@ -146,9 +152,9 @@ class TelemetryController extends ControllerBase {
       }
       $days[] = $row;
     }
-    $day_header = [$this->t('Date (UTC)')];
+    $day_header = [['data' => $this->t('Date (UTC)'), 'scope' => 'col']];
     foreach (GuardrailTelemetry::EVENTS as $key) {
-      $day_header[] = $labels[$key] ?? $key;
+      $day_header[] = ['data' => $labels[$key] ?? $key, 'scope' => 'col'];
     }
     $build['days'] = [
       '#type' => 'table',
@@ -327,8 +333,8 @@ class TelemetryController extends ControllerBase {
       '#type' => 'table',
       '#caption' => $this->t('Flagged turns (suspected injection attempts)'),
       '#header' => [
-        $this->t('Recorded (UTC)'),
-        $this->t('Why kept'),
+        ['data' => $this->t('Recorded (UTC)'), 'scope' => 'col'],
+        ['data' => $this->t('Why kept'), 'scope' => 'col'],
       ],
       '#rows' => $rows,
       '#empty' => $this->t('No turns have been flagged as suspected injection attempts.'),

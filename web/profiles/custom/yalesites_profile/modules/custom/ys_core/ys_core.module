@@ -130,6 +130,14 @@ function ys_core_linkit_uri_selector(array $element) {
 
 /**
  * Implements hook_form_alter().
+ *
+ * This hook runs for every form on the site, so only two kinds of branch
+ * belong here: those matching a form-ID *pattern*, and those keyed off the
+ * form's structure rather than its ID. Anything targeting one specific form ID
+ * lives in its own hook_form_FORM_ID_alter() below, which Drupal only invokes
+ * for that form - except that a set of exact IDs sharing a one-line body may
+ * stay as a membership test here, since a function each would be more to read
+ * than it saves.
  */
 function ys_core_form_alter(&$form, FormStateInterface $form_state, $form_id) {
   // Strip the Webform module's contextual "edit" links (Test, Results, Build,
@@ -140,111 +148,6 @@ function ys_core_form_alter(&$form, FormStateInterface $form_state, $form_id) {
   // them before the contextual placeholder is built.
   if (str_starts_with($form_id, 'webform_submission')) {
     $form['#pre_render'][] = [WebformContextualLinksSuppressor::class, 'preRender'];
-  }
-
-  if ($form_id === 'layout_builder_update_block' || $form_id === 'layout_builder_add_block') {
-    $block_type = ys_core_get_block_type($form, $form_state);
-
-    if ($block_type === 'webform') {
-      // Submissions are sent From the site email, so a site email nobody can
-      // receive at - or that the platform is not authorized to send from at
-      // all - means this form silently delivers nothing. Warn where the editor
-      // is placing the form, because nothing at submission time will tell them.
-      // Tightening the Site email validation only guards the next save, so an
-      // address stored before that still has to be surfaced here.
-      // @see yalesites-org/YaleSites-Internal#1669
-      $siteMail = (string) \Drupal::config('system.site')->get('mail');
-      $warning = NULL;
-      if ($siteMail === 'noreply@noreply.yale.edu') {
-        $warning = t('Form submissions will be sent to the default no-reply address and will not be received. <a href=":url">Update the site email in Site Settings</a> to receive submissions.', [':url' => Url::fromRoute('ys_core.admin_site_settings')->toString()]);
-      }
-      elseif (!SiteMail::isAuthorized($siteMail)) {
-        $warning = t('The site email %mail is not an address this platform is authorized to send from, so submissions to this form will never be delivered. <a href=":url">Update the site email in Site Settings</a> to an address at @domains.', [
-          '%mail' => $siteMail,
-          '@domains' => SiteMail::allowedDomainsLabel(),
-          ':url' => Url::fromRoute('ys_core.admin_site_settings')->toString(),
-        ]);
-      }
-
-      if ($warning !== NULL) {
-        $form['settings']['block_form']['email_warning'] = [
-          '#type' => 'container',
-          '#attributes' => ['class' => ['messages', 'messages--warning']],
-          '#weight' => -100,
-          'message' => ['#markup' => $warning],
-        ];
-      }
-    }
-
-    // Only applies to inline block forms, where the entity subform lives at
-    // settings.block_form. Reusable (Custom Block Library) placements expose
-    // the subform at a different path, so these settings.block_form
-    // assumptions (including the ys_core_grand_hero_validate handler) must not
-    // run for them; otherwise the validator reads empty values from the wrong
-    // path and flags every required field as missing. See
-    // yalesites-org/YaleSites-Internal#1381.
-    if ($block_type === 'grand_hero' && isset($form['settings']['block_form'])) {
-
-      // Get the block entity.
-      $block = $form['settings']['block_form']['#block'];
-
-      // Handle field_overlay_png.
-      if ($block && $block->hasField('field_overlay_png')) {
-        if (!isset($form['settings']['block_form']['field_overlay_png'])) {
-          $form['settings']['block_form']['field_overlay_png'] = [
-            '#type' => 'managed_file',
-            '#title' => t('Overlay Image'),
-            '#default_value' => $block->get('field_overlay_png')->target_id,
-            '#upload_location' => 'public://overlay-images/',
-          ];
-        }
-
-        // Apply states to the field_overlay_png.
-        $form['settings']['block_form']['field_overlay_png']['#states'] = [
-          'visible' => [
-            ':input[name="settings[block_form][field_display_mode]"]' => ['value' => 'image'],
-          ],
-          'required' => [
-            ':input[name="settings[block_form][field_display_mode]"]' => ['value' => 'image'],
-          ],
-        ];
-      }
-
-      // Add JavaScript dependencies.
-      $form['#attached']['library'][] = 'core/drupal';
-      $form['#attached']['library'][] = 'core/drupal.states';
-      $form['#attached']['library'][] = 'core/jquery';
-      $form['#attached']['library'][] = 'core/once';
-
-      // Add a wrapper div for AJAX updates.
-      $form['settings']['block_form']['#prefix'] = '<div id="grand-hero-settings">';
-      $form['settings']['block_form']['#suffix'] = '</div>';
-
-      // Add validation handler.
-      $form['#validate'][] = 'ys_core_grand_hero_validate';
-
-      // Add custom JavaScript to ensure states are properly initialized.
-      $form['#attached']['library'][] = 'ys_core/grand_hero_form';
-    }
-  }
-
-  // Ensure the CAS bulk add only allows roles that role_delegate will allow.
-  if ($form_id == 'bulk_add_cas_users') {
-    $account = \Drupal::currentUser();
-    $delegatable_roles = \Drupal::service('delegatable_roles');
-
-    $delegatable_roles = $delegatable_roles->getAssignableRoles($account);
-    $form['roles']['#options'] = $delegatable_roles;
-
-    if (isset($form['cas_usernames'])) {
-      $form['cas_usernames']['#title'] = t('NetIDs');
-      $form['cas_usernames']['#description'] = t('Enter one NetID per line.');
-    }
-
-    // Hide the email field since CAS users get email from LDAP.
-    if (isset($form['email_hostname'])) {
-      $form['email_hostname']['#access'] = FALSE;
-    }
   }
 
   // Load custom library.
@@ -282,36 +185,8 @@ function ys_core_form_alter(&$form, FormStateInterface $form_state, $form_id) {
     }
   }
 
-  // Increase length of taxonomy vocabulary description field.
-  if ($form_id == 'taxonomy_vocabulary_form') {
-    $form['description']['#maxlength'] = 256;
-  }
-
-  // Add help text to redirect form Path field.
-  if ($form_id === 'redirect_redirect_form') {
-    if (isset($form['redirect_source']['widget'][0]['path'])) {
-      $form['redirect_source']['widget'][0]['path']['#description'] = t('
-        To add a redirect from an aliased path, the "from" page must be published. <br>
-        To create a redirect from an unpublished page, use the node path, eg. /node/123.
-      ');
-    }
-  }
-
-  // Hide core taxonomy description.
-  // @see ys_core_help()
-  if ($form_id == 'taxonomy_overview_vocabularies') {
-    $form['#attached']['library'][] = 'ys_core/taxonomy_form';
-  }
-
-  // Add vocabulary description to the taxonomy overview form.
-  if ($form_id == 'taxonomy_overview_terms') {
-    $replacements['@description'] = $form_state->getBuildInfo()['args'][0]->getDescription();
-    $form['help']['description'] = [
-      '#type' => 'markup',
-      '#markup' => "<p>" . t('@description', $replacements) . "</p>",
-    ];
-  }
-
+  // A membership test rather than eight one-line hook_form_FORM_ID_alter()
+  // implementations.
   $block_content_forms = [
     'block_content_tabs_form',
     'block_content_quick_links_form',
@@ -327,60 +202,210 @@ function ys_core_form_alter(&$form, FormStateInterface $form_state, $form_id) {
     $form['#attached']['library'][] = 'ys_core/block_form';
   }
 
-  $layout_builder_block_forms = [
-    'layout_builder_update_block',
-    'layout_builder_add_block',
-  ];
-
-  if (in_array($form_id, $layout_builder_block_forms)) {
-    // Explain a rejected value where the editor is working. The configure-block
-    // submit carries no #ajax, so a server-side validation failure leaves the
-    // off-canvas dialog and re-renders this form as a standalone Layout Builder
-    // page — and Gin's page--layout-builder.html.twig prints only pre_content
-    // and content, never the highlighted region that holds the site's messages
-    // block. The rejection therefore stayed queued and surfaced later on an
-    // unrelated page, leaving the editor a red-outlined field with no text, and
-    // screen reader users no error at all. This deliberately reuses the key
-    // core's own Ajax error path assigns in AjaxFormHelperTrait::ajaxSubmit():
-    // where that path does run it overwrites this element rather than adding a
-    // second one, which would render the message twice and announce it twice.
-    $form['status_messages'] = [
-      '#type' => 'status_messages',
-      '#weight' => -100,
-    ];
-
-    $block_type_name = ys_core_get_block_type($form, $form_state);
-    $limited_block_types = [
-      'tabs',
-      'quick_links',
-      'media_grid',
-      'gallery',
-    ];
-    if (in_array($block_type_name, $limited_block_types)) {
-      $form['#attached']['library'][] = 'ys_core/block_form';
-    }
-
-    $emptyAdminLabel = $form['settings']['label']['#default_value'] ?? '';
-    if (empty($emptyAdminLabel)) {
-      // Add default admin label to layout builder blocks.
-      $form_object = $form_state->getFormObject();
-      $component = $form_object->getCurrentComponent();
-      $plugin = $component->getPlugin();
-      if (isset($plugin)) {
-        // Get the default admin label from the block plugin label.
-        $plugin_definition = $plugin->getPluginDefinition();
-        $default_admin_label = $plugin_definition['admin_label'] ?? $plugin->getPluginId();
-        // Add the plugin label as default value.
-        $form['settings']['label']['#default_value'] = $default_admin_label;
-      }
-    }
-  }
-
   _ys_core_disable_event_fields($form, $form_id);
 
   // Add JavaScript preview functionality to Facts and Figures icon fields.
   _ys_core_attach_icon_preview($form, $form_state, $form_id);
+}
 
+/**
+ * Implements hook_form_BASE_FORM_ID_alter().
+ *
+ * The base form ID layout_builder_configure_block belongs to both
+ * layout_builder_add_block and layout_builder_update_block, the only two
+ * subclasses of ConfigureBlockFormBase. Matching on it covers that pair in one
+ * implementation, which is why the per-block-type and form-wide alterations can
+ * share a single resolved block type here.
+ */
+function ys_core_form_layout_builder_configure_block_alter(&$form, FormStateInterface $form_state, $form_id) {
+  $block_type = ys_core_get_block_type($form, $form_state);
+
+  if ($block_type === 'webform') {
+    // Submissions are sent From the site email, so a site email nobody can
+    // receive at - or that the platform is not authorized to send from at
+    // all - means this form silently delivers nothing. Warn where the editor
+    // is placing the form, because nothing at submission time will tell them.
+    // Tightening the Site email validation only guards the next save, so an
+    // address stored before that still has to be surfaced here.
+    // @see yalesites-org/YaleSites-Internal#1669
+    $siteMail = (string) \Drupal::config('system.site')->get('mail');
+    $warning = NULL;
+    if ($siteMail === 'noreply@noreply.yale.edu') {
+      $warning = t('Form submissions will be sent to the default no-reply address and will not be received. <a href=":url">Update the site email in Site Settings</a> to receive submissions.', [':url' => Url::fromRoute('ys_core.admin_site_settings')->toString()]);
+    }
+    elseif (!SiteMail::isAuthorized($siteMail)) {
+      $warning = t('The site email %mail is not an address this platform is authorized to send from, so submissions to this form will never be delivered. <a href=":url">Update the site email in Site Settings</a> to an address at @domains.', [
+        '%mail' => $siteMail,
+        '@domains' => SiteMail::allowedDomainsLabel(),
+        ':url' => Url::fromRoute('ys_core.admin_site_settings')->toString(),
+      ]);
+    }
+
+    if ($warning !== NULL) {
+      $form['settings']['block_form']['email_warning'] = [
+        '#type' => 'container',
+        '#attributes' => ['class' => ['messages', 'messages--warning']],
+        '#weight' => -100,
+        'message' => ['#markup' => $warning],
+      ];
+    }
+  }
+
+  // Only applies to inline block forms, where the entity subform lives at
+  // settings.block_form. Reusable (Custom Block Library) placements expose
+  // the subform at a different path, so these settings.block_form
+  // assumptions (including the ys_core_grand_hero_validate handler) must not
+  // run for them; otherwise the validator reads empty values from the wrong
+  // path and flags every required field as missing. See
+  // yalesites-org/YaleSites-Internal#1381.
+  if ($block_type === 'grand_hero' && isset($form['settings']['block_form'])) {
+
+    // Get the block entity.
+    $block = $form['settings']['block_form']['#block'];
+
+    // Handle field_overlay_png.
+    if ($block && $block->hasField('field_overlay_png')) {
+      if (!isset($form['settings']['block_form']['field_overlay_png'])) {
+        $form['settings']['block_form']['field_overlay_png'] = [
+          '#type' => 'managed_file',
+          '#title' => t('Overlay Image'),
+          '#default_value' => $block->get('field_overlay_png')->target_id,
+          '#upload_location' => 'public://overlay-images/',
+        ];
+      }
+
+      // Apply states to the field_overlay_png.
+      $form['settings']['block_form']['field_overlay_png']['#states'] = [
+        'visible' => [
+          ':input[name="settings[block_form][field_display_mode]"]' => ['value' => 'image'],
+        ],
+        'required' => [
+          ':input[name="settings[block_form][field_display_mode]"]' => ['value' => 'image'],
+        ],
+      ];
+    }
+
+    // Add JavaScript dependencies.
+    $form['#attached']['library'][] = 'core/drupal';
+    $form['#attached']['library'][] = 'core/drupal.states';
+    $form['#attached']['library'][] = 'core/jquery';
+    $form['#attached']['library'][] = 'core/once';
+
+    // Add a wrapper div for AJAX updates.
+    $form['settings']['block_form']['#prefix'] = '<div id="grand-hero-settings">';
+    $form['settings']['block_form']['#suffix'] = '</div>';
+
+    // Add validation handler.
+    $form['#validate'][] = 'ys_core_grand_hero_validate';
+
+    // Add custom JavaScript to ensure states are properly initialized.
+    $form['#attached']['library'][] = 'ys_core/grand_hero_form';
+  }
+
+  // Explain a rejected value where the editor is working. The configure-block
+  // submit carries no #ajax, so a server-side validation failure leaves the
+  // off-canvas dialog and re-renders this form as a standalone Layout Builder
+  // page — and Gin's page--layout-builder.html.twig prints only pre_content
+  // and content, never the highlighted region that holds the site's messages
+  // block. The rejection therefore stayed queued and surfaced later on an
+  // unrelated page, leaving the editor a red-outlined field with no text, and
+  // screen reader users no error at all. This deliberately reuses the key
+  // core's own Ajax error path assigns in AjaxFormHelperTrait::ajaxSubmit():
+  // where that path does run it overwrites this element rather than adding a
+  // second one, which would render the message twice and announce it twice.
+  $form['status_messages'] = [
+    '#type' => 'status_messages',
+    '#weight' => -100,
+  ];
+
+  $limited_block_types = [
+    'tabs',
+    'quick_links',
+    'media_grid',
+    'gallery',
+  ];
+  if (in_array($block_type, $limited_block_types)) {
+    $form['#attached']['library'][] = 'ys_core/block_form';
+  }
+
+  $emptyAdminLabel = $form['settings']['label']['#default_value'] ?? '';
+  if (empty($emptyAdminLabel)) {
+    // Add default admin label to layout builder blocks.
+    $form_object = $form_state->getFormObject();
+    $component = $form_object->getCurrentComponent();
+    $plugin = $component->getPlugin();
+    if (isset($plugin)) {
+      // Get the default admin label from the block plugin label.
+      $plugin_definition = $plugin->getPluginDefinition();
+      $default_admin_label = $plugin_definition['admin_label'] ?? $plugin->getPluginId();
+      // Add the plugin label as default value.
+      $form['settings']['label']['#default_value'] = $default_admin_label;
+    }
+  }
+}
+
+/**
+ * Implements hook_form_FORM_ID_alter().
+ */
+function ys_core_form_bulk_add_cas_users_alter(&$form, FormStateInterface $form_state, $form_id) {
+  // Ensure the CAS bulk add only allows roles that role_delegate will allow.
+  $account = \Drupal::currentUser();
+  $delegatable_roles = \Drupal::service('delegatable_roles');
+
+  $delegatable_roles = $delegatable_roles->getAssignableRoles($account);
+  $form['roles']['#options'] = $delegatable_roles;
+
+  if (isset($form['cas_usernames'])) {
+    $form['cas_usernames']['#title'] = t('NetIDs');
+    $form['cas_usernames']['#description'] = t('Enter one NetID per line.');
+  }
+
+  // Hide the email field since CAS users get email from LDAP.
+  if (isset($form['email_hostname'])) {
+    $form['email_hostname']['#access'] = FALSE;
+  }
+}
+
+/**
+ * Implements hook_form_FORM_ID_alter().
+ */
+function ys_core_form_taxonomy_vocabulary_form_alter(&$form, FormStateInterface $form_state, $form_id) {
+  // Increase length of taxonomy vocabulary description field.
+  $form['description']['#maxlength'] = 256;
+}
+
+/**
+ * Implements hook_form_FORM_ID_alter().
+ */
+function ys_core_form_redirect_redirect_form_alter(&$form, FormStateInterface $form_state, $form_id) {
+  // Add help text to redirect form Path field.
+  if (isset($form['redirect_source']['widget'][0]['path'])) {
+    $form['redirect_source']['widget'][0]['path']['#description'] = t('
+        To add a redirect from an aliased path, the "from" page must be published. <br>
+        To create a redirect from an unpublished page, use the node path, eg. /node/123.
+      ');
+  }
+}
+
+/**
+ * Implements hook_form_FORM_ID_alter().
+ */
+function ys_core_form_taxonomy_overview_vocabularies_alter(&$form, FormStateInterface $form_state, $form_id) {
+  // Hide core taxonomy description.
+  // @see ys_core_help()
+  $form['#attached']['library'][] = 'ys_core/taxonomy_form';
+}
+
+/**
+ * Implements hook_form_FORM_ID_alter().
+ */
+function ys_core_form_taxonomy_overview_terms_alter(&$form, FormStateInterface $form_state, $form_id) {
+  // Add vocabulary description to the taxonomy overview form.
+  $replacements['@description'] = $form_state->getBuildInfo()['args'][0]->getDescription();
+  $form['help']['description'] = [
+    '#type' => 'markup',
+    '#markup' => "<p>" . t('@description', $replacements) . "</p>",
+  ];
 }
 
 /**

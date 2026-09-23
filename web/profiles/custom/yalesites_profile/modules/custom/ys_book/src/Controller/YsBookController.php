@@ -19,12 +19,21 @@ class YsBookController extends BookController {
   public function adminOverview(): array {
     $build = parent::adminOverview();
 
-    if (isset($build['#header'])) {
-      foreach ($build['#header'] as &$header) {
-        if ($header->__toString() === 'Book') {
-          $header = $this->t('Collection');
-        }
+    // Contrib builds these cells as plain strings, which renders a <th> with
+    // no scope for a screen reader to associate the column by. Promote each
+    // cell to an array to carry the attribute, normalizing rather than
+    // assuming a string so a later contrib change cannot nest a cell inside
+    // itself. The rename has to happen in the same pass: reading a cell as a
+    // string after this point would fail. template_preprocess_table() passes
+    // any key that is not data/header/colspan/class/sort/field through to the
+    // <th> as an attribute.
+    foreach ($build['#header'] ?? [] as $index => $cell) {
+      $cell = is_array($cell) ? $cell : ['data' => $cell];
+      if ((string) $cell['data'] === 'Book') {
+        $cell['data'] = $this->t('Collection');
       }
+      $cell['scope'] = 'col';
+      $build['#header'][$index] = $cell;
     }
 
     // Replace the empty message.
