@@ -1,81 +1,84 @@
-.font-preview-container {
-  margin: 1rem 0;
-  padding: 1rem;
-  border: 1px solid #ccc;
-  border-radius: 4px;
-  min-height: 150px;
-  position: relative;
+.ys-form-section-heading {
+  margin: 0 0 0.5rem;
+  font-size: 1.25rem;
+  font-weight: 600;
 }
 
-.font-preview {
-  padding: 0 1rem 1rem 1rem;
+.font-preview-container {
+  margin: 0.5rem 0 1rem;
+  padding: 1rem;
   background: #f5f5f5;
   border-radius: 4px;
-  display: none;
-  position: absolute;
-  top: 1rem;
-  left: 1rem;
-  right: 1rem;
-  min-height: calc(100% - 3rem);
 }
 
-.font-preview:last-child {
-  margin-bottom: 0;
+/* Heading sample: font family, driven by data-heading-font */
+.preview-heading-sample {
+  margin: 0;
+  font-size: 1.5rem;
 }
 
-.font-preview.is-active {
+.font-preview-heading:not([data-heading-font="mallory"])
+  .preview-heading-sample {
+  font-family: YaleNew, serif;
+}
+
+.font-preview-heading[data-heading-font="mallory"] .preview-heading-sample {
+  font-family: Mallory, sans-serif;
+}
+
+/* Numeral samples: heading and body styles shown side by side */
+.font-preview-numerals {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 1.5rem;
+}
+
+.numeral-sample {
   display: flex;
   flex-direction: column;
-  justify-content: center;
+  gap: 0.25rem;
 }
 
-/* YaleNew font pairing preview */
-.font-preview-yalenew .preview-heading {
-  font-family: "YaleNew", serif;
-  font-size: 1.75rem;
+.numeral-sample-label {
+  font-family: Mallory, sans-serif;
+  font-size: 0.85rem;
+  color: #555;
+}
+
+.numeral-sample-value {
+  font-family: Mallory, sans-serif;
+  font-size: 1.5rem;
+}
+
+.font-preview-numerals:not([data-heading-numerals="lining"])
+  .numeral-sample-heading
+  .numeral-sample-value {
   font-variant-numeric: oldstyle-nums;
   font-feature-settings: "onum" 1;
-  margin-bottom: 0.75rem;
 }
 
-.font-preview-yalenew .preview-text {
-  font-family: "Mallory", sans-serif;
-  font-size: 1rem;
-  line-height: 1.4;
-  margin: 0;
-}
-
-/* Yale New / Mallory font pairing preview */
-.font-preview-yalenew-oldstyle .preview-heading {
-  font-family: "YaleNew", serif;
-  font-size: 1.75rem;
+.font-preview-numerals[data-heading-numerals="lining"]
+  .numeral-sample-heading
+  .numeral-sample-value {
   font-variant-numeric: normal;
   font-feature-settings: "onum" 0;
-  margin-bottom: 0.75rem;
 }
 
-.font-preview-yalenew-oldstyle .preview-text {
-  font-family: "Mallory", sans-serif;
-  font-size: 1rem;
-  line-height: 1.4;
-  margin: 0;
+.font-preview-numerals:not([data-body-numerals="lining"])
+  .numeral-sample-body
+  .numeral-sample-value {
+  font-variant-numeric: oldstyle-nums;
+  font-feature-settings: "onum" 1;
 }
 
-/* Mallory font pairing preview */
-.font-preview-mallory .preview-heading {
-  font-family: "Mallory", sans-serif;
-  font-size: 1.75rem;
-  margin-bottom: 0.75rem;
-}
-
-.font-preview-mallory .preview-text {
-  font-family: "Mallory", sans-serif;
-  font-size: 1rem;
-  line-height: 1.4;
-  margin: 0;
+.font-preview-numerals[data-body-numerals="lining"]
+  .numeral-sample-body
+  .numeral-sample-value {
+  font-variant-numeric: normal;
+  font-feature-settings: "onum" 0;
 }
 
 /* Dark mode */
-.gin--dark-mode .font-preview {
+.gin--dark-mode .font-preview-container {
   background: var(--gin-bg-input);
 }
