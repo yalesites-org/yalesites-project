@@ -86,6 +86,7 @@
     "drupal/multiple_fields_remove_button": "2.3",
     "drupal/multivalue_form_element": "1.0.0-beta8",
     "drupal/node_revision_delete": "2.1.1",
+    "drupal/office_hours": "1.29.0",
     "drupal/override_node_options": "2.9.0",
     "drupal/pantheon_advanced_page_cache": "2.3.4",
     "drupal/pantheon_secrets": "1.0.6",
@@ -179,6 +180,9 @@
       },
       "drupal/migrate_plus": {
         "Allow callback for Url source, and single item Json plugin https://www.drupal.org/project/migrate_plus/issues/3040427": "patches/contrib/migrate_plus/3040427-66.patch"
+      },
+      "drupal/office_hours": {
+        "Make the table formatter's header describe the table it heads - scope, row headers, matching column count - WCAG 1.3.1 (YaleSites-Internal#1706)": "patches/contrib/office_hours/office_hours-table-header-scope-and-shape.patch"
       },
       "drupal/paragraphs": {
         "hide remove button https://www.drupal.org/project/paragraphs/issues/2919186": "patches/contrib/paragraphs/2919186-1.patch"
