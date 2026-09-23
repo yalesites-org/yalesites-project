@@ -9,9 +9,9 @@ dependencies:
   module:
     - user
 id: ys_dashboard_site_editors
-label: 'Dashboard: Site editors'
+label: 'Dashboard: People with access'
 module: user
-description: 'Site editors sorted by most recent login. Used by the editorial dashboard.'
+description: 'People with editorial access, sorted by most recent login. Used by the editorial dashboard.'
 tag: default
 base_table: users_field_data
 base_field: uid
@@ -22,7 +22,7 @@ display:
     display_plugin: default
     position: 0
     display_options:
-      title: 'Site editors'
+      title: 'People with access'
       fields:
         name:
           id: name
@@ -163,7 +163,7 @@ display:
           admin_label: ''
           plugin_id: text_custom
           empty: true
-          content: 'No site editors found.'
+          content: 'No people with access found.'
           tokenize: false
       sorts:
         login:
@@ -308,7 +308,7 @@ display:
             default_group: All
             default_group_multiple: {  }
             group_items: {  }
-          reduce_duplicates: false
+          reduce_duplicates: true
       filter_groups:
         operator: AND
         groups:
@@ -368,10 +368,10 @@ display:
           replica: false
           query_tags: {  }
       relationships: {  }
-      use_more: false
-      use_more_always: false
-      use_more_text: More
-      link_display: '0'
+      use_more: true
+      use_more_always: true
+      use_more_text: 'View all people with access'
+      link_display: page_1
       link_url: ''
       header: {  }
       footer: {  }
@@ -393,5 +393,49 @@ display:
       max-age: 0
       contexts:
         - 'languages:language_interface'
+        - user.permissions
+      tags: {  }
+  page_1:
+    id: page_1
+    display_title: Page
+    display_plugin: page
+    position: 2
+    display_options:
+      title: 'People with access'
+      pager:
+        type: full
+        options:
+          offset: 0
+          pagination_heading_level: h2
+          items_per_page: 50
+          total_pages: null
+          id: 0
+          tags:
+            next: 'Next ›'
+            previous: '‹ Previous'
+            first: '« First'
+            last: 'Last »'
+          expose:
+            items_per_page: false
+            items_per_page_label: 'Items per page'
+            items_per_page_options: '5, 10, 25, 50'
+            items_per_page_options_all: false
+            items_per_page_options_all_label: '- All -'
+            offset: false
+            offset_label: Offset
+          quantity: 9
+      query:
+        type: views_query
+        options: {  }
+      defaults:
+        title: false
+        pager: false
+      display_extenders: {  }
+      path: admin/yalesites/people-with-access
+    cache_metadata:
+      max-age: 0
+      contexts:
+        - 'languages:language_interface'
+        - url.query_args
         - user.permissions
       tags: {  }
