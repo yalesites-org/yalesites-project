@@ -6,6 +6,8 @@ use Drupal\Core\Controller\TitleResolver;
 use Drupal\Core\Form\FormState;
 use Drupal\Core\Routing\RouteMatchInterface;
 use Drupal\Tests\UnitTestCase;
+use Drupal\Tests\ys_core\Traits\LayoutBuilderEntityContextTestTrait;
+use Drupal\node\NodeInterface;
 use Drupal\ys_layouts\Plugin\Block\PageMetaBlock;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\RequestStack;
@@ -20,6 +22,8 @@ use Symfony\Component\Routing\Route;
  * @group ys_layouts
  */
 class PageMetaBlockTest extends UnitTestCase {
+
+  use LayoutBuilderEntityContextTestTrait;
 
   /**
    * The route match mock.
@@ -51,6 +55,8 @@ class PageMetaBlockTest extends UnitTestCase {
     $this->routeMatch = $this->createMock(RouteMatchInterface::class);
     $this->titleResolver = $this->createMock(TitleResolver::class);
     $this->requestStack = $this->createMock(RequestStack::class);
+
+    $this->setUpLayoutBuilderEntityContextContainer();
   }
 
   /**
@@ -60,7 +66,29 @@ class PageMetaBlockTest extends UnitTestCase {
    *   The block plugin.
    */
   protected function buildBlock(array $configuration = []): PageMetaBlock {
-    return new PageMetaBlock($configuration, 'page_meta_block', ['provider' => 'ys_layouts'], $this->routeMatch, $this->titleResolver, $this->requestStack);
+    $definition = [
+      'provider' => 'ys_layouts',
+      'admin_label' => 'Page Meta Block',
+      'context_definitions' => $this->layoutBuilderEntityContextDefinitions(PageMetaBlock::class),
+    ];
+
+    return new PageMetaBlock($configuration, 'page_meta_block', $definition, $this->routeMatch, $this->titleResolver, $this->requestStack);
+  }
+
+  /**
+   * Builds a node mock that reports the given title.
+   *
+   * @param string $title
+   *   The node title.
+   *
+   * @return \Drupal\node\NodeInterface|\PHPUnit\Framework\MockObject\MockObject
+   *   The node mock.
+   */
+  protected function mockNode(string $title) {
+    $node = $this->createMock(NodeInterface::class);
+    $node->method('label')->willReturn($title);
+
+    return $node;
   }
 
   /**
@@ -78,11 +106,11 @@ class PageMetaBlockTest extends UnitTestCase {
   }
 
   /**
-   * The block resolves and renders the current route's title.
+   * Without a node in context, the block falls back to the route title.
    *
    * @covers ::build
    */
-  public function testBuildResolvesTitleFromRoute(): void {
+  public function testBuildFallsBackToRouteTitleWithoutNode(): void {
     $route = new Route('/about');
     $request = new Request();
     $this->routeMatch->method('getRouteObject')->willReturn($route);
@@ -93,6 +121,200 @@ class PageMetaBlockTest extends UnitTestCase {
 
     $this->assertSame('About Us', $build['#page_title']);
     $this->assertSame('visible', $build['#page_title_display']);
+  }
+
+  /**
+   * On the Layout Builder route the node title wins over "Edit layout for ...".
+   *
+   * Search API renders the node in the same request that saves it, so a route
+   * title leaks into the indexed content of the page.
+   *
+   * @covers ::build
+   */
+  public function testBuildIgnoresLayoutBuilderRouteTitle(): void {
+    $route = new Route('/node/{node}/layout');
+    $request = new Request();
+    $this->routeMatch->method('getRouteObject')->willReturn($route);
+    $this->routeMatch->method('getParameter')->willReturnMap([
+      ['node_revision', NULL],
+      ['node', $this->mockNode('My Page')],
+    ]);
+    $this->requestStack->method('getCurrentRequest')->willReturn($request);
+    $this->titleResolver->expects($this->never())->method('getTitle');
+
+    $build = $this->buildBlock()->build();
+
+    $this->assertSame('My Page', $build['#page_title']);
+  }
+
+  /**
+   * A non-node route parameter does not stand in for the entity.
+   *
+   * @covers ::build
+   */
+  public function testBuildFallsBackWhenRouteParameterIsNotNode(): void {
+    $route = new Route('/node/{node}');
+    $request = new Request();
+    $this->routeMatch->method('getRouteObject')->willReturn($route);
+    $this->routeMatch->method('getParameter')->willReturnMap([
+      ['node_revision', NULL],
+      ['node', '12'],
+    ]);
+    $this->requestStack->method('getCurrentRequest')->willReturn($request);
+    $this->titleResolver->method('getTitle')->with($request, $route)->willReturn('Some Route Title');
+
+    $build = $this->buildBlock()->build();
+
+    $this->assertSame('Some Route Title', $build['#page_title']);
+  }
+
+  /**
+   * Without a current request there is no route title to fall back to.
+   *
+   * @covers ::build
+   */
+  public function testBuildReturnsEmptyTitleWithoutRequest(): void {
+    $this->routeMatch->method('getRouteObject')->willReturn(new Route('/about'));
+    $this->requestStack->method('getCurrentRequest')->willReturn(NULL);
+    $this->titleResolver->expects($this->never())->method('getTitle');
+
+    $build = $this->buildBlock()->build();
+
+    $this->assertSame('', $build['#page_title']);
+  }
+
+  /**
+   * A revision route renders the revision, so its title wins.
+   *
+   * @covers ::build
+   */
+  public function testBuildPrefersTheRevisionBeingRendered(): void {
+    $this->routeMatch->method('getRouteObject')->willReturn(new Route('/node/{node}/revisions/{node_revision}/view'));
+    $this->routeMatch->method('getParameter')->willReturnMap([
+      ['node_revision', $this->mockNode('My Page, as it was')],
+      ['node', $this->mockNode('My Page')],
+    ]);
+    $this->titleResolver->expects($this->never())->method('getTitle');
+
+    $build = $this->buildBlock()->build();
+
+    $this->assertSame('My Page, as it was', $build['#page_title']);
+  }
+
+  /**
+   * The entity being rendered beats a route that names no node at all.
+   *
+   * These are the routes a page is saved on when it is created
+   * (/node/add/{type}) or changed by a bulk operation (/admin/content). The
+   * route carries no node, so before this the interface text was indexed as
+   * the page's heading.
+   *
+   * @covers ::build
+   *
+   * @dataProvider providerNodelessRoutes
+   */
+  public function testBuildPrefersRenderedEntityOnNodelessRoutes(string $path, string $route_title): void {
+    $route = new Route($path);
+    $request = new Request();
+    $this->routeMatch->method('getRouteObject')->willReturn($route);
+    $this->routeMatch->method('getParameter')->willReturn(NULL);
+    $this->requestStack->method('getCurrentRequest')->willReturn($request);
+    $this->titleResolver->method('getTitle')->willReturn($route_title);
+
+    $block = $this->buildBlock();
+    $this->setRenderedEntity($block, $this->mockNode('My Page'));
+
+    $this->assertSame('My Page', $block->build()['#page_title']);
+  }
+
+  /**
+   * Data provider of routes that carry no node parameter.
+   *
+   * @return array<string, array{string, string}>
+   *   Test cases of a route path and the title that route resolves to.
+   */
+  public static function providerNodelessRoutes(): array {
+    return [
+      'new page' => ['/node/add/page', 'Create Page'],
+      'bulk operation' => ['/admin/content', 'Content'],
+    ];
+  }
+
+  /**
+   * The entity being rendered beats a DIFFERENT node named by the route.
+   *
+   * Rendering page A while the request is on page B's layout route used to
+   * index B's title into A. Because the index also tracks referenced content,
+   * a wrong-but-plausible title is harder to spot than an obviously wrong one.
+   *
+   * @covers ::build
+   */
+  public function testBuildPrefersRenderedEntityOverDifferentRoutesNode(): void {
+    $this->routeMatch->method('getRouteObject')->willReturn(new Route('/node/{node}/layout'));
+    $this->routeMatch->method('getParameter')->willReturnMap([
+      ['node_revision', NULL],
+      ['node', $this->mockNode('Hello World')],
+    ]);
+    $this->titleResolver->expects($this->never())->method('getTitle');
+
+    $block = $this->buildBlock();
+    $this->setRenderedEntity($block, $this->mockNode('My Page'));
+
+    $this->assertSame('My Page', $block->build()['#page_title']);
+  }
+
+  /**
+   * A context holding something other than a node is not used as the title.
+   *
+   * Layout Builder hands over whatever entity the display belongs to, so the
+   * context is not guaranteed to hold a node -- the defaults layout screen
+   * passes a generated sample entity of the display's own type. The slot is
+   * also declared as a generic entity, so the guard is what keeps a non-node
+   * out of the heading.
+   *
+   * @covers ::build
+   *
+   * @dataProvider providerNonNodeContextValues
+   */
+  public function testBuildIgnoresNonNodeEntityContext($value): void {
+    $route = new Route('/about');
+    $request = new Request();
+    $this->routeMatch->method('getRouteObject')->willReturn($route);
+    $this->routeMatch->method('getParameter')->willReturn(NULL);
+    $this->requestStack->method('getCurrentRequest')->willReturn($request);
+    $this->titleResolver->method('getTitle')->with($request, $route)->willReturn('About Us');
+
+    $block = $this->buildBlock();
+    $this->setRenderedEntity($block, $value);
+
+    $this->assertSame('About Us', $block->build()['#page_title']);
+  }
+
+  /**
+   * The ANNOTATION declares the slot Layout Builder actually publishes.
+   *
+   * This is the guard for the whole approach, so it deliberately reads the
+   * real @Block annotation through the same annotation reader plugin
+   * discovery uses, rather than the hand-built definition buildBlock() passes
+   * in -- asserting the fixture would only prove the fixture. Renaming the
+   * annotation's slot to "entity" would still resolve while rendering but NOT
+   * during Layout Builder preview, where OverridesSectionStorage unsets
+   * "entity", and would put back the need to rewrite the stored
+   * context_mapping of every node with an overridden layout. Optional is
+   * asserted too: a required slot would throw where no entity is offered
+   * instead of degrading to the route.
+   */
+  public function testAnnotationDeclaresTheLayoutBuilderEntitySlot(): void {
+    $this->assertDeclaresLayoutBuilderEntitySlot(PageMetaBlock::class);
+  }
+
+  /**
+   * The context-assignment select is kept off the editor's block form.
+   *
+   * @covers ::buildConfigurationForm
+   */
+  public function testConfigurationFormHasNoContextAssignmentSelect(): void {
+    $this->assertNoContextAssignmentSelect($this->buildBlock());
   }
 
   /**

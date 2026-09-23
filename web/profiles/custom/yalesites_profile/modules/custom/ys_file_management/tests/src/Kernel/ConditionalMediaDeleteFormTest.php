@@ -4,8 +4,8 @@ namespace Drupal\Tests\ys_file_management\Kernel;
 
 use Drupal\Core\Form\FormState;
 use Drupal\file\Entity\File;
-use Drupal\KernelTests\KernelTestBase;
 use Drupal\Tests\media\Traits\MediaTypeCreationTrait;
+use Drupal\Tests\ys_core\Kernel\YsKernelTestBase;
 use Drupal\user\Entity\Role;
 use Drupal\user\Entity\User;
 
@@ -15,7 +15,7 @@ use Drupal\user\Entity\User;
  * @group ys_file_management
  * @group yalesites
  */
-class ConditionalMediaDeleteFormTest extends KernelTestBase {
+class ConditionalMediaDeleteFormTest extends YsKernelTestBase {
 
   use MediaTypeCreationTrait;
 
@@ -35,7 +35,7 @@ class ConditionalMediaDeleteFormTest extends KernelTestBase {
   /**
    * The media file deleter service.
    *
-   * @var \Drupal\ys_file_management\Service\MediaFileDeleterInterface
+   * @var \Drupal\ys_file_management\Service\MediaFileDeleter
    */
   protected $mediaFileDeleter;
 
@@ -113,13 +113,6 @@ class ConditionalMediaDeleteFormTest extends KernelTestBase {
    * @covers \Drupal\ys_file_management\Service\MediaFileDeleter
    */
   public function testServiceExists() {
-    $this->assertNotNull($this->mediaFileDeleter);
-    // Check that it implements the interface.
-    $this->assertInstanceOf(
-      'Drupal\ys_file_management\Service\MediaFileDeleterInterface',
-      $this->mediaFileDeleter
-    );
-    // Check that it's the concrete implementation.
     $this->assertInstanceOf(
       'Drupal\ys_file_management\Service\MediaFileDeleter',
       $this->mediaFileDeleter
@@ -239,7 +232,7 @@ class ConditionalMediaDeleteFormTest extends KernelTestBase {
     $deleter_property = $reflection->getProperty('mediaFileDeleter');
     $deleter_property->setAccessible(TRUE);
     $this->assertInstanceOf(
-      'Drupal\ys_file_management\Service\MediaFileDeleterInterface',
+      'Drupal\ys_file_management\Service\MediaFileDeleter',
       $deleter_property->getValue($form_object)
     );
 

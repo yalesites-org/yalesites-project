@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Drupal\ys_layouts\Plugin\Block;
 
+use Drupal\Core\Block\Attribute\Block;
 use Drupal\Core\Block\BlockBase;
 use Drupal\Core\Entity\EntityTypeManagerInterface;
 use Drupal\Core\Form\FormStateInterface;
@@ -12,6 +13,7 @@ use Drupal\Core\Plugin\ContextAwarePluginAssignmentTrait;
 use Drupal\Core\Plugin\ContextAwarePluginInterface;
 use Drupal\Core\Plugin\ContextAwarePluginTrait;
 use Drupal\Core\Routing\CurrentRouteMatch;
+use Drupal\Core\StringTranslation\TranslatableMarkup;
 use Drupal\node\Entity\Node;
 use Drupal\ys_themes\ColorTokenResolver;
 use Symfony\Component\DependencyInjection\ContainerInterface;
@@ -19,13 +21,12 @@ use Symfony\Component\HttpFoundation\RequestStack;
 
 /**
  * Provides a yalesites taxonomy display block block.
- *
- * @Block(
- *   id = "ys_taxonomy_display_block",
- *   admin_label = @Translation("Taxonomy Display Block"),
- *   category = @Translation("YaleSites Layouts"),
- * )
  */
+#[Block(
+  id: 'ys_taxonomy_display_block',
+  admin_label: new TranslatableMarkup('Taxonomy Display Block'),
+  category: new TranslatableMarkup('YaleSites Layouts'),
+)]
 class TaxonomyDisplayBlock extends BlockBase implements ContextAwarePluginInterface, ContainerFactoryPluginInterface {
 
   use ContextAwarePluginTrait;

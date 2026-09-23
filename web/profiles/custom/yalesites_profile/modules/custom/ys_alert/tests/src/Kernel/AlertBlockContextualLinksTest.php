@@ -2,7 +2,7 @@
 
 namespace Drupal\Tests\ys_alert\Kernel;
 
-use Drupal\KernelTests\KernelTestBase;
+use Drupal\Tests\ys_core\Kernel\YsKernelTestBase;
 use Drupal\block\BlockViewBuilder;
 use Drupal\block\Entity\Block;
 use Symfony\Component\Yaml\Yaml;
@@ -24,7 +24,7 @@ use Symfony\Component\Yaml\Yaml;
  * @group yalesites
  * @group ys_alert
  */
-class AlertBlockContextualLinksTest extends KernelTestBase {
+class AlertBlockContextualLinksTest extends YsKernelTestBase {
 
   /**
    * {@inheritdoc}

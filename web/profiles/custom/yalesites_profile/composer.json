@@ -93,7 +93,7 @@
     "drupal/paragraphs_features": "2.2.0",
     "drupal/pathauto": "1.15.0",
     "drupal/quick_node_clone": "1.22.0",
-    "drupal/recaptcha": "3.4.0",
+    "drupal/recaptcha": "3.5.0",
     "drupal/recaptcha_v3": "2.0.5",
     "drupal/redirect": "1.13",
     "drupal/redis": "1.11.0",
@@ -117,7 +117,7 @@
     "mathjax/mathjax": "2.7.9",
     "smalot/pdfparser": "2.11.0",
     "yalesites-org/ai_engine": "1.2.18",
-    "yalesites-org/atomic": "1.83.0",
+    "yalesites-org/atomic": "1.84.0",
     "yalesites-org/yale_cas": "v1.3.0"
   },
   "minimum-stability": "dev",
@@ -143,6 +143,12 @@
         "Update \"Add reusable option to inline block creation\" patch with local changes to save block if it didn't save": "patches/drupal-core/1330eff91b1234979cf697a66a48e34eb116b441-1.patch",
         "renderPlain on a node render array causes RuntimeException if the node renders a view programmatically": "patches/drupal-core/3350137-9.patch",
         "Ajax exposed filters not working for multiple instances": "patches/drupal-core/3163299-140.patch"
+      },
+      "drupal/ai": {
+        "Don't duplicate a title configured as contextual content (YaleSites-Internal#1617, drupal.org #3547137)": "patches/contrib/ai/ai-3547137-title-duplication.patch"
+      },
+      "drupal/ai_vdb_provider_azure_ai_search": {
+        "Throw on a rejected document upload instead of reporting a silent success (YaleSites-Internal#1392)": "patches/contrib/ai_vdb_provider_azure_ai_search/yalesites-1392-insert-throws-on-failed-write.patch"
       },
       "drupal/entity_redirect": {
         "fix layout route https://www.drupal.org/project/entity_redirect/issues/3352265": "patches/contrib/entity_redirect/3352265-mr-6.diff"

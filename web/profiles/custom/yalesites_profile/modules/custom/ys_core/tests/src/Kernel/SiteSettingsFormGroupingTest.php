@@ -5,7 +5,6 @@ namespace Drupal\Tests\ys_core\Kernel;
 use Drupal\Component\Serialization\Yaml;
 use Drupal\Core\Form\FormState;
 use Drupal\Core\Render\Element;
-use Drupal\KernelTests\KernelTestBase;
 use Drupal\Tests\user\Traits\UserCreationTrait;
 use Drupal\ys_core\Form\SiteSettingsForm;
 use Drupal\ys_core\PlatformAdminCheckerInterface;
@@ -37,7 +36,7 @@ use Drupal\ys_core\PlatformAdminCheckerInterface;
  *
  * @group ys_core
  */
-class SiteSettingsFormGroupingTest extends KernelTestBase {
+class SiteSettingsFormGroupingTest extends YsKernelTestBase {
 
   use UserCreationTrait;
 
@@ -100,22 +99,6 @@ class SiteSettingsFormGroupingTest extends KernelTestBase {
     'custom_vocab_name' => 'content_and_tagging',
     'cas_app_name' => 'advanced',
   ];
-
-  /**
-   * {@inheritdoc}
-   *
-   * Strict schema checking is off because ys_core.site ships no config schema.
-   * Writing that schema is explicitly not test-only work and is tracked in
-   * yalesites-org/YaleSites-Internal#579: as this module's README records, no
-   * schema type validates both the install defaults and the real saved values
-   * without first correcting them (custom_favicon is declared '' but holds an
-   * array of file ids, and a site that saved environment_indicator.show through
-   * this form before it moved holds integer 1 against a declared boolean).
-   * Suppressed the same way the six sibling settings-form kernel tests in this
-   * profile do, rather than pre-empting that ticket.
-   */
-  // phpcs:ignore DrupalPractice.Objects.StrictSchemaDisabled.StrictConfigSchema
-  protected $strictConfigSchema = FALSE;
 
   /**
    * {@inheritdoc}
@@ -461,6 +444,28 @@ class SiteSettingsFormGroupingTest extends KernelTestBase {
       $form['look_and_feel']['#open'] ?? FALSE,
       'An unrelated group was opened.'
     );
+  }
+
+  /**
+   * The favicon restricts uploads through validation constraint plugins.
+   *
+   * Not a grouping assertion, but this class is the only harness that builds
+   * the real Site Settings form — SiteSettingsFormTest constructs the object
+   * without its constructor and exercises submitForm() alone. The legacy
+   * 'file_validate_*' array form is deprecated in Drupal 10.2 and removed in
+   * Drupal 11, so pinning the constraint plugin IDs is what stops these
+   * restrictions silently disappearing on the major upgrade. Asserted as a
+   * whole array so a legacy key cannot creep back in beside them
+   * (yalesites-org/YaleSites-Internal#1610).
+   */
+  public function testFaviconUsesValidationConstraints(): void {
+    $validators = $this->buildFormAs(1)['look_and_feel']['favicon']['#upload_validators'];
+
+    $this->assertSame([
+      'FileIsImage' => [],
+      'FileExtension' => ['extensions' => 'gif png jpg jpeg'],
+      'FileImageDimensions' => ['maxDimensions' => 0, 'minDimensions' => '180x180'],
+    ], $validators);
   }
 
 }

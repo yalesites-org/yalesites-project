@@ -3,9 +3,8 @@
 namespace Drupal\Tests\ys_node_access\Kernel;
 
 use Drupal\Core\Session\AnonymousUserSession;
-use Drupal\field\Entity\FieldConfig;
-use Drupal\field\Entity\FieldStorageConfig;
-use Drupal\KernelTests\KernelTestBase;
+use Drupal\Tests\ys_core\Kernel\YsKernelTestBase;
+use Drupal\Tests\ys_node_access\Traits\CasProtectedNodeTypeTrait;
 use Drupal\node\Entity\Node;
 use Drupal\node\Entity\NodeType;
 use Drupal\user\Entity\Role;
@@ -39,7 +38,9 @@ use Drupal\ys_node_access\NodeAccessManager;
  * @group yalesites
  * @group ys_node_access
  */
-class NodeAccessGrantsTest extends KernelTestBase {
+class NodeAccessGrantsTest extends YsKernelTestBase {
+
+  use CasProtectedNodeTypeTrait;
 
   /**
    * {@inheritdoc}
@@ -96,18 +97,7 @@ class NodeAccessGrantsTest extends KernelTestBase {
 
     // A content type carrying field_login_required, mirroring how it is
     // attached to page/post/event/profile/resource in production.
-    NodeType::create(['type' => 'protected_type', 'name' => 'Protected type'])->save();
-    $field_storage = FieldStorageConfig::create([
-      'field_name' => 'field_login_required',
-      'entity_type' => 'node',
-      'type' => 'boolean',
-    ]);
-    $field_storage->save();
-    FieldConfig::create([
-      'field_storage' => $field_storage,
-      'bundle' => 'protected_type',
-      'label' => 'CAS Login Required',
-    ])->save();
+    $this->createCasProtectedNodeType();
 
     // A content type that never received the field, to characterize the
     // module's fallback when field_login_required is absent.

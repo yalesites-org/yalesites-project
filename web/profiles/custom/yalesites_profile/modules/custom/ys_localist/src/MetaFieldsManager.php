@@ -106,6 +106,40 @@ class MetaFieldsManager implements ContainerFactoryPluginInterface {
   }
 
   /**
+   * Loads a taxonomy term, tolerating an ID that resolves to nothing.
+   *
+   * @param mixed $termId
+   *   The term ID, which may be NULL or empty.
+   *
+   * @return \Drupal\taxonomy\TermInterface|null
+   *   The term, or NULL when there is no ID or no such term.
+   */
+  private function loadTerm($termId) {
+    // EntityStorageBase::load() asserts a non-NULL ID, so an empty reference
+    // must never reach it.
+    if (empty($termId)) {
+      return NULL;
+    }
+
+    return $this->entityTypeManager->getStorage('taxonomy_term')->load($termId);
+  }
+
+  /**
+   * Gets a taxonomy term's name, or an empty string if it cannot be resolved.
+   *
+   * @param mixed $termId
+   *   The term ID, which may be NULL or empty.
+   *
+   * @return string
+   *   The term name, or an empty string when the term does not resolve.
+   */
+  private function getTermName($termId): string {
+    $term = $this->loadTerm($termId);
+
+    return $term ? $term->getName() : '';
+  }
+
+  /**
    * Returns filter values for a given filter field.
    *
    * @param \Drupal\node\NodeInterface $node
@@ -122,8 +156,14 @@ class MetaFieldsManager implements ContainerFactoryPluginInterface {
       $values = $node->$filterField->getValue();
       if ($values) {
         foreach ($values as $value) {
+          // An item with no target would reach load() as a NULL ID, which
+          // trips its assertion.
+          if (empty($value['target_id'])) {
+            continue;
+          }
+
           /** @var \Drupal\taxonomy\Entity\Term $typeInfo */
-          $typeInfo = $this->entityTypeManager->getStorage('taxonomy_term')->load($value['target_id']);
+          $typeInfo = $this->loadTerm($value['target_id']);
           $name = $url = "";
           if ($typeInfo) {
             $name = $typeInfo->getName();
@@ -229,13 +269,8 @@ class MetaFieldsManager implements ContainerFactoryPluginInterface {
     $streamEmbedCode = $node->field_stream_embed_code->first() ? $node->field_stream_embed_code->first()->getValue()['value'] : NULL;
 
     // Retrieve the source taxonomy term name.
-    $sourceTaxonomyTermName = '';
-    if ($node->field_event_source->first()) {
-      $termId = $node->field_event_source->first()->getValue()['target_id'];
-      $term = $this->entityTypeManager->getStorage('taxonomy_term')->load($termId);
-      $sourceTaxonomyTermName = $term->getName();
-    }
-    $eventSource = $sourceTaxonomyTermName;
+    $sourceTerm = $node->field_event_source->first();
+    $eventSource = $sourceTerm ? $this->getTermName($sourceTerm->getValue()['target_id'] ?? NULL) : '';
 
     // Localist register ticket changes.
     $localistRegisterTickets = $hasRegister ? $this->localistManager->getTicketInfo($localistId) : NULL;
@@ -267,17 +302,24 @@ class MetaFieldsManager implements ContainerFactoryPluginInterface {
       if ($teaserMedia = $this->entityTypeManager->getStorage('media')->load($teaserMediaId)) {
         /** @var Drupal\file\FileStorage $fileEntityStorage */
         $fileEntityStorage = $this->entityTypeManager->getStorage('file');
-        $teaserImageFileUri = $fileEntityStorage->load($teaserMedia->field_media_image->target_id)->getFileUri();
-        $isTeaserImageLandscape = $teaserMedia->get('thumbnail')->width > $teaserMedia->get('thumbnail')->height;
+        $teaserImageFileId = $teaserMedia->field_media_image->target_id ?? NULL;
+        $teaserImageFile = $teaserImageFileId ? $fileEntityStorage->load($teaserImageFileId) : NULL;
 
-        $teaserMediaRender = [
-          '#type' => 'responsive_image',
-          '#responsive_image_style_id' => $isTeaserImageLandscape ? 'card_featured_3_2' : 'content_spotlight_portrait',
-          '#uri' => $teaserImageFileUri,
-          '#attributes' => [
-            'alt' => $teaserMedia->get('field_media_image')->first()->get('alt')->getValue(),
-          ],
-        ];
+        // Only render the teaser once the image file actually resolves --
+        // the referenced file can have been deleted, and getFileUri() was
+        // previously called straight off the load().
+        if ($teaserImageFile) {
+          $isTeaserImageLandscape = $teaserMedia->get('thumbnail')->width > $teaserMedia->get('thumbnail')->height;
+
+          $teaserMediaRender = [
+            '#type' => 'responsive_image',
+            '#responsive_image_style_id' => $isTeaserImageLandscape ? 'card_featured_3_2' : 'content_spotlight_portrait',
+            '#uri' => $teaserImageFile->getFileUri(),
+            '#attributes' => [
+              'alt' => $teaserMedia->get('field_media_image')->first()->get('alt')->getValue(),
+            ],
+          ];
+        }
       }
     }
 
@@ -285,7 +327,7 @@ class MetaFieldsManager implements ContainerFactoryPluginInterface {
     $place = [];
     if ($placeRef = $node->field_event_place->first()) {
       /** @var \Drupal\taxonomy\Entity\Term $placeInfo */
-      $placeInfo = $this->entityTypeManager->getStorage('taxonomy_term')->load($placeRef->getValue()['target_id']);
+      $placeInfo = $this->loadTerm($placeRef->getValue()['target_id'] ?? NULL);
       if ($placeInfo) {
         $place = [
           'name' => $placeInfo->getName(),

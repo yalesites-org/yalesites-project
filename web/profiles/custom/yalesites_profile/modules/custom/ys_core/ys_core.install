@@ -1073,6 +1073,37 @@ function ys_core_update_10010() {
 }
 
 /**
+ * Removes the orphaned system.schema entry of a module whose files are gone.
+ *
+ * A module dropped from composer.json without a prior `drush pm-uninstall`
+ * leaves its schema version behind in the key_value table. Config import then
+ * fails: core.extension no longer lists the module, but the site still
+ * believes it is installed. By the time an update hook runs the module's files
+ * are already gone, so ModuleInstaller::uninstall() cannot do this -- it needs
+ * the files to invoke the module's own uninstall hooks -- and the entry has to
+ * be deleted directly.
+ *
+ * Shared by the update hooks below, which each report differently, so this
+ * only reports whether it removed anything -- letting a hook stay silent when
+ * there was nothing to do.
+ *
+ * @param string $module
+ *   The machine name of the module whose schema entry should be removed.
+ *
+ * @return bool
+ *   TRUE when an entry existed and was deleted, FALSE when there was none.
+ */
+function _ys_core_purge_missing_module($module) {
+  // Delete::execute() returns the affected row count, so the delete itself
+  // answers "was there anything there" and no separate SELECT is needed.
+  return (bool) \Drupal::database()
+    ->delete('key_value')
+    ->condition('collection', 'system.schema')
+    ->condition('name', $module)
+    ->execute();
+}
+
+/**
  * Remove fpa and js_cookie schema entries left behind after module removal.
  *
  * These modules were removed from composer.json without a proper drush
@@ -1085,21 +1116,7 @@ function ys_core_update_10011() {
   $removed = [];
 
   foreach ($modules as $module) {
-    $schema_exists = \Drupal::database()
-      ->select('key_value', 'kv')
-      ->fields('kv', ['name'])
-      ->condition('collection', 'system.schema')
-      ->condition('name', $module)
-      ->execute()
-      ->fetchField();
-
-    if ($schema_exists) {
-      \Drupal::database()
-        ->delete('key_value')
-        ->condition('collection', 'system.schema')
-        ->condition('name', $module)
-        ->execute();
-
+    if (_ys_core_purge_missing_module($module)) {
       $removed[] = $module;
     }
   }
@@ -1292,23 +1309,9 @@ function ys_core_update_10014() {
 function ys_core_update_10015() {
   $module = 'ys_servicenow';
 
-  $schema_exists = \Drupal::database()
-    ->select('key_value', 'kv')
-    ->fields('kv', ['name'])
-    ->condition('collection', 'system.schema')
-    ->condition('name', $module)
-    ->execute()
-    ->fetchField();
-
-  if (!$schema_exists) {
+  if (!_ys_core_purge_missing_module($module)) {
     return t('No @module schema entry found; nothing to remove.', ['@module' => $module]);
   }
-
-  \Drupal::database()
-    ->delete('key_value')
-    ->condition('collection', 'system.schema')
-    ->condition('name', $module)
-    ->execute();
 
   return t('Removed system.schema entry for @module.', ['@module' => $module]);
 }
@@ -1343,19 +1346,7 @@ function ys_core_update_10016() {
 
   // Defensively clear the orphaned system.schema entry (10015 already does this
   // on most sites; safe to repeat).
-  $schema_exists = \Drupal::database()
-    ->select('key_value', 'kv')
-    ->fields('kv', ['name'])
-    ->condition('collection', 'system.schema')
-    ->condition('name', $module)
-    ->execute()
-    ->fetchField();
-  if ($schema_exists) {
-    \Drupal::database()
-      ->delete('key_value')
-      ->condition('collection', 'system.schema')
-      ->condition('name', $module)
-      ->execute();
+  if (_ys_core_purge_missing_module($module)) {
     $cleaned[] = 'system.schema';
   }
 
@@ -1437,19 +1428,7 @@ function ys_core_update_10018() {
   }
 
   // Defensively clear any orphaned system.schema entry too.
-  $schema_exists = \Drupal::database()
-    ->select('key_value', 'kv')
-    ->fields('kv', ['name'])
-    ->condition('collection', 'system.schema')
-    ->condition('name', $module)
-    ->execute()
-    ->fetchField();
-  if ($schema_exists) {
-    \Drupal::database()
-      ->delete('key_value')
-      ->condition('collection', 'system.schema')
-      ->condition('name', $module)
-      ->execute();
+  if (_ys_core_purge_missing_module($module)) {
     $cleaned[] = 'system.schema';
   }
 
