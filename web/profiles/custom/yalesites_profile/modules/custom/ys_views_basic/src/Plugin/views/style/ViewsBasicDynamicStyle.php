@@ -5,6 +5,8 @@ namespace Drupal\ys_views_basic\Plugin\views\style;
 use Drupal\Core\Entity\EntityDisplayRepository;
 use Drupal\Core\Plugin\ContainerFactoryPluginInterface;
 use Drupal\Core\Routing\RouteMatchInterface;
+use Drupal\Core\StringTranslation\TranslatableMarkup;
+use Drupal\views\Attribute\ViewsStyle;
 use Drupal\views\Plugin\views\style\StylePluginBase;
 use Symfony\Component\DependencyInjection\ContainerInterface;
 
@@ -14,15 +16,14 @@ use Symfony\Component\DependencyInjection\ContainerInterface;
  * Row are rendered one after another with no decorations.
  *
  * @ingroup views_style_plugins
- *
- * @ViewsStyle(
- *   id = "ys_views_basic_dynamic_style",
- *   title = @Translation("Views Basic Dynamic Style"),
- *   help = @Translation("Displays rows one after another."),
- *   theme = "views_view_unformatted",
- *   display_types = {"normal"}
- * )
  */
+#[ViewsStyle(
+  id: 'ys_views_basic_dynamic_style',
+  title: new TranslatableMarkup('Views Basic Dynamic Style'),
+  help: new TranslatableMarkup('Displays rows one after another.'),
+  theme: 'views_view_unformatted',
+  display_types: ['normal'],
+)]
 class ViewsBasicDynamicStyle extends StylePluginBase implements ContainerFactoryPluginInterface {
 
   /**

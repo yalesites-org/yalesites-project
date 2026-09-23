@@ -118,7 +118,7 @@ class WebformBlockSiteMailWarningTest extends UnitTestCase {
     $form_state = new FormState();
     $form_state->setBuildInfo(['args' => [NULL, NULL, NULL, "inline_block:$block_type"]]);
 
-    ys_core_form_alter($form, $form_state, 'layout_builder_update_block');
+    ys_core_form_layout_builder_configure_block_alter($form, $form_state, 'layout_builder_update_block');
 
     return $form['settings']['block_form']['email_warning'] ?? NULL;
   }
