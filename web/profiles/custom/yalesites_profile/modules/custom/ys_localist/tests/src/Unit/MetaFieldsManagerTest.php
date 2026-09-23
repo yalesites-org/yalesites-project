@@ -5,6 +5,8 @@ namespace Drupal\Tests\ys_localist\Unit;
 use Drupal\Core\Datetime\DateFormatter;
 use Drupal\Core\Entity\EntityStorageInterface;
 use Drupal\Core\Entity\EntityTypeManager;
+use Drupal\Core\Field\FieldItemListInterface;
+use Drupal\node\NodeInterface;
 use Drupal\Tests\UnitTestCase;
 use Drupal\taxonomy\Entity\Term;
 use Drupal\ys_localist\LocalistManager;
@@ -383,6 +385,122 @@ class MetaFieldsManagerTest extends UnitTestCase {
     $method->setAccessible(TRUE);
 
     $this->assertSame('Localist', $method->invoke($manager, '42'));
+  }
+
+  /**
+   * Builds a node mock whose fields hold the given first-item values.
+   *
+   * @param array $fields
+   *   Field name => first item (object or array value), or NULL for an empty
+   *   field. Fields not listed do not exist on the node.
+   */
+  protected function nodeWithFields(array $fields): NodeInterface {
+    $node = $this->createMock(NodeInterface::class);
+    $node->method('hasField')->willReturnCallback(fn($name) => array_key_exists($name, $fields));
+    $node->method('get')->willReturnCallback(function ($name) use ($fields) {
+      $item = $fields[$name] ?? NULL;
+      $list = $this->createMock(FieldItemListInterface::class);
+      $list->method('isEmpty')->willReturn($item === NULL);
+      if (is_array($item)) {
+        $item = new class($item) {
+
+          /**
+           * Mimics a field item exposing getValue().
+           */
+          public function __construct(private array $value) {}
+
+          /**
+           * Returns the stored value.
+           */
+          public function getValue(): array {
+            return $this->value;
+          }
+
+        };
+      }
+      $list->method('first')->willReturn($item);
+      return $list;
+    });
+    return $node;
+  }
+
+  /**
+   * Invokes a protected method on the manager under test.
+   */
+  protected function invokeProtected(string $method, ...$args) {
+    $reflection = new \ReflectionMethod($this->metaFieldsManager, $method);
+    $reflection->setAccessible(TRUE);
+    return $reflection->invoke($this->metaFieldsManager, ...$args);
+  }
+
+  /**
+   * Only a populated field_localist_id marks an event as Localist-synced.
+   *
+   * @covers ::isLocalistEvent
+   */
+  public function testIsLocalistEvent(): void {
+    $this->assertTrue($this->invokeProtected('isLocalistEvent', $this->nodeWithFields(['field_localist_id' => ['value' => '123']])));
+    $this->assertFalse($this->invokeProtected('isLocalistEvent', $this->nodeWithFields(['field_localist_id' => NULL])));
+    $this->assertFalse($this->invokeProtected('isLocalistEvent', $this->nodeWithFields([])), 'A site without the field has no Localist events.');
+  }
+
+  /**
+   * A populated native address maps onto the keys the template reads.
+   *
+   * @covers ::getEventAddress
+   */
+  public function testEventAddressPresent(): void {
+    $address = (object) [
+      'address_line1' => 'Grand-Place 1',
+      'locality' => 'Brussels',
+      'administrative_area' => '',
+      'postal_code' => '1000',
+      'country_code' => 'BE',
+    ];
+    $this->assertSame([
+      'address' => 'Grand-Place 1',
+      'city' => 'Brussels',
+      'state' => '',
+      'postal_code' => '1000',
+      'country_code' => 'BE',
+    ], $this->invokeProtected('getEventAddress', $this->nodeWithFields(['field_event_address' => $address])));
+  }
+
+  /**
+   * An empty or missing native address yields no address at all.
+   *
+   * @covers ::getEventAddress
+   */
+  public function testEventAddressAbsent(): void {
+    $this->assertSame([], $this->invokeProtected('getEventAddress', $this->nodeWithFields(['field_event_address' => NULL])));
+    $this->assertSame([], $this->invokeProtected('getEventAddress', $this->nodeWithFields([])));
+  }
+
+  /**
+   * Additional information renders through its stored text format.
+   *
+   * @covers ::getAddressAdditionalInfo
+   */
+  public function testAddressAdditionalInfoPresent(): void {
+    $info = ['value' => '<p>Room 101</p>', 'format' => 'basic_html'];
+    $node = $this->nodeWithFields(['field_address_additional_info' => $info]);
+    $this->assertSame([
+      '#type' => 'processed_text',
+      '#text' => '<p>Room 101</p>',
+      '#format' => 'basic_html',
+    ], $this->invokeProtected('getAddressAdditionalInfo', $node));
+  }
+
+  /**
+   * Empty, blank or missing additional information yields NULL.
+   *
+   * @covers ::getAddressAdditionalInfo
+   */
+  public function testAddressAdditionalInfoAbsent(): void {
+    $this->assertNull($this->invokeProtected('getAddressAdditionalInfo', $this->nodeWithFields(['field_address_additional_info' => NULL])));
+    $blank = ['value' => '', 'format' => 'basic_html'];
+    $this->assertNull($this->invokeProtected('getAddressAdditionalInfo', $this->nodeWithFields(['field_address_additional_info' => $blank])));
+    $this->assertNull($this->invokeProtected('getAddressAdditionalInfo', $this->nodeWithFields([])));
   }
 
 }

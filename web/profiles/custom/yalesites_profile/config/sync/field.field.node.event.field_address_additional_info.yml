@@ -13,9 +13,9 @@ field_name: field_address_additional_info
 entity_type: node
 bundle: event
 label: 'Additional Address Information'
-description: 'Free-form location details (address, building, virtual link, hybrid instructions, etc.) for native (non-Localist) events.'
+description: 'Free-form location details (address, building, virtual link, hybrid instructions, etc.). Displays on Localist and non-Localist events alike.'
 required: false
-translatable: null
+translatable: true
 default_value: {  }
 default_value_callback: ''
 settings:

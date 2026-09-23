@@ -14,12 +14,12 @@ bundle: event
 label: Address
 description: ''
 required: false
-translatable: null
+translatable: true
 default_value: {  }
 default_value_callback: ''
 settings:
   available_countries: {  }
-  langcode_override: null
+  langcode_override: ''
   field_overrides:
     givenName:
       override: hidden

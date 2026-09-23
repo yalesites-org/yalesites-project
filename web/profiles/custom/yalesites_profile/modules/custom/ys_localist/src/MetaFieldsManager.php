@@ -237,6 +237,57 @@ class MetaFieldsManager implements ContainerFactoryPluginInterface {
   }
 
   /**
+   * Whether the event was synced from Localist.
+   *
+   * Only the localist_events migration fills in field_localist_id, so a
+   * populated value is what separates a synced event from a hand-authored one.
+   */
+  protected function isLocalistEvent(NodeInterface $node): bool {
+    return $node->hasField('field_localist_id') && !$node->get('field_localist_id')->isEmpty();
+  }
+
+  /**
+   * Gets the native (non-Localist) event address for the template.
+   *
+   * @return array
+   *   Address parts keyed as the template reads them, or empty when unset.
+   */
+  protected function getEventAddress(NodeInterface $node): array {
+    if (!$node->hasField('field_event_address') || $node->get('field_event_address')->isEmpty()) {
+      return [];
+    }
+    $address = $node->get('field_event_address')->first();
+    return [
+      'address' => $address->address_line1 ?? NULL,
+      'city' => $address->locality ?? NULL,
+      'state' => $address->administrative_area ?? NULL,
+      'postal_code' => $address->postal_code ?? NULL,
+      'country_code' => $address->country_code ?? NULL,
+    ];
+  }
+
+  /**
+   * Gets the free-form Additional Address Information as a render array.
+   *
+   * Rendered as processed_text so the format's filter cacheability and
+   * attachments bubble.
+   */
+  protected function getAddressAdditionalInfo(NodeInterface $node): ?array {
+    if (!$node->hasField('field_address_additional_info') || $node->get('field_address_additional_info')->isEmpty()) {
+      return NULL;
+    }
+    $value = $node->get('field_address_additional_info')->first()->getValue();
+    if (empty($value['value'])) {
+      return NULL;
+    }
+    return [
+      '#type' => 'processed_text',
+      '#text' => $value['value'],
+      '#format' => $value['format'] ?? 'basic_html',
+    ];
+  }
+
+  /**
    * Gets event all fields.
    */
   public function getEventData($node) {
@@ -342,32 +393,6 @@ class MetaFieldsManager implements ContainerFactoryPluginInterface {
       }
     }
 
-    // Native (non-Localist) event address.
-    $eventAddress = [];
-    if ($node->hasField('field_event_address') && !$node->get('field_event_address')->isEmpty()) {
-      $addressValue = $node->get('field_event_address')->first();
-      $eventAddress = [
-        'address' => $addressValue->address_line1 ?? NULL,
-        'city' => $addressValue->locality ?? NULL,
-        'state' => $addressValue->administrative_area ?? NULL,
-        'postal_code' => $addressValue->postal_code ?? NULL,
-        'country_code' => $addressValue->country_code ?? NULL,
-      ];
-    }
-
-    // Free-form address details for native (non-Localist) events.
-    $addressAdditionalInfo = NULL;
-    if ($node->hasField('field_address_additional_info') && !$node->get('field_address_additional_info')->isEmpty()) {
-      $field_value = $node->get('field_address_additional_info')->first()->getValue();
-      if (!empty($field_value['value'])) {
-        $addressAdditionalInfo = [
-          '#type' => 'processed_text',
-          '#text' => $field_value['value'],
-          '#format' => $field_value['format'] ?? 'basic_html',
-        ];
-      }
-    }
-
     /*
      * ICS URL.
      *
@@ -411,10 +436,10 @@ class MetaFieldsManager implements ContainerFactoryPluginInterface {
       'localist_image_url' => $localistImageUrl,
       'localist_image_alt' => $localistImageAlt,
       'teaser_media' => $teaserMediaRender,
-      'is_localist_event' => !empty($localistId),
+      'is_localist_event' => $this->isLocalistEvent($node),
       'place_info' => $place,
-      'event_address' => $eventAddress,
-      'address_additional_info' => $addressAdditionalInfo,
+      'event_address' => $this->getEventAddress($node),
+      'address_additional_info' => $this->getAddressAdditionalInfo($node),
       'event_types' => $eventTypes,
       'event_audience' => $eventAudience,
       'event_topics' => $eventTopics,
