@@ -81,7 +81,7 @@ function ys_themes_default_value_function(ContentEntityInterface $entity, FieldD
  * Implements hook_page_attachments_alter().
  */
 function ys_themes_page_attachments_alter(array &$page) {
-  // Add CSS custom variables to the page to pass global overrides to the theme.
+  // Add inline CSS overrides to the page head.
   $page['#attached']['html_head'][] = [
     [
       '#tag' => 'style',
@@ -92,40 +92,14 @@ function ys_themes_page_attachments_alter(array &$page) {
 }
 
 /**
- * Build a string of CSS variables to override theme settings.
- *
- * @todo Refactor the backend management once frontend conventions are set.
- * We will look for ways to introduce error handling and unit testing.
+ * Build the inline CSS added to every page head.
  *
  * @return string
  *   CSS code.
  */
 function ys_themes_build_css_variables() : string {
-  $settings = \Drupal::service('ys_themes.theme_settings_manager');
-  $css = [];
-  $css[] = ':root {';
-
-  $actionColor = $settings->getSetting('action_color');
-  $css[] = "--color-theme-action: var(--color-{$actionColor});";
-
-  $accentColor = $settings->getSetting('accent_color');
-  $css[] = "--color-theme-accent: var(--color-{$accentColor});";
-
-  $pullQuoteColor = $settings->getSetting('pull_quote_color');
-  $css[] = "--color-theme-pull-quote-accent: var(--color-{$pullQuoteColor});";
-
-  $lineColor = $settings->getSetting('line_color');
-  $css[] = "--color-theme-divider: var(--color-{$lineColor});";
-
-  $lineThickness = $settings->getSetting('line_thickness');
-  $css[] = "--thickness-theme-divider: var(--thickness-divider-{$lineThickness});";
-
-  $css[] = '}';
-
   // Override environment indicator bold font weight.
-  $css[] = '#environment-indicator { font-weight: normal !important; }';
-
-  return implode(PHP_EOL, $css);
+  return '#environment-indicator { font-weight: normal !important; }';
 }
 
 /**
