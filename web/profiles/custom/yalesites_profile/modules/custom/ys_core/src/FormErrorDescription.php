@@ -4,6 +4,8 @@ namespace Drupal\ys_core;
 
 use Drupal\Component\Render\MarkupInterface;
 use Drupal\Component\Utility\Html;
+use Drupal\Core\Render\Element;
+use Drupal\Core\Security\TrustedCallbackInterface;
 
 /**
  * Ties an inline form error to its field for screen reader users.
@@ -15,10 +17,13 @@ use Drupal\Component\Utility\Html;
  * to the field's aria-describedby, and attaches the behavior that moves focus
  * to the first invalid field (yalesites-org/YaleSites-Internal#1670).
  *
- * Covers every control wrapped in a form_element (text, email, number,
- * textarea, select, single checkbox, file). Grouped controls (radios,
- * checkboxes, datetime) render their error on the fieldset instead; they keep
- * aria-invalid and the inline message but get no aria-describedby link.
+ * Controls wrapped in a form_element (text, email, number, textarea, select,
+ * single checkbox, file) link from the control itself. A rich text field is
+ * its textarea; form-error-focus.js copies the link onto the CKEditor 5
+ * editing area. Grouped controls render their error on the group instead:
+ * radios, checkbox lists, and media pickers link from the fieldset, which
+ * screen readers announce on entering the group (the GOV.UK error pattern),
+ * and a datetime links from each date part, since its wrapper is a plain div.
  *
  * Remove this if core's Inline Form Errors starts wiring aria-describedby
  * itself.
@@ -26,8 +31,27 @@ use Drupal\Component\Utility\Html;
  * @see ys_core_form_alter()
  * @see ys_core_preprocess_form_element()
  * @see ys_core_preprocess_input()
+ * @see ys_core_preprocess_fieldset()
+ * @see ys_core_element_info_alter()
  */
-final class FormErrorDescription {
+final class FormErrorDescription implements TrustedCallbackInterface {
+
+  /**
+   * Templates that print an element's inline error, bar formdazzle suffixes.
+   */
+  private const ERROR_TEMPLATES = [
+    'form_element',
+    'fieldset',
+    'datetime_wrapper',
+    'media_library_element',
+  ];
+
+  /**
+   * {@inheritdoc}
+   */
+  public static function trustedCallbacks() {
+    return ['preRenderDatetime'];
+  }
 
   /**
    * Keeps Inline Form Errors to admin forms.
@@ -59,11 +83,14 @@ final class FormErrorDescription {
     if (empty($element['#errors']) || !empty($element['#error_no_message']) || empty($element['#id'])) {
       return NULL;
     }
+    $hooks = (array) ($element['#theme'] ?? []);
+    foreach ($element['#theme_wrappers'] ?? [] as $key => $wrapper) {
+      $hooks[] = is_string($key) ? $key : $wrapper;
+    }
     // Match suggestions too: formdazzle rewrites the wrapper to
     // form_element__FORM_ID__FIELD before it renders.
-    foreach ($element['#theme_wrappers'] ?? [] as $key => $wrapper) {
-      $hook = is_string($key) ? $key : $wrapper;
-      if ($hook === 'form_element' || str_starts_with($hook, 'form_element__')) {
+    foreach ($hooks as $hook) {
+      if (in_array(explode('__', $hook)[0], self::ERROR_TEMPLATES, TRUE)) {
         return $element['#id'] . '--error-message';
       }
     }
@@ -73,8 +100,11 @@ final class FormErrorDescription {
   /**
    * Gives the inline error rendered by Inline Form Errors its id.
    *
+   * Every inline error renders through here, so this is also where the focus
+   * behavior is attached.
+   *
    * @param array $variables
-   *   The form_element template variables.
+   *   The form_element, fieldset, or datetime_wrapper template variables.
    */
   public static function preprocessFormElement(array &$variables): void {
     $id = self::id($variables['element']);
@@ -106,8 +136,77 @@ final class FormErrorDescription {
       return;
     }
     $attributes = &$variables['attributes'];
-    $current = isset($attributes['aria-describedby']) ? $attributes['aria-describedby'] . ' ' : '';
-    $attributes['aria-describedby'] = $current . $id;
+    $attributes['aria-describedby'] = self::describedBy($attributes['aria-describedby'] ?? NULL, $id);
+  }
+
+  /**
+   * Ids a group's inline error and points the group's aria-describedby at it.
+   *
+   * @param array $variables
+   *   The fieldset or media_library_element template variables.
+   */
+  public static function preprocessGroup(array &$variables): void {
+    self::preprocessFormElement($variables);
+    if (isset($variables['errors']['#attributes']['id'])) {
+      self::preprocessControl($variables);
+    }
+  }
+
+  /**
+   * Renders the media picker's inline error, which Inline Form Errors skips.
+   *
+   * The media_library_element template prints errors, but its preprocess
+   * blanks them and Inline Form Errors has no hook for this theme hook.
+   * Nothing marks the element #error_no_message while that module is off, so
+   * check it is on rather than render an error it would not.
+   *
+   * @param array $variables
+   *   The media_library_element template variables.
+   */
+  public static function preprocessMediaLibraryElement(array &$variables): void {
+    if (self::id($variables['element']) && \Drupal::moduleHandler()->moduleExists('inline_form_errors')) {
+      $variables['errors'] = $variables['element']['#errors'];
+      self::preprocessGroup($variables);
+    }
+  }
+
+  /**
+   * Points each date part of an invalid datetime at the datetime's error.
+   *
+   * @param array $element
+   *   The datetime or datelist element.
+   *
+   * @return array
+   *   The element, its date parts described by its error.
+   */
+  public static function preRenderDatetime(array $element): array {
+    $id = self::id($element);
+    if ($id) {
+      foreach (Element::children($element) as $key) {
+        // A datelist part keeps its own message, and so its own link.
+        if (self::id($element[$key])) {
+          continue;
+        }
+        $element[$key]['#attributes']['aria-describedby'] = self::describedBy($element[$key]['#attributes']['aria-describedby'] ?? NULL, $id);
+      }
+    }
+    return $element;
+  }
+
+  /**
+   * Adds the error id to an aria-describedby value, once.
+   *
+   * @param mixed $current
+   *   The current value: NULL, a string, or an AttributeString.
+   * @param string $id
+   *   The error message id.
+   *
+   * @return string
+   *   The value with the error id last.
+   */
+  private static function describedBy(mixed $current, string $id): string {
+    $ids = array_filter(explode(' ', (string) $current));
+    return implode(' ', array_unique([...$ids, $id]));
   }
 
 }

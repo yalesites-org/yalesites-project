@@ -100,6 +100,11 @@ function ys_core_element_info_alter(array &$info) {
   if (isset($info['linkit'])) {
     $info['linkit']['#process'][] = 'ys_core_linkit_uri_selector';
   }
+  foreach (['datetime', 'datelist'] as $type) {
+    if (isset($info[$type])) {
+      $info[$type]['#pre_render'][] = [FormErrorDescription::class, 'preRenderDatetime'];
+    }
+  }
 }
 
 /**
@@ -1704,6 +1709,27 @@ function ys_core_form_menu_edit_form_alter(array &$form, FormStateInterface $for
  */
 function ys_core_preprocess_form_element(&$variables) {
   FormErrorDescription::preprocessFormElement($variables);
+}
+
+/**
+ * Implements hook_preprocess_HOOK() for datetime_wrapper.
+ */
+function ys_core_preprocess_datetime_wrapper(&$variables) {
+  FormErrorDescription::preprocessFormElement($variables);
+}
+
+/**
+ * Implements hook_preprocess_HOOK() for fieldset.
+ */
+function ys_core_preprocess_fieldset(&$variables) {
+  FormErrorDescription::preprocessGroup($variables);
+}
+
+/**
+ * Implements hook_preprocess_HOOK() for media_library_element.
+ */
+function ys_core_preprocess_media_library_element(&$variables) {
+  FormErrorDescription::preprocessMediaLibraryElement($variables);
 }
 
 /**
