@@ -293,7 +293,7 @@ class ContentExportBuilder {
    * value with a single quote forces it to be read as text.
    *
    * Deliberately kept identical to
-   * \Drupal\ys_ai_tester\Controller\AiTesterController::csvCell(). Sharing one
+   * \Drupal\ys_ai_tester\RunExporter::csvCell(). Sharing one
    * helper would mean ys_content_export (which depends only on node) taking a
    * dependency on a heavier module to reuse six lines; see
    * yalesites-org/YaleSites-Internal#1759.
