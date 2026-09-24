@@ -11,7 +11,7 @@ use Symfony\Component\Yaml\Yaml;
  * The module's config/install copy of ys_themes.component_overrides drifted
  * from config/sync for long enough that reading it gave the wrong answer to
  * "what options does this dial offer" (#1667). config/sync is the source of
- * truth; config/install must stay a byte-for-byte copy of it.
+ * truth; each file in config/install must stay a byte-for-byte copy of it.
  *
  * @group ys_themes
  * @group yalesites
@@ -34,14 +34,26 @@ class ComponentOverridesConfigTest extends UnitTestCase {
 
   /**
    * The install copy is identical to the deployed copy.
+   *
+   * @dataProvider installedConfigFiles
    */
-  public function testInstallCopyMatchesConfigSync(): void {
+  public function testInstallCopyMatchesConfigSync(string $file): void {
     $this->assertFileEquals(
-      $this->configSyncDir() . '/ys_themes.component_overrides.yml',
-      $this->configInstallDir() . '/ys_themes.component_overrides.yml',
-      'config/install/ys_themes.component_overrides.yml has drifted from '
-      . 'config/sync. Copy the config/sync file over it.'
+      $this->configSyncDir() . "/$file",
+      $this->configInstallDir() . "/$file",
+      "config/install/$file has drifted from config/sync. Copy the "
+      . 'config/sync file over it.'
     );
+  }
+
+  /**
+   * Every config file this module ships in config/install.
+   */
+  public static function installedConfigFiles(): array {
+    return [
+      ['ys_themes.component_overrides.yml'],
+      ['ys_themes.theme_settings.yml'],
+    ];
   }
 
   /**
