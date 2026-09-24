@@ -2,30 +2,46 @@
 
 namespace Drupal\ys_layouts\Plugin\Block;
 
+use Drupal\Core\Block\Attribute\Block;
 use Drupal\Core\Block\BlockBase;
 use Drupal\Core\Plugin\ContainerFactoryPluginInterface;
-use Drupal\Core\Routing\RouteMatchInterface;
+use Drupal\Core\Plugin\Context\ContextDefinition;
+use Drupal\Core\StringTranslation\TranslatableMarkup;
 use Drupal\node\NodeInterface;
+use Drupal\ys_core\Plugin\Block\LayoutBuilderEntityContextTrait;
 use Drupal\ys_localist\MetaFieldsManager;
 use Symfony\Component\DependencyInjection\ContainerInterface;
+use Symfony\Component\HttpFoundation\RequestStack;
 
 /**
  * Block for event meta data that appears above events.
  *
- * @Block(
- *   id = "event_meta_block",
- *   admin_label = @Translation("Event Meta Block"),
- *   category = @Translation("YaleSites Layouts"),
- * )
+ * The "layout_builder.entity" context slot and its name are explained on
+ * \Drupal\ys_core\Plugin\Block\LayoutBuilderEntityContextTrait. An
+ * attribute cannot be inherited from a trait, so the slot is declared here.
  */
+#[Block(
+  id: 'event_meta_block',
+  admin_label: new TranslatableMarkup('Event Meta Block'),
+  category: new TranslatableMarkup('YaleSites Layouts'),
+  context_definitions: [
+    'layout_builder.entity' => new ContextDefinition(
+      data_type: 'entity',
+      label: new TranslatableMarkup('Entity being viewed'),
+      required: FALSE,
+    ),
+  ],
+)]
 class EventMetaBlock extends BlockBase implements ContainerFactoryPluginInterface {
 
+  use LayoutBuilderEntityContextTrait;
+
   /**
-   * The current route match.
+   * The request stack.
    *
-   * @var \Drupal\Core\Routing\RouteMatchInterface
+   * @var \Symfony\Component\HttpFoundation\RequestStack
    */
-  protected $routeMatch;
+  protected $requestStack;
 
   /**
    * The meta fields manager service.
@@ -43,8 +59,8 @@ class EventMetaBlock extends BlockBase implements ContainerFactoryPluginInterfac
    *   The plugin_id for the plugin instance.
    * @param mixed $plugin_definition
    *   The plugin implementation definition.
-   * @param \Drupal\Core\Routing\RouteMatchInterface $route_match
-   *   The current route match.
+   * @param \Symfony\Component\HttpFoundation\RequestStack $request_stack
+   *   The request stack.
    * @param \Drupal\ys_localist\MetaFieldsManager $meta_fields_manager
    *   The meta fields manager service.
    */
@@ -52,12 +68,12 @@ class EventMetaBlock extends BlockBase implements ContainerFactoryPluginInterfac
     array $configuration,
     $plugin_id,
     $plugin_definition,
-    RouteMatchInterface $route_match,
+    RequestStack $request_stack,
     MetaFieldsManager $meta_fields_manager,
   ) {
     parent::__construct($configuration, $plugin_id, $plugin_definition);
 
-    $this->routeMatch = $route_match;
+    $this->requestStack = $request_stack;
     $this->metaFieldsManager = $meta_fields_manager;
   }
 
@@ -69,7 +85,7 @@ class EventMetaBlock extends BlockBase implements ContainerFactoryPluginInterfac
       $configuration,
       $plugin_id,
       $plugin_definition,
-      $container->get('current_route_match'),
+      $container->get('request_stack'),
       $container->get('ys_localist.meta_fields_manager'),
     );
   }
@@ -79,9 +95,8 @@ class EventMetaBlock extends BlockBase implements ContainerFactoryPluginInterfac
    */
   public function build() {
 
-    /** @var \Drupal\node\NodeInterface $node */
-    $node = $this->routeMatch->getParameter('node');
-    if (!($node instanceof NodeInterface) || $node->bundle() !== 'event') {
+    $node = $this->getCurrentNode();
+    if (!$node || $node->bundle() !== 'event') {
       return [];
     }
 
@@ -117,6 +132,32 @@ class EventMetaBlock extends BlockBase implements ContainerFactoryPluginInterfac
       '#event_featured_date' => $eventFieldData['event_featured_date'],
       '#event_featured_index' => $eventFieldData['event_featured_index'],
     ];
+  }
+
+  /**
+   * Gets the node being rendered.
+   *
+   * The entity Layout Builder hands over is preferred over anything the
+   * request names; the request lookup is kept as a fallback tier for the
+   * contexts Layout Builder offers nothing in.
+   *
+   * @return \Drupal\node\NodeInterface|null
+   *   The node being rendered, or NULL when neither source resolves one.
+   */
+  protected function getCurrentNode(): ?NodeInterface {
+    $node = $this->getRenderedEntitySavedNode();
+    if ($node) {
+      return $node;
+    }
+
+    $request = $this->requestStack->getCurrentRequest();
+    if (!$request) {
+      return NULL;
+    }
+
+    $node = $request->attributes->get('node');
+
+    return $node instanceof NodeInterface ? $node : NULL;
   }
 
 }

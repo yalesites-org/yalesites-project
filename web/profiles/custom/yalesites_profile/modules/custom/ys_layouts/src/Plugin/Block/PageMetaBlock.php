@@ -2,24 +2,41 @@
 
 namespace Drupal\ys_layouts\Plugin\Block;
 
+use Drupal\Core\Block\Attribute\Block;
 use Drupal\Core\Block\BlockBase;
 use Drupal\Core\Controller\TitleResolver;
 use Drupal\Core\Form\FormStateInterface;
 use Drupal\Core\Plugin\ContainerFactoryPluginInterface;
+use Drupal\Core\Plugin\Context\ContextDefinition;
 use Drupal\Core\Routing\RouteMatchInterface;
+use Drupal\Core\StringTranslation\TranslatableMarkup;
+use Drupal\node\NodeInterface;
+use Drupal\ys_core\Plugin\Block\LayoutBuilderEntityContextTrait;
 use Symfony\Component\DependencyInjection\ContainerInterface;
 use Symfony\Component\HttpFoundation\RequestStack;
 
 /**
  * Block for page meta data that appears above pages.
  *
- * @Block(
- *   id = "page_meta_block",
- *   admin_label = @Translation("Page Meta Block"),
- *   category = @Translation("YaleSites Layouts"),
- * )
+ * The "layout_builder.entity" context slot and its name are explained on
+ * \Drupal\ys_core\Plugin\Block\LayoutBuilderEntityContextTrait. An
+ * attribute cannot be inherited from a trait, so the slot is declared here.
  */
+#[Block(
+  id: 'page_meta_block',
+  admin_label: new TranslatableMarkup('Page Meta Block'),
+  category: new TranslatableMarkup('YaleSites Layouts'),
+  context_definitions: [
+    'layout_builder.entity' => new ContextDefinition(
+      data_type: 'entity',
+      label: new TranslatableMarkup('Entity being viewed'),
+      required: FALSE,
+    ),
+  ],
+)]
 class PageMetaBlock extends BlockBase implements ContainerFactoryPluginInterface {
+
+  use LayoutBuilderEntityContextTrait;
 
   /**
    * The current route match.
@@ -84,20 +101,70 @@ class PageMetaBlock extends BlockBase implements ContainerFactoryPluginInterface
    */
   public function build() {
 
-    $route = $this->routeMatch->getRouteObject();
-    $request = $this->requestStack->getCurrentRequest();
-    $page_title = '';
-
-    // Get the page title.
-    if ($route) {
-      $page_title = $this->titleResolver->getTitle($request, $route);
-    }
+    $page_title = $this->getPageTitle();
 
     return [
       '#theme' => 'ys_page_meta_block',
       '#page_title' => $page_title,
       '#page_title_display' => $this->configuration['page_title_display'] ?? '',
     ];
+  }
+
+  /**
+   * Gets the title to display for the page being rendered.
+   *
+   * The entity being rendered is preferred over anything the route names,
+   * because a node is rendered on routes other than its canonical one -- and
+   * sometimes on a route that names a different node, or no node at all.
+   * Search API renders the node in the request that saves it, so whatever this
+   * returns is indexed as part of the page's content. That made the route the
+   * wrong source in four ways: on /node/{node}/layout the route title is "Edit
+   * layout for <label>", on a revision route "Revision of <label> from
+   * <date>", on /node/add/{type} (the first save of every new page) "Create
+   * <type>", and on a bulk operation from /admin/content "Content". Rendering
+   * one page while the request sits on another page's layout route indexed the
+   * other page's title.
+   *
+   * Layout Builder hands the rendered entity to the block as a context, which
+   * is true regardless of the route, so it is the first choice. It covers node
+   * preview too: preview renders through a Layout Builder display, so the
+   * context is supplied even though the route names the node as node_preview
+   * rather than node.
+   *
+   * The route-parameter and route-title tiers below it are kept but are not
+   * expected to be reached, because these blocks are placed only in entity
+   * view displays and Layout Builder always supplies the context there. They
+   * are insurance against rendering no heading at all -- a missing <h1> is a
+   * WCAG 2.1 AA problem, so degrading to the old behaviour beats degrading to
+   * nothing -- and they cover the window between a code deploy and the cache
+   * rebuild that follows it, when the cached plugin definition can still
+   * predate this context slot.
+   *
+   * @return array|string|\Stringable|null
+   *   The page title, or an empty string when no source resolves one.
+   */
+  protected function getPageTitle() {
+    $entity = $this->getRenderedEntityNode();
+    if ($entity) {
+      return $entity->label();
+    }
+
+    foreach (['node_revision', 'node'] as $parameter) {
+      $node = $this->routeMatch->getParameter($parameter);
+      if ($node instanceof NodeInterface) {
+        return $node->label();
+      }
+    }
+
+    // Fall back to the route title where there is no node in context, so the
+    // block keeps working on non-node pages.
+    $route = $this->routeMatch->getRouteObject();
+    $request = $this->requestStack->getCurrentRequest();
+    if ($route && $request) {
+      return $this->titleResolver->getTitle($request, $route);
+    }
+
+    return '';
   }
 
   /**

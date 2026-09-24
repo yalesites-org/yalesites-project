@@ -79,6 +79,26 @@ class SiteBrandingPlatformAdminSettingTest extends UnitTestCase {
   }
 
   /**
+   * The site name image restricts uploads via the FileExtension constraint.
+   *
+   * The legacy 'file_validate_extensions' array form is deprecated in Drupal
+   * 10.2 and removed in Drupal 11, so asserting the constraint plugin key here
+   * is what stops the SVG restriction silently disappearing on the major
+   * upgrade (yalesites-org/YaleSites-Internal#1610).
+   *
+   * @covers ::buildSettings
+   */
+  public function testSiteNameImageUsesTheFileExtensionConstraint(): void {
+    $written = [];
+    $form = $this->plugin([], $written)->buildSettings([], new FormState());
+
+    $this->assertSame(
+      ['FileExtension' => ['extensions' => 'svg']],
+      $form['site_name_image']['#upload_validators']
+    );
+  }
+
+  /**
    * Defaults come from the unchanged ys_core.header_settings keys.
    *
    * @covers ::buildSettings

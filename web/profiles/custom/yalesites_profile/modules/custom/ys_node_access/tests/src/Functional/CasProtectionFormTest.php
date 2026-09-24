@@ -2,9 +2,10 @@
 
 namespace Drupal\Tests\ys_node_access\Functional;
 
+use Drupal\Tests\ys_core\Kernel\YsKernelTestBase;
+use Drupal\Tests\ys_node_access\Traits\CasProtectedNodeTypeTrait;
 use Drupal\field\Entity\FieldConfig;
 use Drupal\field\Entity\FieldStorageConfig;
-use Drupal\KernelTests\KernelTestBase;
 use Drupal\node\Entity\Node;
 use Drupal\node\Entity\NodeType;
 
@@ -13,7 +14,9 @@ use Drupal\node\Entity\NodeType;
  *
  * @group yalesites
  */
-class CasProtectionFormTest extends KernelTestBase {
+class CasProtectionFormTest extends YsKernelTestBase {
+
+  use CasProtectedNodeTypeTrait;
 
   /**
    * Modules to enable.
@@ -41,26 +44,7 @@ class CasProtectionFormTest extends KernelTestBase {
     $this->installSchema('node', ['node_access']);
     $this->installConfig(['node']);
 
-    // Create a content type.
-    NodeType::create([
-      'type' => 'page',
-      'name' => 'Page',
-    ])->save();
-
-    // Create field storage and field instance for CAS protection.
-    $field_storage = FieldStorageConfig::create([
-      'field_name' => 'field_login_required',
-      'entity_type' => 'node',
-      'type' => 'boolean',
-    ]);
-    $field_storage->save();
-
-    $field = FieldConfig::create([
-      'field_storage' => $field_storage,
-      'bundle' => 'page',
-      'label' => 'CAS Login Required',
-    ]);
-    $field->save();
+    $this->createCasProtectedNodeType('page', 'Page');
   }
 
   /**

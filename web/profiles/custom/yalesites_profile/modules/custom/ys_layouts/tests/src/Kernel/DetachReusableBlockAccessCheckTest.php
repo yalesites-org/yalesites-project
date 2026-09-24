@@ -2,7 +2,7 @@
 
 namespace Drupal\Tests\ys_layouts\Kernel;
 
-use Drupal\KernelTests\KernelTestBase;
+use Drupal\Tests\ys_core\Kernel\YsKernelTestBase;
 use Drupal\layout_builder\LayoutTempstoreRepositoryInterface;
 use Drupal\layout_builder\Section;
 use Drupal\layout_builder\SectionComponent;
@@ -26,7 +26,7 @@ use Psr\Log\LoggerInterface;
  * @group ys_layouts
  * @coversDefaultClass \Drupal\ys_layouts\Access\DetachReusableBlockAccessCheck
  */
-class DetachReusableBlockAccessCheckTest extends KernelTestBase {
+class DetachReusableBlockAccessCheckTest extends YsKernelTestBase {
 
   /**
    * {@inheritdoc}

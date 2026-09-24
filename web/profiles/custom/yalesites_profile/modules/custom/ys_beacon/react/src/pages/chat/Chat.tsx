@@ -22,8 +22,8 @@ import {
     ChatResponse,
     Conversation
 } from "../../api";
-import { Answer } from "../../components/Answer";
-import { QuestionInput } from "../../components/QuestionInput";
+import { Answer } from "../../components/Answer/Answer";
+import { QuestionInput } from "../../components/QuestionInput/QuestionInput";
 import { AppStateContext } from "../../state/AppProvider";
 import { XSSAllowTags, XSSAllowAttr } from "../../constants/xssAllowTags";
 import { allowLinkOutsideHeading, demotedHeadingComponents } from "../../constants/markdownComponents";
@@ -420,7 +420,7 @@ const Chat = () => {
                             conversationId={appStateContext?.state.currentChat?.id}
                         />
                     </Stack>
-                    <div style={{display: 'flex', flexFlow: 'row nowrap', gap: '1rem', justifyContent: 'flex-start', alignItems: 'center', width: '100%'}}>
+                    <div className={styles.chatActions}>
                         <button
                             type="button"
                             className={styles.newChatButton}

@@ -3,11 +3,9 @@
 namespace Drupal\Tests\ys_node_access\Kernel;
 
 use Drupal\Core\Session\AnonymousUserSession;
-use Drupal\field\Entity\FieldConfig;
-use Drupal\field\Entity\FieldStorageConfig;
-use Drupal\KernelTests\KernelTestBase;
+use Drupal\Tests\ys_core\Kernel\YsKernelTestBase;
+use Drupal\Tests\ys_node_access\Traits\CasProtectedNodeTypeTrait;
 use Drupal\node\Entity\Node;
-use Drupal\node\Entity\NodeType;
 use Drupal\ys_node_access\EventSubscriber\NodeAccessEventSubscriber;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpKernel\Event\ExceptionEvent;
@@ -28,7 +26,9 @@ use Symfony\Component\HttpKernel\HttpKernelInterface;
  * @group yalesites
  * @group ys_node_access
  */
-class NodeAccessEventSubscriberMissingCasDependencyTest extends KernelTestBase {
+class NodeAccessEventSubscriberMissingCasDependencyTest extends YsKernelTestBase {
+
+  use CasProtectedNodeTypeTrait;
 
   /**
    * {@inheritdoc}
@@ -57,18 +57,7 @@ class NodeAccessEventSubscriberMissingCasDependencyTest extends KernelTestBase {
     // writes to the node_access table.
     $this->installSchema('node', ['node_access']);
 
-    NodeType::create(['type' => 'protected_type', 'name' => 'Protected type'])->save();
-    $field_storage = FieldStorageConfig::create([
-      'field_name' => 'field_login_required',
-      'entity_type' => 'node',
-      'type' => 'boolean',
-    ]);
-    $field_storage->save();
-    FieldConfig::create([
-      'field_storage' => $field_storage,
-      'bundle' => 'protected_type',
-      'label' => 'CAS Login Required',
-    ])->save();
+    $this->createCasProtectedNodeType();
 
     $node = Node::create([
       'type' => 'protected_type',

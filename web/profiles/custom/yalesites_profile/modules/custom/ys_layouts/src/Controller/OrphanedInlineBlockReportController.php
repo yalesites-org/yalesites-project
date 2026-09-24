@@ -7,7 +7,7 @@ use Drupal\Core\Entity\EntityTypeManagerInterface;
 use Drupal\Core\Pager\PagerManagerInterface;
 use Drupal\Core\StringTranslation\StringTranslationTrait;
 use Drupal\Core\Url;
-use Drupal\ys_layouts\Service\OrphanedInlineBlockCleanerInterface;
+use Drupal\ys_layouts\Service\OrphanedInlineBlockCleaner;
 use Symfony\Component\DependencyInjection\ContainerInterface;
 
 /**
@@ -48,7 +48,7 @@ class OrphanedInlineBlockReportController implements ContainerInjectionInterface
   /**
    * Constructs an OrphanedInlineBlockReportController.
    *
-   * @param \Drupal\ys_layouts\Service\OrphanedInlineBlockCleanerInterface $cleaner
+   * @param \Drupal\ys_layouts\Service\OrphanedInlineBlockCleaner $cleaner
    *   The orphaned inline block cleaner.
    * @param \Drupal\Core\Entity\EntityTypeManagerInterface $entityTypeManager
    *   The entity type manager.
@@ -56,7 +56,7 @@ class OrphanedInlineBlockReportController implements ContainerInjectionInterface
    *   The pager manager.
    */
   public function __construct(
-    protected OrphanedInlineBlockCleanerInterface $cleaner,
+    protected OrphanedInlineBlockCleaner $cleaner,
     protected EntityTypeManagerInterface $entityTypeManager,
     protected PagerManagerInterface $pagerManager,
   ) {}

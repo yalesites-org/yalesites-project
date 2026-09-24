@@ -2,19 +2,19 @@
 
 namespace Drupal\Tests\ys_layouts\Kernel;
 
+use Drupal\Tests\ys_core\Kernel\YsKernelTestBase;
 use Drupal\block_content\Entity\BlockContent;
 use Drupal\block_content\Entity\BlockContentType;
 use Drupal\entity_test\Entity\EntityTest;
 use Drupal\field\Entity\FieldConfig;
 use Drupal\field\Entity\FieldStorageConfig;
-use Drupal\KernelTests\KernelTestBase;
 use Drupal\layout_builder\Entity\LayoutBuilderEntityViewDisplay;
 use Drupal\layout_builder\Section;
 use Drupal\layout_builder\SectionComponent;
 use Drupal\node\Entity\Node;
 use Drupal\node\Entity\NodeType;
 use Drupal\node\NodeInterface;
-use Drupal\ys_layouts\Service\OrphanedInlineBlockCleanerInterface;
+use Drupal\ys_layouts\Service\OrphanedInlineBlockCleaner;
 
 /**
  * Tests detection and deletion of orphaned Layout Builder inline blocks.
@@ -30,7 +30,7 @@ use Drupal\ys_layouts\Service\OrphanedInlineBlockCleanerInterface;
  *
  * @group ys_layouts
  */
-class OrphanedInlineBlockCleanerTest extends KernelTestBase {
+class OrphanedInlineBlockCleanerTest extends YsKernelTestBase {
 
   /**
    * {@inheritdoc}
@@ -86,7 +86,7 @@ class OrphanedInlineBlockCleanerTest extends KernelTestBase {
   /**
    * Gets the service under test.
    */
-  protected function cleaner(): OrphanedInlineBlockCleanerInterface {
+  protected function cleaner(): OrphanedInlineBlockCleaner {
     return $this->container->get('ys_layouts.orphaned_inline_block_cleaner');
   }
 

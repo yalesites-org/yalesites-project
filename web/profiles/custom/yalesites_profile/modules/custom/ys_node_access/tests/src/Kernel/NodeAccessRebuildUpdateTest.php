@@ -2,7 +2,7 @@
 
 namespace Drupal\Tests\ys_node_access\Kernel;
 
-use Drupal\KernelTests\KernelTestBase;
+use Drupal\Tests\ys_core\Kernel\YsKernelTestBase;
 use Drupal\node\Entity\Node;
 use Drupal\node\Entity\NodeType;
 use Drupal\user\Entity\User;
@@ -21,7 +21,7 @@ use Drupal\ys_node_access\NodeAccessManager;
  * @group yalesites
  * @group ys_node_access
  */
-class NodeAccessRebuildUpdateTest extends KernelTestBase {
+class NodeAccessRebuildUpdateTest extends YsKernelTestBase {
 
   /**
    * {@inheritdoc}

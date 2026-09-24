@@ -75,7 +75,7 @@ The module is installed on every site and is off by default.
 2. User 1 (the platform superadmin) sets the per-site Azure index name at
    `/admin/config/yalesites/ys-beacon/admin`. This administration form is
    restricted to user 1 only — no other role, however privileged, can reach it
-   (`\Drupal\ys_beacon\Access\BeaconAdminAccessCheck`). Until the index name is
+   (`\Drupal\ys_beacon\Access\BeaconSuperadminOnlyAccessCheck`). Until the index name is
    set, the Beacon search index stays disabled at runtime and no Azure traffic
    occurs.
 3. A site administrator enables the chat widget at
@@ -317,51 +317,17 @@ the equivalent of the legacy `/api/ai/v1/content` endpoint:
 GET /api/ys-beacon/v1/content?type=node&page=1&page_size=50
 ```
 
-- **Open to all users.** The route is accessible to any role, authenticated or
-  anonymous. There is no permission gate, because the feed only ever exposes
-  content a logged-out visitor could already read (see below).
-- **Same indexability rules as the index.** Items are filtered through
-  `BeaconIndexability` while account-switched to the anonymous user, so the feed
-  exposes exactly what the chatbot indexes regardless of who calls it: published,
-  anonymously viewable (not CAS-protected), and not opted out via
-  `ai_disable_indexing`.
-- **Parameters:** `type` (`node` or `media`, default `node`), `page` (1-based,
-  default 1), `page_size` (default 50, max 200). Because the per-item
-  indexability filter runs after the page window, a page may contain fewer than
-  `page_size` items; page until `data` is empty.
+It serves published, anonymously viewable content that has not opted out of AI
+indexing — the same corpus the chatbot indexes — and returns `403` on any site
+where a platform admin has not authorized Beacon.
 
-Response shape:
-
-```json
-{
-  "data": [
-    {
-      "id": "node/123",
-      "type": "node",
-      "bundle": "page",
-      "uuid": "…",
-      "title": "…",
-      "url": "https://…",
-      "langcode": "en",
-      "created": "2026-01-01T00:00:00+00:00",
-      "changed": "2026-02-01T00:00:00+00:00",
-      "ai_description": "…",
-      "ai_tags": "…",
-      "content": "plain-text rendering of the default view (nodes only)"
-    }
-  ],
-  "pagination": {
-    "type": "node",
-    "page": 1,
-    "page_size": 50,
-    "total_records": 1234,
-    "total_pages": 25
-  }
-}
-```
-
-Node bodies are rendered as the anonymous user, so the feed never exposes
-content a logged-out visitor could not see.
+**Full reference: [API_ENDPOINT_DOCUMENTATION.md](API_ENDPOINT_DOCUMENTATION.md).**
+That document is the single home for the parameters, the response shape and every
+field, pagination behavior, error responses, rate-limit and polling guidance, and
+the differences from the legacy endpoint — so they are not written down twice and
+cannot drift. Two things there are worth knowing before you call the endpoint:
+media is excluded from the feed by default and must be opted in per item, and
+`total_records`/`total_pages` are an upper bound rather than the served count.
 
 ## Citations
 
@@ -744,6 +710,19 @@ npm run build      # tsc && vite build -> react/static/assets
 
 Commit the regenerated `react/static` output together with the source change.
 
+`vite build` keeps debug output out of the bundle, because it is served to
+every site visitor: `console.log`, `console.debug`, `console.info`,
+`console.warn` and `console.trace` are marked `esbuild.pure` so minification
+removes them, and `debugger` statements are dropped. They all still work under
+`npm run dev`, so keep using them while developing - just do not rely on one
+being present in production.
+
+**`console.error` is intentionally kept.** Some failure paths (for example the
+"Conversation not found" branch in `Chat.tsx`) return without showing the
+visitor anything, so the console is the only trace they leave - and the source
+map this bundle ships is only useful if something reaches the console. Use
+`console.error` for anything you would want to see in a production report.
+
 The `.github/workflows/verify_beacon_bundle.yml` CI check rebuilds the bundle
 from source on every pull request that touches `react/` and fails if the
 result differs from the committed `react/static` output, so a source change
@@ -783,10 +762,22 @@ lando drush cset ys_beacon.settings azure_index_name <dev-index> -y
 lando drush cset ys_beacon.settings enable_chat 1 -y
 lando drush sapi-rt ys_beacon   # rebuild tracking after setting the index name via CLI
 lando drush sapi-i ys_beacon
-curl -sN -X POST https://yalesites-fable.lndo.site/api/ys-beacon/v1/conversation \
+curl -sN -X POST https://<your-lando-host>/api/ys-beacon/v1/conversation \
   -H 'Content-Type: application/json' \
   -d '{"messages":[{"id":"1","role":"user","content":"What is this site about?","date":"2026-01-01T00:00:00Z"}]}'
 ```
 
+(`<your-lando-host>` is `<name>.lndo.site` for the `name` in your
+`.lando.local.yml` at the repo root.)
+
 For frontend work, `npm run dev` serves the widget with `/api/ys-beacon`
-proxied to the Lando site (see `react/vite.config.ts`).
+proxied to the Lando site. Point it at your own instance with
+`YS_BEACON_PROXY_TARGET`, since every checkout has a different host:
+
+```
+cd react
+YS_BEACON_PROXY_TARGET=https://<your-lando-host> npm run dev
+```
+
+Unset, it falls back to `https://yalesites-platform.lndo.site` - the host
+shipped in `.lando.local.example.yml`.

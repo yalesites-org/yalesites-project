@@ -347,10 +347,10 @@ class ProfileCsvImportForm extends FormBase {
     $build = [
       '#type' => 'table',
       '#header' => [
-        $this->t('Display Name'),
-        $this->t('Email'),
-        $this->t('Position'),
-        $this->t('Department'),
+        ['data' => $this->t('Display Name'), 'scope' => 'col'],
+        ['data' => $this->t('Email'), 'scope' => 'col'],
+        ['data' => $this->t('Position'), 'scope' => 'col'],
+        ['data' => $this->t('Department'), 'scope' => 'col'],
       ],
       '#rows' => $rows,
       '#attributes' => ['class' => ['profile-preview-table']],

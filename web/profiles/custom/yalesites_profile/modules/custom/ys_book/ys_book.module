@@ -361,6 +361,18 @@ function ys_book_form_book_admin_edit_alter(&$form, FormStateInterface $form_sta
     // Change the table header from "Title" to "Menu link title".
     if (isset($form['table']['#header']) && is_array($form['table']['#header'])) {
       $form['table']['#header'][0] = t('Menu link title');
+
+      // Contrib builds these cells as plain strings, so they render a <th>
+      // with no scope. Promote each to an array to carry the attribute,
+      // normalizing rather than assuming a string so a later contrib change
+      // cannot nest a cell inside itself; any key that is not
+      // data/header/colspan/class/sort/field is passed through to the <th>
+      // by template_preprocess_table().
+      foreach ($form['table']['#header'] as $index => $cell) {
+        $cell = is_array($cell) ? $cell : ['data' => $cell];
+        $cell['scope'] = 'col';
+        $form['table']['#header'][$index] = $cell;
+      }
     }
 
     /** @var \Drupal\book\BookManagerInterface $bookManager */

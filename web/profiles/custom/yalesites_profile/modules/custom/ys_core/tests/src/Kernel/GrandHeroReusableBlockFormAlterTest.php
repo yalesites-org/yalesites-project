@@ -5,15 +5,14 @@ namespace Drupal\Tests\ys_core\Kernel;
 use Drupal\block_content\Entity\BlockContent;
 use Drupal\block_content\Entity\BlockContentType;
 use Drupal\Core\Form\FormState;
-use Drupal\KernelTests\KernelTestBase;
 
 /**
- * Tests ys_core_form_alter() on reusable vs inline block placements.
+ * Tests the configure-block alter on reusable vs inline block placements.
  *
  * Regression test for the bug where adding a reusable (Custom Block Library)
  * Grand Hero block to a page via Layout Builder failed on save with false
  * "… field is required" errors and logged an "Undefined array key block_form"
- * warning in ys_core_form_alter().
+ * warning in ys_core_form_layout_builder_configure_block_alter().
  *
  * For a reusable block placement (plugin id block_content:UUID) the entity
  * subform lives at $form['block_form'], not $form['settings']['block_form']
@@ -25,7 +24,7 @@ use Drupal\KernelTests\KernelTestBase;
  *
  * @group ys_core
  */
-class GrandHeroReusableBlockFormAlterTest extends KernelTestBase {
+class GrandHeroReusableBlockFormAlterTest extends YsKernelTestBase {
 
   /**
    * {@inheritdoc}
@@ -93,7 +92,7 @@ class GrandHeroReusableBlockFormAlterTest extends KernelTestBase {
       // that keeps the inline-only validator off a reusable placement.
       $this->assertSame('grand_hero', ys_core_get_block_type($form, $form_state));
 
-      ys_core_form_alter($form, $form_state, $form_id);
+      ys_core_form_layout_builder_configure_block_alter($form, $form_state, $form_id);
 
       $this->assertNotContains(
         'ys_core_grand_hero_validate',
@@ -125,7 +124,7 @@ class GrandHeroReusableBlockFormAlterTest extends KernelTestBase {
 
     $this->assertSame('grand_hero', ys_core_get_block_type($form, $form_state));
 
-    ys_core_form_alter($form, $form_state, 'layout_builder_add_block');
+    ys_core_form_layout_builder_configure_block_alter($form, $form_state, 'layout_builder_add_block');
 
     $this->assertContains(
       'ys_core_grand_hero_validate',
