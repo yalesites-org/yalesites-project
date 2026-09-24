@@ -27,8 +27,10 @@ class ViewsBasicFullPager extends Full {
     if (!$this->hasItemsPerPage()) {
       return;
     }
+    // The offset is $this->options['offset'], set by the managers through
+    // ViewExecutable::setOffset(). Not read from view->args: the two managers
+    // put it at different positions.
     $this->setItemsPerPage($this->itemsPerPage());
-    $this->setOffset($this->offset());
     $limit = $this->options['items_per_page'];
     $offset = $this->current_page * $this->options['items_per_page'] + $this->options['offset'];
     if ($this->hasTotalPages() && $this->pastLastPage()) {
@@ -81,17 +83,6 @@ class ViewsBasicFullPager extends Full {
    */
   protected function itemsPerPage(): int {
     return (int) $this->view->args[5];
-
-  }
-
-  /**
-   * Gets the offset for the query.
-   *
-   * @return int
-   *   The offset for the query.
-   */
-  protected function offset(): int {
-    return (int) $this->view->args[7];
 
   }
 

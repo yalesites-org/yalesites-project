@@ -545,6 +545,8 @@ class ViewsBasicManager extends ControllerBase implements ContainerInjectionInte
     ];
 
     $view->setArguments($view_args);
+    // See ViewsBasicFullPager::query().
+    $view->setOffset((int) $view_args['offset']);
     $view->execute();
 
     // Unset the pager. Needs to be done after view->execute();
