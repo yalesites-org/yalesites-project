@@ -13,6 +13,20 @@ callout:
       left: Left
       center: Center
     default: center
+button_link:
+  field_button_alignment:
+    values:
+      left: Left
+      center: Center
+      right: Right
+    default: left
+  field_button_style_consistency:
+    values:
+      both_filled: 'Both Filled'
+      both_outline: 'Both Outline'
+      filled_outline: 'Filled, Outline'
+      outline_filled: 'Outline, Filled'
+    default: filled_outline
 cta_banner:
   field_style_color:
     values:
@@ -54,55 +68,30 @@ content_spotlight:
     default: site
   field_style_variation:
     values:
+      inline: Inline
+      offset: Offset
+    default: inline
+  field_focus:
+    values:
       equal: 'Equal Focus'
       image: 'Image Focus'
     default: equal
   field_style_color:
     values:
       default: 'Default - No Color'
-      one: 'One'
-      two: 'Two'
-      three: 'Three'
-      four: 'Four'
-      five: 'Five'
-      six: 'Six'
+      one: One
+      two: Two
+      three: Three
+      four: Four
+      five: Five
+      six: Six
     default: default
   field_style_alignment:
     values:
-      top: 'Top'
-      middle: 'Middle'
-      bottom: 'Bottom'
+      top: Top
+      middle: Middle
+      bottom: Bottom
     default: top
-quick_links:
-  field_style_variation:
-    values:
-      promotional: Full-width
-      subtle: Narrow
-    default: promotional
-post_list:
-  field_style_variation:
-    values:
-      'true': Featured
-      'false': Secondary
-    default: 'true'
-post_cards:
-  field_style_variation:
-    values:
-      'true': Featured
-      'false': Secondary
-    default: 'true'
-event_list:
-  field_style_variation:
-    values:
-      'true': Featured
-      'false': Secondary
-    default: 'true'
-event_cards:
-  field_style_variation:
-    values:
-      'true': Featured
-      'false': Secondary
-    default: 'true'
 wrapped_image:
   field_style_position:
     values:
@@ -122,23 +111,25 @@ wrapped_text_callout:
     default: left
   field_style_color:
     values:
-      one: 'One'
-      two: 'Two'
-      three: 'Three'
-      four: 'Four'
-      five: 'Five'
-      six: 'Six'
+      one: One
+      two: Two
+      three: Three
+      four: Four
+      five: Five
+      six: Six
     default: one
 grand_hero:
   field_style_position:
     values:
       full: Full
       contained: 'Floating Box'
+      contained-narrow: 'Floating Box Narrow'
     default: full
   field_style_variation:
     values:
       full: Tall
       reduced: Short
+      mini: Mini
     default: full
   field_style_color:
     values:
@@ -162,10 +153,10 @@ divider:
     default: left
   field_style_width:
     values:
-      '100%': 100
-      '75%': 75
-      '50%': 50
-      '25%': 25
+      100%: 100
+      75%: 75
+      50%: 50
+      25%: 25
     default: 100%
 content_spotlight_portrait:
   field_style_position:
@@ -175,115 +166,115 @@ content_spotlight_portrait:
     default: image-left
   field_style_variation:
     values:
-      inline: 'Inline'
-      offset: 'Offset'
+      inline: Inline
+      offset: Offset
     default: inline
   field_style_color:
     values:
       default: 'Default - No Color'
-      one: 'One'
-      two: 'Two'
-      three: 'Three'
-      four: 'Four'
-      five: 'Five'
-      six: 'Six'
+      one: One
+      two: Two
+      three: Three
+      four: Four
+      five: Five
+      six: Six
     default: default
   field_style_alignment:
     values:
-      top: 'Top'
-      middle: 'Middle'
-      bottom: 'Bottom'
+      top: Top
+      middle: Middle
+      bottom: Bottom
     default: middle
 text:
   field_style_variation:
     values:
-      default: 'Default'
-      emphasized: 'Emphasized'
+      default: Default
+      emphasized: Emphasized
     default: default
 reference_card:
   field_style_variation:
     values:
-      featured: 'Featured'
-      non-featured: 'Non-featured'
+      featured: Featured
+      non-featured: Non-featured
     default: featured
 tile:
   field_style_color:
     values:
-      one: 'One'
-      two: 'Two'
-      three: 'Three'
-      four: 'Four'
-      five: 'Five'
-      six: 'Six'
+      one: One
+      two: Two
+      three: Three
+      four: Four
+      five: Five
+      six: Six
     default: one
 tiles:
   field_style_width:
     values:
-      two: 'Two'
-      three: 'Three'
-      four: 'Four'
+      two: Two
+      three: Three
+      four: Four
     default: four
   field_style_alignment:
     values:
-      left: 'Left'
-      center: 'Center'
-      right: 'Right'
+      left: Left
+      center: Center
+      right: Right
     default: left
   field_style_position:
     values:
-      top: 'Top'
-      bottom: 'Bottom'
+      top: Top
+      bottom: Bottom
     default: bottom
 facts:
   field_style_width:
     values:
-      two: 'Two'
-      three: 'Three'
-      four: 'Four'
+      two: Two
+      three: Three
+      four: Four
     default: four
   field_style_color:
     values:
-      one: 'One'
-      two: 'Two'
-      three: 'Three'
-      four: 'Four'
-      five: 'Five'
-      six: 'Six'
+      one: One
+      two: Two
+      three: Three
+      four: Four
+      five: Five
+      six: Six
     default: one
   field_style_alignment:
     values:
-      left: 'Left'
-      center: 'Center'
+      left: Left
+      center: Center
     default: left
 quote_callout:
   field_style_color:
     values:
-      one: 'One'
-      two: 'Two'
-      three: 'Three'
-      four: 'Four'
-      five: 'Five'
-      six: 'Six'
+      one: One
+      two: Two
+      three: Three
+      four: Four
+      five: Five
+      six: Six
     default: one
   field_style_variation:
     values:
-      bar: 'Bar'
-      quote: 'Quote'
+      bar: Bar
+      quote: Quote
     default: bar
   field_style_alignment:
     values:
-      left: 'Left'
-      right: 'Right'
+      left: Left
+      right: Right
     default: left
 link_grid:
   field_style_color:
     values:
-      one: 'One'
-      two: 'Two'
-      three: 'Three'
-      four: 'Four'
-      five: 'Five'
-      six: 'Six'
+      one: One
+      two: Two
+      three: Three
+      four: Four
+      five: Five
+      six: Six
     default: one
 inline_message:
   field_style_color:
@@ -291,10 +282,21 @@ inline_message:
       one: One
       two: Two
       three: Three
-      four: 'Four'
-      five: 'Five'
-      six: 'Six'
+      four: Four
+      five: Five
+      six: Six
     default: one
+accordion:
+  field_style_color:
+    values:
+      default: 'Default - No Color'
+      one: One
+      two: Two
+      three: Three
+      four: Four
+      five: Five
+      six: Six
+    default: default
 video:
   field_style_alignment:
     values:
@@ -313,20 +315,9 @@ image_banner:
       site: Contained
       full: 'Full Width'
     default: site
-accordion:
-  field_style_color:
-    values:
-      default: 'Default - No Color'
-      one: 'One'
-      two: 'Two'
-      three: 'Three'
-      four: 'Four'
-      five: 'Five'
-      six: 'Six'
-    default: default
 video_banner:
   field_style_width:
     values:
       max: Contained
-      full: Full Width
+      full: 'Full Width'
     default: max
