@@ -75,3 +75,9 @@ facts_icon_preview:
     - core/jquery
     - core/once
     - chosen/chosen
+form_error_focus:
+  js:
+    js/form-error-focus.js: {}
+  dependencies:
+    - core/drupal
+    - core/once
