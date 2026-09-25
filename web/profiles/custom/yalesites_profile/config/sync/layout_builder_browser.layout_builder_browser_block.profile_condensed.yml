@@ -1,0 +1,11 @@
+uuid: 1fbe0eb7-bbda-4d35-af9f-94101d175695
+langcode: en
+status: true
+dependencies: {  }
+id: profile_condensed
+block_id: 'inline_block:profile_condensed'
+category: people_listings
+label: 'People - Condensed View'
+image_path: ''
+image_alt: ''
+weight: 0

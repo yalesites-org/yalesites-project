@@ -1,0 +1,10 @@
+uuid: 06744425-63c3-482f-ad06-80d94cc96ae8
+langcode: en
+status: true
+dependencies: {  }
+id: post_listings
+label: 'Post Views'
+weight: 1
+opened: true
+image_path: /profiles/custom/yalesites_profile/modules/custom/ys_core/images/preview-icons/view-placeholder.svg
+image_alt: 'Placeholder listing icon'
