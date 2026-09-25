@@ -65,8 +65,8 @@
    * @param {number} tries
    *   Checks left before giving up.
    */
-  // ponytail: polls for up to 3 seconds; an editor slower than that keeps
-  // the textarea's link but does not get focus.
+  // Polls for up to 3 seconds. An editor slower than that keeps the
+  // textarea's link but does not get focus.
   const withEditor = (textarea, callback, tries = 30) => {
     const editor = Drupal.CKEditor5Instances?.get(textarea.dataset.ckeditor5Id);
     if (editor) {

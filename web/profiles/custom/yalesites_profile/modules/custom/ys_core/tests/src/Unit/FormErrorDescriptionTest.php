@@ -291,6 +291,7 @@ class FormErrorDescriptionTest extends UnitTestCase {
 
     $this->assertSame('edit-site-mail--error-message', $variables['errors']['#attributes']['id']);
     $this->assertSame('Site email must end in @yale.edu.', $variables['errors']['#value']);
+    $this->assertSame(['fieldset__error-message'], $variables['errors']['#attributes']['class']);
     $this->assertSame('edit-site-mail--error-message', $variables['attributes']['aria-describedby']);
   }
 

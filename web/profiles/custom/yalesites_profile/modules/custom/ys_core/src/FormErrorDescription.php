@@ -167,6 +167,8 @@ final class FormErrorDescription implements TrustedCallbackInterface {
     if (self::id($variables['element']) && \Drupal::moduleHandler()->moduleExists('inline_form_errors')) {
       $variables['errors'] = $variables['element']['#errors'];
       self::preprocessGroup($variables);
+      // The template's bare wrapper has no error styling; Claro's has.
+      $variables['errors']['#attributes']['class'][] = 'fieldset__error-message';
     }
   }
 
