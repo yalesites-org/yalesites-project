@@ -70,6 +70,16 @@ function ys_views_wizard_layout_builder_browser_alter(array &$build, array $cont
         $wizard_link = $item;
         $wizard_link['link']['#url'] = $wizard_url;
         $wizard_link['link']['#title']['label']['#markup'] = ViewsWizardOptions::LINK_LABEL;
+        // Listing tiles have no icon of their own, so the copied image is the
+        // category or browser placeholder. Use the Views icon instead, kept
+        // first so it renders above the label like the browser's own tiles.
+        $wizard_link['link']['#title'] = [
+          'image' => [
+            '#theme' => 'image',
+            '#uri' => ViewsWizardOptions::ICON_PATH,
+            '#alt' => '',
+          ],
+        ] + $wizard_link['link']['#title'];
         // layout_builder_browser_link_alter() only modalises the two core
         // layout_builder route names, so a custom route would open off-canvas
         // from inside the modal. Set the dialog attributes here instead.

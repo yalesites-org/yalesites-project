@@ -43,6 +43,14 @@ class ViewsWizardOptions {
   const LINK_LABEL = 'Views';
 
   /**
+   * Icon shown on the single wizard entry.
+   *
+   * The same view.svg production's "View" tile uses, so editors see the icon
+   * they already know.
+   */
+  const ICON_PATH = '/profiles/custom/yalesites_profile/modules/custom/ys_core/images/preview-icons/view.svg';
+
+  /**
    * The block plugin manager.
    *
    * @var \Drupal\Core\Block\BlockManagerInterface

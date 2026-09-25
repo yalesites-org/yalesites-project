@@ -67,6 +67,13 @@ class ViewsWizardBrowserAlterTest extends UnitTestCase {
       'ys_views_wizard.choose',
       $categories['dynamic_content']['links'][1]['link']['#url']->getRouteName()
     );
+    // The entry keeps production's Views icon rather than inheriting the
+    // first listing tile's placeholder.
+    $this->assertSame(
+      '/profiles/custom/yalesites_profile/modules/custom/ys_core/images/preview-icons/view.svg',
+      $categories['dynamic_content']['links'][1]['link']['#title']['image']['#uri']
+    );
+    $this->assertSame('image', array_key_first($categories['dynamic_content']['links'][1]['link']['#title']));
   }
 
   /**
