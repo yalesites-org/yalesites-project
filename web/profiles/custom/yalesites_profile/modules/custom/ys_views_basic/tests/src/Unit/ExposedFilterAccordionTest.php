@@ -33,6 +33,11 @@ class ExposedFilterAccordionTest extends UnitTestCase {
    * it. Without this, every test that runs that callback errors with
    * ContainerNotInitializedException before reaching a single assertion —
    * which is how two of the tests below were failing.
+   *
+   * It is the global t() rather than $this->t() because the method is a
+   * static #after_build callback, so there is no $this to call it on. And
+   * the container has to be built here because UnitTestCase::setUp()
+   * deliberately leaves the test container-less.
    */
   protected function setUp(): void {
     parent::setUp();

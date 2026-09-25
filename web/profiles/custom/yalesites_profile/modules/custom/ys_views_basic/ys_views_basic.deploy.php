@@ -96,12 +96,7 @@ function ys_views_basic_deploy_10000() {
   \Drupal::service('cache.render')->invalidateAll();
   // Clear node entity cache (if nodes were updated).
   \Drupal::entityTypeManager()->getStorage('node')->resetCache();
-  // Clear Layout Builder tempstore overrides.
-  if (\Drupal::database()->schema()->tableExists('key_value_expire')) {
-    \Drupal::database()->delete('key_value_expire')
-      ->condition('collection', 'tempstore.shared.layout_builder.section_storage.overrides')
-      ->execute();
-  }
+  _ys_views_basic_clear_layout_tempstore();
 }
 
 /**
@@ -202,11 +197,7 @@ function ys_views_basic_deploy_10001() {
 
   // Clear caches so the rewritten layouts render with the new bundles.
   \Drupal::service('cache.render')->invalidateAll();
-  if ($database->schema()->tableExists('key_value_expire')) {
-    $database->delete('key_value_expire')
-      ->condition('collection', 'tempstore.shared.layout_builder.section_storage.overrides')
-      ->execute();
-  }
+  _ys_views_basic_clear_layout_tempstore();
 
   return t('Migrated @m view blocks; rewrote @r layout placements; @rv view blocks and @rr inline_block:view references remain.', [
     '@m' => $migrated,
@@ -273,16 +264,26 @@ function ys_views_basic_deploy_10002() {
 
   // Clear caches so the rewritten layouts render with the new bundles.
   \Drupal::service('cache.render')->invalidateAll();
-  if ($database->schema()->tableExists('key_value_expire')) {
-    $database->delete('key_value_expire')
-      ->condition('collection', 'tempstore.shared.layout_builder.section_storage.overrides')
-      ->execute();
-  }
+  _ys_views_basic_clear_layout_tempstore();
 
   return t('Predecessor migration: converted @m blocks; rewrote @r layout placements.', [
     '@m' => $migrated,
     '@r' => $rewritten,
   ]);
+}
+
+/**
+ * Discards every pending Layout Builder override edit.
+ *
+ * Restructuring a listing block leaves half-finished Layout Builder edits
+ * pointing at sections that no longer match, so each deploy step throws them
+ * away. The collection name is the one SharedTempStoreFactory::get() builds
+ * for Layout Builder's override storage.
+ */
+function _ys_views_basic_clear_layout_tempstore(): void {
+  \Drupal::service('keyvalue.expirable')
+    ->get('tempstore.shared.layout_builder.section_storage.overrides')
+    ->deleteAll();
 }
 
 /**
