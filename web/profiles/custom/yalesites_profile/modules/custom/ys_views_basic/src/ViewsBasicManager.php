@@ -187,8 +187,8 @@ class ViewsBasicManager extends ControllerBase implements ContainerInjectionInte
   /**
    * The views ::setupView() packs arguments for, in ::VIEW_ARGUMENT_ORDER.
    *
-   * Every positional read of a view argument has to be gated on this list:
-   * the style plugin, the pager, the sort and the taxonomy filters are shared
+   * A named argument read is only guaranteed correct for these views. The
+   * style plugin, the pager, the sort and the taxonomy filters are shared
    * with the content_resources view, which packs a different, shorter list of
    * its own (ViewsContentResourcesManager::setupView()).
    */
@@ -207,13 +207,15 @@ class ViewsBasicManager extends ControllerBase implements ContainerInjectionInte
    * cannot drift from what those three read: they resolve every index through
    * ::viewArgumentIndex().
    *
-   * This is NOT yet true of the views plugins in Plugin/views (the sort, the
-   * pager, the taxonomy and time-period filters, and the style plugin's view
-   * mode lookup). They still read bare indices, and they cannot simply be
-   * converted: content_resources drives the same plugins from a different,
-   * shorter argument list, so a name resolved here would be the wrong
-   * argument there. Reordering this list therefore still needs those files
-   * checked by hand.
+   * The views plugins in Plugin/views (the sort, the pager, the taxonomy and
+   * time-period filters, and the style plugin's view mode lookup) resolve
+   * their indices through ::viewArgumentIndex() too, but ungated: the
+   * content_resources view drives the same plugins from its own, shorter
+   * argument list (ViewsContentResourcesManager::setupView()), so there a
+   * name resolved here can land on a different argument. The indices match
+   * the bare numbers those plugins read before names existed, so nothing
+   * changed for content_resources, but reordering this list still needs
+   * that view's argument order checked by hand.
    *
    * Appending here is safe; reordering or removing an entry is not, and is
    * what this constant exists to make obvious. (#1648 learned this the hard
