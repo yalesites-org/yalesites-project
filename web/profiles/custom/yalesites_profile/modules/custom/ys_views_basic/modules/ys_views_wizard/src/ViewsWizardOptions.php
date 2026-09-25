@@ -32,18 +32,15 @@ class ViewsWizardOptions {
   /**
    * ID of the block browser category that hosts the single wizard entry.
    *
-   * The matching layout_builder_browser_blockcat config entity ships in this
-   * module's config/install, so the category's label, weight and open state
-   * stay editable in the block browser UI instead of being frozen here. That
-   * entity declares an enforced module dependency on this module, so
-   * uninstalling the wizard takes its category with it.
+   * The existing Dynamic Content category, where editors already find the
+   * "Views" entry. It belongs to the profile, not to this module.
    */
-  const CATEGORY_ID = 'content_listings';
+  const CATEGORY_ID = 'dynamic_content';
 
   /**
    * Label shown on the single wizard entry.
    */
-  const LINK_LABEL = 'Content Listing';
+  const LINK_LABEL = 'Views';
 
   /**
    * The block plugin manager.
