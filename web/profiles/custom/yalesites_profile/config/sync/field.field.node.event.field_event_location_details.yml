@@ -1,0 +1,24 @@
+uuid: 82264df6-f64c-4716-b2a6-2ff0ab943db3
+langcode: en
+status: true
+dependencies:
+  config:
+    - field.storage.node.field_event_location_details
+    - filter.format.restricted_html
+    - node.type.event
+  module:
+    - text
+id: node.event.field_event_location_details
+field_name: field_event_location_details
+entity_type: node
+bundle: event
+label: 'Location details'
+description: 'Extra details such as a building entrance, directions, or an address that is not in the Yale Location list. Put virtual meeting links in Stream URL instead.'
+required: false
+translatable: true
+default_value: {  }
+default_value_callback: ''
+settings:
+  allowed_formats:
+    - restricted_html
+field_type: text_long

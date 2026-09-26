@@ -47,6 +47,22 @@ This module uses Drupal core migration. The following are the migrations that ar
 
 Specific unique plugins will be mentioned here. Most migration fields are text strings, so, for example `field_event_room: localist_room` is simply adding the `localist_room` to the `field_event_room`.
 
+### Locations
+
+Localist matches an event's location to a Yale Location (`event_place`) term by exact name.
+
+- If no term has that name, the import creates one from the event's own location data: name, street, city, state, zip, country, latitude and longitude. The `skip_placeholder_place` process plugin runs first, so placeholder names (Other, TBD, TBA, N/A, or empty) create no term.
+- The `localist_places` import looks up an existing term with the same name before creating one, so a place the events import already created is reused, not duplicated.
+
+### Read-only fields on the event form
+
+`_ys_core_disable_event_fields()` in `ys_core.module` locks the fields the import overwrites, using core Form API (`#disabled` plus a description linked to the input):
+
+- Yale Location (`field_event_place`) and Room (`field_event_room`) are always read-only. Both live in the "Localist data" tab.
+- Stream URL and stream embed code are read-only on Localist events only. A Localist event is one where `field_localist_id` has a value. On other events editors can edit them.
+
+Free-form location text goes in Location details (`field_event_location_details`), which is editable on every event. The event meta block shows Yale Location, then Room (Localist events only), then Location details. Deploy hook `ys_localist_deploy_10001` moved Room into Location details on every non-Localist event.
+
 ### Callback Source URL
 
 Most of the migrations require a dynamic URL for accessing the Localist API. The `migrate_plus` module supports callbacks with a patch that is in the `web/profiles/custom/yalesites_profile/composer.json`. This allows for a function `ys_localist_migrate_url` in the `ys_localist.module` file to return an array of dynamic URLs to use.
