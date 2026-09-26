@@ -5,7 +5,7 @@
  * The preview is a compact, inline placeholder card shown below the field
  * display options. It is intentionally simple — a visual aid, not a faithful
  * theme render — but it reflects the bundle's display mode (card, list,
- * condensed, directory) so the layout matches what the block will produce.
+ * condensed) so the layout matches what the block will produce.
  *
  * Only the card itself (.vb-preview) is styled as a "mockup" — a dashed-border
  * stage (.vb-preview-wrapper__stage) around it signals it's a placeholder, not
@@ -284,16 +284,6 @@
 
 .vb-preview[data-view-mode='condensed'] .vb-preview__image {
   display: none;
-}
-
-/* Directory (profiles): portrait grid — taller image, centered text. */
-.vb-preview[data-view-mode='directory'] {
-  max-width: 12rem;
-  text-align: center;
-}
-
-.vb-preview[data-view-mode='directory'] .vb-preview__image {
-  height: 11rem;
 }
 
 /*

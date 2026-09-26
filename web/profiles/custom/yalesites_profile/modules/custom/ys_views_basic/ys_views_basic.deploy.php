@@ -105,9 +105,11 @@ function ys_views_basic_deploy_10000() {
  * In-place bundle swap keyed on the stored content type and view mode together
  * (ADR DR-9, ticket #1169): e.g. {post, card} -> post_card. Because every new
  * bundle shares the existing field_view_params storage (DR-3) this copies no
- * data. The hook is idempotent (blocks already in a target bundle are skipped),
- * pre-flight counts and logs the work, rewrites inline_block:view plugin IDs
- * across ALL revisions, and verifies zero remaining "view" blocks/references.
+ * data, except that {profile, directory} lands on profile_card with its params
+ * rewritten to small cards (#1682). The hook is idempotent (blocks already
+ * in a target bundle are skipped), pre-flight counts and logs the work,
+ * rewrites inline_block:view plugin IDs across ALL revisions, and verifies
+ * zero remaining "view" blocks/references.
  */
 function ys_views_basic_deploy_10001() {
   $logger = \Drupal::logger('ys_views_basic');
@@ -152,6 +154,9 @@ function ys_views_basic_deploy_10001() {
     }
 
     $block->set('type', $target);
+    if ($view_mode === 'directory') {
+      $block->set('field_view_params', ['params' => json_encode(ViewsBasicManager::directoryToCardParams($decoded))]);
+    }
     $block->save();
 
     // A bundle swap + save leaves prior field-table rows stamped "view"; patch

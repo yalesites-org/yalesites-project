@@ -42,7 +42,7 @@ class BlockTemplateSuggestionTest extends UnitTestCase {
    * Every listing bundle gets the shared view template suggestion, last.
    */
   public function testListingBundlesReuseViewTemplate() {
-    foreach (['post_card', 'event_list_item', 'page_condensed', 'profile_directory'] as $bundle) {
+    foreach (['post_card', 'event_list_item', 'page_condensed', 'profile_card'] as $bundle) {
       $suggestions = $this->suggestionsFor('inline_block', $bundle);
       $this->assertSame('block__inline_block__view', end($suggestions), "$bundle reuses the view template (highest priority).");
     }
