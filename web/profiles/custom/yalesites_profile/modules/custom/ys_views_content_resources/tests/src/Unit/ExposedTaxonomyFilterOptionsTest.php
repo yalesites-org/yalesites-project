@@ -4,8 +4,10 @@ namespace Drupal\Tests\ys_views_content_resources\Unit;
 
 use Drupal\Core\Entity\EntityTypeManagerInterface;
 use Drupal\Tests\UnitTestCase;
+use Drupal\taxonomy\TermInterface;
 use Drupal\taxonomy\TermStorageInterface;
 use Drupal\ys_views_content_resources\ExposedTaxonomyFilterOptions;
+use Psr\Log\LoggerInterface;
 
 /**
  * Unit tests for ExposedTaxonomyFilterOptions.
@@ -22,6 +24,13 @@ class ExposedTaxonomyFilterOptionsTest extends UnitTestCase {
    * @var \Drupal\taxonomy\TermStorageInterface|\PHPUnit\Framework\MockObject\MockObject
    */
   protected $termStorage;
+
+  /**
+   * The logger mock.
+   *
+   * @var \Psr\Log\LoggerInterface|\PHPUnit\Framework\MockObject\MockObject
+   */
+  protected $logger;
 
   /**
    * The service under test.
@@ -42,7 +51,9 @@ class ExposedTaxonomyFilterOptionsTest extends UnitTestCase {
       ->with('taxonomy_term')
       ->willReturn($this->termStorage);
 
-    $this->service = new ExposedTaxonomyFilterOptions($entityTypeManager);
+    $this->logger = $this->createMock(LoggerInterface::class);
+
+    $this->service = new ExposedTaxonomyFilterOptions($entityTypeManager, $this->logger);
   }
 
   /**
@@ -71,9 +82,23 @@ class ExposedTaxonomyFilterOptionsTest extends UnitTestCase {
   }
 
   /**
+   * Makes loadMultiple() return terms of the given tid => vocabulary map.
+   */
+  protected function stubTerms(array $vocabularies): void {
+    $terms = [];
+    foreach ($vocabularies as $tid => $vid) {
+      $term = $this->createMock(TermInterface::class);
+      $term->method('bundle')->willReturn($vid);
+      $terms[$tid] = $term;
+    }
+    $this->termStorage->method('loadMultiple')->willReturn($terms);
+  }
+
+  /**
    * @covers ::apply
    */
   public function testExcludedTermsAreRemovedFromWholeVocabulary() {
+    $this->stubTerms([2 => 'resource_category', 4 => 'resource_category']);
     $this->stubTree('resource_category', 0, [1, 2, 3, 4]);
     $filters = $this->filtersWith('field_category_target_id', 'resource_category');
 
@@ -100,6 +125,7 @@ class ExposedTaxonomyFilterOptionsTest extends UnitTestCase {
    * @covers ::apply
    */
   public function testParentAndExclusionsCombine() {
+    $this->stubTerms([12 => 'resource_category']);
     $this->stubTree('resource_category', 10, [11, 12, 13]);
     $filters = $this->filtersWith('field_category_target_id', 'resource_category');
 
@@ -112,13 +138,42 @@ class ExposedTaxonomyFilterOptionsTest extends UnitTestCase {
    * @covers ::apply
    */
   public function testExcludedIdsOutsideVocabularyAreIgnored() {
+    // 999 is a tag; it cannot appear in the audience filter, so the filter
+    // keeps its configured options and no tree is loaded.
+    $this->stubTerms([999 => 'tags']);
+    $this->termStorage->expects($this->never())->method('loadTree');
+    $filters = $this->filtersWith('field_audience_target_id', 'audience');
+    $before = $filters;
+
+    $this->assertFalse($this->service->apply($filters, 'field_audience_target_id', [999]));
+
+    $this->assertSame($before, $filters);
+  }
+
+  /**
+   * @covers ::apply
+   */
+  public function testOnlyExcludedIdsInVocabularyAreRemoved() {
+    $this->stubTerms([21 => 'audience', 999 => 'tags']);
     $this->stubTree('audience', 0, [20, 21]);
     $filters = $this->filtersWith('field_audience_target_id', 'audience');
 
-    // 999 is (say) a tag; it is not in this vocabulary's tree.
-    $this->service->apply($filters, 'field_audience_target_id', [999]);
+    $this->assertTrue($this->service->apply($filters, 'field_audience_target_id', [21, 999]));
 
-    $this->assertSame([20 => 20, 21 => 21], $filters['field_audience_target_id']['value']);
+    $this->assertSame([20 => 20], $filters['field_audience_target_id']['value']);
+  }
+
+  /**
+   * @covers ::apply
+   */
+  public function testParentStillAppliesWhenExcludedIdsAreOutsideVocabulary() {
+    $this->stubTerms([999 => 'tags']);
+    $this->stubTree('custom_vocab', 10, [11, 12]);
+    $filters = $this->filtersWith('field_custom_vocab_target_id', 'custom_vocab');
+
+    $this->assertTrue($this->service->apply($filters, 'field_custom_vocab_target_id', [999], 10));
+
+    $this->assertSame([11 => 11, 12 => 12], $filters['field_custom_vocab_target_id']['value']);
   }
 
   /**
@@ -151,12 +206,14 @@ class ExposedTaxonomyFilterOptionsTest extends UnitTestCase {
   /**
    * @covers ::apply
    */
-  public function testFilterWithoutVocabularyIsNoOp() {
+  public function testFilterWithoutVocabularyIsNoOpAndLogs() {
     $this->termStorage->expects($this->never())->method('loadTree');
-    $filters = ['combine' => ['id' => 'combine', 'plugin_id' => 'combine']];
+    $this->logger->expects($this->once())->method('warning');
+    $filters = $this->filtersWith('field_category_target_id', 'resource_category');
+    unset($filters['field_category_target_id']['vid']);
     $before = $filters;
 
-    $this->assertFalse($this->service->apply($filters, 'combine', [1]));
+    $this->assertFalse($this->service->apply($filters, 'field_category_target_id', [1]));
 
     $this->assertSame($before, $filters);
   }
@@ -169,16 +226,6 @@ class ExposedTaxonomyFilterOptionsTest extends UnitTestCase {
 
     $this->assertSame($available, ExposedTaxonomyFilterOptions::reduceTermsForExposure($available, []));
     $this->assertSame([1 => 1, 3 => 3], ExposedTaxonomyFilterOptions::reduceTermsForExposure($available, [2, 99]));
-  }
-
-  /**
-   * @covers ::normalizeTermIds
-   */
-  public function testNormalizeTermIdsHandlesPlainAndLegacyShapes() {
-    $this->assertSame([3, 7], ExposedTaxonomyFilterOptions::normalizeTermIds([3, '7']));
-    $this->assertSame([9, 4], ExposedTaxonomyFilterOptions::normalizeTermIds([['target_id' => 9], ['target_id' => '4']]));
-    $this->assertSame([5], ExposedTaxonomyFilterOptions::normalizeTermIds([0, NULL, 5, []]));
-    $this->assertSame([], ExposedTaxonomyFilterOptions::normalizeTermIds([]));
   }
 
 }

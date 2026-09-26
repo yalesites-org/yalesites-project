@@ -118,14 +118,14 @@ class ViewsContentResourcesManager extends ControllerBase implements ContainerIn
     EntityDisplayRepository $entity_display_repository,
     RouteMatchInterface $route_match,
     CacheTagsInvalidatorInterface $cache_tags_invalidator,
-    ?ExposedTaxonomyFilterOptions $exposed_taxonomy_filter_options = NULL,
+    ExposedTaxonomyFilterOptions $exposed_taxonomy_filter_options,
   ) {
     $this->entityTypeManager = $entity_type_manager;
     $this->entityDisplayRepository = $entity_display_repository;
     $this->termStorage = $this->entityTypeManager->getStorage('taxonomy_term');
     $this->routeMatch = $route_match;
     $this->cacheTagsInvalidator = $cache_tags_invalidator;
-    $this->exposedTaxonomyFilterOptions = $exposed_taxonomy_filter_options ?? new ExposedTaxonomyFilterOptions($entity_type_manager);
+    $this->exposedTaxonomyFilterOptions = $exposed_taxonomy_filter_options;
   }
 
   /**
@@ -181,7 +181,7 @@ class ViewsContentResourcesManager extends ControllerBase implements ContainerIn
     // Terms the editor used to exclude content. Every exposed taxonomy filter
     // drops these from its options: a visitor selecting one would always get
     // zero results.
-    $excluded_terms = ExposedTaxonomyFilterOptions::normalizeTermIds($paramsDecoded['filters']['terms_exclude'] ?? []);
+    $excluded_terms = array_map([$this, 'getTermId'], $paramsDecoded['filters']['terms_exclude'] ?? []);
 
     // Mapping content types to their respective category filters.
     $category_filters = [
@@ -335,40 +335,13 @@ class ViewsContentResourcesManager extends ControllerBase implements ContainerIn
      * 6) Event time period (future, past, all)
      */
 
-    $termsIncludeArray = [];
-    $termsExcludeArray = [];
-
-    // Get terms to include.
-    if (isset($paramsDecoded['filters']['terms_include'])) {
-      foreach ($paramsDecoded['filters']['terms_include'] as $term) {
-        $termsIncludeArray[] = $this->getTermId($term);
-      }
-    }
-
-    // Get terms to exclude.
-    if (isset($paramsDecoded['filters']['terms_exclude'])) {
-      foreach ($paramsDecoded['filters']['terms_exclude'] as $term) {
-        $termsExcludeArray[] = $this->getTermId($term);
-      }
-    }
+    // getTermId() already unwraps legacy ['target_id' => id] storage.
+    $termsIncludeArray = array_map([$this, 'getTermId'], $paramsDecoded['filters']['terms_include'] ?? []);
+    $termsExcludeArray = $excluded_terms;
 
     // Set operator: "+" is "OR" and "," is "AND".
     $operator = $paramsDecoded['operator'] ?? '+';
 
-    // Fix for older setting terms for nodes not saved with the new storage.
-    if (isset($termsIncludeArray[0]) && is_array($termsIncludeArray[0])) {
-      foreach ($termsIncludeArray as $terms) {
-        $termsIncludeArrayFixed[] = $terms['target_id'];
-      }
-      $termsIncludeArray = $termsIncludeArrayFixed;
-    }
-    if (isset($termsExcludeArray[0]) && is_array($termsExcludeArray[0])) {
-      foreach ($termsExcludeArray as $terms) {
-        $termsExcludeArrayFixed[] = $terms['target_id'];
-      }
-      $termsExcludeArray = $termsExcludeArrayFixed;
-    }
-    // End fix.
     $termsInclude = (count($termsIncludeArray) != 0) ? implode($operator, $termsIncludeArray) : 'all';
     $termsExclude = (count($termsExcludeArray) != 0) ? implode($operator, $termsExcludeArray) : NULL;
 
@@ -598,25 +571,6 @@ class ViewsContentResourcesManager extends ControllerBase implements ContainerIn
     }
 
     return ['fields' => $fields, 'authors' => $authors];
-  }
-
-  /**
-   * Removes excluded terms from the set of exposed category filter options.
-   *
-   * A category used to exclude content would always return zero results if a
-   * visitor selected it, so it must not appear as a filter option. Pure helper,
-   * separated for unit testing.
-   *
-   * @param array $available
-   *   Available term options keyed by term id.
-   * @param array $excluded
-   *   Term ids to remove.
-   *
-   * @return array
-   *   The available terms with the excluded ids removed.
-   */
-  public function reduceCategoryTermsForExposure(array $available, array $excluded): array {
-    return ExposedTaxonomyFilterOptions::reduceTermsForExposure($available, $excluded);
   }
 
   /**
@@ -917,30 +871,6 @@ class ViewsContentResourcesManager extends ControllerBase implements ContainerIn
 
     foreach ($terms as $term) {
       $list[$term->tid] = $term->name;
-    }
-
-    return $list;
-  }
-
-  /**
-   * Get child taxonomy terms by parent ID.
-   *
-   * @param int $parentId
-   *   The ID of the parent term.
-   * @param string $vid
-   *   The machine name of the vocabulary.
-   *
-   * @return array
-   *   An associative array of child terms where the key is the term ID and
-   *   the value is the term ID.
-   */
-  public function getChildTermsByParentId(int $parentId, string $vid): array {
-    $list = [];
-    // Load all child terms for the given parent term ID and vocabulary ID.
-    $terms = $this->termStorage->loadTree($vid, $parentId, NULL);
-
-    foreach ($terms as $term) {
-      $list[$term->tid] = (int) $term->tid;
     }
 
     return $list;

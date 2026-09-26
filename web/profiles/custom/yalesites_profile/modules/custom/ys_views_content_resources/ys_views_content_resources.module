@@ -69,6 +69,8 @@ function ys_views_content_resources_views_data_alter(array &$data) {
       'field_nonaffiliated_authors_first' => t('Non-affiliated author first name'),
       'field_nonaffiliated_authors_second' => t('Non-affiliated author last name'),
     ];
+    // Merge over core's entry so its filter, sort, and argument handlers
+    // survive.
     foreach ($columns as $column => $label) {
       $data['node__field_nonaffiliated_authors'][$column] = [
         'title' => $label,
@@ -76,7 +78,7 @@ function ys_views_content_resources_views_data_alter(array &$data) {
         'field' => [
           'id' => 'standard',
         ],
-      ];
+      ] + ($data['node__field_nonaffiliated_authors'][$column] ?? []);
     }
   }
 

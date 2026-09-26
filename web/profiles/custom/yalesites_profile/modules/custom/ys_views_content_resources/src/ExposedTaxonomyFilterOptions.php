@@ -4,6 +4,7 @@ namespace Drupal\ys_views_content_resources;
 
 use Drupal\Core\Entity\EntityTypeManagerInterface;
 use Drupal\taxonomy\TermStorageInterface;
+use Psr\Log\LoggerInterface;
 
 /**
  * Constrains the options offered by an exposed taxonomy filter.
@@ -21,8 +22,9 @@ use Drupal\taxonomy\TermStorageInterface;
  * filter-to-vocabulary map is needed; excluded term ids from any vocabulary
  * can be passed and only those in the filter's vocabulary take effect.
  *
- * The filter config is left untouched when nothing constrains it, so existing
- * blocks keep offering the whole vocabulary.
+ * The filter config is left untouched when nothing constrains it (no parent
+ * and no excluded id in its vocabulary), so existing blocks keep offering the
+ * whole vocabulary.
  *
  * Not tied to the resources view. Any module that assembles a Views display's
  * filters from stored parameters (for example `ys_views_basic`) can use the
@@ -39,13 +41,23 @@ class ExposedTaxonomyFilterOptions {
   protected TermStorageInterface $termStorage;
 
   /**
+   * The logger channel.
+   *
+   * @var \Psr\Log\LoggerInterface
+   */
+  protected LoggerInterface $logger;
+
+  /**
    * Constructs the service.
    *
    * @param \Drupal\Core\Entity\EntityTypeManagerInterface $entity_type_manager
    *   The entity type manager.
+   * @param \Psr\Log\LoggerInterface $logger
+   *   The logger channel.
    */
-  public function __construct(EntityTypeManagerInterface $entity_type_manager) {
+  public function __construct(EntityTypeManagerInterface $entity_type_manager, LoggerInterface $logger) {
     $this->termStorage = $entity_type_manager->getStorage('taxonomy_term');
+    $this->logger = $logger;
   }
 
   /**
@@ -63,10 +75,11 @@ class ExposedTaxonomyFilterOptions {
    *
    * @return bool
    *   TRUE when the filter was constrained, FALSE when it was left untouched
-   *   (missing filter, no vocabulary on it, or nothing to constrain).
+   *   (missing filter, no vocabulary on it, or nothing to constrain). A filter
+   *   without a vocabulary is logged as a warning.
    */
   public function apply(array &$filters, string $filter_name, array $excluded_tids, ?int $parent_tid = NULL): bool {
-    if (empty($filters[$filter_name]['vid'])) {
+    if (!isset($filters[$filter_name])) {
       return FALSE;
     }
 
@@ -78,7 +91,25 @@ class ExposedTaxonomyFilterOptions {
       return FALSE;
     }
 
-    $available = $this->getDescendantTermIds($filters[$filter_name]['vid'], $parent_tid ?? 0);
+    $vid = $filters[$filter_name]['vid'] ?? NULL;
+    if (!$vid) {
+      $this->logger->warning('Exposed filter @filter has no vocabulary, so its options cannot be constrained.', ['@filter' => $filter_name]);
+      return FALSE;
+    }
+
+    // Keep only excluded ids in this filter's vocabulary; others could never
+    // be offered by it. Term loads are statically cached, so repeat calls per
+    // filter are cheap.
+    $excluded_tids = $excluded_tids ? array_keys(array_filter(
+      $this->termStorage->loadMultiple($excluded_tids),
+      static fn ($term) => $term->bundle() === $vid,
+    )) : [];
+
+    if ($parent_tid === NULL && !$excluded_tids) {
+      return FALSE;
+    }
+
+    $available = $this->getDescendantTermIds($vid, $parent_tid ?? 0);
     $available = static::reduceTermsForExposure($available, $excluded_tids);
 
     $filters[$filter_name]['value'] = $available;
@@ -107,26 +138,6 @@ class ExposedTaxonomyFilterOptions {
       return $available;
     }
     return array_diff_key($available, array_flip($excluded));
-  }
-
-  /**
-   * Normalizes stored term references to plain term ids.
-   *
-   * Editor-selected terms are stored either as plain ids or, for content
-   * saved before the storage change, as `['target_id' => id]` arrays.
-   *
-   * @param array $terms
-   *   The stored term references.
-   *
-   * @return int[]
-   *   The term ids.
-   */
-  public static function normalizeTermIds(array $terms): array {
-    $ids = [];
-    foreach ($terms as $term) {
-      $ids[] = (int) (is_array($term) ? ($term['target_id'] ?? 0) : $term);
-    }
-    return array_values(array_filter($ids));
   }
 
   /**

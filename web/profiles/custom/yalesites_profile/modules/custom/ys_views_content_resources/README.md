@@ -54,12 +54,14 @@ Two constraints, alone or together:
 
 The vocabulary is read from the filter's own `vid` setting, so there is no
 filter-to-vocabulary map to maintain. Excluded ids from other vocabularies
-(for example tags) are ignored. When nothing constrains a filter it is left
-untouched, so existing blocks keep offering the whole vocabulary.
+(for example tags) are ignored. When nothing constrains a filter (no parent
+and no excluded id in its vocabulary) it is left untouched, so existing blocks
+keep offering the whole vocabulary.
 
 ```php
 $filters = $view->getDisplay()->getOption('filters');
-$excluded = ExposedTaxonomyFilterOptions::normalizeTermIds($params['filters']['terms_exclude'] ?? []);
+// Plain term ids. Unwrap legacy ['target_id' => id] values first.
+$excluded = array_map(fn ($t) => (int) (is_array($t) ? ($t['target_id'] ?? 0) : $t), $params['filters']['terms_exclude'] ?? []);
 
 // Category: parent term + exclusions.
 $this->exposedTaxonomyFilterOptions->apply($filters, 'field_category_target_id', $excluded, $params['category_included_terms'] ?? NULL);
