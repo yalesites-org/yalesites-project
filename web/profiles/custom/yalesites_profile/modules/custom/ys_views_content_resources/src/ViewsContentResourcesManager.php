@@ -58,6 +58,17 @@ class ViewsContentResourcesManager extends ControllerBase implements ContainerIn
   const DEFAULT_PIN_LABEL = 'Pinned';
 
   /**
+   * Combine-filter field ids the 'authors' search option expands to.
+   *
+   * @var string[]
+   */
+  const AUTHOR_COMBINE_FIELDS = [
+    'author_profile_title',
+    'nonaffiliated_author_first',
+    'nonaffiliated_author_second',
+  ];
+
+  /**
    * The entity type manager.
    *
    * @var \Drupal\Core\Entity\EntityTypeManagerInterface
@@ -93,6 +104,13 @@ class ViewsContentResourcesManager extends ControllerBase implements ContainerIn
   protected $cacheTagsInvalidator;
 
   /**
+   * Constrains exposed taxonomy filter options (parent term, excluded terms).
+   *
+   * @var \Drupal\ys_views_content_resources\ExposedTaxonomyFilterOptions
+   */
+  protected ExposedTaxonomyFilterOptions $exposedTaxonomyFilterOptions;
+
+  /**
    * Constructs a new ViewsBasicManager object.
    */
   public function __construct(
@@ -100,12 +118,14 @@ class ViewsContentResourcesManager extends ControllerBase implements ContainerIn
     EntityDisplayRepository $entity_display_repository,
     RouteMatchInterface $route_match,
     CacheTagsInvalidatorInterface $cache_tags_invalidator,
+    ExposedTaxonomyFilterOptions $exposed_taxonomy_filter_options,
   ) {
     $this->entityTypeManager = $entity_type_manager;
     $this->entityDisplayRepository = $entity_display_repository;
     $this->termStorage = $this->entityTypeManager->getStorage('taxonomy_term');
     $this->routeMatch = $route_match;
     $this->cacheTagsInvalidator = $cache_tags_invalidator;
+    $this->exposedTaxonomyFilterOptions = $exposed_taxonomy_filter_options;
   }
 
   /**
@@ -117,6 +137,7 @@ class ViewsContentResourcesManager extends ControllerBase implements ContainerIn
       $container->get('entity_display.repository'),
       $container->get('current_route_match'),
       $container->get('cache_tags.invalidator'),
+      $container->get('ys_views_content_resources.exposed_taxonomy_filter_options'),
     );
   }
 
@@ -157,6 +178,11 @@ class ViewsContentResourcesManager extends ControllerBase implements ContainerIn
     // Retrieve the current filter options from the view's display settings.
     $filters = $view->getDisplay()->getOption('filters');
 
+    // Terms the editor used to exclude content. Every exposed taxonomy filter
+    // drops these from its options: a visitor selecting one would always get
+    // zero results.
+    $excluded_terms = array_map([$this, 'getTermId'], $paramsDecoded['filters']['terms_exclude'] ?? []);
+
     // Mapping content types to their respective category filters.
     $category_filters = [
       'resource' => 'field_category_target_id',
@@ -178,16 +204,14 @@ class ViewsContentResourcesManager extends ControllerBase implements ContainerIn
         unset($filters[$filter]);
       }
 
-      // Check if 'category_included_terms' is provided for the current
-      // filter type.
-      if (!empty($paramsDecoded['category_included_terms'])) {
-        $vid = "resource_category";
-
-        // Limit the filter to specific terms if provided.
-        $filters[$category_filter_name]['value'] = $this->getChildTermsByParentId($paramsDecoded['category_included_terms'], $vid);
-        $filters[$category_filter_name]['limit'] = TRUE;
-        $filters[$category_filter_name]['expose']['reduce'] = TRUE;
-      }
+      // Offer only the included parent's children (when set) and never a term
+      // used to exclude content, which would always return zero results.
+      $this->exposedTaxonomyFilterOptions->apply(
+        $filters,
+        $category_filter_name,
+        $excluded_terms,
+        (int) ($paramsDecoded['category_included_terms'] ?? 0),
+      );
 
       // Set a custom label for the 'Category' filter if provided.
       if (!empty($paramsDecoded['category_filter_label'])) {
@@ -208,17 +232,14 @@ class ViewsContentResourcesManager extends ControllerBase implements ContainerIn
       $custom_vocab_label = $this->entityTypeManager->getStorage('taxonomy_vocabulary')->load('custom_vocab')->label();
       $filters['field_custom_vocab_target_id']['expose']['label'] = $custom_vocab_label;
 
-      // Check if 'custom_vocab_included_terms' is provided for the current
-      // filter type.
-      if (!empty($paramsDecoded['custom_vocab_included_terms'])) {
-        // Determine the vocabulary ID based on the selected filter type.
-        $vid = 'custom_vocab';
-
-        // Limit the filter to specific terms if provided.
-        $filters['field_custom_vocab_target_id']['value'] = $this->getChildTermsByParentId($paramsDecoded['custom_vocab_included_terms'], $vid);
-        $filters['field_custom_vocab_target_id']['limit'] = TRUE;
-        $filters['field_custom_vocab_target_id']['expose']['reduce'] = TRUE;
-      }
+      // Offer only the included parent's children (when set) and never an
+      // excluded term.
+      $this->exposedTaxonomyFilterOptions->apply(
+        $filters,
+        'field_custom_vocab_target_id',
+        $excluded_terms,
+        (int) ($paramsDecoded['custom_vocab_included_terms'] ?? 0),
+      );
     }
     else {
       // Remove filter if 'show filter' field is not set.
@@ -237,6 +258,10 @@ class ViewsContentResourcesManager extends ControllerBase implements ContainerIn
     foreach ($exposed_filters as $exposed_filter_option => $filter_name) {
       if (!isset($paramsDecoded['exposed_filter_options'][$exposed_filter_option])) {
         unset($filters[$filter_name]);
+      }
+      else {
+        // Never offer an excluded term.
+        $this->exposedTaxonomyFilterOptions->apply($filters, $filter_name, $excluded_terms);
       }
     }
 
@@ -264,11 +289,18 @@ class ViewsContentResourcesManager extends ControllerBase implements ContainerIn
             'field_teaser_title' => 'field_teaser_title',
           ];
         }
-        $fieldsArray = [];
-        foreach ($selectedFields as $field) {
-          $fieldsArray[$field] = $field;
+
+        // The 'authors' option is a pseudo-field. Affiliated author names live
+        // on referenced Profile nodes and non-affiliated authors are a
+        // multi-value double_field, so neither is reachable by the combine
+        // filter as-is. expandSearchFields() maps the selection onto the real
+        // combine field ids and reports whether the author handlers (the
+        // relationship and extra fields) need injecting.
+        $combine = $this->expandSearchFields($selectedFields);
+        if ($combine['authors']) {
+          $this->addAuthorSearchHandlers($view);
         }
-        $filters['combine']['fields'] = $fieldsArray;
+        $filters['combine']['fields'] = $combine['fields'];
       }
     }
 
@@ -303,40 +335,13 @@ class ViewsContentResourcesManager extends ControllerBase implements ContainerIn
      * 6) Event time period (future, past, all)
      */
 
-    $termsIncludeArray = [];
-    $termsExcludeArray = [];
-
-    // Get terms to include.
-    if (isset($paramsDecoded['filters']['terms_include'])) {
-      foreach ($paramsDecoded['filters']['terms_include'] as $term) {
-        $termsIncludeArray[] = $this->getTermId($term);
-      }
-    }
-
-    // Get terms to exclude.
-    if (isset($paramsDecoded['filters']['terms_exclude'])) {
-      foreach ($paramsDecoded['filters']['terms_exclude'] as $term) {
-        $termsExcludeArray[] = $this->getTermId($term);
-      }
-    }
+    // getTermId() already unwraps legacy ['target_id' => id] storage.
+    $termsIncludeArray = array_map([$this, 'getTermId'], $paramsDecoded['filters']['terms_include'] ?? []);
+    $termsExcludeArray = $excluded_terms;
 
     // Set operator: "+" is "OR" and "," is "AND".
     $operator = $paramsDecoded['operator'] ?? '+';
 
-    // Fix for older setting terms for nodes not saved with the new storage.
-    if (isset($termsIncludeArray[0]) && is_array($termsIncludeArray[0])) {
-      foreach ($termsIncludeArray as $terms) {
-        $termsIncludeArrayFixed[] = $terms['target_id'];
-      }
-      $termsIncludeArray = $termsIncludeArrayFixed;
-    }
-    if (isset($termsExcludeArray[0]) && is_array($termsExcludeArray[0])) {
-      foreach ($termsExcludeArray as $terms) {
-        $termsExcludeArrayFixed[] = $terms['target_id'];
-      }
-      $termsExcludeArray = $termsExcludeArrayFixed;
-    }
-    // End fix.
     $termsInclude = (count($termsIncludeArray) != 0) ? implode($operator, $termsIncludeArray) : 'all';
     $termsExclude = (count($termsExcludeArray) != 0) ? implode($operator, $termsExcludeArray) : NULL;
 
@@ -444,6 +449,128 @@ class ViewsContentResourcesManager extends ControllerBase implements ContainerIn
     }
 
     $setupRunning = FALSE;
+  }
+
+  /**
+   * Injects the handlers needed to search author names.
+   *
+   * The combine filter can only search real database columns on the resource
+   * node. Affiliated authors (field_authors) reference Profile nodes, so a
+   * relationship to the Profile exposes its title. Non-affiliated authors
+   * (field_nonaffiliated_authors) are a multi-value double_field whose first
+   * and second name columns must both be searchable. Every handler is excluded
+   * from display and only feeds the combine filter; DISTINCT collapses the row
+   * multiplication the multi-value joins introduce.
+   *
+   * @param \Drupal\views\ViewExecutable $view
+   *   The view being set up.
+   */
+  private function addAuthorSearchHandlers(&$view): void {
+    $display = $view->getDisplay();
+    $definitions = $this->authorSearchHandlerDefinitions();
+
+    // Merge so existing handlers are preserved; the author keys are unique.
+    $relationships = $display->getOption('relationships') ?: [];
+    $display->setOption('relationships', $relationships + $definitions['relationships']);
+
+    $fields = $display->getOption('fields') ?: [];
+    $display->setOption('fields', $fields + $definitions['fields']);
+
+    // Collapse the row multiplication the multi-value author joins introduce.
+    $query_options = $display->getOption('query') ?: [];
+    $query_options['options']['distinct'] = TRUE;
+    $display->setOption('query', $query_options);
+  }
+
+  /**
+   * Builds the relationship and field handler definitions for author search.
+   *
+   * Pure data builder, separated from addAuthorSearchHandlers() so it can be
+   * unit tested. Affiliated authors (field_authors) reference Profile nodes, so
+   * a relationship to the Profile exposes its title. Non-affiliated authors
+   * (field_nonaffiliated_authors) are a multi-value double_field whose first
+   * and second name columns are both needed. Every field is excluded from
+   * display and exists only to feed the combine filter.
+   *
+   * @return array
+   *   An array with 'relationships' and 'fields' keys of Views handler config.
+   */
+  public function authorSearchHandlerDefinitions(): array {
+    return [
+      'relationships' => [
+        'field_authors' => [
+          'id' => 'field_authors',
+          'table' => 'node__field_authors',
+          'field' => 'field_authors',
+          'relationship' => 'none',
+          'group_type' => 'group',
+          'admin_label' => 'Author profile',
+          'plugin_id' => 'standard',
+          'required' => FALSE,
+        ],
+      ],
+      'fields' => [
+        'author_profile_title' => [
+          'id' => 'author_profile_title',
+          'table' => 'node_field_data',
+          'field' => 'title',
+          'relationship' => 'field_authors',
+          'plugin_id' => 'field',
+          'entity_type' => 'node',
+          'entity_field' => 'title',
+          'exclude' => TRUE,
+          'label' => '',
+        ],
+        'nonaffiliated_author_first' => [
+          'id' => 'nonaffiliated_author_first',
+          'table' => 'node__field_nonaffiliated_authors',
+          'field' => 'field_nonaffiliated_authors_first',
+          'relationship' => 'none',
+          'plugin_id' => 'standard',
+          'exclude' => TRUE,
+          'label' => '',
+        ],
+        'nonaffiliated_author_second' => [
+          'id' => 'nonaffiliated_author_second',
+          'table' => 'node__field_nonaffiliated_authors',
+          'field' => 'field_nonaffiliated_authors_second',
+          'relationship' => 'none',
+          'plugin_id' => 'standard',
+          'exclude' => TRUE,
+          'label' => '',
+        ],
+      ],
+    ];
+  }
+
+  /**
+   * Maps selected search fields onto combine-filter field ids.
+   *
+   * The 'authors' option is a pseudo-field that expands to the author combine
+   * fields. Pure helper, separated for unit testing.
+   *
+   * @param array $selectedFields
+   *   The search field machine names selected by the editor.
+   *
+   * @return array
+   *   An array with 'fields' (combine field id => id) and 'authors' (bool,
+   *   whether the author handlers must be injected).
+   */
+  public function expandSearchFields(array $selectedFields): array {
+    $authors = in_array('authors', $selectedFields, TRUE);
+    $plain = array_filter($selectedFields, static fn ($field) => $field !== 'authors');
+
+    $fields = [];
+    foreach ($plain as $field) {
+      $fields[$field] = $field;
+    }
+    if ($authors) {
+      foreach (self::AUTHOR_COMBINE_FIELDS as $author_field) {
+        $fields[$author_field] = $author_field;
+      }
+    }
+
+    return ['fields' => $fields, 'authors' => $authors];
   }
 
   /**
@@ -750,30 +877,6 @@ class ViewsContentResourcesManager extends ControllerBase implements ContainerIn
   }
 
   /**
-   * Get child taxonomy terms by parent ID.
-   *
-   * @param int $parentId
-   *   The ID of the parent term.
-   * @param string $vid
-   *   The machine name of the vocabulary.
-   *
-   * @return array
-   *   An associative array of child terms where the key is the term ID and
-   *   the value is the term ID.
-   */
-  public function getChildTermsByParentId(int $parentId, string $vid): array {
-    $list = [];
-    // Load all child terms for the given parent term ID and vocabulary ID.
-    $terms = $this->termStorage->loadTree($vid, $parentId, NULL);
-
-    foreach ($terms as $term) {
-      $list[$term->tid] = (int) $term->tid;
-    }
-
-    return $list;
-  }
-
-  /**
    * Returns an integer representation of the term.
    *
    * The term could be either the old Drupal way of an array with a
@@ -788,7 +891,9 @@ class ViewsContentResourcesManager extends ControllerBase implements ContainerIn
    *   The term ID.
    */
   private function getTermId($term) : int {
-    return (int) is_array($term) ? $term['target_id'] : $term;
+    // Parenthesized: without them the cast binds to is_array() and the
+    // value is returned uncast.
+    return (int) (is_array($term) ? ($term['target_id'] ?? 0) : $term);
   }
 
   /**

@@ -10,6 +10,7 @@ use Drupal\Core\Form\FormStateInterface;
 use Drupal\Core\Routing\RouteMatchInterface;
 use Drupal\Tests\UnitTestCase;
 use Drupal\taxonomy\TermStorageInterface;
+use Drupal\ys_views_content_resources\ExposedTaxonomyFilterOptions;
 use Drupal\ys_views_content_resources\ViewsContentResourcesManager;
 
 /**
@@ -70,6 +71,13 @@ class ViewsContentResourcesManagerTest extends UnitTestCase {
   protected $cacheTagsInvalidator;
 
   /**
+   * The exposed taxonomy filter options mock.
+   *
+   * @var \Drupal\ys_views_content_resources\ExposedTaxonomyFilterOptions|\PHPUnit\Framework\MockObject\MockObject
+   */
+  protected $exposedTaxonomyFilterOptions;
+
+  /**
    * The manager under test.
    *
    * @var \Drupal\ys_views_content_resources\ViewsContentResourcesManager
@@ -95,12 +103,14 @@ class ViewsContentResourcesManagerTest extends UnitTestCase {
     $this->entityDisplayRepository = $this->createMock(EntityDisplayRepository::class);
     $this->routeMatch = $this->createMock(RouteMatchInterface::class);
     $this->cacheTagsInvalidator = $this->createMock(CacheTagsInvalidatorInterface::class);
+    $this->exposedTaxonomyFilterOptions = $this->createMock(ExposedTaxonomyFilterOptions::class);
 
     $this->manager = new ViewsContentResourcesManager(
       $this->entityTypeManager,
       $this->entityDisplayRepository,
       $this->routeMatch,
-      $this->cacheTagsInvalidator
+      $this->cacheTagsInvalidator,
+      $this->exposedTaxonomyFilterOptions
     );
   }
 
@@ -177,6 +187,7 @@ class ViewsContentResourcesManagerTest extends UnitTestCase {
         ['entity_display.repository', 1, $this->entityDisplayRepository],
         ['current_route_match', 1, $this->routeMatch],
         ['cache_tags.invalidator', 1, $this->cacheTagsInvalidator],
+        ['ys_views_content_resources.exposed_taxonomy_filter_options', 1, $this->exposedTaxonomyFilterOptions],
       ]);
 
     $manager = ViewsContentResourcesManager::create($container);
@@ -516,18 +527,60 @@ class ViewsContentResourcesManagerTest extends UnitTestCase {
   }
 
   /**
-   * GetChildTermsByParentId() lists descendant term IDs keyed by themselves.
+   * ExpandSearchFields() leaves a selection without authors unchanged.
    *
-   * @covers ::getChildTermsByParentId
+   * @covers ::expandSearchFields
    */
-  public function testGetChildTermsByParentIdReturnsDescendantIds() {
-    $this->termStorage->method('loadTree')
-      ->with('resource_category', 4, NULL)
-      ->willReturn([$this->createTreeItem(5, 'Articles'), $this->createTreeItem(6, 'Reports')]);
+  public function testExpandSearchFieldsWithoutAuthors() {
+    $selected = ['title' => 'title', 'field_teaser_text' => 'field_teaser_text'];
 
-    $children = $this->manager->getChildTermsByParentId(4, 'resource_category');
+    $this->assertSame(
+      ['fields' => $selected, 'authors' => FALSE],
+      $this->manager->expandSearchFields($selected)
+    );
+  }
 
-    $this->assertSame([5 => 5, 6 => 6], $children);
+  /**
+   * ExpandSearchFields() swaps the authors pseudo-field for author columns.
+   *
+   * @covers ::expandSearchFields
+   */
+  public function testExpandSearchFieldsWithAuthors() {
+    $result = $this->manager->expandSearchFields(['title' => 'title', 'authors' => 'authors']);
+
+    $this->assertTrue($result['authors']);
+    $this->assertSame([
+      'title' => 'title',
+      'author_profile_title' => 'author_profile_title',
+      'nonaffiliated_author_first' => 'nonaffiliated_author_first',
+      'nonaffiliated_author_second' => 'nonaffiliated_author_second',
+    ], $result['fields']);
+  }
+
+  /**
+   * AuthorSearchHandlerDefinitions() provides a hidden handler per field.
+   *
+   * Every combine field the authors option expands to must have a matching
+   * field handler, hidden from display, and any relationship it uses must be
+   * defined alongside it.
+   *
+   * @covers ::authorSearchHandlerDefinitions
+   */
+  public function testAuthorSearchHandlerDefinitionsCoverEveryAuthorField() {
+    $definitions = $this->manager->authorSearchHandlerDefinitions();
+    $combine = $this->manager->expandSearchFields(['authors' => 'authors'])['fields'];
+
+    $this->assertSame(array_keys($combine), array_keys($definitions['fields']));
+    foreach ($definitions['fields'] as $id => $field) {
+      $this->assertSame($id, $field['id']);
+      $this->assertTrue($field['exclude']);
+      if ($field['relationship'] !== 'none') {
+        $this->assertArrayHasKey($field['relationship'], $definitions['relationships']);
+      }
+    }
+    $this->assertSame('node__field_nonaffiliated_authors', $definitions['fields']['nonaffiliated_author_first']['table']);
+    $this->assertSame('field_nonaffiliated_authors_first', $definitions['fields']['nonaffiliated_author_first']['field']);
+    $this->assertSame('field_nonaffiliated_authors_second', $definitions['fields']['nonaffiliated_author_second']['field']);
   }
 
   /**
