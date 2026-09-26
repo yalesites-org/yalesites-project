@@ -149,6 +149,39 @@ class ViewsBasicManager extends ControllerBase implements ContainerInjectionInte
         'field_last_name:DESC' => 'Last Name - Z-A',
       ],
     ],
+    // Resources (#1723) keep the design labels and sort options of the
+    // ys_views_content_resources widget they replace.
+    'resource' => [
+      'label' => 'Resources',
+      'img' => '/profiles/custom/yalesites_profile/modules/custom/ys_views_basic/assets/icons/content-type-resource.svg',
+      'img_alt' => 'Document icon',
+      'view_modes' => [
+        'card' => [
+          'label' => 'Card Grid',
+          'img' => '/profiles/custom/yalesites_profile/modules/custom/ys_views_basic/assets/icons/display-type-card-grid.svg',
+          'img_alt' => 'Icon showing 3 generic cards next to each other. Image placement is on the top of each card.',
+        ],
+        'portrait_grid' => [
+          'label' => 'Portrait Grid',
+          'img' => '/profiles/custom/yalesites_profile/modules/custom/ys_views_basic/assets/icons/display-type-portrait-grid.svg',
+          'img_alt' => 'Placeholder icon for portrait grid display mode.',
+        ],
+        'list_item' => [
+          'label' => 'List',
+          'img' => '/profiles/custom/yalesites_profile/modules/custom/ys_views_basic/assets/icons/display-type-list-view.svg',
+          'img_alt' => 'Icon showing 3 generic list items one on top of the other. Image placement is on the left of each list item.',
+        ],
+        'condensed' => [
+          'label' => 'Condensed',
+          'img' => '/profiles/custom/yalesites_profile/modules/custom/ys_views_basic/assets/icons/display-type-condensed.svg',
+          'img_alt' => 'Icon showing 3 generic list items one on top of the other with no images on the items.',
+        ],
+      ],
+      'sort_by' => [
+        'field_publish_date:DESC' => 'Published Date - newer first',
+        'field_publish_date:ASC' => 'Published Date - older first',
+      ],
+    ],
   ];
 
   /**
@@ -163,6 +196,47 @@ class ViewsBasicManager extends ControllerBase implements ContainerInjectionInte
   const CONTENT_TYPE_EVENT = 'event';
   const CONTENT_TYPE_PAGE = 'page';
   const CONTENT_TYPE_PROFILE = 'profile';
+  const CONTENT_TYPE_RESOURCE = 'resource';
+
+  /**
+   * The resource-only exposed filters, keyed by their exposed-filter option.
+   *
+   * Each maps to the filter id it switches on in the resource scaffold view.
+   * The shared filters (search, category, custom vocabulary, audience) are
+   * handled for every content type in ::setupView().
+   */
+  const RESOURCE_EXPOSED_FILTERS = [
+    'show_year_filter' => 'resource_year_filter',
+    'show_academic_year_filter' => 'field_academic_years_target_id',
+    'show_discipline_filter' => 'field_discipline_target_id',
+    'show_areas_of_study_filter' => 'field_areas_of_study_target_id',
+    'show_geographic_areas_filter' => 'field_geographic_areas_target_id',
+  ];
+
+  /**
+   * The fields a resource search runs across when the block picked none.
+   */
+  const RESOURCE_DEFAULT_SEARCH_FIELDS = [
+    'title' => 'title',
+    'field_teaser_text' => 'field_teaser_text',
+    'field_teaser_title' => 'field_teaser_title',
+  ];
+
+  /**
+   * The resource-only field display options (#1723).
+   *
+   * Stored under resource_field_options and stamped onto each result node by
+   * hook_views_pre_render() under these same names, which is what atomic's
+   * node--resource--*.html.twig templates read.
+   */
+  const RESOURCE_FIELD_OPTIONS = [
+    'show_teaser_text',
+    'show_discipline',
+    'show_journal_name',
+    'show_journal_issue',
+    'show_authors',
+    'show_publish_date',
+  ];
 
   /**
    * The card sizes a card grid may be set to (#1648).
@@ -191,10 +265,16 @@ class ViewsBasicManager extends ControllerBase implements ContainerInjectionInte
    * style plugin, the pager, the sort and the taxonomy filters are shared
    * with the content_resources view, which packs a different, shorter list of
    * its own (ViewsContentResourcesManager::setupView()).
+   *
+   * Resource listings (#1723) get a scaffold view of their own rather than
+   * reusing content_resources: that view stays wired to the old module's
+   * hooks, which read its arguments in the old order, until the old module is
+   * removed.
    */
   const SCAFFOLD_VIEWS = [
     'views_basic_scaffold',
     'views_basic_scaffold_events',
+    'views_basic_scaffold_resources',
   ];
 
   /**
@@ -238,6 +318,7 @@ class ViewsBasicManager extends ControllerBase implements ContainerInjectionInte
     'pin_settings',
     'original_settings',
     'profile_field_display_options',
+    'resource_field_display_options',
   ];
 
   /**
@@ -363,6 +444,32 @@ class ViewsBasicManager extends ControllerBase implements ContainerInjectionInte
       'supports_thumbnail' => FALSE,
       'supports_card_size' => FALSE,
     ],
+    // Resources (#1723): the teaser image on every design but condensed, and
+    // no card-size dial, matching what the resource_view widget offered.
+    'resource_card' => [
+      'content_type' => self::CONTENT_TYPE_RESOURCE,
+      'view_mode' => 'card',
+      'supports_thumbnail' => TRUE,
+      'supports_card_size' => FALSE,
+    ],
+    'resource_portrait_grid' => [
+      'content_type' => self::CONTENT_TYPE_RESOURCE,
+      'view_mode' => 'portrait_grid',
+      'supports_thumbnail' => TRUE,
+      'supports_card_size' => FALSE,
+    ],
+    'resource_list_item' => [
+      'content_type' => self::CONTENT_TYPE_RESOURCE,
+      'view_mode' => 'list_item',
+      'supports_thumbnail' => TRUE,
+      'supports_card_size' => FALSE,
+    ],
+    'resource_condensed' => [
+      'content_type' => self::CONTENT_TYPE_RESOURCE,
+      'view_mode' => 'condensed',
+      'supports_thumbnail' => FALSE,
+      'supports_card_size' => FALSE,
+    ],
   ];
 
   /**
@@ -461,9 +568,11 @@ class ViewsBasicManager extends ControllerBase implements ContainerInjectionInte
    *   The isolated view executable, or NULL when the scaffold view is missing.
    */
   public function initView($types) {
-    $view_id = in_array('event', $types)
-      ? 'views_basic_scaffold_events'
-      : 'views_basic_scaffold';
+    $view_id = match (TRUE) {
+      in_array(self::CONTENT_TYPE_EVENT, $types) => 'views_basic_scaffold_events',
+      in_array(self::CONTENT_TYPE_RESOURCE, $types) => 'views_basic_scaffold_resources',
+      default => 'views_basic_scaffold',
+    };
 
     $view_entity = $this->entityTypeManager->getStorage('view')->load($view_id);
     if (!$view_entity instanceof ViewEntityInterface) {
@@ -540,6 +649,7 @@ class ViewsBasicManager extends ControllerBase implements ContainerInjectionInte
       self::CONTENT_TYPE_EVENT => 'field_category_target_id',
       self::CONTENT_TYPE_PAGE => 'field_category_target_id_1',
       self::CONTENT_TYPE_PROFILE => 'field_affiliation_target_id',
+      self::CONTENT_TYPE_RESOURCE => 'field_category_target_id',
     ];
 
     // Determine the category filter name based on the filter type.
@@ -635,6 +745,10 @@ class ViewsBasicManager extends ControllerBase implements ContainerInjectionInte
     if (!isset($paramsDecoded['exposed_filter_options']['show_year_filter']) || $filterType !== self::CONTENT_TYPE_POST) {
       // Remove the 'Year' filter if the 'show_year_filter' is not set.
       unset($filters['post_year_filter']);
+    }
+
+    if ($filterType === self::CONTENT_TYPE_RESOURCE) {
+      $filters = self::applyResourceFilters($filters, $paramsDecoded);
     }
 
     // Set the modified filters back to the view display options.
@@ -755,6 +869,8 @@ class ViewsBasicManager extends ControllerBase implements ContainerInjectionInte
       'show_pronouns' => (int) !empty($paramsDecoded['profile_field_options']['show_pronouns']),
     ];
 
+    $resource_field_display_options = self::resourceFieldDisplayOptions($paramsDecoded);
+
     $pin_label = $paramsDecoded['pin_label'] ?? self::DEFAULT_PIN_LABEL;
 
     if (!$pinned_to_top) {
@@ -806,6 +922,7 @@ class ViewsBasicManager extends ControllerBase implements ContainerInjectionInte
       'pin_settings' => json_encode($pin_options),
       'original_settings' => $params,
       'profile_field_display_options' => json_encode($profile_field_display_options),
+      'resource_field_display_options' => json_encode($resource_field_display_options),
     ];
 
     // Ordered by ::VIEW_ARGUMENT_ORDER rather than by the literal above, so
@@ -841,11 +958,17 @@ class ViewsBasicManager extends ControllerBase implements ContainerInjectionInte
         // card-size dial deliberately is not: it only affects the
         // collection wrapper the style plugin builds, so keying it per row
         // would split identical row markup into a 3-up and a 4-up copy and
-        // cover nothing. The wrapper needs no key of its own either — the
-        // scaffold view sets `cache: type: none` and ys_views_basic_node_view()
-        // forces max-age 0 on these builds, so this path is not render-cached.
+        // cover nothing. The wrapper needs no key of its own either: every
+        // result node build gets max-age 0 from ys_views_basic_node_view(),
+        // and the post/event/page/profile scaffold views set `cache: type:
+        // none`. views_basic_scaffold_resources keeps content_resources'
+        // `cache: type: tag`, whose cached output is keyed on the view
+        // arguments, and the card size rides in field_display_options.
         foreach ($profile_field_display_options as $profile_option) {
           $resultRow['#cache']['keys'][] = $profile_option;
+        }
+        foreach ($resource_field_display_options as $resource_option) {
+          $resultRow['#cache']['keys'][] = $resource_option;
         }
         $resultRow['#cache']['keys'][] = $pin_options['pinned_to_top'];
         $resultRow['#cache']['keys'][] = $pin_options['pin_label'];
@@ -873,6 +996,109 @@ class ViewsBasicManager extends ControllerBase implements ContainerInjectionInte
    */
   protected function pagerElementId(string $uuid): int {
     return abs(crc32($uuid)) % 100;
+  }
+
+  /**
+   * Applies a resource listing's own exposed filters and search fields.
+   *
+   * The resource-only half of the filter setup ported from
+   * ViewsContentResourcesManager::setupView() (#1723); ::setupView() has
+   * already handled the filters every content type shares.
+   *
+   * @param array $filters
+   *   The scaffold view display's filters.
+   * @param array $paramsDecoded
+   *   The decoded stored params.
+   *
+   * @return array
+   *   The filters, with each resource-only filter the block did not enable
+   *   removed and the search narrowed to the block's chosen fields.
+   */
+  public static function applyResourceFilters(array $filters, array $paramsDecoded): array {
+    $exposed = $paramsDecoded['exposed_filter_options'] ?? [];
+    foreach (self::RESOURCE_EXPOSED_FILTERS as $option => $filter) {
+      if (!isset($exposed[$option])) {
+        unset($filters[$filter]);
+      }
+    }
+
+    // A block saved before search fields existed keeps the view's own set.
+    $search_fields = $paramsDecoded['search_fields'] ?? NULL;
+    if (isset($exposed['show_search_filter']) && !empty($search_fields) && is_array($search_fields)) {
+      $selected = array_filter($search_fields) ?: self::RESOURCE_DEFAULT_SEARCH_FIELDS;
+      $filters['combine']['fields'] = array_combine($selected, $selected);
+    }
+
+    return $filters;
+  }
+
+  /**
+   * Returns a resource listing's per-result display flags as 0/1 values.
+   *
+   * @param array $paramsDecoded
+   *   The decoded stored params.
+   *
+   * @return array
+   *   One flag per ::RESOURCE_FIELD_OPTIONS name, all 0 when none are stored.
+   */
+  public static function resourceFieldDisplayOptions(array $paramsDecoded): array {
+    $options = is_array($paramsDecoded['resource_field_options'] ?? NULL) ? $paramsDecoded['resource_field_options'] : [];
+    $flags = [];
+    foreach (self::RESOURCE_FIELD_OPTIONS as $option) {
+      $flags[$option] = (int) !empty($options[$option]);
+    }
+    return $flags;
+  }
+
+  /**
+   * Moves a stored resource_view params blob onto this manager's keys (#1723).
+   *
+   * The resource_view widget kept every per-result option in one
+   * field_options bucket and named the category flag show_category. Here the
+   * shared options (thumbnail, category, tags) stay in field_options under
+   * the names every listing uses, and the resource-only ones move to
+   * resource_field_options. The two legacy mappings the old manager applied
+   * on every render are applied once here instead: show_publication expands
+   * to the four fields it covered, and the retired journal-name filter
+   * becomes a search across that field. Every other key is carried over
+   * unchanged, and running this on its own output changes nothing.
+   *
+   * @param array $params
+   *   Decoded params as stored by the resource_view widget.
+   *
+   * @return array
+   *   Params for a resource listing bundle.
+   */
+  public static function normalizeResourceParams(array $params): array {
+    $params['filters']['types'] = [self::CONTENT_TYPE_RESOURCE];
+
+    // Only when options were stored: setupView() shows the teaser image when
+    // field_options is absent altogether, and an empty set would hide it.
+    if (isset($params['field_options']) && is_array($params['field_options'])) {
+      $stored = $params['field_options'] + (is_array($params['resource_field_options'] ?? NULL) ? $params['resource_field_options'] : []);
+      if (isset($stored['show_publication'])) {
+        foreach (['show_journal_name', 'show_journal_issue', 'show_authors', 'show_publish_date'] as $option) {
+          $stored[$option] ??= !empty($stored['show_publication']);
+        }
+      }
+      if (!empty($stored['show_category'])) {
+        $stored['show_categories'] = 'show_categories';
+      }
+      $enabled = array_keys(array_filter($stored));
+      $shared = array_intersect(['show_thumbnail', 'show_categories', 'show_tags'], $enabled);
+      $resource = array_intersect(self::RESOURCE_FIELD_OPTIONS, $enabled);
+      $params['field_options'] = array_combine($shared, $shared);
+      $params['resource_field_options'] = array_combine($resource, $resource);
+    }
+
+    if (!empty($params['exposed_filter_options']['show_journal_publication_name_filter']) && empty($params['search_fields'])) {
+      $params['search_fields'] = self::RESOURCE_DEFAULT_SEARCH_FIELDS + [
+        'field_journal_publication_name' => 'field_journal_publication_name',
+      ];
+    }
+    unset($params['exposed_filter_options']['show_journal_publication_name_filter']);
+
+    return $params;
   }
 
   /**
@@ -1284,6 +1510,18 @@ class ViewsBasicManager extends ControllerBase implements ContainerInjectionInte
         $defaultParam = (empty($paramsDecoded['profile_field_options'])) ? [] : $paramsDecoded['profile_field_options'];
         break;
 
+      case 'resource_field_options':
+        $defaultParam = (!empty($paramsDecoded['resource_field_options']) && is_array($paramsDecoded['resource_field_options']))
+          ? $paramsDecoded['resource_field_options']
+          : [];
+        break;
+
+      case 'search_fields':
+        $defaultParam = (!empty($paramsDecoded['search_fields']) && is_array($paramsDecoded['search_fields']))
+          ? $paramsDecoded['search_fields']
+          : self::RESOURCE_DEFAULT_SEARCH_FIELDS;
+        break;
+
       case 'card_size':
         // Listings saved before the dial existed carry no key and must keep
         // their large (3-up) grid. An unrecognised stored value falls back too,
@@ -1561,6 +1799,7 @@ class ViewsBasicManager extends ControllerBase implements ContainerInjectionInte
           'view_mode_ajax' => ($form) ? $form['block_form']['group_user_selection']['entity_and_view_mode']['view_mode'] : NULL,
           'category_included_terms_ajax' => ($form) ? $form['block_form']['group_user_selection']['entity_and_view_mode']['category_included_terms'] : NULL,
           'show_category_filter_selector' => ':input[name="block_form[group_user_selection][entity_and_view_mode][exposed_filter_options][show_category_filter]"]',
+          'show_search_filter_selector' => ':input[name="block_form[group_user_selection][entity_and_view_mode][exposed_filter_options][show_search_filter]"]',
           'show_audience_filter_selector' => ':input[name="block_form[group_user_selection][entity_and_view_mode][exposed_filter_options][show_audience_filter]"]',
           'show_custom_vocab_filter_selector' => ':input[name="block_form[group_user_selection][entity_and_view_mode][exposed_filter_options][show_custom_vocab_filter]"]',
           'custom_vocab_included_terms_ajax' => ($form) ? $form['block_form']['group_user_selection']['entity_and_view_mode']['custom_vocab_included_terms'] : NULL,
@@ -1640,6 +1879,7 @@ class ViewsBasicManager extends ControllerBase implements ContainerInjectionInte
           'view_mode_ajax' => ($form) ? $form['settings']['block_form']['group_user_selection']['entity_and_view_mode']['view_mode'] : NULL,
           'category_included_terms_ajax' => ($form) ? $form['settings']['block_form']['group_user_selection']['entity_and_view_mode']['category_included_terms'] : NULL,
           'show_category_filter_selector' => ':input[name="settings[block_form][group_user_selection][entity_and_view_mode][exposed_filter_options][show_category_filter]"]',
+          'show_search_filter_selector' => ':input[name="settings[block_form][group_user_selection][entity_and_view_mode][exposed_filter_options][show_search_filter]"]',
           'show_audience_filter_selector' => ':input[name="settings[block_form][group_user_selection][entity_and_view_mode][exposed_filter_options][show_audience_filter]"]',
           'show_custom_vocab_filter_selector' => ':input[name="settings[block_form][group_user_selection][entity_and_view_mode][exposed_filter_options][show_custom_vocab_filter]"]',
           'custom_vocab_included_terms_ajax' => ($form) ? $form['settings']['block_form']['group_user_selection']['entity_and_view_mode']['custom_vocab_included_terms'] : NULL,
@@ -1726,6 +1966,7 @@ class ViewsBasicManager extends ControllerBase implements ContainerInjectionInte
         'view_mode_ajax' => ($form) ? $form['group_user_selection']['entity_and_view_mode']['view_mode'] : NULL,
         'category_included_terms_ajax' => ($form) ? $form['group_user_selection']['entity_and_view_mode']['category_included_terms'] : NULL,
         'show_category_filter_selector' => ':input[name="show_category_filter"]',
+        'show_search_filter_selector' => ':input[name="show_search_filter"]',
         'show_audience_filter_selector' => ':input[name="show_audience_filter"]',
         'show_custom_vocab_filter_selector' => ':input[name="show_custom_vocab_filter"]',
         'custom_vocab_included_terms_ajax' => ($form) ? $form['group_user_selection']['entity_and_view_mode']['custom_vocab_included_terms'] : NULL,

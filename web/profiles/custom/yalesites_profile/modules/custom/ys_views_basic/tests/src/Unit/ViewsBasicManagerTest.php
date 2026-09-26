@@ -182,7 +182,7 @@ class ViewsBasicManagerTest extends UnitTestCase {
   public function testEntityTypeListReturnsLabelsWithImageMarkup() {
     $list = $this->manager->entityTypeList();
 
-    $this->assertSame(['post', 'event', 'page', 'profile'], array_keys($list));
+    $this->assertSame(['post', 'event', 'page', 'profile', 'resource'], array_keys($list));
     $this->assertStringContainsString('Posts', $list['post']);
     $this->assertStringContainsString('<img src=', $list['post']);
   }

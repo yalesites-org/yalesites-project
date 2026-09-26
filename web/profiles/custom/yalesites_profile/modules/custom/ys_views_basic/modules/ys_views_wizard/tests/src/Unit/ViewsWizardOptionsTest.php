@@ -101,6 +101,28 @@ class ViewsWizardOptionsTest extends UnitTestCase {
   }
 
   /**
+   * Resources are offered as a content type tile with all four designs (#1723).
+   *
+   * The tile and its designs come from ViewsBasicManager::ALLOWED_ENTITIES,
+   * and each design has to hand off to a resource listing bundle, or the
+   * wizard would offer a choice it cannot place.
+   *
+   * @covers ::resolveBundle
+   */
+  public function testResourceTileResolvesEveryDesign(): void {
+    $this->assertArrayHasKey('resource', ViewsBasicManager::ALLOWED_ENTITIES);
+    $this->assertSame(
+      '/profiles/custom/yalesites_profile/modules/custom/ys_views_basic/assets/icons/content-type-resource.svg',
+      ViewsBasicManager::ALLOWED_ENTITIES['resource']['img']
+    );
+    $designs = array_keys(ViewsBasicManager::ALLOWED_ENTITIES['resource']['view_modes']);
+    $this->assertSame(['card', 'portrait_grid', 'list_item', 'condensed'], $designs);
+    foreach ($designs as $view_mode) {
+      $this->assertSame('resource_' . $view_mode, $this->options->resolveBundle('resource', $view_mode));
+    }
+  }
+
+  /**
    * A pair with no listing bundle resolves to NULL rather than a bad plugin.
    *
    * ViewsWizardForm marks the display-mode radios #validated so the
@@ -128,6 +150,8 @@ class ViewsWizardOptionsTest extends UnitTestCase {
   public static function providerImpossiblePairs(): array {
     return [
       'directory is profile-only' => ['post', 'directory'],
+      'portrait grid is resource-only' => ['post', 'portrait_grid'],
+      'resources have no directory' => ['resource', 'directory'],
       'unknown content type' => ['nonsense', 'card'],
       'unknown display mode' => ['post', 'nonsense'],
       'both unknown' => ['nonsense', 'nonsense'],

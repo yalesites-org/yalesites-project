@@ -41,6 +41,10 @@ dependencies:
     - block_content.type.quick_links
     - block_content.type.quote_callout
     - block_content.type.reference_card
+    - block_content.type.resource_card
+    - block_content.type.resource_condensed
+    - block_content.type.resource_list_item
+    - block_content.type.resource_portrait_grid
     - block_content.type.resource_view
     - block_content.type.tabs
     - block_content.type.text
@@ -193,6 +197,10 @@ permissions:
   - 'create quote_callout block content'
   - 'create reference_card block content'
   - 'create resource content'
+  - 'create resource_card block content'
+  - 'create resource_condensed block content'
+  - 'create resource_list_item block content'
+  - 'create resource_portrait_grid block content'
   - 'create resource_view block content'
   - 'create reusable blocks'
   - 'create tabs block content'
@@ -307,6 +315,14 @@ permissions:
   - 'delete any reference_card block content'
   - 'delete any reference_card block content revisions'
   - 'delete any resource content'
+  - 'delete any resource_card block content'
+  - 'delete any resource_card block content revisions'
+  - 'delete any resource_condensed block content'
+  - 'delete any resource_condensed block content revisions'
+  - 'delete any resource_list_item block content'
+  - 'delete any resource_list_item block content revisions'
+  - 'delete any resource_portrait_grid block content'
+  - 'delete any resource_portrait_grid block content revisions'
   - 'delete any resource_view block content'
   - 'delete any resource_view block content revisions'
   - 'delete any tabs block content'
@@ -402,6 +418,10 @@ permissions:
   - 'edit any quote_callout block content'
   - 'edit any reference_card block content'
   - 'edit any resource content'
+  - 'edit any resource_card block content'
+  - 'edit any resource_condensed block content'
+  - 'edit any resource_list_item block content'
+  - 'edit any resource_portrait_grid block content'
   - 'edit any resource_view block content'
   - 'edit any tabs block content'
   - 'edit any text block content'
@@ -485,6 +505,10 @@ permissions:
   - 'revert any quick_links block content revisions'
   - 'revert any quote_callout block content revisions'
   - 'revert any reference_card block content revisions'
+  - 'revert any resource_card block content revisions'
+  - 'revert any resource_condensed block content revisions'
+  - 'revert any resource_list_item block content revisions'
+  - 'revert any resource_portrait_grid block content revisions'
   - 'revert any resource_view block content revisions'
   - 'revert any tabs block content revisions'
   - 'revert any text block content revisions'
@@ -554,6 +578,10 @@ permissions:
   - 'view any quick_links block content history'
   - 'view any quote_callout block content history'
   - 'view any reference_card block content history'
+  - 'view any resource_card block content history'
+  - 'view any resource_condensed block content history'
+  - 'view any resource_list_item block content history'
+  - 'view any resource_portrait_grid block content history'
   - 'view any resource_view block content history'
   - 'view any tabs block content history'
   - 'view any text block content history'

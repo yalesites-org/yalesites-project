@@ -49,6 +49,7 @@ class ViewArgumentOrderTest extends UnitTestCase {
     'pin_settings',
     'original_settings',
     'profile_field_display_options',
+    'resource_field_display_options',
   ];
 
   /**

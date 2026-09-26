@@ -273,6 +273,160 @@ function ys_views_basic_deploy_10002() {
 }
 
 /**
+ * Migrates resource_view blocks onto the resource listing bundles (#1723).
+ *
+ * The ys_views_content_resources module's resource_view block is replaced by
+ * the resource_card, resource_portrait_grid, resource_list_item and
+ * resource_condensed bundles, served by ys_views_basic. Each block is
+ * re-bundled in place to the bundle for its current design option, and its
+ * params are copied from field_view_resource_params to field_view_params on
+ * EVERY revision, normalised onto ys_views_basic's keys
+ * (ViewsBasicManager::normalizeResourceParams()). All revisions matter
+ * because Layout Builder renders an inline block by revision id: a published
+ * page with a pending draft points at an older block revision.
+ *
+ * The old field is left in place (it is deleted with the old module), so the
+ * source data survives until then. Idempotent: a second run finds no
+ * resource_view blocks and changes nothing. Blocks whose params name no
+ * design option are skipped and logged, as deploy_10001 does.
+ */
+function ys_views_basic_deploy_10003() {
+  $logger = \Drupal::logger('ys_views_basic');
+  $block_storage = \Drupal::entityTypeManager()->getStorage('block_content');
+  $database = \Drupal::database();
+
+  $ids = $block_storage->getQuery()
+    ->condition('type', 'resource_view')
+    ->accessCheck(FALSE)
+    ->execute();
+  $logger->notice('Resource migration pre-flight: @count "resource_view" blocks to evaluate.', ['@count' => count($ids)]);
+
+  $migrated = 0;
+  foreach ($block_storage->loadMultiple($ids) as $block) {
+    // Read the params before the bundle changes: the target bundles do not
+    // carry field_view_resource_params.
+    $field = $block->get('field_view_resource_params');
+    $params = $field->isEmpty() ? NULL : ($field->first()->getValue()['params'] ?? NULL);
+    $decoded = $params ? json_decode($params, TRUE) : NULL;
+    $view_mode = is_array($decoded) ? ($decoded['view_mode'] ?? NULL) : NULL;
+    $target = ViewsBasicManager::migrationTargetBundle(ViewsBasicManager::CONTENT_TYPE_RESOURCE, $view_mode);
+
+    if ($target === NULL) {
+      $logger->warning('Resource migration: skipping block @id with unmappable view_mode=@v.', [
+        '@id' => $block->id(),
+        '@v' => $view_mode ?? 'NULL',
+      ]);
+      continue;
+    }
+
+    $block_id = $block->id();
+    $block->set('type', $target);
+    $block->save();
+    _ys_views_basic_copy_resource_params($database, $block_id, $target);
+    _ys_views_basic_patch_block_field_bundles($database, $block_id, $target);
+    $migrated++;
+  }
+  // The copy wrote field tables directly, past the entity caches.
+  $block_storage->resetCache();
+
+  $rewritten = _ys_views_basic_rewrite_placements($database, ['resource_view'], $logger);
+
+  $remaining = (int) $block_storage->getQuery()
+    ->condition('type', 'resource_view')
+    ->accessCheck(FALSE)
+    ->count()
+    ->execute();
+  $logger->notice('Resource migration complete: @m blocks migrated, @r placements rewritten, @rv "resource_view" blocks remain.', [
+    '@m' => $migrated,
+    '@r' => $rewritten,
+    '@rv' => $remaining,
+  ]);
+
+  \Drupal::service('cache.render')->invalidateAll();
+  _ys_views_basic_clear_layout_tempstore();
+
+  return t('Resource migration: converted @m blocks; rewrote @r layout placements; @rv resource_view blocks remain.', [
+    '@m' => $migrated,
+    '@r' => $rewritten,
+    '@rv' => $remaining,
+  ]);
+}
+
+/**
+ * Copies a block's resource params into field_view_params, every revision.
+ *
+ * Reads field_view_resource_params from its data and revision tables and
+ * writes the normalised params into field_view_params' matching rows. Table
+ * and column names come from the table mapping: the resource field's revision
+ * table name is long enough that Drupal stores it under a hashed name.
+ *
+ * @param \Drupal\Core\Database\Connection $database
+ *   The database connection.
+ * @param int|string $entity_id
+ *   The block content entity id.
+ * @param string $target
+ *   The block's new bundle id.
+ */
+function _ys_views_basic_copy_resource_params($database, $entity_id, string $target): void {
+  // Resolved once per request: the same for every block migrated.
+  static $plan = NULL;
+  if ($plan === NULL) {
+    $plan = ['tables' => []];
+    $storage_definitions = \Drupal::service('entity_field.manager')->getFieldStorageDefinitions('block_content');
+    $source = $storage_definitions['field_view_resource_params'] ?? NULL;
+    $destination = $storage_definitions['field_view_params'] ?? NULL;
+    if ($source && $destination) {
+      /** @var \Drupal\Core\Entity\Sql\DefaultTableMapping $mapping */
+      $mapping = \Drupal::entityTypeManager()->getStorage('block_content')->getTableMapping();
+      $plan['source_column'] = $mapping->getFieldColumnName($source, 'params');
+      $plan['destination_column'] = $mapping->getFieldColumnName($destination, 'params');
+      $candidates = [
+        // [source table, destination table, primary key columns].
+        [
+          $mapping->getDedicatedDataTableName($source),
+          $mapping->getDedicatedDataTableName($destination),
+          ['entity_id', 'deleted', 'delta', 'langcode'],
+        ],
+        [
+          $mapping->getDedicatedRevisionTableName($source),
+          $mapping->getDedicatedRevisionTableName($destination),
+          ['entity_id', 'revision_id', 'deleted', 'delta', 'langcode'],
+        ],
+      ];
+      foreach ($candidates as $candidate) {
+        if ($database->schema()->tableExists($candidate[0]) && $database->schema()->tableExists($candidate[1])) {
+          $plan['tables'][] = $candidate;
+        }
+      }
+    }
+  }
+  foreach ($plan['tables'] as [$source_table, $destination_table, $keys]) {
+    $rows = $database->select($source_table, 's')
+      ->fields('s')
+      ->condition('entity_id', $entity_id)
+      ->execute()
+      ->fetchAll(\PDO::FETCH_ASSOC);
+    foreach ($rows as $row) {
+      // The params column is declared 'serialize', so it holds a serialized
+      // JSON string.
+      $json = @unserialize((string) $row[$plan['source_column']], ['allowed_classes' => FALSE]);
+      $decoded = is_string($json) ? json_decode($json, TRUE) : NULL;
+      if (!is_array($decoded)) {
+        continue;
+      }
+      $database->merge($destination_table)
+        ->keys(array_intersect_key($row, array_flip($keys)))
+        ->fields([
+          'bundle' => $target,
+          'revision_id' => $row['revision_id'],
+          $plan['destination_column'] => serialize(json_encode(ViewsBasicManager::normalizeResourceParams($decoded))),
+        ])
+        ->execute();
+    }
+  }
+}
+
+/**
  * Discards every pending Layout Builder override edit.
  *
  * Restructuring a listing block leaves half-finished Layout Builder edits
@@ -455,6 +609,16 @@ function _ys_views_basic_rewrite_placements($database, array $legacy_bundles, $l
       '@n' => $rewritten,
       '@ids' => implode(', ', $legacy_ids),
     ]);
+    // The rewrite bypassed the entity API, and drush deploy clears no cache
+    // after the deploy hooks run, so an entity loaded before this ran would
+    // keep serving its old plugin ids. resetCache() with no ids invalidates
+    // each storage's persistent <type>_values cache tag.
+    $entity_type_manager = \Drupal::entityTypeManager();
+    foreach (\Drupal::service('entity_field.manager')->getFieldMap() as $entity_type_id => $fields) {
+      if (isset($fields['layout_builder__layout'])) {
+        $entity_type_manager->getStorage($entity_type_id)->resetCache();
+      }
+    }
   }
   return $rewritten;
 }

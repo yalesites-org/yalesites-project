@@ -32,6 +32,9 @@ class ViewMigrationTest extends KernelTestBase {
     'path_alias',
     'views',
     'ys_views_basic',
+    // Provides the views_content_resources_params field type that the legacy
+    // resource_view bundle stores its params in (#1723).
+    'ys_views_content_resources',
   ];
 
   /**
@@ -182,6 +185,136 @@ class ViewMigrationTest extends KernelTestBase {
     $this->assertSame(['post'], $params['filters']['types']);
     $this->assertSame('field_publish_date:DESC', $params['sort_by']);
     $this->assertTrue($params['pinned_to_top'], 'Post feed pins sticky items.');
+  }
+
+  /**
+   * Creates the legacy resource_view bundle and the resource listing bundles.
+   */
+  private function createResourceBundles(): void {
+    FieldStorageConfig::create([
+      'field_name' => 'field_view_resource_params',
+      'entity_type' => 'block_content',
+      'type' => 'views_content_resources_params',
+    ])->save();
+    BlockContentType::create(['id' => 'resource_view', 'label' => 'Resource View'])->save();
+    FieldConfig::create([
+      'field_name' => 'field_view_resource_params',
+      'entity_type' => 'block_content',
+      'bundle' => 'resource_view',
+      'label' => 'View Resource Params',
+    ])->save();
+    foreach (['resource_card', 'resource_list_item'] as $bundle) {
+      BlockContentType::create(['id' => $bundle, 'label' => $bundle])->save();
+      FieldConfig::create([
+        'field_name' => 'field_view_params',
+        'entity_type' => 'block_content',
+        'bundle' => $bundle,
+        'label' => 'View params',
+      ])->save();
+    }
+  }
+
+  /**
+   * Reads a block revision's field_view_params back as decoded params.
+   */
+  private function viewParams(BlockContent $block): ?array {
+    if ($block->get('field_view_params')->isEmpty()) {
+      return NULL;
+    }
+    return json_decode($block->get('field_view_params')->first()->getValue()['params'], TRUE);
+  }
+
+  /**
+   * Resource listings move onto the resource bundles, every revision (#1723).
+   *
+   * The params live in a different field on the old bundle, so unlike the
+   * "view" migration this one has to copy them. It copies them on every
+   * revision, not just the current one, because Layout Builder renders an
+   * inline block by revision id: a published page with a newer draft points
+   * at an older block revision than the latest one.
+   */
+  public function testResourceViewMigration() {
+    $this->createResourceBundles();
+
+    $first_params = [
+      'view_mode' => 'card',
+      'filters' => ['types' => ['resource']],
+      'field_options' => [
+        'show_category' => 'show_category',
+        'show_publication' => 'show_publication',
+      ],
+      'sort_by' => 'field_publish_date:DESC',
+    ];
+    $block = BlockContent::create([
+      'type' => 'resource_view',
+      'info' => 'Resources',
+      'field_view_resource_params' => ['params' => json_encode($first_params)],
+    ]);
+    $block->save();
+    $first_revision = $block->getRevisionId();
+
+    $block->setNewRevision(TRUE);
+    $second_params = [
+      'view_mode' => 'list_item',
+      'filters' => ['types' => ['resource']],
+      'field_options' => ['show_tags' => 'show_tags', 'show_authors' => 'show_authors'],
+      'sort_by' => 'field_publish_date:ASC',
+      'offset' => 2,
+    ];
+    $block->set('field_view_resource_params', ['params' => json_encode($second_params)]);
+    $block->save();
+
+    $unmappable = BlockContent::create([
+      'type' => 'resource_view',
+      'info' => 'No params',
+      'field_view_resource_params' => ['params' => json_encode(['filters' => ['types' => ['resource']]])],
+    ]);
+    $unmappable->save();
+
+    ys_views_basic_deploy_10003();
+    $this->blockStorage->resetCache();
+
+    // The target comes from the current revision's design option.
+    $migrated = $this->blockStorage->load($block->id());
+    $this->assertSame('resource_list_item', $migrated->bundle());
+    $params = $this->viewParams($migrated);
+    $this->assertSame('list_item', $params['view_mode']);
+    $this->assertSame(['show_tags' => 'show_tags'], $params['field_options']);
+    $this->assertSame(['show_authors' => 'show_authors'], $params['resource_field_options']);
+    $this->assertSame('field_publish_date:ASC', $params['sort_by']);
+    $this->assertSame(2, $params['offset']);
+
+    // The older revision carries its own params, normalised the same way.
+    $old = $this->viewParams($this->blockStorage->loadRevision($first_revision));
+    $this->assertSame('card', $old['view_mode']);
+    $this->assertSame(['show_categories' => 'show_categories'], $old['field_options']);
+    $this->assertSame([
+      'show_journal_name' => 'show_journal_name',
+      'show_journal_issue' => 'show_journal_issue',
+      'show_authors' => 'show_authors',
+      'show_publish_date' => 'show_publish_date',
+    ], $old['resource_field_options']);
+
+    // The field-table bundle column is patched.
+    $bundle = $this->container->get('database')
+      ->select('block_content__field_view_params', 't')
+      ->fields('t', ['bundle'])
+      ->condition('entity_id', $block->id())
+      ->execute()
+      ->fetchField();
+    $this->assertSame('resource_list_item', $bundle);
+
+    // A block with no design option to map is left for manual follow-up.
+    $this->assertSame('resource_view', $this->blockStorage->load($unmappable->id())->bundle());
+
+    // A second run changes nothing.
+    ys_views_basic_deploy_10003();
+    $this->blockStorage->resetCache();
+    $again = $this->blockStorage->load($block->id());
+    $this->assertSame('resource_list_item', $again->bundle());
+    $this->assertSame($params, $this->viewParams($again));
+    $this->assertSame($old, $this->viewParams($this->blockStorage->loadRevision($first_revision)));
+    $this->assertSame('resource_view', $this->blockStorage->load($unmappable->id())->bundle());
   }
 
 }
