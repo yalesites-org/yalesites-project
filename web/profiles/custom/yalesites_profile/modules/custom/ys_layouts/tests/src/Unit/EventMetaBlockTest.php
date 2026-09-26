@@ -61,6 +61,7 @@ class EventMetaBlockTest extends UnitTestCase {
       'event_topics' => [],
       'description' => 'A description.',
       'room' => NULL,
+      'location_details' => ['#markup' => '<p>Side door.</p>'],
       'external_website_url' => NULL,
       'external_website_title' => NULL,
       'experience' => [],
@@ -119,6 +120,7 @@ class EventMetaBlockTest extends UnitTestCase {
     $this->assertSame('Fall Concert', $build['#event_title__heading']);
     $this->assertSame('/events/fall-concert', $build['#canonical_url']);
     $this->assertSame('https://example.com/event.ics', $build['#ics_url']);
+    $this->assertSame(['#markup' => '<p>Side door.</p>'], $build['#location_details']);
   }
 
   /**

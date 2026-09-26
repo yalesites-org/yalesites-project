@@ -61,6 +61,34 @@ source:
       label: 'Place name'
       selector: localist_data/location_name
     -
+      name: place_street
+      label: 'Place street'
+      selector: localist_data/geo/street
+    -
+      name: place_city
+      label: 'Place city'
+      selector: localist_data/geo/city
+    -
+      name: place_state
+      label: 'Place state'
+      selector: localist_data/geo/state
+    -
+      name: place_zip
+      label: 'Place zip'
+      selector: localist_data/geo/zip
+    -
+      name: place_country
+      label: 'Place country'
+      selector: localist_data/geo/country
+    -
+      name: place_latitude
+      label: 'Place latitude'
+      selector: localist_data/geo/latitude
+    -
+      name: place_longitude
+      label: 'Place longitude'
+      selector: localist_data/geo/longitude
+    -
       name: filters
       label: 'Localist filters'
       selector: localist_data/filters
@@ -144,13 +172,26 @@ process:
     bundle_key: vid
     bundle: tags
     source: localist_tags
+  # Locations missing from the Places import become new Yale Location terms,
+  # except placeholders such as "Other" or "TBD".
   field_event_place:
-    plugin: entity_lookup
-    source: place_name
-    value_key: name
-    bundle_key: vid
-    bundle: event_place
-    entity_type: taxonomy_term
+    -
+      plugin: skip_placeholder_place
+      source: place_name
+    -
+      plugin: entity_generate
+      value_key: name
+      bundle_key: vid
+      bundle: event_place
+      entity_type: taxonomy_term
+      values:
+        field_address/address_line1: place_street
+        field_address/locality: place_city
+        field_address/administrative_area: place_state
+        field_address/postal_code: place_zip
+        field_address/country_code: place_country
+        field_latitude: place_latitude
+        field_longitude: place_longitude
   field_localist_event_type:
     -
       plugin: extract_localist_filter

@@ -197,6 +197,32 @@ class MetaFieldsManager implements ContainerFactoryPluginInterface {
   }
 
   /**
+   * Gets the room and free-form location details shown on the event page.
+   *
+   * Room is shown only on Localist events. Localist sets it, and a deploy hook
+   * moved it into Location details on every other event (issue #750).
+   *
+   * @param \Drupal\node\NodeInterface $node
+   *   The event node.
+   *
+   * @return array
+   *   'room': the room string or NULL. 'location_details': a processed_text
+   *   render array or NULL.
+   */
+  public function getLocation(NodeInterface $node): array {
+    $room = $node->get('field_localist_id')->isEmpty() ? '' : $node->get('field_event_room')->getString();
+    $details = $node->get('field_event_location_details')->first()?->getValue();
+    return [
+      'room' => $room !== '' ? $room : NULL,
+      'location_details' => trim($details['value'] ?? '') !== '' ? [
+        '#type' => 'processed_text',
+        '#text' => $details['value'],
+        '#format' => $details['format'],
+      ] : NULL,
+    ];
+  }
+
+  /**
    * Gets event all fields.
    */
   public function getEventData($node) {
@@ -218,7 +244,7 @@ class MetaFieldsManager implements ContainerFactoryPluginInterface {
     // a manually-authored event's description untouched even if an editor's
     // own empty paragraph happens to match the filler shape.
     $description = $localistId ? $this->stripEmptyParagraphs($storedDescription) : $storedDescription;
-    $room = $node->field_event_room->first() ? $node->field_event_room->first()->getValue()['value'] : NULL;
+    $location = $this->getLocation($node);
     $externalEventWebsiteUrl = ($node->field_event_cta->first()) ? Url::fromUri($node->field_event_cta->first()->getValue()['uri'])->toString() : NULL;
     $externalEventWebsiteTitle = ($node->field_event_cta->first()) ? $node->field_event_cta->first()->getValue()['title'] : NULL;
     $localistImageUrl = ($node->field_localist_event_image_url->first()) ? Url::fromUri($node->field_localist_event_image_url->first()->getValue()['uri'])->toString() : NULL;
@@ -337,7 +363,8 @@ class MetaFieldsManager implements ContainerFactoryPluginInterface {
       'ticket_url' => $ticketLink,
       'ticket_cost' => $ticketCost,
       'description' => $description,
-      'room' => $room,
+      'room' => $location['room'],
+      'location_details' => $location['location_details'],
       'external_website_url' => $externalEventWebsiteUrl,
       'external_website_title' => $externalEventWebsiteTitle,
       'localist_image_url' => $localistImageUrl,

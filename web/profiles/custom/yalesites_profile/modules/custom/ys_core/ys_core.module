@@ -376,7 +376,7 @@ function ys_core_form_alter(&$form, FormStateInterface $form_state, $form_id) {
     }
   }
 
-  _ys_core_disable_event_fields($form, $form_id);
+  _ys_core_disable_event_fields($form, $form_state, $form_id);
 
   // Add JavaScript preview functionality to Facts and Figures icon fields.
   _ys_core_attach_icon_preview($form, $form_state, $form_id);
@@ -1232,31 +1232,54 @@ function ys_core_menu_local_tasks_alter(&$data, $route_name, $cachability) {
 }
 
 /**
- * Disabled event fields for imported data.
+ * Disables event fields that an integration import overwrites.
+ *
+ * Yale Location and Room are always locked: only Localist sets them. Stream
+ * URL and embed code are locked on Localist events only; editors fill them in
+ * on other events (YaleSites-Internal#750).
  */
-function _ys_core_disable_event_fields(&$form, $form_id) {
-  // Disables fields that are imported from an integration.
+function _ys_core_disable_event_fields(array &$form, FormStateInterface $form_state, $form_id) {
   $formsToCheck = [
     'node_event_form',
     'node_event_edit_form',
     'node_event_quick_node_clone_form',
   ];
+  if (!in_array($form_id, $formsToCheck)) {
+    return;
+  }
 
-  if (in_array($form_id, $formsToCheck)) {
-    $fieldsToDisable = [
-      'field_localist_id',
-      'field_event_status',
-      'field_localist_event_url',
-      'field_localist_event_image_url',
-      'field_localist_event_image_alt',
-      'field_localist_ics_url',
-      'field_localist_register_enabled',
-      'field_event_source',
-      'field_event_id',
-    ];
-    foreach ($fieldsToDisable as $field) {
-      $form[$field]['#disabled'] = TRUE;
+  $fieldsToDisable = [
+    'field_localist_id',
+    'field_event_status',
+    'field_localist_event_url',
+    'field_localist_event_image_url',
+    'field_localist_event_image_alt',
+    'field_localist_ics_url',
+    'field_localist_register_enabled',
+    'field_event_source',
+    'field_event_id',
+  ];
+  foreach ($fieldsToDisable as $field) {
+    $form[$field]['#disabled'] = TRUE;
+  }
+
+  // These editors used to fill in, so they also get a note saying why they
+  // are locked. Each value is the input element's path inside the widget: the
+  // note goes on the input so core links it with aria-describedby.
+  $localistOwned = [
+    'field_event_place' => [],
+    'field_event_room' => [0, 'value'],
+  ];
+  if (!$form_state->getFormObject()->getEntity()->get('field_localist_id')->isEmpty()) {
+    $localistOwned['field_stream_url'] = [0, 'uri'];
+    $localistOwned['field_stream_embed_code'] = [0, 'value'];
+  }
+  foreach ($localistOwned as $field => $input) {
+    if (!isset($form[$field]['widget'])) {
+      continue;
     }
+    $form[$field]['#disabled'] = TRUE;
+    NestedArray::setValue($form[$field]['widget'], [...$input, '#description'], t('Set by Localist. Changes made here are overwritten on the next import.'));
   }
 }
 
