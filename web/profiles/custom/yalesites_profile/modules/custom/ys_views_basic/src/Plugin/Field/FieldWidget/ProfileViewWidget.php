@@ -9,14 +9,13 @@ use Drupal\ys_views_basic\ViewsBasicManager;
 /**
  * Profile (People) listing widget.
  *
- * Serves the profile_card, profile_list_item, profile_condensed, and
- * profile_directory bundles. Profiles differ from other content types in two
- * ways, both expressed declaratively rather than as runtime conditionals
- * (ADR Fear 2): the category control is labelled "Show Affiliations" and uses
- * the affiliation vocabulary / field_affiliation_target_id filter (resolved by
- * getCategoryVocabulary() on the base and by ViewsBasicManager::setupView()),
- * and the extra "directory" display mode is its own bundle (profile_directory)
- * with the thumbnail option disabled via its capability flag.
+ * Serves the profile_card, profile_list_item and profile_condensed bundles.
+ * Profiles differ from other content types in two ways, both expressed
+ * declaratively rather than as runtime conditionals (ADR Fear 2): the category
+ * control is labelled "Show Affiliations" and uses the affiliation vocabulary /
+ * field_affiliation_target_id filter (resolved by getCategoryVocabulary() on
+ * the base and by ViewsBasicManager::setupView()), and the listing can show
+ * the profile data pass-throughs (department, email, phone, pronouns).
  *
  * @FieldWidget(
  *   id = "profile_view_widget",
@@ -34,15 +33,8 @@ class ProfileViewWidget extends ViewsBasicWidgetBase {
    * These are the modes whose node template embeds the shared reference card,
    * which is what honours the show_department/email/phone/pronouns flags.
    * Listed rather than tested against at each call site so the set is stated
-   * once and asserted directly by the tests.
-   *
-   * Deliberately excludes "directory": that mode renders the separate
-   * directory-listing card, which shows department, email and phone
-   * unconditionally and would ignore the checkboxes. Offering controls there
-   * would be exactly the clutter this ticket set out to remove. The team
-   * decided on 2026-09-11 that the directory bundle stays; deprecating it and
-   * migrating existing listings onto the card grid is tracked as #1682, so
-   * nothing about it is changed here.
+   * once and asserted directly by the tests. Condensed renders none of these
+   * fields, so it is left out.
    */
   const PROFILE_FIELD_VIEW_MODES = ['card', 'list_item'];
 
@@ -57,7 +49,7 @@ class ProfileViewWidget extends ViewsBasicWidgetBase {
    * {@inheritdoc}
    *
    * Adds the profile data pass-throughs (#1648): department, email, phone and
-   * pronouns. These used to be available only through the profile-only
+   * pronouns. These used to be available only through the retired profile
    * directory card, which rendered all three unconditionally; as checkboxes on
    * the profile widget they work with whichever design option the listing
    * uses. No #states are needed because this widget only ever serves profiles,

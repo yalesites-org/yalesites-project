@@ -113,7 +113,6 @@ third_party_settings:
               - 'inline_block:post_list_item'
               - 'inline_block:profile_card'
               - 'inline_block:profile_condensed'
-              - 'inline_block:profile_directory'
               - 'inline_block:profile_list_item'
               - 'inline_block:pull_quote'
               - 'inline_block:reference_card'

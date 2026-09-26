@@ -11,7 +11,7 @@ use Drupal\ys_views_basic\Plugin\Field\FieldWidget\ProfileViewWidget;
 use Drupal\ys_views_basic\ViewsBasicManager;
 
 /**
- * Tests ProfileViewWidget (#1167): affiliations label and directory mode.
+ * Tests ProfileViewWidget (#1167): affiliations label and profile data options.
  *
  * @coversDefaultClass \Drupal\ys_views_basic\Plugin\Field\FieldWidget\ProfileViewWidget
  *
@@ -88,23 +88,12 @@ class ProfileViewWidgetTest extends UnitTestCase {
   }
 
   /**
-   * The profile-only directory mode resolves and disables the thumbnail.
-   *
-   * @covers \Drupal\ys_views_basic\Plugin\Field\FieldWidget\ViewsBasicWidgetBase::getViewMode
-   */
-  public function testDirectoryMode() {
-    $this->assertSame('directory', $this->invoke($this->widget('profile_directory'), 'getViewMode'));
-    $this->assertFalse(ViewsBasicManager::bundleSupportsThumbnail('profile_directory'));
-    $this->assertTrue(ViewsBasicManager::bundleSupportsThumbnail('profile_card'));
-  }
-
-  /**
    * The profile data checkboxes are offered on every profile listing (#1648).
    *
    * Department, Email, Phone and Pronouns used to be available only through
-   * the one-off directory card. They are plain checkboxes on the profile
-   * widget so any profile listing can show them, whichever design option it
-   * uses.
+   * the one-off directory card, since retired (#1682). They are plain
+   * checkboxes on the profile widget so any profile listing can show them,
+   * whichever design option it uses.
    *
    * @covers ::buildEntitySpecificOptions
    */
@@ -137,10 +126,8 @@ class ProfileViewWidgetTest extends UnitTestCase {
    * The checkboxes appear only where something renders them (#1648).
    *
    * Card and list both embed the shared reference card, which honours the
-   * flags. The directory mode renders the separate directory-listing card,
-   * which shows department/email/phone unconditionally and would ignore them,
-   * and condensed renders none of these fields — offering controls there would
-   * be clutter that does nothing.
+   * flags. Condensed renders none of these fields, so offering controls there
+   * would be clutter that does nothing.
    *
    * @covers ::buildEntitySpecificOptions
    */
@@ -159,7 +146,7 @@ class ProfileViewWidgetTest extends UnitTestCase {
       );
     }
 
-    foreach (['profile_directory', 'profile_condensed'] as $bundle) {
+    foreach (['profile_condensed'] as $bundle) {
       $form = [];
       $this->invoke($this->widget($bundle), 'buildEntitySpecificOptions', [&$form, $items, 0]);
       $this->assertSame([], $form, "$bundle adds no profile data options");

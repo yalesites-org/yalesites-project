@@ -134,7 +134,7 @@ class CardSizeTest extends UnitTestCase {
   /**
    * Design options that are not a card grid do not offer the control.
    *
-   * List, condensed and the profile directory each have their own layout, so
+   * List and condensed each have their own layout, so
    * offering a card-grid dial there would be clutter that does nothing.
    *
    * @covers ::buildDisplayControls
@@ -149,8 +149,8 @@ class CardSizeTest extends UnitTestCase {
     }
     $this->assertArrayNotHasKey(
       'card_size',
-      $this->displayControls(ProfileViewWidget::class, 'profile_directory'),
-      'the directory design option keeps its own grid'
+      $this->displayControls(ProfileViewWidget::class, 'profile_list_item'),
+      'profile_list_item does not offer card size'
     );
   }
 
@@ -281,7 +281,7 @@ class CardSizeTest extends UnitTestCase {
     $this->assertTrue(ViewsBasicManager::bundleSupportsCardSize('post_card'));
     $this->assertTrue(ViewsBasicManager::bundleSupportsCardSize('profile_card'));
     $this->assertFalse(ViewsBasicManager::bundleSupportsCardSize('post_condensed'));
-    $this->assertFalse(ViewsBasicManager::bundleSupportsCardSize('profile_directory'));
+    $this->assertFalse(ViewsBasicManager::bundleSupportsCardSize('profile_list_item'));
   }
 
 }
