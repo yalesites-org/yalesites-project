@@ -3,6 +3,7 @@
 namespace Drupal\Tests\ys_beacon\Unit\Service;
 
 use Drupal\Tests\UnitTestCase;
+use Drupal\ai\Dto\HostnameFilterDto;
 use Drupal\ai\OperationType\Chat\ChatInput;
 use Drupal\ai\OperationType\Chat\ChatMessage;
 use Drupal\ai\OperationType\Chat\ChatOutput;
@@ -268,6 +269,81 @@ class BeaconAnswerServiceTest extends UnitTestCase {
 
     $this->expectException(\RuntimeException::class);
     $service->answer('Anything');
+  }
+
+  /**
+   * Every chat call carries a full-trust override for the AI output filter.
+   *
+   * The AI module filters all model output through
+   * \Drupal\ai\Service\HostnameFilter, which removes any link whose host is
+   * not on ai.settings.allowed_hosts. That allow-list ships empty and the
+   * filter treats empty as block-all, so without this override every link in
+   * an answer is stripped and one "ai" channel warning is logged per link.
+   * That corrupts the very output the tester exists to score: the answer it
+   * records stops matching what the chat widget renders, since
+   * ChatApiController disables the same filter on its own streamed path.
+   *
+   * Asserted on both calls because ToolCallHandler builds the follow-up input
+   * itself, so the override has to be set on it separately rather than being
+   * inherited from the first request.
+   *
+   * @covers ::answer
+   */
+  public function testDisablesOutputLinkFilteringOnEveryCall(): void {
+    $toolCall = $this->createMock(ToolsFunctionOutputInterface::class);
+
+    $firstMessage = new ChatMessage('assistant', '');
+    $firstMessage->setTools([$toolCall]);
+
+    $toolCallHandler = $this->createMock(ToolCallHandler::class);
+    $toolCallHandler->method('followUpInput')->willReturnCallback(
+      fn (mixed $normalized, array $messages) => new ChatInput($messages)
+    );
+
+    $provider = new class($firstMessage) {
+
+      /**
+       * The number of times chat() was called.
+       */
+      public int $calls = 0;
+
+      /**
+       * The override each call carried, read when the call was made.
+       */
+      public array $receivedFilters = [];
+
+      /**
+       * Constructs the double with the first call's response.
+       */
+      public function __construct(protected ChatMessage $firstMessage) {
+      }
+
+      /**
+       * Answers the turn, returning a tool call on the first call only.
+       */
+      public function chat($input, string $model_id, array $tags = []): ChatOutput {
+        $this->calls++;
+        // Read now, not retained for the assertions to read later: ChatInput is
+        // mutable and ProviderProxy consults the override once, before invoking
+        // the provider. Asserting on the object after answer() returns would
+        // pass just as well if the override were set after the call, which is
+        // precisely the regression worth catching.
+        $this->receivedFilters[] = $input->getHostnameFilter();
+        if ($this->calls === 1) {
+          return new ChatOutput($this->firstMessage, NULL, []);
+        }
+        return new ChatOutput(new ChatMessage('assistant', 'See [the grants page](https://example.yale.edu/grants).'), NULL, []);
+      }
+
+    };
+
+    $this->service($provider, $toolCallHandler)->answer('Where do I apply?');
+
+    $this->assertSame(2, $provider->calls);
+    foreach ($provider->receivedFilters as $index => $filter) {
+      $this->assertInstanceOf(HostnameFilterDto::class, $filter, "Call $index carried a hostname filter override.");
+      $this->assertTrue($filter->fullTrust, "Call $index disabled output link filtering.");
+    }
   }
 
 }

@@ -69,6 +69,78 @@ class AnnouncementsSourcePlatformAdminSettingTest extends UnitTestCase {
   }
 
   /**
+   * The categories field renders as a textarea, one stored value per line.
+   *
+   * @covers ::buildSettings
+   */
+  public function testBuildRendersCategoriesTextareaFromConfig(): void {
+    $plugin = $this->plugin($this->readOnlyConfigFactory([
+      'announcements_source_categories' => ['Alpha', 'Beta'],
+    ]));
+
+    $form = $plugin->buildSettings([], new FormState());
+
+    $this->assertSame('textarea', $form['announcements_source_categories']['#type']);
+    $this->assertSame("Alpha\nBeta", $form['announcements_source_categories']['#default_value']);
+  }
+
+  /**
+   * A never-saved categories key falls back to the platform defaults.
+   *
+   * This is the normal state on every existing site: config_ignore keeps
+   * `ys_core.dashboard_settings` from being created/merged by config:import,
+   * so the key reads NULL until a platform admin saves this section once.
+   *
+   * @covers ::buildSettings
+   */
+  public function testBuildFallsBackToDefaultCategoriesWhenNeverSaved(): void {
+    $plugin = $this->plugin($this->readOnlyConfigFactory([]));
+
+    $form = $plugin->buildSettings([], new FormState());
+
+    $this->assertSame(
+      implode("\n", AnnouncementsSourcePlatformAdminSetting::DEFAULT_CATEGORIES),
+      $form['announcements_source_categories']['#default_value'],
+    );
+  }
+
+  /**
+   * An explicitly-stored empty list displays as a blank textarea, not defaults.
+   *
+   * A platform admin who deliberately cleared the whitelist to turn off
+   * category pills entirely must see that choice reflected back, not the
+   * three examples - otherwise the form would look like their edit never
+   * took effect.
+   *
+   * @covers ::buildSettings
+   */
+  public function testBuildShowsBlankTextareaWhenExplicitlyEmptyCategoriesStored(): void {
+    $plugin = $this->plugin($this->readOnlyConfigFactory([
+      'announcements_source_categories' => [],
+    ]));
+
+    $form = $plugin->buildSettings([], new FormState());
+
+    $this->assertSame('', $form['announcements_source_categories']['#default_value']);
+  }
+
+  /**
+   * The categories field's #states selector matches the tag field's.
+   *
+   * @covers ::buildSettings
+   */
+  public function testCategoriesFieldIsHiddenUntilPublishingIsEnabled(): void {
+    $plugin = $this->plugin($this->readOnlyConfigFactory([]));
+
+    $form = $plugin->buildSettings([], new FormState());
+
+    $this->assertSame(
+      [':input[name="announcements_source[announcements_source_enabled]"]' => ['checked' => TRUE]],
+      $form['announcements_source_categories']['#states']['visible'],
+    );
+  }
+
+  /**
    * The tag field's #states selector matches its #tree-namespaced input name.
    *
    * The page renders every section with #tree set, so the selector has to name
@@ -107,7 +179,11 @@ class AnnouncementsSourcePlatformAdminSettingTest extends UnitTestCase {
     );
 
     $this->assertSame(
-      ['announcements_source_enabled' => TRUE, 'announcements_source_term' => 'Platform News'],
+      [
+        'announcements_source_enabled' => TRUE,
+        'announcements_source_term' => 'Platform News',
+        'announcements_source_categories' => AnnouncementsSourcePlatformAdminSetting::DEFAULT_CATEGORIES,
+      ],
       $written,
     );
   }
@@ -134,7 +210,11 @@ class AnnouncementsSourcePlatformAdminSettingTest extends UnitTestCase {
     );
 
     $this->assertSame(
-      ['announcements_source_enabled' => TRUE, 'announcements_source_term' => 'Platform Bulletins'],
+      [
+        'announcements_source_enabled' => TRUE,
+        'announcements_source_term' => 'Platform Bulletins',
+        'announcements_source_categories' => AnnouncementsSourcePlatformAdminSetting::DEFAULT_CATEGORIES,
+      ],
       $written,
     );
   }
@@ -159,6 +239,218 @@ class AnnouncementsSourcePlatformAdminSettingTest extends UnitTestCase {
     $this->assertSame(
       AnnouncementsSourcePlatformAdminSetting::DEFAULT_TERM,
       $written['announcements_source_term'],
+    );
+  }
+
+  /**
+   * A multi-line categories submission is parsed and written as an array.
+   *
+   * @covers ::submitSettings
+   */
+  public function testSubmitWritesCategoriesArrayFromMultilineInput(): void {
+    $written = [];
+    $this->submit(
+      $written,
+      [
+        'announcements_source_enabled' => TRUE,
+        'announcements_source_term' => 'Platform News',
+        'announcements_source_categories' => ['Alpha'],
+      ],
+      [
+        'announcements_source_enabled' => 1,
+        'announcements_source_term' => 'Platform News',
+        'announcements_source_categories' => "Alpha\nBeta\n\n",
+      ],
+    );
+
+    $this->assertSame(['Alpha', 'Beta'], $written['announcements_source_categories']);
+  }
+
+  /**
+   * Clearing the categories field to blank writes an explicit empty list.
+   *
+   * This is the case a naive copy of the tag field's "empty falls back to
+   * the default" normalization would get wrong: for categories, an
+   * intentional empty list means "show no pills," not "use the defaults,"
+   * so it must persist as `[]` rather than comparing equal to the shown
+   * default and silently failing to save.
+   *
+   * @covers ::submitSettings
+   */
+  public function testSubmitWritesExplicitEmptyCategoriesWhenCleared(): void {
+    $written = [];
+    $this->submit(
+      $written,
+      [
+        'announcements_source_enabled' => TRUE,
+        'announcements_source_term' => 'Platform News',
+        // Categories key absent from stored config: never saved, so
+        // buildSettings() would have shown the platform defaults.
+      ],
+      [
+        'announcements_source_enabled' => 1,
+        'announcements_source_term' => 'Platform News',
+        'announcements_source_categories' => '   ',
+      ],
+    );
+
+    $this->assertSame([], $written['announcements_source_categories']);
+  }
+
+  /**
+   * Resubmitting the shown default categories unchanged skips the write.
+   *
+   * Mirrors testSubmitSkipsTheWriteWhenUnsetValuesAreResubmittedAsShown for
+   * the tag field: a site that never saved this section displays the
+   * platform defaults, and saving some other section on the same page must
+   * not turn that display into an explicit config value.
+   *
+   * @covers ::submitSettings
+   */
+  public function testSubmitSkipsTheWriteWhenUnsetCategoriesAreResubmittedAsShown(): void {
+    $written = [];
+    $announcements = $this->createMock(DashboardAnnouncements::class);
+    $announcements->expects($this->never())->method('clearCache');
+
+    $this->submit(
+      $written,
+      [
+        'announcements_source_enabled' => TRUE,
+        'announcements_source_term' => 'Platform News',
+      ],
+      [
+        'announcements_source_enabled' => 1,
+        'announcements_source_term' => 'Platform News',
+        'announcements_source_categories' => implode("\n", AnnouncementsSourcePlatformAdminSetting::DEFAULT_CATEGORIES),
+      ],
+      $announcements,
+    );
+
+    $this->assertSame([], $written);
+  }
+
+  /**
+   * A category with no matching Post Categories term is flagged.
+   *
+   * Nothing else surfaces this: the post still publishes, the feed still
+   * returns 200, and the category simply never appears as a pill - identical
+   * to "correctly configured, no post uses that category." The warning is
+   * the only place this distinction becomes visible.
+   *
+   * @covers ::submitSettings
+   * @covers ::warnAboutUnmatchedCategories
+   */
+  public function testSubmitWarnsWhenCategoryMatchesNoExistingTerm(): void {
+    $messenger = $this->createMock(MessengerInterface::class);
+    $messenger->expects($this->once())->method('addWarning');
+
+    $written = [];
+    $this->submit(
+      $written,
+      [
+        'announcements_source_enabled' => TRUE,
+        'announcements_source_term' => 'Platform News',
+        'announcements_source_categories' => ['Alumni'],
+      ],
+      [
+        'announcements_source_enabled' => 1,
+        'announcements_source_term' => 'Platform News',
+        'announcements_source_categories' => "Alumni\nOff List",
+      ],
+      NULL,
+      $this->entityTypeManagerWithCategoryVocabulary($this->termStorageWithCategories(['Alumni'])),
+      $messenger,
+    );
+  }
+
+  /**
+   * Categories that all match existing terms are not flagged.
+   *
+   * @covers ::submitSettings
+   * @covers ::warnAboutUnmatchedCategories
+   */
+  public function testSubmitDoesNotWarnWhenAllCategoriesMatchExistingTerms(): void {
+    $messenger = $this->createMock(MessengerInterface::class);
+    $messenger->expects($this->never())->method('addWarning');
+
+    $written = [];
+    $this->submit(
+      $written,
+      [
+        'announcements_source_enabled' => TRUE,
+        'announcements_source_term' => 'Platform News',
+        'announcements_source_categories' => ['Alumni'],
+      ],
+      [
+        'announcements_source_enabled' => 1,
+        'announcements_source_term' => 'Platform News',
+        // Case-insensitive match against the existing "Alumni" term.
+        'announcements_source_categories' => 'alumni',
+      ],
+      NULL,
+      $this->entityTypeManagerWithCategoryVocabulary($this->termStorageWithCategories(['Alumni'])),
+      $messenger,
+    );
+  }
+
+  /**
+   * An unrelated save never re-checks an already-mismatched whitelist.
+   *
+   * Same reasoning as the tag's unpublished/missing-vocabulary warnings:
+   * gated on the categories themselves having changed, so an admin editing
+   * only the tag or the enabled toggle is not renagged every save about a
+   * pre-existing mismatch there is nothing new for them to act on.
+   *
+   * @covers ::submitSettings
+   * @covers ::warnAboutUnmatchedCategories
+   */
+  public function testSubmitDoesNotWarnAboutCategoriesWhenNothingChanged(): void {
+    $messenger = $this->createMock(MessengerInterface::class);
+    $messenger->expects($this->never())->method('addWarning');
+
+    $written = [];
+    $this->submit(
+      $written,
+      [
+        'announcements_source_enabled' => TRUE,
+        'announcements_source_term' => 'Platform News',
+        'announcements_source_categories' => ['Off List'],
+      ],
+      [
+        'announcements_source_enabled' => 1,
+        // Only the term changed; categories are resubmitted unchanged.
+        'announcements_source_term' => 'Platform Bulletins',
+        'announcements_source_categories' => 'Off List',
+      ],
+      NULL,
+      // "Alumni" is the only real term, so "Off List" would warn if the
+      // gate did not hold.
+      $this->entityTypeManagerWithCategoryVocabulary($this->termStorageWithCategories(['Alumni'])),
+      $messenger,
+    );
+  }
+
+  /**
+   * A missing Post Categories vocabulary is reported, not silently ignored.
+   *
+   * @covers ::warnAboutUnmatchedCategories
+   */
+  public function testSubmitWarnsWhenThePostCategoryVocabularyIsMissing(): void {
+    $messenger = $this->createMock(MessengerInterface::class);
+    $messenger->expects($this->once())->method('addWarning');
+
+    $written = [];
+    $this->submit(
+      $written,
+      ['announcements_source_enabled' => TRUE, 'announcements_source_term' => 'Platform News'],
+      [
+        'announcements_source_enabled' => 1,
+        'announcements_source_term' => 'Platform News',
+        'announcements_source_categories' => 'Feature release',
+      ],
+      NULL,
+      $this->entityTypeManagerWithCategoryVocabulary($this->termStorageWithCategories([]), post_category_vocabulary_exists: FALSE),
+      $messenger,
     );
   }
 
@@ -281,11 +573,12 @@ class AnnouncementsSourcePlatformAdminSettingTest extends UnitTestCase {
     $messenger->expects($this->once())->method('addStatus');
 
     $written = [];
+    $stored = [
+      'announcements_source_enabled' => TRUE,
+      'announcements_source_term' => 'Platform News',
+    ];
     $plugin = $this->plugin(
-      $this->trackingConfigFactory($written, [
-        'announcements_source_enabled' => TRUE,
-        'announcements_source_term' => 'Platform News',
-      ]),
+      $this->trackingConfigFactory($written, $stored),
       NULL,
       $this->entityTypeManager($term_storage),
       $messenger,
@@ -293,10 +586,10 @@ class AnnouncementsSourcePlatformAdminSettingTest extends UnitTestCase {
 
     $form_state = new FormState();
     $form_state->setValues([
-      self::PLUGIN_ID => [
+      self::PLUGIN_ID => $this->withUnchangedCategoriesDefault($stored, [
         'announcements_source_enabled' => 1,
         'announcements_source_term' => 'Platform News',
-      ],
+      ]),
     ]);
 
     $form = [];
@@ -473,6 +766,8 @@ class AnnouncementsSourcePlatformAdminSettingTest extends UnitTestCase {
    *   The announcements service double, when the test asserts on it.
    * @param \Drupal\Core\Entity\EntityTypeManagerInterface|null $entity_type_manager
    *   The entity type manager double, when the test asserts on it.
+   * @param \Drupal\Core\Messenger\MessengerInterface|null $messenger
+   *   The messenger double, when the test asserts on it.
    */
   private function submit(
     array &$written,
@@ -480,18 +775,44 @@ class AnnouncementsSourcePlatformAdminSettingTest extends UnitTestCase {
     array $submitted,
     ?DashboardAnnouncements $announcements = NULL,
     ?EntityTypeManagerInterface $entity_type_manager = NULL,
+    ?MessengerInterface $messenger = NULL,
   ): void {
     $plugin = $this->plugin(
       $this->trackingConfigFactory($written, $stored),
       $announcements,
       $entity_type_manager,
+      $messenger,
     );
 
     $form_state = new FormState();
-    $form_state->setValues([self::PLUGIN_ID => $submitted]);
+    $form_state->setValues([self::PLUGIN_ID => $this->withUnchangedCategoriesDefault($stored, $submitted)]);
 
     $form = [];
     $plugin->submitSettings($form, $form_state);
+  }
+
+  /**
+   * Fills in a categories submission matching the stored value, if omitted.
+   *
+   * Every real form submission includes every field on the page, so a test
+   * exercising only the enabled/term fields still has to submit *something*
+   * for categories - and it must be the value that already displays as
+   * unchanged, or the test would start asserting on categories behavior it
+   * never meant to cover. Callers that ARE testing the categories field pass
+   * it explicitly in $submitted, which this leaves untouched.
+   *
+   * @param array $stored
+   *   The config values in place before the submit.
+   * @param array $submitted
+   *   The values arriving from the form, un-namespaced.
+   */
+  private function withUnchangedCategoriesDefault(array $stored, array $submitted): array {
+    return $submitted + [
+      'announcements_source_categories' => implode(
+        "\n",
+        AnnouncementsSourcePlatformAdminSetting::resolveCategoryWhitelist($stored['announcements_source_categories'] ?? NULL),
+      ),
+    ];
   }
 
   /**
@@ -581,11 +902,12 @@ class AnnouncementsSourcePlatformAdminSettingTest extends UnitTestCase {
    */
   private function submitTerms(MessengerInterface $messenger, EntityTypeManagerInterface $entity_type_manager, string $stored_term, string $submitted_term): void {
     $written = [];
+    $stored = [
+      'announcements_source_enabled' => TRUE,
+      'announcements_source_term' => $stored_term,
+    ];
     $plugin = $this->plugin(
-      $this->trackingConfigFactory($written, [
-        'announcements_source_enabled' => TRUE,
-        'announcements_source_term' => $stored_term,
-      ]),
+      $this->trackingConfigFactory($written, $stored),
       NULL,
       $entity_type_manager,
       $messenger,
@@ -593,10 +915,10 @@ class AnnouncementsSourcePlatformAdminSettingTest extends UnitTestCase {
 
     $form_state = new FormState();
     $form_state->setValues([
-      self::PLUGIN_ID => [
+      self::PLUGIN_ID => $this->withUnchangedCategoriesDefault($stored, [
         'announcements_source_enabled' => 1,
         'announcements_source_term' => $submitted_term,
-      ],
+      ]),
     ]);
 
     $form = [];
@@ -621,10 +943,79 @@ class AnnouncementsSourcePlatformAdminSettingTest extends UnitTestCase {
 
   /**
    * An entity type manager whose Tags vocabulary exists.
+   *
+   * Answers a load('post_category') too - rather than only recognizing
+   * 'tags' - because submitSettings() now also runs
+   * warnAboutUnmatchedCategories() whenever a test's categories value
+   * changes, even in tests that are not exercising that warning themselves.
+   * Reporting "no Post Categories vocabulary" (NULL) for those is harmless:
+   * none of them assert on the messenger.
    */
   private function entityTypeManager(EntityStorageInterface $term_storage): EntityTypeManagerInterface {
     $vocab_storage = $this->createMock(EntityStorageInterface::class);
-    $vocab_storage->method('load')->with('tags')->willReturn($this->createMock('Drupal\taxonomy\VocabularyInterface'));
+    $vocab_storage->method('load')->willReturnCallback(
+      fn(string $vid) => $vid === 'tags' ? $this->createMock('Drupal\taxonomy\VocabularyInterface') : NULL,
+    );
+
+    $manager = $this->createMock(EntityTypeManagerInterface::class);
+    $manager->method('getStorage')->willReturnMap([
+      ['taxonomy_vocabulary', $vocab_storage],
+      ['taxonomy_term', $term_storage],
+    ]);
+
+    return $manager;
+  }
+
+  /**
+   * A term storage double branching by vid: tags vs. Post Categories.
+   *
+   * EnsureAnnouncementTerm() and warnAboutUnmatchedCategories() both query
+   * `taxonomy_term` storage in the same submit, for different vocabularies -
+   * this fixture answers both queries distinctly instead of the generic
+   * vid-blind existingTermStorage().
+   *
+   * @param string[] $category_term_names
+   *   The Post Categories vocabulary's existing term names.
+   */
+  private function termStorageWithCategories(array $category_term_names): EntityStorageInterface {
+    $storage = $this->createMock(EntityStorageInterface::class);
+    $storage->method('loadByProperties')->willReturnCallback(function (array $properties) use ($category_term_names) {
+      if (($properties['vid'] ?? NULL) === 'post_category') {
+        return array_map(function (string $name) {
+          $term = $this->createMock('Drupal\taxonomy\TermInterface');
+          $term->method('getName')->willReturn($name);
+          return $term;
+        }, $category_term_names);
+      }
+      // The tags lookup (from ensureAnnouncementTerm): report the tag as
+      // already existing and published, so it short-circuits without
+      // creating anything these tests are not asserting on.
+      $tag_term = $this->createMock('Drupal\taxonomy\TermInterface');
+      $tag_term->method('isPublished')->willReturn(TRUE);
+      return [$tag_term];
+    });
+
+    return $storage;
+  }
+
+  /**
+   * An entity type manager whose Tags and Post Categories vocabularies exist.
+   *
+   * @param \Drupal\Core\Entity\EntityStorageInterface $term_storage
+   *   The term storage double to return for the `taxonomy_term` entity type.
+   * @param bool $post_category_vocabulary_exists
+   *   Whether `taxonomy_vocabulary`::load('post_category') resolves.
+   */
+  private function entityTypeManagerWithCategoryVocabulary(
+    EntityStorageInterface $term_storage,
+    bool $post_category_vocabulary_exists = TRUE,
+  ): EntityTypeManagerInterface {
+    $vocab_storage = $this->createMock(EntityStorageInterface::class);
+    $vocab_storage->method('load')->willReturnCallback(
+      fn(string $vid) => $vid === 'post_category' && !$post_category_vocabulary_exists
+        ? NULL
+        : $this->createMock('Drupal\taxonomy\VocabularyInterface'),
+    );
 
     $manager = $this->createMock(EntityTypeManagerInterface::class);
     $manager->method('getStorage')->willReturnMap([

@@ -2,8 +2,8 @@
 
 namespace Drupal\Tests\ys_book\Kernel;
 
-use Drupal\KernelTests\KernelTestBase;
 use Drupal\Tests\user\Traits\UserCreationTrait;
+use Drupal\Tests\ys_core\Kernel\YsKernelTestBase;
 use Drupal\node\Entity\Node;
 use Drupal\node\Entity\NodeType;
 use Drupal\Core\Session\AccountInterface;
@@ -20,7 +20,7 @@ use Drupal\Core\Session\AccountInterface;
  * @group ys_book
  * @group yalesites
  */
-class BookCollectionPermissionTest extends KernelTestBase {
+class BookCollectionPermissionTest extends YsKernelTestBase {
 
   use UserCreationTrait;
 

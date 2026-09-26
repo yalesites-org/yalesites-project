@@ -25,3 +25,16 @@
   text-align: center;
   vertical-align: baseline;
 }
+
+/**
+ * The announcement category pill (yalesites-org/YaleSites-Internal#1559).
+ *
+ * A distinct color from the red "New" pill above, so the two read as
+ * different kinds of information rather than just different positions. Uses
+ * Gin's own info/button-text token pair, which the theme ships pre-matched
+ * for contrast in both light and dark admin-theme modes.
+ */
+.ys-dashboard-badge--category {
+  background-color: var(--gin-color-info, #082538);
+  color: var(--gin-color-button-text, #fff);
+}

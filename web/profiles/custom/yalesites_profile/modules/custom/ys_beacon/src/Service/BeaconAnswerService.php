@@ -3,6 +3,7 @@
 namespace Drupal\ys_beacon\Service;
 
 use Drupal\ai\AiProviderPluginManager;
+use Drupal\ai\Dto\HostnameFilterDto;
 use Drupal\ai\OperationType\Chat\ChatInput;
 use Drupal\ai\OperationType\Chat\ChatMessage;
 use Drupal\ys_beacon\Exception\BeaconStageException;
@@ -57,6 +58,7 @@ class BeaconAnswerService {
     $provider = $this->chatProvider($defaults['provider_id']);
     $chat_input = new ChatInput($messages);
     $this->toolCallHandler->attachTools($chat_input);
+    $chat_input->setHostnameFilter($this->outputFilterOverride());
 
     $output = $this->runStage(
       BeaconStageException::STAGE_CHAT,
@@ -66,6 +68,7 @@ class BeaconAnswerService {
 
     $follow_up_input = $this->toolCallHandler->followUpInput($normalized, $messages);
     if ($follow_up_input) {
+      $follow_up_input->setHostnameFilter($this->outputFilterOverride());
       $output = $this->runStage(
         BeaconStageException::STAGE_CHAT_FOLLOW_UP,
         fn() => $provider->chat($follow_up_input, $defaults['model_id'], ['ys_beacon'])
@@ -77,6 +80,49 @@ class BeaconAnswerService {
       'answer' => (string) $normalized->getText(),
       'citations' => $citations,
     ];
+  }
+
+  /**
+   * Returns the AI output-filter override applied to every chat call.
+   *
+   * The AI module filters all model output through
+   * \Drupal\ai\Service\HostnameFilter, which removes any link whose host is
+   * not on ai.settings.allowed_hosts. That allow-list ships empty and the
+   * filter treats empty as block-all, so without this override every link an
+   * answer contains - including links back into the site being tested - is
+   * stripped, and one "ai" channel warning is logged per link.
+   *
+   * The allow-list cannot express "trust the sites we index": YaleSites content
+   * links to an open-ended set of legitimate hosts (yale.edu, ServiceNow,
+   * Microsoft, ...), the module offers no denylist, and there is no
+   * match-everything pattern - a bare "*" is escaped to /^\*$/ and matches only
+   * the literal hostname "*". Full trust is the only switch that fits.
+   *
+   * ChatApiController disables the same filter for the streamed chat path (see
+   * ::withOutputFilteringDisabled there). Without the equivalent here the
+   * tester scores answers whose links have been stripped, so it stops measuring
+   * what the chat widget actually renders - the one thing it exists to do.
+   *
+   * Unlike that streamed path this rides on ChatInput rather than setting the
+   * filter here. The end state is the same - ProviderProxy applies the DTO by
+   * snapshotting and mutating the same singleton, restoring it in a finally
+   * block - but it scopes the override to the one provider call rather than to
+   * a block of our own code, and it is applied early enough to cover strings
+   * built inside the plugin as well as the response. The streamed path cannot
+   * use a DTO at all, because the proxy restores the filter before the lazy
+   * stream is consumed; this path is not streamed, so it can.
+   *
+   * Safe because full trust bypasses the whole output filter - its HTML
+   * sanitizing included - and every consumer of this answer escapes it:
+   * AiTesterController renders answers through Html::escape() at each render
+   * site, and the exports carry them as data. If an answer is ever rendered as
+   * raw HTML, a server-side sanitizer must be restored here.
+   *
+   * @return \Drupal\ai\Dto\HostnameFilterDto
+   *   A DTO disabling output filtering for a single call.
+   */
+  protected function outputFilterOverride(): HostnameFilterDto {
+    return new HostnameFilterDto(fullTrust: TRUE);
   }
 
   /**

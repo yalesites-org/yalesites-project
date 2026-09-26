@@ -3,7 +3,6 @@
 namespace Drupal\Tests\ys_core\Kernel;
 
 use Drupal\Core\Form\FormState;
-use Drupal\KernelTests\KernelTestBase;
 use Drupal\ys_core\Form\PlatformAdminSettingsForm;
 
 /**
@@ -22,7 +21,7 @@ use Drupal\ys_core\Form\PlatformAdminSettingsForm;
  * @group yalesites
  * @coversDefaultClass \Drupal\ys_core\Form\PlatformAdminSettingsForm
  */
-class PlatformAdminSettingsFormTest extends KernelTestBase {
+class PlatformAdminSettingsFormTest extends YsKernelTestBase {
 
   /**
    * {@inheritdoc}

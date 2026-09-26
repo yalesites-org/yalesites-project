@@ -317,51 +317,17 @@ the equivalent of the legacy `/api/ai/v1/content` endpoint:
 GET /api/ys-beacon/v1/content?type=node&page=1&page_size=50
 ```
 
-- **Open to all users.** The route is accessible to any role, authenticated or
-  anonymous. There is no permission gate, because the feed only ever exposes
-  content a logged-out visitor could already read (see below).
-- **Same indexability rules as the index.** Items are filtered through
-  `BeaconIndexability` while account-switched to the anonymous user, so the feed
-  exposes exactly what the chatbot indexes regardless of who calls it: published,
-  anonymously viewable (not CAS-protected), and not opted out via
-  `ai_disable_indexing`.
-- **Parameters:** `type` (`node` or `media`, default `node`), `page` (1-based,
-  default 1), `page_size` (default 50, max 200). Because the per-item
-  indexability filter runs after the page window, a page may contain fewer than
-  `page_size` items; page until `data` is empty.
+It serves published, anonymously viewable content that has not opted out of AI
+indexing — the same corpus the chatbot indexes — and returns `403` on any site
+where a platform admin has not authorized Beacon.
 
-Response shape:
-
-```json
-{
-  "data": [
-    {
-      "id": "node/123",
-      "type": "node",
-      "bundle": "page",
-      "uuid": "…",
-      "title": "…",
-      "url": "https://…",
-      "langcode": "en",
-      "created": "2026-01-01T00:00:00+00:00",
-      "changed": "2026-02-01T00:00:00+00:00",
-      "ai_description": "…",
-      "ai_tags": "…",
-      "content": "plain-text rendering of the default view (nodes only)"
-    }
-  ],
-  "pagination": {
-    "type": "node",
-    "page": 1,
-    "page_size": 50,
-    "total_records": 1234,
-    "total_pages": 25
-  }
-}
-```
-
-Node bodies are rendered as the anonymous user, so the feed never exposes
-content a logged-out visitor could not see.
+**Full reference: [API_ENDPOINT_DOCUMENTATION.md](API_ENDPOINT_DOCUMENTATION.md).**
+That document is the single home for the parameters, the response shape and every
+field, pagination behavior, error responses, rate-limit and polling guidance, and
+the differences from the legacy endpoint — so they are not written down twice and
+cannot drift. Two things there are worth knowing before you call the endpoint:
+media is excluded from the feed by default and must be opted in per item, and
+`total_records`/`total_pages` are an upper bound rather than the served count.
 
 ## Citations
 
