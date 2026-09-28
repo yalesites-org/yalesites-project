@@ -141,7 +141,8 @@
  * overline/eyebrow treatment (_yds-reference-card.scss) — the mockup
  * previously rendered this as plain bold text.
  */
-.vb-preview__eyebrow {
+.vb-preview__eyebrow,
+.vb-preview__discipline {
   display: block;
   font-size: 0.8125rem;
   font-weight: 700;
@@ -149,6 +150,15 @@
   text-transform: lowercase;
   letter-spacing: 0.5px;
   color: var(--gin-color-text-light, #555);
+}
+
+/*
+ * Resource discipline sits where the real card puts it, the reference card's
+ * overline, which drops the eyebrow's bold.
+ */
+.vb-preview__discipline {
+  margin-top: 0.5rem;
+  font-weight: 400;
 }
 
 /*
@@ -183,13 +193,17 @@
  * Profile data pass-throughs (#1648), given the same muted treatment as
  * .vb-preview__meta so the mockup reads like the rendered card. The real card
  * links the email and phone; this is a static mockup, so they stay plain text.
+ * The resource date and authors (#1723) sit in the real card's subheading
+ * and get the same treatment.
  * `display: block` is safe against the `hidden` attribute these start with:
  * `.vb-preview [hidden]` below is more specific and wins.
  */
 .vb-preview__pronouns,
 .vb-preview__department,
 .vb-preview__email,
-.vb-preview__phone {
+.vb-preview__phone,
+.vb-preview__publish-date,
+.vb-preview__authors {
   display: block;
   margin-top: 0.5rem;
   font-size: 0.8rem;
@@ -229,8 +243,14 @@
  * scale. Inside this compact, fixed-width (max-width: 22rem) mockup box it
  * just renders large and stretches the vw term meaninglessly, so a smaller,
  * fixed size reads better here without claiming a false pixel match.
+ *
+ * The resource journal details (#1723) render in the real card's snippet
+ * too, so they share this type.
  */
-.vb-preview__teaser {
+.vb-preview__teaser,
+.vb-preview__journal-name,
+.vb-preview__journal-issue {
+  display: block;
   margin: 0.5rem 0 0;
   font: 400 0.875rem/1.4 "Mallory Compact", sans-serif;
   color: var(--gin-color-text, inherit);
@@ -294,6 +314,18 @@
 
 .vb-preview[data-view-mode='directory'] .vb-preview__image {
   height: 11rem;
+}
+
+/*
+ * Portrait grid (resources): the rendered card crops its teaser image to 5:8
+ * (card_grid_portrait_5_8), so the mockup does the same.
+ */
+.vb-preview[data-view-mode='portrait_grid'] {
+  max-width: 12rem;
+}
+
+.vb-preview[data-view-mode='portrait_grid'] .vb-preview__image {
+  aspect-ratio: 5 / 8;
 }
 
 /*
