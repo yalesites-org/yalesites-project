@@ -159,6 +159,9 @@
       "drupal/gin": {
         "fix description toggle for CKEditor fields https://www.drupal.org/project/gin/issues/3316265": "patches/contrib/gin/3316265-mr-227.patch"
       },
+      "drupal/gin_lb": {
+        "Keep the views-exposed-form class so Views AJAX exposed filters work in Layout Builder; remove once a gin_lb release includes it (YaleSites-Internal#1791) https://www.drupal.org/project/gin_lb/issues/3563771": "patches/contrib/gin_lb/3563771-mr-121.diff"
+      },
       "drupal/layout_builder_browser": {
         "Add grouping of reusable blocks (3409153) and add fallback images (3408935) - can't use both patches from d.o would cause merge conflict, combined patch": "patches/contrib/layout_builder_browser/3408935-and-3409153-9.patch"
       },
