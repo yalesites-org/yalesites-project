@@ -243,6 +243,28 @@ function ys_views_basic_views_pre_build($view) {
 }
 
 /**
+ * Implements hook_views_post_execute().
+ *
+ * Gives each listing its own copy of every result node. Listings on one page
+ * share node objects through the entity static cache, and
+ * ys_views_basic_views_pre_render() stamps per-block flags onto them that the
+ * node templates only read once the whole page renders. Without a copy, the
+ * last listing's flags apply to every listing showing the same nodes. This
+ * runs before the row plugin builds its render arrays, so they capture the
+ * copies.
+ */
+function ys_views_basic_views_post_execute(ViewExecutable $view): void {
+  if (!in_array($view->id(), ViewsBasicManager::SCAFFOLD_VIEWS, TRUE)) {
+    return;
+  }
+  foreach ($view->result as $row) {
+    if (isset($row->_entity)) {
+      $row->_entity = clone $row->_entity;
+    }
+  }
+}
+
+/**
  * Implements hook_views_pre_render().
  */
 function ys_views_basic_views_pre_render(ViewExecutable $view): void {
