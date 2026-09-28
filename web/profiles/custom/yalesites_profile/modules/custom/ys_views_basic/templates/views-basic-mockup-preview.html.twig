@@ -11,16 +11,19 @@
  *
  * Available variables:
  * - content_type: The listing content type machine name (post/event/page/
- *   profile); gates which parts render and feeds data-content-type.
+ *   profile/resource); gates which parts render and feeds data-content-type.
  * - view_mode: The node view mode; feeds data-view-mode for the CSS layout
- *   variants (list_item/condensed/directory) and gates the teaser text, which
- *   the real card/list_item view modes render but condensed/directory hide.
+ *   variants (list_item/condensed/directory/portrait_grid) and gates the
+ *   teaser text, which the real card/list_item view modes render but
+ *   condensed/directory hide. Resources gate their teaser on the Show Teaser
+ *   Text option instead, as their node templates do.
  * - image_src: Placeholder teaser image src (a 1x1 transparent GIF).
  * - font_pairing: The site's configured Font Pairing (ys_core.site:
  *   font_pairing — yalenew/mallory/yalenew-oldstyle); feeds data-font-pairing
  *   so the card's heading typeface matches the live front-end render.
  */
 #}
+{% set teaser_text = 'This is example teaser text that shows how a longer summary will wrap onto multiple lines within the card.'|t %}
 <div class="vb-preview-wrapper" role="group" aria-label="{{ 'Result preview'|t }}">
   <div class="vb-preview-wrapper__header">
     <p class="vb-preview-wrapper__label">{{ 'Preview'|t }}</p>
@@ -43,10 +46,27 @@
           <span class="vb-preview__pronouns" hidden>{{ 'they/them'|t }}</span>
           <span class="vb-preview__meta">{{ 'Job Title'|t }}</span>
         {% endif %}
+        {% if content_type == 'resource' and view_mode in ['card', 'portrait_grid', 'list_item'] %}
+          {# One part per "Resource options" checkbox (#1723), in the order
+             node--resource--card.html.twig hands them to the reference card:
+             date, teaser and authors as the subheading, then discipline as the
+             overline; the journal details follow the tags below, as the card's
+             snippet. All but the teaser start hidden because only Show Teaser
+             Text starts ticked. Condensed offers none of these options,
+             matching ResourceViewWidget::RESOURCE_FIELD_VIEW_MODES. #}
+          <span class="vb-preview__publish-date" hidden>{{ 'Published: Month 1, 2026'|t }}</span>
+          <p class="vb-preview__teaser">{{ teaser_text }}</p>
+          <span class="vb-preview__authors" hidden>{{ 'Authors: Author A, Author B'|t }}</span>
+          <span class="vb-preview__discipline" hidden>{{ 'Discipline: Discipline A'|t }}</span>
+        {% endif %}
         <span class="vb-preview__category">{{ 'Category A | Category B'|t }}</span>
         <span class="vb-preview__tags">{{ 'Tag A | Tag B'|t }}</span>
-        {% if view_mode in ['card', 'list_item'] %}
-          <p class="vb-preview__teaser">{{ 'This is example teaser text that shows how a longer summary will wrap onto multiple lines within the card.'|t }}</p>
+        {% if content_type == 'resource' and view_mode in ['card', 'portrait_grid', 'list_item'] %}
+          <span class="vb-preview__journal-name" hidden>{{ 'Publication:'|t }} <em>{{ 'Journal Name'|t }}</em></span>
+          <span class="vb-preview__journal-issue" hidden>{{ 'Issue: Vol. 1, No. 1'|t }}</span>
+        {% endif %}
+        {% if view_mode in ['card', 'list_item'] and content_type != 'resource' %}
+          <p class="vb-preview__teaser">{{ teaser_text }}</p>
         {% endif %}
         {% if content_type == 'event' %}<a class="vb-preview__calendar" href="#">{{ 'Add to Calendar'|t }}</a>{% endif %}
         {% if content_type == 'profile' %}
