@@ -1,5 +1,25 @@
 # Changelog
 
+## Resource listings folded into Views Basic (#1723)
+
+### Added
+
+- `ResourceViewWidget` and four resource listing block types —
+  `resource_card`, `resource_portrait_grid`, `resource_list_item`,
+  `resource_condensed` — served by `ViewsBasicManager` through a new
+  `views_basic_scaffold_resources` view. Resources appear as a content type
+  tile in the Views wizard. Every option the `ys_views_content_resources`
+  widget offered stays available under the same label.
+- `ys_views_basic_deploy_10003()` moves existing `resource_view` blocks onto
+  the new bundles, copying and normalising their params on every revision.
+- The `resource_year_filter` views filter now lives in this module.
+
+### Changed
+
+- `resource_view` is removed from the Layout Builder picker. The block type,
+  its field and the `ys_views_content_resources` module stay until a
+  follow-up removes them.
+
 ## Views Block Architectural Rework (EPIC #1161)
 
 Refactored the single monolithic `view` block into a layered, per-content-type

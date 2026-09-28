@@ -1,0 +1,8 @@
+uuid: 91bebda9-c009-402f-a12d-d45622c44a2d
+langcode: en
+status: true
+dependencies: {  }
+id: resource_card
+label: 'Resources - Card Grid View'
+revision: true
+description: 'Resources - Card Grid listing block.'

@@ -117,6 +117,10 @@ third_party_settings:
               - 'inline_block:profile_list_item'
               - 'inline_block:pull_quote'
               - 'inline_block:reference_card'
+              - 'inline_block:resource_card'
+              - 'inline_block:resource_condensed'
+              - 'inline_block:resource_list_item'
+              - 'inline_block:resource_portrait_grid'
               - 'inline_block:tabs'
               - 'inline_block:text'
               - 'inline_block:video'
@@ -134,6 +138,9 @@ third_party_settings:
               - 'inline_block:post_condensed'
               - 'inline_block:profile_card'
               - 'inline_block:profile_condensed'
+              - 'inline_block:resource_card'
+              - 'inline_block:resource_condensed'
+              - 'inline_block:resource_portrait_grid'
               - 'inline_block:text'
             'YaleSites Layouts':
               - profile_contact_block

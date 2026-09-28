@@ -13,12 +13,14 @@ The Layout Builder Browser groups the 14 listing blocks into four categories
 | Event Listings | Events — Card Grid / List / Condensed / Calendar |
 | People Listings | People — Card Grid / List / Directory / Condensed |
 | Page Listings | Pages — Card Grid / List / Condensed |
+| Resource Views | Resources — Card Grid / Portrait Grid / List / Condensed (#1723) |
 
 ## Placement matrix (product-approved)
 
 | Display mode | Full width | 70% column | 30% sidebar | 50/50 | 33/33/33 |
 |---|---|---|---|---|---|
 | Card Grid | ✅ | ✅ | ✅ | ✅ | ✅ |
+| Portrait Grid (resources) | ✅ | ✅ | ✅ | ✅ | ✅ |
 | List | ✅ | ✅ | ❌ | ❌ | ❌ |
 | Condensed | ✅ | ✅ | ✅ | ✅ | ✅ |
 | Directory (profiles) | ✅ | ✅ | ❌ | ❌ | ❌ |
