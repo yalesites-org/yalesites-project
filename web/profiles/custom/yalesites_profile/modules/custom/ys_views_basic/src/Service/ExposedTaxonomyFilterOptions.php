@@ -1,6 +1,6 @@
 <?php
 
-namespace Drupal\ys_views_content_resources;
+namespace Drupal\ys_views_basic\Service;
 
 use Drupal\Core\Entity\EntityTypeManagerInterface;
 use Drupal\taxonomy\TermStorageInterface;
@@ -26,10 +26,10 @@ use Psr\Log\LoggerInterface;
  * and no excluded id in its vocabulary), so existing blocks keep offering the
  * whole vocabulary.
  *
- * Not tied to the resources view. Any module that assembles a Views display's
- * filters from stored parameters (for example `ys_views_basic`) can use the
- * service `ys_views_content_resources.exposed_taxonomy_filter_options`, or
- * copy this class, and call apply() per taxonomy filter.
+ * Not tied to the resources view: any code that assembles a Views display's
+ * filters from stored parameters can use the service
+ * `ys_views_basic.exposed_taxonomy_filter_options` and call apply() per
+ * taxonomy filter. ViewsBasicManager uses it for resource listings only.
  */
 class ExposedTaxonomyFilterOptions {
 
@@ -151,7 +151,7 @@ class ExposedTaxonomyFilterOptions {
    * @return int[]
    *   Term ids keyed by term id.
    */
-  protected function getDescendantTermIds(string $vid, int $parent_tid): array {
+  public function getDescendantTermIds(string $vid, int $parent_tid): array {
     $list = [];
     foreach ($this->termStorage->loadTree($vid, $parent_tid, NULL) as $term) {
       $list[$term->tid] = (int) $term->tid;

@@ -265,7 +265,7 @@ class ResourceViewWidgetTest extends UnitTestCase {
   }
 
   /**
-   * The search-field picker offers the four fields the old widget offered.
+   * The search-field picker offers the fields the old widget offered.
    *
    * @covers ::buildEntitySpecificOptions
    */
@@ -279,6 +279,7 @@ class ResourceViewWidgetTest extends UnitTestCase {
         'field_teaser_text' => 'Teaser Text',
         'field_teaser_title' => 'Teaser Title',
         'field_journal_publication_name' => 'Journal/Publication Name',
+        'authors' => 'Authors',
       ], $this->labels($element['#options']), "$bundle search fields");
       $this->assertSame(['title', 'field_teaser_text', 'field_teaser_title'], $element['#default_value']);
       $this->assertSame([[ResourceViewWidget::class, 'validateSearchFields']], $element['#element_validate']);

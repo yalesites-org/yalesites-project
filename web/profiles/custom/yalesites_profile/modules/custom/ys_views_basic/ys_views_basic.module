@@ -229,6 +229,16 @@ function ys_views_basic_views_data_alter(array &$data) {
     ],
   ];
 
+  // The resource search swapped in when a block selects "Authors"; see
+  // ViewsBasicManager::applyResourceFilters().
+  $data['views']['resource_author_combine'] = [
+    'title' => t('Resource search with authors'),
+    'filter' => [
+      'help' => t('Combine filter that also matches resource author names.'),
+      'id' => 'ys_views_basic_resource_author_combine',
+    ],
+  ];
+
 }
 
 /**

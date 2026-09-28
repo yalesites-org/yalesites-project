@@ -141,6 +141,7 @@ class ResourceViewWidget extends ViewsBasicWidgetBase {
         'field_teaser_text' => $this->t('Teaser Text'),
         'field_teaser_title' => $this->t('Teaser Title'),
         'field_journal_publication_name' => $this->t('Journal/Publication Name'),
+        'authors' => $this->t('Authors'),
       ],
       '#tree' => TRUE,
       '#default_value' => array_values(array_filter($search_fields)),

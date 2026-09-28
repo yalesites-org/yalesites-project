@@ -11,6 +11,7 @@ use Drupal\Tests\UnitTestCase;
 use Drupal\views\ViewEntityInterface;
 use Drupal\views\ViewExecutable;
 use Drupal\views\ViewExecutableFactory;
+use Drupal\ys_views_basic\Service\ExposedTaxonomyFilterOptions;
 use Drupal\ys_views_basic\ViewsBasicManager;
 
 /**
@@ -68,6 +69,7 @@ class RenderIsolationTest extends UnitTestCase {
       $this->createMock(RouteMatchInterface::class),
       $this->createMock(CacheTagsInvalidatorInterface::class),
       $this->viewExecutableFactory,
+      $this->createMock(ExposedTaxonomyFilterOptions::class),
     );
   }
 

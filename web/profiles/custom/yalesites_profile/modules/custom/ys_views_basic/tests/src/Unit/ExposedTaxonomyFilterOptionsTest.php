@@ -1,19 +1,19 @@
 <?php
 
-namespace Drupal\Tests\ys_views_content_resources\Unit;
+namespace Drupal\Tests\ys_views_basic\Unit;
 
 use Drupal\Core\Entity\EntityTypeManagerInterface;
 use Drupal\Tests\UnitTestCase;
 use Drupal\taxonomy\TermInterface;
 use Drupal\taxonomy\TermStorageInterface;
-use Drupal\ys_views_content_resources\ExposedTaxonomyFilterOptions;
+use Drupal\ys_views_basic\Service\ExposedTaxonomyFilterOptions;
 use Psr\Log\LoggerInterface;
 
 /**
  * Unit tests for ExposedTaxonomyFilterOptions.
  *
- * @coversDefaultClass \Drupal\ys_views_content_resources\ExposedTaxonomyFilterOptions
- * @group ys_views_content_resources
+ * @coversDefaultClass \Drupal\ys_views_basic\Service\ExposedTaxonomyFilterOptions
+ * @group ys_views_basic
  * @group yalesites
  */
 class ExposedTaxonomyFilterOptionsTest extends UnitTestCase {
@@ -35,7 +35,7 @@ class ExposedTaxonomyFilterOptionsTest extends UnitTestCase {
   /**
    * The service under test.
    *
-   * @var \Drupal\ys_views_content_resources\ExposedTaxonomyFilterOptions
+   * @var \Drupal\ys_views_basic\Service\ExposedTaxonomyFilterOptions
    */
   protected $service;
 
