@@ -41,11 +41,33 @@ class YsLayoutsDefinitionsTest extends UnitTestCase {
     // removes the class from one of these is caught here too.
     foreach ([
       'ys_layout_two_column',
+      'ys_layout_two_column_30_70',
       'ys_layout_two_column_50_50',
       'ys_layout_three_column_33_33_33',
     ] as $id) {
       $this->assertSame('\\' . YSLayoutOptions::class, $definitions[$id]['class'] ?? NULL, $id);
     }
+  }
+
+  /**
+   * Two Column (30/70) is the 70/30 layout with its columns flipped.
+   *
+   * It reuses the 70/30 region machine names (sidebar, content) so that
+   * existing block restrictions carry over, but lists sidebar first so
+   * the narrow column renders on the left.
+   */
+  public function testTwoColumnThirtySeventyDefinition(): void {
+    $definitions = $this->getLayoutDefinitions();
+    $definition = $definitions['ys_layout_two_column_30_70'] ?? NULL;
+
+    $this->assertIsArray($definition);
+    $this->assertSame('Two column (30/70)', $definition['label']);
+    $this->assertSame(['sidebar', 'content'], array_keys($definition['regions']));
+    $this->assertSame('sidebar', $definition['icon_map'][0][0]);
+    $this->assertSame('layout--two-column--30-70', $definition['template']);
+
+    $template_path = __DIR__ . '/../../../' . $definition['path'] . '/' . $definition['template'] . '.html.twig';
+    $this->assertFileExists($template_path);
   }
 
 }

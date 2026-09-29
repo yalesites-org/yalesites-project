@@ -60,6 +60,9 @@ layout_plugin.settings.layout_onecol:
 layout_plugin.settings.ys_layout_two_column:
   type: ys_layouts.layout_settings.theme_and_divider
 
+layout_plugin.settings.ys_layout_two_column_30_70:
+  type: ys_layouts.layout_settings.theme_and_divider
+
 layout_plugin.settings.ys_layout_two_column_50_50:
   type: ys_layouts.layout_settings.theme_and_divider
 

@@ -26,6 +26,21 @@ ys_layout_two_column:
       label: Content
     sidebar:
       label: Sidebar
+ys_layout_two_column_30_70:
+  label: 'Two column (30/70)'
+  path: layouts/two_column_30_70
+  template: layout--two-column--30-70
+  library: ys_layouts/ys_layout_two_column
+  class: '\Drupal\ys_layouts\Plugin\Layout\YSLayoutOptions'
+  category: 'Columns: 2'
+  default_region: content
+  icon_map:
+    - [sidebar, content, content]
+  regions:
+    sidebar:
+      label: Sidebar
+    content:
+      label: Content
 ys_layout_two_column_50_50:
   label: 'Two column (50/50)'
   path: layouts/two_column_50_50
