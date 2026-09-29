@@ -7,7 +7,7 @@
  * The views rework gives every (content type, display mode) pair its own
  * block_content bundle, which is the right architecture but puts one tile per
  * bundle in the Layout Builder block picker. This module collapses those tiles
- * into a single "Content Listing" entry that asks the two questions the pair
+ * into a single "Views" entry that asks the two questions the pair
  * encodes - which content type, and which display mode - and then hands off to
  * the matching bundle's own configure form.
  *
@@ -30,12 +30,11 @@ use Drupal\ys_views_wizard\ViewsWizardOptions;
  * browser hands us the finished render array plus the section storage, delta
  * and region, which are exactly the parameters the wizard route needs.
  *
- * Every listing tile is removed and replaced by one entry in the module's own
- * category, which is a layout_builder_browser_blockcat config entity shipped
- * in config/install - so the category label and weight are editable in the
- * block browser UI rather than being frozen in code. Categories this hook
- * empties are dropped, since the browser itself drops empty categories and
- * leaving them behind would render as empty accordions.
+ * Every listing tile is removed and replaced by one "Views" entry in the
+ * existing Dynamic Content category, which is where editors and the user guide
+ * already expect it. Categories this hook empties are dropped, since the
+ * browser itself drops empty categories and leaving them behind would render
+ * as empty accordions.
  *
  * Event Calendar is deliberately untouched: it is not a listing bundle.
  */
@@ -71,6 +70,16 @@ function ys_views_wizard_layout_builder_browser_alter(array &$build, array $cont
         $wizard_link = $item;
         $wizard_link['link']['#url'] = $wizard_url;
         $wizard_link['link']['#title']['label']['#markup'] = ViewsWizardOptions::LINK_LABEL;
+        // Listing tiles have no icon of their own, so the copied image is the
+        // category or browser placeholder. Use the Views icon instead, kept
+        // first so it renders above the label like the browser's own tiles.
+        $wizard_link['link']['#title'] = [
+          'image' => [
+            '#theme' => 'image',
+            '#uri' => ViewsWizardOptions::ICON_PATH,
+            '#alt' => '',
+          ],
+        ] + $wizard_link['link']['#title'];
         // layout_builder_browser_link_alter() only modalises the two core
         // layout_builder route names, so a custom route would open off-canvas
         // from inside the modal. Set the dialog attributes here instead.
@@ -93,26 +102,34 @@ function ys_views_wizard_layout_builder_browser_alter(array &$build, array $cont
     return;
   }
 
-  $wizard_category = _ys_views_wizard_category();
-  if ($wizard_category === NULL) {
-    return;
+  // The entry joins the existing Dynamic Content category, where editors
+  // already know it as "Views". That category is only missing from $build when
+  // nothing else in it is placeable here, so rebuild it in that case.
+  $categories = &$build['block_categories'];
+  if (isset($categories[ViewsWizardOptions::CATEGORY_ID])) {
+    $categories[ViewsWizardOptions::CATEGORY_ID]['links'][] = $wizard_link;
   }
-  $wizard_category['links'] = [$wizard_link];
+  else {
+    $wizard_category = _ys_views_wizard_category();
+    if ($wizard_category === NULL) {
+      return;
+    }
+    $wizard_category['links'] = [$wizard_link];
 
-  // Splice BEFORE dropping the emptied categories, while the anchor is still
-  // in the array. The anchor is usually emptied and dropped itself - it is the
-  // category the first listing tile came out of - so resolving its position
-  // afterwards would always miss and fall through to appending, which puts the
-  // entry after unrelated categories rather than where the listings were.
-  $build['block_categories'] = _ys_views_wizard_splice(
-    $build['block_categories'],
-    ViewsWizardOptions::CATEGORY_ID,
-    $wizard_category,
-    $anchor_category
-  );
+    // Splice BEFORE dropping the emptied categories, while the anchor is still
+    // in the array. The anchor is usually emptied and dropped itself - it is
+    // the category the first listing tile came out of - so resolving its
+    // position afterwards would always miss and fall through to appending.
+    $categories = _ys_views_wizard_splice(
+      $categories,
+      ViewsWizardOptions::CATEGORY_ID,
+      $wizard_category,
+      $anchor_category
+    );
+  }
 
-  foreach ($emptied_categories as $category_key) {
-    unset($build['block_categories'][$category_key]);
+  foreach (array_diff($emptied_categories, [ViewsWizardOptions::CATEGORY_ID]) as $category_key) {
+    unset($categories[$category_key]);
   }
 }
 
@@ -121,9 +138,8 @@ function ys_views_wizard_layout_builder_browser_alter(array &$build, array $cont
  *
  * Mirrors the category render array BrowserController::browse() builds, so the
  * single entry sits in an accordion indistinguishable from the browser's own.
- * The controller drops any category with no blocks behind it, and the wizard's
- * category has none by design, so it never survives into $build on its own -
- * this rebuilds it.
+ * Only needed when the controller dropped Dynamic Content because nothing else
+ * in it is placeable in this region.
  *
  * @return array|null
  *   The category render array, or NULL when the config entity is missing.
