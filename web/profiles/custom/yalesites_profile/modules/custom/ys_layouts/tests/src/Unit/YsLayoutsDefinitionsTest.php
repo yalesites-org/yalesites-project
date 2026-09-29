@@ -63,11 +63,21 @@ class YsLayoutsDefinitionsTest extends UnitTestCase {
     $this->assertIsArray($definition);
     $this->assertSame('Two column (30/70)', $definition['label']);
     $this->assertSame(['sidebar', 'content'], array_keys($definition['regions']));
-    $this->assertSame('sidebar', $definition['icon_map'][0][0]);
+    $this->assertSame([['sidebar', 'content', 'content']], $definition['icon_map']);
     $this->assertSame('layout--two-column--30-70', $definition['template']);
 
     $template_path = __DIR__ . '/../../../' . $definition['path'] . '/' . $definition['template'] . '.html.twig';
     $this->assertFileExists($template_path);
+  }
+
+  /**
+   * The 70/30 icon draws its columns at 2:1, mirroring the 30/70 icon.
+   *
+   * With equal-width boxes it read as 50/50 in the Add section picker.
+   */
+  public function testTwoColumnSeventyThirtyIconShowsProportion(): void {
+    $definitions = $this->getLayoutDefinitions();
+    $this->assertSame([['content', 'content', 'sidebar']], $definitions['ys_layout_two_column']['icon_map']);
   }
 
 }

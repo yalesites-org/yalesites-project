@@ -20,7 +20,7 @@ ys_layout_two_column:
   category: 'Columns: 2'
   default_region: content
   icon_map:
-    - [content, sidebar]
+    - [content, content, sidebar]
   regions:
     content:
       label: Content
