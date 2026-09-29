@@ -224,16 +224,6 @@ class ViewsBasicManager extends ControllerBase implements ContainerInjectionInte
   ];
 
   /**
-   * Resource taxonomy filters constrained to an included parent term.
-   *
-   * Keyed by filter id, valued by the stored param holding the parent term.
-   */
-  const RESOURCE_PARENT_TERM_PARAMS = [
-    'field_category_target_id' => 'category_included_terms',
-    'field_custom_vocab_target_id' => 'custom_vocab_included_terms',
-  ];
-
-  /**
    * The resource-only field display options (#1723).
    *
    * Stored under resource_field_options and stamped onto each result node by
@@ -700,20 +690,6 @@ class ViewsBasicManager extends ControllerBase implements ContainerInjectionInte
         unset($filters[$filter]);
       }
 
-      // Check if 'category_included_terms' is provided for the current
-      // filter type.
-      if (!empty($paramsDecoded['category_included_terms'])) {
-        // Determine the vocabulary ID based on the selected filter type.
-        $vid = $filterType == self::CONTENT_TYPE_PROFILE
-          ? 'affiliation'
-          : "{$filterType}_category";
-
-        // Limit the filter to specific terms if provided.
-        $filters[$category_filter_name]['value'] = $this->getChildTermsByParentId($paramsDecoded['category_included_terms'], $vid);
-        $filters[$category_filter_name]['limit'] = TRUE;
-        $filters[$category_filter_name]['expose']['reduce'] = TRUE;
-      }
-
       // Set a custom label for the 'Category' filter if provided.
       if (!empty($paramsDecoded['category_filter_label'])) {
         $filters[$category_filter_name]['expose']['label'] = $paramsDecoded['category_filter_label'];
@@ -732,18 +708,6 @@ class ViewsBasicManager extends ControllerBase implements ContainerInjectionInte
       // Get the label of the custom vocab.
       $custom_vocab_label = $this->entityTypeManager->getStorage('taxonomy_vocabulary')->load('custom_vocab')->label();
       $filters['field_custom_vocab_target_id']['expose']['label'] = $custom_vocab_label;
-
-      // Check if 'custom_vocab_included_terms' is provided for the current
-      // filter type.
-      if (!empty($paramsDecoded['custom_vocab_included_terms'])) {
-        // Determine the vocabulary ID based on the selected filter type.
-        $vid = 'custom_vocab';
-
-        // Limit the filter to specific terms if provided.
-        $filters['field_custom_vocab_target_id']['value'] = $this->getChildTermsByParentId($paramsDecoded['custom_vocab_included_terms'], $vid);
-        $filters['field_custom_vocab_target_id']['limit'] = TRUE;
-        $filters['field_custom_vocab_target_id']['expose']['reduce'] = TRUE;
-      }
     }
     else {
       // Remove filter if 'show filter' field is not set.
@@ -770,17 +734,21 @@ class ViewsBasicManager extends ControllerBase implements ContainerInjectionInte
 
     if ($filterType === self::CONTENT_TYPE_RESOURCE) {
       $filters = self::applyResourceFilters($filters, $paramsDecoded);
+    }
 
-      // Never offer a term the editor used to exclude content: a visitor
-      // picking it would always get zero results. Category and custom
-      // vocabulary also stay limited to their included parent's children.
-      $excluded_terms = array_map([$this, 'getTermId'], $paramsDecoded['filters']['terms_exclude'] ?? []);
-      foreach ($filters as $filter_name => $filter) {
-        if (($filter['plugin_id'] ?? NULL) === 'taxonomy_index_tid' && !empty($filter['exposed'])) {
-          $parent_param = self::RESOURCE_PARENT_TERM_PARAMS[$filter_name] ?? NULL;
-          $parent_tid = $parent_param ? (int) ($paramsDecoded[$parent_param] ?? 0) : NULL;
-          $this->exposedTaxonomyFilterOptions->apply($filters, $filter_name, $excluded_terms, $parent_tid);
-        }
+    // Never offer a term the editor used to exclude content: a visitor
+    // picking it would always get zero results. Category and custom
+    // vocabulary also stay limited to their included parent's children.
+    $parent_params = ['field_custom_vocab_target_id' => 'custom_vocab_included_terms'];
+    if ($category_filter_name) {
+      $parent_params[$category_filter_name] = 'category_included_terms';
+    }
+    $excluded_terms = array_map([$this, 'getTermId'], $paramsDecoded['filters']['terms_exclude'] ?? []);
+    foreach ($filters as $filter_name => $filter) {
+      if (($filter['plugin_id'] ?? NULL) === 'taxonomy_index_tid' && !empty($filter['exposed'])) {
+        $parent_param = $parent_params[$filter_name] ?? NULL;
+        $parent_tid = $parent_param ? (int) ($paramsDecoded[$parent_param] ?? 0) : NULL;
+        $this->exposedTaxonomyFilterOptions->apply($filters, $filter_name, $excluded_terms, $parent_tid);
       }
     }
 

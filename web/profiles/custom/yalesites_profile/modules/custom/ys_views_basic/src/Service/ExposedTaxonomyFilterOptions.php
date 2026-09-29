@@ -29,7 +29,7 @@ use Psr\Log\LoggerInterface;
  * Not tied to the resources view: any code that assembles a Views display's
  * filters from stored parameters can use the service
  * `ys_views_basic.exposed_taxonomy_filter_options` and call apply() per
- * taxonomy filter. ViewsBasicManager uses it for resource listings only.
+ * taxonomy filter. ViewsBasicManager uses it for every listing type.
  */
 class ExposedTaxonomyFilterOptions {
 
