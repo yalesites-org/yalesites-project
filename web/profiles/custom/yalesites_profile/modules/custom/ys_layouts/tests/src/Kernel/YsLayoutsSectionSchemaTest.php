@@ -48,6 +48,7 @@ class YsLayoutsSectionSchemaTest extends KernelTestBase {
   const THEMED_LAYOUT_IDS = [
     'layout_onecol',
     'ys_layout_two_column',
+    'ys_layout_two_column_30_70',
     'ys_layout_two_column_50_50',
     'ys_layout_three_column_33_33_33',
   ];
