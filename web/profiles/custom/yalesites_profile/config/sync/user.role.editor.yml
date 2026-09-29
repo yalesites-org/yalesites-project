@@ -35,7 +35,6 @@ dependencies:
     - block_content.type.post_list_item
     - block_content.type.profile_card
     - block_content.type.profile_condensed
-    - block_content.type.profile_directory
     - block_content.type.profile_list_item
     - block_content.type.pull_quote
     - block_content.type.quick_links
@@ -186,7 +185,6 @@ permissions:
   - 'create profile content'
   - 'create profile_card block content'
   - 'create profile_condensed block content'
-  - 'create profile_directory block content'
   - 'create profile_list_item block content'
   - 'create pull_quote block content'
   - 'create quick_links block content'
@@ -294,8 +292,6 @@ permissions:
   - 'delete any profile_card block content revisions'
   - 'delete any profile_condensed block content'
   - 'delete any profile_condensed block content revisions'
-  - 'delete any profile_directory block content'
-  - 'delete any profile_directory block content revisions'
   - 'delete any profile_list_item block content'
   - 'delete any profile_list_item block content revisions'
   - 'delete any pull_quote block content'
@@ -395,7 +391,6 @@ permissions:
   - 'edit any profile content'
   - 'edit any profile_card block content'
   - 'edit any profile_condensed block content'
-  - 'edit any profile_directory block content'
   - 'edit any profile_list_item block content'
   - 'edit any pull_quote block content'
   - 'edit any quick_links block content'
@@ -479,7 +474,6 @@ permissions:
   - 'revert any post_list_item block content revisions'
   - 'revert any profile_card block content revisions'
   - 'revert any profile_condensed block content revisions'
-  - 'revert any profile_directory block content revisions'
   - 'revert any profile_list_item block content revisions'
   - 'revert any pull_quote block content revisions'
   - 'revert any quick_links block content revisions'
@@ -548,7 +542,6 @@ permissions:
   - 'view any post_list_item block content history'
   - 'view any profile_card block content history'
   - 'view any profile_condensed block content history'
-  - 'view any profile_directory block content history'
   - 'view any profile_list_item block content history'
   - 'view any pull_quote block content history'
   - 'view any quick_links block content history'

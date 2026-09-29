@@ -13,8 +13,8 @@
  * - content_type: The listing content type machine name (post/event/page/
  *   profile); gates which parts render and feeds data-content-type.
  * - view_mode: The node view mode; feeds data-view-mode for the CSS layout
- *   variants (list_item/condensed/directory) and gates the teaser text, which
- *   the real card/list_item view modes render but condensed/directory hide.
+ *   variants (list_item/condensed) and gates the teaser text, which the real
+ *   card/list_item view modes render but condensed hides.
  * - image_src: Placeholder teaser image src (a 1x1 transparent GIF).
  * - font_pairing: The site's configured Font Pairing (ys_core.site:
  *   font_pairing — yalenew/mallory/yalenew-oldstyle); feeds data-font-pairing
@@ -32,14 +32,15 @@
       <img class="vb-preview__image" alt="{{ 'Example teaser image placeholder'|t }}" src="{{ image_src }}">
       <div class="vb-preview__body">
         {% if content_type == 'post' %}<span class="vb-preview__eyebrow">{{ 'Eyebrow'|t }}</span>{% endif %}
+        {% if content_type == 'profile' %}<span class="vb-preview__department" hidden>{{ 'Department Name'|t }}</span>{% endif %}
         <p class="vb-preview__title">{{ 'Example Title'|t }}</p>
         {% if content_type == 'event' %}<span class="vb-preview__meta">{{ 'Month 1, 2026 - 12:00 PM'|t }}</span>{% endif %}
         {% if content_type == 'profile' %}
           {# Like .vb-preview__pinned, the four profile fields start hidden
              because their checkboxes start unticked (#1648); the behavior
              reveals them. They sit where the rendered reference card puts
-             them: pronouns under the heading, department and the contact
-             details below the teaser. #}
+             them: department above the heading (#1682), pronouns under it,
+             and the contact details below the teaser. #}
           <span class="vb-preview__pronouns" hidden>{{ 'they/them'|t }}</span>
           <span class="vb-preview__meta">{{ 'Job Title'|t }}</span>
         {% endif %}
@@ -50,8 +51,7 @@
         {% endif %}
         {% if content_type == 'event' %}<a class="vb-preview__calendar" href="#">{{ 'Add to Calendar'|t }}</a>{% endif %}
         {% if content_type == 'profile' %}
-          <span class="vb-preview__department" hidden>{{ 'Department Name'|t }}</span>
-          <span class="vb-preview__email" hidden>{{ 'name@example.edu'|t }}</span>
+          <span class="vb-preview__email" hidden>{{ 'Email'|t }}</span>
           <span class="vb-preview__phone" hidden>{{ '203-555-0100'|t }}</span>
         {% endif %}
       </div>

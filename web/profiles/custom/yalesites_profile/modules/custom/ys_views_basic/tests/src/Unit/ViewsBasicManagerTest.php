@@ -200,14 +200,14 @@ class ViewsBasicManagerTest extends UnitTestCase {
   }
 
   /**
-   * ViewModeList() includes the "directory" mode only for profiles.
+   * ViewModeList() no longer offers the retired "directory" mode (#1682).
    *
    * @covers ::viewModeList
    */
-  public function testViewModeListForProfileIncludesDirectory() {
+  public function testViewModeListForProfile() {
     $list = $this->manager->viewModeList('profile');
 
-    $this->assertArrayHasKey('directory', $list);
+    $this->assertSame(['card', 'list_item', 'condensed'], array_keys($list));
   }
 
   /**
