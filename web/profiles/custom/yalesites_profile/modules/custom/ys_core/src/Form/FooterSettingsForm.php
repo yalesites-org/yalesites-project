@@ -80,7 +80,7 @@ class FooterSettingsForm extends ConfigFormBase {
         'basic' => $this->t('Basic') . '<img src="/profiles/custom/yalesites_profile/modules/custom/ys_core/images/preview-icons/footer-basic.svg" class="preview-icon" alt="Basic footer icon showing a small Yale logo, and gray placeholders for copyright and social media icons.">',
         'mega' => $this->t('Mega') . '<img src="/profiles/custom/yalesites_profile/modules/custom/ys_core/images/preview-icons/footer-mega-2.svg" class="preview-icon" alt="Mega footer icon with gray placeholders for more information than the basic footer.">',
       ],
-      '#title' => $this->t('Footer variation'),
+      '#title' => $this->t('Footer Variation'),
       '#default_value' => ($footerConfig->get('footer_variation')) ? $footerConfig->get('footer_variation') : 'basic',
       '#attributes' => [
         'class' => [
