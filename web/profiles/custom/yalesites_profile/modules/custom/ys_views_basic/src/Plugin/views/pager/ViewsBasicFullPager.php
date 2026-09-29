@@ -3,6 +3,7 @@
 namespace Drupal\ys_views_basic\Plugin\views\pager;
 
 use Drupal\views\Plugin\views\pager\Full;
+use Drupal\ys_views_basic\ViewsBasicManager;
 
 /**
  * The plugin to handle full pager.
@@ -60,7 +61,7 @@ class ViewsBasicFullPager extends Full {
    *   TRUE if items per page argument is set, FALSE otherwise.
    */
   protected function hasItemsPerPage(): bool {
-    return isset($this->view->args[5]);
+    return isset($this->view->args[ViewsBasicManager::viewArgumentIndex('items')]);
 
   }
 
@@ -82,7 +83,7 @@ class ViewsBasicFullPager extends Full {
    *   The number of items per page.
    */
   protected function itemsPerPage(): int {
-    return (int) $this->view->args[5];
+    return (int) $this->view->args[ViewsBasicManager::viewArgumentIndex('items')];
 
   }
 

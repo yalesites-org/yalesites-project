@@ -1,6 +1,10 @@
 ((Drupal, once, $) => {
+  // Drupal.behaviors.X = {} is the required registration pattern for a
+  // Drupal behavior; there is no alternative API that avoids assigning onto
+  // the Drupal parameter.
+  // eslint-disable-next-line no-param-reassign
   Drupal.behaviors.ysViewsBasic = {
-    attach: function (context) { // eslint-disable-line
+    attach(context) {
       // Function to handle radio input checked behavior based on radio element selection.
       function handleRadioInputs(radioGroup) {
         // Get references to the radio input elements within the specified group
@@ -35,6 +39,10 @@
         'input[name="term_operator"]',
         'input[name="settings[block_form][group_user_selection][entity_specific][event_time_period]"]',
         'input[name="block_form[group_user_selection][entity_specific][event_time_period]"]',
+        // event_view_widget now renders Event Time Period under the Display
+        // options group; the legacy widgets keep the entity_specific path above.
+        'input[name="settings[block_form][group_user_selection][options][event_time_period]"]',
+        'input[name="block_form[group_user_selection][options][event_time_period]"]',
         'input[name="event_time_period"]',
       ];
 
@@ -43,77 +51,124 @@
         handleRadioInputs(group);
       });
 
-      // Handle limit display
-      const editLimitWrapperElement = document.querySelector('#edit-limit');
-      const displayElement = document.querySelector('select[name="settings[block_form][group_user_selection][options][display]"');
+      // Handle the "limit" field's title (Items / Items per Page). Visibility
+      // and the required state are handled by Drupal's own #states now
+      // (ViewsBasicWidgetBase::buildDisplayControls(), #1481) rather than this
+      // inline style toggle, which used to leave the field hidden-but-required
+      // whenever "display" was "all".
+      const editLimitWrapperElement = document.querySelector("#edit-limit");
+      const displayElement = document.querySelector(
+        'select[name="settings[block_form][group_user_selection][options][display]"'
+      );
 
       // If they're ever gone from the form, don't deal with this.
       if (editLimitWrapperElement && displayElement) {
-        const limitLabel = editLimitWrapperElement.querySelector('label');
+        const limitLabel = editLimitWrapperElement.querySelector("label");
 
         const updateLimitElement = () => {
-          const value = displayElement.value;
+          const { value } = displayElement;
 
-          // First evaluate whether to hide/show the limit
-          const newLimitDisplayValue = value === 'all' ? 'display: none' : '';
-          editLimitWrapperElement.setAttribute('style', newLimitDisplayValue);
-
-          // Change the title
+          // Change the title. "all" hides the field entirely via #states, so
+          // it needs no label and falls through to the default.
           switch (value) {
-            case 'all':
+            case "limit":
+              limitLabel.textContent = "Items";
               break;
-            case 'limit':
-              limitLabel.textContent = 'Items';
+            case "pager":
+              limitLabel.textContent = "Items Per Page";
               break;
-            case 'pager':
-              limitLabel.textContent = 'Items Per Page';
             default:
               break;
           }
-        }
+        };
 
-        displayElement.addEventListener('change', updateLimitElement);
+        displayElement.addEventListener("change", updateLimitElement);
         updateLimitElement();
       }
 
       // Unified selectors to handle both cases
-      const entityTypesSelector = 'input[name="settings[block_form][group_user_selection][entity_and_view_mode][entity_types]"], input[name="block_form[group_user_selection][entity_and_view_mode][entity_types]"]';
-      const viewModeSelector = 'input[name="settings[block_form][group_user_selection][entity_and_view_mode][view_mode]"], input[name="block_form[group_user_selection][entity_and_view_mode][view_mode]"]';
-      const eventTimePeriod = document.querySelector('#edit-event-time-period');
+      const entityTypesSelector =
+        'input[name="settings[block_form][group_user_selection][entity_and_view_mode][entity_types]"], input[name="block_form[group_user_selection][entity_and_view_mode][entity_types]"]';
+      const viewModeSelector =
+        'input[name="settings[block_form][group_user_selection][entity_and_view_mode][view_mode]"], input[name="block_form[group_user_selection][entity_and_view_mode][view_mode]"]';
+      const eventTimePeriod = document.querySelector("#edit-event-time-period");
 
       const entityTypes = document.querySelectorAll(entityTypesSelector);
       const viewModes = document.querySelectorAll(viewModeSelector);
 
       // Function to handle visibility based on conditions
       function updateVisibility() {
-        const entityType = Array.from(entityTypes).find(input => input.checked)?.value;
-        const viewMode = Array.from(viewModes).find(input => input.checked)?.value;
+        const entityType = Array.from(entityTypes).find(
+          (input) => input.checked
+        )?.value;
+        const viewMode = Array.from(viewModes).find(
+          (input) => input.checked
+        )?.value;
 
         if (eventTimePeriod) {
-          eventTimePeriod.style.display = (entityType === 'event' && viewMode === 'calendar') ? 'none' : '';
+          eventTimePeriod.style.display =
+            entityType === "event" && viewMode === "calendar" ? "none" : "";
         }
       }
 
-      entityTypes.forEach(input => input.addEventListener('change', updateVisibility));
-      viewModes.forEach(input => input.addEventListener('change', updateVisibility));
+      entityTypes.forEach((input) =>
+        input.addEventListener("change", updateVisibility)
+      );
+      viewModes.forEach((input) =>
+        input.addEventListener("change", updateVisibility)
+      );
       updateVisibility();
+
+      // Each exposed-filter row discloses its settings body with a pure-CSS
+      // :has() rule (views-basic.css), so revealing it grows the form without
+      // firing anything the surrounding dialog can react to.
+      //
+      // Adding a block goes through layout_builder_browser, which opens the
+      // form in a jQuery UI modal (#layout-builder-modal) sized and positioned
+      // once, when it opens. Growing its content therefore pushes the dialog
+      // past the bottom of the viewport, and that overflow is unreachable
+      // because the modal locks body scroll. Core's dialog.position.js binds
+      // the recompute to the `resize.dialogResize` window namespace and
+      // triggers it itself on open, so re-triggering that is what makes the
+      // dialog re-measure and re-centre.
+      //
+      // Configuring an existing block uses the off-canvas renderer instead,
+      // which is unaffected: its panel height is derived from the viewport
+      // rather than from content, so it scrolls internally and can never be
+      // pushed below the fold. It is created with autoResize: FALSE, so
+      // nothing is bound to this namespace there and the trigger is a harmless
+      // no-op.
+      //
+      // Keyed on the row class rather than on field names, so every disclosing
+      // row is covered, including the pinned-items row. (#1299 QA)
+      once(
+        "vb-filter-row-dialog-resize",
+        '.vb-filter-row--has-settings input[type="checkbox"]',
+        context
+      ).forEach((toggle) => {
+        toggle.addEventListener("change", () => {
+          $(window).trigger("resize.dialogResize");
+        });
+      });
 
       // Handle Enter key submission in event calendar filter form search field.
       const searchFields = once(
-        'event-calendar-search-enter',
+        "event-calendar-search-enter",
         'form#event-calendar-filter-form input[name="search"], form#event-calendar-filter-form .form-item-search input[type="text"]',
         context
       );
 
       searchFields.forEach((searchField) => {
-        searchField.addEventListener('keydown', function(event) {
-          if (event.key === 'Enter' || event.keyCode === 13) {
+        searchField.addEventListener("keydown", function (event) {
+          if (event.key === "Enter" || event.keyCode === 13) {
             event.preventDefault();
             event.stopImmediatePropagation();
-            const form = this.closest('form');
-            const submitButton = form?.querySelector('input[type="submit"], button[type="submit"], .form-submit, .button--primary');
+            const form = this.closest("form");
+            const submitButton = form?.querySelector(
+              'input[type="submit"], button[type="submit"], .form-submit, .button--primary'
+            );
             if (submitButton) {
-              $(submitButton).trigger('mousedown').trigger('click');
+              $(submitButton).trigger("mousedown").trigger("click");
             }
           }
         });
