@@ -82,7 +82,7 @@ class HeaderSettingsForm extends ConfigFormBase {
         'mega' => $this->t('Mega Nav') . '<img src="/profiles/custom/yalesites_profile/modules/custom/ys_core/images/preview-icons/header-mega.svg" class="preview-icon" alt="Mega header icon showing a site title and a flyout style mega menu.">',
         'focus' => $this->t('Focus Nav') . '<img src="/profiles/custom/yalesites_profile/modules/custom/ys_core/images/preview-icons/header-focus.svg" class="preview-icon" alt="Focus header icon showing single level navigation and simplified header.">',
       ],
-      '#title' => $this->t('Header variation'),
+      '#title' => $this->t('Header Variation'),
       '#default_value' => ($headerConfig->get('header_variation')) ? $headerConfig->get('header_variation') : 'basic',
       '#attributes' => [
         'class' => [
