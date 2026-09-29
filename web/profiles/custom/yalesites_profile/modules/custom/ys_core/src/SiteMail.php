@@ -15,7 +15,7 @@ namespace Drupal\ys_core;
  * address is wrong while the form refuses to let them change it.
  *
  * @see \Drupal\ys_core\Form\SiteSettingsForm::validateEmail()
- * @see ys_core_form_alter()
+ * @see ys_core_form_layout_builder_configure_block_alter()
  */
 final class SiteMail {
 

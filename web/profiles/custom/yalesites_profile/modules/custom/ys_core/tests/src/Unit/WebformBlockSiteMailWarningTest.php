@@ -5,6 +5,7 @@ namespace Drupal\Tests\ys_core\Unit;
 use Drupal\Core\Config\ImmutableConfig;
 use Drupal\Core\Config\ConfigFactoryInterface;
 use Drupal\Core\Form\FormState;
+use Drupal\Core\Routing\AdminContext;
 use Drupal\Core\Routing\UrlGeneratorInterface;
 use Drupal\Tests\UnitTestCase;
 use Symfony\Component\DependencyInjection\ContainerBuilder;
@@ -118,13 +119,13 @@ class WebformBlockSiteMailWarningTest extends UnitTestCase {
     $form_state = new FormState();
     $form_state->setBuildInfo(['args' => [NULL, NULL, NULL, "inline_block:$block_type"]]);
 
-    ys_core_form_alter($form, $form_state, 'layout_builder_update_block');
+    ys_core_form_layout_builder_configure_block_alter($form, $form_state, 'layout_builder_update_block');
 
     return $form['settings']['block_form']['email_warning'] ?? NULL;
   }
 
   /**
-   * Puts the three services the warning branch reaches for in the container.
+   * Puts the services ys_core_form_alter() reaches for in the container.
    */
   private function setContainerWithSiteMail(string $site_mail): void {
     $config = $this->createMock(ImmutableConfig::class);
@@ -139,7 +140,12 @@ class WebformBlockSiteMailWarningTest extends UnitTestCase {
     // through and returns whatever comes back, so FALSE means a plain string.
     $url_generator->method('generateFromRoute')->willReturn(self::SETTINGS_PATH);
 
+    // Layout Builder is an admin route, so the inline-errors check passes.
+    $admin_context = $this->createMock(AdminContext::class);
+    $admin_context->method('isAdminRoute')->willReturn(TRUE);
+
     $container = new ContainerBuilder();
+    $container->set('router.admin_context', $admin_context);
     $container->set('config.factory', $factory);
     $container->set('url_generator', $url_generator);
     $container->set('string_translation', $this->getStringTranslationStub());

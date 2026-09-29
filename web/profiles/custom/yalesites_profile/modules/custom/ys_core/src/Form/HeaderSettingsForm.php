@@ -95,9 +95,7 @@ class HeaderSettingsForm extends ConfigFormBase {
       '#type' => 'container',
       '#title' => $this->t('Basic'),
       '#states' => [
-        'visible' => [
-          ':input[name="header_variation"]' => ['value' => 'basic'],
-        ],
+        'visible' => $this->headerVariationCondition('basic'),
       ],
     ];
 
@@ -105,9 +103,7 @@ class HeaderSettingsForm extends ConfigFormBase {
       '#type' => 'container',
       '#title' => $this->t('Mega'),
       '#states' => [
-        'visible' => [
-          ':input[name="header_variation"]' => ['value' => 'mega'],
-        ],
+        'visible' => $this->headerVariationCondition('mega'),
       ],
     ];
 
@@ -115,9 +111,7 @@ class HeaderSettingsForm extends ConfigFormBase {
       '#type' => 'container',
       '#title' => $this->t('Focus'),
       '#states' => [
-        'visible' => [
-          ':input[name="header_variation"]' => ['value' => 'focus'],
-        ],
+        'visible' => $this->headerVariationCondition('focus'),
       ],
     ];
 
@@ -125,11 +119,7 @@ class HeaderSettingsForm extends ConfigFormBase {
       '#type' => 'details',
       '#title' => $this->t('Site Search'),
       '#states' => [
-        'disabled' => [
-          ':input[name="header_variation"]' => [
-            'value' => 'focus',
-          ],
-        ],
+        'disabled' => $this->headerVariationCondition('focus'),
       ],
     ];
 
@@ -137,11 +127,7 @@ class HeaderSettingsForm extends ConfigFormBase {
       '#type' => 'details',
       '#title' => $this->t('Navigation Position'),
       '#states' => [
-        'disabled' => [
-          ':input[name="header_variation"]' => [
-            'value' => 'focus',
-          ],
-        ],
+        'disabled' => $this->headerVariationCondition('focus'),
       ],
     ];
 
@@ -149,11 +135,7 @@ class HeaderSettingsForm extends ConfigFormBase {
       '#type' => 'details',
       '#title' => $this->t('Utility Navigation Dropdown'),
       '#states' => [
-        'disabled' => [
-          ':input[name="header_variation"]' => [
-            'value' => 'focus',
-          ],
-        ],
+        'disabled' => $this->headerVariationCondition('focus'),
       ],
     ];
 
@@ -161,11 +143,7 @@ class HeaderSettingsForm extends ConfigFormBase {
       '#type' => 'details',
       '#title' => $this->t('Call to Action'),
       '#states' => [
-        'disabled' => [
-          ':input[name="header_variation"]' => [
-            'value' => 'focus',
-          ],
-        ],
+        'disabled' => $this->headerVariationCondition('focus'),
       ],
     ];
 
@@ -173,11 +151,7 @@ class HeaderSettingsForm extends ConfigFormBase {
       '#type' => 'details',
       '#title' => $this->t('Full Screen Homepage Image'),
       '#states' => [
-        'enabled' => [
-          ':input[name="header_variation"]' => [
-            'value' => 'focus',
-          ],
-        ],
+        'enabled' => $this->headerVariationCondition('focus'),
       ],
     ];
 
@@ -210,11 +184,7 @@ class HeaderSettingsForm extends ConfigFormBase {
             ':input[name="enable_search_form"]' => ['checked' => FALSE],
           ],
           'or',
-          [
-            ':input[name="header_variation"]' => [
-              'value' => 'focus',
-            ],
-          ],
+          $this->headerVariationCondition('focus'),
         ],
       ],
     ];
@@ -285,9 +255,7 @@ class HeaderSettingsForm extends ConfigFormBase {
       '#title' => $this->t('Enable search form'),
       '#default_value' => $headerConfig->get('search.enable_search_form'),
       '#states' => [
-        'invisible' => [
-          ':input[name="header_variation"]' => ['value' => 'focus'],
-        ],
+        'invisible' => $this->headerVariationCondition('focus'),
       ],
     ];
 
@@ -302,11 +270,7 @@ class HeaderSettingsForm extends ConfigFormBase {
             ':input[name="enable_search_form"]' => ['checked' => FALSE],
           ],
           'or',
-          [
-            ':input[name="header_variation"]' => [
-              'value' => 'focus',
-            ],
-          ],
+          $this->headerVariationCondition('focus'),
         ],
       ],
     ];
@@ -382,6 +346,24 @@ class HeaderSettingsForm extends ConfigFormBase {
     return [
       'ys_core.header_settings',
     ];
+  }
+
+  /**
+   * Builds the #states condition matching one header nav variation.
+   *
+   * Written once because the selector has to agree with the radios element's
+   * name exactly or the condition silently never matches. Returns the
+   * condition rather than a whole #states array, so the call sites that nest
+   * it inside an 'or' compound can use it too.
+   *
+   * @param string $variation
+   *   The header_variation value to match: 'basic', 'mega' or 'focus'.
+   *
+   * @return array
+   *   A #states condition array for the header variation radios.
+   */
+  private function headerVariationCondition(string $variation) {
+    return [':input[name="header_variation"]' => ['value' => $variation]];
   }
 
 }

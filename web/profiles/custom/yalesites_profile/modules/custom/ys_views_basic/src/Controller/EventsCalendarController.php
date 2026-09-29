@@ -7,7 +7,7 @@ namespace Drupal\ys_views_basic\Controller;
 use Drupal\Core\Ajax\AjaxResponse;
 use Drupal\Core\Ajax\ReplaceCommand;
 use Drupal\Core\Controller\ControllerBase;
-use Drupal\ys_views_basic\Service\EventsCalendarInterface;
+use Drupal\ys_views_basic\Service\EventsCalendar;
 use Symfony\Component\DependencyInjection\ContainerInterface;
 use Symfony\Component\HttpFoundation\Request;
 
@@ -20,7 +20,7 @@ final class EventsCalendarController extends ControllerBase {
    * The controller constructor.
    */
   public function __construct(
-    private EventsCalendarInterface $eventsCalendar,
+    private EventsCalendar $eventsCalendar,
   ) {}
 
   /**

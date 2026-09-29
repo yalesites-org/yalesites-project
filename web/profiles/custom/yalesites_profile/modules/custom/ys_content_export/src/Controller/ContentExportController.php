@@ -102,12 +102,12 @@ class ContentExportController extends ControllerBase {
       $handle = fopen('php://output', 'w');
       // UTF-8 BOM so spreadsheet apps read accented characters correctly.
       fwrite($handle, "\xEF\xBB\xBF");
-      fputcsv($handle, $columns);
+      ContentExportBuilder::writeRow($handle, $columns);
       foreach (array_chunk($nids, self::CHUNK_SIZE) as $chunk) {
         $nodes = $this->nodeStorage->loadMultiple($chunk);
         foreach ($chunk as $nid) {
           if (isset($nodes[$nid])) {
-            fputcsv($handle, ContentExportBuilder::getRow($nodes[$nid], $bundle, $this->dateFormatter));
+            ContentExportBuilder::writeRow($handle, ContentExportBuilder::getRow($nodes[$nid], $bundle, $this->dateFormatter));
           }
         }
         // Release the chunk so memory stays bounded on large content lists.

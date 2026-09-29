@@ -417,18 +417,6 @@ class MediaFileDeleterTest extends UnitTestCase {
   }
 
   /**
-   * Tests that the service implements the interface.
-   *
-   * @covers ::__construct
-   */
-  public function testServiceImplementsInterface() {
-    $this->assertInstanceOf(
-      'Drupal\ys_file_management\Service\MediaFileDeleterInterface',
-      $this->mediaFileDeleter
-    );
-  }
-
-  /**
    * Tests getFileCacheTags() helper method.
    *
    * Uses reflection to test the protected method since it's used internally

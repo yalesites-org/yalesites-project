@@ -22,8 +22,8 @@ import {
     ChatResponse,
     Conversation
 } from "../../api";
-import { Answer } from "../../components/Answer";
-import { QuestionInput } from "../../components/QuestionInput";
+import { Answer } from "../../components/Answer/Answer";
+import { QuestionInput } from "../../components/QuestionInput/QuestionInput";
 import { AppStateContext } from "../../state/AppProvider";
 import { XSSAllowTags, XSSAllowAttr } from "../../constants/xssAllowTags";
 import { allowLinkOutsideHeading, demotedHeadingComponents } from "../../constants/markdownComponents";
