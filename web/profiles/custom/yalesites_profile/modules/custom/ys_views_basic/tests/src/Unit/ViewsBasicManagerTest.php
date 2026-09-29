@@ -9,7 +9,10 @@ use Drupal\Core\Form\FormStateInterface;
 use Drupal\Core\Routing\RouteMatchInterface;
 use Drupal\Tests\UnitTestCase;
 use Drupal\taxonomy\TermStorageInterface;
+use Drupal\views\Plugin\views\display\DisplayPluginBase;
+use Drupal\views\ViewExecutable;
 use Drupal\views\ViewExecutableFactory;
+use Drupal\ys_views_basic\Service\ExposedTaxonomyFilterOptions;
 use Drupal\ys_views_basic\ViewsBasicManager;
 
 /**
@@ -76,6 +79,13 @@ class ViewsBasicManagerTest extends UnitTestCase {
   protected $viewExecutableFactory;
 
   /**
+   * The exposed taxonomy filter options mock.
+   *
+   * @var \Drupal\ys_views_basic\Service\ExposedTaxonomyFilterOptions|\PHPUnit\Framework\MockObject\MockObject
+   */
+  protected $exposedTaxonomyFilterOptions;
+
+  /**
    * The manager under test.
    *
    * @var \Drupal\ys_views_basic\ViewsBasicManager
@@ -102,13 +112,15 @@ class ViewsBasicManagerTest extends UnitTestCase {
     $this->routeMatch = $this->createMock(RouteMatchInterface::class);
     $this->cacheTagsInvalidator = $this->createMock(CacheTagsInvalidatorInterface::class);
     $this->viewExecutableFactory = $this->createMock(ViewExecutableFactory::class);
+    $this->exposedTaxonomyFilterOptions = $this->createMock(ExposedTaxonomyFilterOptions::class);
 
     $this->manager = new ViewsBasicManager(
       $this->entityTypeManager,
       $this->entityDisplayRepository,
       $this->routeMatch,
       $this->cacheTagsInvalidator,
-      $this->viewExecutableFactory
+      $this->viewExecutableFactory,
+      $this->exposedTaxonomyFilterOptions
     );
   }
 
@@ -168,6 +180,7 @@ class ViewsBasicManagerTest extends UnitTestCase {
         ['current_route_match', 1, $this->routeMatch],
         ['cache_tags.invalidator', 1, $this->cacheTagsInvalidator],
         ['views.executable', 1, $this->viewExecutableFactory],
+        ['ys_views_basic.exposed_taxonomy_filter_options', 1, $this->exposedTaxonomyFilterOptions],
       ]);
 
     $manager = ViewsBasicManager::create($container);
@@ -716,14 +729,14 @@ class ViewsBasicManagerTest extends UnitTestCase {
   }
 
   /**
-   * GetChildTermsByParentId() lists descendant term IDs keyed by themselves.
+   * GetChildTermsByParentId() delegates to the exposed filter options service.
    *
    * @covers ::getChildTermsByParentId
    */
   public function testGetChildTermsByParentIdReturnsDescendantIds() {
-    $this->termStorage->method('loadTree')
-      ->with('event_category', 4, NULL)
-      ->willReturn([$this->createTreeItem(5, 'Concerts'), $this->createTreeItem(6, 'Readings')]);
+    $this->exposedTaxonomyFilterOptions->method('getDescendantTermIds')
+      ->with('event_category', 4)
+      ->willReturn([5 => 5, 6 => 6]);
 
     $children = $this->manager->getChildTermsByParentId(4, 'event_category');
 
@@ -742,6 +755,132 @@ class ViewsBasicManagerTest extends UnitTestCase {
 
     $this->assertSame(12, $method->invoke($this->manager, '12'));
     $this->assertSame(12, $method->invoke($this->manager, ['target_id' => '12']));
+    // The cast applies to the whole ternary, so an empty value is 0 rather
+    // than a TypeError from returning an uncast string.
+    $this->assertSame(0, $method->invoke($this->manager, ''));
+  }
+
+  /**
+   * Runs setupView() on a mock view and returns the display options it set.
+   *
+   * @param array $params
+   *   The block params, merged over the minimum setupView() reads.
+   * @param array $filters
+   *   The display's filters before setup.
+   *
+   * @return array
+   *   Every display option setupView() set, keyed by option name.
+   */
+  protected function runSetupView(array $params, array $filters): array {
+    $params += [
+      'sort_by' => 'field_publish_date:DESC',
+      'display' => 'all',
+      'limit' => 10,
+      'view_mode' => 'card',
+    ];
+    $set = [];
+    $display = $this->createMock(DisplayPluginBase::class);
+    $display->method('getOption')->willReturnCallback(
+      function ($name) use (&$set, $filters) {
+        return $name === 'filters' ? $filters : ($set[$name] ?? NULL);
+      }
+    );
+    $display->method('setOption')->willReturnCallback(
+      function ($name, $value) use (&$set) {
+        $set[$name] = $value;
+      }
+    );
+    $view = $this->createMock(ViewExecutable::class);
+    $view->method('getDisplay')->willReturn($display);
+    $view->method('preview')->willReturn(['#rows' => []]);
+
+    $this->manager->setupView($view, json_encode($params));
+    return $set;
+  }
+
+  /**
+   * Builds an exposed taxonomy filter as the scaffold views hold it.
+   */
+  protected function taxonomyFilter(string $vid): array {
+    return [
+      'plugin_id' => 'taxonomy_index_tid',
+      'vid' => $vid,
+      'exposed' => TRUE,
+      'expose' => ['reduce' => FALSE],
+    ];
+  }
+
+  /**
+   * A non-resource listing's category filter ignores excluded terms.
+   *
+   * @covers ::setupView
+   */
+  public function testSetupViewLeavesPostCategoryFilterUnchangedByExclusions() {
+    $this->exposedTaxonomyFilterOptions->method('getDescendantTermIds')
+      ->with('post_category', 4)
+      ->willReturn([5 => 5, 6 => 6]);
+    $this->exposedTaxonomyFilterOptions->expects($this->never())->method('apply');
+
+    $set = $this->runSetupView([
+      'filters' => ['types' => ['post'], 'terms_exclude' => ['5']],
+      'exposed_filter_options' => ['show_category_filter' => 'show_category_filter'],
+      'category_included_terms' => 4,
+    ], ['field_category_target_id' => $this->taxonomyFilter('post_category')]);
+
+    $this->assertSame([5 => 5, 6 => 6], $set['filters']['field_category_target_id']['value']);
+  }
+
+  /**
+   * A resource listing runs every exposed taxonomy filter through apply().
+   *
+   * Category and custom vocabulary pass their included parent term; the
+   * other taxonomy filters pass exclusions only; non-taxonomy filters are
+   * never touched.
+   *
+   * @covers ::setupView
+   */
+  public function testSetupViewConstrainsResourceTaxonomyFilters() {
+    $vocabulary = $this->createMock('Drupal\taxonomy\VocabularyInterface');
+    $vocabulary->method('label')->willReturn('Custom');
+    $this->vocabularyStorage->method('load')->with('custom_vocab')->willReturn($vocabulary);
+    // The shared parent-term setup still runs before the resource pass.
+    $this->termStorage->method('loadTree')->willReturn([]);
+
+    $calls = [];
+    $this->exposedTaxonomyFilterOptions->method('apply')->willReturnCallback(
+      function ($filters, $name, $excluded, $parent = NULL) use (&$calls) {
+        $calls[$name] = [$excluded, $parent];
+        return TRUE;
+      }
+    );
+
+    $this->runSetupView([
+      'filters' => ['types' => ['resource'], 'terms_exclude' => ['5', ['target_id' => '7']]],
+      'exposed_filter_options' => [
+        'show_category_filter' => 'show_category_filter',
+        'show_custom_vocab_filter' => 'show_custom_vocab_filter',
+        'show_audience_filter' => 'show_audience_filter',
+        'show_discipline_filter' => 'show_discipline_filter',
+        'show_year_filter' => 'show_year_filter',
+      ],
+      'category_included_terms' => 4,
+      'custom_vocab_included_terms' => 9,
+    ], [
+      'status' => ['plugin_id' => 'boolean'],
+      'field_category_target_id' => $this->taxonomyFilter('resource_category'),
+      'field_custom_vocab_target_id' => $this->taxonomyFilter('custom_vocab'),
+      'field_audience_target_id' => $this->taxonomyFilter('audience'),
+      'field_discipline_target_id' => $this->taxonomyFilter('discipline'),
+      'field_geographic_areas_target_id' => $this->taxonomyFilter('geographic_areas'),
+      'resource_year_filter' => ['plugin_id' => 'resource_year_filter', 'exposed' => TRUE],
+    ]);
+
+    $this->assertSame([
+      'field_category_target_id' => [[5, 7], 4],
+      'field_custom_vocab_target_id' => [[5, 7], 9],
+      'field_audience_target_id' => [[5, 7], NULL],
+      'field_discipline_target_id' => [[5, 7], NULL],
+    ], $calls, 'Geographic areas was not enabled, so it was removed, not constrained.');
   }
 
   /**

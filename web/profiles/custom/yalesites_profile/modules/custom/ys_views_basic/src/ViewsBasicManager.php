@@ -11,6 +11,7 @@ use Drupal\Core\Routing\RouteMatchInterface;
 use Drupal\node\NodeInterface;
 use Drupal\views\ViewEntityInterface;
 use Drupal\views\ViewExecutableFactory;
+use Drupal\ys_views_basic\Service\ExposedTaxonomyFilterOptions;
 use Symfony\Component\DependencyInjection\ContainerInterface;
 
 /**
@@ -220,6 +221,16 @@ class ViewsBasicManager extends ControllerBase implements ContainerInjectionInte
     'title' => 'title',
     'field_teaser_text' => 'field_teaser_text',
     'field_teaser_title' => 'field_teaser_title',
+  ];
+
+  /**
+   * Resource taxonomy filters constrained to an included parent term.
+   *
+   * Keyed by filter id, valued by the stored param holding the parent term.
+   */
+  const RESOURCE_PARENT_TERM_PARAMS = [
+    'field_category_target_id' => 'category_included_terms',
+    'field_custom_vocab_target_id' => 'custom_vocab_included_terms',
   ];
 
   /**
@@ -515,6 +526,13 @@ class ViewsBasicManager extends ControllerBase implements ContainerInjectionInte
   protected $viewExecutableFactory;
 
   /**
+   * Constrains exposed taxonomy filter options (parent term, excluded terms).
+   *
+   * @var \Drupal\ys_views_basic\Service\ExposedTaxonomyFilterOptions
+   */
+  protected $exposedTaxonomyFilterOptions;
+
+  /**
    * Constructs a new ViewsBasicManager object.
    */
   public function __construct(
@@ -523,6 +541,7 @@ class ViewsBasicManager extends ControllerBase implements ContainerInjectionInte
     RouteMatchInterface $route_match,
     CacheTagsInvalidatorInterface $cache_tags_invalidator,
     ViewExecutableFactory $view_executable_factory,
+    ExposedTaxonomyFilterOptions $exposed_taxonomy_filter_options,
   ) {
     $this->entityTypeManager = $entity_type_manager;
     $this->entityDisplayRepository = $entity_display_repository;
@@ -530,6 +549,7 @@ class ViewsBasicManager extends ControllerBase implements ContainerInjectionInte
     $this->routeMatch = $route_match;
     $this->cacheTagsInvalidator = $cache_tags_invalidator;
     $this->viewExecutableFactory = $view_executable_factory;
+    $this->exposedTaxonomyFilterOptions = $exposed_taxonomy_filter_options;
   }
 
   /**
@@ -542,6 +562,7 @@ class ViewsBasicManager extends ControllerBase implements ContainerInjectionInte
       $container->get('current_route_match'),
       $container->get('cache_tags.invalidator'),
       $container->get('views.executable'),
+      $container->get('ys_views_basic.exposed_taxonomy_filter_options'),
     );
   }
 
@@ -749,6 +770,18 @@ class ViewsBasicManager extends ControllerBase implements ContainerInjectionInte
 
     if ($filterType === self::CONTENT_TYPE_RESOURCE) {
       $filters = self::applyResourceFilters($filters, $paramsDecoded);
+
+      // Never offer a term the editor used to exclude content: a visitor
+      // picking it would always get zero results. Category and custom
+      // vocabulary also stay limited to their included parent's children.
+      $excluded_terms = array_map([$this, 'getTermId'], $paramsDecoded['filters']['terms_exclude'] ?? []);
+      foreach ($filters as $filter_name => $filter) {
+        if (($filter['plugin_id'] ?? NULL) === 'taxonomy_index_tid' && !empty($filter['exposed'])) {
+          $parent_param = self::RESOURCE_PARENT_TERM_PARAMS[$filter_name] ?? NULL;
+          $parent_tid = $parent_param ? (int) ($paramsDecoded[$parent_param] ?? 0) : NULL;
+          $this->exposedTaxonomyFilterOptions->apply($filters, $filter_name, $excluded_terms, $parent_tid);
+        }
+      }
     }
 
     // Set the modified filters back to the view display options.
@@ -1026,7 +1059,17 @@ class ViewsBasicManager extends ControllerBase implements ContainerInjectionInte
     $search_fields = $paramsDecoded['search_fields'] ?? NULL;
     if (isset($exposed['show_search_filter']) && !empty($search_fields) && is_array($search_fields)) {
       $selected = array_filter($search_fields) ?: self::RESOURCE_DEFAULT_SEARCH_FIELDS;
-      $filters['combine']['fields'] = array_combine($selected, $selected);
+      $fields = array_combine($selected, $selected);
+      // 'authors' is not a field: it swaps in a combine filter that matches
+      // author names through subqueries, so a resource with several authors
+      // is never multiplied into several rows. Key and exposed identifier stay
+      // the same, so stored blocks and search URLs keep working.
+      if (isset($fields['authors'])) {
+        unset($fields['authors']);
+        $filters['combine']['field'] = 'resource_author_combine';
+        $filters['combine']['plugin_id'] = 'ys_views_basic_resource_author_combine';
+      }
+      $filters['combine']['fields'] = $fields;
     }
 
     return $filters;
@@ -1745,15 +1788,7 @@ class ViewsBasicManager extends ControllerBase implements ContainerInjectionInte
    *   the value is the term ID.
    */
   public function getChildTermsByParentId(int $parentId, string $vid): array {
-    $list = [];
-    // Load all child terms for the given parent term ID and vocabulary ID.
-    $terms = $this->termStorage->loadTree($vid, $parentId, NULL);
-
-    foreach ($terms as $term) {
-      $list[$term->tid] = (int) $term->tid;
-    }
-
-    return $list;
+    return $this->exposedTaxonomyFilterOptions->getDescendantTermIds($vid, $parentId);
   }
 
   /**
@@ -1771,7 +1806,7 @@ class ViewsBasicManager extends ControllerBase implements ContainerInjectionInte
    *   The term ID.
    */
   private function getTermId($term) : int {
-    return (int) is_array($term) ? $term['target_id'] : $term;
+    return (int) (is_array($term) ? $term['target_id'] : $term);
   }
 
   /**

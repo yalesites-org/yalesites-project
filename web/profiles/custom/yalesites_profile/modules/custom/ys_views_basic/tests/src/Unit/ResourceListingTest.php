@@ -12,6 +12,7 @@ use Drupal\taxonomy\TermStorageInterface;
 use Drupal\views\ViewEntityInterface;
 use Drupal\views\ViewExecutable;
 use Drupal\views\ViewExecutableFactory;
+use Drupal\ys_views_basic\Service\ExposedTaxonomyFilterOptions;
 use Drupal\ys_views_basic\ViewsBasicManager;
 
 /**
@@ -95,6 +96,7 @@ class ResourceListingTest extends UnitTestCase {
       $this->createMock(RouteMatchInterface::class),
       $this->createMock(CacheTagsInvalidatorInterface::class),
       $this->createMock(ViewExecutableFactory::class),
+      $this->createMock(ExposedTaxonomyFilterOptions::class),
     );
     $this->assertSame(ViewsBasicManager::RESOURCE_DEFAULT_SEARCH_FIELDS, $manager->getDefaultParamValue('search_fields', ''));
     $this->assertSame(ViewsBasicManager::RESOURCE_DEFAULT_SEARCH_FIELDS, $manager->getDefaultParamValue('search_fields', '{"search_fields":"title"}'));
@@ -130,6 +132,7 @@ class ResourceListingTest extends UnitTestCase {
       $this->createMock(RouteMatchInterface::class),
       $this->createMock(CacheTagsInvalidatorInterface::class),
       $factory,
+      $this->createMock(ExposedTaxonomyFilterOptions::class),
     );
     $this->assertSame($executable, $manager->initView(['resource']));
     $this->assertContains('views_basic_scaffold_resources', ViewsBasicManager::SCAFFOLD_VIEWS);
@@ -198,6 +201,33 @@ class ResourceListingTest extends UnitTestCase {
     unset($params['search_fields']);
     $filters = ViewsBasicManager::applyResourceFilters(self::FILTERS, $params);
     $this->assertSame(self::FILTERS['combine']['fields'], $filters['combine']['fields']);
+  }
+
+  /**
+   * Authors swaps in the author-aware search and never becomes a field.
+   *
+   * @covers ::applyResourceFilters
+   */
+  public function testAuthorsSearchFieldSwapsInAuthorCombine() {
+    $params = [
+      'exposed_filter_options' => ['show_search_filter' => 'show_search_filter'],
+      'search_fields' => ['title' => 'title', 'authors' => 'authors'],
+    ];
+    $combine = ViewsBasicManager::applyResourceFilters(self::FILTERS, $params)['combine'];
+    $this->assertSame(['title' => 'title'], $combine['fields']);
+    $this->assertSame('resource_author_combine', $combine['field']);
+    $this->assertSame('ys_views_basic_resource_author_combine', $combine['plugin_id']);
+
+    $params['search_fields'] = ['authors' => 'authors'];
+    $combine = ViewsBasicManager::applyResourceFilters(self::FILTERS, $params)['combine'];
+    $this->assertSame([], $combine['fields']);
+    $this->assertSame('resource_author_combine', $combine['field']);
+
+    // Without Authors the view's own combine filter stays in place.
+    $params['search_fields'] = ['title' => 'title'];
+    $combine = ViewsBasicManager::applyResourceFilters(self::FILTERS, $params)['combine'];
+    $this->assertArrayNotHasKey('field', $combine);
+    $this->assertArrayNotHasKey('plugin_id', $combine);
   }
 
   /**
