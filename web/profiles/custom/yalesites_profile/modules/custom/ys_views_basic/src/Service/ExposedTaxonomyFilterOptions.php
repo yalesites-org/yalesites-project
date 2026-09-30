@@ -141,6 +141,26 @@ class ExposedTaxonomyFilterOptions {
   }
 
   /**
+   * Builds the element shown in place of an exposed filter with no choices.
+   *
+   * Keeps the filter's label on the page instead of an empty multi-select.
+   * This replaces the old YaleSites-Internal#162 rule that hid such filters.
+   *
+   * @param mixed $title
+   *   The filter label.
+   *
+   * @return array
+   *   A Form API item element.
+   */
+  public static function emptyFilterElement($title): array {
+    return [
+      '#type' => 'item',
+      '#title' => $title,
+      '#markup' => t('There are no terms available to filter by.'),
+    ];
+  }
+
+  /**
    * Loads the ids of every descendant of a term (or of a whole vocabulary).
    *
    * @param string $vid

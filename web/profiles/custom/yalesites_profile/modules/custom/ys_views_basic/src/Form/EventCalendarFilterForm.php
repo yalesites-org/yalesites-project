@@ -316,6 +316,9 @@ class EventCalendarFilterForm extends FormBase {
    *   The filter element array.
    */
   private function createFilterElement(string $title, array $options, $default_value): array {
+    if (!$options) {
+      return ExposedTaxonomyFilterOptions::emptyFilterElement($this->t('@title', ['@title' => $title]));
+    }
     return [
       '#type' => 'select',
       '#title' => $this->t('@title', ['@title' => $title]),

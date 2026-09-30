@@ -2,6 +2,7 @@
 
 namespace Drupal\Tests\ys_views_basic\Unit;
 
+use Drupal\Core\DependencyInjection\ContainerBuilder;
 use Drupal\Core\Entity\EntityTypeManagerInterface;
 use Drupal\Tests\UnitTestCase;
 use Drupal\ys_views_basic\Form\EventCalendarFilterForm;
@@ -78,6 +79,42 @@ class EventCalendarFilterFormTest extends UnitTestCase {
       ->willReturn(['' => '- Any -', 5 => 'Five', 6 => 'Six']);
 
     $this->assertSame([5 => 'Five', 6 => 'Six'], $this->options('audience', NULL, []));
+  }
+
+  /**
+   * Calls the private createFilterElement() on the form.
+   */
+  protected function element(array $options): array {
+    $container = new ContainerBuilder();
+    $container->set('string_translation', $this->getStringTranslationStub());
+    \Drupal::setContainer($container);
+    $method = new \ReflectionMethod($this->form, 'createFilterElement');
+    $method->setAccessible(TRUE);
+    return $method->invoke($this->form, 'Category', $options, []);
+  }
+
+  /**
+   * A filter with no choices shows the message under its label.
+   *
+   * @covers ::createFilterElement
+   */
+  public function testEmptyOptionsRenderNoTermsMessage() {
+    $element = $this->element([]);
+    $this->assertSame('item', $element['#type']);
+    $this->assertSame('Category', (string) $element['#title']);
+    $this->assertSame('There are no terms available to filter by.', (string) $element['#markup']);
+  }
+
+  /**
+   * A filter with choices is still the Chosen multi-select.
+   *
+   * @covers ::createFilterElement
+   */
+  public function testNonEmptyOptionsStillRenderSelect() {
+    $element = $this->element([5 => 'Five']);
+    $this->assertSame('select', $element['#type']);
+    $this->assertTrue($element['#multiple']);
+    $this->assertTrue($element['#chosen']);
   }
 
 }
