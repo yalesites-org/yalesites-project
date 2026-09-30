@@ -102,7 +102,7 @@ class MediaFileDeleter {
    * @return bool
    *   TRUE if the file is valid, FALSE otherwise.
    */
-  public function validateFile(mixed $file): bool {
+  protected function validateFile(mixed $file): bool {
     if (!$file instanceof FileInterface) {
       if ($file !== NULL) {
         $this->getLogger()->error('Invalid file object provided to MediaFileDeleter');
@@ -124,7 +124,7 @@ class MediaFileDeleter {
    * @return bool
    *   TRUE if the URI is valid, FALSE otherwise.
    */
-  public function validateFileUri(string $file_uri): bool {
+  protected function validateFileUri(string $file_uri): bool {
     // Use static method for getScheme since it's a utility function.
     $scheme = StreamWrapperManager::getScheme($file_uri);
     if (!$scheme || !$this->streamWrapperManager->isValidScheme($scheme)) {

@@ -19,13 +19,14 @@ use Drupal\ys_views_basic\Service\EventsCalendar;
  * Unit tests for the EventsCalendar service.
  *
  * Characterizes the current behavior of calendar grid generation, per-day
- * event lookup, and event-node filtering. All date values are passed in as
+ * event lookup, and event-node filtering, all exercised through the public
+ * getCalendar() entry point. All date values are passed in as
  * fixed test data; time-period ("future"/"past") assertions use timestamps
  * far enough from the present (year 1990 / year 2100) that they do not
  * depend on when the suite is run.
  *
- * The recurring-event (smart_date_recur "rrule") branches of getEvents() and
- * getCalendar() are not covered -- see the module's test log for why.
+ * The recurring-event (smart_date_recur "rrule") branches of getCalendar() are
+ * not covered -- see the module's test log for why.
  *
  * @coversDefaultClass \Drupal\ys_views_basic\Service\EventsCalendar
  * @group ys_views_basic
@@ -185,77 +186,116 @@ class EventsCalendarTest extends UnitTestCase {
   }
 
   /**
-   * IsAllDay() is TRUE only when start is 00:00 and end is 23:59.
+   * Returns the events of one day's cell in a calendar grid.
    *
-   * @covers ::isAllDay
+   * @param array $rows
+   *   The grid returned by getCalendar().
+   * @param string $day
+   *   The two-digit day of the cell.
+   * @param string $month
+   *   The two-digit month of the cell.
+   *
+   * @return array
+   *   The events of the matching cell.
    */
-  public function testIsAllDayTrueForMidnightToElevenFiftyNine() {
+  protected function eventsForDay(array $rows, string $day, string $month): array {
+    foreach ($rows as $row) {
+      foreach ($row as $cell) {
+        if ($cell['date']['day'] === $day && $cell['date']['month'] === $month) {
+          return $cell['events'];
+        }
+      }
+    }
+    $this->fail("No cell found for $month/$day.");
+  }
+
+  /**
+   * An event running 00:00 to 23:59 renders as "All Day".
+   *
+   * @covers ::getCalendar
+   */
+  public function testCalendarLabelsMidnightToElevenFiftyNineAsAllDay() {
+    $node = $this->createMockEventNode([
+      'id' => 1,
+      'event_dates' => [[
+        'value' => strtotime('2024-06-15 00:00:00'),
+        'end_value' => strtotime('2024-06-15 23:59:00'),
+      ],
+      ],
+    ]);
+    $this->configureNodeStorageToReturn([1 => $node]);
+
+    $events = $this->eventsForDay($this->eventsCalendar->getCalendar('06', '2024'), '15', '06');
+
+    $this->assertCount(1, $events);
+    $this->assertSame('All Day', (string) $events[0]['time']);
+  }
+
+  /**
+   * A normal, timed event renders its start and end times.
+   *
+   * @covers ::getCalendar
+   */
+  public function testCalendarLabelsTimedEventWithTimes() {
+    $node = $this->createMockEventNode([
+      'id' => 1,
+      'event_dates' => [[
+        'value' => strtotime('2024-06-15 09:00:00'),
+        'end_value' => strtotime('2024-06-15 10:30:00'),
+      ],
+      ],
+    ]);
+    $this->configureNodeStorageToReturn([1 => $node]);
+
+    $events = $this->eventsForDay($this->eventsCalendar->getCalendar('06', '2024'), '15', '06');
+
+    $this->assertCount(1, $events);
+    $this->assertSame('9:00AM to 10:30AM', (string) $events[0]['time']);
+  }
+
+  /**
+   * A day's event carries categories, tags, title, url, time, and timestamp.
+   *
+   * @covers ::getCalendar
+   */
+  public function testCalendarBuildsExpectedEventStructure() {
     $start = strtotime('2024-06-15 00:00:00');
-    $end = strtotime('2024-06-15 23:59:00');
-
-    $this->assertTrue($this->eventsCalendar->isAllDay($start, $end));
-  }
-
-  /**
-   * IsAllDay() is FALSE for a normal, timed event.
-   *
-   * @covers ::isAllDay
-   */
-  public function testIsAllDayFalseForTimedEvent() {
-    $start = strtotime('2024-06-15 09:00:00');
-    $end = strtotime('2024-06-15 10:30:00');
-
-    $this->assertFalse($this->eventsCalendar->isAllDay($start, $end));
-  }
-
-  /**
-   * IsAllDay() evaluates the start/end times in the given timezone.
-   *
-   * @covers ::isAllDay
-   */
-  public function testIsAllDayRespectsExplicitTimezone() {
-    // Midnight UTC is not midnight in America/New_York, so this should not
-    // register as all-day when evaluated in that timezone.
-    $start = gmmktime(0, 0, 0, 6, 15, 2024);
-    $end = gmmktime(23, 59, 0, 6, 15, 2024);
-
-    $this->assertFalse($this->eventsCalendar->isAllDay($start, $end, 'America/New_York'));
-  }
-
-  /**
-   * CreateEventArray() extracts categories, tags, title, url, and timestamp.
-   *
-   * @covers ::createEventArray
-   */
-  public function testCreateEventArrayBuildsExpectedStructure() {
     $node = $this->createMockEventNode([
       'id' => 42,
       'title' => 'Spring Concert',
       'category_tids' => [10],
       'tag_tids' => [20, 21],
+      'event_dates' => [[
+        'value' => $start,
+        'end_value' => strtotime('2024-06-15 23:59:00'),
+      ],
+      ],
     ]);
+    $this->configureNodeStorageToReturn([42 => $node]);
     $this->aliasManager->method('getAliasByPath')
       ->with('/node/42')
       ->willReturn('/events/spring-concert');
 
-    $result = $this->eventsCalendar->createEventArray($node, 'All Day', 12345);
+    $events = $this->eventsForDay($this->eventsCalendar->getCalendar('06', '2024'), '15', '06');
 
+    $this->assertCount(1, $events);
+    $events[0]['time'] = (string) $events[0]['time'];
     $this->assertSame([
       'category' => 'Term 10',
       'title' => 'Spring Concert',
       'url' => '/events/spring-concert',
       'time' => 'All Day',
       'type' => ['Term 20', 'Term 21'],
-      'timestamp' => 12345,
-    ], $result);
+      'timestamp' => $start,
+    ], $events[0]);
   }
 
   /**
-   * GetEvents() returns only events overlapping the requested day, sorted.
+   * A day's cell holds only events overlapping that day, sorted by time.
    *
-   * @covers ::getEvents
+   * @covers ::getCalendar
    */
-  public function testGetEventsReturnsOnlyEventsOverlappingTheDaySortedByTime() {
+  public function testCalendarDayHoldsOnlyOverlappingEventsSortedByTime() {
     $nodeMorning = $this->createMockEventNode([
       'id' => 1,
       'title' => 'Morning Talk',
@@ -287,27 +327,30 @@ class EventsCalendarTest extends UnitTestCase {
       fn($path) => $path
     );
 
-    // Passed in reverse chronological order to verify the usort() by
+    // Loaded in reverse chronological order to verify the usort() by
     // timestamp.
-    $events = $this->eventsCalendar->getEvents(15, '06', '2024', [
-      $nodeAfternoon,
-      $nodeMorning,
-      $nodeOtherDay,
+    $this->configureNodeStorageToReturn([
+      2 => $nodeAfternoon,
+      1 => $nodeMorning,
+      3 => $nodeOtherDay,
     ]);
+
+    $events = $this->eventsForDay($this->eventsCalendar->getCalendar('06', '2024'), '15', '06');
 
     $this->assertCount(2, $events);
     $this->assertSame('Morning Talk', $events[0]['title']);
     $this->assertSame('Afternoon Workshop', $events[1]['title']);
-    $this->assertSame('9:00AM to 10:00AM', $events[0]['time']);
+    $this->assertSame('9:00AM to 10:00AM', (string) $events[0]['time']);
   }
 
   /**
-   * GetEvents() reports a multi-day event with a "Multi-day Event" label.
+   * A multi-day event is labelled "Multi-day Event" on each day it spans.
    *
-   * @covers ::getEvents
+   * @covers ::getCalendar
    */
-  public function testGetEventsLabelsMultiDayEvents() {
+  public function testCalendarLabelsMultiDayEvents() {
     $node = $this->createMockEventNode([
+      'id' => 1,
       'title' => 'Conference',
       'event_dates' => [[
         'value' => strtotime('2024-06-15 09:00:00'),
@@ -315,33 +358,39 @@ class EventsCalendarTest extends UnitTestCase {
       ],
       ],
     ]);
+    $this->configureNodeStorageToReturn([1 => $node]);
 
-    $events = $this->eventsCalendar->getEvents(16, '06', '2024', [$node]);
+    $rows = $this->eventsCalendar->getCalendar('06', '2024');
+    $events = $this->eventsForDay($rows, '16', '06');
 
     $this->assertCount(1, $events);
     $this->assertSame('Multi-day Event', (string) $events[0]['time']);
+    // The days outside the span stay empty.
+    $this->assertSame([], $this->eventsForDay($rows, '18', '06'));
   }
 
   /**
-   * GetEvents() skips nodes whose event date field is empty.
+   * Nodes whose event date field is empty appear on no day.
    *
-   * @covers ::getEvents
+   * @covers ::getCalendar
    */
-  public function testGetEventsSkipsNodesWithEmptyEventDate() {
-    $node = $this->createMockEventNode(['event_dates' => []]);
+  public function testCalendarSkipsNodesWithEmptyEventDate() {
+    $node = $this->createMockEventNode(['id' => 1, 'event_dates' => []]);
+    $this->configureNodeStorageToReturn([1 => $node]);
 
-    $events = $this->eventsCalendar->getEvents(15, '06', '2024', [$node]);
+    $events = $this->eventsForDay($this->eventsCalendar->getCalendar('06', '2024'), '15', '06');
 
     $this->assertSame([], $events);
   }
 
   /**
-   * CreateCalendarCell() wraps the date and that day's events together.
+   * Each cell pads its day and carries that day's events.
    *
-   * @covers ::createCalendarCell
+   * @covers ::getCalendar
    */
-  public function testCreateCalendarCellPadsDayAndIncludesEvents() {
+  public function testCalendarCellPadsDayAndIncludesEvents() {
     $node = $this->createMockEventNode([
+      'id' => 1,
       'title' => 'Talk',
       'event_dates' => [[
         'value' => strtotime('2024-06-05 09:00:00'),
@@ -349,19 +398,20 @@ class EventsCalendarTest extends UnitTestCase {
       ],
       ],
     ]);
+    $this->configureNodeStorageToReturn([1 => $node]);
 
-    $cell = $this->eventsCalendar->createCalendarCell(5, '06', '2024', [$node]);
+    // Looking the cell up by the zero-padded day '05' proves the padding.
+    $events = $this->eventsForDay($this->eventsCalendar->getCalendar('06', '2024'), '05', '06');
 
-    $this->assertSame(['day' => '05', 'month' => '06', 'year' => '2024'], $cell['date']);
-    $this->assertCount(1, $cell['events']);
-    $this->assertSame('Talk', $cell['events'][0]['title']);
+    $this->assertCount(1, $events);
+    $this->assertSame('Talk', $events[0]['title']);
   }
 
   /**
    * Configures the mocked node storage to return the given nodes.
    *
    * @param array $nodes
-   *   The node mocks that loadMonthlyEvents()/getCalendar() should "find".
+   *   The node mocks that getCalendar() should "find".
    */
   protected function configureNodeStorageToReturn(array $nodes) {
     $query = $this->createMock(QueryInterface::class);
@@ -554,11 +604,11 @@ class EventsCalendarTest extends UnitTestCase {
   }
 
   /**
-   * LoadMonthlyEvents() queries published event nodes overlapping the month.
+   * GetCalendar() queries published event nodes overlapping the month.
    *
-   * @covers ::loadMonthlyEvents
+   * @covers ::getCalendar
    */
-  public function testLoadMonthlyEventsQueriesPublishedEventsForMonth() {
+  public function testGetCalendarQueriesPublishedEventsForMonth() {
     $node = $this->createMockEventNode(['id' => 7]);
 
     $query = $this->createMock(QueryInterface::class);
@@ -576,9 +626,8 @@ class EventsCalendarTest extends UnitTestCase {
       ->with([7])
       ->willReturn([7 => $node]);
 
-    $result = $this->eventsCalendar->loadMonthlyEvents('06', '2024');
+    $this->eventsCalendar->getCalendar('06', '2024');
 
-    $this->assertSame([7 => $node], $result);
     $this->assertSame(['type', 'event'], [$conditions[0][0], $conditions[0][1]]);
     $this->assertSame(['status', 1], [$conditions[1][0], $conditions[1][1]]);
   }
