@@ -71,14 +71,29 @@ class EmptyExposedFilterMessageTest extends UnitTestCase {
   }
 
   /**
-   * A taxonomy select with no choices is replaced by the message.
+   * Asserts the element is the disabled, empty multi-select.
+   */
+  protected function assertEmptyFilterSelect(array $element): void {
+    $this->assertSame('select', $element['#type']);
+    $this->assertSame('Cat', (string) $element['#title']);
+    $this->assertTrue($element['#multiple']);
+    $this->assertSame([], $element['#options']);
+    $this->assertTrue($element['#disabled']);
+    $this->assertTrue($element['#chosen']);
+    $message = 'There are no terms available to filter by.';
+    $placeholder = $element['#attributes']['data-placeholder'];
+    $this->assertSame($message, (string) $placeholder);
+    $this->assertSame($message, (string) $element['#attributes']['title']);
+    $this->assertContains('ys-filter--empty', $element['#attributes']['class']);
+  }
+
+  /**
+   * A taxonomy select with no choices becomes a disabled select.
    */
   public function testZeroChoiceSelectIsReplaced() {
     $form = $this->alter('views_basic_scaffold', 'taxonomy_index_tid', []);
-    $this->assertSame('item', $form['field_x']['#type']);
-    $this->assertSame('Cat', (string) $form['field_x']['#title']);
+    $this->assertEmptyFilterSelect($form['field_x']);
     $this->assertSame(3, $form['field_x']['#weight']);
-    $this->assertSame('There are no terms available to filter by.', (string) $form['field_x']['#markup']);
   }
 
   /**
@@ -86,7 +101,7 @@ class EmptyExposedFilterMessageTest extends UnitTestCase {
    */
   public function testUnweightedSelectStaysUnweighted() {
     $form = $this->alter('views_basic_scaffold', 'taxonomy_index_tid', [], NULL);
-    $this->assertSame('item', $form['field_x']['#type']);
+    $this->assertEmptyFilterSelect($form['field_x']);
     $this->assertArrayNotHasKey('#weight', $form['field_x']);
   }
 
@@ -95,7 +110,7 @@ class EmptyExposedFilterMessageTest extends UnitTestCase {
    */
   public function testAllOnlySelectIsReplaced() {
     $form = $this->alter('views_basic_scaffold_events', 'taxonomy_index_tid', ['All' => '- Any -']);
-    $this->assertSame('item', $form['field_x']['#type']);
+    $this->assertEmptyFilterSelect($form['field_x']);
   }
 
   /**

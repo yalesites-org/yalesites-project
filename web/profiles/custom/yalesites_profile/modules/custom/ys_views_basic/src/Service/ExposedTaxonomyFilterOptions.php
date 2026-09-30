@@ -143,20 +143,35 @@ class ExposedTaxonomyFilterOptions {
   /**
    * Builds the element shown in place of an exposed filter with no choices.
    *
-   * Keeps the filter's label on the page instead of an empty multi-select.
-   * This replaces the old YaleSites-Internal#162 rule that hid such filters.
+   * A disabled, empty Chosen multi-select keeps the filter's box and label in
+   * the row, with the message as its placeholder. The message is repeated as
+   * a visually hidden description for screen readers. This replaces the old
+   * YaleSites-Internal#162 rule that hid such filters.
    *
    * @param mixed $title
    *   The filter label.
    *
    * @return array
-   *   A Form API item element.
+   *   A Form API select element.
    */
   public static function emptyFilterElement($title): array {
+    $message = t('There are no terms available to filter by.');
     return [
-      '#type' => 'item',
+      '#type' => 'select',
       '#title' => $title,
-      '#markup' => t('There are no terms available to filter by.'),
+      '#multiple' => TRUE,
+      '#options' => [],
+      '#disabled' => TRUE,
+      '#chosen' => TRUE,
+      '#description' => $message,
+      '#description_display' => 'invisible',
+      '#attributes' => [
+        'class' => ['ys-filter--empty'],
+        'data-placeholder' => $message,
+        // Chosen copies the select's title onto its container, so the full
+        // message shows on hover when it is truncated.
+        'title' => $message,
+      ],
     ];
   }
 
