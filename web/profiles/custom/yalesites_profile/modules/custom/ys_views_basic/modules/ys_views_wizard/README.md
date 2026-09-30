@@ -1,7 +1,7 @@
 # ys_views_wizard
 
 Collapses the per-(content type, display mode) listing tiles in the Layout Builder block
-picker into a **single** entry — _Content Listing_ — which opens a two-question step,
+picker into a **single** entry — _Views_, under Dynamic Content — which opens a two-question step,
 _I Want To Show_ (content type) and _As_ (display mode), and hands off to the configure
 form for the listing bundle that matches. With JavaScript the handoff happens inside the
 same dialog; without it, it falls back to a plain redirect.
@@ -19,8 +19,7 @@ This is an **optional add-on** to `ys_views_basic`, and the dependency runs one 
   that stylesheet's spacing and type scale with the `views-basic--form-scale` class.
 - `ys_views_basic` contains **no reference to this module**. Uninstalling
   `ys_views_wizard` restores the per-bundle tiles in the picker and leaves the authoring
-  experience untouched. The `content_listings` block browser category is removed with it,
-  via an enforced module dependency on the config entity.
+  experience untouched.
 
 If you change the card markup here, check the authoring widget too — both surfaces share
 those CSS rules deliberately.
@@ -39,7 +38,7 @@ bottom padding so gin_lb's actions bar reaches the dialog edge.
 | -------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | Collapse the listing tiles       | `hook_layout_builder_browser_alter()`. The browser hands over `section_storage`, `delta` and `region`, which is exactly the wizard route's parameter set. No patch, no route override, no template.                                                                                                                 |
 | Which tiles to collapse          | `ViewsWizardOptions::listingPluginIds()`, derived from `ViewsBasicManager::LISTING_BUNDLES`, so the set can never drift from the set of bundles the wizard can hand off to. `event_calendar` is correctly left alone — it is not a listing bundle.                                                                  |
-| Where the single entry lives     | Its own `layout_builder_browser_blockcat` config entity, `content_listings`, shipped in `config/install`. The hook rebuilds the category render array from that entity and splices it in where the first listing tile used to be. Categories the hook empties are dropped, mirroring `BrowserController::browse()`. |
+| Where the single entry lives     | The existing `dynamic_content` block browser category, where editors and the user guide already expect "Views". The entry is appended to that category's links. If nothing else in Dynamic Content is placeable in the region, the hook rebuilds the category from its config entity and splices it in where the first listing tile used to be. Categories the hook empties are dropped, mirroring `BrowserController::browse()`. |
 | Make the entry open in the modal | Handled in the same alter. `layout_builder_browser_link_alter()` whitelists only `layout_builder.choose_block` and `layout_builder.add_block`, so a custom route would otherwise open off-canvas from inside a modal.                                                                                               |
 | Keep unsaved layout edits        | Route option `parameters.section_storage.layout_builder_tempstore: TRUE`, same as every core Layout Builder route.                                                                                                                                                                                                  |
 | Region-aware options             | `ViewsWizardOptions` asks the block manager for the same filtered definition list the browser asks for, so `layout_builder_restrictions` applies for free and the step never offers a combination that cannot be placed in the region the editor is in.                                                             |

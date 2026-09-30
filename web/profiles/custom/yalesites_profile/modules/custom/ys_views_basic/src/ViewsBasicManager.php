@@ -134,11 +134,6 @@ class ViewsBasicManager extends ControllerBase implements ContainerInjectionInte
           'img' => '/profiles/custom/yalesites_profile/modules/custom/ys_views_basic/assets/icons/display-type-list-view.svg',
           'img_alt' => 'Icon showing 3 generic list items one on top of the other. Image placement is on the left of each list item.',
         ],
-        'directory' => [
-          'label' => 'Directory Grid',
-          'img' => '/profiles/custom/yalesites_profile/modules/custom/ys_views_basic/assets/icons/display-type-directory.svg',
-          'img_alt' => 'Icon showing 3 cards next to each other with a generic person image on the top of each card.',
-        ],
         'condensed' => [
           'label' => 'Condensed',
           'img' => '/profiles/custom/yalesites_profile/modules/custom/ys_views_basic/assets/icons/display-type-condensed.svg',
@@ -446,12 +441,6 @@ class ViewsBasicManager extends ControllerBase implements ContainerInjectionInte
     'profile_condensed' => [
       'content_type' => self::CONTENT_TYPE_PROFILE,
       'view_mode' => 'condensed',
-      'supports_thumbnail' => FALSE,
-      'supports_card_size' => FALSE,
-    ],
-    'profile_directory' => [
-      'content_type' => self::CONTENT_TYPE_PROFILE,
-      'view_mode' => 'directory',
       'supports_thumbnail' => FALSE,
       'supports_card_size' => FALSE,
     ],
@@ -894,7 +883,7 @@ class ViewsBasicManager extends ControllerBase implements ContainerInjectionInte
     ];
 
     // Profile data pass-throughs (#1648): department, email, phone and
-    // pronouns on any profile listing, not just the directory design option.
+    // pronouns on any profile listing, not just the retired directory card.
     $profile_field_display_options = [
       'show_department' => (int) !empty($paramsDecoded['profile_field_options']['show_department']),
       'show_email' => (int) !empty($paramsDecoded['profile_field_options']['show_email']),
@@ -967,6 +956,8 @@ class ViewsBasicManager extends ControllerBase implements ContainerInjectionInte
     }
 
     $view->setArguments($view_args);
+    // See ViewsBasicFullPager::query().
+    $view->setOffset((int) $view_args['offset']);
     $view->execute();
 
     // Unset the pager. Needs to be done after view->execute();
@@ -1287,8 +1278,8 @@ class ViewsBasicManager extends ControllerBase implements ContainerInjectionInte
   /**
    * Returns whether a listing bundle offers the "Card size" dial (#1648).
    *
-   * Only the card grid takes one: list, condensed and the profile directory
-   * each lay themselves out, so the control would be clutter that does
+   * Only the card grid takes one: list and condensed each lay themselves
+   * out, so the control would be clutter that does
    * nothing. Declared per bundle rather than inferred from the view mode at
    * call time, matching supports_thumbnail (ADR DR-2).
    *
@@ -1328,9 +1319,11 @@ class ViewsBasicManager extends ControllerBase implements ContainerInjectionInte
    *
    * The migration keys on the stored content type and view mode together: the
    * target bundle id is "{content_type}_{view_mode}" when that pair is a known
-   * listing bundle. Returns NULL for anything that does not map (e.g. the
-   * calendar view mode, which deploy_10000 already converted to event_calendar,
-   * or a malformed/empty param set) so the migration can skip it loudly rather
+   * listing bundle. The retired profile directory (#1682) maps to profile_card;
+   * its params need ::directoryToCardParams() as well. Returns NULL for
+   * anything that does not map (e.g. the calendar view mode, which
+   * deploy_10000 already converted to event_calendar, or a malformed/empty
+   * param set) so the migration can skip it loudly rather
    * than guess (ADR DR-9).
    *
    * @param string|null $content_type
@@ -1346,6 +1339,9 @@ class ViewsBasicManager extends ControllerBase implements ContainerInjectionInte
     if ($content_type === NULL || $view_mode === NULL) {
       return NULL;
     }
+    if ($content_type === self::CONTENT_TYPE_PROFILE && $view_mode === 'directory') {
+      return 'profile_card';
+    }
     $candidate = $content_type . '_' . $view_mode;
     return isset(self::LISTING_BUNDLES[$candidate]) ? $candidate : NULL;
   }
@@ -1360,7 +1356,8 @@ class ViewsBasicManager extends ControllerBase implements ContainerInjectionInte
    * reproduce the predecessor View's query (ADR DR-10):
    * - post_list  -> post_list_item: posts, sticky + publish-date DESC, 10/page.
    * - event_list -> event_list_item: future events, event-date ASC.
-   * - directory  -> profile_directory: profiles, last-name A-Z, directory mode.
+   * - directory  -> profile_card: profiles, last-name A-Z, small cards with
+   *   department, email and phone (the retired directory look, #1682).
    *
    * These presets are best-effort reproductions and must be confirmed on
    * staging with a before/after render diff (#1171) before the predecessor
@@ -1416,14 +1413,13 @@ class ViewsBasicManager extends ControllerBase implements ContainerInjectionInte
         ],
       ],
       'directory' => [
-        'target' => 'profile_directory',
-        'params' => [
-          'view_mode' => 'directory',
+        'target' => 'profile_card',
+        'params' => self::directoryToCardParams([
           'filters' => ['types' => ['profile'], 'terms_include' => NULL, 'terms_exclude' => NULL],
           'sort_by' => 'field_last_name:ASC',
           'display' => 'all',
           'limit' => 10,
-        ],
+        ]),
       ],
     ];
     if (!isset($presets[$legacy_bundle])) {
@@ -1433,6 +1429,31 @@ class ViewsBasicManager extends ControllerBase implements ContainerInjectionInte
       'target' => $presets[$legacy_bundle]['target'],
       'params' => $presets[$legacy_bundle]['params'] + $base,
     ];
+  }
+
+  /**
+   * Converts profile directory params to the equivalent card params (#1682).
+   *
+   * The directory design option was retired onto the profile card grid. Small
+   * cards with department, email and phone switched on reproduce its look;
+   * every other stored setting (filters, sort, limit, pins) is kept as is.
+   *
+   * @param array $params
+   *   Decoded field_view_params of a directory listing.
+   *
+   * @return array
+   *   The params for a profile_card listing.
+   */
+  public static function directoryToCardParams(array $params): array {
+    $params['view_mode'] = 'card';
+    $params['card_size'] = 'small';
+    $params['field_options'] = ['show_thumbnail' => 'show_thumbnail'];
+    $params['profile_field_options'] = [
+      'show_department' => 'show_department',
+      'show_email' => 'show_email',
+      'show_phone' => 'show_phone',
+    ];
+    return $params;
   }
 
   /**

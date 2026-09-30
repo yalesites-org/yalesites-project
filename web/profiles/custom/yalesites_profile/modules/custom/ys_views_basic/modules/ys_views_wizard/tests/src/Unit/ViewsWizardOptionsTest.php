@@ -150,6 +150,7 @@ class ViewsWizardOptionsTest extends UnitTestCase {
   public static function providerImpossiblePairs(): array {
     return [
       'directory is profile-only' => ['post', 'directory'],
+      'directory is retired' => ['profile', 'directory'],
       'portrait grid is resource-only' => ['post', 'portrait_grid'],
       'resources have no directory' => ['resource', 'directory'],
       'unknown content type' => ['nonsense', 'card'],
