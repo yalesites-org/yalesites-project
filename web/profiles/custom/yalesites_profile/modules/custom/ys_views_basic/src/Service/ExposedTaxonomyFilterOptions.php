@@ -144,9 +144,10 @@ class ExposedTaxonomyFilterOptions {
    * Builds the element shown in place of an exposed filter with no choices.
    *
    * A disabled, empty Chosen multi-select keeps the filter's box and label in
-   * the row, with the message as its placeholder. The message is repeated as
-   * a visually hidden description for screen readers. This replaces the old
-   * YaleSites-Internal#162 rule that hid such filters.
+   * the row, with the message as its placeholder and title. Chosen exposes
+   * the placeholder as the name of its disabled combobox, so screen readers
+   * announce it. This replaces the old YaleSites-Internal#162 rule that hid
+   * such filters.
    *
    * @param mixed $title
    *   The filter label.
@@ -163,8 +164,6 @@ class ExposedTaxonomyFilterOptions {
       '#options' => [],
       '#disabled' => TRUE,
       '#chosen' => TRUE,
-      '#description' => $message,
-      '#description_display' => 'invisible',
       '#attributes' => [
         'class' => ['ys-filter--empty'],
         'data-placeholder' => $message,
