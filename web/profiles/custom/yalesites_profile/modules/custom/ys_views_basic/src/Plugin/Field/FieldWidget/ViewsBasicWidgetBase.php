@@ -27,7 +27,7 @@ use Symfony\Component\DependencyInjection\ContainerInterface;
  * per-content-type widgets implement.
  *
  * Display mode is NOT a form control. It is encoded in the block content
- * bundle id (e.g. "post_card", "profile_directory") and resolved from the host
+ * bundle id (e.g. "post_card", "profile_condensed") and resolved from the host
  * entity via ::LISTING_BUNDLES. Per-mode availability (such as whether the
  * "Show Teaser Image" option applies) is a capability flag in that same
  * definition rather than a scattered conditional.
