@@ -85,7 +85,7 @@ class ViewsWizardForm extends FormBase {
     $content_types = $this->options->getContentTypeOptions($section_storage, $delta, $region);
     if (!$content_types) {
       $form['empty'] = [
-        '#markup' => $this->t('No listing blocks can be placed in this region.'),
+        '#markup' => $this->t('No Views blocks can be placed in this region.'),
       ];
       return $form;
     }
@@ -328,7 +328,7 @@ class ViewsWizardForm extends FormBase {
       $form_state->getValue('view_mode')
     );
     if ($resolved === NULL) {
-      $form_state->setErrorByName('view_mode', $this->t('That combination has no listing block.'));
+      $form_state->setErrorByName('view_mode', $this->t('That combination has no Views block.'));
     }
   }
 

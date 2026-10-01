@@ -21,8 +21,8 @@ class ListingBundleDefinitionTest extends UnitTestCase {
    * The capability row each bundle must map to.
    *
    * `[content type, view mode, supports_thumbnail, supports_card_size]`.
-   * This pins the full 17-bundle grid (ADR DR-2/DR-4). Card and list_item
-   * support the teaser image; condensed and directory do not. Only the card
+   * This pins the full 16-bundle grid (ADR DR-2/DR-4). Card and list_item
+   * support the teaser image; condensed does not. Only the card
    * grid takes a card-size dial (#1648) — the other design options lay
    * themselves out. Resources (#1723) keep exactly the options their old
    * resource_view widget offered: a teaser image on every mode but condensed,
@@ -41,7 +41,6 @@ class ListingBundleDefinitionTest extends UnitTestCase {
     'profile_card' => ['profile', 'card', TRUE, TRUE],
     'profile_list_item' => ['profile', 'list_item', TRUE, FALSE],
     'profile_condensed' => ['profile', 'condensed', FALSE, FALSE],
-    'profile_directory' => ['profile', 'directory', FALSE, FALSE],
     'resource_card' => ['resource', 'card', TRUE, FALSE],
     'resource_portrait_grid' => ['resource', 'portrait_grid', TRUE, FALSE],
     'resource_list_item' => ['resource', 'list_item', TRUE, FALSE],
@@ -49,7 +48,16 @@ class ListingBundleDefinitionTest extends UnitTestCase {
   ];
 
   /**
-   * The definition covers exactly the 17 expected listing bundles.
+   * The profile fields the retired directory card always showed (#1682).
+   */
+  const DIRECTORY_PROFILE_FIELDS = [
+    'show_department' => 'show_department',
+    'show_email' => 'show_email',
+    'show_phone' => 'show_phone',
+  ];
+
+  /**
+   * The definition covers exactly the 16 expected listing bundles.
    *
    * @covers ::getListingBundleDefinition
    */
@@ -57,7 +65,7 @@ class ListingBundleDefinitionTest extends UnitTestCase {
     $this->assertSame(
       array_keys(self::EXPECTED_BUNDLES),
       array_keys(ViewsBasicManager::LISTING_BUNDLES),
-      'The listing definition contains exactly the 17 expected bundles.'
+      'The listing definition contains exactly the 16 expected bundles.'
     );
   }
 
@@ -79,16 +87,17 @@ class ListingBundleDefinitionTest extends UnitTestCase {
   }
 
   /**
-   * The directory view mode exists only for profiles.
+   * No listing bundle uses the retired directory view mode (#1682).
    *
    * @covers ::getListingBundleDefinition
    */
-  public function testDirectoryIsProfileOnly() {
+  public function testDirectoryBundleIsRetired() {
     $directory_bundles = array_filter(
       ViewsBasicManager::LISTING_BUNDLES,
       fn($definition) => $definition['view_mode'] === 'directory'
     );
-    $this->assertSame(['profile_directory'], array_keys($directory_bundles));
+    $this->assertSame([], $directory_bundles);
+    $this->assertArrayNotHasKey('directory', ViewsBasicManager::ALLOWED_ENTITIES['profile']['view_modes']);
   }
 
   /**
@@ -123,14 +132,15 @@ class ListingBundleDefinitionTest extends UnitTestCase {
   public function testMigrationTargetBundle() {
     $this->assertSame('post_card', ViewsBasicManager::migrationTargetBundle('post', 'card'));
     $this->assertSame('event_condensed', ViewsBasicManager::migrationTargetBundle('event', 'condensed'));
-    $this->assertSame('profile_directory', ViewsBasicManager::migrationTargetBundle('profile', 'directory'));
+    // The retired profile directory lands on the profile card grid (#1682).
+    $this->assertSame('profile_card', ViewsBasicManager::migrationTargetBundle('profile', 'directory'));
     $this->assertSame('resource_portrait_grid', ViewsBasicManager::migrationTargetBundle('resource', 'portrait_grid'));
     $this->assertSame('resource_condensed', ViewsBasicManager::migrationTargetBundle('resource', 'condensed'));
     // Portrait grid is resource-only.
     $this->assertNull(ViewsBasicManager::migrationTargetBundle('post', 'portrait_grid'));
     // Calendar is not a listing bundle (handled by deploy_10000).
     $this->assertNull(ViewsBasicManager::migrationTargetBundle('event', 'calendar'));
-    // Directory is profile-only.
+    // Directory only ever existed for profiles.
     $this->assertNull(ViewsBasicManager::migrationTargetBundle('page', 'directory'));
     // Unknown type and missing values do not map.
     $this->assertNull(ViewsBasicManager::migrationTargetBundle('widget', 'card'));
@@ -157,8 +167,10 @@ class ListingBundleDefinitionTest extends UnitTestCase {
     $this->assertSame('field_event_date:ASC', $event['params']['sort_by']);
 
     $directory = ViewsBasicManager::predecessorPreset('directory');
-    $this->assertSame('profile_directory', $directory['target']);
-    $this->assertSame('directory', $directory['params']['view_mode']);
+    $this->assertSame('profile_card', $directory['target']);
+    $this->assertSame('card', $directory['params']['view_mode']);
+    $this->assertSame('small', $directory['params']['card_size']);
+    $this->assertSame(self::DIRECTORY_PROFILE_FIELDS, $directory['params']['profile_field_options']);
     $this->assertSame('field_last_name:ASC', $directory['params']['sort_by']);
 
     // Every preset carries the common defaults so setupView never warns.
@@ -167,6 +179,34 @@ class ListingBundleDefinitionTest extends UnitTestCase {
 
     $this->assertNull(ViewsBasicManager::predecessorPreset('view'));
     $this->assertNull(ViewsBasicManager::predecessorPreset('unknown'));
+  }
+
+  /**
+   * Directory params become small-card params with the same data (#1682).
+   *
+   * @covers ::directoryToCardParams
+   */
+  public function testDirectoryToCardParams() {
+    $stored = [
+      'view_mode' => 'directory',
+      'filters' => ['types' => ['profile'], 'terms_include' => [3]],
+      'sort_by' => 'field_last_name:DESC',
+      'display' => 'limit',
+      'limit' => 8,
+      'field_options' => [],
+      'profile_field_options' => ['show_pronouns' => 'show_pronouns'],
+    ];
+    $card = ViewsBasicManager::directoryToCardParams($stored);
+
+    $this->assertSame('card', $card['view_mode']);
+    $this->assertSame('small', $card['card_size']);
+    $this->assertSame(['show_thumbnail' => 'show_thumbnail'], $card['field_options']);
+    $this->assertSame(self::DIRECTORY_PROFILE_FIELDS, $card['profile_field_options']);
+    // Everything else is kept as stored.
+    $this->assertSame($stored['filters'], $card['filters']);
+    $this->assertSame('field_last_name:DESC', $card['sort_by']);
+    $this->assertSame('limit', $card['display']);
+    $this->assertSame(8, $card['limit']);
   }
 
 }

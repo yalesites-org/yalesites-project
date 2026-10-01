@@ -130,6 +130,7 @@ class ViewsBasicDynamicStyle extends StylePluginBase implements ContainerFactory
       'portrait_grid' => 'grid',
       'list_item' => 'list',
       'condensed' => 'condensed',
+      // No bundle offers directory since #1682; old block revisions still do.
       'directory' => 'profile-directory',
     ];
 

@@ -4,7 +4,7 @@ status: true
 dependencies: {  }
 id: event_condensed
 block_id: 'inline_block:event_condensed'
-category: event_listings
+category: dynamic_content
 label: 'Events - Condensed View'
 image_path: ''
 image_alt: ''
