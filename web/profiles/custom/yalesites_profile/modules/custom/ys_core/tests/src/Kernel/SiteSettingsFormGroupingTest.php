@@ -90,8 +90,13 @@ class SiteSettingsFormGroupingTest extends YsKernelTestBase {
     'site_page_events' => 'key_pages',
     'site_page_403' => 'key_pages',
     'site_page_404' => 'key_pages',
-    'font_pairing' => 'look_and_feel',
-    'font_preview' => 'look_and_feel',
+    'font_styles_heading' => 'look_and_feel',
+    'body_font_note' => 'look_and_feel',
+    'heading_font' => 'look_and_feel',
+    'heading_font_preview' => 'look_and_feel',
+    'heading_numerals' => 'look_and_feel',
+    'body_numerals' => 'look_and_feel',
+    'numeral_preview' => 'look_and_feel',
     'favicon' => 'look_and_feel',
     'teaser_image_fallback' => 'look_and_feel',
     'google_site_verification' => 'search_and_analytics',
@@ -254,7 +259,9 @@ class SiteSettingsFormGroupingTest extends YsKernelTestBase {
       'site_page_404' => '/gone',
       'google_site_verification' => 'verification-key',
       'custom_vocab_name' => 'Custom Vocab',
-      'font_pairing' => 'mallory',
+      'heading_font' => 'mallory',
+      'heading_numerals' => 'lining',
+      'body_numerals' => 'lining',
       'teaser_image_fallback' => '',
       // handleMediaFilesystem() only dereferences this when it is truthy.
       'favicon' => [],
@@ -277,7 +284,9 @@ class SiteSettingsFormGroupingTest extends YsKernelTestBase {
       $yale->get('seo.google_site_verification')
     );
     $this->assertSame('Custom Vocab', $yale->get('taxonomy.custom_vocab_name'));
-    $this->assertSame('mallory', $yale->get('font_pairing'));
+    $this->assertSame('mallory', $yale->get('font_pairing.heading_font'));
+    $this->assertSame('lining', $yale->get('font_pairing.heading_numerals'));
+    $this->assertSame('lining', $yale->get('font_pairing.body_numerals'));
     $this->assertSame('yalesites', $yale->get('cas_app_name'));
   }
 

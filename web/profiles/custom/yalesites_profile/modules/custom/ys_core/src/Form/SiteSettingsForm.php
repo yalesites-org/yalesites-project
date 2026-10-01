@@ -247,92 +247,122 @@ class SiteSettingsForm extends ConfigFormBase implements ContainerInjectionInter
       '#group' => 'vertical_tabs',
     ];
 
-    $form['look_and_feel']['font_pairing'] = [
-      '#type' => 'radios',
-      '#options' => [
-        'yalenew' => $this->t('Yale New (Old-Style Numerals) / Mallory (YaleNew with old-style numerals for headings and other numeric text; Mallory for paragraph text)'),
-        'mallory' => $this->t('Mallory / Mallory (Mallory for headings, Mallory for paragraph text)'),
-        'yalenew-oldstyle' => $this->t('Yale New / Mallory (YaleNew with lining numerals for headings and other numeric text; Mallory for paragraph text)'),
-      ],
-      '#description' => $this->t('This font pairing controls how numbers appear in headings and other numeric text across the site.'),
-      '#title' => $this->t('Font Pairing'),
-      '#default_value' => $yaleConfig->get('font_pairing') ?? 'yalenew',
-      '#prefix' => '<div class="font-pairing-selector">',
-      '#suffix' => '</div>',
+    $heading_font = $yaleConfig->get('font_pairing.heading_font') ?? 'yalenew';
+    $heading_numerals = $yaleConfig->get('font_pairing.heading_numerals') ?? 'oldstyle';
+    $body_numerals = $yaleConfig->get('font_pairing.body_numerals') ?? 'oldstyle';
+
+    $form['look_and_feel']['font_styles_heading'] = [
+      '#type' => 'html_tag',
+      '#tag' => 'h3',
+      '#value' => $this->t('Font styles'),
+      '#attributes' => ['class' => ['ys-form-section-heading']],
+      '#attached' => ['library' => ['ys_core/font_preview']],
     ];
 
-    // The preview stays directly under the font pairing radios: font-preview.js
-    // toggles the active preview on change and the two read as one control.
-    //
-    // Only the sample digits are hidden from assistive technology, not the
-    // whole preview. They are marked up as h2 purely for size, so they would
-    // otherwise be the only headings in this tab's outline and read as
-    // "1234567890" with nothing to convey. The paragraphs beside them do carry
-    // real information the radio labels omit (which digits descend below the
-    // baseline), so those stay exposed.
-    $form['look_and_feel']['font_preview'] = [
+    $form['look_and_feel']['body_font_note'] = [
+      '#type' => 'item',
+      '#markup' => $this->t('Body text is always set in Mallory.'),
+    ];
+
+    $form['look_and_feel']['heading_font'] = [
+      '#type' => 'select',
+      '#options' => [
+        'yalenew' => $this->t('Yale New'),
+        'mallory' => $this->t('Mallory'),
+      ],
+      '#title' => $this->t('Heading font'),
+      '#description' => $this->t("<strong>Yale New</strong>: Yale's official typeface. Recommended for most sites. Supports a wide range of scripts and languages.<br><strong>Mallory</strong>: A versatile humanist sans-serif. Well-suited for sites that want a more neutral or contemporary feel."),
+      '#default_value' => $heading_font,
+    ];
+
+    // This preview's data-heading-font attribute starts from the saved value,
+    // so it is already correct on load with no JS. font-preview.js only needs
+    // to keep it in sync when the select above changes. It shows text, not
+    // numerals - numeral style has no bearing on which letterforms render.
+    $form['look_and_feel']['heading_font_preview'] = [
       '#type' => 'container',
       '#attributes' => [
-        'class' => ['font-preview-container'],
+        'class' => ['font-preview-container', 'font-preview-heading'],
+        'data-heading-font' => $heading_font,
       ],
       '#attached' => [
         'library' => ['ys_core/font_preview'],
       ],
-      'yalenew' => [
+      'sample' => [
+        '#type' => 'html_tag',
+        '#tag' => 'p',
+        '#value' => $this->t('The quick brown fox jumps over the lazy dog'),
+        '#attributes' => ['class' => ['preview-heading-sample']],
+      ],
+    ];
+
+    $numeral_options = [
+      'oldstyle' => $this->t('Old-Style Numerals'),
+      'lining' => $this->t('Lining Numerals'),
+    ];
+    $numeral_description = $this->t("<strong>Old-Style Numerals</strong>: Numbers vary in height, sitting on and below the baseline. Yale's brand standard — recommended for most sites.<br><strong>Lining Numerals</strong>: Numbers sit uniformly at cap height. Better suited for displaying data, tables, or financial figures.");
+
+    $form['look_and_feel']['heading_numerals'] = [
+      '#type' => 'select',
+      '#options' => $numeral_options,
+      '#title' => $this->t('Heading numeral style'),
+      '#description' => $numeral_description,
+      '#default_value' => $heading_numerals,
+    ];
+
+    $form['look_and_feel']['body_numerals'] = [
+      '#type' => 'select',
+      '#options' => $numeral_options,
+      '#title' => $this->t('Body numeral style'),
+      '#description' => $numeral_description,
+      '#default_value' => $body_numerals,
+    ];
+
+    // One preview area serves both numeral selects, since the two styles can
+    // now differ from each other. Each sample's digits are hidden from
+    // assistive technology because the style difference (old-style digits
+    // sitting below the baseline vs. lining digits at cap height) is purely
+    // visual - the label beside each sample is what a screen reader needs.
+    $form['look_and_feel']['numeral_preview'] = [
+      '#type' => 'container',
+      '#attributes' => [
+        'class' => ['font-preview-container', 'font-preview-numerals'],
+        'data-heading-numerals' => $heading_numerals,
+        'data-body-numerals' => $body_numerals,
+      ],
+      '#attached' => [
+        'library' => ['ys_core/font_preview'],
+      ],
+      'heading_numerals_sample' => [
         '#type' => 'container',
-        '#attributes' => [
-          'class' => ['font-preview', 'font-preview-yalenew'],
-          'data-font-pairing' => 'yalenew',
-        ],
-        'heading' => [
+        '#attributes' => ['class' => ['numeral-sample', 'numeral-sample-heading']],
+        'label' => [
           '#type' => 'html_tag',
-          '#tag' => 'h2',
+          '#tag' => 'span',
+          '#value' => $this->t('Heading numerals'),
+          '#attributes' => ['class' => ['numeral-sample-label']],
+        ],
+        'value' => [
+          '#type' => 'html_tag',
+          '#tag' => 'span',
           '#value' => $this->t('1234567890'),
-          '#attributes' => ['class' => ['preview-heading'], 'aria-hidden' => 'true'],
-        ],
-        'text' => [
-          '#type' => 'html_tag',
-          '#tag' => 'p',
-          '#value' => $this->t('Old-Style Numerals — some digits (3, 4, 5, 7, 9) descend below the text baseline, similar to lowercase letters.'),
-          '#attributes' => ['class' => ['preview-text']],
+          '#attributes' => ['class' => ['numeral-sample-value'], 'aria-hidden' => 'true'],
         ],
       ],
-      'mallory' => [
+      'body_numerals_sample' => [
         '#type' => 'container',
-        '#attributes' => [
-          'class' => ['font-preview', 'font-preview-mallory'],
-          'data-font-pairing' => 'mallory',
-        ],
-        'heading' => [
+        '#attributes' => ['class' => ['numeral-sample', 'numeral-sample-body']],
+        'label' => [
           '#type' => 'html_tag',
-          '#tag' => 'h2',
-          '#value' => $this->t('Mallory Heading Sample'),
-          '#attributes' => ['class' => ['preview-heading'], 'aria-hidden' => 'true'],
+          '#tag' => 'span',
+          '#value' => $this->t('Body numerals'),
+          '#attributes' => ['class' => ['numeral-sample-label']],
         ],
-        'text' => [
+        'value' => [
           '#type' => 'html_tag',
-          '#tag' => 'p',
-          '#value' => $this->t('This is a sample paragraph in Mallory.'),
-          '#attributes' => ['class' => ['preview-text']],
-        ],
-      ],
-      'yalenew-oldstyle' => [
-        '#type' => 'container',
-        '#attributes' => [
-          'class' => ['font-preview', 'font-preview-yalenew-oldstyle'],
-          'data-font-pairing' => 'yalenew-oldstyle',
-        ],
-        'heading' => [
-          '#type' => 'html_tag',
-          '#tag' => 'h2',
+          '#tag' => 'span',
           '#value' => $this->t('1234567890'),
-          '#attributes' => ['class' => ['preview-heading'], 'aria-hidden' => 'true'],
-        ],
-        'text' => [
-          '#type' => 'html_tag',
-          '#tag' => 'p',
-          '#value' => $this->t('Lining Numerals — all digits align uniformly to the text baseline, similar to capital letters.'),
-          '#attributes' => ['class' => ['preview-text']],
+          '#attributes' => ['class' => ['numeral-sample-value'], 'aria-hidden' => 'true'],
         ],
       ],
     ];
@@ -568,7 +598,9 @@ class SiteSettingsForm extends ConfigFormBase implements ContainerInjectionInter
       ->set('taxonomy.custom_vocab_name', $form_state->getValue('custom_vocab_name') ?: 'Custom Vocab')
       ->set('image_fallback.teaser', $form_state->getValue('teaser_image_fallback'))
       ->set('custom_favicon', $form_state->getValue('favicon'))
-      ->set('font_pairing', $form_state->getValue('font_pairing'))
+      ->set('font_pairing.heading_font', $form_state->getValue('heading_font'))
+      ->set('font_pairing.heading_numerals', $form_state->getValue('heading_numerals'))
+      ->set('font_pairing.body_numerals', $form_state->getValue('body_numerals'))
       ->set('cas_app_name', $form_state->getValue('cas_app_name') ?? 'yalesites');
 
     $yaleSiteConfig->save();
