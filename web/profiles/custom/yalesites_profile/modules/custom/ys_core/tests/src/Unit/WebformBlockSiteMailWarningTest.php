@@ -5,6 +5,7 @@ namespace Drupal\Tests\ys_core\Unit;
 use Drupal\Core\Config\ImmutableConfig;
 use Drupal\Core\Config\ConfigFactoryInterface;
 use Drupal\Core\Form\FormState;
+use Drupal\Core\Routing\AdminContext;
 use Drupal\Core\Routing\UrlGeneratorInterface;
 use Drupal\Tests\UnitTestCase;
 use Symfony\Component\DependencyInjection\ContainerBuilder;
@@ -47,7 +48,7 @@ class WebformBlockSiteMailWarningTest extends UnitTestCase {
   public static function warnedProvider(): array {
     return [
       'default no-reply address' => ['noreply@noreply.yale.edu'],
-      'unauthorized yale subdomain' => ['yalegsa@elilists.yale.edu'],
+      'unverified yale subdomain' => ['user@lists.yale.edu'],
       'not a yale address at all' => ['forms@example.com'],
     ];
   }
@@ -72,10 +73,10 @@ class WebformBlockSiteMailWarningTest extends UnitTestCase {
    * quote the value so they can recognise and correct it.
    */
   public function testUnauthorizedDomainWarningNamesTheAddress(): void {
-    $warning = $this->warningFor('yalegsa@elilists.yale.edu');
+    $warning = $this->warningFor('user@lists.yale.edu');
 
     $this->assertStringContainsString(
-      'yalegsa@elilists.yale.edu',
+      'user@lists.yale.edu',
       (string) $warning['message']['#markup']
     );
   }
@@ -86,13 +87,15 @@ class WebformBlockSiteMailWarningTest extends UnitTestCase {
   public function testAuthorizedSiteMailIsNotWarnedAbout(): void {
     $this->assertNull($this->warningFor('forms@yale.edu'));
     $this->assertNull($this->warningFor('Forms@YALE.EDU'));
+    // Verified for gsa.yale.edu in yalesites-org/YaleSites-Internal#1735.
+    $this->assertNull($this->warningFor('yalegsa@elilists.yale.edu'));
   }
 
   /**
    * Only Pre-Built Form blocks carry the warning.
    */
   public function testOtherBlockTypesAreNotWarnedAbout(): void {
-    $this->assertNull($this->warningFor('yalegsa@elilists.yale.edu', 'quick_links'));
+    $this->assertNull($this->warningFor('user@lists.yale.edu', 'quick_links'));
   }
 
   /**
@@ -124,7 +127,7 @@ class WebformBlockSiteMailWarningTest extends UnitTestCase {
   }
 
   /**
-   * Puts the three services the warning branch reaches for in the container.
+   * Puts the services ys_core_form_alter() reaches for in the container.
    */
   private function setContainerWithSiteMail(string $site_mail): void {
     $config = $this->createMock(ImmutableConfig::class);
@@ -139,7 +142,12 @@ class WebformBlockSiteMailWarningTest extends UnitTestCase {
     // through and returns whatever comes back, so FALSE means a plain string.
     $url_generator->method('generateFromRoute')->willReturn(self::SETTINGS_PATH);
 
+    // Layout Builder is an admin route, so the inline-errors check passes.
+    $admin_context = $this->createMock(AdminContext::class);
+    $admin_context->method('isAdminRoute')->willReturn(TRUE);
+
     $container = new ContainerBuilder();
+    $container->set('router.admin_context', $admin_context);
     $container->set('config.factory', $factory);
     $container->set('url_generator', $url_generator);
     $container->set('string_translation', $this->getStringTranslationStub());

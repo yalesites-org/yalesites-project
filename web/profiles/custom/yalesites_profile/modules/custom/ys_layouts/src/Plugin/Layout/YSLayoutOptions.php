@@ -98,7 +98,7 @@ class YSLayoutOptions extends LayoutDefault implements ContainerFactoryPluginInt
     // Yale.
     $form['theme'] = [
       '#type' => 'select',
-      '#title' => $this->t('Component theme'),
+      '#title' => $this->t('Section Theme'),
       '#default_value' => $saved_theme,
       '#options' => [
         'default' => $this->t('Default - no color'),
