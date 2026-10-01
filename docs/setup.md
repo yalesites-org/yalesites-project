@@ -11,7 +11,7 @@ __NOTE: Documentation assumes you are using MacOS with at least 8GB of memory on
    1. SSH authorization key
    2. [Github Package Personal Access Token](#package-personal-access-token) in environment variable `YALESITES_BUILD_TOKEN`
 3. [NVM](#additional-tools)
-4. [Node.js (>= 8.0, < 11.0)](#additional-tools)
+4. [Node.js 20.x](#additional-tools) (see `.nvmrc`)
 5. [Composer](#additional-tools): Version 2.x.
 6. [Terminus](#terminus): Machine auth token
 7. [Lando](#lando) or [DDEV](#ddev)
@@ -108,14 +108,34 @@ npm run setup
 
 The shared selector lives in `scripts/local/local-dev-tool.sh`. It defaults to `lando`, and supports `ddev` for Composer, Drush, cache rebuilds, and Pantheon database/file pulls.
 
-`ddev pull pantheon` reads **`PANTHEON_SITE`** and **`PANTHEON_ENVIRONMENT`** from `.ddev/config.yaml`. To override site or environment without editing the committed file, copy **`.ddev/config.local.example.yaml`** to **`.ddev/config.local.yaml`** (gitignored) and set `web_environment` there.
+#### Pantheon pulls under DDEV
+
+`ddev pull pantheon` (used by `npm run db:get` and `npm run files:get`) needs a Terminus machine token in your **global** DDEV config — the project config cannot supply it. Set it once per machine:
+
+```bash
+ddev config global --web-environment-add="TERMINUS_MACHINE_TOKEN=<your-token>"
+```
+
+Without it the pull stops with `Please make sure you have set TERMINUS_MACHINE_TOKEN in ~/.ddev/global_config.yaml`.
+
+The site and environment come from **`PANTHEON_SITE`** and **`PANTHEON_ENVIRONMENT`** in the committed `.ddev/config.yaml`. To point at a different site or environment without editing that file, create **`.ddev/config.local.yaml`** (ignored by the `.ddev/.gitignore` DDEV generates on first start; do not commit it):
+
+```yaml
+web_environment:
+  - PANTHEON_SITE=my-site-name
+  - PANTHEON_ENVIRONMENT=dev
+```
+
+DDEV merges every `.ddev/config.*.yaml` file into the project configuration, so only create one when you actually want it applied.
+
+Note that `ddev pull` writes the dump to `.ddev/.downloads/db.sql.gz`. The `reference/` directory and its `backup.sql.gz` rotation are Lando-only.
 
 Useful commands:
 
 - **`ddev describe`** — local URL, services, and ports.
 - **`ddev drush uli`** — one-time login link.
 - **`ddev phpunit`** — run PHPUnit with the project root **`phpunit.xml`**.
-- **`ddev redis-cli`** / **`ddev redis-flush`** — inspect or clear the local Redis instance when the add-on is installed.
+- **`ddev redis-cli`** / **`ddev redis-flush`** — inspect or clear the local Redis instance. If these report `service redis does not exist`, run **`ddev restart`**: the Redis container is only created on a restart after the add-on files arrive (for example on first checkout of a branch that adds them).
 
 If **`ddev pull pantheon`** fails with **`mkdir .../.ddev/.downloads: file exists`** while Mutagen performance mode is on, set **`performance_mode: "none"`** for this project (already set in the committed `config.yaml`) or see comments in that file.
 
@@ -123,7 +143,7 @@ If **`ddev pull pantheon`** fails with **`mkdir .../.ddev/.downloads: file exist
 
 - [Composer](https://getcomposer.org/download/): PHP package manager. Version 2.x. (Can use your selected local development tool instead if you prefer)
 - [NVM](https://github.com/nvm-sh/nvm#install--update-script): Node Version Manager
-- Node.js (>=8.0,<11.0). Via NVM.
+- Node.js 20.x (the version pinned in `.nvmrc`). Via NVM. DDEV installs the same major version in the web container via `nodejs_version` in `.ddev/config.yaml`.
 
 ### Cloning the project
 
@@ -140,7 +160,7 @@ This repository is a Pantheon Custom Upstream used to create and manage every si
 npm run setup
 ```
 
-Visit the local dev site for **Lando** at [https://yalesites-project.lndo.site/](https://yalesites-project.lndo.site/) (URL follows the `name` in `.lando.local.yml`). For **DDEV**, open the HTTPS URL from `ddev describe` (typically `https://<project>.ddev.site`, matching the `name` in `.ddev/config.yaml`), or run `ddev drush uli`. You can also run `npm run build` to obtain a login link using your selected local tool.
+Visit the local dev site for **Lando** at the HTTPS URL that follows the `name` in `.lando.local.yml` (with the defaults from `.lando.local.example.yml`, that is [https://yalesites-platform.lndo.site/](https://yalesites-platform.lndo.site/)). For **DDEV**, open the HTTPS URL from `ddev describe` (typically `https://<project>.ddev.site`, matching the `name` in `.ddev/config.yaml`), or run `ddev drush uli`. You can also run `npm run build` to obtain a login link using your selected local tool.
 
 ## Working on projects within this repository
 
