@@ -94,7 +94,7 @@ its instances to `profile_card` with small cards and department, email and
 phone switched on, and 10001/10002 send directory listings straight to
 `profile_card`. See [`CHANGELOG.md`](CHANGELOG.md).
 
-## Resource listings: author search and excluded terms
+## Resource author search and excluded filter terms
 
 ### Authors search option
 
@@ -145,10 +145,10 @@ $this->exposedTaxonomyFilterOptions->apply($filters, 'field_audience_target_id',
 $view->getDisplay()->setOption('filters', $filters);
 ```
 
-`ViewsBasicManager::setupView()` runs every exposed taxonomy filter of a
-**resource** listing through `apply()` (category and custom vocabulary with
-their included parent term). Post, event, page, and profile listings are not
-affected: their category filter still offers excluded terms.
+`ViewsBasicManager::setupView()` runs every exposed taxonomy filter of every
+listing type (post, event, page, profile, resource) through `apply()`. The
+category or affiliation filter and the custom vocabulary filter pass their
+included parent term; the rest pass exclusions only.
 
 ## Running tests
 

@@ -29,7 +29,7 @@ use Psr\Log\LoggerInterface;
  * Not tied to the resources view: any code that assembles a Views display's
  * filters from stored parameters can use the service
  * `ys_views_basic.exposed_taxonomy_filter_options` and call apply() per
- * taxonomy filter. ViewsBasicManager uses it for resource listings only.
+ * taxonomy filter. ViewsBasicManager uses it for every listing type.
  */
 class ExposedTaxonomyFilterOptions {
 
@@ -138,6 +138,40 @@ class ExposedTaxonomyFilterOptions {
       return $available;
     }
     return array_diff_key($available, array_flip($excluded));
+  }
+
+  /**
+   * Builds the element shown in place of an exposed filter with no choices.
+   *
+   * A disabled, empty Chosen multi-select keeps the filter's box and label in
+   * the row, with the message as its placeholder and title. Chosen exposes
+   * the placeholder as the name of its disabled combobox, so screen readers
+   * announce it. This replaces the old YaleSites-Internal#162 rule that hid
+   * such filters.
+   *
+   * @param mixed $title
+   *   The filter label.
+   *
+   * @return array
+   *   A Form API select element.
+   */
+  public static function emptyFilterElement($title): array {
+    $message = t('No options available.');
+    return [
+      '#type' => 'select',
+      '#title' => $title,
+      '#multiple' => TRUE,
+      '#options' => [],
+      '#disabled' => TRUE,
+      '#chosen' => TRUE,
+      '#attributes' => [
+        'class' => ['ys-filter--empty'],
+        'data-placeholder' => $message,
+        // Chosen copies the select's title onto its container, so the full
+        // message shows on hover when it is truncated.
+        'title' => $message,
+      ],
+    ];
   }
 
   /**

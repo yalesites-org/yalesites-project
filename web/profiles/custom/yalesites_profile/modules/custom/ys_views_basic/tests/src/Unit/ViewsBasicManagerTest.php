@@ -811,23 +811,64 @@ class ViewsBasicManagerTest extends UnitTestCase {
   }
 
   /**
-   * A non-resource listing's category filter ignores excluded terms.
+   * Provides each non-resource listing type with its category filter.
+   *
+   * @return array
+   *   Rows of type, category filter name, category vocabulary id.
+   */
+  public static function categoryFilterProvider(): array {
+    return [
+      'post' => ['post', 'field_category_target_id', 'post_category'],
+      'event' => ['event', 'field_category_target_id', 'event_category'],
+      'page' => ['page', 'field_category_target_id_1', 'page_category'],
+      'profile' => ['profile', 'field_affiliation_target_id', 'affiliation'],
+    ];
+  }
+
+  /**
+   * Every listing type stops offering excluded terms in its taxonomy filters.
+   *
+   * The category filter and custom vocabulary also pass their included parent
+   * term; audience passes exclusions only.
    *
    * @covers ::setupView
+   *
+   * @dataProvider categoryFilterProvider
    */
-  public function testSetupViewLeavesPostCategoryFilterUnchangedByExclusions() {
-    $this->exposedTaxonomyFilterOptions->method('getDescendantTermIds')
-      ->with('post_category', 4)
-      ->willReturn([5 => 5, 6 => 6]);
-    $this->exposedTaxonomyFilterOptions->expects($this->never())->method('apply');
+  public function testSetupViewConstrainsTaxonomyFiltersForEveryListingType(string $type, string $category_filter, string $vid) {
+    $vocabulary = $this->createMock('Drupal\taxonomy\VocabularyInterface');
+    $vocabulary->method('label')->willReturn('Custom');
+    $this->vocabularyStorage->method('load')->with('custom_vocab')->willReturn($vocabulary);
 
-    $set = $this->runSetupView([
-      'filters' => ['types' => ['post'], 'terms_exclude' => ['5']],
-      'exposed_filter_options' => ['show_category_filter' => 'show_category_filter'],
+    $calls = [];
+    $this->exposedTaxonomyFilterOptions->method('apply')->willReturnCallback(
+      function ($filters, $name, $excluded, $parent = NULL) use (&$calls) {
+        $calls[$name] = [$excluded, $parent];
+        return TRUE;
+      }
+    );
+
+    $this->runSetupView([
+      'filters' => ['types' => [$type], 'terms_exclude' => ['5', ['target_id' => '7']]],
+      'exposed_filter_options' => [
+        'show_category_filter' => 'show_category_filter',
+        'show_custom_vocab_filter' => 'show_custom_vocab_filter',
+        'show_audience_filter' => 'show_audience_filter',
+      ],
       'category_included_terms' => 4,
-    ], ['field_category_target_id' => $this->taxonomyFilter('post_category')]);
+      'custom_vocab_included_terms' => 9,
+    ], [
+      'status' => ['plugin_id' => 'boolean'],
+      $category_filter => $this->taxonomyFilter($vid),
+      'field_custom_vocab_target_id' => $this->taxonomyFilter('custom_vocab'),
+      'field_audience_target_id' => $this->taxonomyFilter('audience'),
+    ]);
 
-    $this->assertSame([5 => 5, 6 => 6], $set['filters']['field_category_target_id']['value']);
+    $this->assertSame([
+      $category_filter => [[5, 7], 4],
+      'field_custom_vocab_target_id' => [[5, 7], 9],
+      'field_audience_target_id' => [[5, 7], NULL],
+    ], $calls);
   }
 
   /**
@@ -843,9 +884,6 @@ class ViewsBasicManagerTest extends UnitTestCase {
     $vocabulary = $this->createMock('Drupal\taxonomy\VocabularyInterface');
     $vocabulary->method('label')->willReturn('Custom');
     $this->vocabularyStorage->method('load')->with('custom_vocab')->willReturn($vocabulary);
-    // The shared parent-term setup still runs before the resource pass.
-    $this->termStorage->method('loadTree')->willReturn([]);
-
     $calls = [];
     $this->exposedTaxonomyFilterOptions->method('apply')->willReturnCallback(
       function ($filters, $name, $excluded, $parent = NULL) use (&$calls) {

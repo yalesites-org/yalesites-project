@@ -10,6 +10,7 @@ use Drupal\Core\Entity\Display\EntityViewDisplayInterface;
 use Drupal\Core\Form\FormStateInterface;
 use Drupal\node\NodeInterface;
 use Drupal\views\ViewExecutable;
+use Drupal\ys_views_basic\Service\ExposedTaxonomyFilterOptions;
 use Drupal\ys_views_basic\ViewsBasicManager;
 
 /**
@@ -633,4 +634,37 @@ function _ys_views_basic_listing_form_tabs(array $element, FormStateInterface $f
   $element['group_user_selection']['#theme_wrappers'] = [];
 
   return $element;
+}
+
+/**
+ * Implements hook_form_views_exposed_form_alter().
+ *
+ * Replaces an exposed taxonomy filter that has no choices with a message.
+ * This replaces the old YaleSites-Internal#162 rule that hid such filters.
+ */
+function ys_views_basic_form_views_exposed_form_alter(array &$form, FormStateInterface $form_state): void {
+  $view = $form_state->get('view');
+  // Same listing family as ys_core_form_views_exposed_form_alter().
+  $listing_views = [...ViewsBasicManager::SCAFFOLD_VIEWS, 'content_resources'];
+  if (!in_array($view->id(), $listing_views, TRUE)) {
+    return;
+  }
+  foreach ($view->filter as $handler) {
+    if ($handler->getPluginId() !== 'taxonomy_index_tid' || !$handler->isExposed()) {
+      continue;
+    }
+    $identifier = $handler->options['expose']['identifier'];
+    if (($form[$identifier]['#type'] ?? '') !== 'select') {
+      continue;
+    }
+    // Core adds an "All" option to single-value, non-required filters.
+    if (array_diff_key($form[$identifier]['#options'] ?? [], ['All' => TRUE])) {
+      continue;
+    }
+    // Carry over #weight only when the select had one: adding a default 0
+    // moves the message ahead of its unweighted siblings.
+    $form[$identifier] = ExposedTaxonomyFilterOptions::emptyFilterElement(
+      $form[$identifier]['#title'] ?? $handler->options['expose']['label']
+    ) + array_intersect_key($form[$identifier], array_flip(['#weight']));
+  }
 }
