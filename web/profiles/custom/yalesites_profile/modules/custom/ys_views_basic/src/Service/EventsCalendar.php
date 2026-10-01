@@ -333,7 +333,7 @@ class EventsCalendar {
    * @return array
    *   The calendar cell array.
    */
-  public function createCalendarCell(int $day, string $month, string $year, array $events): array {
+  protected function createCalendarCell(int $day, string $month, string $year, array $events): array {
     return [
       'date' => [
         'day' => str_pad($day, 2, '0', STR_PAD_LEFT),
@@ -359,7 +359,7 @@ class EventsCalendar {
    * @return array
    *   The events list.
    */
-  public function getEvents(int $day, string $month, string $year, array $events): array {
+  protected function getEvents(int $day, string $month, string $year, array $events): array {
     $startDate = new DrupalDateTime("$year-$month-$day 00:00:00");
     $endDate = new DrupalDateTime("$year-$month-$day 23:59:59");
 
@@ -446,7 +446,7 @@ class EventsCalendar {
    * @return array
    *   An associative array containing details of the event
    */
-  public function createEventArray($node, string $time, int $timestamp): array {
+  protected function createEventArray($node, string $time, int $timestamp): array {
     // Extract the event's categories.
     $categories = implode(' | ', array_map(function ($term) {
       return $term->label();
@@ -479,7 +479,7 @@ class EventsCalendar {
    * @return bool
    *   TRUE if the event is all day, FALSE otherwise.
    */
-  public function isAllDay(int $start_ts, int $end_ts, ?string $timezone = NULL): bool {
+  protected function isAllDay(int $start_ts, int $end_ts, ?string $timezone = NULL): bool {
     if ($timezone) {
       $default_tz = date_default_timezone_get();
       date_default_timezone_set($timezone);
@@ -506,7 +506,7 @@ class EventsCalendar {
    * @return \Drupal\node\NodeInterface[]
    *   An array of event nodes.
    */
-  public function loadMonthlyEvents(string $month, string $year): array {
+  protected function loadMonthlyEvents(string $month, string $year): array {
     $startDate = new DrupalDateTime("$year-$month-01 00:00:00");
     $endDate = clone $startDate;
     $endDate->modify('last day of this month 23:59:59');

@@ -33,6 +33,7 @@ function ys_layouts_theme($existing, $type, $theme, $path): array {
         'ticket_cost' => NULL,
         'place' => [],
         'room' => NULL,
+        'location_details' => NULL,
         'event_types' => [],
         'event_audience' => [],
         'event_topics' => [],
@@ -559,15 +560,15 @@ function ys_layouts_form_layout_builder_configure_section_alter(&$form, FormStat
 
   $form['padding_options'] = [
     '#type' => 'select',
-    '#title' => t('Section padding options'),
+    '#title' => t('Section Padding Options'),
     '#options' => [
-      'default' => t('Default'),
+      'default' => t('Padding on both top and bottom'),
       'no_top' => t('No top padding'),
       'no_bottom' => t('No bottom padding'),
-      'no_padding' => t('No padding (top and bottom)'),
+      'no_padding' => t('No padding (removes both top and bottom padding)'),
     ],
     '#default_value' => $config['ys_layouts_sections_config']['padding_options'] ?? 'default',
-    '#description' => t("To create connected sections, use 'No bottom padding' on the first section and 'No top padding' on the section below it. Default padding maintains standard spacing for optimal readability."),
+    '#description' => t("To create connected sections, use 'No bottom padding' on the first section and 'No top padding' on the section below it. 'Padding on both top and bottom' maintains standard spacing for optimal readability."),
     '#weight' => 0,
     '#wrapper_attributes' => [
       'class' => ['glb-canvas-form__settings'],

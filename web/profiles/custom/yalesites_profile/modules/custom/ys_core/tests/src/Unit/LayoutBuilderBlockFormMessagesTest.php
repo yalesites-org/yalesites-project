@@ -3,7 +3,9 @@
 namespace Drupal\Tests\ys_core\Unit;
 
 use Drupal\Core\Form\FormState;
+use Drupal\Core\Routing\AdminContext;
 use Drupal\Tests\UnitTestCase;
+use Symfony\Component\DependencyInjection\ContainerBuilder;
 
 /**
  * Tests that Layout Builder block forms render their own validation messages.
@@ -45,6 +47,14 @@ class LayoutBuilderBlockFormMessagesTest extends UnitTestCase {
     parent::setUp();
     // The function under test is procedural, so the file has to be loaded.
     require_once dirname(__DIR__, 3) . '/ys_core.module';
+
+    // ys_core_form_alter() asks whether this is an admin route before
+    // anything else. Layout Builder forms are, so no inline-errors opt-out.
+    $admin_context = $this->createMock(AdminContext::class);
+    $admin_context->method('isAdminRoute')->willReturn(TRUE);
+    $container = new ContainerBuilder();
+    $container->set('router.admin_context', $admin_context);
+    \Drupal::setContainer($container);
   }
 
   /**

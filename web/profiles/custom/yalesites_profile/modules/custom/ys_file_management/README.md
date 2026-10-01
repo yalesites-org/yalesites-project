@@ -185,10 +185,10 @@ The module uses a service-oriented architecture to separate concerns and follows
   - `CacheTagsInvalidatorInterface $cacheTagsInvalidator`
   - `ModuleHandlerInterface $moduleHandler`
 - Public Methods:
-  - `validateFile(mixed $file): bool` - Validates FileInterface objects
-  - `validateFileUri(string $file_uri): bool` - Security check for URI schemes
   - `deleteFile(FileInterface $file): bool` - Immediate file deletion with error handling
 - Protected Helper Methods:
+  - `validateFile(mixed $file): bool` - Validates FileInterface objects
+  - `validateFileUri(string $file_uri): bool` - Security check for URI schemes
   - `getLogger(): LoggerChannelInterface` - Returns logger channel
   - `getFileCacheTags(string $file_id): array` - Returns cache tags for invalidation
 

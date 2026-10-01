@@ -185,7 +185,7 @@ class ProfileMetaBlock extends BlockBase implements ContainerFactoryPluginInterf
     // The form field is defined and added to the form array here.
     $form['image_orientation'] = [
       '#type' => 'select',
-      '#title' => $this->t('Image orientation'),
+      '#title' => $this->t('Image Orientation'),
       '#default_value' => $config['image_orientation'] ?? 'portrait',
       '#options' => [
         'landscape' => $this->t('Landscape'),
@@ -195,7 +195,7 @@ class ProfileMetaBlock extends BlockBase implements ContainerFactoryPluginInterf
 
     $form['image_style'] = [
       '#type' => 'select',
-      '#title' => $this->t('Image style'),
+      '#title' => $this->t('Image Style'),
       '#default_value' => $config['image_style'] ?? 'inline',
       '#options' => [
         'inline' => $this->t('Inline'),
@@ -205,7 +205,7 @@ class ProfileMetaBlock extends BlockBase implements ContainerFactoryPluginInterf
 
     $form['image_alignment'] = [
       '#type' => 'select',
-      '#title' => $this->t('Image alignment'),
+      '#title' => $this->t('Image Alignment'),
       '#default_value' => $config['image_alignment'] ?? 'left',
       '#options' => [
         'left' => $this->t('Left'),

@@ -80,6 +80,14 @@ source:
       # This would be an int, but it is too long for the DB
       type: string
 process:
+  # Reuse a term the events import already created for this place name.
+  tid:
+    plugin: entity_lookup
+    source: place_name
+    value_key: name
+    bundle_key: vid
+    bundle: event_place
+    entity_type: taxonomy_term
   name: place_name
   field_localist_id: place_id
   field_address/country_code: country_code
