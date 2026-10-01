@@ -80,7 +80,7 @@ class EmptyExposedFilterMessageTest extends UnitTestCase {
     $this->assertSame([], $element['#options']);
     $this->assertTrue($element['#disabled']);
     $this->assertTrue($element['#chosen']);
-    $message = 'There are no terms available to filter by.';
+    $message = 'No options available.';
     $placeholder = $element['#attributes']['data-placeholder'];
     $this->assertSame($message, (string) $placeholder);
     $this->assertSame($message, (string) $element['#attributes']['title']);

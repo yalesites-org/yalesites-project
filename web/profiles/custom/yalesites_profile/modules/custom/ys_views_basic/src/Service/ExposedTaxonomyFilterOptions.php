@@ -156,7 +156,7 @@ class ExposedTaxonomyFilterOptions {
    *   A Form API select element.
    */
   public static function emptyFilterElement($title): array {
-    $message = t('There are no terms available to filter by.');
+    $message = t('No options available.');
     return [
       '#type' => 'select',
       '#title' => $title,

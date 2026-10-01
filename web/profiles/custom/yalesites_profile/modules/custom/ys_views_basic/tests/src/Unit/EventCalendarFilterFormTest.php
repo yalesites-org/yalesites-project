@@ -106,8 +106,8 @@ class EventCalendarFilterFormTest extends UnitTestCase {
     $this->assertSame([], $element['#options']);
     $this->assertTrue($element['#disabled']);
     $this->assertTrue($element['#chosen']);
-    $this->assertSame('There are no terms available to filter by.', (string) $element['#attributes']['data-placeholder']);
-    $this->assertSame('There are no terms available to filter by.', (string) $element['#attributes']['title']);
+    $this->assertSame('No options available.', (string) $element['#attributes']['data-placeholder']);
+    $this->assertSame('No options available.', (string) $element['#attributes']['title']);
   }
 
   /**
