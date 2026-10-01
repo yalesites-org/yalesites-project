@@ -10,6 +10,7 @@ use Drupal\Core\Entity\Display\EntityViewDisplayInterface;
 use Drupal\Core\Form\FormStateInterface;
 use Drupal\node\NodeInterface;
 use Drupal\views\ViewExecutable;
+use Drupal\ys_views_basic\Service\ExposedTaxonomyFilterOptions;
 use Drupal\ys_views_basic\ViewsBasicManager;
 
 /**
@@ -27,12 +28,110 @@ function ys_views_basic_theme_suggestions_block_alter(array &$suggestions, array
   if (($variables['elements']['#base_plugin_id'] ?? NULL) !== 'inline_block') {
     return;
   }
-  $bundle = $variables['elements']['#derivative_plugin_id'] ?? NULL;
+  $bundle = _ys_views_basic_inline_block_bundle($variables['elements'], $variables['elements']['#derivative_plugin_id'] ?? NULL);
   if ($bundle !== NULL && isset(ViewsBasicManager::LISTING_BUNDLES[$bundle])) {
     // Appended last so it takes priority over the (template-less) per-bundle
     // suggestion and resolves to block--inline-block--view.html.twig.
-    $suggestions[] = 'block__inline_block__view';
+    // Resource listings (#1723) reuse the old resource_view block's template
+    // instead: its ys-resource-view wrapper is styled differently from
+    // ys-view, and ys_views_basic_preprocess_block() hands it the params
+    // field under the name it prints.
+    // @todo Removed with ys_views_content_resources in the follow-up to
+    //   yalesites-org/YaleSites-Internal#1723, once Atomic reads these bundles.
+    $suggestions[] = _ys_views_basic_is_resource_listing($bundle)
+      ? 'block__inline_block__resource_view'
+      : 'block__inline_block__view';
   }
+}
+
+/**
+ * Implements hook_preprocess_HOOK() for block.
+ *
+ * Atomic's block--inline-block--resource-view.html.twig prints
+ * content.field_view_resource_params, the old resource_view bundle's params
+ * field. The resource listing bundles store theirs in field_view_params, so
+ * the rendered field is handed over under the name the template reads (#1723).
+ *
+ * @todo Remove with ys_views_content_resources in the follow-up to
+ *   yalesites-org/YaleSites-Internal#1723, once Atomic reads field_view_params.
+ */
+function ys_views_basic_preprocess_block(array &$variables): void {
+  $bundle = _ys_views_basic_inline_block_bundle($variables['elements'] ?? [], $variables['derivative_plugin_id'] ?? NULL);
+  if (($variables['base_plugin_id'] ?? NULL) !== 'inline_block'
+    || !_ys_views_basic_is_resource_listing($bundle)
+    || !isset($variables['content']['field_view_params'])) {
+    return;
+  }
+  $variables['content']['field_view_resource_params'] = $variables['content']['field_view_params'];
+  unset($variables['content']['field_view_params']);
+}
+
+/**
+ * Implements hook_theme_suggestions_HOOK_alter() for views_view.
+ *
+ * The resource scaffold view renders through atomic's content_resources view
+ * template, so a migrated resource listing keeps its markup (#1723).
+ *
+ * @todo Remove with ys_views_content_resources in the follow-up to
+ *   yalesites-org/YaleSites-Internal#1723, once Atomic has a template for it.
+ */
+function ys_views_basic_theme_suggestions_views_view_alter(array &$suggestions, array $variables): void {
+  if ($variables['view']->id() === 'views_basic_scaffold_resources') {
+    $suggestions[] = 'views_view__content_resources';
+  }
+}
+
+/**
+ * Implements hook_theme_suggestions_HOOK_alter() for form.
+ *
+ * As above, for the resource scaffold view's exposed filter form: atomic
+ * styles form--views--content-resources.html.twig, which formdazzle only
+ * suggests for the content_resources view itself. ViewsExposedForm sets the
+ * form's #theme from ViewExecutable::buildThemeFunctions(), which always
+ * includes views_exposed_form__{view id}.
+ *
+ * @todo Remove with ys_views_content_resources in the follow-up to
+ *   yalesites-org/YaleSites-Internal#1723, once Atomic has a template for it.
+ */
+function ys_views_basic_theme_suggestions_form_alter(array &$suggestions, array $variables): void {
+  if (in_array('views_exposed_form__views_basic_scaffold_resources', (array) ($variables['element']['#theme'] ?? []), TRUE)) {
+    $suggestions[] = 'form__views__content_resources';
+  }
+}
+
+/**
+ * Returns the bundle of the block content an inline block renders.
+ *
+ * Read from the rendered entity when the build carries it, so a placement
+ * whose cached plugin id still names a migrated block's old bundle (e.g. a
+ * node cached as inline_block:resource_view before deploy_10003 rewrote it)
+ * is still recognised by its real bundle. Falls back to the derivative id.
+ *
+ * @param array $elements
+ *   The block render element.
+ * @param string|null $derivative
+ *   The inline block derivative id (the bundle named by the plugin id).
+ *
+ * @return string|null
+ *   The block content bundle id.
+ */
+function _ys_views_basic_inline_block_bundle(array $elements, ?string $derivative): ?string {
+  $block = $elements['content']['#block_content'] ?? NULL;
+  return $block instanceof BlockContentInterface ? $block->bundle() : $derivative;
+}
+
+/**
+ * Returns whether a block content bundle is a resource listing bundle.
+ *
+ * @param string|null $bundle
+ *   The block content bundle id.
+ *
+ * @return bool
+ *   TRUE for the resource_* listing bundles.
+ */
+function _ys_views_basic_is_resource_listing(?string $bundle): bool {
+  return $bundle !== NULL
+    && (ViewsBasicManager::LISTING_BUNDLES[$bundle]['content_type'] ?? NULL) === ViewsBasicManager::CONTENT_TYPE_RESOURCE;
 }
 
 /**
@@ -114,11 +213,30 @@ function ys_views_basic_views_data_alter(array &$data) {
       'id' => 'post_year_filter',
     ],
   ];
+  // Also registered by ys_views_content_resources until that module is
+  // removed; the two definitions are identical (#1723).
+  $data['node_field_data']['resource_year_filter'] = [
+    'title' => t('Published Year'),
+    'filter' => [
+      'help' => t('Filter resources by year based on published date.'),
+      'id' => 'resource_year_filter',
+    ],
+  ];
   $data['node_field_data']['post_publish_date'] = [
     'title' => t('Post Publish Date'),
     'filter' => [
       'help' => t('Excludes posts whose publish date is in the future.'),
       'id' => 'post_publish_date',
+    ],
+  ];
+
+  // The resource search swapped in when a block selects "Authors"; see
+  // ViewsBasicManager::applyResourceFilters().
+  $data['views']['resource_author_combine'] = [
+    'title' => t('Resource search with authors'),
+    'filter' => [
+      'help' => t('Combine filter that also matches resource author names.'),
+      'id' => 'ys_views_basic_resource_author_combine',
     ],
   ];
 
@@ -132,6 +250,28 @@ function ys_views_basic_views_pre_build($view) {
 
   if (empty($view->dom_id)) {
     $view->dom_id = "view_" . $counter++;
+  }
+}
+
+/**
+ * Implements hook_views_post_execute().
+ *
+ * Gives each listing its own copy of every result node. Listings on one page
+ * share node objects through the entity static cache, and
+ * ys_views_basic_views_pre_render() stamps per-block flags onto them that the
+ * node templates only read once the whole page renders. Without a copy, the
+ * last listing's flags apply to every listing showing the same nodes. This
+ * runs before the row plugin builds its render arrays, so they capture the
+ * copies.
+ */
+function ys_views_basic_views_post_execute(ViewExecutable $view): void {
+  if (!in_array($view->id(), ViewsBasicManager::SCAFFOLD_VIEWS, TRUE)) {
+    return;
+  }
+  foreach ($view->result as $row) {
+    if (isset($row->_entity)) {
+      $row->_entity = clone $row->_entity;
+    }
   }
 }
 
@@ -163,6 +303,11 @@ function ys_views_basic_views_pre_render(ViewExecutable $view): void {
         'show_pronouns' => 0,
       ];
     }
+    // Resource details (#1723), with the same fallback.
+    $resource_field_display_options = json_decode($view->args[ViewsBasicManager::viewArgumentIndex('resource_field_display_options')] ?? '');
+    if (!is_object($resource_field_display_options)) {
+      $resource_field_display_options = (object) array_fill_keys(ViewsBasicManager::RESOURCE_FIELD_OPTIONS, 0);
+    }
     // Loop through each row in the view's results and update the node's
     // properties based on show_categories, show_tags and show_thumbnail
     // configuration.
@@ -177,6 +322,17 @@ function ys_views_basic_views_pre_render(ViewExecutable $view): void {
       $row->_entity->show_email = $profile_field_display_options->show_email;
       $row->_entity->show_phone = $profile_field_display_options->show_phone;
       $row->_entity->show_pronouns = $profile_field_display_options->show_pronouns;
+      // Atomic's resource templates read the category flag as show_category
+      // and each resource detail under its own name (#1723).
+      if ($view_id === 'views_basic_scaffold_resources') {
+        // @todo Rename with ys_views_content_resources' removal in the follow-up
+        //   to yalesites-org/YaleSites-Internal#1723, once Atomic reads
+        //   show_categories.
+        $row->_entity->show_category = $field_display_options->show_categories;
+        foreach (ViewsBasicManager::RESOURCE_FIELD_OPTIONS as $resource_option) {
+          $row->_entity->{$resource_option} = $resource_field_display_options->{$resource_option};
+        }
+      }
       // Context-derived heading level for each result card: H3 when the block
       // renders its own heading (the cards nest under it), H2 when the cards
       // are the first heading on the page. The listing node templates read
@@ -478,4 +634,37 @@ function _ys_views_basic_listing_form_tabs(array $element, FormStateInterface $f
   $element['group_user_selection']['#theme_wrappers'] = [];
 
   return $element;
+}
+
+/**
+ * Implements hook_form_views_exposed_form_alter().
+ *
+ * Replaces an exposed taxonomy filter that has no choices with a message.
+ * This replaces the old YaleSites-Internal#162 rule that hid such filters.
+ */
+function ys_views_basic_form_views_exposed_form_alter(array &$form, FormStateInterface $form_state): void {
+  $view = $form_state->get('view');
+  // Same listing family as ys_core_form_views_exposed_form_alter().
+  $listing_views = [...ViewsBasicManager::SCAFFOLD_VIEWS, 'content_resources'];
+  if (!in_array($view->id(), $listing_views, TRUE)) {
+    return;
+  }
+  foreach ($view->filter as $handler) {
+    if ($handler->getPluginId() !== 'taxonomy_index_tid' || !$handler->isExposed()) {
+      continue;
+    }
+    $identifier = $handler->options['expose']['identifier'];
+    if (($form[$identifier]['#type'] ?? '') !== 'select') {
+      continue;
+    }
+    // Core adds an "All" option to single-value, non-required filters.
+    if (array_diff_key($form[$identifier]['#options'] ?? [], ['All' => TRUE])) {
+      continue;
+    }
+    // Carry over #weight only when the select had one: adding a default 0
+    // moves the message ahead of its unweighted siblings.
+    $form[$identifier] = ExposedTaxonomyFilterOptions::emptyFilterElement(
+      $form[$identifier]['#title'] ?? $handler->options['expose']['label']
+    ) + array_intersect_key($form[$identifier], array_flip(['#weight']));
+  }
 }

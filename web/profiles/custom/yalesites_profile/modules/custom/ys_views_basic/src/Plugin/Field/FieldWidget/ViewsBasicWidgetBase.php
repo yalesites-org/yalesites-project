@@ -817,10 +817,11 @@ abstract class ViewsBasicWidgetBase extends WidgetBase implements ContainerFacto
    * exposed filters grow as their settings are disclosed, and they are no
    * longer in the same row.
    *
-   * The field_options, event_field_options, post_field_options and
-   * profile_field_options groups (each built separately — all but the first
-   * only by the per-type widgets) are gathered into one "Result content"
-   * fieldset here rather than at build time, so the per-type widgets keep
+   * The field_options, event_field_options, post_field_options,
+   * profile_field_options and resource_field_options groups (each built
+   * separately — all but the first only by the per-type widgets) are
+   * gathered into one "Result content" fieldset here rather than at build
+   * time, so the per-type widgets keep
    * writing their sibling groups exactly as before; only the render tree
    * changes. flattenBuiltElements() already descends through any structural
    * wrapper, so massageFormValues() and massageEntitySpecificParams() find
@@ -839,7 +840,13 @@ abstract class ViewsBasicWidgetBase extends WidgetBase implements ContainerFacto
    *   The group with a display row wrapping the field options and preview.
    */
   public static function groupFieldDisplayRow(array $element, FormStateInterface $form_state): array {
-    $field_option_keys = ['field_options', 'event_field_options', 'post_field_options', 'profile_field_options'];
+    $field_option_keys = [
+      'field_options',
+      'event_field_options',
+      'post_field_options',
+      'profile_field_options',
+      'resource_field_options',
+    ];
     $field_options = [];
     foreach ($field_option_keys as $key) {
       if (isset($element[$key])) {

@@ -1,9 +1,11 @@
 # YaleSites Views Basic
 
 ## Description
+
 The View Basic module is a custom utility, built on Drupal Views, that gives advanced users with the ability to generate dynamic content lists based on content metadata. This feature lets users curate the collections of news, events, people, and pages across various sections of their website more effectively. This module serves as a valuable resource for authors seeking to create multiple content streams, leveraging taxonomy and other filters to tailor their content displays. It gives them the ability to create custom queries with little training and in a no-code interface.
 
 ## Features
+
 - **Field Plugin**: Data describing a view is stored within a custom schema as a serialized object. This modular design allows for seamless addition and removal of features without compromising metadata storage integrity.
 - **Field Widget**: Users interact with a specialized form for constructing queries and render logic using a user-friendly, no-code interface. Natural language and intuitive icons simplify query building, requiring minimal training for authors.
 - **Field Formatter**: Metadata is rendered consistently through custom templates, blocks, display modes, and a Drupal View. This consistency ensures that content creators construct Views that align with the YaleSites Design System.
@@ -17,12 +19,12 @@ block whose form branched on content type and display mode, there are now **13
 listing block content types**, one per `(content type, display mode)` pair,
 grouped in the Layout Builder picker by content type:
 
-| Group | Block content types |
-|---|---|
-| Post Listings | `post_card`, `post_list_item`, `post_condensed` |
-| Event Listings | `event_card`, `event_list_item`, `event_condensed`, `event_calendar` *(pre-existing)* |
-| People Listings | `profile_card`, `profile_list_item`, `profile_condensed` |
-| Page Listings | `page_card`, `page_list_item`, `page_condensed` |
+| Group           | Block content types                                                                   |
+| --------------- | ------------------------------------------------------------------------------------- |
+| Post Listings   | `post_card`, `post_list_item`, `post_condensed`                                       |
+| Event Listings  | `event_card`, `event_list_item`, `event_condensed`, `event_calendar` _(pre-existing)_ |
+| People Listings | `profile_card`, `profile_list_item`, `profile_condensed`                              |
+| Page Listings   | `page_card`, `page_list_item`, `page_condensed`                                       |
 
 ### Bundle naming
 
@@ -91,6 +93,62 @@ The former `profile_directory` bundle is retired (#1682): the
 its instances to `profile_card` with small cards and department, email and
 phone switched on, and 10001/10002 send directory listings straight to
 `profile_card`. See [`CHANGELOG.md`](CHANGELOG.md).
+
+## Resource author search and excluded filter terms
+
+### Authors search option
+
+The resource widget's **Search Fields** include an **Authors** option. It is
+not a field: when it is selected, `ViewsBasicManager::applyResourceFilters()`
+drops it from the combine filter's fields and swaps that filter for
+`ResourceAuthorCombine` (`ys_views_basic_resource_author_combine`, registered
+on the `views` table in `ys_views_basic_views_data_alter()`). The filter keeps
+the `combine` key and the `search` identifier, so stored blocks and URLs keep
+working. It matches the selected fields as core does, OR any author name:
+the title of a Profile referenced by `field_authors`, or either name column of
+`field_nonaffiliated_authors`. Authors are matched with `EXISTS` subqueries, not
+joins, so a resource with several authors is still one row and the pager count
+stays right. Only the `contains`, `word` and `allwords` operators search
+authors; the resource view uses `contains`. With Authors off, the view's own
+combine filter runs unchanged.
+
+### Exposed taxonomy filter options
+
+`ExposedTaxonomyFilterOptions` (service
+`ys_views_basic.exposed_taxonomy_filter_options`) constrains what an exposed
+`taxonomy_index_tid` filter offers. Two constraints, alone or together:
+
+- **Parent term** - only that term's descendants are offered (the existing
+  "Filter by parent term" behaviour).
+- **Excluded terms** - any term the editor used to _exclude content_ is removed
+  from the dropdown. A visitor choosing such a term would always get zero
+  results, so it is never offered.
+
+The vocabulary is read from the filter's own `vid` setting, so there is no
+filter-to-vocabulary map to maintain. Excluded ids from other vocabularies
+(for example tags) are ignored. When nothing constrains a filter (no parent
+and no excluded id in its vocabulary) it is left untouched, so existing blocks
+keep offering the whole vocabulary. A constrained filter with no `vid` is
+logged as a warning on the `ys_views_basic` channel and left as is.
+
+```php
+$filters = $view->getDisplay()->getOption('filters');
+// Plain term ids. Unwrap legacy ['target_id' => id] values first.
+$excluded = array_map(fn ($t) => (int) (is_array($t) ? $t['target_id'] : $t), $params['filters']['terms_exclude'] ?? []);
+
+// Category: parent term + exclusions.
+$this->exposedTaxonomyFilterOptions->apply($filters, 'field_category_target_id', $excluded, $params['category_included_terms'] ?? NULL);
+
+// Any other taxonomy filter: exclusions only.
+$this->exposedTaxonomyFilterOptions->apply($filters, 'field_audience_target_id', $excluded);
+
+$view->getDisplay()->setOption('filters', $filters);
+```
+
+`ViewsBasicManager::setupView()` runs every exposed taxonomy filter of every
+listing type (post, event, page, profile, resource) through `apply()`. The
+category or affiliation filter and the custom vocabulary filter pass their
+included parent term; the rest pass exclusions only.
 
 ## Running tests
 

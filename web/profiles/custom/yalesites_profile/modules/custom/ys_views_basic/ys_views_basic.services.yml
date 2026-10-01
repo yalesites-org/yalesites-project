@@ -1,8 +1,17 @@
 services:
+  logger.channel.ys_views_basic:
+    parent: logger.channel_base
+    arguments: ['ys_views_basic']
+
   # Service for managing views basic plugins.
   ys_views_basic.views_basic_manager:
     class: Drupal\ys_views_basic\ViewsBasicManager
-    arguments: ['@entity_type.manager', '@entity_display.repository', '@current_route_match', '@cache_tags.invalidator', '@views.executable']
+    arguments: ['@entity_type.manager', '@entity_display.repository', '@current_route_match', '@cache_tags.invalidator', '@views.executable', '@ys_views_basic.exposed_taxonomy_filter_options']
+
+  # Constrains exposed taxonomy filter options (parent term, excluded terms).
+  ys_views_basic.exposed_taxonomy_filter_options:
+    class: Drupal\ys_views_basic\Service\ExposedTaxonomyFilterOptions
+    arguments: ['@entity_type.manager', '@logger.channel.ys_views_basic']
 
   ys_views_basic.events_calendar:
     class: Drupal\ys_views_basic\Service\EventsCalendar

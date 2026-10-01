@@ -64,6 +64,37 @@
       suffix: "[profile_field_options][show_pronouns]",
       showWhenChecked: true,
     },
+    // Resource details (#1723).
+    {
+      part: ".vb-preview__teaser",
+      suffix: "[resource_field_options][show_teaser_text]",
+      showWhenChecked: true,
+    },
+    {
+      part: ".vb-preview__publish-date",
+      suffix: "[resource_field_options][show_publish_date]",
+      showWhenChecked: true,
+    },
+    {
+      part: ".vb-preview__authors",
+      suffix: "[resource_field_options][show_authors]",
+      showWhenChecked: true,
+    },
+    {
+      part: ".vb-preview__discipline",
+      suffix: "[resource_field_options][show_discipline]",
+      showWhenChecked: true,
+    },
+    {
+      part: ".vb-preview__journal-name",
+      suffix: "[resource_field_options][show_journal_name]",
+      showWhenChecked: true,
+    },
+    {
+      part: ".vb-preview__journal-issue",
+      suffix: "[resource_field_options][show_journal_issue]",
+      showWhenChecked: true,
+    },
   ];
 
   /**

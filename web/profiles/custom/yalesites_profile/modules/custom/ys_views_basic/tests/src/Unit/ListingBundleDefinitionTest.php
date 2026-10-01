@@ -21,10 +21,12 @@ class ListingBundleDefinitionTest extends UnitTestCase {
    * The capability row each bundle must map to.
    *
    * `[content type, view mode, supports_thumbnail, supports_card_size]`.
-   * This pins the full 12-bundle grid (ADR DR-2/DR-4). Card and list_item
+   * This pins the full 16-bundle grid (ADR DR-2/DR-4). Card and list_item
    * support the teaser image; condensed does not. Only the card
    * grid takes a card-size dial (#1648) — the other design options lay
-   * themselves out.
+   * themselves out. Resources (#1723) keep exactly the options their old
+   * resource_view widget offered: a teaser image on every mode but condensed,
+   * and no card-size dial, which that widget never had.
    */
   const EXPECTED_BUNDLES = [
     'post_card' => ['post', 'card', TRUE, TRUE],
@@ -39,6 +41,10 @@ class ListingBundleDefinitionTest extends UnitTestCase {
     'profile_card' => ['profile', 'card', TRUE, TRUE],
     'profile_list_item' => ['profile', 'list_item', TRUE, FALSE],
     'profile_condensed' => ['profile', 'condensed', FALSE, FALSE],
+    'resource_card' => ['resource', 'card', TRUE, FALSE],
+    'resource_portrait_grid' => ['resource', 'portrait_grid', TRUE, FALSE],
+    'resource_list_item' => ['resource', 'list_item', TRUE, FALSE],
+    'resource_condensed' => ['resource', 'condensed', FALSE, FALSE],
   ];
 
   /**
@@ -51,7 +57,7 @@ class ListingBundleDefinitionTest extends UnitTestCase {
   ];
 
   /**
-   * The definition covers exactly the 12 expected listing bundles.
+   * The definition covers exactly the 16 expected listing bundles.
    *
    * @covers ::getListingBundleDefinition
    */
@@ -59,7 +65,7 @@ class ListingBundleDefinitionTest extends UnitTestCase {
     $this->assertSame(
       array_keys(self::EXPECTED_BUNDLES),
       array_keys(ViewsBasicManager::LISTING_BUNDLES),
-      'The listing definition contains exactly the 12 expected bundles.'
+      'The listing definition contains exactly the 16 expected bundles.'
     );
   }
 
@@ -95,6 +101,19 @@ class ListingBundleDefinitionTest extends UnitTestCase {
   }
 
   /**
+   * The portrait grid view mode exists only for resources (#1723).
+   *
+   * @covers ::getListingBundleDefinition
+   */
+  public function testPortraitGridIsResourceOnly() {
+    $portrait_bundles = array_filter(
+      ViewsBasicManager::LISTING_BUNDLES,
+      fn($definition) => $definition['view_mode'] === 'portrait_grid'
+    );
+    $this->assertSame(['resource_portrait_grid'], array_keys($portrait_bundles));
+  }
+
+  /**
    * An unknown bundle throws rather than guessing a default (ADR DR-2).
    *
    * @covers ::getListingBundleDefinition
@@ -115,6 +134,10 @@ class ListingBundleDefinitionTest extends UnitTestCase {
     $this->assertSame('event_condensed', ViewsBasicManager::migrationTargetBundle('event', 'condensed'));
     // The retired profile directory lands on the profile card grid (#1682).
     $this->assertSame('profile_card', ViewsBasicManager::migrationTargetBundle('profile', 'directory'));
+    $this->assertSame('resource_portrait_grid', ViewsBasicManager::migrationTargetBundle('resource', 'portrait_grid'));
+    $this->assertSame('resource_condensed', ViewsBasicManager::migrationTargetBundle('resource', 'condensed'));
+    // Portrait grid is resource-only.
+    $this->assertNull(ViewsBasicManager::migrationTargetBundle('post', 'portrait_grid'));
     // Calendar is not a listing bundle (handled by deploy_10000).
     $this->assertNull(ViewsBasicManager::migrationTargetBundle('event', 'calendar'));
     // Directory only ever existed for profiles.
