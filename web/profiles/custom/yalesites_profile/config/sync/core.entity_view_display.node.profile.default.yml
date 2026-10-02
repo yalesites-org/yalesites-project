@@ -79,6 +79,7 @@ third_party_settings:
         layout_settings:
           label: 'Content Section'
           context_mapping: {  }
+          divider: 1
         components:
           c60f8771-bc1b-46f1-85f5-0bb81f03eb82:
             uuid: c60f8771-bc1b-46f1-85f5-0bb81f03eb82
@@ -118,6 +119,7 @@ third_party_settings:
       allowed_layouts:
         - layout_onecol
         - ys_layout_two_column
+        - ys_layout_two_column_30_70
       denylisted_blocks:
         'Custom block types':
           - wrapped_text_callout
@@ -148,6 +150,7 @@ third_party_settings:
       allowed_layouts:
         - layout_onecol
         - ys_layout_two_column
+        - ys_layout_two_column_30_70
       allowlisted_blocks:
         layout_onecol:
           all_regions:
@@ -155,6 +158,69 @@ third_party_settings:
               - profile_contact_block
               - ys_taxonomy_display_block
         ys_layout_two_column:
+          content:
+            'Custom block types':
+              - accordion
+              - button_link
+              - divider
+              - embed
+              - event_list
+              - gallery
+              - image
+              - link_grid
+              - media_grid
+              - post_list
+              - pull_quote
+              - reference_card
+              - tabs
+              - text
+              - video
+              - wrapped_text_callout
+            'Inline blocks':
+              - 'inline_block:accordion'
+              - 'inline_block:button_link'
+              - 'inline_block:event_list'
+              - 'inline_block:divider'
+              - 'inline_block:embed'
+              - 'inline_block:gallery'
+              - 'inline_block:image'
+              - 'inline_block:link_grid'
+              - 'inline_block:media_grid'
+              - 'inline_block:post_list'
+              - 'inline_block:pull_quote'
+              - 'inline_block:reference_card'
+              - 'inline_block:tabs'
+              - 'inline_block:text'
+              - 'inline_block:video'
+              - 'inline_block:wrapped_text_callout'
+            'YaleSites Layouts':
+              - profile_contact_block
+          sidebar:
+            'Custom block types':
+              - accordion
+              - button_link
+              - divider
+              - image
+              - link_grid
+              - pull_quote
+              - tabs
+              - text
+              - video
+              - webform
+            'Inline blocks':
+              - 'inline_block:accordion'
+              - 'inline_block:button_link'
+              - 'inline_block:divider'
+              - 'inline_block:image'
+              - 'inline_block:link_grid'
+              - 'inline_block:webform'
+              - 'inline_block:pull_quote'
+              - 'inline_block:tabs'
+              - 'inline_block:text'
+              - 'inline_block:video'
+            'YaleSites Layouts':
+              - profile_contact_block
+        ys_layout_two_column_30_70:
           content:
             'Custom block types':
               - accordion
@@ -226,6 +292,34 @@ third_party_settings:
               - 'inline_block:wrapped_text_callout'
       restricted_categories:
         ys_layout_two_column:
+          sidebar:
+            - AddToAny
+            - 'Chaos Tools'
+            - 'Content fields'
+            - 'Custom blocks'
+            - Forms
+            - Help
+            - 'Lists (Views)'
+            - Menus
+            - System
+            - Webform
+            - 'YaleSites Core'
+            - 'YaleSites alert'
+            - core
+          content:
+            - AddToAny
+            - 'Chaos Tools'
+            - 'Content fields'
+            - Forms
+            - Help
+            - 'Lists (Views)'
+            - Menus
+            - System
+            - Webform
+            - 'YaleSites Core'
+            - 'YaleSites alert'
+            - core
+        ys_layout_two_column_30_70:
           sidebar:
             - AddToAny
             - 'Chaos Tools'

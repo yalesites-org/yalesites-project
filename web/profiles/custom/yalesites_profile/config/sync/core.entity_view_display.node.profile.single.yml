@@ -58,6 +58,7 @@ third_party_settings:
       allowed_layouts:
         - layout_onecol
         - ys_layout_two_column
+        - ys_layout_two_column_30_70
       denylisted_blocks: {  }
       allowlisted_blocks:
         'YaleSites Layouts':
@@ -80,6 +81,7 @@ third_party_settings:
       allowed_layouts:
         - layout_onecol
         - ys_layout_two_column
+        - ys_layout_two_column_30_70
       allowlisted_blocks:
         layout_onecol:
           all_regions:
@@ -116,9 +118,68 @@ third_party_settings:
               - 'inline_block:text'
             'YaleSites Layouts':
               - profile_contact_block
+        ys_layout_two_column_30_70:
+          content:
+            'Custom block types':
+              - accordion
+              - button_link
+              - divider
+              - image
+              - pull_quote
+              - reference_card
+              - tabs
+              - text
+              - video
+            'Inline blocks':
+              - 'inline_block:accordion'
+              - 'inline_block:button_link'
+              - 'inline_block:divider'
+              - 'inline_block:image'
+              - 'inline_block:pull_quote'
+              - 'inline_block:reference_card'
+              - 'inline_block:tabs'
+              - 'inline_block:text'
+              - 'inline_block:video'
+            'YaleSites Layouts':
+              - profile_contact_block
+          sidebar:
+            'Custom block types':
+              - text
+            'Inline blocks':
+              - 'inline_block:text'
+            'YaleSites Layouts':
+              - profile_contact_block
       denylisted_blocks: {  }
       restricted_categories:
         ys_layout_two_column:
+          sidebar:
+            - 'Chaos Tools'
+            - 'Content fields'
+            - 'Custom blocks'
+            - Devel
+            - Forms
+            - Help
+            - 'Lists (Views)'
+            - Menus
+            - System
+            - Webform
+            - 'YaleSites Core'
+            - 'YaleSites alert'
+            - core
+          content:
+            - 'Chaos Tools'
+            - 'Content fields'
+            - 'Custom blocks'
+            - Forms
+            - Help
+            - 'Lists (Views)'
+            - Menus
+            - System
+            - Webform
+            - 'YaleSites Core'
+            - 'YaleSites alert'
+            - core
+        ys_layout_two_column_30_70:
           sidebar:
             - 'Chaos Tools'
             - 'Content fields'
