@@ -123,7 +123,9 @@ class YSLayoutOptionsTest extends UnitTestCase {
       ->with($element, $form_state, $complete_form, 'layout_section', 'ys_layout_options')
       ->willReturn($element + ['#processed' => TRUE]);
 
-    $result = $this->layout->processColorPicker($element, $form_state);
+    // Invoke it the way FormBuilder::doBuildForm() calls #after_build
+    // callbacks: $element by value, $form_state by reference.
+    $result = call_user_func_array([$this->layout, 'processColorPicker'], [$element, &$form_state]);
 
     $this->assertTrue($result['#processed']);
   }
