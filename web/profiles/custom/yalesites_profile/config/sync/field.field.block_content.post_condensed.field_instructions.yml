@@ -1,0 +1,25 @@
+uuid: c91d2c08-2059-4d3e-a0c7-384fd532d8aa
+langcode: en
+status: true
+dependencies:
+  config:
+    - block_content.type.post_condensed
+    - field.storage.block_content.field_instructions
+  module:
+    - markup
+id: block_content.post_condensed.field_instructions
+field_name: field_instructions
+entity_type: block_content
+bundle: post_condensed
+label: Instructions
+description: ''
+required: false
+translatable: true
+default_value:
+  - {  }
+default_value_callback: ''
+settings:
+  markup:
+    value: "<p>This block builds a list of Posts automatically. Choose which posts appear and how each one looks — the list updates itself as content is published.</p>\r\n"
+    format: basic_html
+field_type: markup

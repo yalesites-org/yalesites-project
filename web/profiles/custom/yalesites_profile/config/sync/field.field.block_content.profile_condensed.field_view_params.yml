@@ -1,0 +1,25 @@
+uuid: d8908004-0ba2-401e-b62f-7803a88e41ba
+langcode: en
+status: true
+dependencies:
+  config:
+    - block_content.type.profile_condensed
+    - field.storage.block_content.field_view_params
+  module:
+    - ys_views_basic
+id: block_content.profile_condensed.field_view_params
+field_name: field_view_params
+entity_type: block_content
+bundle: profile_condensed
+label: 'View Parameters'
+description: ''
+required: false
+translatable: false
+default_value:
+  -
+    group_params:
+      params: '{"view_mode":"card","filters":{"types":["post"],"terms_include":null,"terms_exclude":null,"event_time_period":"future"},"operator":"+","sort_by":null,"display":null,"limit":0}'
+    params: '{"view_mode":"card","filters":{"types":["post"],"terms_include":null,"terms_exclude":null,"event_time_period":"future"},"field_options":[],"exposed_filter_options":[],"category_filter_label":null,"category_included_terms":null,"operator":"+","sort_by":null,"display":null,"limit":0}'
+default_value_callback: ''
+settings: {  }
+field_type: views_basic_params
