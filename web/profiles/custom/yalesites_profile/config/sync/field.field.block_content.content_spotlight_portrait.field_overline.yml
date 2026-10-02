@@ -10,7 +10,7 @@ field_name: field_overline
 entity_type: block_content
 bundle: content_spotlight_portrait
 label: Overline
-description: 'Short text shown above the heading.'
+description: 'A few words, shown in capital letters above the heading.'
 required: false
 translatable: false
 default_value: {  }

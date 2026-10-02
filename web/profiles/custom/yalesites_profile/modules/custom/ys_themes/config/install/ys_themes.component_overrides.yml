@@ -176,7 +176,6 @@ divider:
       2: 2px
       4: 4px
       8: 8px
-      16: 16px
     default: '1'
 content_spotlight_portrait:
   field_style_position:

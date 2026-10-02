@@ -21,7 +21,7 @@ class EditorOptionsWave1DialsTest extends UnitTestCase {
    * Expected dials: bundle => field => [option keys, default].
    */
   const DIALS = [
-    'divider' => ['field_style_thickness', ['1', '2', '4', '8', '16'], '1'],
+    'divider' => ['field_style_thickness', ['1', '2', '4', '8'], '1'],
     'callout' => ['field_style_variation', ['cta', 'link'], 'cta'],
     'cta_banner' => [
       'field_button_style_consistency',
