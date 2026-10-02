@@ -2,24 +2,25 @@
 
 namespace Drupal\ys_embed\Plugin\Field\FieldWidget;
 
+use Drupal\Core\Field\Attribute\FieldWidget;
 use Drupal\Core\Field\FieldDefinitionInterface;
 use Drupal\Core\Field\FieldItemListInterface;
 use Drupal\Core\Field\WidgetBase;
 use Drupal\Core\Form\FormStateInterface;
 use Drupal\Core\Plugin\ContainerFactoryPluginInterface;
+use Drupal\Core\StringTranslation\TranslatableMarkup;
 use Drupal\Core\Url;
 use Drupal\ys_embed\Plugin\EmbedSourceManager;
 use Symfony\Component\DependencyInjection\ContainerInterface;
 
 /**
  * Plugin implementation of the 'embed_default' widget.
- *
- * @FieldWidget(
- *   id = "embed_default",
- *   label = @Translation("Embed Default Widget"),
- *   field_types = {"embed"}
- * )
  */
+#[FieldWidget(
+  id: 'embed_default',
+  label: new TranslatableMarkup('Embed Default Widget'),
+  field_types: ['embed'],
+)]
 class EmbedDefaultWidget extends WidgetBase implements ContainerFactoryPluginInterface {
 
   /**

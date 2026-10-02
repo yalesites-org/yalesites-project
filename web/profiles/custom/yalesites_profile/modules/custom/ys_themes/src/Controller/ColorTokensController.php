@@ -110,13 +110,13 @@ class ColorTokensController extends ControllerBase {
     $build = [
       '#type' => 'table',
       '#header' => [
-        $this->t('Theme'),
-        $this->t('Slot'),
-        $this->t('Color Name'),
-        $this->t('Swatch'),
-        $this->t('Hex Code'),
-        $this->t('CSS Variable'),
-        $this->t('Token Reference'),
+        ['data' => $this->t('Theme'), 'scope' => 'col'],
+        ['data' => $this->t('Slot'), 'scope' => 'col'],
+        ['data' => $this->t('Color Name'), 'scope' => 'col'],
+        ['data' => $this->t('Swatch'), 'scope' => 'col'],
+        ['data' => $this->t('Hex Code'), 'scope' => 'col'],
+        ['data' => $this->t('CSS Variable'), 'scope' => 'col'],
+        ['data' => $this->t('Token Reference'), 'scope' => 'col'],
       ],
       '#rows' => $rows,
       '#attributes' => [

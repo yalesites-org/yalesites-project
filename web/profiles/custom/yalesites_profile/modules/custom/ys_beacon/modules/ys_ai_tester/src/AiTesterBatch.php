@@ -270,6 +270,29 @@ class AiTesterBatch {
    * Skipped for the first question of a run, where there is nothing to pace
    * against.
    *
+   * The sleep is blocking, and that is a deliberate, recorded trade-off rather
+   * than an oversight — it holds a PHP-FPM worker for the duration. The
+   * alternative, a queue with a per-item delay, was considered and rejected:
+   *
+   * - The worker is already held. This callback's next act is a synchronous
+   *   HTTP request to an assistant that takes seconds; the default 500 ms pause
+   *   is a small fraction of time the worker spends blocked either way. Moving
+   *   to a queue would not free the worker, only move where it blocks.
+   * - Batch semantics are load-bearing here. The progress bar,
+   *   ::wholeRunStatus() and the resume and rerun forms all read a run's state
+   *   as a batch progresses; a queue would have to reimplement each of those,
+   *   for a tool whose whole value is watching a run finish.
+   * - The exposure is bounded. The tester is behind 'use ys ai tester' plus the
+   *   Beacon authorization check, so it is a handful of platform operators
+   *   running it occasionally, not a visitor-facing path that could exhaust the
+   *   pool. The delay is also operator-tunable and clamped by
+   *   AiTesterRetry::MAX_QUESTION_DELAY_MS, with 0 turning it off.
+   *
+   * Revisit if the tester ever runs unattended (on cron, or triggered by
+   * something other than a person watching the progress bar) — at that point
+   * nothing needs the batch's interactivity and a delayed queue is the better
+   * shape.
+   *
    * @param int $delta
    *   Position of this question within the run (0-based).
    */
