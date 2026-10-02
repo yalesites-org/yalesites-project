@@ -146,7 +146,7 @@ class YSLayoutOptions extends LayoutDefault implements ContainerFactoryPluginInt
    *   The processed form element.
    */
   public function processColorPicker(
-    array &$element,
+    array $element,
     FormStateInterface $form_state,
   ) {
     // Get the complete form from form state (required for after_build).
