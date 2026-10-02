@@ -75,3 +75,30 @@ facts_icon_preview:
     - core/jquery
     - core/once
     - chosen/chosen
+
+# Editor affordances for the contrib Office Hours widget -- the Closed column
+# and the per-row operations menu (js/office-hours-widget.js).
+#
+# Attached by ys_core_field_widget_complete_form_alter(), which travels with the
+# widget's own render array so it reaches the Layout Builder "Configure block"
+# modal as well as the standalone block form. A theme's `libraries:` entries
+# would not: system_page_attachments() only runs for a full HTML page render,
+# and `libraries-extend` only applies while that theme is the active one, while
+# Layout Builder renders in the front-end theme over AJAX.
+#
+# Lives here rather than in ys_admin_theme because a module cannot declare a
+# dependency on a theme, and core resolves a missing library by silently
+# dropping it -- LibraryDiscovery::getLibraryByName() returns FALSE and
+# AssetResolver::filterLibrariesByType() unsets it with no exception and no log
+# entry, so the affordance would just disappear. The Gin-specific rules in the
+# CSS are all either scoped to `.gin--dark-mode` or use var() fallbacks, so they
+# no-op under another admin theme.
+office_hours_widget:
+  css:
+    theme:
+      css/office-hours-widget.css: {}
+  js:
+    js/office-hours-widget.js: {}
+  dependencies:
+    - core/drupal
+    - core/once

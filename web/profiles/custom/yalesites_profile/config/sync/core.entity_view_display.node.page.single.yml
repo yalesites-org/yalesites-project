@@ -74,6 +74,7 @@ third_party_settings:
               - pull_quote
               - text
               - video
+              - office_hours
             'Inline blocks':
               - 'inline_block:button_link'
               - 'inline_block:divider'
@@ -83,6 +84,7 @@ third_party_settings:
               - 'inline_block:pull_quote'
               - 'inline_block:text'
               - 'inline_block:video'
+              - 'inline_block:office_hours'
         ys_layout_two_column:
           content:
             'Custom block types':
@@ -103,6 +105,7 @@ third_party_settings:
               - text
               - video
               - wrapped_text_callout
+              - office_hours
             'Inline blocks':
               - 'inline_block:accordion'
               - 'inline_block:button_link'
@@ -121,6 +124,7 @@ third_party_settings:
               - 'inline_block:text'
               - 'inline_block:video'
               - 'inline_block:wrapped_text_callout'
+              - 'inline_block:office_hours'
             'YaleSites Layouts': {  }
           sidebar:
             'Custom block types':
@@ -132,6 +136,7 @@ third_party_settings:
               - text
               - video
               - webform
+              - office_hours
             'Inline blocks':
               - 'inline_block:button_link'
               - 'inline_block:divider'
@@ -141,6 +146,7 @@ third_party_settings:
               - 'inline_block:pull_quote'
               - 'inline_block:text'
               - 'inline_block:video'
+              - 'inline_block:office_hours'
         ys_layout_two_column_50_50:
           all_regions:
             'Custom block types':
@@ -155,6 +161,7 @@ third_party_settings:
               - text
               - video
               - webform
+              - office_hours
             'Inline blocks':
               - 'inline_block:accordion'
               - 'inline_block:button_link'
@@ -167,6 +174,7 @@ third_party_settings:
               - 'inline_block:tabs'
               - 'inline_block:text'
               - 'inline_block:video'
+              - 'inline_block:office_hours'
       denylisted_blocks: {  }
       restricted_categories:
         ys_layout_two_column:

@@ -1,0 +1,38 @@
+uuid: 9e0a721a-5a4c-4592-958e-7327738a2bb5
+langcode: en
+status: true
+dependencies:
+  config:
+    - block_content.type.office_hours
+    - field.field.block_content.office_hours.field_office_hours
+  module:
+    - hide_revision_field
+    - office_hours
+id: block_content.office_hours.default
+targetEntityType: block_content
+bundle: office_hours
+mode: default
+content:
+  field_office_hours:
+    type: office_hours_exceptions
+    weight: 1
+    region: content
+    settings:
+      collapsed: false
+      collapsed_exceptions: true
+    third_party_settings: {  }
+  revision_log:
+    type: hide_revision_field_log_widget
+    weight: 80
+    region: content
+    settings:
+      rows: 5
+      placeholder: ''
+      show: true
+      default: ''
+      permission_based: false
+      allow_user_settings: true
+      hide_revision: false
+    third_party_settings: {  }
+hidden:
+  info: true
