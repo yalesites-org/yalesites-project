@@ -13,6 +13,7 @@
     "husky:commit-msg": "commitlint --edit $1",
     "husky:pre-commit": "lint-staged",
     "lint": "npm run lint:js && npm run lint:php && npm run lint:styles",
+    "sdc:generate": "node scripts/sdc/generate-sdc.js",
     "lint:js": "eslint --color --no-error-on-unmatched-pattern --format stylish {web/modules/custom,web/themes/custom,web/profiles/custom}/**/*.js",
     "lint:php": "composer lint:php",
     "lint:styles": "stylelint --color {web/modules/custom,web/themes/contrib/atomic,web/themes/custom,web/profiles/custom}/**/*.scss",
