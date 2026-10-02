@@ -1,0 +1,19 @@
+uuid: 52fe67d4-a987-4d8f-9e22-094a1ba49cbe
+langcode: en
+status: true
+dependencies:
+  config:
+    - block_content.type.content_spotlight
+    - field.storage.block_content.field_overline
+id: block_content.content_spotlight.field_overline
+field_name: field_overline
+entity_type: block_content
+bundle: content_spotlight
+label: Overline
+description: 'Short text shown above the heading.'
+required: false
+translatable: false
+default_value: {  }
+default_value_callback: ''
+settings: {  }
+field_type: string

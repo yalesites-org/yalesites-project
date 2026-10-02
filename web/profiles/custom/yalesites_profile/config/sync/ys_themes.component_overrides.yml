@@ -13,6 +13,11 @@ callout:
       left: Left
       center: Center
     default: center
+  field_style_variation:
+    values:
+      cta: Button
+      link: 'Text link'
+    default: cta
 button_link:
   field_button_alignment:
     values:
@@ -48,6 +53,13 @@ cta_banner:
       site: Contained
       full: 'Full Width'
     default: site
+  field_button_style_consistency:
+    values:
+      both_filled: 'Both Filled'
+      both_outline: 'Both Outline'
+      filled_outline: 'Filled, Outline'
+      outline_filled: 'Outline, Filled'
+    default: filled_outline
 pull_quote:
   field_style_variation:
     values:
@@ -158,6 +170,14 @@ divider:
       50%: 50
       25%: 25
     default: 100%
+  field_style_thickness:
+    values:
+      1: 1px
+      2: 2px
+      4: 4px
+      8: 8px
+      16: 16px
+    default: '1'
 content_spotlight_portrait:
   field_style_position:
     values:
