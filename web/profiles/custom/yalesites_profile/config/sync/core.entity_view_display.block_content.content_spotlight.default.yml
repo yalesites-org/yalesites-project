@@ -12,6 +12,7 @@ dependencies:
     - field.field.block_content.content_spotlight.field_link
     - field.field.block_content.content_spotlight.field_link_two
     - field.field.block_content.content_spotlight.field_media
+    - field.field.block_content.content_spotlight.field_overline
     - field.field.block_content.content_spotlight.field_padding_options
     - field.field.block_content.content_spotlight.field_style_alignment
     - field.field.block_content.content_spotlight.field_style_color
@@ -87,6 +88,14 @@ content:
     settings:
       view_mode: text_with_image_feature_equal
       link: false
+    third_party_settings: {  }
+    weight: 0
+    region: content
+  field_overline:
+    type: string
+    label: hidden
+    settings:
+      link_to_entity: false
     third_party_settings: {  }
     weight: 0
     region: content
