@@ -342,7 +342,7 @@ class EventCalendarDefaultWidget extends ViewsBasicDefaultWidget {
     return [
       '#type' => 'select',
       '#title' => $this->t('@title', ['@title' => $title]),
-      '#description' => $this->t("Select a parent term to show content tagged with that terms sub-items. This ignores content tagged as the parent term and any other parent terms in the vocabulary."),
+      '#description' => $this->t("Select a parent term to show only events tagged with its sub-items. Events tagged only with the parent term, or only with terms outside it, are hidden from the calendar. Categories imported from Localist may fall outside the parent you choose."),
       '#options' => $this->viewsBasicManager->getTaxonomyParents($vocabulary_id),
       '#default_value' => $this->getDefaultParamValue($field_name, $items, $delta),
       '#validated' => 'true',
