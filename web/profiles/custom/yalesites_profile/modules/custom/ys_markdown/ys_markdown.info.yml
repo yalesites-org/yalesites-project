@@ -1,6 +1,6 @@
 name: YaleSites Markdown
 type: module
-description: 'Serves a public Markdown version of each eligible page at its URL plus .md.'
+description: 'Serves a public Markdown version of each eligible page at its URL plus .md, plus dynamic robots.txt and llms.txt.'
 package: YaleSites
 core_version_requirement: ^10 || ^11
 dependencies:
