@@ -66,6 +66,7 @@ install:
   - ys_beacon
   - ys_core
   - ys_mail
+  - ys_markdown
 
 # Required modules
 # Note that any dependencies of the modules listed here will be installed automatically.

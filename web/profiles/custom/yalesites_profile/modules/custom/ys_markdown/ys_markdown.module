@@ -1,0 +1,37 @@
+<?php
+
+/**
+ * @file
+ * Advertises each eligible node's Markdown version.
+ */
+
+use Drupal\Core\Cache\CacheableMetadata;
+use Drupal\Core\Url;
+use Drupal\node\NodeInterface;
+
+/**
+ * Implements hook_page_attachments().
+ */
+function ys_markdown_page_attachments(array &$attachments) {
+  $route_match = \Drupal::routeMatch();
+  $node = $route_match->getRouteName() === 'entity.node.canonical' ? $route_match->getParameter('node') : NULL;
+  if (!$node instanceof NodeInterface) {
+    return;
+  }
+  $eligibility = \Drupal::service('ys_markdown.eligibility');
+  // Always, so the page's cached output tracks the setting and the node even
+  // when no link is added.
+  $cacheability = $eligibility->getCacheability($node);
+  if ($eligibility->isEligible($node)) {
+    $url = Url::fromRoute('entity.node.canonical', ['node' => $node->id()])->toString(TRUE);
+    $cacheability->addCacheableDependency($url);
+    $attachments['#attached']['html_head_link'][] = [[
+      'rel' => 'alternate',
+      'type' => 'text/markdown',
+      'href' => $url->getGeneratedUrl() . '.md',
+    ],
+    ];
+  }
+  // Merged: applyTo() alone would wipe what earlier hooks set on this array.
+  CacheableMetadata::createFromRenderArray($attachments)->merge($cacheability)->applyTo($attachments);
+}
