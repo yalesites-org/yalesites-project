@@ -2,7 +2,7 @@
 
 namespace Drupal\Tests\ys_markdown\Kernel;
 
-use Drupal\Core\Http\Exception\CacheableNotFoundHttpException;
+use Drupal\Core\Cache\CacheableResponseInterface;
 use Drupal\Tests\ys_core\Kernel\YsKernelTestBase;
 use Drupal\ys_markdown\Controller\AiDirectivesController;
 use Drupal\node\Entity\Node;
@@ -12,7 +12,6 @@ use Drupal\user\Entity\Role;
 use Drupal\user\RoleInterface;
 use Symfony\Component\DependencyInjection\ContainerBuilder;
 use Symfony\Component\HttpFoundation\Request;
-use Symfony\Component\HttpKernel\HttpKernelInterface;
 
 /**
  * Tests the dynamic robots.txt and llms.txt routes.
@@ -75,21 +74,6 @@ class AiDirectivesRouteTest extends YsKernelTestBase {
   }
 
   /**
-   * Fetches a path that must answer 404, returning the exception.
-   *
-   * Errors are not caught so the test does not depend on a rendered 404 page.
-   */
-  protected function get404(string $path): CacheableNotFoundHttpException {
-    try {
-      $this->container->get('http_kernel')->handle(Request::create($path), HttpKernelInterface::MAIN_REQUEST, FALSE);
-    }
-    catch (CacheableNotFoundHttpException $e) {
-      return $e;
-    }
-    $this->fail('Expected a cacheable 404 for ' . $path);
-  }
-
-  /**
    * Returns the expected base robots.txt: core's file plus the site rule.
    */
   protected function baseRobots(): string {
@@ -141,8 +125,10 @@ class AiDirectivesRouteTest extends YsKernelTestBase {
    */
   public function testLlmsOffIs404(): void {
     $this->config('ys_core.site')->set('ai_readability.markdown_enabled', FALSE)->save();
-    $e = $this->get404('/llms.txt');
-    $this->assertLlmsTags($e->getCacheTags());
+    $response = $this->get('/llms.txt');
+    $this->assertSame(404, $response->getStatusCode());
+    $this->assertInstanceOf(CacheableResponseInterface::class, $response);
+    $this->assertLlmsTags($response->getCacheableMetadata()->getCacheTags());
   }
 
   /**

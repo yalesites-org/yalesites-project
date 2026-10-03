@@ -5,7 +5,6 @@ namespace Drupal\ys_markdown\Controller;
 use Drupal\Core\Cache\CacheableMetadata;
 use Drupal\Core\Cache\CacheableResponse;
 use Drupal\Core\Controller\ControllerBase;
-use Drupal\Core\Http\Exception\CacheableNotFoundHttpException;
 use Drupal\ys_core\AiReadabilitySettings;
 use Drupal\ys_markdown\MarkdownEligibility;
 use Symfony\Component\DependencyInjection\ContainerInterface;
@@ -84,7 +83,13 @@ class AiDirectivesController extends ControllerBase {
       ->addCacheableDependency($siteConfig)
       ->addCacheableDependency($system);
     if (!AiReadabilitySettings::isEnabled($siteConfig, AiReadabilitySettings::MARKDOWN_ENABLED)) {
-      throw new CacheableNotFoundHttpException($cacheability);
+      // Return rather than throw: core's fast 404 discards an exception's
+      // cacheability for .txt paths, so the 404 would never be invalidated.
+      $response = new CacheableResponse("Not found\n", 404, [
+        'Content-Type' => 'text/plain; charset=utf-8',
+      ]);
+      $response->addCacheableDependency($cacheability);
+      return $response;
     }
 
     $markdown = '# ' . $system->get('name') . "\n\n";
