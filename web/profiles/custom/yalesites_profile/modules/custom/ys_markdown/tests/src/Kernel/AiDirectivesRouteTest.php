@@ -5,6 +5,7 @@ namespace Drupal\Tests\ys_markdown\Kernel;
 use Drupal\Core\Cache\CacheableResponseInterface;
 use Drupal\Tests\ys_core\Kernel\YsKernelTestBase;
 use Drupal\ys_markdown\Controller\AiDirectivesController;
+use Drupal\ys_markdown\MarkdownBuilder;
 use Drupal\node\Entity\Node;
 use Drupal\node\Entity\NodeType;
 use Drupal\path_alias\Entity\PathAlias;
@@ -170,11 +171,35 @@ class AiDirectivesRouteTest extends YsKernelTestBase {
     $this->assertSame(200, $response->getStatusCode());
     $this->assertStringStartsWith('text/markdown', $response->headers->get('Content-Type'));
     $content = $response->getContent();
-    $this->assertStringStartsWith("# Test Site\n\n> A slogan\n\n## Pages\n\n", $content);
+    $this->assertStringStartsWith("# Test Site\n\n> A slogan\n\n## Page\n\n", $content);
     $this->assertMatchesRegularExpression('#^- \\[About \\\\\\[us\\\\\\]\\]\\(http://[^)]+/about\\.md\\)$#m', $content);
     $this->assertStringNotContainsString('Secret draft', $content);
     $this->assertStringNotContainsString('Private page', $content);
     $this->assertLlmsTags($response->getCacheableMetadata()->getCacheTags());
+    // Only the metadata is observable: core forces kernel requests private.
+    $this->assertSame(MarkdownBuilder::MAX_AGE, $response->getCacheableMetadata()->getCacheMaxAge());
+  }
+
+  /**
+   * Each node type gets its own section, ordered by label.
+   */
+  public function testLlmsGroupsByContentType(): void {
+    $this->config('ys_core.site')->set('ai_readability.markdown_enabled', TRUE)->save();
+    // Label order differs from machine-name order on purpose.
+    NodeType::create(['type' => 'event', 'name' => 'Zebra events'])->save();
+    NodeType::create(['type' => 'post', 'name' => 'Post'])->save();
+    NodeType::create(['type' => 'resource', 'name' => 'Resource'])->save();
+    foreach ([['post', 'A post'], ['page', 'A page'], ['event', 'An event']] as [$type, $title]) {
+      $node = Node::create(['type' => $type, 'title' => $title, 'status' => 1]);
+      $node->save();
+      PathAlias::create(['path' => '/node/' . $node->id(), 'alias' => '/' . $type])->save();
+    }
+
+    $content = $this->get('/llms.txt')->getContent();
+    // Reduce each link to its title so the host does not matter.
+    $outline = preg_replace('#\(http[^)]*\)#', '', $content);
+    $this->assertStringEndsWith("\n## Page\n\n- [A page]\n\n## Post\n\n- [A post]\n\n## Zebra events\n\n- [An event]\n\n", $outline);
+    $this->assertStringNotContainsString('## Resource', $content);
   }
 
 }

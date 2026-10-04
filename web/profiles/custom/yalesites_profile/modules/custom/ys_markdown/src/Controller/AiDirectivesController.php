@@ -6,6 +6,7 @@ use Drupal\Core\Cache\CacheableMetadata;
 use Drupal\Core\Cache\CacheableResponse;
 use Drupal\Core\Controller\ControllerBase;
 use Drupal\ys_core\AiReadabilitySettings;
+use Drupal\ys_markdown\MarkdownBuilder;
 use Drupal\ys_markdown\MarkdownEligibility;
 use Symfony\Component\DependencyInjection\ContainerInterface;
 
@@ -96,11 +97,11 @@ class AiDirectivesController extends ControllerBase {
     if ($system->get('slogan')) {
       $markdown .= '> ' . $system->get('slogan') . "\n\n";
     }
-    $markdown .= "## Pages\n\n";
 
     $storage = $this->entityTypeManager()->getStorage('node');
     // ponytail: loads every published node on a cache miss; move to a paged
     // or queued build if large sites time out.
+    $lines = [];
     $ids = $storage->getQuery()->accessCheck(FALSE)->condition('status', 1)->sort('nid')->execute();
     foreach (array_chunk($ids, self::CHUNK_SIZE) as $chunk) {
       foreach ($storage->loadMultiple($chunk) as $node) {
@@ -109,15 +110,29 @@ class AiDirectivesController extends ControllerBase {
         }
         $url = $node->toUrl('canonical', ['absolute' => TRUE])->toString();
         $title = strtr($node->label(), ['[' => '\[', ']' => '\]']);
-        $markdown .= '- [' . $title . '](' . $url . ".md)\n";
+        $lines[$node->bundle()][] = '- [' . $title . '](' . $url . ".md)\n";
       }
       $storage->resetCache($chunk);
     }
 
+    // One section per content type, ordered by label.
+    $types = $this->entityTypeManager()->getStorage('node_type')->loadMultiple(array_keys($lines));
+    uasort($types, fn($a, $b) => strcasecmp($a->label(), $b->label()));
+    foreach ($types as $id => $type) {
+      $cacheability->addCacheableDependency($type);
+      $markdown .= "## " . $type->label() . "\n\n" . implode('', $lines[$id]) . "\n";
+    }
+
+    $cacheability->setCacheMaxAge(MarkdownBuilder::MAX_AGE);
     $response = new CacheableResponse($markdown, 200, [
       'Content-Type' => 'text/markdown; charset=utf-8',
     ]);
     $response->addCacheableDependency($cacheability);
+    // Hourly ceiling set on the header itself: see ContentFeedController in
+    // ys_beacon for why core's FinishResponseSubscriber must not override it.
+    $response->setPublic();
+    $response->setMaxAge(MarkdownBuilder::MAX_AGE);
+    $response->setVary('Cookie', FALSE);
     return $response;
   }
 

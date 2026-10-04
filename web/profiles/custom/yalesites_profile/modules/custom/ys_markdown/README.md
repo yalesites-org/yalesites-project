@@ -62,7 +62,9 @@ scaffold no longer writes `web/robots.txt`.
   AI search bots (OAI-SearchBot, Claude-SearchBot, PerplexityBot) are not blocked,
   because they fetch pages in order to cite them, which sites want.
 - `/llms.txt` follows llmstxt.org: the site name, slogan, and a link to the `.md`
-  version of every page that would be served as Markdown. It answers 404 when
+  version of every page that would be served as Markdown, grouped into one
+  section per content type (ordered by label). The 200 is fresh for at most an
+  hour at the edge, as ys_beacon's feed is. It answers 404 when
   the "Markdown version" setting (`ai_readability.markdown_enabled`) is off.
   It is built by loading every published node on a cache miss.
 
