@@ -43,6 +43,12 @@ class SystemInstructionsApiService {
 
   /**
    * API timeout in seconds.
+   *
+   * Only the response is bounded here. The connection is left to the
+   * platform-wide connect_timeout in settings.php, which this endpoint has no
+   * reason to deviate from - noting that default arrives with a Pantheon
+   * upstream update rather than with the profile release
+   * (yalesites-org/YaleSites-Internal#1701).
    */
   const API_TIMEOUT = 30;
 

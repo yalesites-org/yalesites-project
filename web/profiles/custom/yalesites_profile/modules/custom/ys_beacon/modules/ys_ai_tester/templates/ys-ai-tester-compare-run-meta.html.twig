@@ -1,0 +1,28 @@
+{#
+/**
+ * @file
+ * One run's block in the comparison header, stacked beside the other run's.
+ *
+ * Says everything the single-run header says (see
+ * ys-ai-tester-run-summary.html.twig) plus the host, and stacks it rather than
+ * running it on one line, because two of these sit side by side. The host is
+ * stated on every comparison, not only cross-host ones: citation matching
+ * ignores the host, so the overlap figures are only interpretable if a reader
+ * can see whether the two sides ran against the same site at all.
+ *
+ * One {% trans %} block rather than a run of translated fragments, so a
+ * translator gets the whole sentence and can reorder it. Keep it on a single
+ * line: {% trans %} preserves its literal whitespace, so wrapping it would put
+ * newlines into the translatable string.
+ *
+ * Available variables:
+ * - label: Which side this is, already translated ("Run A").
+ * - id: The run id.
+ * - date: The run's creation time, already formatted.
+ * - file: The uploaded source filename.
+ * - backend: The assistant's label, already resolved from its machine name.
+ * - status: The run's status.
+ * - host: The host the citations named, or an "unknown" message when none did.
+ */
+#}
+<div class="ys-compare-meta__run">{% trans %}<strong>{{ label }} — Run #{{ id }}</strong><br>{{ date }}<br>File: {{ file }}<br>Assistant: {{ backend }}<br>Status: {{ status }}<br>Host: {{ host }}{% endtrans %}</div>

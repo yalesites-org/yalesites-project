@@ -112,6 +112,40 @@ function ys_ai_tester_theme(): array {
         'copy' => NULL,
       ],
     ],
+    // The single-run page's header line.
+    'ys_ai_tester_run_summary' => [
+      'variables' => [
+        'id' => 0,
+        'date' => '',
+        'file' => '',
+        'backend' => '',
+        'status' => '',
+      ],
+    ],
+    // One run's block in the comparison header. Says what the single-run
+    // header says, stacked and with the host added, because two sit side by
+    // side and citation overlap is only interpretable against the host.
+    'ys_ai_tester_compare_run_meta' => [
+      'variables' => [
+        'label' => '',
+        'id' => 0,
+        'date' => '',
+        'file' => '',
+        'backend' => '',
+        'status' => '',
+        'host' => '',
+      ],
+    ],
+    // One retrieved source inside a panel's "Sources" list. Rendered as an
+    // item of a theme('item_list'), so it emits inline content and no <li>.
+    'ys_ai_tester_citation' => [
+      'variables' => [
+        'link' => NULL,
+        'flag' => '',
+        'only_here' => FALSE,
+        'url' => '',
+      ],
+    ],
     // One tab per question, each revealing a panel of per-run answer columns.
     // Rendered by both AI Tester views: the comparison passes two sides per
     // panel and the single-run detail view passes one. The panel grid derives
