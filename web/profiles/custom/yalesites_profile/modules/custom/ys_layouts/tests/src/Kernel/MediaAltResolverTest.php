@@ -3,8 +3,8 @@
 namespace Drupal\Tests\ys_layouts\Kernel;
 
 use Drupal\file\Entity\File;
-use Drupal\KernelTests\KernelTestBase;
 use Drupal\Tests\media\Traits\MediaTypeCreationTrait;
+use Drupal\Tests\ys_core\Kernel\YsKernelTestBase;
 use Drupal\ys_layouts\Service\MediaAltResolver;
 
 /**
@@ -19,7 +19,7 @@ use Drupal\ys_layouts\Service\MediaAltResolver;
  * @group ys_layouts
  * @group yalesites
  */
-class MediaAltResolverTest extends KernelTestBase {
+class MediaAltResolverTest extends YsKernelTestBase {
 
   use MediaTypeCreationTrait;
 

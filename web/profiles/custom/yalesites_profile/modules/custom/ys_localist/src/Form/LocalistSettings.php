@@ -6,7 +6,7 @@ use Drupal\Core\Config\ConfigFactoryInterface;
 use Drupal\Core\Entity\EntityTypeManagerInterface;
 use Drupal\Core\Form\ConfigFormBase;
 use Drupal\Core\Form\FormStateInterface;
-use Drupal\Core\Session\AccountProxy;
+use Drupal\ys_core\PlatformAdminCheckerInterface;
 use Drupal\ys_localist\LocalistManager;
 use Symfony\Component\DependencyInjection\ContainerInterface;
 
@@ -30,14 +30,14 @@ class LocalistSettings extends ConfigFormBase {
   protected $localistManager;
 
   /**
-   * Current user session.
+   * The platform admin checker.
    *
-   * @var \Drupal\Core\Session\AccountProxy
+   * @var \Drupal\ys_core\PlatformAdminCheckerInterface
    */
-  protected $currentUserSession;
+  protected $platformAdminChecker;
 
   /**
-   * Constructs a SiteInformationForm object.
+   * Constructs a LocalistSettings object.
    *
    * @param \Drupal\Core\Config\ConfigFactoryInterface $config_factory
    *   The factory for configuration objects.
@@ -45,19 +45,19 @@ class LocalistSettings extends ConfigFormBase {
    *   The entity type manager.
    * @param \Drupal\ys_localist\LocalistManager $localist_manager
    *   The Localist manager.
-   * @param \Drupal\Core\Session\AccountProxy $current_user_session
-   *   The current user session.
+   * @param \Drupal\ys_core\PlatformAdminCheckerInterface $platform_admin_checker
+   *   The platform admin checker.
    */
   public function __construct(
     ConfigFactoryInterface $config_factory,
     EntityTypeManagerInterface $entity_type_manager,
     LocalistManager $localist_manager,
-    AccountProxy $current_user_session,
+    PlatformAdminCheckerInterface $platform_admin_checker,
   ) {
     parent::__construct($config_factory);
     $this->entityTypeManager = $entity_type_manager;
     $this->localistManager = $localist_manager;
-    $this->currentUserSession = $current_user_session;
+    $this->platformAdminChecker = $platform_admin_checker;
   }
 
   /**
@@ -68,7 +68,7 @@ class LocalistSettings extends ConfigFormBase {
       $container->get('config.factory'),
       $container->get('entity_type.manager'),
       $container->get('ys_localist.manager'),
-      $container->get('current_user'),
+      $container->get('ys_core.platform_admin_checker'),
     );
   }
 
@@ -93,7 +93,10 @@ class LocalistSettings extends ConfigFormBase {
     $config = $this->config('ys_localist.settings');
     $groupsImported = $this->localistManager->getMigrationStatus('localist_groups') > 0;
 
-    $allowSecretItems = function_exists('ys_core_allow_secret_items') ? ys_core_allow_secret_items($this->currentUserSession) : FALSE;
+    // The sync plumbing is a platform admin concern. Ask the shared checker so
+    // the definition of "platform admin" lives in one place rather than being
+    // restated here (yalesites-org/YaleSites-Internal#1560).
+    $allowSecretItems = $this->platformAdminChecker->isPlatformAdmin();
 
     if (
       $config->get('enable_localist_sync') &&
@@ -180,12 +183,29 @@ class LocalistSettings extends ConfigFormBase {
    */
   public function submitForm(array &$form, FormStateInterface $form_state) {
 
-    $this->configFactory->getEditable('ys_localist.settings')
+    $config = $this->configFactory->getEditable('ys_localist.settings')
       // Set the submitted configuration setting.
       ->set('enable_localist_sync', $form_state->getValue('enable_localist_sync'))
-      ->set('localist_endpoint', rtrim($form_state->getValue('localist_endpoint'), "/"))
-      ->set('localist_group', $form_state->getValue('localist_group'))
-      ->save();
+      ->set('localist_endpoint', rtrim($form_state->getValue('localist_endpoint'), "/"));
+
+    // The group is only written when its picker was genuinely editable on the
+    // submitted form (yalesites-org/YaleSites-Internal#1610):
+    // - buildForm() omits the picker unless sync is enabled and the groups
+    //   migration has run. Saving with sync off therefore carried no value at
+    //   all, and writing it anyway blanked the site's selected group. That is
+    //   the bug this guard exists for.
+    // - A '#disabled' picker carries no user intent either: FormBuilder
+    //   discards input for it, so the value derives from '#default_value',
+    //   which buildForm() sets to NULL when the stored term ID no longer
+    //   loads. A non-platform-admin save would then blank a still-meaningful
+    //   ID. (The ticket blames skipped '#element_validate' for this; that is
+    //   not the mechanism - EntityAutocomplete's validator does run on
+    //   disabled elements.)
+    if (isset($form['localist_group']) && empty($form['localist_group']['#disabled'])) {
+      $config->set('localist_group', $form_state->getValue('localist_group'));
+    }
+
+    $config->save();
 
     parent::submitForm($form, $form_state);
   }

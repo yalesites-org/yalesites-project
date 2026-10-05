@@ -5,6 +5,8 @@ namespace Drupal\ys_core\Controller;
 use Drupal\Core\Cache\CacheableJsonResponse;
 use Drupal\Core\Cache\CacheableMetadata;
 use Drupal\Core\Controller\ControllerBase;
+use Drupal\taxonomy\TermInterface;
+use Drupal\ys_core\Plugin\PlatformAdminSetting\AnnouncementsSourcePlatformAdminSetting;
 use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
 
 /**
@@ -34,10 +36,18 @@ class AnnouncementsFeedController extends ControllerBase {
       throw new NotFoundHttpException();
     }
 
-    $term_name = $config->get('announcements_source_term') ?: 'Dashboard Announcement';
+    // Normalized the same way the settings form stores and displays it, and
+    // through the same constant, so the query cannot look for a name the form
+    // would never have written. A whitespace-only value set out of band - by
+    // drush, or a settings.php override the form cannot see - would otherwise
+    // match no term and answer 200 with an empty feed.
+    $term_name = trim((string) $config->get('announcements_source_term'))
+      ?: AnnouncementsSourcePlatformAdminSetting::DEFAULT_TERM;
+
+    $category_whitelist = AnnouncementsSourcePlatformAdminSetting::resolveCategoryWhitelist($config->get('announcements_source_categories'));
 
     $cacheability = (new CacheableMetadata())
-      ->addCacheTags(['node_list:post', 'taxonomy_term_list:tags'])
+      ->addCacheTags(['node_list:post', 'taxonomy_term_list:tags', 'taxonomy_term_list:post_category'])
       ->addCacheableDependency($config);
 
     $items = [];
@@ -68,12 +78,26 @@ class AnnouncementsFeedController extends ControllerBase {
         if ($node->hasField('field_teaser_text') && !$node->get('field_teaser_text')->isEmpty()) {
           $summary = (string) $node->get('field_teaser_text')->value;
         }
+        $category_names = [];
+        if ($node->hasField('field_category') && !$node->get('field_category')->isEmpty()) {
+          foreach ($node->get('field_category')->referencedEntities() as $term) {
+            if ($term instanceof TermInterface) {
+              $category_names[] = $term->getName();
+            }
+          }
+        }
         $items[] = [
           'id' => (string) $node->id(),
           'title' => $node->getTitle(),
           'url' => $node->toUrl('canonical', ['absolute' => TRUE])->toString(),
           'date_published' => date('c', $node->getChangedTime()),
           'summary' => $summary,
+          // JSON Feed 1.1's own `tags` field is documented as covering exactly
+          // this ("some blogging systems and other feed formats call these
+          // categories") - no custom extension key needed. Always an array,
+          // empty when the post has no category or none survive the site's
+          // whitelist, so a consumer never has to special-case a missing key.
+          'tags' => self::filterCategories($category_names, $category_whitelist),
         ];
         $cacheability->addCacheableDependency($node);
       }
@@ -87,6 +111,40 @@ class AnnouncementsFeedController extends ControllerBase {
     $response->addCacheableDependency($cacheability);
 
     return $response;
+  }
+
+  /**
+   * Filters a post's category names down to the site's published whitelist.
+   *
+   * Matching is case-insensitive - the category field allows auto-created
+   * terms, so editor-typed casing drift ("news" vs "News") is a real case -
+   * but each surviving name is emitted in its own original casing rather than
+   * the whitelist's. Extracted as a pure static method so the filtering logic
+   * is Unit-testable without loading real node/taxonomy entities.
+   *
+   * @param string[] $names
+   *   The post's category term names, in any order.
+   * @param string[] $whitelist
+   *   The site's configured category whitelist.
+   *
+   * @return string[]
+   *   The whitelisted names, trimmed, deduped, and in their original casing.
+   */
+  public static function filterCategories(array $names, array $whitelist): array {
+    $whitelist_lower = array_map(fn($name) => mb_strtolower(trim((string) $name)), $whitelist);
+
+    $result = [];
+    foreach ($names as $name) {
+      $name = trim((string) $name);
+      if ($name === '' || in_array($name, $result, TRUE)) {
+        continue;
+      }
+      if (in_array(mb_strtolower($name), $whitelist_lower, TRUE)) {
+        $result[] = $name;
+      }
+    }
+
+    return $result;
   }
 
 }

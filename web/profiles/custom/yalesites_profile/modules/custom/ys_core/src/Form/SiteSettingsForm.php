@@ -11,9 +11,11 @@ use Drupal\Core\Entity\EntityTypeManagerInterface;
 use Drupal\Core\Form\ConfigFormBase;
 use Drupal\Core\Form\FormStateInterface;
 use Drupal\Core\Path\PathValidatorInterface;
+use Drupal\Core\Render\Element;
 use Drupal\Core\Routing\RequestContext;
 use Drupal\Core\Session\AccountProxy;
 use Drupal\path_alias\AliasManagerInterface;
+use Drupal\ys_core\SiteMail;
 use Drupal\ys_media\YaleSitesMediaManager;
 use Symfony\Component\DependencyInjection\ContainerInterface;
 
@@ -78,13 +80,6 @@ class SiteSettingsForm extends ConfigFormBase implements ContainerInjectionInter
   protected $cacheDiscovery;
 
   /**
-   * Current user session.
-   *
-   * @var \Drupal\Core\Session\AccountProxy
-   */
-  protected $currentUserSession;
-
-  /**
    * Constructs a SiteInformationForm object.
    *
    * @param \Drupal\Core\Config\ConfigFactoryInterface $config_factory
@@ -121,7 +116,6 @@ class SiteSettingsForm extends ConfigFormBase implements ContainerInjectionInter
     $this->ysMediaManager = $ys_media_manager;
     $this->entityTypeManager = $entity_type_manager;
     $this->currentUser = $account_interface;
-    $this->currentUserSession = $account_interface;
     $this->cacheDiscovery = $cache_discovery;
   }
 
@@ -194,7 +188,7 @@ class SiteSettingsForm extends ConfigFormBase implements ContainerInjectionInter
 
     $form['site_basics']['site_mail'] = [
       '#type' => 'textfield',
-      '#description' => $this->t("The From address in automated emails sent during registration and new password requests, and other notifications. (Use an address ending in your site's domain to help prevent this email being flagged as spam.)"),
+      '#description' => $this->t('The From address in automated emails sent during registration and new password requests, and other notifications, including Pre-Built Form submissions. Must be an address at @domains - the platform is not authorized to send mail from any other domain, and mail from one will never be delivered.', ['@domains' => SiteMail::allowedDomainsLabel()]),
       '#title' => $this->t('Site email'),
       '#default_value' => $siteConfig->get('mail'),
       '#required' => TRUE,
@@ -349,9 +343,16 @@ class SiteSettingsForm extends ConfigFormBase implements ContainerInjectionInter
       '#multiple' => FALSE,
       '#description' => $this->t('Allowed extensions: gif png jpg jpeg<br>Image must be at least 180x180'),
       '#upload_validators' => [
-        'file_validate_is_image' => [],
-        'file_validate_extensions' => ['gif png jpg jpeg'],
-        'file_validate_image_resolution' => [0, "180x180"],
+        'FileIsImage' => [],
+        'FileExtension' => ['extensions' => 'gif png jpg jpeg'],
+        // The legacy file_validate_image_resolution() signature was
+        // ($file, $maximum_dimensions = 0, $minimum_dimensions = 0), so the
+        // old [0, "180x180"] meant no maximum and a 180x180 minimum. The zero
+        // maximum is stated rather than omitted: the constraint validator
+        // ignores a falsy maxDimensions, but file.module reads the key
+        // unconditionally when building the upload-help description and warns
+        // if it is absent.
+        'FileImageDimensions' => ['maxDimensions' => 0, 'minDimensions' => '180x180'],
       ],
       '#title' => $this->t('Custom Favicon'),
       '#default_value' => ($yaleConfig->get('custom_favicon')) ? $yaleConfig->get('custom_favicon') : NULL,
@@ -419,20 +420,17 @@ class SiteSettingsForm extends ConfigFormBase implements ContainerInjectionInter
       '#default_value' => $yaleConfig->get('taxonomy')['custom_vocab_name'] ?? 'Custom Vocab',
     ];
 
-    // Both settings in this group are already restricted, so gate the group
-    // itself too — an Advanced tab a user cannot open anything inside is worse
-    // than no tab at all. ys_core_allow_secret_items() already covers user 1,
-    // so it is the whole condition; the narrower $is_user_1 still gates the CAS
-    // field on its own below.
+    // Deliberately narrower than the platform admin gate used elsewhere: the
+    // CAS application name is user 1 only, so it is not a candidate for the
+    // Platform Admin Settings page either - moving it there would widen access
+    // to every platform admin (yalesites-org/YaleSites-Internal#1560).
     $is_user_1 = ($this->currentUser->id() == 1);
-    $allow_secret_items = ys_core_allow_secret_items($this->currentUserSession);
 
     $form['advanced'] = [
       '#type' => 'details',
       '#title' => $this->t('Advanced'),
       '#description' => $this->t('Platform-level settings. Most sites never need to change these.'),
       '#group' => 'vertical_tabs',
-      '#access' => $allow_secret_items,
     ];
 
     $form['advanced']['cas_app_name'] = [
@@ -443,14 +441,20 @@ class SiteSettingsForm extends ConfigFormBase implements ContainerInjectionInter
       '#access' => $is_user_1,
     ];
 
-    if ($allow_secret_items) {
-      $form['advanced']['environment_indicator_show'] = [
-        '#type' => 'checkbox',
-        '#title' => $this->t('Show environment indicator'),
-        '#description' => $this->t('Display the environment indicator banner at the top of the site. This setting overrides all environment-specific configurations.'),
-        '#default_value' => $yaleConfig->get('environment_indicator')['show'] ?? TRUE,
-      ];
-    }
+    // An Advanced tab a user cannot open anything inside is worse than no tab,
+    // so the group is reachable exactly when something in it is. Derived rather
+    // than restated: the settings here are gated one per audience, and this is
+    // the same rule the platform-admin admin section states for itself in
+    // ys_core.routing.yml - grant the container when a child is reachable, so
+    // it can never hide a screen its audience may see and needs no edit when
+    // the children change. FormBuilder propagates '#access' downward only
+    // (FormBuilder::doBuildForm()), so nothing derives this for us.
+    //
+    // Core's '#optional' is the idiom for this and cannot be used here: it
+    // counts '#groups' members, which only elements tagging '#group' join, and
+    // these are nested instead - see the note on $form['vertical_tabs'] above.
+    // It would find zero children and hide the tab from user 1 too.
+    $form['advanced']['#access'] = (bool) Element::getVisibleChildren($form['advanced']);
 
     return parent::buildForm($form, $form_state);
   }
@@ -574,12 +578,6 @@ class SiteSettingsForm extends ConfigFormBase implements ContainerInjectionInter
       ->set('font_pairing', $form_state->getValue('font_pairing'))
       ->set('cas_app_name', $form_state->getValue('cas_app_name') ?? 'yalesites');
 
-    // Save environment indicator setting if the field was present
-    // (platform admin only).
-    if (ys_core_allow_secret_items($this->currentUserSession)) {
-      $yaleSiteConfig->set('environment_indicator.show', $form_state->getValue('environment_indicator_show') ?? TRUE);
-    }
-
     $yaleSiteConfig->save();
 
     // Consent lives in its own config object rather than in ys_core.site so it
@@ -701,21 +699,34 @@ class SiteSettingsForm extends ConfigFormBase implements ContainerInjectionInter
    *   The id of a field on the config form.
    */
   protected function validateEmail(FormStateInterface &$form_state, string $fieldId) {
-    if (($value = $form_state->getValue($fieldId))) {
-      if (!filter_var($value, FILTER_VALIDATE_EMAIL)) {
-        $form_state->setErrorByName(
-          $fieldId,
-          $this->t(
-            'Email format for "%email" is not valid. Expected format is "user@yale.edu".',
-            ['%email' => $form_state->getValue('site_mail')]
-          )
-        );
-      }
-      if (strpos($value, 'yale.edu') === FALSE) {
-        $form_state->setErrorByName(
-          $fieldId, $this->t('Email domain has to be yale.edu.')
-        );
-      }
+    if (!($value = $form_state->getValue($fieldId))) {
+      return;
+    }
+
+    if (!filter_var($value, FILTER_VALIDATE_EMAIL)) {
+      $form_state->setErrorByName(
+        $fieldId,
+        $this->t(
+          'Email format for "%email" is not valid. Expected format is "user@yale.edu".',
+          ['%email' => $value]
+        )
+      );
+      // A malformed address has no domain worth reporting on, so stop rather
+      // than falling through to the domain check. This changes nothing the
+      // user sees - setErrorByName() keeps only the first error per element,
+      // so the domain error was already being discarded - it just makes the
+      // intent explicit instead of relying on that.
+      return;
+    }
+
+    if (!SiteMail::isAuthorized($value)) {
+      $form_state->setErrorByName(
+        $fieldId,
+        $this->t(
+          'Site email must end in @domains. The platform is not authorized to send mail from any other domain, so messages from %email would never be delivered.',
+          ['@domains' => SiteMail::allowedDomainsLabel(), '%email' => $value]
+        )
+      );
     }
   }
 

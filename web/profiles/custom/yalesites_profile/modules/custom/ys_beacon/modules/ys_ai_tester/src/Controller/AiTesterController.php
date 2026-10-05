@@ -1133,7 +1133,7 @@ class AiTesterController extends ControllerBase {
    * CitationFormatter::format() stores both 'content' — the entire retrieved
    * chunk — and 'excerpt', that same text's first 300 characters. Exporting
    * both made the file grow with however long the indexed pages happened to be,
-   * multiplied by up to top_k (default 5) sources per question per side, while
+   * multiplied by up to top_k (default 10) sources per question per side, while
    * adding no category of information the excerpt does not already carry. That
    * is what put the download beyond what an LLM will accept in one go.
    *

@@ -3,7 +3,7 @@
 namespace Drupal\Tests\ys_beacon\Kernel;
 
 use Drupal\Component\Datetime\TimeInterface;
-use Drupal\KernelTests\KernelTestBase;
+use Drupal\Tests\ys_core\Kernel\YsKernelTestBase;
 use Drupal\ai\Entity\AiGuardrailModeEnum;
 use Drupal\ai\Guardrail\Result\GuardrailResultInterface;
 use Drupal\ys_beacon\Service\GuardrailTelemetry;
@@ -19,7 +19,7 @@ use Psr\Log\LoggerInterface;
  * @group ys_beacon
  * @coversDefaultClass \Drupal\ys_beacon\Service\GuardrailTelemetry
  */
-class GuardrailTelemetryTest extends KernelTestBase {
+class GuardrailTelemetryTest extends YsKernelTestBase {
 
   /**
    * {@inheritdoc}

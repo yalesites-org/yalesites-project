@@ -4,6 +4,7 @@ import userEvent from "@testing-library/user-event";
 import Chat from "./Chat";
 import { AppStateContext, AppState } from "../../state/AppProvider";
 import { Conversation } from "../../api";
+import styles from "./Chat.module.css";
 
 const renderChat = (
   state: AppState = { currentChat: null },
@@ -202,6 +203,16 @@ describe("Citation panel ARIA", () => {
     // citation container must not be exposed as a tabpanel.
     expect(screen.queryByRole("tabpanel")).not.toBeInTheDocument();
   });
+
+  it("shows the citation label before its numbered badge, without repeating the number", async () => {
+    renderChat({ currentChat: conversationWithCitation() });
+
+    const button = screen.getByRole("button", { name: "Citation 1" });
+    // Visible text should read "Citation" followed by the badge "1" -- not a
+    // leading "1" badge followed by a redundant "Citation 1" label.
+    expect(button.textContent).toBe("Citation1");
+    expect(button.lastElementChild).toHaveTextContent("1");
+  });
 });
 
 describe("Chat input accessibility wiring", () => {
@@ -305,16 +316,16 @@ describe("Citation overlay accessibility (#1441)", () => {
     await userEvent.click(screen.getByRole("button", { name: "Citation 1" }));
   };
 
-  it("names the overlay dialog and titles it with a heading (WCAG 4.1.2)", async () => {
+  it("names the overlay dialog and titles it with a heading identifying which citation was opened (WCAG 4.1.2)", async () => {
     renderChat({ currentChat: conversationWithRichCitation() });
 
     await openCitation();
 
     expect(
-      screen.getByRole("dialog", { name: "Citations" })
+      screen.getByRole("dialog", { name: "Citation 1" })
     ).toBeInTheDocument();
     expect(
-      screen.getByRole("heading", { name: "Citations" })
+      screen.getByRole("heading", { name: "Citation 1", level: 2 })
     ).toBeInTheDocument();
   });
 
@@ -394,13 +405,180 @@ describe("Citation overlay accessibility (#1441)", () => {
     ).toBeInTheDocument();
   });
 
+  // See allowLinkOutsideHeading in constants/markdownComponents.tsx for why a
+  // heading whose whole text is a link has to render as plain text.
+  const conversationWithLinkedHeadingCitation = (): Conversation => ({
+    id: "conversation-1",
+    title: "Image Banner",
+    messages: [
+      {
+        id: "message-tool",
+        role: "tool",
+        content: JSON.stringify({
+          citations: [
+            {
+              content: "# [Image Banner](https://example.com/deep-section)\n\nBody text about the banner.",
+              id: "1",
+              title: "Image Banner",
+              filepath: null,
+              url: "https://example.com/image-banner",
+              metadata: null,
+              chunk_id: null,
+              reindex_id: null,
+            },
+          ],
+          intent: "",
+        }),
+        date: "2026-01-01T00:00:00Z",
+      },
+      {
+        id: "message-assistant",
+        role: "assistant",
+        content: "See the source. [doc1]",
+        date: "2026-01-01T00:00:00Z",
+      },
+    ],
+    date: "2026-01-01T00:00:00Z",
+  });
+
+  it("renders a heading that is itself a markdown link as plain text, not a duplicate link (WCAG 2.4.4)", async () => {
+    renderChat({ currentChat: conversationWithLinkedHeadingCitation() });
+
+    await openCitation();
+
+    // Only the citation's own title link should be a real link; the body's
+    // heading-that-is-a-link must render as plain, non-link text.
+    expect(
+      screen.getAllByRole("link", { name: /Image Banner/i })
+    ).toHaveLength(1);
+    expect(
+      screen.getByRole("heading", { name: "Image Banner", level: 3 })
+    ).toBeInTheDocument();
+  });
+
+  // See normalizeCitationMarkdown in utils/ for why stray leading whitespace
+  // in the indexed text turns a setext heading into a code block plus an <hr>.
+  const conversationWithIndentedHeadingCitation = (): Conversation => ({
+    id: "conversation-1",
+    title: "Spotlight - Landscape",
+    messages: [
+      {
+        id: "message-tool",
+        role: "tool",
+        content: JSON.stringify({
+          citations: [
+            {
+              content:
+                "[ Spotlight - Landscape ](/blocks-for-visreg/spotlight-landscape)\n" +
+                "-----------------------------------------------------------------\n" +
+                "\n" +
+                "       Spotlight - Landscape Heading\n" +
+                "------------------------------\n" +
+                "\n" +
+                " Spotlight - Landscape Subheading\n",
+              id: "1",
+              title: "Spotlight - Landscape",
+              filepath: null,
+              url: "https://example.com/spotlight-landscape",
+              metadata: null,
+              chunk_id: null,
+              reindex_id: null,
+            },
+          ],
+          intent: "",
+        }),
+        date: "2026-01-01T00:00:00Z",
+      },
+      {
+        id: "message-assistant",
+        role: "assistant",
+        content: "See the source. [doc1]",
+        date: "2026-01-01T00:00:00Z",
+      },
+    ],
+    date: "2026-01-01T00:00:00Z",
+  });
+
+  it("renders a stray-indented setext heading as a heading, not a code block", async () => {
+    renderChat({ currentChat: conversationWithIndentedHeadingCitation() });
+
+    await openCitation();
+
+    const dialog = screen.getByRole("dialog", { name: "Citation 1" });
+
+    expect(
+      screen.getByRole("heading", {
+        name: "Spotlight - Landscape Heading",
+        level: 4,
+      })
+    ).toBeInTheDocument();
+    // The monospace box and the stray rule the misparse produced are both gone.
+    expect(dialog.querySelector("pre")).toBeNull();
+    expect(dialog.querySelector("hr")).toBeNull();
+    // The subheading stays ordinary paragraph text.
+    expect(
+      screen.getByText("Spotlight - Landscape Subheading").tagName
+    ).toBe("P");
+  });
+
+  // Only a heading that is ENTIRELY a link is unwrapped. A heading mixing
+  // prose with a genuine link must keep it, or the destination is lost with no
+  // other way for the reader to reach it.
+  const conversationWithProseAndLinkHeading = (): Conversation => ({
+    id: "conversation-1",
+    title: "Policy",
+    messages: [
+      {
+        id: "message-tool",
+        role: "tool",
+        content: JSON.stringify({
+          citations: [
+            {
+              content:
+                "## See the [policy page](https://example.com/policy) for details\n\nBody.",
+              id: "1",
+              title: "Policy",
+              filepath: null,
+              url: "https://example.com/policy-source",
+              metadata: null,
+              chunk_id: null,
+              reindex_id: null,
+            },
+          ],
+          intent: "",
+        }),
+        date: "2026-01-01T00:00:00Z",
+      },
+      {
+        id: "message-assistant",
+        role: "assistant",
+        content: "See the source. [doc1]",
+        date: "2026-01-01T00:00:00Z",
+      },
+    ],
+    date: "2026-01-01T00:00:00Z",
+  });
+
+  it("keeps a genuine link inside a heading that also contains prose", async () => {
+    renderChat({ currentChat: conversationWithProseAndLinkHeading() });
+
+    await openCitation();
+
+    expect(
+      screen.getByRole("link", { name: "policy page" })
+    ).toHaveAttribute("href", "https://example.com/policy");
+    expect(
+      screen.getByRole("heading", { name: /See the policy page for details/ })
+    ).toBeInTheDocument();
+  });
+
   it("returns focus to the triggering citation button when the overlay closes (WCAG 2.4.3)", async () => {
     renderChat({ currentChat: conversationWithRichCitation() });
 
     const chip = screen.getByRole("button", { name: "Citation 1" });
     await userEvent.click(chip);
     expect(
-      screen.getByRole("dialog", { name: "Citations" })
+      screen.getByRole("dialog", { name: "Citation 1" })
     ).toBeInTheDocument();
 
     await userEvent.click(
@@ -408,5 +586,138 @@ describe("Citation overlay accessibility (#1441)", () => {
     );
 
     expect(chip).toHaveFocus();
+  });
+});
+
+// Locates a selector's top-level rule and its counterpart nested in a media
+// query, together with their positions in the stylesheet. jsdom never *applies*
+// media queries, so asserting that the desktop row survived has to be done
+// against the CSS text itself rather than a computed style -- and because the
+// two rules have equal specificity, the position of each is part of what has to
+// be asserted, not just that both exist.
+const findOverridePair = (
+  condition: string,
+  selector: string
+):
+  | { baseIndex: number; mediaIndex: number; mediaRule: CSSStyleRule }
+  | undefined => {
+  for (const sheet of Array.from(document.styleSheets)) {
+    const rules = Array.from(sheet.cssRules);
+
+    const baseIndex = rules.findIndex(
+      rule => (rule as CSSStyleRule).selectorText === selector
+    );
+    if (baseIndex === -1) continue;
+
+    let mediaIndex = -1;
+    let mediaRule: CSSStyleRule | undefined;
+    rules.forEach((rule, index) => {
+      const media = (rule as CSSMediaRule).media;
+      if (!media?.mediaText.includes(condition)) return;
+
+      const nested = Array.from((rule as CSSMediaRule).cssRules).find(
+        candidate => (candidate as CSSStyleRule).selectorText === selector
+      );
+      // Keep the last match: if the stylesheet ever grows a second override
+      // block, that is the one that actually wins.
+      if (nested) {
+        mediaIndex = index;
+        mediaRule = nested as CSSStyleRule;
+      }
+    });
+    if (!mediaRule) continue;
+
+    return { baseIndex, mediaIndex, mediaRule };
+  }
+
+  return undefined;
+};
+
+describe("New chat / disclaimer layout (#1645)", () => {
+  // Realistic sample text. jsdom does no layout, so nothing here is actually
+  // length-sensitive -- the real narrow-viewport check is a browser one.
+  const DISCLAIMER =
+    "Responses may contain errors or omissions and should be verified against " +
+    "official Yale sources.";
+
+  beforeEach(() => {
+    const widget = document.createElement("div");
+    widget.id = "ys-beacon-chat-widget";
+    widget.setAttribute("data-disclaimer", DISCLAIMER);
+    document.body.appendChild(widget);
+  });
+
+  afterEach(() => {
+    document.getElementById("ys-beacon-chat-widget")?.remove();
+  });
+
+  const actionsRow = () =>
+    screen.getByRole("button", { name: "New chat" }).parentElement as HTMLElement;
+
+  it("styles the actions row from the stylesheet, not an inline style", () => {
+    renderChat();
+
+    const row = actionsRow();
+
+    // This is the regression fence for the defect itself: an inline style cannot
+    // be overridden by a media query, which is what made the mobile layout
+    // unfixable in the first place.
+    expect(row.getAttribute("style")).toBeNull();
+    expect(row).toHaveClass(styles.chatActions);
+  });
+
+  it("stacks the New chat button above a full-width disclaimer at narrow widths", () => {
+    renderChat();
+
+    // jsdom does not match `(min-width:800px)`, so the computed style here is the
+    // mobile-first base rule -- the layout a phone gets. flex-start is what keeps
+    // the button its natural size while letting the paragraph fill the panel;
+    // centring would re-narrow the disclaimer, stretching would blow the button
+    // out to full width.
+    const computed = getComputedStyle(actionsRow());
+
+    expect(computed.display).toBe("flex");
+    expect(computed.flexDirection).toBe("column");
+    expect(computed.alignItems).toBe("flex-start");
+    // Carried over verbatim from the inline style this rule replaced, and the
+    // two a refactor is most likely to drop silently.
+    expect(computed.gap).toBe("1rem");
+    expect(computed.width).toBe("100%");
+  });
+
+  it("restores the side-by-side desktop row at 800px and up", () => {
+    renderChat();
+
+    const desktop = findOverridePair(
+      "(min-width:800px)",
+      `.${styles.chatActions}`
+    );
+
+    expect(desktop, "no min-width:800px rule for the actions row").toBeDefined();
+    if (!desktop) return;
+
+    // Only the two properties that differ from the mobile base belong here.
+    // getPropertyValue, not the camelCase accessor: rules nested in a media
+    // query use jsdom's plainer CSSOM declaration, which has no typed props.
+    expect(desktop.mediaRule.style.getPropertyValue("flex-direction")).toBe("row");
+    expect(desktop.mediaRule.style.getPropertyValue("align-items")).toBe("center");
+    // Equal specificity, so source order is the whole override. Hoisting the
+    // media block above the mobile base (e.g. while grouping the stylesheet's
+    // breakpoints together) would leave desktop stacked in a column with every
+    // other assertion here still green.
+    expect(desktop.mediaIndex).toBeGreaterThan(desktop.baseIndex);
+  });
+
+  it("keeps the disclaimer inside the actions row and still described-by the input", () => {
+    renderChat();
+
+    const describedById = screen
+      .getByRole("textbox")
+      .getAttribute("aria-describedby");
+    const disclaimer = document.getElementById(describedById as string);
+
+    // The restructure must not move the disclaimer out of the row or break the
+    // screen-reader association with the question input.
+    expect(actionsRow()).toContainElement(disclaimer);
   });
 });

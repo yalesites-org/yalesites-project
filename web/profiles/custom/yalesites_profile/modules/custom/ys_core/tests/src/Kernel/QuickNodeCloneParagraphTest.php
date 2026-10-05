@@ -6,7 +6,6 @@ use Drupal\block_content\Entity\BlockContent;
 use Drupal\block_content\Entity\BlockContentType;
 use Drupal\field\Entity\FieldConfig;
 use Drupal\field\Entity\FieldStorageConfig;
-use Drupal\KernelTests\KernelTestBase;
 use Drupal\layout_builder\Section;
 use Drupal\layout_builder\SectionComponent;
 use Drupal\paragraphs\Entity\Paragraph;
@@ -23,7 +22,7 @@ use Drupal\paragraphs\Entity\ParagraphsType;
  *
  * @group ys_core
  */
-class QuickNodeCloneParagraphTest extends KernelTestBase {
+class QuickNodeCloneParagraphTest extends YsKernelTestBase {
 
   /**
    * {@inheritdoc}

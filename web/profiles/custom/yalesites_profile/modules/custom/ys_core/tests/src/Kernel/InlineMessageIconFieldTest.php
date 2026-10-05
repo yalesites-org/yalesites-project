@@ -6,7 +6,6 @@ use Drupal\block_content\Entity\BlockContent;
 use Drupal\block_content\Entity\BlockContentType;
 use Drupal\field\Entity\FieldConfig;
 use Drupal\field\Entity\FieldStorageConfig;
-use Drupal\KernelTests\KernelTestBase;
 use Symfony\Component\Yaml\Yaml;
 
 /**
@@ -21,7 +20,7 @@ use Symfony\Component\Yaml\Yaml;
  *
  * @group ys_core
  */
-class InlineMessageIconFieldTest extends KernelTestBase {
+class InlineMessageIconFieldTest extends YsKernelTestBase {
 
   /**
    * The icon every In-Line Message rendered before the field existed.

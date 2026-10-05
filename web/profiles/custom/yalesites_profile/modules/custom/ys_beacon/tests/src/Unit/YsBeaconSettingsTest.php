@@ -7,6 +7,7 @@ use Drupal\Core\Config\ConfigFactoryInterface;
 use Drupal\Core\Form\FormStateInterface;
 use Drupal\Core\Messenger\MessengerInterface;
 use Drupal\Tests\UnitTestCase;
+use Drupal\Tests\ys_core\Traits\ProtectedPropertyTrait;
 use Drupal\ys_beacon\Form\YsBeaconSettings;
 
 /**
@@ -22,6 +23,8 @@ use Drupal\ys_beacon\Form\YsBeaconSettings;
  * @coversDefaultClass \Drupal\ys_beacon\Form\YsBeaconSettings
  */
 class YsBeaconSettingsTest extends UnitTestCase {
+
+  use ProtectedPropertyTrait;
 
   /**
    * The form saves the presentation settings the site admin can edit.
@@ -94,23 +97,14 @@ class YsBeaconSettingsTest extends UnitTestCase {
     $form_state->method('getValue')->willReturnCallback(fn (string $key) => $values[$key] ?? NULL);
 
     $form = (new \ReflectionClass(YsBeaconSettings::class))->newInstanceWithoutConstructor();
-    $this->setProtected($form, 'configFactory', $factory);
-    $this->setProtected($form, 'messenger', $this->createMock(MessengerInterface::class));
-    $this->setProtected($form, 'stringTranslation', $this->getStringTranslationStub());
+    $this->setProtectedProperty($form, 'configFactory', $factory);
+    $this->setProtectedProperty($form, 'messenger', $this->createMock(MessengerInterface::class));
+    $this->setProtectedProperty($form, 'stringTranslation', $this->getStringTranslationStub());
 
     $form_array = [];
     $form->submitForm($form_array, $form_state);
 
     return $saved;
-  }
-
-  /**
-   * Sets a protected/inherited property on an object via reflection.
-   */
-  private function setProtected(object $object, string $property, mixed $value): void {
-    $reflection = new \ReflectionProperty($object, $property);
-    $reflection->setAccessible(TRUE);
-    $reflection->setValue($object, $value);
   }
 
 }

@@ -100,3 +100,13 @@ ys_ai_tester.rerun:
     _permission: 'use ys ai tester'
     _ys_beacon_authorized: 'TRUE'
     run_id: '\d+'
+
+ys_ai_tester.resume:
+  path: '/admin/config/yalesites/ys-beacon/tester/{run_id}/resume'
+  defaults:
+    _form: '\Drupal\ys_ai_tester\Form\AiTesterResumeForm'
+    _title: 'Resume test run'
+  requirements:
+    _permission: 'use ys ai tester'
+    _ys_beacon_authorized: 'TRUE'
+    run_id: '\d+'

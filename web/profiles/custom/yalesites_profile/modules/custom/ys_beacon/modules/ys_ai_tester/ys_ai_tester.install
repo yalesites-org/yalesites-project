@@ -25,6 +25,13 @@ function ys_ai_tester_schema(): array {
         'description' => 'The run this one was created by re-running, or 0 for an original run.',
       ],
       'status' => ['type' => 'varchar', 'length' => 32, 'not null' => TRUE, 'default' => 'processing'],
+      'changed' => [
+        'type' => 'int',
+        'unsigned' => TRUE,
+        'not null' => TRUE,
+        'default' => 0,
+        'description' => 'When this run last recorded progress, used to detect a batch that stopped without reporting.',
+      ],
       'question_count' => ['type' => 'int', 'unsigned' => TRUE, 'not null' => TRUE, 'default' => 0],
       'backend' => [
         'type' => 'varchar',
@@ -142,4 +149,34 @@ function ys_ai_tester_update_10002(): void {
       'description' => 'Error recorded against this question, or empty when it was answered.',
     ]);
   }
+}
+
+/**
+ * Add a progress heartbeat so abandoned runs can be reconciled.
+ */
+function ys_ai_tester_update_10003(): void {
+  $schema = \Drupal::database()->schema();
+
+  if (!$schema->fieldExists('ys_ai_tester_run', 'changed')) {
+    $schema->addField('ys_ai_tester_run', 'changed', [
+      'type' => 'int',
+      'unsigned' => TRUE,
+      'not null' => TRUE,
+      'default' => 0,
+      'description' => 'When this run last recorded progress, used to detect a batch that stopped without reporting.',
+    ]);
+  }
+
+  // Backfill from 'created' so existing rows carry a real timestamp rather than
+  // the epoch. Outside the guard above and scoped to rows still at the default,
+  // so it converges even if a failure between the two statements leaves the
+  // column added and the schema version unadvanced - addField() is DDL and does
+  // not roll back. Finished runs never consult the column, and any run still
+  // stuck on 'processing' predates this update by long enough to be reconciled
+  // on the next request either way, which is the point: those are the wedged
+  // runs this update exists to release.
+  \Drupal::database()->update('ys_ai_tester_run')
+    ->expression('changed', 'created')
+    ->condition('changed', 0)
+    ->execute();
 }

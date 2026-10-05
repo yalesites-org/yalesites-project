@@ -7,7 +7,7 @@ use Drupal\Core\Menu\MenuLinkTreeElement;
 use Drupal\Core\Session\AnonymousUserSession;
 use Drupal\field\Entity\FieldConfig;
 use Drupal\field\Entity\FieldStorageConfig;
-use Drupal\KernelTests\KernelTestBase;
+use Drupal\Tests\ys_core\Kernel\YsKernelTestBase;
 use Drupal\menu_link_content\Entity\MenuLinkContent;
 use Drupal\node\Entity\Node;
 use Drupal\node\Entity\NodeType;
@@ -31,7 +31,7 @@ use Drupal\ys_node_access\Menu\YsNodeAccessLinkTreeManipulator;
  * @group yalesites
  * @group ys_node_access
  */
-class YsNodeAccessLinkTreeManipulatorTest extends KernelTestBase {
+class YsNodeAccessLinkTreeManipulatorTest extends YsKernelTestBase {
 
   /**
    * {@inheritdoc}

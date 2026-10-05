@@ -2,7 +2,7 @@
 
 namespace Drupal\Tests\ys_book\Kernel;
 
-use Drupal\KernelTests\KernelTestBase;
+use Drupal\Tests\ys_core\Kernel\YsKernelTestBase;
 use Drupal\field\Entity\FieldConfig;
 use Drupal\field\Entity\FieldStorageConfig;
 use Drupal\node\Entity\Node;
@@ -21,7 +21,7 @@ use Drupal\ys_book\YsExpandBookManager;
  * @group ys_book
  * @group yalesites
  */
-class YsExpandBookManagerTest extends KernelTestBase {
+class YsExpandBookManagerTest extends YsKernelTestBase {
 
   /**
    * {@inheritdoc}

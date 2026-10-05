@@ -11,7 +11,7 @@ field_name: field_media
 entity_type: block_content
 bundle: audio
 label: 'Audio file'
-description: ''
+description: 'All audio should be described in text. For audio containing speech, a transcript should be provided.'
 required: true
 translatable: false
 default_value: {  }

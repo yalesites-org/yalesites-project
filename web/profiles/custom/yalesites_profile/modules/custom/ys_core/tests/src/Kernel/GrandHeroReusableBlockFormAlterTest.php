@@ -5,7 +5,6 @@ namespace Drupal\Tests\ys_core\Kernel;
 use Drupal\block_content\Entity\BlockContent;
 use Drupal\block_content\Entity\BlockContentType;
 use Drupal\Core\Form\FormState;
-use Drupal\KernelTests\KernelTestBase;
 
 /**
  * Tests ys_core_form_alter() on reusable vs inline block placements.
@@ -25,7 +24,7 @@ use Drupal\KernelTests\KernelTestBase;
  *
  * @group ys_core
  */
-class GrandHeroReusableBlockFormAlterTest extends KernelTestBase {
+class GrandHeroReusableBlockFormAlterTest extends YsKernelTestBase {
 
   /**
    * {@inheritdoc}

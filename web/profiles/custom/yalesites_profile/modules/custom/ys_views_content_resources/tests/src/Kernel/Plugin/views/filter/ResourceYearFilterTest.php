@@ -3,7 +3,7 @@
 namespace Drupal\Tests\ys_views_content_resources\Kernel\Plugin\views\filter;
 
 use Drupal\Core\Cache\Cache;
-use Drupal\KernelTests\KernelTestBase;
+use Drupal\Tests\ys_core\Kernel\YsKernelTestBase;
 use Drupal\node\Entity\Node;
 use Drupal\node\Entity\NodeType;
 use Drupal\field\Entity\FieldConfig;
@@ -22,7 +22,7 @@ use Drupal\ys_views_content_resources\Plugin\views\filter\ResourceYearFilter;
  * @group ys_views_content_resources
  * @group yalesites
  */
-class ResourceYearFilterTest extends KernelTestBase {
+class ResourceYearFilterTest extends YsKernelTestBase {
 
   /**
    * {@inheritdoc}

@@ -83,6 +83,19 @@ function ys_ai_tester_admin_settings_submit(array &$form, FormStateInterface $fo
 }
 
 /**
+ * Implements hook_cron().
+ *
+ * Reconciles runs whose batch died without reporting, so the repair is tied to
+ * the condition rather than to someone opening the tester. The forms reconcile
+ * on their own read paths too, because a user recovering a run should not have
+ * to wait for cron - but the run and comparison views do not, so without this a
+ * directly linked run keeps showing 'processing' indefinitely.
+ */
+function ys_ai_tester_cron(): void {
+  \Drupal::service('ys_ai_tester.stale_run_reconciler')->reconcile();
+}
+
+/**
  * Implements hook_theme().
  */
 function ys_ai_tester_theme(): array {

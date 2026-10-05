@@ -53,6 +53,24 @@ class DashboardAnnouncements {
   const FAILURE_MAX_AGE = 300;
 
   /**
+   * Seconds to wait for the whole feed request.
+   *
+   * Short because the admin-menu badge puts this fetch on every admin page's
+   * render path, where ClientFactory's 30s default would stall the page.
+   *
+   * @see \Drupal\Core\Http\ClientFactory
+   */
+  const FEED_TIMEOUT = 5;
+
+  /**
+   * Seconds to wait for the connection itself.
+   *
+   * Set explicitly because ClientFactory leaves it unset, which is what lets
+   * a host that drops packets run to the full request timeout.
+   */
+  const FEED_CONNECT_TIMEOUT = 2;
+
+  /**
    * The canonical platform announcements feed URL.
    *
    * Used when `ys_core.dashboard_settings:announcements_feed_url` is empty,
@@ -188,12 +206,23 @@ class DashboardAnnouncements {
         $timestamp = $raw_date !== '' ? strtotime((string) $raw_date) : FALSE;
       }
       $summary_source = $item['summary'] ?? $item['content_text'] ?? $item['content_html'] ?? '';
+      // Reads JSON Feed 1.1's own `tags` field, which the source controller
+      // populates with the post's whitelisted category names. Tolerates total
+      // absence of the key (an older cached entry, or a publisher that has
+      // not deployed this yet) by resolving to an empty list rather than
+      // erroring - the "cache shape gotcha" the issue flags.
+      $categories_raw = is_array($item['tags'] ?? NULL) ? $item['tags'] : [];
+      $categories = array_values(array_filter(
+        array_map(fn($value) => trim((string) $value), $categories_raw),
+        fn($value) => $value !== '',
+      ));
       $announcements[] = [
         'title' => isset($item['title']) ? (string) $item['title'] : '',
         'url' => isset($item['url']) ? UrlHelper::stripDangerousProtocols((string) $item['url']) : '',
         'summary' => trim(Unicode::truncate(Html::decodeEntities(strip_tags((string) $summary_source)), 300, TRUE, TRUE)),
         'timestamp' => $timestamp ?: NULL,
         'date' => $timestamp ? $this->dateFormatter->format($timestamp, 'custom', 'F j, Y') : '',
+        'categories' => $categories,
       ];
     }
 
@@ -235,7 +264,10 @@ class DashboardAnnouncements {
         return '{"items":[]}';
       }
     }
-    return (string) $this->httpClient->get($feed_url)->getBody();
+    return (string) $this->httpClient->get($feed_url, [
+      'timeout' => self::FEED_TIMEOUT,
+      'connect_timeout' => self::FEED_CONNECT_TIMEOUT,
+    ])->getBody();
   }
 
   /**

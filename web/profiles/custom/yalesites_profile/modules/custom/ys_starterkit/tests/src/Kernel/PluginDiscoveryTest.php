@@ -2,7 +2,7 @@
 
 namespace Drupal\Tests\ys_starterkit\Kernel;
 
-use Drupal\KernelTests\KernelTestBase;
+use Drupal\Tests\ys_core\Kernel\YsKernelTestBase;
 use Drupal\ys_starterkit\Plugin\Action\MediaBulkExport;
 use Drupal\ys_starterkit\Plugin\Action\TaxonomyBulkExport;
 use Drupal\ys_starterkit\Plugin\SingleContentSyncFieldProcessor\Embed;
@@ -21,7 +21,7 @@ use Drupal\ys_starterkit\Plugin\SingleContentSyncFieldProcessor\ViewsBasicParams
  * @group yalesites
  * @group ys_starterkit
  */
-class PluginDiscoveryTest extends KernelTestBase {
+class PluginDiscoveryTest extends YsKernelTestBase {
 
   /**
    * {@inheritdoc}

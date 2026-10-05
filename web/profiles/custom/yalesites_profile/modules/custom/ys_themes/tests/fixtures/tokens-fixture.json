@@ -18,10 +18,5 @@
     "blue": {
       "yale": "hsl(210, 100%, 21%)"
     }
-  },
-  "component-themes": {
-    "five": {
-      "background": "hsl(174, 57%, 93%)"
-    }
   }
 }

@@ -36,6 +36,11 @@ services:
   ys_core.taxonomy_vocabulary_manager:
     class: Drupal\ys_core\TaxonomyVocabularyManager
     arguments: ['@entity_type.manager', '@entity_field.manager']
+  # Corrects stored text formats a field's allowed_formats does not permit,
+  # which core's TextFormat element renders as a disabled widget.
+  ys_core.text_format_repair:
+    class: Drupal\ys_core\TextFormatRepair
+    arguments: ['@entity_type.manager', '@entity_field.manager', '@database', '@cache_tags.invalidator', '@entity_type.bundle.info']
   # Service for managing Facts and Figures icon options.
   ys_core.facts_and_figures_icon_manager:
     class: Drupal\ys_core\FactsAndFiguresIconManager
@@ -46,6 +51,10 @@ services:
     arguments: ['@current_user', '@request_stack']
     tags:
       - { name: event_subscriber }
+  # The platform's single answer to "is this account a platform admin?".
+  ys_core.platform_admin_checker:
+    class: Drupal\ys_core\PlatformAdminChecker
+    arguments: ['@current_user']
   # Manages platform-admin-only settings sections (extensible plugin type).
   ys_core.platform_admin_setting_manager:
     class: Drupal\ys_core\PlatformAdminSettingManager

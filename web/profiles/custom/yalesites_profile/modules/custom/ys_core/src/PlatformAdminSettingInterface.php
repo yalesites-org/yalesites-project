@@ -10,6 +10,11 @@ use Drupal\Core\Form\FormStateInterface;
  * Each plugin contributes a self-contained section (build, validate, and save)
  * to the platform-admin-only Platform Admin Settings form. The form owns
  * discovery and ordering; each plugin owns its own configuration.
+ *
+ * "Is this account a platform admin?" is not asked here. That question has one
+ * answer platform-wide, in ys_core.platform_admin_checker.
+ *
+ * @see \Drupal\ys_core\PlatformAdminCheckerInterface
  */
 interface PlatformAdminSettingInterface {
 

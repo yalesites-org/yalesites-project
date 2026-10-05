@@ -3,7 +3,7 @@
 namespace Drupal\Tests\ys_beacon\Kernel;
 
 use Drupal\Component\Datetime\TimeInterface;
-use Drupal\KernelTests\KernelTestBase;
+use Drupal\Tests\ys_core\Kernel\YsKernelTestBase;
 use Drupal\ys_beacon\Service\SuspectTurnLog;
 use Psr\Log\LoggerInterface;
 
@@ -22,7 +22,7 @@ use Psr\Log\LoggerInterface;
  * @group ys_beacon
  * @coversDefaultClass \Drupal\ys_beacon\Service\SuspectTurnLog
  */
-class SuspectTurnLogTest extends KernelTestBase {
+class SuspectTurnLogTest extends YsKernelTestBase {
 
   /**
    * {@inheritdoc}

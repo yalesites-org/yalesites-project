@@ -2,7 +2,7 @@
 
 namespace Drupal\Tests\ys_book\Kernel;
 
-use Drupal\KernelTests\KernelTestBase;
+use Drupal\Tests\ys_core\Kernel\YsKernelTestBase;
 
 /**
  * Tests that ys_book adds its title column to the contrib book table.
@@ -15,7 +15,7 @@ use Drupal\KernelTests\KernelTestBase;
  * @group ys_book
  * @group yalesites
  */
-class BookTitleColumnTest extends KernelTestBase {
+class BookTitleColumnTest extends YsKernelTestBase {
 
   /**
    * {@inheritdoc}

@@ -4,7 +4,6 @@ namespace Drupal\Tests\ys_core\Kernel;
 
 use Drupal\Core\Session\AnonymousUserSession;
 use Drupal\Core\Url;
-use Drupal\KernelTests\KernelTestBase;
 use Drupal\user\Entity\User;
 use Drupal\ys_core\DashboardAnnouncements;
 
@@ -19,7 +18,7 @@ use Drupal\ys_core\DashboardAnnouncements;
  * @group ys_core
  * @group yalesites
  */
-class DashboardToolbarBadgeTest extends KernelTestBase {
+class DashboardToolbarBadgeTest extends YsKernelTestBase {
 
   /**
    * {@inheritdoc}

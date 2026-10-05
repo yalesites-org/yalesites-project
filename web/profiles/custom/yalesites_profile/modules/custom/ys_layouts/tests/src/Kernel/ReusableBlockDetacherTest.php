@@ -2,11 +2,11 @@
 
 namespace Drupal\Tests\ys_layouts\Kernel;
 
+use Drupal\Tests\ys_core\Kernel\YsKernelTestBase;
 use Drupal\block_content\Entity\BlockContent;
 use Drupal\block_content\Entity\BlockContentType;
 use Drupal\field\Entity\FieldConfig;
 use Drupal\field\Entity\FieldStorageConfig;
-use Drupal\KernelTests\KernelTestBase;
 use Drupal\layout_builder\SectionComponent;
 use Drupal\paragraphs\Entity\Paragraph;
 use Drupal\paragraphs\Entity\ParagraphsType;
@@ -23,7 +23,7 @@ use Drupal\ys_layouts\ReusableBlockDetacher;
  * @group ys_layouts
  * @coversDefaultClass \Drupal\ys_layouts\ReusableBlockDetacher
  */
-class ReusableBlockDetacherTest extends KernelTestBase {
+class ReusableBlockDetacherTest extends YsKernelTestBase {
 
   /**
    * {@inheritdoc}
