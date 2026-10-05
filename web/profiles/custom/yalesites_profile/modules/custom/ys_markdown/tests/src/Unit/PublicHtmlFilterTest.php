@@ -142,4 +142,159 @@ HTML;
     $this->assertStringNotContainsString('The Title', $out);
   }
 
+  /**
+   * A form is replaced by one fallback line, never dropped silently.
+   *
+   * @covers ::filter
+   */
+  public function testFormBecomesFallback(): void {
+    $out = $this->filter('<p>Before</p><form><div><form>INNER</form>GRID</div></form><p>After</p>');
+    $this->assertStringNotContainsString('GRID', $out);
+    $this->assertStringNotContainsString('INNER', $out);
+    $this->assertSame(1, substr_count($out, 'Interactive form: available on the web page.'));
+    $this->assertStringContainsString('After', $out);
+  }
+
+  /**
+   * Elements hidden from screen readers are dropped with their contents.
+   *
+   * @covers ::filter
+   */
+  public function testAriaHiddenRemoved(): void {
+    $out = $this->filter('<ul><li>A</li><li aria-hidden="true" class="d">|</li><li>B</li></ul>');
+    $this->assertStringNotContainsString('|', $out);
+    $this->assertStringContainsString('B', $out);
+  }
+
+  /**
+   * A data: link is removed with its text; other unsafe links are unwrapped.
+   *
+   * @covers ::filter
+   */
+  public function testDataLinkRemoved(): void {
+    $out = $this->filter('<p>Hi <a href=" DATA:text/calendar;base64,AAAA" class="cta">Add to Calendar</a></p><p><a href="javascript:x()">Plain</a></p>');
+    $this->assertStringNotContainsString('Add to Calendar', $out);
+    $this->assertStringContainsString('Hi', $out);
+    $this->assertStringContainsString('<p>Plain</p>', $out);
+  }
+
+  /**
+   * Edge space of an inline element moves outside it instead of vanishing.
+   *
+   * @covers ::filter
+   */
+  public function testInlineEdgeSpaceKept(): void {
+    $out = $this->filter('<p><span><strong>Lorem ipsum dolor </strong>sit amet</span><em><span> per, diam</span></em></p>');
+    $this->assertStringContainsString('<strong>Lorem ipsum dolor</strong> sit amet', $out);
+    $this->assertStringContainsString('</span> <em>', $out);
+    $this->assertStringContainsString('<span>per, diam</span></em>', $out);
+    $out = $this->filter('<p><em> x </em></p>');
+    $this->assertStringContainsString('<p><em>x</em></p>', $out);
+  }
+
+  /**
+   * A list that opens with a nested list becomes a line of text.
+   *
+   * @covers ::filter
+   */
+  public function testLeadingNestedListFlattened(): void {
+    $out = $this->filter('<ul><li><ul class="t"><li>Arts &amp; Humanities</li><li>Science</li></ul><h3>Event</h3></li><li>Plain <ul><li>kept</li></ul></li></ul>');
+    $this->assertStringContainsString('<p>Arts &amp; Humanities, Science</p>', $out);
+    $this->assertStringContainsString('<li>kept</li>', $out);
+  }
+
+  /**
+   * A media oEmbed proxy iframe links to the underlying video URL.
+   *
+   * @covers ::filter
+   */
+  public function testOembedIframeLinksToSource(): void {
+    $src = 'https://site.test/media/oembed?url=https%3A//www.youtube.com/watch%3Fv%3DahDqeHiaO9M&max_width=0&hash=x';
+    $out = $this->filter('<iframe src="' . $src . '" title="What Is Drupal?"></iframe>');
+    $this->assertStringContainsString('href="https://www.youtube.com/watch?v=ahDqeHiaO9M"', $out);
+    $this->assertStringContainsString('>What Is Drupal?</a>', $out);
+    $this->assertStringNotContainsString('site.test', $out);
+
+    $out = $this->filter('<iframe src="https://site.test/media/oembed?url=javascript%3Aalert(1)" title="Bad"></iframe>');
+    $this->assertStringNotContainsString('href="javascript', $out);
+    $this->assertStringNotContainsString('href', $out);
+    $this->assertStringContainsString('Embedded content: Bad', $out);
+  }
+
+  /**
+   * Builds a listing of the given number of items.
+   */
+  protected function listing(int $count, string $extra = ''): string {
+    $items = '';
+    for ($i = 1; $i <= $count; $i++) {
+      $items .= "<li>Item $i</li>";
+    }
+    return '<div class="foo ys-view bar"><ul>' . $items . '</ul>' . $extra . '</div>';
+  }
+
+  /**
+   * A listing keeps its first items and says that more exist.
+   *
+   * @covers ::filter
+   */
+  public function testListingCapAddsMoreLine(): void {
+    $out = $this->filter($this->listing(PublicHtmlFilter::LISTING_ITEM_CAP + 5));
+    $this->assertStringContainsString('Item 50<', $out);
+    $this->assertStringNotContainsString('Item 51<', $out);
+    $this->assertSame(1, substr_count($out, 'More items are listed on the web page.'));
+  }
+
+  /**
+   * A pager means more pages exist, even when the list is short.
+   *
+   * @covers ::filter
+   */
+  public function testListingPagerAddsMoreLine(): void {
+    $out = $this->filter($this->listing(3, '<nav class="pager"><a href="?page=1">Next</a></nav>'));
+    $this->assertStringContainsString('Item 3<', $out);
+    $this->assertSame(1, substr_count($out, 'More items are listed on the web page.'));
+    $this->assertStringNotContainsString('Next', $out);
+  }
+
+  /**
+   * A short listing without a pager gets no sentence.
+   *
+   * @covers ::filter
+   */
+  public function testShortListingHasNoMoreLine(): void {
+    $out = $this->filter($this->listing(3));
+    $this->assertStringContainsString('Item 3<', $out);
+    $this->assertStringNotContainsString('More items', $out);
+    $out = $this->filter('<ul>' . str_repeat('<li>x</li>', 60) . '</ul>');
+    $this->assertSame(60, substr_count($out, '<li>'));
+  }
+
+  /**
+   * A category list inside a wrapper at the start of a card is flattened.
+   *
+   * @covers ::filter
+   */
+  public function testWrappedLeadingListFlattened(): void {
+    $out = $this->filter('<ul><li class="reference-card"><div class="reference-card__content"><ul class="taxonomy-list taxonomy-list--categories"><li>Arts &amp; Humanities</li><li aria-hidden="true">|</li></ul><h3>Event</h3></div><div class="reference-card__image"><img src="/a.png" alt="x"></div></li></ul>');
+    $this->assertStringContainsString('<p>Arts &amp; Humanities</p>', $out);
+    $this->assertStringNotContainsString('taxonomy-list', $out);
+    $out = $this->filter('<ul><li><div><img src="/a.png" alt="x"></div><div><ul><li>Kept</li></ul></div></li></ul>');
+    $this->assertStringContainsString('<li>Kept</li>', $out);
+  }
+
+  /**
+   * Exposed filter forms vanish silently; other forms leave the fallback.
+   *
+   * @covers ::filter
+   */
+  public function testExposedFormSilentOtherFormsFallback(): void {
+    $out = $this->filter('<form class="views-exposed-form ys-filter-form">FILTER</form><p>Keep</p>');
+    $this->assertStringNotContainsString('FILTER', $out);
+    $this->assertStringNotContainsString('Interactive form', $out);
+    foreach (['webform-submission-form', 'event-calendar-filter-form'] as $class) {
+      $out = $this->filter('<form class="' . $class . '">X</form><p>Keep</p>');
+      $this->assertStringContainsString('Interactive form: available on the web page.', $out);
+    }
+  }
+
 }

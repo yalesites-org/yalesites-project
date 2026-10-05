@@ -29,13 +29,48 @@ All of these must hold, otherwise the response is a 404:
 The 404 carries the cache tags of the setting, CAS config and the node, so
 changing any of them takes effect without a cache clear.
 
-## Leaving page chrome out
+## Conventions for component authors
 
-The HTML is cleaned before conversion: `script`, `style`, `noscript`,
-`template`, `nav`, `button` and `form` are removed, and an `iframe` becomes a
-line "Embedded content: <title>" linking to its source. Image alt text, figure
-captions and tables are kept. Add the attribute `data-markdown-skip` to any
-element in a template to leave it (and everything inside it) out of the Markdown.
+The HTML is cleaned before conversion, so the Markdown is only as good as
+the markup a template renders. When you build or change a component:
+
+- Use semantic markup: real headings (`h2` to `h6`), real lists, `figure`
+  and `figcaption` for captioned images, and `table` for tabular data. Give
+  informative images an `alt` text and decorative images an empty `alt=""`.
+- Add the attribute `data-markdown-skip` to any element that is page
+  chrome. It is left out of the Markdown with everything inside it.
+- Content marked `aria-hidden="true"` is dropped. Content hidden from screen
+  readers is decorative, so AI readers skip it too.
+- `script`, `style`, `noscript`, `template`, `nav` and `button` are
+  removed. A `form` is replaced by one line, "Interactive form: available
+  on the web page.", so a form never vanishes without a trace. The
+  exception is a Views exposed filter form (class `views-exposed-form`),
+  which is chrome and is removed silently. Links to `data:` URLs (such as
+  calendar downloads) are removed with their text.
+- An `iframe` becomes a line "Embedded content: <title>" linking to its
+  source. The `title` attribute is the link text, so always set it. A
+  Drupal media `/media/oembed` proxy URL is replaced by the video URL
+  behind it.
+- A listing (a Views block wrapped in an element with the class `ys-view`)
+  keeps its first 50 items. When items were cut, or the listing has a
+  pager, the line "More items are listed on the web page." follows it.
+- A list that opens a list item, even inside wrapper elements (such as a
+  card's category list), is written as one comma-separated line.
+- Do not convey meaning by colour or position alone. Markdown has neither.
+
+## Component audit
+
+| Category | Blocks | Result |
+|---|---|---|
+| Text and callouts | text, callout, quote_callout, pull_quote, wrapped_text_callout, inline_message, facts | Clean |
+| Banners | grand_hero, cta_banner, image_banner, video_banner | Clean; the video banner links the video |
+| Cards and grids | reference_card, custom_cards, tiles, content_spotlight, content_spotlight_portrait, link_grid, quick_links, button_link | Clean |
+| Media | image, wrapped_image, gallery, media_grid, video | Clean; alt text kept; video links the source |
+| Embeds | embed | Social posts kept as quotes; iframes become links |
+| Interactive | accordion, tabs | Headings and panels kept in order |
+| Forms | webform, event_calendar | Fallback line |
+| Listings | view, post_list, event_list, resource_view, directory | First page, capped at 50, "more" line, category lists flattened |
+| Navigation and chrome | breadcrumbs, menus, pagers, buttons, divider | Dropped |
 
 ## Query strings
 

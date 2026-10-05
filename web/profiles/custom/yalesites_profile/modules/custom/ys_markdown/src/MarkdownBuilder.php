@@ -55,7 +55,7 @@ class MarkdownBuilder {
 
     $html = $this->renderAsAnonymous($node, $cacheability);
     $title = trim($node->label() ?? '');
-    $body = $this->convert($this->htmlFilter->filter($html, $title));
+    $body = self::convert($this->htmlFilter->filter($html, $title));
 
     $markdown = '# ' . $title . "\n\n"
       . 'Source: ' . $url->getGeneratedUrl() . "\n"
@@ -140,7 +140,7 @@ class MarkdownBuilder {
   /**
    * Converts filtered HTML to Markdown.
    */
-  protected function convert(string $html): string {
+  public static function convert(string $html): string {
     $converter = new HtmlConverter([
       'strip_tags' => TRUE,
       'strip_placeholder_links' => TRUE,
