@@ -6,6 +6,8 @@ use Drupal\Core\Config\ConfigFactoryInterface;
 use Drupal\Core\Entity\EntityFieldManagerInterface;
 use Drupal\Core\Entity\EntityTypeManagerInterface;
 use Drupal\Core\Field\FieldTypePluginManagerInterface;
+use Drupal\Core\StringTranslation\TranslatableMarkup;
+use Drupal\media\Attribute\MediaSource;
 use Drupal\media\MediaInterface;
 use Drupal\media\MediaSourceBase;
 use Drupal\media\MediaSourceFieldConstraintsInterface;
@@ -14,18 +16,15 @@ use Symfony\Component\DependencyInjection\ContainerInterface;
 
 /**
  * Provides a media source plugin for embedding external content.
- *
- * @MediaSource(
- *   id = "embed",
- *   label = @Translation("Embed source"),
- *   description = @Translation("Used to embed external content"),
- *   allowed_field_types = {"embed"},
- *   default_thumbnail_filename = "generic.png",
- *   forms = {
- *     "media_library_add" = "\Drupal\ys_embed\Form\EmbedMediaLibraryAddForm",
- *   }
- * )
  */
+#[MediaSource(
+  id: 'embed',
+  label: new TranslatableMarkup('Embed source'),
+  description: new TranslatableMarkup('Used to embed external content'),
+  allowed_field_types: ['embed'],
+  default_thumbnail_filename: 'generic.png',
+  forms: ['media_library_add' => '\Drupal\ys_embed\Form\EmbedMediaLibraryAddForm'],
+)]
 class Embed extends MediaSourceBase implements MediaSourceFieldConstraintsInterface {
 
   /**

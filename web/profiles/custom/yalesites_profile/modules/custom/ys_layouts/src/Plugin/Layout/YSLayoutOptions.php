@@ -85,7 +85,7 @@ class YSLayoutOptions extends LayoutDefault implements ContainerFactoryPluginInt
     // palette slot each option resolves to and why slot-three is excluded.
     $form['theme'] = [
       '#type' => 'select',
-      '#title' => $this->t('Component theme'),
+      '#title' => $this->t('Section Theme'),
       '#default_value' => $saved_theme,
       '#options' => [
         'default' => $this->t('Default - no color'),
