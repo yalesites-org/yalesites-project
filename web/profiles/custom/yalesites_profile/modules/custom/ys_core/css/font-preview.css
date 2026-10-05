@@ -46,8 +46,26 @@
 }
 
 .numeral-sample-value {
-  font-family: Mallory, sans-serif;
   font-size: 1.5rem;
+}
+
+/* Body numerals sample: body text is always Mallory. */
+.numeral-sample-body .numeral-sample-value {
+  font-family: Mallory, sans-serif;
+}
+
+/* Heading numerals sample: font family follows the heading font select,
+   since a heading's numerals render in whatever font the heading uses. */
+.font-preview-numerals:not([data-heading-font="mallory"])
+  .numeral-sample-heading
+  .numeral-sample-value {
+  font-family: YaleNew, serif;
+}
+
+.font-preview-numerals[data-heading-font="mallory"]
+  .numeral-sample-heading
+  .numeral-sample-value {
+  font-family: Mallory, sans-serif;
 }
 
 .font-preview-numerals:not([data-heading-numerals="lining"])

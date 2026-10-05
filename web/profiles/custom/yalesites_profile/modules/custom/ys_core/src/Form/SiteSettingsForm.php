@@ -319,7 +319,9 @@ class SiteSettingsForm extends ConfigFormBase implements ContainerInjectionInter
     ];
 
     // One preview area serves both numeral selects, since the two styles can
-    // now differ from each other. Each sample's digits are hidden from
+    // now differ from each other. The heading sample also carries the heading
+    // font, since a heading's numerals render in whichever font is selected
+    // there, not always Mallory. Each sample's digits are hidden from
     // assistive technology because the style difference (old-style digits
     // sitting below the baseline vs. lining digits at cap height) is purely
     // visual - the label beside each sample is what a screen reader needs.
@@ -327,6 +329,7 @@ class SiteSettingsForm extends ConfigFormBase implements ContainerInjectionInter
       '#type' => 'container',
       '#attributes' => [
         'class' => ['font-preview-container', 'font-preview-numerals'],
+        'data-heading-font' => $heading_font,
         'data-heading-numerals' => $heading_numerals,
         'data-body-numerals' => $body_numerals,
       ],
