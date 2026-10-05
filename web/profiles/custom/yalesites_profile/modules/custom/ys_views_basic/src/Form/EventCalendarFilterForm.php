@@ -153,7 +153,6 @@ class EventCalendarFilterForm extends FormBase {
       'category_included_terms',
       'audience_included_terms',
       'custom_vocab_included_terms',
-      'parent_terms',
       'terms_include',
       'terms_exclude',
       'term_operator',
@@ -388,7 +387,6 @@ class EventCalendarFilterForm extends FormBase {
       'terms_exclude' => is_array($terms_exclude) ? json_encode(array_values($terms_exclude)) : $terms_exclude,
       'term_operator' => $paramsDecoded['operator'] ?? '+',
       'event_time_period' => $paramsDecoded['filters']['event_time_period'] ?? 'all',
-      'parent_terms' => json_encode($this->getParentTerms($paramsDecoded), JSON_FORCE_OBJECT),
     ];
 
     foreach ($filterHiddenFields as $field => $value) {
@@ -440,37 +438,12 @@ class EventCalendarFilterForm extends FormBase {
       'category_included_terms' => [],
       'audience_included_terms' => [],
       'custom_vocab_included_terms' => [],
-      'parent_terms' => $this->getParentTerms($paramsDecoded),
       'terms_include' => $paramsDecoded['terms_include'] ?? [],
       'terms_exclude' => $paramsDecoded['terms_exclude'] ?? [],
       'term_operator' => $paramsDecoded['operator'] ?? '+',
       'event_time_period' => $paramsDecoded['filters']['event_time_period'] ?? 'all',
       'search' => $paramsDecoded['search'] ?? '',
     ];
-  }
-
-  /**
-   * Maps the configured parent term params to vocabulary ID => parent term ID.
-   *
-   * @param array $paramsDecoded
-   *   The decoded parameters.
-   *
-   * @return array
-   *   Parent term IDs keyed by vocabulary ID; unset parents are omitted.
-   */
-  private function getParentTerms(array $paramsDecoded): array {
-    $map = [
-      'event_category' => 'category_included_terms',
-      'audience' => 'audience_included_terms',
-      'custom_vocab' => 'custom_vocab_included_terms',
-    ];
-    $parents = [];
-    foreach ($map as $vid => $param) {
-      if (!empty($paramsDecoded[$param])) {
-        $parents[$vid] = $paramsDecoded[$param];
-      }
-    }
-    return $parents;
   }
 
   /**
@@ -526,7 +499,6 @@ class EventCalendarFilterForm extends FormBase {
       'category_included_terms' => $ensureArray($getFilterValue('category_included_terms', [])),
       'audience_included_terms' => $ensureArray($getFilterValue('audience_included_terms', [])),
       'custom_vocab_included_terms' => $ensureArray($getFilterValue('custom_vocab_included_terms', [])),
-      'parent_terms' => $ensureArray($getFilterValue('parent_terms', [])),
       'terms_include' => $ensureArray($getFilterValue('terms_include', [])),
       'terms_exclude' => $ensureArray($getFilterValue('terms_exclude', [])),
       'term_operator' => $getFilterValue('term_operator', '+'),

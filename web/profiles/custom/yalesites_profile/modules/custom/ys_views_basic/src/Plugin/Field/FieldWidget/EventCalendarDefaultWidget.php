@@ -339,10 +339,14 @@ class EventCalendarDefaultWidget extends ViewsBasicDefaultWidget {
    *   The form element array.
    */
   private function createTaxonomyFilterElement(string $title, string $vocabulary_id, string $field_name, FieldItemListInterface $items, int $delta, string $visibility_selector): array {
+    $description = $this->t('Select a parent term to limit the choices visitors see in the filter dropdown. This does not hide any events. To show or hide events, use the include and exclude terms.');
+    if ($vocabulary_id === 'event_category') {
+      $description = $this->t('Select a parent term to limit the choices visitors see in the filter dropdown. This does not hide any events. To show or hide events, use the include and exclude terms. Categories imported from Localist that are outside the parent will not appear as choices.');
+    }
     return [
       '#type' => 'select',
       '#title' => $this->t('@title', ['@title' => $title]),
-      '#description' => $this->t("Select a parent term to show only events tagged with its sub-items. Events tagged only with the parent term, or only with terms outside it, are hidden from the calendar. Categories imported from Localist may fall outside the parent you choose."),
+      '#description' => $description,
       '#options' => $this->viewsBasicManager->getTaxonomyParents($vocabulary_id),
       '#default_value' => $this->getDefaultParamValue($field_name, $items, $delta),
       '#validated' => 'true',

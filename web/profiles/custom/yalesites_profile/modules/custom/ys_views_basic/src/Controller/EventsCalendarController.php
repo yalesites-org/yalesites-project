@@ -52,7 +52,6 @@ final class EventsCalendarController extends ControllerBase {
     $term_operator = $request->request->get('term_operator');
     $event_time_period = $request->request->get('event_time_period');
     $search = $request->request->get('search');
-    $parent_terms = $this->decodeArray($request->request->get('parent_terms'));
 
     $category_included_terms = $this->decodeArray($category_included_terms);
     $audience_included_terms = $this->decodeArray($audience_included_terms);
@@ -70,7 +69,6 @@ final class EventsCalendarController extends ControllerBase {
       'term_operator' => $term_operator,
       'event_time_period' => $event_time_period,
       'search' => $search,
-      'parent_terms' => $parent_terms,
     ];
 
     // Get filtered calendar (service must be updated to support filters).

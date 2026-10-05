@@ -17,9 +17,7 @@ interface EventsCalendarInterface {
    * @param string $year
    *   The year as a four-digit string (e.g., 'yyyy').
    * @param array $filters
-   *   (optional) An associative array of filters, e.g. taxonomy term IDs. The
-   *   parent_terms key maps vocabulary ID to a parent term ID and limits events
-   *   to those tagged with a descendant of that parent.
+   *   (optional) An associative array of filters, e.g. taxonomy term IDs.
    *
    * @return array
    *   A two-dimensional array representing the calendar grid.

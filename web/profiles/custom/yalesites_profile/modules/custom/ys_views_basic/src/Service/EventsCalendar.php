@@ -116,30 +116,7 @@ class EventsCalendar implements EventsCalendarInterface {
     // Note: event_time_period must be checked separately as 'all' means
     // no time filtering.
     $has_time_filter = !empty($filters['event_time_period']) && $filters['event_time_period'] !== 'all';
-
-    // Parent terms (vocabulary ID => parent term ID) restrict events to those
-    // tagged with a descendant of the parent, never the parent itself. A
-    // parent with no descendants (a leaf term) falls back to filtering on the
-    // parent term itself. The value may come from an untrusted request, so
-    // keep only known vocabularies and positive integer IDs.
-    $parent_fields = [
-      'event_category' => 'field_category',
-      'audience' => 'field_audience',
-      'custom_vocab' => 'field_custom_vocab',
-    ];
-    $parent_tids = [];
-    $parent_terms = is_array($filters['parent_terms'] ?? NULL) ? $filters['parent_terms'] : [];
-    foreach ($parent_fields as $vid => $field) {
-      $parent_tid = is_scalar($parent_terms[$vid] ?? NULL) ? (int) $parent_terms[$vid] : 0;
-      if ($parent_tid > 0) {
-        $parent_tids[$field] = array_map(
-          fn($term) => (int) $term->tid,
-          $this->entityTypeManager->getStorage('taxonomy_term')->loadTree($vid, $parent_tid, NULL)
-        ) ?: [$parent_tid];
-      }
-    }
-
-    if ($parent_tids || !empty($filters['category_included_terms']) || !empty($filters['audience_included_terms']) || !empty($filters['custom_vocab_included_terms']) || !empty($filters['terms_include']) || !empty($filters['terms_exclude']) || $has_time_filter) {
+    if (!empty($filters['category_included_terms']) || !empty($filters['audience_included_terms']) || !empty($filters['custom_vocab_included_terms']) || !empty($filters['terms_include']) || !empty($filters['terms_exclude']) || $has_time_filter) {
       $category_tids = [];
       $audience_tids = [];
       $custom_vocab_tids = [];
@@ -186,7 +163,7 @@ class EventsCalendar implements EventsCalendarInterface {
         }
       }
 
-      $monthlyEvents = array_filter($monthlyEvents, function ($node) use ($parent_tids, $category_tids, $audience_tids, $custom_vocab_tids, $terms_include, $terms_exclude, $term_operator, $event_time_period) {
+      $monthlyEvents = array_filter($monthlyEvents, function ($node) use ($category_tids, $audience_tids, $custom_vocab_tids, $terms_include, $terms_exclude, $term_operator, $event_time_period) {
         // Time period filtering.
         if ($event_time_period && $event_time_period !== 'all') {
           $current_timestamp = time();
@@ -232,13 +209,6 @@ class EventsCalendar implements EventsCalendarInterface {
           }
 
           if (!$event_has_valid_time) {
-            return FALSE;
-          }
-        }
-        // Check parent terms: need at least one descendant of each parent.
-        foreach ($parent_tids as $field => $allowed_tids) {
-          $node_tids = array_map(fn($term) => (int) $term->id(), $node->get($field)->referencedEntities());
-          if (!array_intersect($allowed_tids, $node_tids)) {
             return FALSE;
           }
         }
