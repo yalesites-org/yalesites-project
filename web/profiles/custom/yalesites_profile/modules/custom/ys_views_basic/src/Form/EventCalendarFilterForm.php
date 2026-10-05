@@ -434,9 +434,10 @@ class EventCalendarFilterForm extends FormBase {
    */
   private function getFiltersFromParams(array $paramsDecoded): array {
     return [
-      'category_included_terms' => $paramsDecoded['category_included_terms'] ?? [],
-      'audience_included_terms' => $paramsDecoded['audience_included_terms'] ?? [],
-      'custom_vocab_included_terms' => $paramsDecoded['custom_vocab_included_terms'] ?? [],
+      // The block params hold parent terms, not visitor selections.
+      'category_included_terms' => [],
+      'audience_included_terms' => [],
+      'custom_vocab_included_terms' => [],
       'terms_include' => $paramsDecoded['terms_include'] ?? [],
       'terms_exclude' => $paramsDecoded['terms_exclude'] ?? [],
       'term_operator' => $paramsDecoded['operator'] ?? '+',
