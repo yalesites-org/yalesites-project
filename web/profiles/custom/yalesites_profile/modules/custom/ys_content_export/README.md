@@ -43,19 +43,21 @@ the Add user actions. It is available to anyone who can open the page, and it
 exports the accounts matching the filters and search currently applied on
 screen. One row per account, with these columns:
 
-- **Username** — the account username, matching the on-screen column. Accounts
-  here are provisioned from CAS, so that username is the person's NetID. An
-  account saved without one exports its display name rather than a blank cell.
+- **NetID** — the account username. Accounts here are provisioned from CAS, so
+  that username is the person's NetID, and the column is headed the way admins
+  refer to it; the on-screen column calls it "Username". An account saved
+  without one exports its display name rather than a blank cell.
 - **Name** — first and last name, as the on-screen Name column shows them.
 - **Status** — Active or Blocked.
 - **Roles** — every role on the account, separated by ", ", matching the
   on-screen column. An account with no role beyond the implicit
   "authenticated" exports an empty cell.
-- **Member for** and **Last access** — exported as `YYYY-MM-DD` dates rather
+- **Member since** and **Last access** — exported as `YYYY-MM-DD` dates rather
   than the relative text ("3 years 2 months", "1 week ago") shown on screen,
-  because a spreadsheet can sort a date and cannot sort that text. The headers
-  still match the screen so the columns can be lined up. An account that has
-  never logged in exports an **empty** Last access cell, not 1970-01-01.
+  because a spreadsheet can sort a date and cannot sort that text. The screen's
+  "Member for" column is headed **Member since** here, since the cell holds a
+  join date rather than a duration. An account that has never logged in exports
+  an **empty** Last access cell, not 1970-01-01.
 
 Dates render in the site's timezone.
 
@@ -106,9 +108,10 @@ Dates render in the site's timezone.
 - Considered the `views_data_export` contrib module; a single custom exporter
   was chosen to avoid five duplicated export-display configs and a new
   serialization surface. See the PR for the trade-off.
-- "Member for" keeps its on-screen header but changes meaning: on screen it is
-  a duration, in the CSV it is the join date. Renaming it to "Member since"
-  would sort better conceptually but would stop matching the screen, which the
-  issue asked for; the README and KB page carry the explanation instead.
+- Two headers deliberately differ from the People screen, because the screen's
+  wording does not describe what the exported cell holds: "Username" is headed
+  **NetID**, and "Member for" (a duration) is headed **Member since** (a date).
+  The other four match the screen exactly. The KB page should call the mapping
+  out so admins reading both can line the columns up.
 - The user-guide/KB page lives in Yale's KB, not this repo, so extending it to
   cover People is tracked separately; this README is the in-repo reference.

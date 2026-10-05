@@ -27,17 +27,17 @@ class PeopleExportBuilderTest extends UnitTestCase {
     $columns = PeopleExportBuilder::getColumns();
 
     $this->assertSame(
-      ['username', 'full_name', 'status', 'roles', 'created', 'access'],
+      ['netid', 'full_name', 'status', 'roles', 'created', 'access'],
       array_keys($columns)
     );
     $this->assertSame(
-      ['Username', 'Name', 'Status', 'Roles', 'Member for', 'Last access'],
+      ['NetID', 'Name', 'Status', 'Roles', 'Member since', 'Last access'],
       array_values($columns)
     );
   }
 
   /**
-   * Tests the Username cell, including an account saved without a name.
+   * Tests the NetID cell, including an account saved without a name.
    *
    * @param string $account_name
    *   The stored account name.
@@ -46,26 +46,26 @@ class PeopleExportBuilderTest extends UnitTestCase {
    * @param string $expected
    *   The expected cell output.
    *
-   * @dataProvider usernameProvider
+   * @dataProvider netidProvider
    * @covers ::cellValue
    */
-  public function testUsernameCell(string $account_name, string $display_name, string $expected): void {
+  public function testNetidCell(string $account_name, string $display_name, string $expected): void {
     $user = $this->createMock(UserInterface::class);
     $user->method('getAccountName')->willReturn($account_name);
     $user->method('getDisplayName')->willReturn($display_name);
 
-    $this->assertSame($expected, $this->cellValue($user, 'username'));
+    $this->assertSame($expected, $this->cellValue($user, 'netid'));
   }
 
   /**
-   * Provides account names and their expected Username cell.
+   * Provides account names and their expected NetID cell.
    *
    * @return array
    *   Cases: [account name, display name, expected].
    */
-  public static function usernameProvider(): array {
+  public static function netidProvider(): array {
     return [
-      'username present' => ['abc12', 'abc12', 'abc12'],
+      'netid present' => ['abc12', 'abc12', 'abc12'],
       'no name falls back to display name' => ['', 'Anonymous', 'Anonymous'],
     ];
   }
@@ -198,7 +198,7 @@ class PeopleExportBuilderTest extends UnitTestCase {
    * @param int $access
    *   The last access timestamp.
    * @param string $expected_created
-   *   The expected Member for cell.
+   *   The expected Member since cell.
    * @param string $expected_access
    *   The expected Last access cell.
    *

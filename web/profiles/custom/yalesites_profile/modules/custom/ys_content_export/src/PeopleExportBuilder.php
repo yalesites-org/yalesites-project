@@ -19,16 +19,20 @@ class PeopleExportBuilder {
   /**
    * The ordered export columns.
    *
-   * Keyed by an internal column key, with the header label as the value. Every
-   * header matches the People screen's own column label so an admin can line
-   * the spreadsheet up against the page it came from.
+   * Keyed by an internal column key, with the header label as the value. Most
+   * headers match the People screen's own column label so an admin can line the
+   * spreadsheet up against the page it came from. Two are deliberately
+   * different, because the screen's wording does not describe what the cell
+   * holds: the username column is headed NetID, which is what admins call the
+   * value and what CAS provisions it from, and "Member for" becomes "Member
+   * since" because the cell is a join date, not the duration the screen shows.
    */
   const COLUMNS = [
-    'username' => 'Username',
+    'netid' => 'NetID',
     'full_name' => 'Name',
     'status' => 'Status',
     'roles' => 'Roles',
-    'created' => 'Member for',
+    'created' => 'Member since',
     'access' => 'Last access',
   ];
 
@@ -84,12 +88,12 @@ class PeopleExportBuilder {
    */
   protected static function cellValue(UserInterface $user, string $key, DateFormatterInterface $date_formatter): string {
     switch ($key) {
-      case 'username':
-        // Accounts are provisioned from CAS, so this username is the person's
-        // NetID. An account saved without one (the anonymous user, or a local
-        // account created before a name was set) falls back to its display
-        // name, which Drupal guarantees to be human readable, rather than
-        // exporting a row whose identifying column is blank.
+      case 'netid':
+        // Accounts are provisioned from CAS, so the account name is the
+        // person's NetID. An account saved without one (the anonymous user, or
+        // a local account created before a name was set) falls back to its
+        // display name, which Drupal guarantees to be human readable, rather
+        // than exporting a row whose identifying column is blank.
         return (string) ($user->getAccountName() ?: $user->getDisplayName());
 
       case 'full_name':
