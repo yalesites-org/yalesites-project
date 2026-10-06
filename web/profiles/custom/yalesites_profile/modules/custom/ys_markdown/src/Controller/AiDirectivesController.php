@@ -11,7 +11,7 @@ use Drupal\ys_markdown\MarkdownEligibility;
 use Symfony\Component\DependencyInjection\ContainerInterface;
 
 /**
- * Serves /robots.txt and /llms.txt, gated by the AI readability settings.
+ * Serves /llms.txt, gated by the AI readability settings.
  */
 class AiDirectivesController extends ControllerBase {
 
@@ -35,11 +35,6 @@ class AiDirectivesController extends ControllerBase {
    */
   const CHUNK_SIZE = 50;
 
-  /**
-   * Site rule appended to core's robots.txt, as composer-scaffold used to.
-   */
-  const SITE_ROBOTS_RULES = "# Disallow ?page= params\nDisallow: /*?page=\n";
-
   public function __construct(protected MarkdownEligibility $eligibility) {
   }
 
@@ -48,23 +43,6 @@ class AiDirectivesController extends ControllerBase {
    */
   public static function create(ContainerInterface $container) {
     return new static($container->get('ys_markdown.eligibility'));
-  }
-
-  /**
-   * Returns the base robots.txt, plus the AI training crawler block if on.
-   */
-  public function robots(): CacheableResponse {
-    $config = $this->config('ys_core.site');
-    $body = file_get_contents(DRUPAL_ROOT . '/core/assets/scaffold/files/robots.txt')
-      . "\n" . self::SITE_ROBOTS_RULES;
-    if (AiReadabilitySettings::isEnabled($config, AiReadabilitySettings::BLOCK_AI_CRAWLERS)) {
-      $body .= "\nUser-agent: " . implode("\nUser-agent: ", self::AI_TRAINING_CRAWLERS) . "\nDisallow: /\n";
-    }
-    $response = new CacheableResponse($body, 200, [
-      'Content-Type' => 'text/plain; charset=utf-8',
-    ]);
-    $response->addCacheableDependency($config);
-    return $response;
   }
 
   /**

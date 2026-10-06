@@ -14,14 +14,6 @@ ys_markdown.node:
       node:
         type: entity:node
 
-ys_markdown.robots:
-  path: '/robots.txt'
-  defaults:
-    _controller: '\Drupal\ys_markdown\Controller\AiDirectivesController::robots'
-    _disable_route_normalizer: TRUE
-  requirements:
-    _access: 'TRUE'
-
 ys_markdown.llms:
   path: '/llms.txt'
   defaults:

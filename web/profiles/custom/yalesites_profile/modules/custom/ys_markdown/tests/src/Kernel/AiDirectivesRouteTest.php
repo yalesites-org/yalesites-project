@@ -26,7 +26,7 @@ class AiDirectivesRouteTest extends YsKernelTestBase {
    */
   protected static $modules = [
     'system', 'user', 'node', 'field', 'filter', 'text', 'path_alias',
-    'ys_markdown',
+    'robotstxt', 'ys_markdown',
   ];
 
   /**
@@ -57,7 +57,8 @@ class AiDirectivesRouteTest extends YsKernelTestBase {
     $this->installEntitySchema('user');
     $this->installEntitySchema('node');
     $this->installEntitySchema('path_alias');
-    $this->installConfig(['node', 'filter', 'system']);
+    $this->installConfig(['node', 'filter', 'system', 'robotstxt']);
+    $this->config('robotstxt.settings')->set('content', "User-agent: *\nDisallow: /admin/\n")->save();
     $this->installSchema('node', ['node_access']);
     $type = NodeType::create(['type' => 'page', 'name' => 'Page', 'display_submitted' => FALSE]);
     $type->save();
@@ -75,23 +76,14 @@ class AiDirectivesRouteTest extends YsKernelTestBase {
   }
 
   /**
-   * Returns the expected base robots.txt: core's file plus the site rule.
-   */
-  protected function baseRobots(): string {
-    return file_get_contents(DRUPAL_ROOT . '/core/assets/scaffold/files/robots.txt')
-      . "\n# Disallow ?page= params\nDisallow: /*?page=\n";
-  }
-
-  /**
-   * With the toggle off, robots.txt is exactly the base file.
+   * With the toggle off, robots.txt is the configured content plus the rule.
    */
   public function testRobotsToggleOffIsBaseFile(): void {
     $this->config('ys_core.site')->set('ai_readability.block_ai_crawlers', FALSE)->save();
     $response = $this->get('/robots.txt');
     $this->assertSame(200, $response->getStatusCode());
     $this->assertStringStartsWith('text/plain', $response->headers->get('Content-Type'));
-    $this->assertSame($this->baseRobots(), $response->getContent());
-    $this->assertContains('config:ys_core.site', $response->getCacheableMetadata()->getCacheTags());
+    $this->assertSame("User-agent: *\nDisallow: /admin/\n# Disallow ?page= params\nDisallow: /*?page=", $response->getContent());
   }
 
   /**
@@ -103,15 +95,16 @@ class AiDirectivesRouteTest extends YsKernelTestBase {
     foreach (AiDirectivesController::AI_TRAINING_CRAWLERS as $bot) {
       $this->assertStringContainsString('User-agent: ' . $bot . "\n", $content);
     }
-    $this->assertStringContainsString("Disallow: /\n", $content);
-    $this->assertStringStartsWith($this->baseRobots() . "\nUser-agent: GPTBot", $content);
+    $this->assertStringContainsString("\nDisallow: /", $content);
+    $this->assertStringContainsString('Disallow: /*?page=', $content);
+    $this->assertStringContainsString('Disallow: /admin/', $content);
     foreach (['OAI-SearchBot', 'Claude-SearchBot', 'PerplexityBot'] as $bot) {
       $this->assertStringNotContainsString($bot, $content);
     }
   }
 
   /**
-   * A missing key means on; switching it off removes the block.
+   * A missing key means on; switching it off removes the block at once.
    */
   public function testRobotsMissingKeyBlocks(): void {
     $config = $this->config('ys_core.site');
@@ -119,6 +112,42 @@ class AiDirectivesRouteTest extends YsKernelTestBase {
     $this->assertStringContainsString('User-agent: GPTBot', $this->get('/robots.txt')->getContent());
     $config->set('ai_readability.block_ai_crawlers', FALSE)->save();
     $this->assertStringNotContainsString('GPTBot', $this->get('/robots.txt')->getContent());
+  }
+
+  /**
+   * Saving the toggle invalidates the robotstxt cache tag.
+   */
+  public function testToggleChangeInvalidatesRobotstxtTag(): void {
+    $before = $this->container->get('cache_tags.invalidator.checksum')->getCurrentChecksum(['robotstxt']);
+    $this->config('ys_core.site')->set('ai_readability.block_ai_crawlers', FALSE)->save();
+    $after = $this->container->get('cache_tags.invalidator.checksum')->getCurrentChecksum(['robotstxt']);
+    $this->assertNotSame($before, $after);
+    // An unrelated save leaves the tag alone.
+    $this->config('ys_core.site')->set('custom_favicon', 'x')->save();
+    $this->assertSame($after, $this->container->get('cache_tags.invalidator.checksum')->getCurrentChecksum(['robotstxt']));
+  }
+
+  /**
+   * The deploy hook replaces the module's bundled default with core's file.
+   */
+  public function testDeployHookSeedsFromCore(): void {
+    require_once __DIR__ . '/../../../ys_markdown.deploy.php';
+    $bundled = $this->container->get('extension.list.module')->getPath('robotstxt') . '/robots.txt';
+    $this->config('robotstxt.settings')->set('content', file_get_contents(DRUPAL_ROOT . '/' . $bundled))->save();
+    ys_markdown_deploy_10001();
+    $this->assertSame(
+      file_get_contents(DRUPAL_ROOT . '/core/assets/scaffold/files/robots.txt'),
+      $this->config('robotstxt.settings')->get('content')
+    );
+  }
+
+  /**
+   * The deploy hook leaves a site's own robots.txt edits alone.
+   */
+  public function testDeployHookKeepsCustomContent(): void {
+    require_once __DIR__ . '/../../../ys_markdown.deploy.php';
+    ys_markdown_deploy_10001();
+    $this->assertSame("User-agent: *\nDisallow: /admin/\n", $this->config('robotstxt.settings')->get('content'));
   }
 
   /**
