@@ -5,6 +5,7 @@ namespace Drupal\ys_layouts\Plugin\Layout;
 use Drupal\Core\Form\FormStateInterface;
 use Drupal\Core\Layout\LayoutDefault;
 use Drupal\Core\Plugin\ContainerFactoryPluginInterface;
+use Drupal\Core\StringTranslation\TranslatableMarkup;
 use Drupal\ys_themes\ColorTokenResolver;
 use Symfony\Component\DependencyInjection\ContainerInterface;
 
@@ -76,6 +77,42 @@ class YSLayoutOptions extends LayoutDefault implements ContainerFactoryPluginInt
   }
 
   /**
+   * Builds the Section Theme select, shared with the Page Meta block form.
+   *
+   * Callers add their own weight and the '#after_build' that attaches the
+   * swatch picker.
+   *
+   * @param string $default_value
+   *   The currently selected option key.
+   *
+   * @return array
+   *   The select form element.
+   */
+  public static function sectionThemeElement(string $default_value): array {
+    // Sections offer six color options, matching the block component pickers
+    // (#1518). See ColorTokenResolver::getColorStylesForEntity() for which
+    // palette slot each option resolves to. Labels are deliberately ordinals
+    // rather than color names, matching every block-level picker
+    // (ys_themes.component_overrides.yml): the underlying color differs per
+    // global theme, so 'six' is light blue on Old Blues but red on It's Your
+    // Yale.
+    return [
+      '#type' => 'select',
+      '#title' => new TranslatableMarkup('Section Theme'),
+      '#default_value' => $default_value,
+      '#options' => [
+        'default' => new TranslatableMarkup('Default - no color'),
+        'one' => new TranslatableMarkup('One'),
+        'two' => new TranslatableMarkup('Two'),
+        'three' => new TranslatableMarkup('Three'),
+        'four' => new TranslatableMarkup('Four'),
+        'five' => new TranslatableMarkup('Five'),
+        'six' => new TranslatableMarkup('Six'),
+      ],
+    ];
+  }
+
+  /**
    * {@inheritdoc}
    */
   public function buildConfigurationForm(array $form, FormStateInterface $form_state) {
@@ -89,26 +126,7 @@ class YSLayoutOptions extends LayoutDefault implements ContainerFactoryPluginInt
 
     // Use the saved theme value directly from configuration.
     $saved_theme = $this->configuration['theme'] ?? 'default';
-    // Sections offer six color options, matching the block component pickers
-    // (#1518). See ColorTokenResolver::getColorStylesForEntity() for which
-    // palette slot each option resolves to. Labels are deliberately ordinals
-    // rather than color names, matching every block-level picker
-    // (ys_themes.component_overrides.yml): the underlying color differs per
-    // global theme, so 'six' is light blue on Old Blues but red on It's Your
-    // Yale.
-    $form['theme'] = [
-      '#type' => 'select',
-      '#title' => $this->t('Section Theme'),
-      '#default_value' => $saved_theme,
-      '#options' => [
-        'default' => $this->t('Default - no color'),
-        'one' => $this->t('One'),
-        'two' => $this->t('Two'),
-        'three' => $this->t('Three'),
-        'four' => $this->t('Four'),
-        'five' => $this->t('Five'),
-        'six' => $this->t('Six'),
-      ],
+    $form['theme'] = static::sectionThemeElement($saved_theme) + [
       '#weight' => 10,
       '#after_build' => [
         [$this, 'processColorPicker'],

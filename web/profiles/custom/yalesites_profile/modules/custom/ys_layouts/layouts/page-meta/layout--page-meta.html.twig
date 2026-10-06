@@ -9,6 +9,7 @@
  * - attributes: HTML attributes for the layout <div>.
  * - show_secondary_nav: Whether or not to show the secondary nav.
  * - show_breadcrumbs: Whether or not to show the breadcrumb trail.
+ * - section_theme: Section color option key; 'default' adds no markup.
  */
 #}
 {%
@@ -32,6 +33,14 @@
 
 {% if hasContent %}
   {% set region_attribute_classes = region_attributes.content.addClass(region_classes) %}
+{% endif %}
+
+{% if section_theme != 'default' %}
+  {# Themed padding comes from the One column stylesheet (.layout--onecol). #}
+  {{ attach_library('ys_layouts/ys_layout_onecol') }}
+  {# Same signature a themed One column section emits (see yds-layout.twig), minus data-component-width: the children already carry their own site gutter, so adding it here would double it. #}
+  {% set classes = classes|merge(['yds-layout']) %}
+  {% set attributes = attributes.setAttribute('data-section-theme', section_theme).setAttribute('data-component-layout', 'one-column').setAttribute('data-component-padding', 'default') %}
 {% endif %}
 
 {% if content.page_meta %}
