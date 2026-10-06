@@ -40,20 +40,27 @@ the markup a template renders. When you build or change a component:
 - Add the attribute `data-markdown-skip` to any element that is page
   chrome. It is left out of the Markdown with everything inside it.
 - Content marked `aria-hidden="true"` is dropped. Content hidden from screen
-  readers is decorative, so AI readers skip it too.
+  readers is decorative, so AI readers skip it too. The exception is an
+  `img` with a non-empty `alt` inside it (such as a card's image link, which
+  repeats the title link): the image is kept and the link around it is not.
 - `script`, `style`, `noscript`, `template`, `nav` and `button` are
   removed. A `form` is replaced by one line, "Interactive form: available
   on the web page.", so a form never vanishes without a trace. The
   exception is a Views exposed filter form (class `views-exposed-form`),
-  which is chrome and is removed silently. Links to `data:` URLs (such as
+  which is chrome and is removed silently. An events calendar form also gets
+  the line, followed by a list of its events (`li.calendar-event`), each
+  with its title link, its day and its time. Links to `data:` URLs (such as
   calendar downloads) are removed with their text.
 - An `iframe` becomes a line "Embedded content: <title>" linking to its
   source. The `title` attribute is the link text, so always set it. A
   Drupal media `/media/oembed` proxy URL is replaced by the video URL
-  behind it.
-- A listing (a Views block wrapped in an element with the class `ys-view`)
-  keeps its first 50 items. When items were cut, or the listing has a
-  pager, the line "More items are listed on the web page." follows it.
+  behind it. An `iframe` with `data-embed-type="form"` and no http(s)
+  source (such as a Microsoft Form) becomes the form line instead.
+- A listing is an element with the class `ys-view` (Views blocks),
+  `ys-resource-view` (resource views) or `card-collection` (Directory and
+  Post Feed), outside any other listing. It keeps its first 50 items. When
+  items were cut, or the listing has a pager, the line "More items are
+  listed on the web page." follows it.
 - A list that opens a list item, even inside wrapper elements (such as a
   card's category list), is written as one comma-separated line.
 - Do not convey meaning by colour or position alone. Markdown has neither.
@@ -64,12 +71,12 @@ the markup a template renders. When you build or change a component:
 |---|---|---|
 | Text and callouts | text, callout, quote_callout, pull_quote, wrapped_text_callout, inline_message, facts | Clean |
 | Banners | grand_hero, cta_banner, image_banner, video_banner | Clean; the video banner links the video |
-| Cards and grids | reference_card, custom_cards, tiles, content_spotlight, content_spotlight_portrait, link_grid, quick_links, button_link | Clean |
-| Media | image, wrapped_image, gallery, media_grid, video | Clean; alt text kept; video links the source |
-| Embeds | embed | Social posts kept as quotes; iframes become links |
+| Cards and grids | reference_card, custom_cards, tiles, content_spotlight, content_spotlight_portrait, link_grid, quick_links, button_link | Mostly clean; known quirk: a resource card's categories come before its title in the Markdown |
+| Media | image, wrapped_image, gallery, media_grid, video | Clean; alt text kept (also in aria-hidden card image links); video links the source |
+| Embeds | embed | Social posts kept as quotes; iframes become links; Microsoft Forms become the form line |
 | Interactive | accordion, tabs | Headings and panels kept in order |
-| Forms | webform, event_calendar | Fallback line |
-| Listings | view, post_list, event_list, resource_view, directory | First page, capped at 50, "more" line, category lists flattened |
+| Forms | webform, event_calendar | Fallback line; the events calendar also lists its events |
+| Listings | view, post_list, event_list, resource_view, directory | Views blocks, resource views, Directory and Post Feed: first page, capped at 50, "more" line, category lists flattened |
 | Navigation and chrome | breadcrumbs, menus, pagers, buttons, divider | Dropped |
 
 ## Query strings

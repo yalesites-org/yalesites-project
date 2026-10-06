@@ -57,6 +57,11 @@ class PublicHtmlFilter {
   const LISTING_ITEM_CAP = 50;
 
   /**
+   * Classes that mark the root element of a listing.
+   */
+  const LISTING_CLASSES = ['ys-view', 'ys-resource-view', 'card-collection'];
+
+  /**
    * Line that replaces a form.
    */
   const FORM_FALLBACK = 'Interactive form: available on the web page.';
@@ -103,18 +108,27 @@ class PublicHtmlFilter {
    * Removes non-content elements, anything marked to skip, and comments.
    *
    * Content hidden from screen readers (aria-hidden="true") is decorative, so
-   * it is dropped too. Comments (such as Twig debug output) are never
-   * content, and the HTML-to-Markdown converter rejects input made of nothing
-   * but comments.
+   * it is dropped too, except images with alt text (a card's image link is
+   * hidden because it repeats the title link). Comments (such as Twig debug
+   * output) are never content, and the HTML-to-Markdown converter rejects
+   * input made of nothing but comments.
    */
   protected function removeChrome(\DOMDocument $document): void {
     $xpath = new \DOMXPath($document);
-    $query = sprintf(
-      '//body//*[self::%s or @%s or @aria-hidden="true" or (self::form and %s)] | //body//comment()',
+    $chrome = sprintf(
+      'self::%s or @%s or (self::form and %s)',
       implode(' or self::', self::REMOVED_TAGS),
       self::SKIP_ATTRIBUTE,
       self::classTokenXpath('views-exposed-form')
     );
+    // An image under other chrome stays dropped with it.
+    foreach (iterator_to_array($xpath->query("//body//*[@aria-hidden=\"true\"]//img[@alt][not(ancestor::*[$chrome])]")) as $image) {
+      if (!$this->isBlank($image->getAttribute('alt'))) {
+        $hidden = $xpath->query('ancestor::*[@aria-hidden="true"][last()]', $image)->item(0);
+        $hidden->parentNode?->insertBefore($image, $hidden);
+      }
+    }
+    $query = "//body//*[$chrome or @aria-hidden=\"true\"] | //body//comment()";
     foreach (iterator_to_array($xpath->query($query)) as $element) {
       $element->parentNode?->removeChild($element);
     }
@@ -130,8 +144,58 @@ class PublicHtmlFilter {
     $xpath = new \DOMXPath($document);
     $query = '//body//form[not(ancestor::form) and not(' . self::classTokenXpath('views-exposed-form') . ')]';
     foreach (iterator_to_array($xpath->query($query)) as $form) {
-      $form->parentNode?->replaceChild($document->createElement('p', self::FORM_FALLBACK), $form);
+      $events = $this->listCalendarEvents($xpath, $form);
+      $fallback = $document->createElement('p', self::FORM_FALLBACK);
+      $form->parentNode?->replaceChild($fallback, $form);
+      if ($events) {
+        $fallback->parentNode?->insertBefore($events, $fallback->nextSibling);
+      }
     }
+  }
+
+  /**
+   * Returns a list of the events in an events calendar form, or NULL.
+   *
+   * Each item is the event title (linked when it links), the day from the
+   * calendar day it sits in, and the event's own time.
+   */
+  protected function listCalendarEvents(\DOMXPath $xpath, \DOMElement $form): ?\DOMElement {
+    $document = $xpath->document;
+    $list = $document->createElement('ul');
+    foreach ($xpath->query('.//li[' . self::classTokenXpath('calendar-event') . ']', $form) as $event) {
+      $title = $xpath->query('.//*[' . self::classTokenXpath('calendar-event__title') . ']', $event)->item(0);
+      $name = self::collapse($title?->textContent ?? '');
+      if ($this->isBlank($name)) {
+        continue;
+      }
+      $item = $document->createElement('li');
+      $href = $xpath->query('.//a[@href]', $title)->item(0)?->getAttribute('href');
+      if ($href) {
+        $link = $document->createElement('a');
+        $link->setAttribute('href', $href);
+        $link->appendChild($document->createTextNode($name));
+        $item->appendChild($link);
+      }
+      else {
+        $item->appendChild($document->createTextNode($name));
+      }
+      $datetime = $xpath->query('ancestor::li[' . self::classTokenXpath('calendar__day') . '][1]/time/@datetime', $event)->item(0)?->nodeValue;
+      $day = $datetime ? \DateTimeImmutable::createFromFormat('!Y-m-d', $datetime) : FALSE;
+      $time = self::collapse($xpath->query('./time', $event)->item(0)?->textContent ?? '');
+      $details = array_filter([$day && $day->format('Y-m-d') === $datetime ? $day->format('F j, Y') : '', $time]);
+      if ($details) {
+        $item->appendChild($document->createTextNode(', ' . implode(', ', $details)));
+      }
+      $list->appendChild($item);
+    }
+    return $list->hasChildNodes() ? $list : NULL;
+  }
+
+  /**
+   * Collapses runs of whitespace to one space and trims the ends.
+   */
+  protected static function collapse(string $text): string {
+    return trim((string) preg_replace('/\s+/u', ' ', $text));
   }
 
   /**
@@ -144,12 +208,15 @@ class PublicHtmlFilter {
   /**
    * Keeps the first items of each listing and notes when more exist.
    *
-   * A listing is a Views block wrapper with the class ys-view. A pager means
-   * more pages exist even when the visible list is short.
+   * A listing is the outermost element with one of LISTING_CLASSES, so a
+   * nested root is never capped twice. A pager means more pages exist even
+   * when the visible list is short.
    */
   protected function capListings(\DOMDocument $document): void {
     $xpath = new \DOMXPath($document);
-    foreach (iterator_to_array($xpath->query('//body//*[' . self::classTokenXpath('ys-view') . ']')) as $view) {
+    $tokens = array_map([self::class, 'classTokenXpath'], self::LISTING_CLASSES);
+    $root = '(' . implode(' or ', $tokens) . ')';
+    foreach (iterator_to_array($xpath->query("//body//*[$root and not(ancestor::*[$root])]")) as $view) {
       $more = $xpath->query('.//*[' . self::classTokenXpath('pager') . ']', $view)->length > 0;
       foreach (iterator_to_array($xpath->query('.//*[(self::ul or self::ol) and not(ancestor::ul or ancestor::ol)]', $view)) as $list) {
         foreach (iterator_to_array($xpath->query('./li[position() > ' . self::LISTING_ITEM_CAP . ']', $list)) as $item) {
@@ -213,6 +280,10 @@ class PublicHtmlFilter {
       $label = trim($iframe->getAttribute('title')) ?: 'embed';
       $src = trim($iframe->getAttribute('src'));
       $src = $this->unwrapOembedProxy($src);
+      if ($iframe->getAttribute('data-embed-type') === 'form' && !$this->isSafeHttpUrl($src)) {
+        $iframe->parentNode?->replaceChild($document->createElement('p', self::FORM_FALLBACK), $iframe);
+        continue;
+      }
       $paragraph = $document->createElement('p', 'Embedded content: ');
       if ($this->isSafeHttpUrl($src)) {
         $link = $document->createElement('a');

@@ -297,4 +297,108 @@ HTML;
     }
   }
 
+  /**
+   * An image with alt text survives inside an aria-hidden link.
+   *
+   * @covers ::filter
+   */
+  public function testAriaHiddenImageWithAltKept(): void {
+    $out = $this->filter('<div><a class="img-link" href="/home" tabindex="-1" aria-hidden="true"><div><img src="/a.jpg" alt="A pool"></div></a></div>');
+    $this->assertStringContainsString('<img src="/a.jpg" alt="A pool">', $out);
+    $this->assertStringNotContainsString('<a', $out);
+  }
+
+  /**
+   * An image stays dropped when chrome sits between it and the hidden element.
+   *
+   * @covers ::filter
+   */
+  public function testAriaHiddenImageInsideChromeDropped(): void {
+    $out = $this->filter('<p>Keep</p><div aria-hidden="true"><div data-markdown-skip><img src="/a.jpg" alt="Logo"></div></div><div aria-hidden="true"><button><img src="/b.jpg" alt="Icon"></button></div>');
+    $this->assertStringNotContainsString('<img', $out);
+    $this->assertStringContainsString('Keep', $out);
+  }
+
+  /**
+   * Decorative images in aria-hidden elements stay dropped.
+   *
+   * @covers ::filter
+   */
+  public function testAriaHiddenDecorativeImageDropped(): void {
+    $out = $this->filter('<p>Keep</p><a href="/x" aria-hidden="true"><img src="/a.jpg" alt=""></a><span aria-hidden="true"><img src="/b.jpg"><img src="/c.jpg" alt="  "></span>');
+    $this->assertStringNotContainsString('<img', $out);
+    $this->assertStringContainsString('Keep', $out);
+  }
+
+  /**
+   * Returns a trimmed events calendar form with one event.
+   */
+  protected function calendar(string $extra = ''): string {
+    return '<form class="event-calendar-filter-form"><div class="views-exposed-form">FILTER</div>'
+      . '<ul><li class="calendar__day calendar__day--events" data-day="Thu">'
+      . '<time datetime="2026-10-08"><span aria-hidden="true">Thu</span><span class="sr-only">08 October, 2026</span></time>'
+      . '<ul class="calendar__day-events"><li class="calendar-event"><span class="calendar-event__category">Arts</span>'
+      . '<div class="calendar-event__title"><a href="/events/dinner">Dinner with Dad</a></div><time>6:00pm - 8:00pm</time></li>'
+      . $extra . '</ul><button>1 more events</button></li></ul>'
+      . '<ul hidden class="modal__calendar-events"></ul></form>';
+  }
+
+  /**
+   * An events calendar keeps the fallback and lists its events.
+   *
+   * @covers ::filter
+   */
+  public function testCalendarEventsListed(): void {
+    $extra = '<li class="calendar-event"><div class="calendar-event__title">Plain talk</div></li>';
+    $out = $this->filter($this->calendar($extra));
+    $this->assertStringContainsString('Interactive form: available on the web page.', $out);
+    $this->assertStringContainsString('<li><a href="/events/dinner">Dinner with Dad</a>, October 8, 2026, 6:00pm - 8:00pm</li>', $out);
+    $this->assertStringContainsString('<li>Plain talk, October 8, 2026</li>', $out);
+    $this->assertStringNotContainsString('FILTER', $out);
+    $this->assertStringNotContainsString('1 more events', $out);
+    $this->assertLessThan(strpos($out, 'Dinner with Dad'), strpos($out, 'Interactive form'));
+  }
+
+  /**
+   * A calendar event without a usable date omits it; no events changes nothing.
+   *
+   * @covers ::filter
+   */
+  public function testCalendarWithoutDateOrEvents(): void {
+    $out = $this->filter(str_replace('datetime="2026-10-08"', 'datetime="junk"', $this->calendar()));
+    $this->assertStringContainsString('<li><a href="/events/dinner">Dinner with Dad</a>, 6:00pm - 8:00pm</li>', $out);
+    $out = $this->filter('<form class="event-calendar-filter-form">X</form><p>Keep</p>');
+    $this->assertSame('<p>Interactive form: available on the web page.</p><p>Keep</p>', $out);
+  }
+
+  /**
+   * Listing roots are capped once each, including nested ones.
+   *
+   * @covers ::filter
+   */
+  public function testListingRoots(): void {
+    $items = str_repeat('<li>x</li>', PublicHtmlFilter::LISTING_ITEM_CAP + 3);
+    foreach (['ys-resource-view', 'card-collection'] as $class) {
+      $out = $this->filter('<div class="' . $class . '"><ul class="card-collection__cards">' . $items . '</ul></div>');
+      $this->assertSame(PublicHtmlFilter::LISTING_ITEM_CAP, substr_count($out, '<li>'), $class);
+      $this->assertSame(1, substr_count($out, 'More items are listed'), $class);
+    }
+    $out = $this->filter('<div class="ys-view"><div class="card-collection"><ul>' . $items . '</ul></div></div>');
+    $this->assertSame(PublicHtmlFilter::LISTING_ITEM_CAP, substr_count($out, '<li>'));
+    $this->assertSame(1, substr_count($out, 'More items are listed'));
+  }
+
+  /**
+   * A form-type embed without a usable source becomes the form line.
+   *
+   * @covers ::filter
+   */
+  public function testFormEmbedIframe(): void {
+    $out = $this->filter('<iframe class="embed__iframe" title="microsoft form" src="" data-embed-type="form"></iframe>');
+    $this->assertStringContainsString('<p>Interactive form: available on the web page.</p>', $out);
+    $this->assertStringNotContainsString('Embedded content', $out);
+    $out = $this->filter('<iframe title="Report" src="https://app.powerbi.com/x" data-embed-type="form"></iframe>');
+    $this->assertStringContainsString('Embedded content: <a href="https://app.powerbi.com/x">Report</a>', $out);
+  }
+
 }
