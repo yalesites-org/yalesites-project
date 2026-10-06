@@ -2,9 +2,15 @@
 
 namespace Drupal\ys_markdown\Controller;
 
+use Drupal\Component\Render\PlainTextOutput;
+use Drupal\Component\Utility\Unicode;
 use Drupal\Core\Cache\CacheableMetadata;
 use Drupal\Core\Cache\CacheableResponse;
 use Drupal\Core\Controller\ControllerBase;
+use Drupal\Core\Render\BubbleableMetadata;
+use Drupal\metatag\MetatagManagerInterface;
+use Drupal\metatag\MetatagToken;
+use Drupal\node\NodeInterface;
 use Drupal\ys_core\AiReadabilitySettings;
 use Drupal\ys_markdown\MarkdownBuilder;
 use Drupal\ys_markdown\MarkdownEligibility;
@@ -35,14 +41,27 @@ class AiDirectivesController extends ControllerBase {
    */
   const CHUNK_SIZE = 50;
 
-  public function __construct(protected MarkdownEligibility $eligibility) {
+  /**
+   * Longest description kept in llms.txt, before the trailing dots.
+   */
+  const DESCRIPTION_MAX_LENGTH = 200;
+
+  public function __construct(
+    protected MarkdownEligibility $eligibility,
+    protected MetatagManagerInterface $metatagManager,
+    protected MetatagToken $metatagToken,
+  ) {
   }
 
   /**
    * {@inheritdoc}
    */
   public static function create(ContainerInterface $container) {
-    return new static($container->get('ys_markdown.eligibility'));
+    return new static(
+      $container->get('ys_markdown.eligibility'),
+      $container->get('metatag.manager'),
+      $container->get('metatag.token'),
+    );
   }
 
   /**
@@ -80,6 +99,7 @@ class AiDirectivesController extends ControllerBase {
     // ponytail: loads every published node on a cache miss; move to a paged
     // or queued build if large sites time out.
     $lines = [];
+    $tokenCacheability = new BubbleableMetadata();
     $ids = $storage->getQuery()->accessCheck(FALSE)->condition('status', 1)->sort('nid')->execute();
     foreach (array_chunk($ids, self::CHUNK_SIZE) as $chunk) {
       foreach ($storage->loadMultiple($chunk) as $node) {
@@ -88,16 +108,23 @@ class AiDirectivesController extends ControllerBase {
         }
         $url = $node->toUrl('canonical', ['absolute' => TRUE])->toString();
         $title = strtr($node->label(), ['[' => '\[', ']' => '\]']);
-        $lines[$node->bundle()][] = '- [' . $title . '](' . $url . ".md)\n";
+        $description = $this->description($node, $tokenCacheability);
+        $lines[$node->bundle()][] = '- [' . $title . '](' . $url . ".md)" . ($description === '' ? '' : ': ' . $description) . "\n";
       }
       $storage->resetCache($chunk);
     }
 
     // One section per content type, ordered by label.
+    $cacheability->addCacheableDependency($tokenCacheability)
+      ->addCacheTags([
+        'config:metatag.metatag_defaults.global',
+        'config:metatag.metatag_defaults.node',
+      ]);
     $types = $this->entityTypeManager()->getStorage('node_type')->loadMultiple(array_keys($lines));
     uasort($types, fn($a, $b) => strcasecmp($a->label(), $b->label()));
     foreach ($types as $id => $type) {
-      $cacheability->addCacheableDependency($type);
+      $cacheability->addCacheableDependency($type)
+        ->addCacheTags(['config:metatag.metatag_defaults.node__' . $id]);
       $markdown .= "## " . $type->label() . "\n\n" . implode('', $lines[$id]) . "\n";
     }
 
@@ -112,6 +139,19 @@ class AiDirectivesController extends ControllerBase {
     $response->setMaxAge(MarkdownBuilder::MAX_AGE);
     $response->setVary('Cookie', FALSE);
     return $response;
+  }
+
+  /**
+   * Returns the page's resolved Metatag description as short plain text.
+   */
+  protected function description(NodeInterface $node, BubbleableMetadata $bubbleable): string {
+    $template = $this->metatagManager->tagsFromEntityWithDefaults($node)['description'] ?? '';
+    $text = $this->metatagToken->replace($template, ['node' => $node], ['langcode' => $node->language()->getId()], $bubbleable);
+    $text = trim(preg_replace('/\s+/u', ' ', PlainTextOutput::renderFromHtml($text)));
+    if (mb_strlen($text) > self::DESCRIPTION_MAX_LENGTH) {
+      $text = Unicode::truncate($text, self::DESCRIPTION_MAX_LENGTH, TRUE) . '...';
+    }
+    return $text;
   }
 
 }

@@ -2,7 +2,12 @@
 
 namespace Drupal\Tests\ys_markdown\Kernel;
 
+use Drupal\Component\Serialization\Json;
 use Drupal\Core\Cache\CacheableResponseInterface;
+use Drupal\field\Entity\FieldConfig;
+use Drupal\field\Entity\FieldStorageConfig;
+use Drupal\filter\Entity\FilterFormat;
+use Drupal\metatag\Entity\MetatagDefaults;
 use Drupal\Tests\ys_core\Kernel\YsKernelTestBase;
 use Drupal\ys_markdown\Controller\AiDirectivesController;
 use Drupal\ys_markdown\MarkdownBuilder;
@@ -26,7 +31,7 @@ class AiDirectivesRouteTest extends YsKernelTestBase {
    */
   protected static $modules = [
     'system', 'user', 'node', 'field', 'filter', 'text', 'path_alias',
-    'robotstxt', 'ys_markdown',
+    'robotstxt', 'metatag', 'token', 'ys_markdown',
   ];
 
   /**
@@ -63,6 +68,14 @@ class AiDirectivesRouteTest extends YsKernelTestBase {
     $type = NodeType::create(['type' => 'page', 'name' => 'Page', 'display_submitted' => FALSE]);
     $type->save();
     node_add_body_field($type);
+    foreach (['field_teaser_text' => 'text_long', 'field_metatags' => 'metatag'] as $name => $field_type) {
+      FieldStorageConfig::create(['entity_type' => 'node', 'field_name' => $name, 'type' => $field_type])->save();
+      FieldConfig::create(['entity_type' => 'node', 'bundle' => 'page', 'field_name' => $name])->save();
+    }
+    // Production teasers are text_long; a format with no filters keeps markup.
+    FilterFormat::create(['format' => 'heading_html', 'name' => 'Heading HTML'])->save();
+    MetatagDefaults::create(['id' => 'global', 'tags' => ['title' => '[node:title]']])->save();
+    MetatagDefaults::create(['id' => 'node', 'tags' => ['description' => '[node:field_teaser_text]']])->save();
     Role::create(['id' => RoleInterface::ANONYMOUS_ID, 'label' => 'Anonymous'])
       ->grantPermission('access content')
       ->save();
@@ -229,6 +242,69 @@ class AiDirectivesRouteTest extends YsKernelTestBase {
     $outline = preg_replace('#\(http[^)]*\)#', '', $content);
     $this->assertStringEndsWith("\n## Page\n\n- [A page]\n\n## Post\n\n- [A post]\n\n## Zebra events\n\n- [An event]\n\n", $outline);
     $this->assertStringNotContainsString('## Resource', $content);
+  }
+
+  /**
+   * Returns the llms.txt line for a page created with the given teaser.
+   */
+  protected function llmsLineFor(string $teaser, array $metatags = []): string {
+    $this->config('ys_core.site')->set('ai_readability.markdown_enabled', TRUE)->save();
+    $node = Node::create([
+      'type' => 'page',
+      'title' => 'Described',
+      'status' => 1,
+      'field_teaser_text' => ['value' => $teaser, 'format' => 'heading_html'],
+      'field_metatags' => $metatags ? ['value' => Json::encode($metatags)] : NULL,
+    ]);
+    $node->save();
+    PathAlias::create(['path' => '/node/' . $node->id(), 'alias' => '/described'])->save();
+    $this->assertSame(1, preg_match('#^- \[Described\]\(http://[^)]+/described\.md\)(.*)$#m', $this->get('/llms.txt')->getContent(), $match));
+    return $match[1];
+  }
+
+  /**
+   * The teaser text, via the metatag default, follows the link.
+   */
+  public function testLlmsAddsDescription(): void {
+    $this->assertSame(': A short teaser.', $this->llmsLineFor('A short teaser.'));
+  }
+
+  /**
+   * A page without a description keeps the bare link.
+   */
+  public function testLlmsOmitsEmptyDescription(): void {
+    $this->assertSame('', $this->llmsLineFor(''));
+  }
+
+  /**
+   * Tags are stripped, entities decoded and whitespace collapsed.
+   */
+  public function testLlmsCleansDescription(): void {
+    $this->assertSame(': Fish & chips are great.', $this->llmsLineFor("<p>Fish &amp;   chips</p>\n<p>are\r\ngreat.</p>"));
+  }
+
+  /**
+   * An escaped less-than sign in a teaser survives tag stripping.
+   */
+  public function testLlmsKeepsEscapedLessThan(): void {
+    $this->assertSame(': Grades K<12 welcome', $this->llmsLineFor('Grades K&lt;12 welcome'));
+  }
+
+  /**
+   * A long description is cut at a word boundary with three dots.
+   */
+  public function testLlmsTruncatesLongDescription(): void {
+    $description = substr($this->llmsLineFor(str_repeat('word ', 80)), 2);
+    $this->assertStringEndsWith(' word...', $description);
+    $this->assertLessThanOrEqual(203, strlen($description));
+    $this->assertGreaterThan(190, strlen($description));
+  }
+
+  /**
+   * A per-page metatag description wins over the teaser default.
+   */
+  public function testLlmsPerPageOverrideWins(): void {
+    $this->assertSame(': Custom override.', $this->llmsLineFor('A short teaser.', ['description' => 'Custom override.']));
   }
 
 }

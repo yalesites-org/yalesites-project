@@ -9,3 +9,4 @@ dependencies:
   - ys_core:ys_core
   - ys_beacon:ys_beacon
   - robotstxt:robotstxt
+  - metatag:metatag
