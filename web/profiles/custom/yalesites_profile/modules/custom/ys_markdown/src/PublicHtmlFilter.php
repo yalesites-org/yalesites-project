@@ -52,6 +52,11 @@ class PublicHtmlFilter {
   ];
 
   /**
+   * XPath test matching any heading element.
+   */
+  const HEADING_XPATH = 'self::h1 or self::h2 or self::h3 or self::h4 or self::h5 or self::h6';
+
+  /**
    * Most list items kept per listing; the rest are on the web page.
    */
   const LISTING_ITEM_CAP = 50;
@@ -268,12 +273,22 @@ class PublicHtmlFilter {
   protected function moveCardTitlesFirst(\DOMDocument $document): void {
     $xpath = new \DOMXPath($document);
     foreach (iterator_to_array($xpath->query('//body//li')) as $item) {
-      $heading = $xpath->query('.//*[self::h1 or self::h2 or self::h3 or self::h4 or self::h5 or self::h6]', $item)->item(0);
-      if (!$heading || $item->firstChild === $heading || $xpath->query('ancestor::li[1]', $heading)->item(0) !== $item || !$this->textPrecedes($heading, $item)) {
+      $heading = $xpath->query('.//*[' . self::HEADING_XPATH . ']', $item)->item(0);
+      if (!$heading || $xpath->query('ancestor::li[1]', $heading)->item(0) !== $item) {
+        continue;
+      }
+      if (!$this->textPrecedes($heading, $item)) {
         continue;
       }
       $item->insertBefore($heading, $item->firstChild);
     }
+  }
+
+  /**
+   * Whether a node is an image or contains one.
+   */
+  protected function holdsImage(\DOMNode $node): bool {
+    return $node instanceof \DOMElement && ($node->nodeName === 'img' || $node->getElementsByTagName('img')->length > 0);
   }
 
   /**
@@ -283,7 +298,7 @@ class PublicHtmlFilter {
     $text = FALSE;
     for ($node = $element; $node !== $ancestor; $node = $node->parentNode) {
       for ($sibling = $node->previousSibling; $sibling; $sibling = $sibling->previousSibling) {
-        if ($sibling instanceof \DOMElement && ($sibling->nodeName === 'img' || $sibling->getElementsByTagName('img')->length > 0)) {
+        if ($this->holdsImage($sibling)) {
           return FALSE;
         }
         $text = $text || !$this->isBlank($sibling->textContent);
@@ -304,20 +319,8 @@ class PublicHtmlFilter {
    */
   protected function labelTabPanels(\DOMDocument $document): void {
     $xpath = new \DOMXPath($document);
-    $headings = 'self::h1 or self::h2 or self::h3 or self::h4 or self::h5 or self::h6';
     foreach (iterator_to_array($xpath->query('//body//ul[' . self::classTokenXpath('tabs__nav') . ']')) as $nav) {
-      $level = 3;
-      $panels = self::classTokenXpath('tabs__container');
-      foreach (array_reverse(iterator_to_array($xpath->query("preceding::*[$headings]", $nav))) as $previous) {
-        $skip = FALSE;
-        foreach ($xpath->query("ancestor::*[$panels]", $previous) as $panel) {
-          $skip = $skip || !$panel->contains($nav);
-        }
-        if (!$skip) {
-          $level = min(6, (int) $previous->nodeName[1] + 1);
-          break;
-        }
-      }
+      $level = $this->tabLabelLevel($xpath, $nav);
       foreach (iterator_to_array($xpath->query('.//a[starts-with(@href, "#")]', $nav)) as $link) {
         $panel = $document->getElementById(substr($link->getAttribute('href'), 1));
         $label = self::collapse($link->textContent);
@@ -327,12 +330,33 @@ class PublicHtmlFilter {
         $heading = $document->createElement('h' . $level);
         $heading->appendChild($document->createTextNode($label));
         $panel->insertBefore($heading, $panel->firstChild);
-        $link->parentNode->removeChild($link);
+        $parent = $link->parentNode;
+        $parent->parentNode->removeChild($parent->nodeName === 'li' ? $parent : $link);
       }
       if ($xpath->query('.//a', $nav)->length === 0) {
         $nav->parentNode->removeChild($nav);
       }
     }
+  }
+
+  /**
+   * Returns the heading level for the labels of a tab list.
+   *
+   * One below the nearest earlier heading outside other tab sets' panels,
+   * or 3 when there is none.
+   */
+  protected function tabLabelLevel(\DOMXPath $xpath, \DOMElement $nav): int {
+    $panels = self::classTokenXpath('tabs__container');
+    $earlier = array_reverse(iterator_to_array($xpath->query('preceding::*[' . self::HEADING_XPATH . ']', $nav)));
+    foreach ($earlier as $heading) {
+      foreach ($xpath->query("ancestor::*[$panels]", $heading) as $panel) {
+        if (!$panel->contains($nav)) {
+          continue 2;
+        }
+      }
+      return min(6, (int) $heading->nodeName[1] + 1);
+    }
+    return 3;
   }
 
   /**
@@ -344,7 +368,7 @@ class PublicHtmlFilter {
         if (!$this->isBlank($sibling->textContent)) {
           return FALSE;
         }
-        if ($sibling instanceof \DOMElement && ($sibling->nodeName === 'img' || $sibling->getElementsByTagName('img')->length > 0)) {
+        if ($this->holdsImage($sibling)) {
           return FALSE;
         }
       }
@@ -463,7 +487,7 @@ class PublicHtmlFilter {
     $normalize = static fn (string $text): string => mb_strtolower(trim((string) preg_replace('/\s+/u', ' ', $text)));
     $title = $normalize($title);
     $xpath = new \DOMXPath($document);
-    foreach (iterator_to_array($xpath->query('//body//*[self::h1 or self::h2 or self::h3 or self::h4 or self::h5 or self::h6]')) as $heading) {
+    foreach (iterator_to_array($xpath->query('//body//*[' . self::HEADING_XPATH . ']')) as $heading) {
       if ($normalize($heading->textContent) === $title) {
         $heading->parentNode?->removeChild($heading);
       }
@@ -566,7 +590,7 @@ class PublicHtmlFilter {
    */
   protected function unwrapDisclosureHeadingButtons(\DOMDocument $document): void {
     $xpath = new \DOMXPath($document);
-    foreach (iterator_to_array($xpath->query('//body//*[self::h1 or self::h2 or self::h3 or self::h4 or self::h5 or self::h6]/button')) as $button) {
+    foreach (iterator_to_array($xpath->query('//body//*[' . self::HEADING_XPATH . ']/button')) as $button) {
       $heading = $button->parentNode;
       if ($heading === NULL) {
         continue;
