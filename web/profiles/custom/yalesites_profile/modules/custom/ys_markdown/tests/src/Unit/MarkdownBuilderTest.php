@@ -93,7 +93,7 @@ class MarkdownBuilderTest extends UnitTestCase {
   }
 
   /**
-   * Entities are decoded in text, link text and table cells, except < and >.
+   * Entities are decoded in text, link text and table cells.
    *
    * @covers ::build
    */
@@ -101,7 +101,7 @@ class MarkdownBuilderTest extends UnitTestCase {
     $markdown = $this->build('<p>Arts &amp; &quot;Humanities&quot; &#039;s &lt;b&gt;</p>'
       . '<p><a href="https://example.com/tips">Tips &amp; Good Practices</a></p>'
       . '<table><tr><th>Name</th></tr><tr><td>Profilin &amp; actophorin</td></tr></table>');
-    $this->assertStringContainsString('Arts & "Humanities" \'s &lt;b&gt;', $markdown);
+    $this->assertStringContainsString('Arts & "Humanities" \'s &lt;b>', $markdown);
     $this->assertStringContainsString('[Tips & Good Practices](https://example.com/tips)', $markdown);
     $this->assertStringContainsString('| Profilin & actophorin |', $markdown);
     $this->assertStringNotContainsString('&amp;', $markdown);

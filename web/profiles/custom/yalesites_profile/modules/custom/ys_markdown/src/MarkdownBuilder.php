@@ -8,6 +8,7 @@ use Drupal\Core\Render\RendererInterface;
 use Drupal\Core\Session\AccountSwitcherInterface;
 use Drupal\Core\Session\AnonymousUserSession;
 use Drupal\node\NodeInterface;
+use Drupal\ys_markdown\Converter\SeparatedDivConverter;
 use Drupal\ys_beacon\Service\ContentFeedBuilder;
 use League\HTMLToMarkdown\Converter\TableConverter;
 use League\HTMLToMarkdown\HtmlConverter;
@@ -147,20 +148,30 @@ class MarkdownBuilder {
       'header_style' => 'atx',
     ]);
     $converter->getEnvironment()->addConverter(new TableConverter());
+    $converter->getEnvironment()->addConverter(new SeparatedDivConverter());
     return self::tidy(self::decodeEntities($converter->convert($html)));
   }
 
   /**
-   * Decodes HTML entities the converter leaves encoded, except < and >.
+   * Decodes HTML entities the converter leaves encoded.
    *
-   * Copied from ys_beacon's MarkdownConverter::decodeEntities(), which is not
-   * callable without its service dependencies. "&lt;" and "&gt;" stay encoded
-   * so literal angle brackets in the text never read as markup.
+   * Based on ys_beacon's MarkdownConverter::decodeEntities(), which is not
+   * callable without its service dependencies, but it differs on "<" and ">".
+   * Those become literal characters, except where they could start markup:
+   * ">" at the start of a line (after any blockquote or list markers) and "<"
+   * before a letter, "/", "!" or "?". There the entity is kept, because a
+   * character reference is literal whatever precedes it (a backslash escape
+   * is not, since the converter leaves a backslash in text unescaped). The
+   * numeric forms of "<" and ">" are treated the same, so decoding never emits
+   * a raw tag. Code needs no special case: the converter already writes
+   * literal "<" and ">" in code, so no such entity is left there to touch.
    */
   protected static function decodeEntities(string $markdown): string {
-    $guarded = strtr($markdown, ['&lt;' => "\x01", '&gt;' => "\x02"]);
+    $guarded = preg_replace(['/&(?:lt|#0*60|#x0*3c);/i', '/&(?:gt|#0*62|#x0*3e);/i'], ["\x01", "\x02"], $markdown);
     $decoded = html_entity_decode($guarded, ENT_QUOTES | ENT_HTML5, 'UTF-8');
-    return strtr($decoded, ["\x01" => '&lt;', "\x02" => '&gt;']);
+    $decoded = preg_replace('/(^|\n)((?: *>)* *(?:(?:[-*+]|\d+[.)]) +)?)\x02/', '$1$2&gt;', $decoded);
+    $decoded = preg_replace('/\x01(?=[A-Za-z\/!?])/', '&lt;', $decoded);
+    return strtr($decoded, ["\x01" => '<', "\x02" => '>']);
   }
 
 }
