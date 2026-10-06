@@ -10,8 +10,6 @@
  * - show_secondary_nav: Whether or not to show the secondary nav.
  * - show_breadcrumbs: Whether or not to show the breadcrumb trail.
  * - section_theme: Section color option key; 'default' adds no markup.
- * - section_padding: Section padding option (default, no-top, no-bottom,
- *   no-padding); only applied when section_theme is set.
  */
 #}
 {%
@@ -38,11 +36,9 @@
 {% endif %}
 
 {% if section_theme != 'default' %}
-  {# Themed padding comes from the One column stylesheet (.layout--onecol). #}
-  {{ attach_library('ys_layouts/ys_layout_onecol') }}
-  {# Same signature a themed One column section emits (see yds-layout.twig), minus data-component-width: the children already carry their own site gutter, so adding it here would double it. #}
+  {# Color only: .yds-layout + data-section-theme supply the --color-section-* properties. No One column padding signature, so spacing matches the uncolored block (YaleSites-Internal#1837). #}
   {% set classes = classes|merge(['yds-layout']) %}
-  {% set attributes = attributes.setAttribute('data-section-theme', section_theme).setAttribute('data-component-layout', 'one-column').setAttribute('data-component-padding', section_padding|default('default')) %}
+  {% set attributes = attributes.setAttribute('data-section-theme', section_theme) %}
 {% endif %}
 
 {% if content.page_meta %}

@@ -219,10 +219,6 @@ class PageMetaBlock extends BlockBase implements ContainerFactoryPluginInterface
       ],
     ];
 
-    // Same options as Configure Section, so a colored title can connect to
-    // the colored section below it. Applies only when a theme is set.
-    $form['section_padding'] = YSLayoutOptions::sectionPaddingElement($config['section_padding'] ?? 'default');
-
     return $form;
   }
 
@@ -249,7 +245,6 @@ class PageMetaBlock extends BlockBase implements ContainerFactoryPluginInterface
     $this->configuration['page_title_display'] = $form_state->getValue('page_title_display');
     $this->configuration['breadcrumb_display'] = $form_state->getValue('breadcrumb_display');
     $this->configuration['section_theme'] = $form_state->getValue('section_theme');
-    $this->configuration['section_padding'] = $form_state->getValue('section_padding');
   }
 
 }
