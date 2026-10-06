@@ -40,6 +40,57 @@ class PublicMarkdownConversionTest extends UnitTestCase {
   }
 
   /**
+   * Each tab panel starts with its tab label and the anchor list is gone.
+   */
+  public function testTabsLabelEachPanel(): void {
+    $html = '<h2>Section</h2><div class="tabs"><div class="tabs__tabs"><ul class="tabs__nav" role="tablist">'
+      . '<li class="tabs__item"><a class="tabs__link" href="#tab-1-0">First</a></li>'
+      . '<li class="tabs__item"><a class="tabs__link" href="#tab-1-1">Second</a></li></ul></div>'
+      . '<div class="tabs__container"><div class="tabs__content" id="tab-1-0"><p>Alpha text</p></div></div>'
+      . '<div class="tabs__container"><div class="tabs__content" id="tab-1-1"><p>Beta text</p></div></div></div>';
+    $md = $this->markdown($html);
+    $this->assertStringNotContainsString('#tab-', $md);
+    $this->assertStringContainsString("### First\n\nAlpha text\n\n### Second\n\nBeta text", $md);
+    $md = $this->markdown(str_replace('<h2>Section</h2>', '', $html));
+    $this->assertStringContainsString("### First\n\nAlpha text", $md);
+  }
+
+  /**
+   * A card's title comes before its category line, whatever wraps either.
+   */
+  public function testCardTitleBeforeCategory(): void {
+    $md = $this->markdown('<ul><li class="c"><div class="c__content"><div class="c__overline">Department of Studies</div><h3><a href="/p">Dr. Chen</a></h3><p>Professor</p></div></li></ul>');
+    $this->assertMatchesRegularExpression('/### \[Dr\. Chen\]\(\/p\)\n\nDepartment of Studies\n\nProfessor/', $md);
+    $md = $this->markdown('<ul><li class="c"><div class="c__content"><div><div>Resource Category 1</div></div><h3>Brief</h3><div>Meta</div></div></li></ul>');
+    $this->assertLessThan(strpos($md, 'Resource Category 1'), strpos($md, '### Brief'));
+    $md = $this->markdown('<ul><li><div><img src="/a.png" alt="x"></div><p>Label</p><h3>Title</h3></li></ul>');
+    $this->assertLessThan(strpos($md, '### Title'), strpos($md, 'Label'));
+  }
+
+  /**
+   * Consecutive tab sets get the same label level; nested tabs go one deeper.
+   */
+  public function testTabLabelLevelsForSeveralSets(): void {
+    $set = static fn (string $id, string $inner = ''): string => '<div class="tabs"><ul class="tabs__nav"><li><a href="#t' . $id . '">Tab ' . $id . '</a></li></ul>'
+      . '<div class="tabs__container"><div class="tabs__content" id="t' . $id . '"><p>Body ' . $id . '</p>' . $inner . '</div></div></div>';
+    $md = $this->markdown('<h2>Section</h2>' . $set('A') . $set('B'));
+    $this->assertStringContainsString('### Tab A', $md);
+    $this->assertStringContainsString('### Tab B', $md);
+    $this->assertStringNotContainsString('####', $md);
+    $md = $this->markdown('<h2>Section</h2>' . $set('A', $set('N')));
+    $this->assertStringContainsString('### Tab A', $md);
+    $this->assertStringContainsString('#### Tab N', $md);
+  }
+
+  /**
+   * A heading nested deeper than the category text still leads the card.
+   */
+  public function testCardTitleInSecondWrapperLeads(): void {
+    $md = $this->markdown('<ul><li><div>Category</div><div><h3>Title</h3><p>x</p></div></li></ul>');
+    $this->assertLessThan(strpos($md, 'Category'), strpos($md, '### Title'));
+  }
+
+  /**
    * A capped listing ends with the "more" line as its own paragraph.
    */
   public function testCappedListingEndsWithMoreLine(): void {

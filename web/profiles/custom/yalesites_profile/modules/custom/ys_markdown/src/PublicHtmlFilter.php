@@ -92,10 +92,12 @@ class PublicHtmlFilter {
     $this->capListings($document);
     // Before the generic removal, so a form leaves a trace.
     $this->replaceForms($document);
+    $this->labelTabPanels($document);
     $this->removeChrome($document);
     $this->replaceIframes($document);
     $this->normalizeWhitespace($document);
     $this->flattenLeadingNestedLists($document);
+    $this->moveCardTitlesFirst($document);
     if ($title !== NULL) {
       $this->removeTitleHeadings($document, $title);
     }
@@ -251,6 +253,85 @@ class PublicHtmlFilter {
         $labels[] = trim($item->textContent);
       }
       $list->parentNode->replaceChild($document->createElement('p', htmlspecialchars(implode(', ', array_filter($labels)))), $list);
+    }
+  }
+
+  /**
+   * Moves a list item's first heading ahead of the text that precedes it.
+   *
+   * A card puts its category or department line above its title. Read as
+   * Markdown the title should lead, so the heading becomes the first child
+   * of the item, however deep it sits. It only moves when text precedes it
+   * inside the item and no image does, so a card that opens with a picture
+   * is left alone.
+   */
+  protected function moveCardTitlesFirst(\DOMDocument $document): void {
+    $xpath = new \DOMXPath($document);
+    foreach (iterator_to_array($xpath->query('//body//li')) as $item) {
+      $heading = $xpath->query('.//*[self::h1 or self::h2 or self::h3 or self::h4 or self::h5 or self::h6]', $item)->item(0);
+      if (!$heading || $item->firstChild === $heading || $xpath->query('ancestor::li[1]', $heading)->item(0) !== $item || !$this->textPrecedes($heading, $item)) {
+        continue;
+      }
+      $item->insertBefore($heading, $item->firstChild);
+    }
+  }
+
+  /**
+   * Whether an element has text before it inside an ancestor, and no image.
+   */
+  protected function textPrecedes(\DOMElement $element, \DOMElement $ancestor): bool {
+    $text = FALSE;
+    for ($node = $element; $node !== $ancestor; $node = $node->parentNode) {
+      for ($sibling = $node->previousSibling; $sibling; $sibling = $sibling->previousSibling) {
+        if ($sibling instanceof \DOMElement && ($sibling->nodeName === 'img' || $sibling->getElementsByTagName('img')->length > 0)) {
+          return FALSE;
+        }
+        $text = $text || !$this->isBlank($sibling->textContent);
+      }
+    }
+    return $text;
+  }
+
+  /**
+   * Replaces each tab list with a heading at the top of its panel.
+   *
+   * A tab links to its panel by id, which means nothing in Markdown. The
+   * heading is one level below the nearest heading before the tabs, or h3
+   * when there is none. Headings in other tab sets' panels are ignored, so
+   * consecutive tab sets match; the tab labels of an enclosing set count, so
+   * nested tabs sit one level below their outer label. A link whose panel is
+   * missing is left as it is.
+   */
+  protected function labelTabPanels(\DOMDocument $document): void {
+    $xpath = new \DOMXPath($document);
+    $headings = 'self::h1 or self::h2 or self::h3 or self::h4 or self::h5 or self::h6';
+    foreach (iterator_to_array($xpath->query('//body//ul[' . self::classTokenXpath('tabs__nav') . ']')) as $nav) {
+      $level = 3;
+      $panels = self::classTokenXpath('tabs__container');
+      foreach (array_reverse(iterator_to_array($xpath->query("preceding::*[$headings]", $nav))) as $previous) {
+        $skip = FALSE;
+        foreach ($xpath->query("ancestor::*[$panels]", $previous) as $panel) {
+          $skip = $skip || !$panel->contains($nav);
+        }
+        if (!$skip) {
+          $level = min(6, (int) $previous->nodeName[1] + 1);
+          break;
+        }
+      }
+      foreach (iterator_to_array($xpath->query('.//a[starts-with(@href, "#")]', $nav)) as $link) {
+        $panel = $document->getElementById(substr($link->getAttribute('href'), 1));
+        $label = self::collapse($link->textContent);
+        if (!$panel || $label === '') {
+          continue;
+        }
+        $heading = $document->createElement('h' . $level);
+        $heading->appendChild($document->createTextNode($label));
+        $panel->insertBefore($heading, $panel->firstChild);
+        $link->parentNode->removeChild($link);
+      }
+      if ($xpath->query('.//a', $nav)->length === 0) {
+        $nav->parentNode->removeChild($nav);
+      }
     }
   }
 

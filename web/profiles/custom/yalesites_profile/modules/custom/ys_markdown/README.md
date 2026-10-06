@@ -57,12 +57,15 @@ the markup a template renders. When you build or change a component:
   behind it. An `iframe` with `data-embed-type="form"` and no http(s)
   source (such as a Microsoft Form) becomes the form line instead.
 - A listing is an element with the class `ys-view` (Views blocks),
-  `ys-resource-view` (resource views) or `card-collection` (Directory and
-  Post Feed), outside any other listing. It keeps its first 50 items. When
+  `ys-resource-view` (resource views) or `card-collection` (the base class of
+  reference-card, post, event, resource, profile and Directory collections),
+  outside any other listing. It keeps its first 50 items. When
   items were cut, or the listing has a pager, the line "More items are
   listed on the web page." follows it.
 - A list that opens a list item, even inside wrapper elements (such as a
-  card's category list), is written as one comma-separated line.
+  card's category list), is written as one comma-separated line. In a list
+  item, the first heading moves ahead of any text before it, so a card's
+  title comes before its category line (unless an image comes first).
 - Do not convey meaning by colour or position alone. Markdown has neither.
 
 ## Component audit
@@ -71,12 +74,12 @@ the markup a template renders. When you build or change a component:
 |---|---|---|
 | Text and callouts | text, callout, quote_callout, pull_quote, wrapped_text_callout, inline_message, facts | Clean |
 | Banners | grand_hero, cta_banner, image_banner, video_banner | Clean; the video banner links the video |
-| Cards and grids | reference_card, custom_cards, tiles, content_spotlight, content_spotlight_portrait, link_grid, quick_links, button_link | Mostly clean; known quirk: a resource card's categories come before its title in the Markdown |
+| Cards and grids | reference_card, custom_cards, tiles, content_spotlight, content_spotlight_portrait, link_grid, quick_links, button_link | Clean; a card's title comes first, then its category or department line |
 | Media | image, wrapped_image, gallery, media_grid, video | Clean; alt text kept (also in aria-hidden card image links); video links the source |
 | Embeds | embed | Social posts kept as quotes; iframes become links; Microsoft Forms become the form line |
-| Interactive | accordion, tabs | Headings and panels kept in order |
+| Interactive | accordion, tabs | Each panel starts with its tab label as a heading (one level below the nearest heading before the tabs, h3 if none); the `#tab-` link list is dropped |
 | Forms | webform, event_calendar | Fallback line; the events calendar also lists its events |
-| Listings | view, post_list, event_list, resource_view, directory | Views blocks, resource views, Directory and Post Feed: first page, capped at 50, "more" line, category lists flattened |
+| Listings | view, post_list, event_list, resource_view, directory | Views blocks, resource views, all card-collection listings: first page, capped at 50, "more" line, category lists flattened |
 | Navigation and chrome | breadcrumbs, menus, pagers, buttons, divider | Dropped |
 
 ## Query strings
