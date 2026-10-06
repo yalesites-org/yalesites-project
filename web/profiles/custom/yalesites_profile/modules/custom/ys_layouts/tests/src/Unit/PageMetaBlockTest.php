@@ -401,4 +401,54 @@ class PageMetaBlockTest extends UnitTestCase {
     $this->assertSame('five', $block->getConfiguration()['section_theme']);
   }
 
+  /**
+   * The section padding select reuses Configure Section's options.
+   *
+   * @covers ::blockForm
+   */
+  public function testBlockFormExposesSectionPaddingAfterSectionTheme(): void {
+    $block = $this->buildBlock();
+    $block->setStringTranslation($this->getStringTranslationStub());
+
+    $form = $block->blockForm([], new FormState());
+
+    $this->assertSame('select', $form['section_padding']['#type']);
+    $this->assertSame('default', $form['section_padding']['#default_value']);
+    $this->assertSame(
+      ['default', 'no_top', 'no_bottom', 'no_padding'],
+      array_keys($form['section_padding']['#options'])
+    );
+    $keys = array_keys($form);
+    $this->assertGreaterThan(array_search('section_theme', $keys), array_search('section_padding', $keys));
+  }
+
+  /**
+   * The section padding select carries the stored value.
+   *
+   * @covers ::blockForm
+   */
+  public function testBlockFormUsesConfiguredSectionPadding(): void {
+    $block = $this->buildBlock(['section_padding' => 'no_bottom']);
+    $block->setStringTranslation($this->getStringTranslationStub());
+
+    $form = $block->blockForm([], new FormState());
+
+    $this->assertSame('no_bottom', $form['section_padding']['#default_value']);
+  }
+
+  /**
+   * Submitting the form stores the selected section padding.
+   *
+   * @covers ::blockSubmit
+   */
+  public function testBlockSubmitStoresSectionPadding(): void {
+    $block = $this->buildBlock();
+    $form_state = new FormState();
+    $form_state->setValue('section_padding', 'no_top');
+
+    $block->blockSubmit([], $form_state);
+
+    $this->assertSame('no_top', $block->getConfiguration()['section_padding']);
+  }
+
 }

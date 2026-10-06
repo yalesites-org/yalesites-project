@@ -77,6 +77,33 @@ class YSLayoutOptions extends LayoutDefault implements ContainerFactoryPluginInt
   }
 
   /**
+   * Builds the Section Padding Options select, shared with Page Meta.
+   *
+   * Used by the Configure Section form alter in ys_layouts.module and by the
+   * Page Meta block form. Callers add their own weight and wrapper.
+   *
+   * @param string $default_value
+   *   The currently selected option key.
+   *
+   * @return array
+   *   The select form element.
+   */
+  public static function sectionPaddingElement(string $default_value): array {
+    return [
+      '#type' => 'select',
+      '#title' => new TranslatableMarkup('Section Padding Options'),
+      '#options' => [
+        'default' => new TranslatableMarkup('Padding on both top and bottom'),
+        'no_top' => new TranslatableMarkup('No top padding'),
+        'no_bottom' => new TranslatableMarkup('No bottom padding'),
+        'no_padding' => new TranslatableMarkup('No padding (removes both top and bottom padding)'),
+      ],
+      '#default_value' => $default_value,
+      '#description' => new TranslatableMarkup("To create connected sections, use 'No bottom padding' on the first section and 'No top padding' on the section below it. 'Padding on both top and bottom' maintains standard spacing for optimal readability."),
+    ];
+  }
+
+  /**
    * Builds the Section Theme select, shared with the Page Meta block form.
    *
    * Callers add their own weight and the '#after_build' that attaches the
