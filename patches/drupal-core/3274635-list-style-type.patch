@@ -98,19 +98,34 @@
        label: 'Allow blocks to be created in list items'
 --- a/core/modules/ckeditor5/js/ckeditor5.js
 +++ b/core/modules/ckeditor5/js/ckeditor5.js
-@@ -324,7 +324,7 @@
+@@ -324,7 +324,19 @@
        const addedCss = [
          `${prefix} .ck.ck-content * {display:revert;background:revert;color:initial;padding:revert;}`,
          `${prefix} .ck.ck-content li {display:list-item}`,
 -        `${prefix} .ck.ck-content ol li {list-style-type: decimal}`,
++        // A plain `ol:not([type]) li` descendant selector can't tell "one
++        // level down" from "two levels down" apart, so on its own it would
++        // force every untyped nested list back to decimal, even under an
++        // explicitly-typed ancestor list. The depth- and ancestor-specific
++        // rules below each have one more selector segment than the one
++        // before, so they correctly win by specificity for deeper/more
++        // specific cases without needing source-order to do any work.
 +        `${prefix} .ck.ck-content ol:not([type]) li {list-style-type: decimal}`,
++        `${prefix} .ck.ck-content ol:not([type]) ol:not([type]) li {list-style-type: lower-alpha}`,
++        `${prefix} .ck.ck-content ol:not([type]) ol:not([type]) ol:not([type]) li {list-style-type: lower-roman}`,
++        `${prefix} .ck.ck-content ol[type='1'] ol:not([type]) li {list-style-type: lower-alpha}`,
++        `${prefix} .ck.ck-content ol[type='1'] ol:not([type]) ol:not([type]) li {list-style-type: lower-roman}`,
++        `${prefix} .ck.ck-content ol[type='a'] ol:not([type]) li {list-style-type: lower-roman}`,
        ];
  
        const prefixedCss = [...addedCss].join('\n');
-@@ -625,6 +625,97 @@
-     },
-   };
+@@ -622,6 +634,112 @@
  
+       // Store the save callback to be executed when this dialog is closed.
+       Drupal.ckeditor5.saveCallback = saveCallback;
++    },
++  };
++
 +  Drupal.behaviors.editorStyleFix = {
 +    attach(context) {
 +      // CKEditor's DLL injects <style data-cke> tags that override native
@@ -137,25 +152,40 @@
 +          return;
 +        }
 +        rules.forEach((rule) => {
-+          if (
-+            rule?.selectorText &&
-+            (rule.selectorText.includes(' ol') ||
-+              rule.selectorText.includes(' ul')) &&
-+            !rule.selectorText.includes('type')
-+          ) {
-+            // Scope the rule to untyped lists only (append :not([type]) to
-+            // the list element the rule actually styles, i.e. the last
-+            // token), rather than deleting the declaration outright. These
-+            // rules implement CKEditor's own nesting-depth cascade
-+            // (decimal -> lower-latin -> lower-roman), which is worth
-+            // keeping for untyped sub-items; the only bug is that it
-+            // unconditionally overrides a list that has an explicit `type`
-+            // attribute, e.g. from the List Style dropdown.
++          if (!rule?.selectorText) {
++            return;
++          }
++          // Operate on each comma-separated selector independently: the
++          // off-canvas style-fencing logic elsewhere in this file combines
++          // a rule's original selector and an #drupal-off-canvas-prefixed
++          // duplicate of it into a single comma-separated selectorText, and
++          // a check or replacement anchored to the *whole* string (e.g.
++          // `!selectorText.includes('type')`, or a `$`-anchored regex)
++          // would only ever see/fix one half of that list.
++          const segments = rule.selectorText.split(',').map((s) => s.trim());
++          let changed = false;
++          const fixed = segments.map((selector) => {
++            if (
++              (selector.includes(' ol') || selector.includes(' ul')) &&
++              !selector.includes('type')
++            ) {
++              changed = true;
++              // Scope the rule to untyped lists only (append :not([type])
++              // to the list element the rule actually styles, i.e. the
++              // last token), rather than deleting the declaration
++              // outright. These rules implement CKEditor's own
++              // nesting-depth cascade (decimal -> lower-latin ->
++              // lower-roman), which is worth keeping for untyped
++              // sub-items; the only bug is that it unconditionally
++              // overrides a list that has an explicit `type` attribute,
++              // e.g. from the List Style dropdown.
++              return selector.replace(/\b(ol|ul)$/, '$1:not([type])');
++            }
++            return selector;
++          });
++          if (changed) {
 +            try {
-+              rule.selectorText = rule.selectorText.replace(
-+                /\b(ol|ul)$/,
-+                '$1:not([type])',
-+              );
++              rule.selectorText = fixed.join(', ');
 +            } catch (e) {
 +              // Ignore: worst case this specific rule keeps overriding an
 +              // explicit type attribute, same as before this fix existed.
@@ -199,12 +229,9 @@
 +          });
 +        }).observe(document.head, { childList: true });
 +      }
-+    },
-+  };
-+
-   // Redirect on hash change when the original hash has an associated CKEditor 5.
-   function redirectTextareaFragmentToCKEditor5Instance() {
-     const hash = window.location.hash.substring(1);
+     },
+   };
+ 
 --- a/core/modules/ckeditor5/src/Plugin/CKEditor4To5Upgrade/Core.php
 +++ b/core/modules/ckeditor5/src/Plugin/CKEditor4To5Upgrade/Core.php
 @@ -274,14 +274,16 @@
