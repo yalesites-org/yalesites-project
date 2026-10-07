@@ -37,6 +37,11 @@ class AiDirectivesController extends ControllerBase {
   ];
 
   /**
+   * Cache tag invalidated when a listed page stops being eligible.
+   */
+  const CACHE_TAG = 'ys_markdown:llms';
+
+  /**
    * Nodes loaded per chunk when building llms.txt.
    */
   const CHUNK_SIZE = 50;
@@ -84,6 +89,7 @@ class AiDirectivesController extends ControllerBase {
     $system = $this->config('system.site');
     $cacheability = (new CacheableMetadata())
       ->addCacheTags([
+        self::CACHE_TAG,
         'config:cas.settings',
         // Eligibility checks anonymous view access.
         'config:user.role.anonymous',

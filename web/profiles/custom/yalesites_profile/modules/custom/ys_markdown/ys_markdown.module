@@ -5,6 +5,7 @@
  * Advertises each eligible node's Markdown version.
  */
 
+use Drupal\Core\Cache\Cache;
 use Drupal\Core\Cache\CacheableMetadata;
 use Drupal\Core\Url;
 use Drupal\ys_core\AiReadabilitySettings;
@@ -53,4 +54,43 @@ function ys_markdown_robotstxt(): array {
     $rules .= "\n\nUser-agent: " . implode("\nUser-agent: ", AiDirectivesController::AI_TRAINING_CRAWLERS) . "\nDisallow: /";
   }
   return [$rules];
+}
+
+/**
+ * Implements hook_node_presave().
+ *
+ * Records whether the saved page is listed in llms.txt now. This cannot wait
+ * for hook_node_update(): Node::postSave() rewrites the node's access grants
+ * first, so an anonymous access check on the original would already see the
+ * new grants and report an unpublished page as never listed.
+ */
+function ys_markdown_node_presave(NodeInterface $node) {
+  if (!$node->isNew()) {
+    $node->ysMarkdownWasListed = \Drupal::service('ys_markdown.eligibility')->isEligible($node->original);
+  }
+}
+
+/**
+ * Implements hook_node_update().
+ *
+ * Drops a page from the cached llms.txt at once when it stops being eligible.
+ * New pages and edits wait for llms.txt's max-age.
+ */
+function ys_markdown_node_update(NodeInterface $node) {
+  // A draft revision leaves the live page, and so the list, unchanged.
+  if ($node->isDefaultRevision() && $node->ysMarkdownWasListed && !\Drupal::service('ys_markdown.eligibility')->isEligible($node)) {
+    Cache::invalidateTags([AiDirectivesController::CACHE_TAG]);
+  }
+}
+
+/**
+ * Implements hook_node_predelete().
+ *
+ * Runs before Node::postDelete() removes the node's access grants, which
+ * would make a listed page look unlisted.
+ */
+function ys_markdown_node_predelete(NodeInterface $node) {
+  if (\Drupal::service('ys_markdown.eligibility')->isEligible($node)) {
+    Cache::invalidateTags([AiDirectivesController::CACHE_TAG]);
+  }
 }

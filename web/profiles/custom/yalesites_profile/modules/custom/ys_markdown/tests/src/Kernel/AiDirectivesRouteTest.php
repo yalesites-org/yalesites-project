@@ -8,6 +8,7 @@ use Drupal\field\Entity\FieldConfig;
 use Drupal\field\Entity\FieldStorageConfig;
 use Drupal\filter\Entity\FilterFormat;
 use Drupal\metatag\Entity\MetatagDefaults;
+use Drupal\Tests\content_moderation\Traits\ContentModerationTestTrait;
 use Drupal\Tests\ys_core\Kernel\YsKernelTestBase;
 use Drupal\ys_markdown\Controller\AiDirectivesController;
 use Drupal\node\Entity\Node;
@@ -25,12 +26,16 @@ use Symfony\Component\HttpFoundation\Request;
  */
 class AiDirectivesRouteTest extends YsKernelTestBase {
 
+  use ContentModerationTestTrait;
+
   /**
    * {@inheritdoc}
    */
   protected static $modules = [
     'system', 'user', 'node', 'field', 'filter', 'text', 'path_alias',
     'robotstxt', 'metatag', 'token', 'ys_markdown',
+    // Production node grants: an unpublished page loses its anonymous grant.
+    'workflows', 'content_moderation', 'ys_node_access',
   ];
 
   /**
@@ -61,6 +66,7 @@ class AiDirectivesRouteTest extends YsKernelTestBase {
     $this->installEntitySchema('user');
     $this->installEntitySchema('node');
     $this->installEntitySchema('path_alias');
+    $this->installEntitySchema('content_moderation_state');
     $this->installConfig(['node', 'filter', 'system', 'robotstxt']);
     $this->config('robotstxt.settings')->set('content', "User-agent: *\nDisallow: /admin/\n")->save();
     $this->installSchema('node', ['node_access']);
@@ -320,6 +326,106 @@ class AiDirectivesRouteTest extends YsKernelTestBase {
   public function testLlmsUsesBundleDefaultTemplate(): void {
     MetatagDefaults::create(['id' => 'node__page', 'tags' => ['description' => 'About [node:title]']])->save();
     $this->assertSame(': About Described', $this->llmsLineFor('A short teaser.'));
+  }
+
+  /**
+   * Returns the current checksum of the llms.txt removal tag.
+   */
+  protected function llmsTagChecksum(): int {
+    return $this->container->get('cache_tags.invalidator.checksum')->getCurrentChecksum([AiDirectivesController::CACHE_TAG]);
+  }
+
+  /**
+   * Saves a listed page and returns it.
+   */
+  protected function listedPage(): Node {
+    $this->config('ys_core.site')->set('ai_readability.markdown_enabled', TRUE)->save();
+    $node = Node::create([
+      'type' => 'page',
+      'title' => 'Listed',
+      'status' => 1,
+      'field_teaser_text' => ['value' => 'Old', 'format' => 'heading_html'],
+    ]);
+    $node->save();
+    return $node;
+  }
+
+  /**
+   * The 200 response carries the removal tag.
+   */
+  public function testLlmsCarriesRemovalTag(): void {
+    $this->listedPage();
+    $this->assertContains(AiDirectivesController::CACHE_TAG, $this->get('/llms.txt')->getCacheableMetadata()->getCacheTags());
+  }
+
+  /**
+   * Unpublishing a listed page invalidates the removal tag.
+   */
+  public function testUnpublishInvalidatesRemovalTag(): void {
+    $node = $this->listedPage();
+    $before = $this->llmsTagChecksum();
+    $node->setUnpublished()->save();
+    $this->assertNotSame($before, $this->llmsTagChecksum());
+  }
+
+  /**
+   * Deleting a listed page invalidates the removal tag.
+   */
+  public function testDeleteInvalidatesRemovalTag(): void {
+    $node = $this->listedPage();
+    $before = $this->llmsTagChecksum();
+    $node->delete();
+    $this->assertNotSame($before, $this->llmsTagChecksum());
+  }
+
+  /**
+   * Excluding a listed page from AI feeds invalidates the removal tag.
+   */
+  public function testExclusionInvalidatesRemovalTag(): void {
+    $node = $this->listedPage();
+    $before = $this->llmsTagChecksum();
+    $node->set('field_metatags', ['value' => Json::encode(['ai_disable_indexing' => 'disabled'])])->save();
+    $this->assertNotSame($before, $this->llmsTagChecksum());
+  }
+
+  /**
+   * Edits that keep a page listed, and unlisted pages, leave the tag alone.
+   */
+  public function testTeaserEditAndUnlistedSavesKeepRemovalTag(): void {
+    $node = $this->listedPage();
+    $before = $this->llmsTagChecksum();
+    $node->set('field_teaser_text', ['value' => 'New', 'format' => 'heading_html'])->save();
+    $draft = Node::create(['type' => 'page', 'title' => 'Draft', 'status' => 0]);
+    $draft->save();
+    $draft->delete();
+    $this->assertSame($before, $this->llmsTagChecksum());
+  }
+
+  /**
+   * Draft and archive saves under content moderation, as separate requests.
+   *
+   * Each save starts with an empty access cache, like an editor's form
+   * submission, so the original's anonymous access is really checked.
+   */
+  public function testModeratedArchiveInvalidatesRemovalTag(): void {
+    $workflow = $this->createEditorialWorkflow();
+    $workflow->getTypePlugin()->addEntityTypeAndBundle('node', 'page');
+    $workflow->save();
+    $this->config('ys_core.site')->set('ai_readability.markdown_enabled', TRUE)->save();
+    $node = Node::create(['type' => 'page', 'title' => 'Listed', 'moderation_state' => 'published']);
+    $node->save();
+    $before = $this->llmsTagChecksum();
+    $resave = function (string $state) use ($node): void {
+      $this->container->get('entity_type.manager')->getAccessControlHandler('node')->resetCache();
+      $storage = $this->container->get('entity_type.manager')->getStorage('node');
+      $storage->resetCache([$node->id()]);
+      $storage->createRevision($storage->load($node->id()))->set('moderation_state', $state)->save();
+    };
+    $resave('draft');
+    $this->assertSame($before, $this->llmsTagChecksum(), 'A forward draft leaves the list alone.');
+    $resave('archived');
+    $this->assertFalse(Node::load($node->id())->isPublished());
+    $this->assertNotSame($before, $this->llmsTagChecksum(), 'Archiving the live page drops it.');
   }
 
 }

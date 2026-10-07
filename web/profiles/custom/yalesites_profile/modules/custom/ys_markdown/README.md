@@ -74,8 +74,9 @@ that file must delete it, or the web server serves the file instead of Drupal.
   every page that would be served as Markdown, as `- [Title](url.md): description`,
   grouped into one section per content type (ordered by label). The description
   is the page's resolved Metatag description (the teaser by default), stripped
-  of markup and cut at 200 characters. Entries refresh within an hour of an
-  edit. It answers 404 when the "Markdown version"
+  of markup and cut at 200 characters. Removals (unpublished, deleted or
+  excluded pages) take effect at once, while new pages and edits show within
+  an hour. It answers 404 when the "Markdown version"
   setting (`ai_readability.markdown_enabled`) is off. It is built by loading
   every published node on a cache miss.
 
