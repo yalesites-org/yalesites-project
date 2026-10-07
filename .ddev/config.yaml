@@ -25,6 +25,12 @@ performance_mode: "none"
 hooks:
     post-start:
         - exec: "git config --global --add safe.directory /var/www/html"
+        # settings.ddev.redis.php is #ddev-generated and gitignored, so copy it
+        # from the tracked source on every start. Without this, a fresh clone
+        # boots with Redis silently disabled (settings.php skips the include).
+        # Do not call redis/scripts/setup-drupal-settings.sh here: outside the
+        # add-on installer it sees no DDEV_PROJECT_TYPE and deletes itself.
+        - exec-host: "cp .ddev/redis/scripts/settings.ddev.redis.php web/sites/default/settings.ddev.redis.php"
 
 # Key features of DDEV's config.yaml:
 
