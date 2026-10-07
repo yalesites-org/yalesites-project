@@ -68,3 +68,22 @@ ys_layouts.orphaned_blocks_delete:
     _title: 'Delete orphaned inline blocks'
   requirements:
     _permission: 'administer orphaned inline blocks'
+
+# Clones a whole section in Layout Builder. Mirrors
+# layout_builder.remove_section so the section toolbar link can reuse the same
+# route parameters, and inherits the same Layout Builder access check: anyone
+# who can edit the layout can clone a section within it.
+ys_layouts.clone_section:
+  path: '/layout_builder/clone/section/{section_storage_type}/{section_storage}/{delta}'
+  defaults:
+    _controller: '\Drupal\ys_layouts\Controller\CloneSectionController::build'
+  requirements:
+    _layout_builder_access: 'view'
+    _ys_layouts_clone_section: 'TRUE'
+    # Keeps a non-numeric delta a 404 rather than a TypeError in the controller.
+    delta: '\d+'
+  options:
+    _admin_route: TRUE
+    parameters:
+      section_storage:
+        layout_builder_tempstore: TRUE

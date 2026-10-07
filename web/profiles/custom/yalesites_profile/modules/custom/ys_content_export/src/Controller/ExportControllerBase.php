@@ -6,6 +6,7 @@ use Drupal\Core\Controller\ControllerBase;
 use Drupal\Core\Datetime\DateFormatterInterface;
 use Drupal\Core\Entity\EntityTypeManagerInterface;
 use Drupal\views\Views;
+use Drupal\ys_content_export\ContentExportBuilder;
 use Symfony\Component\DependencyInjection\ContainerInterface;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
@@ -138,12 +139,12 @@ abstract class ExportControllerBase extends ControllerBase {
       $handle = fopen('php://output', 'w');
       // UTF-8 BOM so spreadsheet apps read accented characters correctly.
       fwrite($handle, "\xEF\xBB\xBF");
-      fputcsv($handle, $columns);
+      ContentExportBuilder::writeRow($handle, $columns);
       foreach (array_chunk($ids, static::CHUNK_SIZE) as $chunk) {
         $entities = $storage->loadMultiple($chunk);
         foreach ($chunk as $id) {
           if (isset($entities[$id])) {
-            fputcsv($handle, $build_row($entities[$id]));
+            ContentExportBuilder::writeRow($handle, $build_row($entities[$id]));
           }
         }
         // Release the chunk so memory stays bounded on large lists.
