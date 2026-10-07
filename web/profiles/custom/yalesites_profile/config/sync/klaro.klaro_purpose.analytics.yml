@@ -6,5 +6,5 @@ _core:
   default_config_hash: DaAAmHlWMVahC2MmhRKQN8Lun9hBPT6LR6PCjkCEikI
 id: analytics
 label: Analytics
-description: ''
+description: 'Google Analytics and Google Tag Manager count visits and show which pages people use, so we can improve the site. They set cookies such as _ga and _gid.'
 weight: 1

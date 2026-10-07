@@ -6,5 +6,5 @@ _core:
   default_config_hash: viRP54gfVbiAJggsHB02B_iBsSqhc8KLC7lngFFBP5Q
 id: security
 label: Security
-description: ''
+description: 'Helps protect forms on this site from spam and abuse using Google reCAPTCHA. Google may set its own cookies when a form with this check loads.'
 weight: -1

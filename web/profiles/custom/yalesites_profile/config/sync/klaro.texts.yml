@@ -3,7 +3,7 @@ _core:
 langcode: en
 consentModal:
   title: 'Manage your cookie choices'
-  description: 'Choose which services this site may use. Strictly necessary services keep the site working and cannot be turned off. Your choice is stored in your browser and you can change it at any time.'
+  description: 'Choose which cookies this site may use. Functional and Security cookies are always on because the site needs them. You can change your choices at any time.'
   privacyPolicy:
     name: 'Yale Privacy Statement'
     text: 'To learn how Yale handles personal data, read the {privacyPolicy}.'
@@ -12,7 +12,7 @@ consentNotice:
   title: 'Cookies on this site'
   changeDescription: 'The services used on this site have changed since your last visit. Please review your choices.'
   description: 'This site uses cookies to understand how it is used and to show content from other services. Accept or decline them, or manage your choices.'
-  learnMore: 'Manage choices'
+  learnMore: 'Cookie settings'
 ok: 'Accept all'
 save: 'Save my choices'
 decline: 'Decline all'
