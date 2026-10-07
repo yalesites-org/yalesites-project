@@ -1,0 +1,33 @@
+uuid: 592bcea6-79a2-4504-a30b-cb76a40eedd1
+langcode: en
+status: true
+dependencies: {  }
+_core:
+  default_config_hash: yUNFm4zDnRj9Fj6If-Z-upP2C6_QCSQezNPiJyijyoE
+id: gtm_consent_mode
+label: 'Google Tag Manager'
+description: 'Manages and deploys marketing tags.'
+default: false
+purposes:
+  - analytics
+  - advertising
+cookies: {  }
+required: false
+opt_out: false
+only_once: false
+contextual_consent_only: null
+contextual_consent_text: null
+info_url: 'https://marketingplatform.google.com/intl/de/about/tag-manager/'
+privacy_policy_url: 'https://policies.google.com/privacy'
+javascripts:
+  - gtm.js
+  - gtag.js
+  - 'https://www.googletagmanager.com/ns.html'
+callback_code: ''
+on_init: "window.dataLayer = window.dataLayer || [];\r\nwindow.gtag = function(){dataLayer.push(arguments)}\r\ngtag('consent', 'default', {\r\n  'ad_storage': 'denied',\r\n  'analytics_storage': 'denied',\r\n  'ad_user_data': 'denied',\r\n  'ad_personalization': 'denied'\r\n});\r\ngtag('set', 'ads_data_redaction', true);"
+on_accept: "for (let key of Object.keys(opts.consents)) {\r\n  if (opts.consents[key]) {\r\n    let eventName = 'klaro-' + key + '-accepted';\r\n    dataLayer.push({'event': eventName});\r\n  }\r\n}"
+on_decline: ''
+wrapper_identifier: {  }
+attachments:
+  - gtm
+weight: 1

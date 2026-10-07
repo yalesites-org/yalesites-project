@@ -20,6 +20,17 @@ class TwentyFiveLiveForm extends EmbedSourceBase implements EmbedSourceInterface
 
   /**
    * {@inheritdoc}
+   *
+   * 25Live runs on Yale's own CollegeNET tenant
+   * (25live.collegenet.com/pro/yale). CollegeNET is a contracted vendor rather
+   * than literally first-party - it does see visitor IPs - but it is out of
+   * scope for the consent MVP, so it is not gated. Revisit if Privacy/OGC
+   * decide contracted vendors need consent too.
+   */
+  protected static $klaroService = NULL;
+
+  /**
+   * {@inheritdoc}
    */
   protected static $pattern = '/^https:\/\/25live\.collegenet\.com\/pro\/yale\/embedded\/preview\?(?<params>.+)/';
 

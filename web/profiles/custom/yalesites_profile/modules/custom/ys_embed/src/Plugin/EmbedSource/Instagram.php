@@ -20,13 +20,25 @@ class Instagram extends EmbedSourceBase implements EmbedSourceInterface {
 
   /**
    * {@inheritdoc}
+   *
+   * Instagram is a Meta service.
+   */
+  protected static $klaroService = 'instagram';
+
+  /**
+   * {@inheritdoc}
    */
   protected static $pattern = '/<blockquote(?<embed_code>.*href="https:\/\/www\.instagram\.com\/(p|tv)\/.*)<\/blockquote>/';
 
   /**
    * {@inheritdoc}
    */
-  protected static $template = '<blockquote {{ embed_code|raw }}</blockquote> <script async src="//www.instagram.com/embed.js"></script>';
+  protected static $script = '//www.instagram.com/embed.js';
+
+  /**
+   * {@inheritdoc}
+   */
+  protected static $template = '<blockquote {{ embed_code|raw }}</blockquote> <script async{% if klaro_service %} type="text/plain" data-type="application/javascript" data-src="{{ script }}" data-name="{{ klaro_service }}"{% else %} src="{{ script }}"{% endif %}></script>';
 
   /**
    * {@inheritdoc}

@@ -1,5 +1,23 @@
+{#
+ # Fallback wrapper for an embedded media item.
+ #
+ # Atomic overrides this hook (atomic/templates/ys_embed/embed_wrapper.html.twig),
+ # so this template only renders when a theme does not provide its own. Keep the
+ # Klaro consent contract below in sync with Atomic's override.
+ #
+ # Consent contract: when klaroService is set, the iframe must NOT carry a live
+ # src. Klaro swaps data-src back to src once the visitor consents, and renders
+ # the click-to-load placeholder into the wrapping element that carries
+ # data-name.
+ #}
 {% if displayAttributes['isIframe'] %}
-  <iframe data-embed-type="{{ embedType }}" src="{{ url }}" title="{{ title }}" height="{{ displayAttributes['height'] }}" width="{{ displayAttributes['width'] }} scrolling="{{ displayAttributes['scrolling'] }}" frameborder="{{ displayAttributes['frameborder'] }}"></iframe>   
+  {% if klaroService %}
+    <div data-name="{{ klaroService }}">
+      <iframe data-embed-type="{{ embedType }}" data-src="{{ url }}" data-name="{{ klaroService }}" title="{{ title }}" height="{{ displayAttributes['height'] }}" width="{{ displayAttributes['width'] }}" scrolling="{{ displayAttributes['scrolling'] }}" frameborder="{{ displayAttributes['frameborder'] }}"></iframe>
+    </div>
+  {% else %}
+    <iframe data-embed-type="{{ embedType }}" src="{{ url }}" title="{{ title }}" height="{{ displayAttributes['height'] }}" width="{{ displayAttributes['width'] }}" scrolling="{{ displayAttributes['scrolling'] }}" frameborder="{{ displayAttributes['frameborder'] }}"></iframe>
+  {% endif %}
 {% elseif title|trim != '' %}
   <div role="group" aria-label="{{ title }}">{{ embedSource }}</div>
 {% else %}

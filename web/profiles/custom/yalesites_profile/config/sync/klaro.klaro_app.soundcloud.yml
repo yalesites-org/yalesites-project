@@ -1,0 +1,28 @@
+uuid: 9a8eaa48-15fd-4fd4-93bf-3a56e3519c45
+langcode: en
+status: true
+dependencies: {  }
+id: soundcloud
+label: SoundCloud
+description: 'SoundCloud is an audio streaming platform by SoundCloud Global Limited & Co. KG (Germany).'
+default: false
+purposes:
+  - external_content
+cookies: {  }
+required: false
+opt_out: false
+only_once: false
+contextual_consent_only: null
+contextual_consent_text: null
+info_url: 'https://soundcloud.com/'
+privacy_policy_url: 'https://soundcloud.com/pages/privacy'
+javascripts:
+  - w.soundcloud.com
+  - api.soundcloud.com
+callback_code: ''
+on_init: ''
+on_accept: ''
+on_decline: ''
+wrapper_identifier: {  }
+attachments: {  }
+weight: 0

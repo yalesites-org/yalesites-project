@@ -20,6 +20,15 @@ class Localist extends EmbedSourceBase implements EmbedSourceInterface {
 
   /**
    * {@inheritdoc}
+   *
+   * Localist runs on Yale's own Localist tenant. Like 25Live it is a
+   * contracted vendor rather than literally first-party, but it is out of scope
+   * for the consent MVP, so it is not gated.
+   */
+  protected static $klaroService = NULL;
+
+  /**
+   * {@inheritdoc}
    */
   protected static $pattern = '/<div\s+id="localist-widget-(?<widget_id>\d+)"\s+class="localist-widget"><\/div><script\s+defer\s+type="text\/javascript"\s+src="(?<localist_source>[^"]+)"><\/script>/';
 

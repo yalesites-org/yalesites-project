@@ -1,0 +1,8 @@
+uuid: 4ee116c4-cc1d-4ceb-9a72-764b7e43e37b
+langcode: en
+status: true
+dependencies: {  }
+id: social_sharing
+label: 'Social sharing'
+description: 'Share this page to a social network.'
+weight: 5

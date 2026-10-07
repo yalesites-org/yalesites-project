@@ -10,6 +10,7 @@ dependencies:
   module:
     - file
     - filter
+    - klaro
     - media
     - media_entity_download
     - system
@@ -23,6 +24,7 @@ permissions:
   - 'access content'
   - 'delete own files'
   - 'download media'
+  - 'use klaro'
   - 'use text format basic_html'
   - 'use text format heading_html'
   - 'use text format restricted_html'

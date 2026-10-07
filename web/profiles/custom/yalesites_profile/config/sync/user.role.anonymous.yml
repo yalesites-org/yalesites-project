@@ -3,6 +3,7 @@ langcode: en
 status: true
 dependencies:
   module:
+    - klaro
     - media
     - media_entity_download
     - system
@@ -16,4 +17,5 @@ is_admin: false
 permissions:
   - 'access content'
   - 'download media'
+  - 'use klaro'
   - 'view media'

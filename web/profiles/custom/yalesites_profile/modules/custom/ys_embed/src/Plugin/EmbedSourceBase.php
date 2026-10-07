@@ -45,6 +45,17 @@ abstract class EmbedSourceBase extends PluginBase implements EmbedSourceInterfac
   protected static $template;
 
   /**
+   * The third-party script URL a script-based template loads.
+   *
+   * Declared separately from the template so the URL is written once and the
+   * template can render it either as a live src or as Klaro's deferred
+   * data-src. Empty for sources that load no script of their own.
+   *
+   * @var string
+   */
+  protected static $script = '';
+
+  /**
    * Instructions for finding the embed code in on third party website.
    *
    * @var string
@@ -82,6 +93,21 @@ abstract class EmbedSourceBase extends PluginBase implements EmbedSourceInterfac
    * @var string
    */
   protected static $defaultTitle = '';
+
+  /**
+   * The Klaro consent service (app) ID that gates this source's content.
+   *
+   * Declare the ID of a klaro_app config entity to hold this source's
+   * third-party request until the visitor consents. Leave it NULL to render
+   * the content immediately — correct only for Yale-controlled tenants and for
+   * sources that make no third-party request at all.
+   *
+   * Gating is driven by this declaration rather than by isIframe(), which is a
+   * substring search over the template and can flip on incidental text.
+   *
+   * @var string|null
+   */
+  protected static $klaroService = NULL;
 
   /**
    * Creates a plugin instance.
@@ -169,6 +195,13 @@ abstract class EmbedSourceBase extends PluginBase implements EmbedSourceInterfac
   /**
    * {@inheritdoc}
    */
+  public function getKlaroService(): ?string {
+    return static::$klaroService;
+  }
+
+  /**
+   * {@inheritdoc}
+   */
   public function build(array $params): array {
     $isIframe = $this->isIframe();
     $displayAttributes = static::$displayAttributes ?? [];
@@ -182,10 +215,23 @@ abstract class EmbedSourceBase extends PluginBase implements EmbedSourceInterfac
       '#title' => trim($params['title']) !== '' ? $params['title'] : static::$defaultTitle,
       '#url' => $this->getUrl($params),
       '#displayAttributes' => $displayAttributes,
+      // The iframe path builds its own element from '#url', so the theme layer
+      // is the only place that can swap 'src' for Klaro's 'data-src'.
+      // ys_embed_preprocess_embed_wrapper() clears both of these when the site
+      // has consent management switched off.
+      '#klaroService' => static::$klaroService,
       '#embedSource' => [
         '#type' => 'inline_template',
         '#template' => static::$template,
-        '#context' => $params,
+        // Script-based sources render their own template, so they need the
+        // service ID in the template context rather than at the theme layer.
+        // These are unioned on the left so they win a key collision: $params
+        // comes from named groups in a regex matched against editor-pasted
+        // embed code, and must never be able to redefine the consent gate.
+        '#context' => [
+          'klaro_service' => static::$klaroService,
+          'script' => static::$script,
+        ] + $params,
       ],
     ];
   }

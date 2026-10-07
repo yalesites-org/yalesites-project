@@ -20,6 +20,14 @@ class Qualtrics extends EmbedSourceBase implements EmbedSourceInterface {
 
   /**
    * {@inheritdoc}
+   *
+   * Qualtrics is a third-party survey platform. Deprecated for new embeds,
+   * but existing content still renders and still calls out to Qualtrics.
+   */
+  protected static $klaroService = 'qualtrics';
+
+  /**
+   * {@inheritdoc}
    */
   protected static $pattern = '/^https:\/\/yalesurvey.ca1.qualtrics.com\/jfe\/form\/(?<form_id>.+)/';
 
