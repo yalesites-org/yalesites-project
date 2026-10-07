@@ -36,6 +36,14 @@ The export reflects the same items you see in the Manage view — including
 any filters or search you have applied — and both published and unpublished items,
 subject to your access.
 
+The last row of the file reports how many rows were exported, for example
+"Export complete: 48 of 50 rows exported (1 failed, 1 skipped)". If that row is
+missing, the download was cut short. A row that fails to build is replaced by a
+placeholder naming the item ("Export failed for node 123") and logged under
+`ys_content_export` in the site log. If a batch of items cannot be loaded, it
+is logged and counted as failed in that last row. Items you may not view are
+skipped.
+
 ## For admins: People
 
 On the People page (`admin/people`) use the **Export to CSV** button, next to
@@ -85,7 +93,12 @@ Dates render in the site's timezone.
   resolves an admin view's filtered entity ids (replaying the request's
   exposed-filter query, de-duplicated because a multi-value join can repeat an
   entity) and streams them to a CSV download in `CHUNK_SIZE` batches, loading
-  and releasing each chunk so memory stays bounded on a long list. Subclasses
+  and releasing each chunk so memory stays bounded on a long list. Each row is
+  built inside a `\Throwable` catch (failure becomes a placeholder row plus a
+  watchdog entry), entities failing `access('view')` are skipped and logged in
+  one aggregated notice, a chunk that fails to load is logged and counted as
+  failed, and a trailing summary row is written last so a truncated stream is
+  detectable. Subclasses
   supply only the view, entity type, headers, row callback, and filename.
 - `Controller\ContentExportController::export($bundle, $request)` — the Manage
   views, gated by the `yalesites manage settings` permission (same as those
