@@ -11,7 +11,7 @@ consentModal:
 consentNotice:
   title: 'Cookies on this site'
   changeDescription: 'The services used on this site have changed since your last visit. Please review your choices.'
-  description: 'Yale uses cookies and similar technologies to measure how this site is used and to show content hosted by other organizations. We use them for: {purposes}.'
+  description: 'This site uses cookies to understand how it is used and to show content from other services. Accept or decline them, or manage your choices.'
   learnMore: 'Manage choices'
 ok: 'Accept all'
 save: 'Save my choices'
@@ -27,7 +27,7 @@ service:
     title: (opt-out)
     description: 'This service is loaded by default (opt-out possible).'
   required:
-    title: '(always active)'
+    title: 'Always active'
     description: 'This service is required for the site to work and cannot be turned off.'
   purposes: Purposes
   purpose: Purpose
