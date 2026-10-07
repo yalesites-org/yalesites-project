@@ -2,10 +2,15 @@
 
 namespace Drupal\Tests\ys_markdown\Kernel;
 
+use Drupal\Component\Serialization\Json;
 use Drupal\Core\Cache\CacheableResponseInterface;
+use Drupal\field\Entity\FieldConfig;
+use Drupal\field\Entity\FieldStorageConfig;
+use Drupal\filter\Entity\FilterFormat;
+use Drupal\metatag\Entity\MetatagDefaults;
+use Drupal\Tests\content_moderation\Traits\ContentModerationTestTrait;
 use Drupal\Tests\ys_core\Kernel\YsKernelTestBase;
 use Drupal\ys_markdown\Controller\AiDirectivesController;
-use Drupal\ys_markdown\MarkdownBuilder;
 use Drupal\node\Entity\Node;
 use Drupal\node\Entity\NodeType;
 use Drupal\path_alias\Entity\PathAlias;
@@ -21,12 +26,16 @@ use Symfony\Component\HttpFoundation\Request;
  */
 class AiDirectivesRouteTest extends YsKernelTestBase {
 
+  use ContentModerationTestTrait;
+
   /**
    * {@inheritdoc}
    */
   protected static $modules = [
     'system', 'user', 'node', 'field', 'filter', 'text', 'path_alias',
-    'robotstxt', 'ys_markdown',
+    'robotstxt', 'metatag', 'token', 'ys_markdown',
+    // Production node grants: an unpublished page loses its anonymous grant.
+    'workflows', 'content_moderation', 'ys_node_access',
   ];
 
   /**
@@ -57,12 +66,21 @@ class AiDirectivesRouteTest extends YsKernelTestBase {
     $this->installEntitySchema('user');
     $this->installEntitySchema('node');
     $this->installEntitySchema('path_alias');
+    $this->installEntitySchema('content_moderation_state');
     $this->installConfig(['node', 'filter', 'system', 'robotstxt']);
     $this->config('robotstxt.settings')->set('content', "User-agent: *\nDisallow: /admin/\n")->save();
     $this->installSchema('node', ['node_access']);
     $type = NodeType::create(['type' => 'page', 'name' => 'Page', 'display_submitted' => FALSE]);
     $type->save();
     node_add_body_field($type);
+    foreach (['field_teaser_text' => 'text_long', 'field_metatags' => 'metatag'] as $name => $field_type) {
+      FieldStorageConfig::create(['entity_type' => 'node', 'field_name' => $name, 'type' => $field_type])->save();
+      FieldConfig::create(['entity_type' => 'node', 'bundle' => 'page', 'field_name' => $name])->save();
+    }
+    // Production teasers are text_long; a format with no filters keeps markup.
+    FilterFormat::create(['format' => 'heading_html', 'name' => 'Heading HTML'])->save();
+    MetatagDefaults::create(['id' => 'global', 'tags' => ['title' => '[node:title]']])->save();
+    MetatagDefaults::create(['id' => 'node', 'tags' => ['description' => '[node:field_teaser_text]']])->save();
     Role::create(['id' => RoleInterface::ANONYMOUS_ID, 'label' => 'Anonymous'])
       ->grantPermission('access content')
       ->save();
@@ -170,7 +188,6 @@ class AiDirectivesRouteTest extends YsKernelTestBase {
    */
   protected function assertLlmsTags(array $tags): void {
     $expected = [
-      'node_list',
       'config:cas.settings',
       'config:ys_core.site',
       'config:system.site',
@@ -209,8 +226,13 @@ class AiDirectivesRouteTest extends YsKernelTestBase {
     $this->assertStringNotContainsString('Secret draft', $content);
     $this->assertStringNotContainsString('Private page', $content);
     $this->assertLlmsTags($response->getCacheableMetadata()->getCacheTags());
+    // The list refreshes hourly, not on every node save.
+    $this->assertNotContains('node_list', $response->getCacheableMetadata()->getCacheTags());
+    // Read off the controller: core overwrites Expires on a kernel response.
+    $expires = AiDirectivesController::create($this->container)->llms()->getExpires();
+    $this->assertEqualsWithDelta(time() + AiDirectivesController::MAX_AGE, $expires->getTimestamp(), 5);
     // Only the metadata is observable: core forces kernel requests private.
-    $this->assertSame(MarkdownBuilder::MAX_AGE, $response->getCacheableMetadata()->getCacheMaxAge());
+    $this->assertSame(AiDirectivesController::MAX_AGE, $response->getCacheableMetadata()->getCacheMaxAge());
   }
 
   /**
@@ -233,6 +255,177 @@ class AiDirectivesRouteTest extends YsKernelTestBase {
     $outline = preg_replace('#\(http[^)]*\)#', '', $content);
     $this->assertStringEndsWith("\n## Page\n\n- [A page]\n\n## Post\n\n- [A post]\n\n## Zebra events\n\n- [An event]\n\n", $outline);
     $this->assertStringNotContainsString('## Resource', $content);
+  }
+
+  /**
+   * Returns the llms.txt line for a page created with the given teaser.
+   */
+  protected function llmsLineFor(string $teaser, array $metatags = []): string {
+    $this->config('ys_core.site')->set('ai_readability.markdown_enabled', TRUE)->save();
+    $node = Node::create([
+      'type' => 'page',
+      'title' => 'Described',
+      'status' => 1,
+      'field_teaser_text' => ['value' => $teaser, 'format' => 'heading_html'],
+      'field_metatags' => $metatags ? ['value' => Json::encode($metatags)] : NULL,
+    ]);
+    $node->save();
+    PathAlias::create(['path' => '/node/' . $node->id(), 'alias' => '/described'])->save();
+    $this->assertSame(1, preg_match('#^- \[Described\]\(http://[^)]+/described\.md\)(.*)$#m', $this->get('/llms.txt')->getContent(), $match));
+    return $match[1];
+  }
+
+  /**
+   * The teaser text, via the metatag default, follows the link.
+   */
+  public function testLlmsAddsDescription(): void {
+    $this->assertSame(': A short teaser.', $this->llmsLineFor('A short teaser.'));
+  }
+
+  /**
+   * A page without a description keeps the bare link.
+   */
+  public function testLlmsOmitsEmptyDescription(): void {
+    $this->assertSame('', $this->llmsLineFor(''));
+  }
+
+  /**
+   * Tags are stripped, entities decoded and whitespace collapsed.
+   */
+  public function testLlmsCleansDescription(): void {
+    $this->assertSame(': Fish & chips are great.', $this->llmsLineFor("<p>Fish &amp;   chips</p>\n<p>are\r\ngreat.</p>"));
+  }
+
+  /**
+   * An escaped less-than sign in a teaser survives tag stripping.
+   */
+  public function testLlmsKeepsEscapedLessThan(): void {
+    $this->assertSame(': Grades K<12 welcome', $this->llmsLineFor('Grades K&lt;12 welcome'));
+  }
+
+  /**
+   * A long description is cut at a word boundary with three dots.
+   */
+  public function testLlmsTruncatesLongDescription(): void {
+    $description = substr($this->llmsLineFor(str_repeat('word ', 80)), 2);
+    $this->assertStringEndsWith(' word...', $description);
+    $this->assertLessThanOrEqual(203, strlen($description));
+    $this->assertGreaterThan(190, strlen($description));
+  }
+
+  /**
+   * A per-page metatag description wins over the teaser default.
+   */
+  public function testLlmsPerPageOverrideWins(): void {
+    $this->assertSame(': Custom override.', $this->llmsLineFor('A short teaser.', ['description' => 'Custom override.']));
+  }
+
+  /**
+   * A bundle default other than the teaser token is still resolved.
+   */
+  public function testLlmsUsesBundleDefaultTemplate(): void {
+    MetatagDefaults::create(['id' => 'node__page', 'tags' => ['description' => 'About [node:title]']])->save();
+    $this->assertSame(': About Described', $this->llmsLineFor('A short teaser.'));
+  }
+
+  /**
+   * Returns the current checksum of the llms.txt removal tag.
+   */
+  protected function llmsTagChecksum(): int {
+    return $this->container->get('cache_tags.invalidator.checksum')->getCurrentChecksum([AiDirectivesController::CACHE_TAG]);
+  }
+
+  /**
+   * Saves a listed page and returns it.
+   */
+  protected function listedPage(): Node {
+    $this->config('ys_core.site')->set('ai_readability.markdown_enabled', TRUE)->save();
+    $node = Node::create([
+      'type' => 'page',
+      'title' => 'Listed',
+      'status' => 1,
+      'field_teaser_text' => ['value' => 'Old', 'format' => 'heading_html'],
+    ]);
+    $node->save();
+    return $node;
+  }
+
+  /**
+   * The 200 response carries the removal tag.
+   */
+  public function testLlmsCarriesRemovalTag(): void {
+    $this->listedPage();
+    $this->assertContains(AiDirectivesController::CACHE_TAG, $this->get('/llms.txt')->getCacheableMetadata()->getCacheTags());
+  }
+
+  /**
+   * Unpublishing a listed page invalidates the removal tag.
+   */
+  public function testUnpublishInvalidatesRemovalTag(): void {
+    $node = $this->listedPage();
+    $before = $this->llmsTagChecksum();
+    $node->setUnpublished()->save();
+    $this->assertNotSame($before, $this->llmsTagChecksum());
+  }
+
+  /**
+   * Deleting a listed page invalidates the removal tag.
+   */
+  public function testDeleteInvalidatesRemovalTag(): void {
+    $node = $this->listedPage();
+    $before = $this->llmsTagChecksum();
+    $node->delete();
+    $this->assertNotSame($before, $this->llmsTagChecksum());
+  }
+
+  /**
+   * Excluding a listed page from AI feeds invalidates the removal tag.
+   */
+  public function testExclusionInvalidatesRemovalTag(): void {
+    $node = $this->listedPage();
+    $before = $this->llmsTagChecksum();
+    $node->set('field_metatags', ['value' => Json::encode(['ai_disable_indexing' => 'disabled'])])->save();
+    $this->assertNotSame($before, $this->llmsTagChecksum());
+  }
+
+  /**
+   * Edits that keep a page listed, and unlisted pages, leave the tag alone.
+   */
+  public function testTeaserEditAndUnlistedSavesKeepRemovalTag(): void {
+    $node = $this->listedPage();
+    $before = $this->llmsTagChecksum();
+    $node->set('field_teaser_text', ['value' => 'New', 'format' => 'heading_html'])->save();
+    $draft = Node::create(['type' => 'page', 'title' => 'Draft', 'status' => 0]);
+    $draft->save();
+    $draft->delete();
+    $this->assertSame($before, $this->llmsTagChecksum());
+  }
+
+  /**
+   * Draft and archive saves under content moderation, as separate requests.
+   *
+   * Each save starts with an empty access cache, like an editor's form
+   * submission, so the original's anonymous access is really checked.
+   */
+  public function testModeratedArchiveInvalidatesRemovalTag(): void {
+    $workflow = $this->createEditorialWorkflow();
+    $workflow->getTypePlugin()->addEntityTypeAndBundle('node', 'page');
+    $workflow->save();
+    $this->config('ys_core.site')->set('ai_readability.markdown_enabled', TRUE)->save();
+    $node = Node::create(['type' => 'page', 'title' => 'Listed', 'moderation_state' => 'published']);
+    $node->save();
+    $before = $this->llmsTagChecksum();
+    $resave = function (string $state) use ($node): void {
+      $this->container->get('entity_type.manager')->getAccessControlHandler('node')->resetCache();
+      $storage = $this->container->get('entity_type.manager')->getStorage('node');
+      $storage->resetCache([$node->id()]);
+      $storage->createRevision($storage->load($node->id()))->set('moderation_state', $state)->save();
+    };
+    $resave('draft');
+    $this->assertSame($before, $this->llmsTagChecksum(), 'A forward draft leaves the list alone.');
+    $resave('archived');
+    $this->assertFalse(Node::load($node->id())->isPublished());
+    $this->assertNotSame($before, $this->llmsTagChecksum(), 'Archiving the live page drops it.');
   }
 
 }

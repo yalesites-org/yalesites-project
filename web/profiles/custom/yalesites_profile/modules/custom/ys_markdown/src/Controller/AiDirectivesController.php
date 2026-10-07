@@ -2,9 +2,15 @@
 
 namespace Drupal\ys_markdown\Controller;
 
+use Drupal\Component\Render\PlainTextOutput;
+use Drupal\Component\Utility\Unicode;
 use Drupal\Core\Cache\CacheableMetadata;
 use Drupal\Core\Cache\CacheableResponse;
 use Drupal\Core\Controller\ControllerBase;
+use Drupal\Core\Render\BubbleableMetadata;
+use Drupal\metatag\MetatagManagerInterface;
+use Drupal\metatag\MetatagToken;
+use Drupal\node\NodeInterface;
 use Drupal\ys_core\AiReadabilitySettings;
 use Drupal\ys_markdown\MarkdownBuilder;
 use Drupal\ys_markdown\MarkdownEligibility;
@@ -31,18 +37,48 @@ class AiDirectivesController extends ControllerBase {
   ];
 
   /**
+   * Cache tag invalidated when a listed page stops being eligible.
+   */
+  const CACHE_TAG = 'ys_markdown:llms';
+
+  /**
    * Nodes loaded per chunk when building llms.txt.
    */
   const CHUNK_SIZE = 50;
 
-  public function __construct(protected MarkdownEligibility $eligibility) {
+  /**
+   * Freshness of llms.txt: half the usual hour, as page cache and edge stack.
+   */
+  const MAX_AGE = MarkdownBuilder::MAX_AGE / 2;
+
+  /**
+   * Longest description kept in llms.txt, before the trailing dots.
+   */
+  const DESCRIPTION_MAX_LENGTH = 200;
+
+  /**
+   * Default Metatag description template per bundle, filled on first use.
+   *
+   * @var string[]
+   */
+  protected array $defaultDescriptions = [];
+
+  public function __construct(
+    protected MarkdownEligibility $eligibility,
+    protected MetatagManagerInterface $metatagManager,
+    protected MetatagToken $metatagToken,
+  ) {
   }
 
   /**
    * {@inheritdoc}
    */
   public static function create(ContainerInterface $container) {
-    return new static($container->get('ys_markdown.eligibility'));
+    return new static(
+      $container->get('ys_markdown.eligibility'),
+      $container->get('metatag.manager'),
+      $container->get('metatag.token'),
+    );
   }
 
   /**
@@ -53,7 +89,7 @@ class AiDirectivesController extends ControllerBase {
     $system = $this->config('system.site');
     $cacheability = (new CacheableMetadata())
       ->addCacheTags([
-        'node_list',
+        self::CACHE_TAG,
         'config:cas.settings',
         // Eligibility checks anonymous view access.
         'config:user.role.anonymous',
@@ -80,6 +116,7 @@ class AiDirectivesController extends ControllerBase {
     // ponytail: loads every published node on a cache miss; move to a paged
     // or queued build if large sites time out.
     $lines = [];
+    $tokenCacheability = new BubbleableMetadata();
     $ids = $storage->getQuery()->accessCheck(FALSE)->condition('status', 1)->sort('nid')->execute();
     foreach (array_chunk($ids, self::CHUNK_SIZE) as $chunk) {
       foreach ($storage->loadMultiple($chunk) as $node) {
@@ -88,30 +125,61 @@ class AiDirectivesController extends ControllerBase {
         }
         $url = $node->toUrl('canonical', ['absolute' => TRUE])->toString();
         $title = strtr($node->label(), ['[' => '\[', ']' => '\]']);
-        $lines[$node->bundle()][] = '- [' . $title . '](' . $url . ".md)\n";
+        $description = $this->description($node, $tokenCacheability);
+        $lines[$node->bundle()][] = '- [' . $title . '](' . $url . ".md)" . ($description === '' ? '' : ': ' . $description) . "\n";
       }
       $storage->resetCache($chunk);
     }
 
     // One section per content type, ordered by label.
+    $cacheability->addCacheableDependency($tokenCacheability)
+      ->addCacheTags([
+        'config:metatag.metatag_defaults.global',
+        'config:metatag.metatag_defaults.node',
+      ]);
     $types = $this->entityTypeManager()->getStorage('node_type')->loadMultiple(array_keys($lines));
     uasort($types, fn($a, $b) => strcasecmp($a->label(), $b->label()));
     foreach ($types as $id => $type) {
-      $cacheability->addCacheableDependency($type);
+      $cacheability->addCacheableDependency($type)
+        ->addCacheTags(['config:metatag.metatag_defaults.node__' . $id]);
       $markdown .= "## " . $type->label() . "\n\n" . implode('', $lines[$id]) . "\n";
     }
 
-    $cacheability->setCacheMaxAge(MarkdownBuilder::MAX_AGE);
+    $cacheability->setCacheMaxAge(self::MAX_AGE);
     $response = new CacheableResponse($markdown, 200, [
       'Content-Type' => 'text/markdown; charset=utf-8',
     ]);
     $response->addCacheableDependency($cacheability);
-    // Hourly ceiling set on the header itself: see ContentFeedController in
+    // Ceiling set on the header itself: see ContentFeedController in
     // ys_beacon for why core's FinishResponseSubscriber must not override it.
     $response->setPublic();
-    $response->setMaxAge(MarkdownBuilder::MAX_AGE);
+    $response->setMaxAge(self::MAX_AGE);
+    // Expires bounds core's page cache, which would otherwise never expire.
+    $response->setExpires(new \DateTime('+' . self::MAX_AGE . ' seconds'));
     $response->setVary('Cookie', FALSE);
     return $response;
+  }
+
+  /**
+   * Returns the page's resolved Metatag description as short plain text.
+   */
+  protected function description(NodeInterface $node, BubbleableMetadata $bubbleable): string {
+    $bundle = $node->bundle();
+    $this->defaultDescriptions[$bundle] ??= $this->metatagManager->defaultTagsFromEntity($node)['description'] ?? '';
+    $template = $this->metatagManager->tagsFromEntity($node)['description'] ?? '';
+    $template = $template ?: $this->defaultDescriptions[$bundle];
+    if ($template === '[node:field_teaser_text]') {
+      // Fast path: the token would resolve to the processed teaser.
+      $text = $node->hasField('field_teaser_text') ? (string) $node->get('field_teaser_text')->processed : '';
+    }
+    else {
+      $text = $this->metatagToken->replace($template, ['node' => $node], ['langcode' => $node->language()->getId()], $bubbleable);
+    }
+    $text = trim(preg_replace('/\s+/u', ' ', PlainTextOutput::renderFromHtml($text)));
+    if (mb_strlen($text) > self::DESCRIPTION_MAX_LENGTH) {
+      $text = Unicode::truncate($text, self::DESCRIPTION_MAX_LENGTH, TRUE) . '...';
+    }
+    return $text;
   }
 
 }
