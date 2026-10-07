@@ -42,3 +42,11 @@ ys_content_export.export_resources:
     bundle: resource
   requirements:
     _permission: 'yalesites manage settings'
+
+ys_content_export.export_people:
+  path: '/admin/people/export'
+  defaults:
+    _controller: 'Drupal\ys_content_export\Controller\PeopleExportController::export'
+    _title: 'Export people to CSV'
+  requirements:
+    _permission: 'administer users'
