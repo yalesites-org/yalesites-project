@@ -1870,3 +1870,18 @@ function ys_core_update_10020() {
     '@left_alone' => $report['left_alone'],
   ]);
 }
+
+/**
+ * Install ys_markdown, which serves a Markdown version of each public page.
+ *
+ * Ys_markdown is listed in synced core.extension but is new to existing sites;
+ * `drush deploy` runs this update before config import, mirroring
+ * ys_core_update_10017(). No-op once installed.
+ */
+function ys_core_update_10022() {
+  if (\Drupal::moduleHandler()->moduleExists('ys_markdown')) {
+    return t('ys_markdown already installed; nothing to do.');
+  }
+  \Drupal::service('module_installer')->install(['ys_markdown']);
+  return t('Installed ys_markdown.');
+}

@@ -6,6 +6,7 @@ use Drupal\Component\Serialization\Yaml;
 use Drupal\Core\Form\FormState;
 use Drupal\Core\Render\Element;
 use Drupal\Tests\user\Traits\UserCreationTrait;
+use Drupal\ys_core\AiReadabilitySettings;
 use Drupal\ys_core\Form\SiteSettingsForm;
 use Drupal\ys_core\PlatformAdminCheckerInterface;
 
@@ -96,6 +97,8 @@ class SiteSettingsFormGroupingTest extends YsKernelTestBase {
     'teaser_image_fallback' => 'look_and_feel',
     'google_site_verification' => 'search_and_analytics',
     'google_analytics_migration' => 'search_and_analytics',
+    'ai_markdown_enabled' => 'search_and_analytics',
+    'ai_block_ai_crawlers' => 'search_and_analytics',
     'custom_vocab_name' => 'content_and_tagging',
     'cas_app_name' => 'advanced',
   ];
@@ -154,6 +157,36 @@ class SiteSettingsFormGroupingTest extends YsKernelTestBase {
    */
   protected function formObject(): SiteSettingsForm {
     return SiteSettingsForm::create($this->container);
+  }
+
+  /**
+   * Submits the form with every value an untouched form would send.
+   *
+   * Pass overrides for the values a test cares about.
+   */
+  protected function submitWith(array $form, array $overrides = []): void {
+    $form_state = new FormState();
+    $form_state->setValues($overrides + [
+      'site_name' => 'AI Readability Site',
+      'site_mail' => 'someone@yale.edu',
+      // submitForm() only concatenates this into '/node/<id>'; it never loads
+      // the node, so a bare id is enough and no bundle setup is needed.
+      'site_page_front' => 42,
+      'site_page_posts' => '/news',
+      'site_page_events' => '/happenings',
+      'site_page_403' => '/no-entry',
+      'site_page_404' => '/gone',
+      'google_site_verification' => '',
+      'custom_vocab_name' => 'Custom Vocab',
+      'font_pairing' => 'yalenew',
+      'teaser_image_fallback' => '',
+      // handleMediaFilesystem() only dereferences this when it is truthy.
+      'favicon' => [],
+      'cas_app_name' => 'yalesites',
+      'ai_markdown_enabled' => 1,
+      'ai_block_ai_crawlers' => 1,
+    ]);
+    $this->formObject()->submitForm($form, $form_state);
   }
 
   /**
@@ -241,26 +274,12 @@ class SiteSettingsFormGroupingTest extends YsKernelTestBase {
   public function testSubmittingStillWritesEveryValueToItsOwnConfigKey(): void {
     $form = $this->buildFormAs(1);
 
-    $form_state = new FormState();
-    $form_state->setValues([
+    $this->submitWith($form, [
       'site_name' => 'Grouped Settings Site',
-      'site_mail' => 'someone@yale.edu',
-      // submitForm() only concatenates this into '/node/<id>'; it never loads
-      // the node, so a bare id is enough and no bundle setup is needed.
-      'site_page_front' => 42,
-      'site_page_posts' => '/news',
-      'site_page_events' => '/happenings',
-      'site_page_403' => '/no-entry',
-      'site_page_404' => '/gone',
       'google_site_verification' => 'verification-key',
-      'custom_vocab_name' => 'Custom Vocab',
       'font_pairing' => 'mallory',
-      'teaser_image_fallback' => '',
-      // handleMediaFilesystem() only dereferences this when it is truthy.
-      'favicon' => [],
-      'cas_app_name' => 'yalesites',
+      'ai_block_ai_crawlers' => 0,
     ]);
-    $this->formObject()->submitForm($form, $form_state);
 
     $site = $this->config('system.site');
     $this->assertSame('Grouped Settings Site', $site->get('name'));
@@ -279,6 +298,8 @@ class SiteSettingsFormGroupingTest extends YsKernelTestBase {
     $this->assertSame('Custom Vocab', $yale->get('taxonomy.custom_vocab_name'));
     $this->assertSame('mallory', $yale->get('font_pairing'));
     $this->assertSame('yalesites', $yale->get('cas_app_name'));
+    $this->assertTrue($yale->get(AiReadabilitySettings::MARKDOWN_ENABLED));
+    $this->assertFalse($yale->get(AiReadabilitySettings::BLOCK_AI_CRAWLERS));
   }
 
   /**
@@ -482,6 +503,53 @@ class SiteSettingsFormGroupingTest extends YsKernelTestBase {
       'FileExtension' => ['extensions' => 'gif png jpg jpeg'],
       'FileImageDimensions' => ['maxDimensions' => 0, 'minDimensions' => '180x180'],
     ], $validators);
+  }
+
+  /**
+   * A site with no saved AI keys shows both ON and a save keeps them ON.
+   *
+   * Existing sites never receive the keys (ys_core config is config-ignored and
+   * there is no update hook), so a missing key must read as ON everywhere.
+   */
+  public function testMissingAiKeysReadAsOnAndSurviveSave(): void {
+    $this->config('ys_core.site')->clear('ai_readability')->save();
+
+    $form = $this->buildFormAs(1);
+    $this->assertTrue($form['search_and_analytics']['ai_markdown_enabled']['#default_value']);
+    $this->assertTrue($form['search_and_analytics']['ai_block_ai_crawlers']['#default_value']);
+
+    $this->submitWith($form);
+
+    $yale = $this->config('ys_core.site');
+    $this->assertSame('AI Readability Site', $this->config('system.site')->get('name'));
+    foreach ([AiReadabilitySettings::MARKDOWN_ENABLED, AiReadabilitySettings::BLOCK_AI_CRAWLERS] as $key) {
+      $this->assertTrue(AiReadabilitySettings::isEnabled($yale, $key), $key);
+      $this->assertTrue($yale->get($key), "$key was not saved as TRUE.");
+    }
+  }
+
+  /**
+   * Each AI setting turns off on its own and saves an explicit FALSE.
+   */
+  public function testAiSettingsAreIndependent(): void {
+    $form = $this->buildFormAs(1);
+    $this->submitWith($form, [
+      'ai_markdown_enabled' => 0,
+      'ai_block_ai_crawlers' => 1,
+    ]);
+
+    $yale = $this->config('ys_core.site');
+    $this->assertFalse($yale->get(AiReadabilitySettings::MARKDOWN_ENABLED));
+    $this->assertTrue($yale->get(AiReadabilitySettings::BLOCK_AI_CRAWLERS));
+
+    $this->submitWith($form, [
+      'ai_markdown_enabled' => 1,
+      'ai_block_ai_crawlers' => 0,
+    ]);
+
+    $yale = $this->config('ys_core.site');
+    $this->assertTrue($yale->get(AiReadabilitySettings::MARKDOWN_ENABLED));
+    $this->assertFalse($yale->get(AiReadabilitySettings::BLOCK_AI_CRAWLERS));
   }
 
 }
