@@ -214,6 +214,17 @@
       // deleting that note - so report the state and leave them to clear the
       // note or enter hours, rather than let the tick fight them.
       closed.disabled = allDay.checked || (!open && hasOwnNote());
+      // Mirror contrib's All day treatment: a closed day's From/To are
+      // disabled. Contrib owns the All day case, so leave that to it. A day
+      // closed only by the editor's own note keeps editable fields: its box
+      // is disabled, so disabling the fields too would leave no way to enter
+      // hours short of clearing the note.
+      if (!allDay.checked) {
+        dayTimeFields.forEach((field) => {
+          const input = field;
+          input.disabled = closed.checked && !closed.disabled;
+        });
+      }
     };
 
     closed.addEventListener("change", () => {
@@ -237,6 +248,7 @@
           comment.value = closedLabel;
           comment.dataset.ysClosedMarker = "1";
         }
+        sync();
         return;
       }
       // Unticking means "I am about to set hours", so drop our label and move
@@ -244,6 +256,13 @@
       // is only ever enabled here when our label is the day's sole comment,
       // so retracting it already leaves the state correct.
       retractLabel();
+      // Re-enable before focusing: a disabled field drops focus. Unticking is
+      // also the only way back to entering hours, since a disabled field can
+      // no longer fire the change that auto-unticks Closed.
+      dayTimeFields.forEach((field) => {
+        const input = field;
+        input.disabled = false;
+      });
       if (dayTimeFields.length) {
         dayTimeFields[0].focus();
       }
