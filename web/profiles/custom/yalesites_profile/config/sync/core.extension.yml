@@ -128,6 +128,7 @@ module:
   redirect: 0
   redirect_404: 0
   responsive_image: 0
+  robotstxt: 0
   role_delegation: 0
   search_api: 0
   search_api_db: 0
@@ -172,6 +173,7 @@ module:
   ys_layouts: 0
   ys_localist: 0
   ys_mail: 0
+  ys_markdown: 0
   ys_mathjax: 0
   ys_media: 0
   ys_migrate: 0

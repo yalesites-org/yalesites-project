@@ -1,0 +1,56 @@
+<?php
+
+/**
+ * @file
+ * Advertises each eligible node's Markdown version.
+ */
+
+use Drupal\Core\Cache\CacheableMetadata;
+use Drupal\Core\Url;
+use Drupal\ys_core\AiReadabilitySettings;
+use Drupal\ys_markdown\Controller\AiDirectivesController;
+use Drupal\node\NodeInterface;
+
+/**
+ * Implements hook_page_attachments().
+ */
+function ys_markdown_page_attachments(array &$attachments) {
+  $route_match = \Drupal::routeMatch();
+  $node = $route_match->getRouteName() === 'entity.node.canonical' ? $route_match->getParameter('node') : NULL;
+  if (!$node instanceof NodeInterface) {
+    return;
+  }
+  $eligibility = \Drupal::service('ys_markdown.eligibility');
+  // Always, so the page's cached output tracks the setting and the node even
+  // when no link is added.
+  $cacheability = $eligibility->getCacheability($node);
+  if ($eligibility->isEligible($node)) {
+    $url = Url::fromRoute('entity.node.canonical', ['node' => $node->id()])->toString(TRUE);
+    $cacheability->addCacheableDependency($url);
+    $attachments['#attached']['html_head_link'][] = [[
+      'rel' => 'alternate',
+      'type' => 'text/markdown',
+      'href' => $url->getGeneratedUrl() . '.md',
+    ],
+    ];
+  }
+  // Merged: applyTo() alone would wipe what earlier hooks set on this array.
+  CacheableMetadata::createFromRenderArray($attachments)->merge($cacheability)->applyTo($attachments);
+}
+
+/**
+ * Implements hook_robotstxt().
+ *
+ * Appends the site rule, plus one group disallowing AI training crawlers when
+ * the "block AI crawlers" setting is on. Each array item is trimmed and
+ * joined with a newline by the robotstxt module, so the blank line between
+ * the rule and the group lives inside a single item.
+ */
+function ys_markdown_robotstxt(): array {
+  $rules = "# Disallow ?page= params\nDisallow: /*?page=";
+  $config = \Drupal::config('ys_core.site');
+  if (AiReadabilitySettings::isEnabled($config, AiReadabilitySettings::BLOCK_AI_CRAWLERS)) {
+    $rules .= "\n\nUser-agent: " . implode("\nUser-agent: ", AiDirectivesController::AI_TRAINING_CRAWLERS) . "\nDisallow: /";
+  }
+  return [$rules];
+}
