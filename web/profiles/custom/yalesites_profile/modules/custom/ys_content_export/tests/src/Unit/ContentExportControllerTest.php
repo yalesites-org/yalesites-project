@@ -191,7 +191,7 @@ class ContentExportControllerTest extends UnitTestCase {
   public function testAccessDeniedNodeIsSkipped(): void {
     $this->logger->expects($this->never())->method('error');
     $this->logger->expects($this->once())->method('notice')
-      ->with($this->anything(), ['@count' => 1, '@nids' => '2']);
+      ->with($this->anything(), ['@count' => 1, '@type' => 'node', '@ids' => '2']);
     $this->storage->method('loadMultiple')->willReturn([
       1 => $this->node(1, 'A'),
       2 => $this->node(2, 'Secret title', FALSE),
@@ -209,7 +209,7 @@ class ContentExportControllerTest extends UnitTestCase {
    */
   public function testMissingNodeIsSkipped(): void {
     $this->logger->expects($this->once())->method('notice')
-      ->with($this->anything(), ['@count' => 1, '@nids' => '2']);
+      ->with($this->anything(), ['@count' => 1, '@type' => 'node', '@ids' => '2']);
     $this->storage->method('loadMultiple')->willReturn([1 => $this->node(1, 'A')]);
     $rows = $this->exportRows([1, 2]);
     $this->assertCount(3, $rows);
