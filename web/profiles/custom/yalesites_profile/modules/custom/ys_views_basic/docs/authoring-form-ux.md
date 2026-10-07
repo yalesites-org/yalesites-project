@@ -89,7 +89,7 @@ copy only.
 | Control | New label | New help text |
 |---|---|---|
 | `term_operator` | Match content tagged with | "Any" shows content with at least one selected term; "All" requires every selected term. |
-| `offset` | Skip the first N results | Hide the first results that match — e.g. enter 1 to omit the single newest item. |
+| `offset` | Skip the first N results | Hide the first results that match. For example, enter 1 to omit the single newest item. |
 | `pinned_to_top` | Highlight pinned items | Show a small label on items an editor has pinned to the top of this list. |
 | `pin_label` | Pinned-item label | Text shown on each pinned item (for example "Featured"). |
 | `show_current_entity` | Include the current page | When this block is placed on a content page, include that page in the results instead of excluding it. |
