@@ -11,3 +11,4 @@ dependencies:
   - quick_node_clone
   - ys_core
   - ys_localist
+  - ys_themes
