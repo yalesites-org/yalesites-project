@@ -21,6 +21,14 @@ content:
       collapsed: false
       collapsed_exceptions: true
     third_party_settings: {  }
+  info:
+    type: string_textfield
+    weight: 2
+    region: content
+    settings:
+      size: 60
+      placeholder: ''
+    third_party_settings: {  }
   revision_log:
     type: hide_revision_field_log_widget
     weight: 80
@@ -34,5 +42,4 @@ content:
       allow_user_settings: true
       hide_revision: false
     third_party_settings: {  }
-hidden:
-  info: true
+hidden: {  }
