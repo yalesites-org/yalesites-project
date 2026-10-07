@@ -100,19 +100,7 @@ class ContentExportController extends ControllerBase {
 
     $response = new StreamedResponse(function () use ($nids, $bundle, $columns) {
       $handle = fopen('php://output', 'w');
-      // UTF-8 BOM so spreadsheet apps read accented characters correctly.
-      fwrite($handle, "\xEF\xBB\xBF");
-      fputcsv($handle, $columns);
-      foreach (array_chunk($nids, self::CHUNK_SIZE) as $chunk) {
-        $nodes = $this->nodeStorage->loadMultiple($chunk);
-        foreach ($chunk as $nid) {
-          if (isset($nodes[$nid])) {
-            fputcsv($handle, ContentExportBuilder::getRow($nodes[$nid], $bundle, $this->dateFormatter));
-          }
-        }
-        // Release the chunk so memory stays bounded on large content lists.
-        $this->nodeStorage->resetCache($chunk);
-      }
+      $this->writeCsv($handle, $nids, $bundle, $columns);
       fclose($handle);
     });
 
@@ -120,6 +108,77 @@ class ContentExportController extends ControllerBase {
     $response->headers->set('Content-Type', 'text/csv; charset=utf-8');
     $response->headers->set('Content-Disposition', 'attachment; filename="' . $filename . '"');
     return $response;
+  }
+
+  /**
+   * Writes the BOM, header, data rows, and trailing summary row to a handle.
+   *
+   * A row that fails to build is replaced by a placeholder and logged, so one
+   * bad node cannot end the download. Nodes the current user cannot view, or
+   * that fail to load, are skipped. The summary row is written last, so a
+   * stream that dies for any other reason visibly lacks it.
+   *
+   * @param resource $handle
+   *   The open output stream.
+   * @param int[] $nids
+   *   The node ids to export, in order.
+   * @param string $bundle
+   *   The node bundle machine name.
+   * @param string[] $columns
+   *   The header labels.
+   */
+  protected function writeCsv($handle, array $nids, string $bundle, array $columns): void {
+    // UTF-8 BOM so spreadsheet apps read accented characters correctly.
+    fwrite($handle, "\xEF\xBB\xBF");
+    fputcsv($handle, $columns);
+    $exported = $failed = 0;
+    $skipped = [];
+    $logger = $this->getLogger('ys_content_export');
+    foreach (array_chunk($nids, self::CHUNK_SIZE) as $chunk) {
+      try {
+        $nodes = $this->nodeStorage->loadMultiple($chunk);
+      }
+      catch (\Throwable $e) {
+        // Count the whole chunk as failed and carry on, so the summary row
+        // reports the shortfall. Rethrowing would make the exception handler
+        // print an error page into the CSV body and log the failure twice.
+        $logger->error('Export failed, could not load nodes @nids: @message', [
+          '@nids' => implode(', ', $chunk),
+          '@message' => $e->getMessage(),
+        ]);
+        $failed += count($chunk);
+        continue;
+      }
+      foreach ($chunk as $nid) {
+        if (!isset($nodes[$nid]) || !$nodes[$nid]->access('view')) {
+          $skipped[] = $nid;
+          continue;
+        }
+        try {
+          fputcsv($handle, ContentExportBuilder::getRow($nodes[$nid], $bundle, $this->dateFormatter));
+          $exported++;
+        }
+        catch (\Throwable $e) {
+          $failed++;
+          $logger->error('Export failed for node @nid: @message', [
+            '@nid' => $nid,
+            '@message' => $e->getMessage(),
+          ]);
+          $placeholder = array_fill(0, count($columns), '');
+          $placeholder[0] = 'Export failed for node ' . $nid;
+          fputcsv($handle, $placeholder);
+        }
+      }
+      // Release the chunk so memory stays bounded on large content lists.
+      $this->nodeStorage->resetCache($chunk);
+    }
+    if ($skipped) {
+      $logger->notice('Export skipped @count nodes (no access or not found): @nids', [
+        '@count' => count($skipped),
+        '@nids' => implode(', ', $skipped),
+      ]);
+    }
+    fputcsv($handle, [sprintf('Export complete: %d of %d rows exported (%d failed, %d skipped)', $exported, count($nids), $failed, count($skipped))]);
   }
 
   /**

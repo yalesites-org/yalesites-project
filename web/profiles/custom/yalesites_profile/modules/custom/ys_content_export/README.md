@@ -35,6 +35,14 @@ The export reflects the same items you see in the Manage view — including
 any filters or search you have applied — and both published and unpublished items,
 subject to your access.
 
+The last row of the file reports how many rows were exported, for example
+"Export complete: 48 of 50 rows exported (1 failed, 1 skipped)". If that row is
+missing, the download was cut short. A row that fails to build is replaced by a
+placeholder naming the node ("Export failed for node 123") and logged under
+`ys_content_export` in the site log. If a batch of items cannot be loaded, it
+is logged and counted as failed in that last row. Items you may not view are
+skipped.
+
 ## For developers
 
 - `ContentExportBuilder` — pure column map + row builder; `sanitizeCell()`
@@ -49,6 +57,11 @@ subject to your access.
   matching Manage view's filtered node ids (replaying the request's exposed-filter
   query) and streams the CSV in chunks, gated by the `yalesites manage settings`
   permission (same as the Manage views).
+  Each row is built inside a `\Throwable` catch (failure becomes a placeholder
+  row plus a watchdog entry), nodes failing `access('view')` are skipped, and
+  skipped nodes are logged in one aggregated notice, a chunk that fails to load
+  is logged and counted as failed, and a trailing summary row is written last
+  so a truncated stream is detectable.
 - `Plugin\Menu\LocalAction\ContentExportLocalAction` — forwards the Manage page's
   active filter query onto the export link so the button exports what you see.
 - One route + one menu local action per content type, so the button appears on
