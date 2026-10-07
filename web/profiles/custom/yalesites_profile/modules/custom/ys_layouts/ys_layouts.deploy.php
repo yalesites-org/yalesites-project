@@ -40,3 +40,10 @@ function ys_layouts_deploy_9004() {
   \Drupal::service('ys_layouts.updater')->updateTextFormats('content_spotlight', 'field_text');
   \Drupal::service('ys_layouts.updater')->updateTextFormats('content_spotlight_portrait', 'field_text');
 }
+
+/**
+ * Updates post section locks so the 50/50 section can be added after content.
+ */
+function ys_layouts_deploy_9005() {
+  \Drupal::service('ys_layouts.updater')->updateLocks('post');
+}

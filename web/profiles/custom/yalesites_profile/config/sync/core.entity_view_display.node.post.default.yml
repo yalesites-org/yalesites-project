@@ -82,12 +82,10 @@ third_party_settings:
           layout_builder_lock:
             lock:
               6: 6
-              7: 7
   layout_builder_restrictions:
     allowed_block_categories: {  }
     entity_view_mode_restriction:
       allowed_layouts:
-        - layout_onecol
         - ys_layout_two_column_50_50
       denylisted_blocks: {  }
       allowlisted_blocks:
@@ -107,7 +105,6 @@ third_party_settings:
         - core
     entity_view_mode_restriction_by_region:
       allowed_layouts:
-        - layout_onecol
         - ys_layout_two_column_50_50
       allowlisted_blocks:
         ys_layout_two_column_50_50:

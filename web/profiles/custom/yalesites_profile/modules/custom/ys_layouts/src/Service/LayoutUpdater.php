@@ -10,6 +10,7 @@ use Drupal\Core\Entity\EntityTypeManagerInterface;
 use Drupal\Core\Messenger\MessengerInterface;
 use Drupal\Core\StringTranslation\StringTranslationTrait;
 use Drupal\block_content\Entity\BlockContent;
+use Drupal\layout_builder\Section;
 use Drupal\node\NodeInterface;
 use Psr\Log\LoggerInterface;
 
@@ -121,18 +122,15 @@ class LayoutUpdater {
    *
    * YaleSites uses layout builder on the default display of all content types.
    * The layout_builder_lock module is used to improve the authoring experience.
-   * Get the third party lock settings for each section of a content type. The
-   * returned array will take the form:
+   * Get the third party lock settings for each locked section of a content
+   * type. Sections are not keyed by layout ID because a content type can have
+   * several sections with the same layout (posts have two layout_onecol). The
+   * returned array is a list of:
    * @code
-   * 'ys_layout_banner' => [
-   *   5 => 5,
-   *   6 => 6,
-   *   8 => 8,
-   * ],
-   * 'ys_layout_page_meta' => [
-   *   2 => 2,
-   *   3 => 3,
-   *   4 => 4,
+   * [
+   *   'layout_id' => 'ys_layout_banner',
+   *   'label' => 'Banner',
+   *   'lock' => [5 => 5, 6 => 6, 8 => 8],
    * ],
    * @endcode
    *
@@ -140,7 +138,7 @@ class LayoutUpdater {
    *   The machine name of the content type (node bundle).
    *
    * @return array
-   *   All third party lock values organized by section ID.
+   *   A list of layout ID, section label, and lock values per locked section.
    */
   public function getLockConfigs($nodeBundleId) {
     $name = "core.entity_view_display.node.{$nodeBundleId}.default";
@@ -151,9 +149,12 @@ class LayoutUpdater {
     // Iterate over each layout builder section to get the locks for each one.
     if (!empty($lb['sections']) && is_array($lb['sections'])) {
       foreach ($lb['sections'] as $section) {
-        $layout_id = $section['layout_id'];
         if (!empty($section['third_party_settings']['layout_builder_lock']['lock']) && is_array($section['third_party_settings']['layout_builder_lock']['lock'])) {
-          $locks[$layout_id] = $section['third_party_settings']['layout_builder_lock']['lock'];
+          $locks[] = [
+            'layout_id' => $section['layout_id'],
+            'label' => $section['layout_settings']['label'] ?? NULL,
+            'lock' => $section['third_party_settings']['layout_builder_lock']['lock'],
+          ];
         }
       }
     }
@@ -188,41 +189,93 @@ class LayoutUpdater {
    */
   public function updateLocks($nodeBundleId) {
     $defaultLocks = $this->getLockConfigs($nodeBundleId);
+    /** @var \Drupal\Core\Entity\RevisionableStorageInterface $storage */
+    $storage = $this->entityTypeManager->getStorage('node');
     foreach ($this->getAllNodeIds($nodeBundleId) as $nid) {
 
       // Load the node or exit early if the node does not exist.
-      $node = $this->entityTypeManager->getStorage('node')->load($nid);
+      $node = $storage->load($nid);
       if (!$node instanceof NodeInterface) {
         continue;
       }
+      $revisions = [$node];
 
-      // Load the layout builder sections or exit early if none are set.
-      /** @var \Drupal\layout_builder\Field\LayoutSectionItemList $layout */
-      $layout = $node->get('layout_builder__layout');
-      if ($layout->isEmpty()) {
-        continue;
+      // Layout Builder edits the latest revision, so a pending draft needs the
+      // same locks. Update it in place rather than creating a new revision.
+      // Content moderation would otherwise force one; see setSyncing() below.
+      $latestId = $storage->getLatestRevisionId($nid);
+      if ($latestId && $latestId != $node->getRevisionId()) {
+        $latest = $storage->loadRevision($latestId);
+        if ($latest instanceof NodeInterface) {
+          $latest->setNewRevision(FALSE);
+          $revisions[] = $latest;
+        }
       }
 
-      foreach ($layout->getSections() as $section) {
-        // Authors can create their own sections. Check if this section is one
-        // of the default sections defined for this content type.
-        if (!array_key_exists($section->getLayoutId(), $defaultLocks)) {
+      foreach ($revisions as $revision) {
+        // Load the layout builder sections or skip if none are set.
+        /** @var \Drupal\layout_builder\Field\LayoutSectionItemList $layout */
+        $layout = $revision->get('layout_builder__layout');
+        if ($layout->isEmpty()) {
           continue;
         }
-        // Set third-party settings for layout_builder_lock to match the config.
-        $locks = $defaultLocks[$section->getLayoutId()];
-        $section->setThirdPartySetting('layout_builder_lock', 'lock', $locks);
-      }
-      try {
-        $node->save();
-      }
-      catch (EntityStorageException $e) {
-        $this->logger->error(
-          'Error updating locks for node with ID @nid: @message',
-          ['@nid' => $nid, '@message' => $e->getMessage()]
-        );
+
+        foreach ($layout->getSections() as $section) {
+          // Authors can create their own sections. Only update sections that
+          // match one of the default sections defined for this content type.
+          $locks = $this->findDefaultLocks($defaultLocks, $section);
+          if ($locks === NULL) {
+            continue;
+          }
+          // Set third-party settings for layout_builder_lock to match config.
+          $section->setThirdPartySetting('layout_builder_lock', 'lock', $locks);
+        }
+        // Syncing stops content moderation from creating a new revision and
+        // changing which revision is default. Without it, saving the default
+        // revision would also bury a pending draft under a newer revision.
+        $revision->setSyncing(TRUE);
+        try {
+          $revision->save();
+        }
+        catch (EntityStorageException $e) {
+          $this->logger->error(
+            'Error updating locks for node with ID @nid: @message',
+            ['@nid' => $nid, '@message' => $e->getMessage()]
+          );
+        }
       }
     }
+  }
+
+  /**
+   * Finds the default locks for a node section.
+   *
+   * Matches on layout ID and section label. A section with no label falls back
+   * to layout ID only, and only when exactly one default shares that layout.
+   *
+   * @param array $defaultLocks
+   *   The result of getLockConfigs().
+   * @param \Drupal\layout_builder\Section $section
+   *   The node's section.
+   *
+   * @return array|null
+   *   The lock values, or NULL if the section is not a default section.
+   */
+  protected function findDefaultLocks(array $defaultLocks, Section $section): ?array {
+    $candidates = array_filter($defaultLocks, fn($default) => $default['layout_id'] === $section->getLayoutId());
+    if (!$candidates) {
+      return NULL;
+    }
+    $label = $section->getLayoutSettings()['label'] ?? NULL;
+    if (empty($label)) {
+      return count($candidates) === 1 ? reset($candidates)['lock'] : NULL;
+    }
+    foreach ($candidates as $default) {
+      if ($default['label'] === $label) {
+        return $default['lock'];
+      }
+    }
+    return NULL;
   }
 
   /**
