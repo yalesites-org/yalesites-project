@@ -213,10 +213,15 @@ class LayoutUpdater {
       }
 
       foreach ($revisions as $revision) {
-        // Load the layout builder sections or skip if none are set.
+        // Saving the default revision stamps its changed time. A draft left
+        // older fails the entity-changed check, so editors could not save it.
+        $synced = $revision !== $node && $this->syncChangedTime($revision, $node);
+
+        // Load the layout builder sections. Skip if none are set, unless the
+        // draft's changed time was just raised and must be saved.
         /** @var \Drupal\layout_builder\Field\LayoutSectionItemList $layout */
         $layout = $revision->get('layout_builder__layout');
-        if ($layout->isEmpty()) {
+        if ($layout->isEmpty() && !$synced) {
           continue;
         }
 
@@ -245,6 +250,33 @@ class LayoutUpdater {
         }
       }
     }
+  }
+
+  /**
+   * Moves a draft's changed times up to the default revision's, if newer.
+   *
+   * @param \Drupal\node\NodeInterface $draft
+   *   The pending draft revision.
+   * @param \Drupal\node\NodeInterface $default
+   *   The default revision, after it was saved.
+   *
+   * @return bool
+   *   TRUE if any translation of the draft was changed.
+   */
+  protected function syncChangedTime(NodeInterface $draft, NodeInterface $default): bool {
+    $synced = FALSE;
+    foreach (array_keys($draft->getTranslationLanguages()) as $langcode) {
+      if (!$default->hasTranslation($langcode)) {
+        continue;
+      }
+      $changed = $default->getTranslation($langcode)->getChangedTime();
+      $translation = $draft->getTranslation($langcode);
+      if ($changed > $translation->getChangedTime()) {
+        $translation->setChangedTime($changed);
+        $synced = TRUE;
+      }
+    }
+    return $synced;
   }
 
   /**

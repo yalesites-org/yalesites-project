@@ -42,8 +42,14 @@ function ys_layouts_deploy_9004() {
 }
 
 /**
- * Updates post section locks so the 50/50 section can be added after content.
+ * Updates post, event, and resource section locks.
+ *
+ * Lets the 50/50 section be added after post content, and repairs the Title
+ * and Metadata locks that deploy 9003 left wrong on events and resources.
  */
 function ys_layouts_deploy_9005() {
-  \Drupal::service('ys_layouts.updater')->updateLocks('post');
+  $updater = \Drupal::service('ys_layouts.updater');
+  foreach (['post', 'event', 'resource'] as $bundle) {
+    $updater->updateLocks($bundle);
+  }
 }
