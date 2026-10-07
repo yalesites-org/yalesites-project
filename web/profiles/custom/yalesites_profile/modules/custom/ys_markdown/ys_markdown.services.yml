@@ -27,3 +27,8 @@ services:
       - '@account_switcher'
       - '@request_stack'
       - '@ys_markdown.public_html_filter'
+
+  ys_markdown.robotstxt_invalidator:
+    class: Drupal\ys_markdown\EventSubscriber\RobotsTxtInvalidator
+    tags:
+      - { name: event_subscriber }

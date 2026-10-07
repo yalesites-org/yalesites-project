@@ -128,6 +128,7 @@ module:
   redirect: 0
   redirect_404: 0
   responsive_image: 0
+  robotstxt: 0
   role_delegation: 0
   search_api: 0
   search_api_db: 0

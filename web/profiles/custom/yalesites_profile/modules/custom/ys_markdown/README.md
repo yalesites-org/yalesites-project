@@ -94,3 +94,34 @@ cache contexts are dropped. `/about.md?page=2` is the same document as
 The built document is cacheable for at most an hour even if an embedded
 listing reports max-age 0, matching ys_beacon's content feed; content changes
 still invalidate it at once through cache tags.
+
+## robots.txt and llms.txt
+
+`/llms.txt` is served by Drupal (`AiDirectivesController`). `/robots.txt` is
+served by the contrib `robotstxt` module (a dependency of this module); the
+scaffold no longer writes `web/robots.txt`. A local checkout that already has
+that file must delete it, or the web server serves the file instead of Drupal.
+
+- `/robots.txt` is the content of the textarea at `/admin/config/search/robotstxt`,
+  seeded from core's scaffold `robots.txt` (`robotstxt.settings` in the profile
+  config; on existing sites the deploy hook `ys_markdown_deploy_10001()`
+  does it, unless the textarea was already edited). That setting is in `config_ignore.settings.yml`, so each site's edits
+  survive `drush deploy`. `ys_markdown_robotstxt()` (`hook_robotstxt()`) appends
+  the site rule `Disallow: /*?page=` and, when "Block AI crawlers"
+  (`ai_readability.block_ai_crawlers`) is on, one group that disallows AI
+  training crawlers (`AiDirectivesController::AI_TRAINING_CRAWLERS`): GPTBot,
+  ClaudeBot, CCBot, Google-Extended, Applebot-Extended and Meta-ExternalAgent.
+  AI search bots (OAI-SearchBot, Claude-SearchBot, PerplexityBot) are not blocked,
+  because they fetch pages in order to cite them, which sites want. Saving a
+  change to that setting invalidates the `robotstxt` cache tag
+  (`RobotsTxtInvalidator`), so toggling takes effect without a cache clear.
+- `/llms.txt` follows llmstxt.org: the site name, slogan, and a link to the `.md`
+  version of every page that would be served as Markdown, grouped into one
+  section per content type (ordered by label). The 200 is fresh for at most an
+  hour at the edge, as ys_beacon's feed is. It answers 404 when
+  the "Markdown version" setting (`ai_readability.markdown_enabled`) is off.
+  It is built by loading every published node on a cache miss.
+
+Both read their setting through `AiReadabilitySettings::isEnabled()` (a missing
+key means on). `/llms.txt` carries the `config:ys_core.site` cache tag, so
+toggling takes effect without a cache clear.

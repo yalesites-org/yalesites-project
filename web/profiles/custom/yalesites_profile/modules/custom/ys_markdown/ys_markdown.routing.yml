@@ -13,3 +13,11 @@ ys_markdown.node:
     parameters:
       node:
         type: entity:node
+
+ys_markdown.llms:
+  path: '/llms.txt'
+  defaults:
+    _controller: '\Drupal\ys_markdown\Controller\AiDirectivesController::llms'
+    _disable_route_normalizer: TRUE
+  requirements:
+    _access: 'TRUE'
