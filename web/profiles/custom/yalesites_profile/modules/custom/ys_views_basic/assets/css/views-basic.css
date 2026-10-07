@@ -104,6 +104,19 @@
 }
 
 /*
+ * Cap it at the field too. Core's off-canvas reset sets `max-width: inherit
+ * !important` on every div in the dialog with an ID selector
+ * (`#drupal-off-canvas-wrapper .ui-dialog-content div`), which otherwise lets
+ * the 100% above overflow the panel, so this needs that ID and !important.
+ */
+#drupal-off-canvas-wrapper
+  .layout-builder-configure-block
+  .horizontal-tabs-panes
+  .chosen-container {
+  max-width: 100% !important;
+}
+
+/*
  * WHY EVERY .gin--dark-mode .chosen-* RULE BELOW IS QUALIFIED WITH
  * .layout-builder-configure-block — the qualifier is load-bearing, not cosmetic.
  *
@@ -671,6 +684,19 @@ input.views-basic--view-mode:focus-visible + label.option {
 .vb-filter-rows > .fieldset__wrapper {
   margin-left: 0;
   margin-right: 0;
+}
+
+/*
+ * Gin/Claro still draw a 1px border on this fieldset, so inset the legend and
+ * contents from it instead of sitting on and against the edge. Scoped to the
+ * block form to out-specify their fieldset rules.
+ */
+.layout-builder-configure-block fieldset.vb-filter-rows {
+  padding-top: var(--vb-space-field);
+}
+
+.layout-builder-configure-block fieldset.vb-filter-rows > .fieldset__wrapper {
+  padding: 0 0.75rem var(--vb-space-field);
 }
 
 .vb-filter-row {

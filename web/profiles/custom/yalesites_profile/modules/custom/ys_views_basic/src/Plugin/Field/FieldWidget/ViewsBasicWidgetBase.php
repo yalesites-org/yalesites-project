@@ -507,7 +507,7 @@ abstract class ViewsBasicWidgetBase extends WidgetBase implements ContainerFacto
    */
   protected function getExposedFilterDescriptions(): array {
     return [
-      'show_search_filter' => $this->t('Matches titles only — not body text, tags, or categories.'),
+      'show_search_filter' => $this->t('Matches titles only, not body text, tags, or categories.'),
     ];
   }
 
@@ -1354,7 +1354,7 @@ abstract class ViewsBasicWidgetBase extends WidgetBase implements ContainerFacto
       // gin_lb renders #field_prefix/#field_suffix and the (invisible) title
       // stacked on separate lines rather than inline around the input.
       '#title' => $this->t('Skip the first results'),
-      '#description' => $this->t('Hide the first results that match — for example, enter 1 to omit the single newest item.'),
+      '#description' => $this->t('Hide the first results that match. For example, enter 1 to omit the single newest item.'),
       '#type' => 'number',
       '#default_value' => $params ? $this->viewsBasicManager->getDefaultParamValue('offset', $params) : 0,
       '#min' => 0,

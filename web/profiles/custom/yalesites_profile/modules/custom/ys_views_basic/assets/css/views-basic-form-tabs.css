@@ -72,8 +72,15 @@
  *   to the tab bar's edge to still read as aligned.
  * Both need !important overrides, scoped to this wrapper specifically, to
  * win.
+ * Separately, .horizontal-tabs is a wrapping flex row and the panes are a
+ * content-sized flex item, so in the narrow off-canvas panel they can overflow
+ * it (clipping the tag help text and Chosen selects) or, when a pane sets
+ * container-type: inline-size (preview mockup), collapse to 0 width. The
+ * panes therefore take the full row and may shrink (flex + min-width below).
  */
 .layout-builder-configure-block .horizontal-tabs-panes {
+  flex: 1 1 100%;
+  min-width: 0;
   background: var(--gin-bg-layer, #fff);
 }
 
