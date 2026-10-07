@@ -45,7 +45,7 @@ jobs:
     permissions:
       deployments: write
       contents: read
-      pull-requests: read
+      pull-requests: write
     steps:
       - name: Checkout
         uses: actions/checkout@v7
@@ -73,7 +73,7 @@ jobs:
           git add -f pantheon.upstream.yml vendor web
 
       - name: Push to Pantheon
-        uses: pantheon-systems/push-to-pantheon@0.9.3
+        uses: pantheon-systems/push-to-pantheon@0.9.5
         id: push-to-pantheon
         with:
           ssh_key: ${{ env.SSH_KEY }}

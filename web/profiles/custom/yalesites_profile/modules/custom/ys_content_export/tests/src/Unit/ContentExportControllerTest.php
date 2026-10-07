@@ -13,6 +13,7 @@ use Drupal\Tests\UnitTestCase;
 use Drupal\node\NodeInterface;
 use Drupal\ys_content_export\ContentExportBuilder;
 use Drupal\ys_content_export\Controller\ContentExportController;
+use Drupal\ys_content_export\Controller\ExportControllerBase;
 
 /**
  * Unit tests for the streamed CSV body of ContentExportController.
@@ -114,8 +115,9 @@ class ContentExportControllerTest extends UnitTestCase {
   protected function exportRows(array $nids): array {
     $columns = array_values(ContentExportBuilder::getColumns('page'));
     $handle = fopen('php://memory', 'w+');
-    (new \ReflectionMethod(ContentExportController::class, 'writeCsv'))
-      ->invoke($this->controller(), $handle, $nids, 'page', $columns);
+    $build_row = fn($node) => ContentExportBuilder::getRow($node, 'page', $this->createMock(DateFormatterInterface::class));
+    (new \ReflectionMethod(ExportControllerBase::class, 'writeCsv'))
+      ->invoke($this->controller(), $handle, $this->storage, 'node', $nids, $columns, $build_row);
     rewind($handle);
     $output = stream_get_contents($handle);
     fclose($handle);
@@ -128,7 +130,7 @@ class ContentExportControllerTest extends UnitTestCase {
   /**
    * Tests a clean export: header, every row, a complete trailing row.
    *
-   * @covers ::writeCsv
+   * @covers \Drupal\ys_content_export\Controller\ExportControllerBase::writeCsv
    */
   public function testAllRowsExported(): void {
     $this->logger->expects($this->never())->method('error');
@@ -144,7 +146,7 @@ class ContentExportControllerTest extends UnitTestCase {
   /**
    * Tests that a throwing row becomes a placeholder and the export continues.
    *
-   * @covers ::writeCsv
+   * @covers \Drupal\ys_content_export\Controller\ExportControllerBase::writeCsv
    */
   public function testFailedRowGetsPlaceholder(): void {
     $this->logger->expects($this->once())->method('error')
@@ -165,7 +167,7 @@ class ContentExportControllerTest extends UnitTestCase {
   /**
    * Tests that an access check that throws becomes a bare placeholder row.
    *
-   * @covers ::writeCsv
+   * @covers \Drupal\ys_content_export\Controller\ExportControllerBase::writeCsv
    */
   public function testThrowingAccessCheckGetsPlaceholder(): void {
     $this->logger->expects($this->once())->method('error')
@@ -184,7 +186,7 @@ class ContentExportControllerTest extends UnitTestCase {
   /**
    * Tests that nodes the user cannot view are skipped without a trace.
    *
-   * @covers ::writeCsv
+   * @covers \Drupal\ys_content_export\Controller\ExportControllerBase::writeCsv
    */
   public function testAccessDeniedNodeIsSkipped(): void {
     $this->logger->expects($this->never())->method('error');
@@ -203,7 +205,7 @@ class ContentExportControllerTest extends UnitTestCase {
   /**
    * Tests that a nid missing from loadMultiple counts as skipped.
    *
-   * @covers ::writeCsv
+   * @covers \Drupal\ys_content_export\Controller\ExportControllerBase::writeCsv
    */
   public function testMissingNodeIsSkipped(): void {
     $this->logger->expects($this->once())->method('notice')
@@ -217,11 +219,11 @@ class ContentExportControllerTest extends UnitTestCase {
   /**
    * Tests that a chunk that will not load is logged and counted as failed.
    *
-   * @covers ::writeCsv
+   * @covers \Drupal\ys_content_export\Controller\ExportControllerBase::writeCsv
    */
   public function testChunkLoadFailureIsCountedAsFailed(): void {
     $this->logger->expects($this->once())->method('error')
-      ->with($this->anything(), ['@nids' => '1, 2', '@message' => 'db gone']);
+      ->with($this->anything(), ['@type' => 'node', '@ids' => '1, 2', '@message' => 'db gone']);
     $this->storage->method('loadMultiple')->willThrowException(new \RuntimeException('db gone'));
     $rows = $this->exportRows([1, 2]);
     $this->assertCount(2, $rows);
@@ -231,7 +233,7 @@ class ContentExportControllerTest extends UnitTestCase {
   /**
    * Tests that a failed chunk does not stop later chunks from exporting.
    *
-   * @covers ::writeCsv
+   * @covers \Drupal\ys_content_export\Controller\ExportControllerBase::writeCsv
    */
   public function testExportContinuesAfterFailedChunk(): void {
     $this->logger->expects($this->once())->method('error');

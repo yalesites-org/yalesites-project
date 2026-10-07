@@ -8,7 +8,3 @@ services:
       - '@stream_wrapper_manager'
       - '@cache_tags.invalidator'
       - '@module_handler'
-
-  # Alias to allow type-hinting against the interface.
-  Drupal\ys_file_management\Service\MediaFileDeleterInterface:
-    alias: ys_file_management.media_file_deleter

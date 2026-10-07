@@ -128,3 +128,8 @@ web/profiles/custom/yalesites_profile/modules/custom/ys_beacon/react/node_module
 
 # Secrets for local use
 secrets.json
+
+# Merge and backup artifacts (never meant to be committed)
+*.orig
+*.rej
+*.bak
