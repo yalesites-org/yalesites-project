@@ -3,6 +3,7 @@
 namespace Drupal\ys_core\Plugin\Block;
 
 use Drupal\Core\Block\BlockBase;
+use Drupal\Core\Cache\CacheableMetadata;
 use Drupal\Core\Config\ConfigFactoryInterface;
 use Drupal\Core\Entity\EntityTypeManager;
 use Drupal\Core\Messenger\Messenger;
@@ -37,6 +38,13 @@ class YaleSitesFooterBlock extends BlockBase implements ContainerFactoryPluginIn
   protected $footerSettings;
 
   /**
+   * Per-site cookie consent settings.
+   *
+   * @var \Drupal\Core\Config\ImmutableConfig
+   */
+  protected $consentSettings;
+
+  /**
    * Entity type manager.
    *
    * @var Drupal\Core\Entity\EntityTypeManager
@@ -65,6 +73,7 @@ class YaleSitesFooterBlock extends BlockBase implements ContainerFactoryPluginIn
     parent::__construct($configuration, $plugin_id, $plugin_definition);
     $this->socialLinks = $social_links_manager;
     $this->footerSettings = $config_factory->getEditable('ys_core.footer_settings');
+    $this->consentSettings = $config_factory->get('ys_core.consent_settings');
     $this->entityTypeManager = $entity_type_manager;
     $this->messenger = $messenger;
   }
@@ -190,7 +199,9 @@ class YaleSitesFooterBlock extends BlockBase implements ContainerFactoryPluginIn
       '#footer_links_col_2_heading' => $this->footerSettings->get('links.links_col_2_heading'),
       '#footer_links_col_1' => $this->footerSettings->get('links.links_col_1'),
       '#footer_links_col_2' => $this->footerSettings->get('links.links_col_2'),
+      '#cookie_settings_link' => (bool) $this->consentSettings->get('banner_enabled'),
     ];
+    CacheableMetadata::createFromObject($this->consentSettings)->applyTo($footerBlockRender);
 
     return $footerBlockRender;
   }

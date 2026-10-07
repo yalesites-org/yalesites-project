@@ -165,7 +165,7 @@
         "Keep the views-exposed-form class so Views AJAX exposed filters work in Layout Builder; remove once a gin_lb release includes it (YaleSites-Internal#1791) https://www.drupal.org/project/gin_lb/issues/3563771": "patches/contrib/gin_lb/3563771-mr-121.diff"
       },
       "drupal/klaro": {
-        "Label every way back into the consent dialog \"Cookie settings\" (YaleSites-Internal#1882)": "patches/contrib/klaro/yalesites-1882-cookie-settings-label.patch"
+        "Label every way back into the consent dialog \"Cookie settings\" and make those links open the preferences dialog even while the notice is showing (YaleSites-Internal#1882)": "patches/contrib/klaro/yalesites-1882-cookie-settings-label.patch"
       },
       "drupal/layout_builder_browser": {
         "Add grouping of reusable blocks (3409153) and add fallback images (3408935) - can't use both patches from d.o would cause merge conflict, combined patch": "patches/contrib/layout_builder_browser/3408935-and-3409153-9.patch"
