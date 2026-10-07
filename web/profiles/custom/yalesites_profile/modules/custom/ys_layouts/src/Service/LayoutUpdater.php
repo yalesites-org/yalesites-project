@@ -7,10 +7,13 @@ use Drupal\Core\Database\Connection;
 use Drupal\Core\Entity\EntityFieldManager;
 use Drupal\Core\Entity\EntityStorageException;
 use Drupal\Core\Entity\EntityTypeManagerInterface;
+use Drupal\Core\KeyValueStore\KeyValueExpirableFactoryInterface;
 use Drupal\Core\Messenger\MessengerInterface;
 use Drupal\Core\StringTranslation\StringTranslationTrait;
+use Drupal\Core\TempStore\SharedTempStoreFactory;
 use Drupal\block_content\Entity\BlockContent;
 use Drupal\layout_builder\Section;
+use Drupal\layout_builder\SectionStorageInterface;
 use Drupal\node\NodeInterface;
 use Psr\Log\LoggerInterface;
 
@@ -76,6 +79,20 @@ class LayoutUpdater {
   protected $messenger;
 
   /**
+   * The expirable key/value factory, to list cached layouts.
+   *
+   * @var \Drupal\Core\KeyValueStore\KeyValueExpirableFactoryInterface
+   */
+  protected $keyValueExpirable;
+
+  /**
+   * The shared tempstore factory, to write cached layouts.
+   *
+   * @var \Drupal\Core\TempStore\SharedTempStoreFactory
+   */
+  protected $tempStoreFactory;
+
+  /**
    * Constructs a new LayoutUpdater object.
    *
    * @param \Drupal\Core\Config\ConfigFactoryInterface $config_factory
@@ -90,6 +107,10 @@ class LayoutUpdater {
    *   The logger service.
    * @param \Drupal\Core\Messenger\MessengerInterface $messenger
    *   The messenger service.
+   * @param \Drupal\Core\KeyValueStore\KeyValueExpirableFactoryInterface $key_value_expirable
+   *   The expirable key/value factory.
+   * @param \Drupal\Core\TempStore\SharedTempStoreFactory $temp_store_factory
+   *   The shared tempstore factory.
    */
   public function __construct(
     ConfigFactoryInterface $config_factory,
@@ -98,6 +119,8 @@ class LayoutUpdater {
     EntityFieldManager $entity_field_manager,
     LoggerInterface $logger,
     MessengerInterface $messenger,
+    KeyValueExpirableFactoryInterface $key_value_expirable,
+    SharedTempStoreFactory $temp_store_factory,
   ) {
     $this->configFactory = $config_factory;
     $this->database = $database;
@@ -105,6 +128,8 @@ class LayoutUpdater {
     $this->entityFieldManager = $entity_field_manager;
     $this->logger = $logger;
     $this->messenger = $messenger;
+    $this->keyValueExpirable = $key_value_expirable;
+    $this->tempStoreFactory = $temp_store_factory;
   }
 
   /**
@@ -213,34 +238,28 @@ class LayoutUpdater {
       }
 
       foreach ($revisions as $revision) {
-        // Saving the default revision stamps its changed time. A draft left
-        // older fails the entity-changed check, so editors could not save it.
-        $synced = $revision !== $node && $this->syncChangedTime($revision, $node);
-
-        // Load the layout builder sections. Skip if none are set, unless the
-        // draft's changed time was just raised and must be saved.
+        // Load the layout builder sections. Skip if none are set.
         /** @var \Drupal\layout_builder\Field\LayoutSectionItemList $layout */
         $layout = $revision->get('layout_builder__layout');
-        if ($layout->isEmpty() && !$synced) {
+        if ($layout->isEmpty()) {
           continue;
         }
+        $this->applyDefaultLocks($defaultLocks, $layout->getSections());
 
-        foreach ($layout->getSections() as $section) {
-          // Authors can create their own sections. Only update sections that
-          // match one of the default sections defined for this content type.
-          $locks = $this->findDefaultLocks($defaultLocks, $section);
-          if ($locks === NULL) {
-            continue;
-          }
-          // Set third-party settings for layout_builder_lock to match config.
-          $section->setThirdPartySetting('layout_builder_lock', 'lock', $locks);
+        // Saving stamps the request time as the changed time, so note each
+        // translation's changed time to put back afterwards.
+        $changed = [];
+        foreach (array_keys($revision->getTranslationLanguages()) as $langcode) {
+          $changed[$langcode] = $revision->getTranslation($langcode)->getChangedTime();
         }
+
         // Syncing stops content moderation from creating a new revision and
         // changing which revision is default. Without it, saving the default
         // revision would also bury a pending draft under a newer revision.
         $revision->setSyncing(TRUE);
         try {
           $revision->save();
+          $this->restoreChangedTimes($revision, $changed);
         }
         catch (EntityStorageException $e) {
           $this->logger->error(
@@ -249,34 +268,85 @@ class LayoutUpdater {
           );
         }
       }
+      $storage->resetCache([$nid]);
+    }
+
+    $this->updateCachedLayouts($nodeBundleId, $defaultLocks);
+  }
+
+  /**
+   * Applies the default locks to the sections that match a default section.
+   *
+   * @param array $defaultLocks
+   *   The result of getLockConfigs().
+   * @param \Drupal\layout_builder\Section[] $sections
+   *   The sections to update.
+   */
+  protected function applyDefaultLocks(array $defaultLocks, array $sections): void {
+    foreach ($sections as $section) {
+      // Authors can create their own sections. Only update sections that
+      // match one of the default sections defined for this content type.
+      $locks = $this->findDefaultLocks($defaultLocks, $section);
+      if ($locks !== NULL) {
+        $section->setThirdPartySetting('layout_builder_lock', 'lock', $locks);
+      }
     }
   }
 
   /**
-   * Moves a draft's changed times up to the default revision's, if newer.
+   * Puts a saved revision's changed times back to what they were.
    *
-   * @param \Drupal\node\NodeInterface $draft
-   *   The pending draft revision.
-   * @param \Drupal\node\NodeInterface $default
-   *   The default revision, after it was saved.
+   * ChangedItem::preSave() has no way to keep the stored value when other
+   * fields change, so this writes it back to the node tables directly.
    *
-   * @return bool
-   *   TRUE if any translation of the draft was changed.
+   * @param \Drupal\node\NodeInterface $revision
+   *   The saved revision.
+   * @param int[] $changed
+   *   Changed times keyed by langcode, from before the save.
    */
-  protected function syncChangedTime(NodeInterface $draft, NodeInterface $default): bool {
-    $synced = FALSE;
-    foreach (array_keys($draft->getTranslationLanguages()) as $langcode) {
-      if (!$default->hasTranslation($langcode)) {
-        continue;
-      }
-      $changed = $default->getTranslation($langcode)->getChangedTime();
-      $translation = $draft->getTranslation($langcode);
-      if ($changed > $translation->getChangedTime()) {
-        $translation->setChangedTime($changed);
-        $synced = TRUE;
+  protected function restoreChangedTimes(NodeInterface $revision, array $changed): void {
+    $tables = ['node_field_revision' => ['vid', $revision->getRevisionId()]];
+    if ($revision->isDefaultRevision()) {
+      $tables['node_field_data'] = ['nid', $revision->id()];
+    }
+    foreach ($changed as $langcode => $time) {
+      foreach ($tables as $table => [$column, $id]) {
+        $this->database->update($table)
+          ->fields(['changed' => $time])
+          ->condition($column, $id)
+          ->condition('langcode', $langcode)
+          ->execute();
       }
     }
-    return $synced;
+  }
+
+  /**
+   * Applies the default locks to layouts cached by Layout Builder.
+   *
+   * Opening a node's Layout tab caches its layout for days. Saving that copy
+   * later would restore the old locks, so update it in place. Deleting it would
+   * throw away an editor's unsaved work.
+   *
+   * @param string $nodeBundleId
+   *   The machine name of the content type (node bundle).
+   * @param array $defaultLocks
+   *   The result of getLockConfigs().
+   */
+  protected function updateCachedLayouts(string $nodeBundleId, array $defaultLocks): void {
+    $collection = 'layout_builder.section_storage.overrides';
+    $items = $this->keyValueExpirable->get("tempstore.shared.$collection")->getAll();
+    foreach ($items as $key => $item) {
+      $sectionStorage = $item->data['section_storage'] ?? NULL;
+      if (!str_starts_with($key, 'node.') || !$sectionStorage instanceof SectionStorageInterface) {
+        continue;
+      }
+      if ($sectionStorage->getContextValue('entity')->bundle() !== $nodeBundleId) {
+        continue;
+      }
+      $this->applyDefaultLocks($defaultLocks, $sectionStorage->getSections());
+      // Write as the original owner so the editor keeps their lock on it.
+      $this->tempStoreFactory->get($collection, $item->owner)->set($key, $item->data);
+    }
   }
 
   /**

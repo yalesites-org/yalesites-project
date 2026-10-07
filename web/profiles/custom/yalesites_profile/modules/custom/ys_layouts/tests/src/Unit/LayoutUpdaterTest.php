@@ -15,9 +15,12 @@ use Drupal\Core\Entity\Query\QueryInterface;
 use Drupal\Core\Entity\RevisionableStorageInterface;
 use Drupal\Core\Field\FieldDefinitionInterface;
 use Drupal\Core\Field\FieldItemListInterface;
+use Drupal\Core\KeyValueStore\KeyValueExpirableFactoryInterface;
+use Drupal\Core\KeyValueStore\KeyValueStoreExpirableInterface;
 use Drupal\Core\Layout\LayoutInterface;
 use Drupal\Core\Layout\LayoutPluginManagerInterface;
 use Drupal\Core\Messenger\MessengerInterface;
+use Drupal\Core\TempStore\SharedTempStoreFactory;
 use Drupal\Tests\UnitTestCase;
 use Drupal\block_content\Entity\BlockContent;
 use Drupal\block_content\Entity\BlockContentType;
@@ -82,6 +85,20 @@ class LayoutUpdaterTest extends UnitTestCase {
   protected $messenger;
 
   /**
+   * The expirable key/value factory mock, serving no cached layouts.
+   *
+   * @var \Drupal\Core\KeyValueStore\KeyValueExpirableFactoryInterface|\PHPUnit\Framework\MockObject\MockObject
+   */
+  protected $keyValueExpirable;
+
+  /**
+   * The shared tempstore factory mock.
+   *
+   * @var \Drupal\Core\TempStore\SharedTempStoreFactory|\PHPUnit\Framework\MockObject\MockObject
+   */
+  protected $tempStoreFactory;
+
+  /**
    * The LayoutUpdater service under test.
    *
    * @var \Drupal\ys_layouts\Service\LayoutUpdater
@@ -100,6 +117,12 @@ class LayoutUpdaterTest extends UnitTestCase {
     $this->entityFieldManager = $this->createMock(EntityFieldManager::class);
     $this->logger = $this->createMock(LoggerInterface::class);
     $this->messenger = $this->createMock(MessengerInterface::class);
+    // LayoutUpdaterDraftTest covers cached layouts with a real tempstore.
+    $this->keyValueExpirable = $this->createMock(KeyValueExpirableFactoryInterface::class);
+    $keyValueStore = $this->createMock(KeyValueStoreExpirableInterface::class);
+    $keyValueStore->method('getAll')->willReturn([]);
+    $this->keyValueExpirable->method('get')->willReturn($keyValueStore);
+    $this->tempStoreFactory = $this->createMock(SharedTempStoreFactory::class);
 
     $this->layoutUpdater = new LayoutUpdater(
       $this->configFactory,
@@ -107,7 +130,9 @@ class LayoutUpdaterTest extends UnitTestCase {
       $this->entityTypeManager,
       $this->entityFieldManager,
       $this->logger,
-      $this->messenger
+      $this->messenger,
+      $this->keyValueExpirable,
+      $this->tempStoreFactory,
     );
     $this->layoutUpdater->setStringTranslation($this->getStringTranslationStub());
 
@@ -245,6 +270,7 @@ class LayoutUpdaterTest extends UnitTestCase {
 
     $node = $this->createMock(NodeInterface::class);
     $node->method('get')->with('layout_builder__layout')->willReturn($layout);
+    $node->method('getTranslationLanguages')->willReturn([]);
     $node->expects($this->once())->method('save');
 
     $nodeStorage = $this->createMock(RevisionableStorageInterface::class);
@@ -289,15 +315,18 @@ class LayoutUpdaterTest extends UnitTestCase {
     $title = new Section('layout_onecol', ['label' => 'Title and Metadata']);
     $content = new Section('layout_onecol', ['label' => 'Content Section']);
     $custom = new Section('layout_onecol', ['label' => 'Added by editor']);
+    // Layout Builder saves an editor-added section with an empty label.
+    $unlabelled = new Section('layout_onecol', ['label' => '']);
     $twoCol = new Section('ys_layout_two_column_50_50', ['label' => 'Two']);
     $twoCol->setThirdPartySetting('layout_builder_lock', 'lock', [1 => 1]);
 
     $layout = $this->createMock(LayoutSectionItemList::class);
     $layout->method('isEmpty')->willReturn(FALSE);
-    $layout->method('getSections')->willReturn([$title, $content, $custom, $twoCol]);
+    $layout->method('getSections')->willReturn([$title, $content, $custom, $unlabelled, $twoCol]);
 
     $node = $this->createMock(NodeInterface::class);
     $node->method('get')->with('layout_builder__layout')->willReturn($layout);
+    $node->method('getTranslationLanguages')->willReturn([]);
     $node->expects($this->once())->method('save');
 
     $nodeStorage = $this->createMock(RevisionableStorageInterface::class);
@@ -336,6 +365,8 @@ class LayoutUpdaterTest extends UnitTestCase {
     $this->assertSame([6 => 6], $content->getThirdPartySetting('layout_builder_lock', 'lock'));
     // Ambiguous layout ID with no label match: untouched.
     $this->assertNull($custom->getThirdPartySetting('layout_builder_lock', 'lock'));
+    // Unlabelled with two candidate defaults: untouched.
+    $this->assertNull($unlabelled->getThirdPartySetting('layout_builder_lock', 'lock'));
     // Layout ID absent from defaults: untouched.
     $this->assertSame([1 => 1], $twoCol->getThirdPartySetting('layout_builder_lock', 'lock'));
   }
@@ -414,8 +445,6 @@ class LayoutUpdaterTest extends UnitTestCase {
     $draft = $this->mockNode([$draftSection], 12, TRUE);
     $draft->expects($this->once())->method('setNewRevision')->with(FALSE);
     $draft->expects($this->once())->method('setSyncing')->with(TRUE);
-    // LayoutUpdaterDraftTest covers changed-time syncing with real entities.
-    $draft->method('getTranslationLanguages')->willReturn([]);
 
     $nodeStorage = $this->mockNodeStorage([1], [
       [
@@ -489,6 +518,7 @@ class LayoutUpdaterTest extends UnitTestCase {
           'get',
           'getRevisionId',
           'getTranslationLanguages',
+          'isDefaultRevision',
           'save',
           'setNewRevision',
           'setSyncing',
@@ -498,6 +528,7 @@ class LayoutUpdaterTest extends UnitTestCase {
       : $this->createMock(NodeInterface::class);
     $node->method('get')->with('layout_builder__layout')->willReturn($layout);
     $node->method('getRevisionId')->willReturn($revisionId);
+    $node->method('getTranslationLanguages')->willReturn([]);
     $node->expects($this->once())->method('save');
     return $node;
   }
@@ -569,6 +600,7 @@ class LayoutUpdaterTest extends UnitTestCase {
 
     $node = $this->createMock(NodeInterface::class);
     $node->method('get')->willReturn($layout);
+    $node->method('getTranslationLanguages')->willReturn([]);
     $node->method('save')->willThrowException(new EntityStorageException('DB down'));
 
     $nodeStorage = $this->createMock(RevisionableStorageInterface::class);
@@ -622,6 +654,8 @@ class LayoutUpdaterTest extends UnitTestCase {
         $this->entityFieldManager,
         $this->logger,
         $this->messenger,
+        $this->keyValueExpirable,
+        $this->tempStoreFactory,
       ])
       ->onlyMethods(['getContentTypes', 'updateLocks'])
       ->getMock();

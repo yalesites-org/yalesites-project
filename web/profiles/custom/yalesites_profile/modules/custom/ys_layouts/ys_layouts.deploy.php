@@ -46,6 +46,8 @@ function ys_layouts_deploy_9004() {
  *
  * Lets the 50/50 section be added after post content, and repairs the Title
  * and Metadata locks that deploy 9003 left wrong on events and resources.
+ * Also updates layouts cached by Layout Builder, and keeps each node's
+ * Updated date.
  */
 function ys_layouts_deploy_9005() {
   $updater = \Drupal::service('ys_layouts.updater');
