@@ -69,7 +69,11 @@ if (!empty($_ENV['PANTHEON_ENVIRONMENT']) && !empty($_ENV['CACHE_HOST'])) {
 /**
  * Environment Indicator.
  */
-$env = $_ENV['PANTHEON_ENVIRONMENT'] ?? 'lando';
+// DDEV sets PANTHEON_ENVIRONMENT (for `ddev pull pantheon`), but the site is
+// still local. 'lando' is the local-environment key in $env_options below.
+$env = getenv('IS_DDEV_PROJECT') === 'true'
+  ? 'lando'
+  : ($_ENV['PANTHEON_ENVIRONMENT'] ?? 'lando');
 
 // Get version from profile info file.
 $profile_info_file = DRUPAL_ROOT . '/profiles/custom/yalesites_profile/yalesites_profile.info.yml';
@@ -116,4 +120,15 @@ if ($env_key === 'lando') {
   $branch_parts = array_slice($ref, 2);
   $branch_name = implode('/', $branch_parts);
   $config['environment_indicator.indicator']['name'] .= " - $branch_name";
+}
+
+// Automatically generated include for settings managed by ddev.
+$ddev_settings = __DIR__ . '/settings.ddev.php';
+if (getenv('IS_DDEV_PROJECT') == 'true' && is_readable($ddev_settings)) {
+  require $ddev_settings;
+}
+
+// Include settings required for Redis cache.
+if (getenv('IS_DDEV_PROJECT') == 'true' && file_exists(__DIR__ . '/settings.ddev.redis.php')) {
+  include __DIR__ . '/settings.ddev.redis.php';
 }
