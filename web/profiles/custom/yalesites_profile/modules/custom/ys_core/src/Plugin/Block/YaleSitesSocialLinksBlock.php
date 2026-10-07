@@ -2,20 +2,21 @@
 
 namespace Drupal\ys_core\Plugin\Block;
 
+use Drupal\Core\Block\Attribute\Block;
 use Drupal\Core\Block\BlockBase;
 use Drupal\Core\Plugin\ContainerFactoryPluginInterface;
+use Drupal\Core\StringTranslation\TranslatableMarkup;
 use Drupal\ys_core\SocialLinksManager;
 use Symfony\Component\DependencyInjection\ContainerInterface;
 
 /**
  * Adds a social links block with links from YS Core footer settings.
- *
- * @Block(
- *   id = "social_links_block",
- *   admin_label = @Translation("Social Links Block"),
- *   category = @Translation("YaleSites Core"),
- * )
  */
+#[Block(
+  id: 'social_links_block',
+  admin_label: new TranslatableMarkup('Social Links Block'),
+  category: new TranslatableMarkup('YaleSites Core'),
+)]
 class YaleSitesSocialLinksBlock extends BlockBase implements ContainerFactoryPluginInterface {
 
   /**

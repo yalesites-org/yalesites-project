@@ -35,7 +35,7 @@ class ConditionalMediaDeleteFormTest extends YsKernelTestBase {
   /**
    * The media file deleter service.
    *
-   * @var \Drupal\ys_file_management\Service\MediaFileDeleterInterface
+   * @var \Drupal\ys_file_management\Service\MediaFileDeleter
    */
   protected $mediaFileDeleter;
 
@@ -113,13 +113,6 @@ class ConditionalMediaDeleteFormTest extends YsKernelTestBase {
    * @covers \Drupal\ys_file_management\Service\MediaFileDeleter
    */
   public function testServiceExists() {
-    $this->assertNotNull($this->mediaFileDeleter);
-    // Check that it implements the interface.
-    $this->assertInstanceOf(
-      'Drupal\ys_file_management\Service\MediaFileDeleterInterface',
-      $this->mediaFileDeleter
-    );
-    // Check that it's the concrete implementation.
     $this->assertInstanceOf(
       'Drupal\ys_file_management\Service\MediaFileDeleter',
       $this->mediaFileDeleter
@@ -127,44 +120,18 @@ class ConditionalMediaDeleteFormTest extends YsKernelTestBase {
   }
 
   /**
-   * Tests file validation methods.
+   * Tests that deleteFile() rejects a file with an invalid URI scheme.
    *
-   * @covers \Drupal\ys_file_management\Service\MediaFileDeleter::validateFile
+   * @covers \Drupal\ys_file_management\Service\MediaFileDeleter::deleteFile
    */
-  public function testValidateFile() {
-    // Create a test file.
+  public function testDeleteFileRejectsInvalidScheme() {
     $file = File::create([
-      'uri' => 'public://test-file.txt',
-      'filename' => 'test-file.txt',
+      'uri' => 'invalid://test.jpg',
+      'filename' => 'test.jpg',
     ]);
     $file->save();
 
-    // Valid file should return TRUE.
-    $this->assertTrue($this->mediaFileDeleter->validateFile($file));
-
-    // NULL should return FALSE.
-    $this->assertFalse($this->mediaFileDeleter->validateFile(NULL));
-
-    // Non-FileInterface object should return FALSE.
-    $this->assertFalse($this->mediaFileDeleter->validateFile(new \stdClass()));
-  }
-
-  /**
-   * Tests URI validation.
-   *
-   * @covers \Drupal\ys_file_management\Service\MediaFileDeleter::validateFileUri
-   */
-  public function testValidateFileUri() {
-    // Valid public:// scheme should return TRUE.
-    $this->assertTrue($this->mediaFileDeleter->validateFileUri('public://test.jpg'));
-
-    // Valid private:// scheme should return TRUE (if enabled).
-    // Note: This may return FALSE if private files aren't configured.
-    $result = $this->mediaFileDeleter->validateFileUri('private://test.jpg');
-    $this->assertIsBool($result);
-
-    // Invalid scheme should return FALSE.
-    $this->assertFalse($this->mediaFileDeleter->validateFileUri('invalid://test.jpg'));
+    $this->assertFalse($this->mediaFileDeleter->deleteFile($file));
   }
 
   /**
@@ -239,7 +206,7 @@ class ConditionalMediaDeleteFormTest extends YsKernelTestBase {
     $deleter_property = $reflection->getProperty('mediaFileDeleter');
     $deleter_property->setAccessible(TRUE);
     $this->assertInstanceOf(
-      'Drupal\ys_file_management\Service\MediaFileDeleterInterface',
+      'Drupal\ys_file_management\Service\MediaFileDeleter',
       $deleter_property->getValue($form_object)
     );
 

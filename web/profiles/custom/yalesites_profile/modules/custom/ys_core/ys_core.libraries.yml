@@ -34,6 +34,11 @@ header_footer_settings:
       css/header-footer-settings.css: {}
   js:
     js/header-footer-settings.js: {}
+  dependencies:
+    - core/drupal
+    - core/drupal.states
+    - core/jquery
+    - core/once
 block_form:
   js:
     js/block-form.js: {}
@@ -99,6 +104,12 @@ office_hours_widget:
       css/office-hours-widget.css: {}
   js:
     js/office-hours-widget.js: {}
+  dependencies:
+    - core/drupal
+    - core/once
+form_error_focus:
+  js:
+    js/form-error-focus.js: {}
   dependencies:
     - core/drupal
     - core/once

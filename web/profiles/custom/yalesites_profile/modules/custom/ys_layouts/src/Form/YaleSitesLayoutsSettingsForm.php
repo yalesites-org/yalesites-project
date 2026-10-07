@@ -97,9 +97,9 @@ class YaleSitesLayoutsSettingsForm extends FormBase {
     $form['content']['content_types_table'] = [
       '#type' => 'table',
       '#header' => [
-        $this->t('Content Type'),
-        $this->t('Node Count'),
-        $this->t('Default Locked Sections'),
+        ['data' => $this->t('Content Type'), 'scope' => 'col'],
+        ['data' => $this->t('Node Count'), 'scope' => 'col'],
+        ['data' => $this->t('Default Locked Sections'), 'scope' => 'col'],
       ],
       '#rows' => $rows,
     ];
@@ -159,9 +159,9 @@ class YaleSitesLayoutsSettingsForm extends FormBase {
     $form['tempstore']['node_table'] = [
       '#type' => 'table',
       '#header' => [
-        'id' => $this->t('Node ID'),
-        'title' => $this->t('Title'),
-        'view' => $this->t('View Node'),
+        'id' => ['data' => $this->t('Node ID'), 'scope' => 'col'],
+        'title' => ['data' => $this->t('Title'), 'scope' => 'col'],
+        'view' => ['data' => $this->t('View Node'), 'scope' => 'col'],
       ],
       '#rows' => $rows,
       '#empty' => $this->t('There are no nodes stored in the temp table.'),

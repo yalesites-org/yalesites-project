@@ -2,22 +2,23 @@
 
 namespace Drupal\ys_views_basic\Plugin\views\pager;
 
+use Drupal\Core\StringTranslation\TranslatableMarkup;
+use Drupal\views\Attribute\ViewsPager;
 use Drupal\views\Plugin\views\pager\Full;
 
 /**
  * The plugin to handle full pager.
  *
  * @ingroup views_pager_plugins
- *
- * @ViewsPager(
- *   id = "views_basic_full_pager",
- *   title = @Translation("Views Basic Paged output, full pager"),
- *   short_title = @Translation("VB Full"),
- *   help = @Translation("Paged output, full Drupal style"),
- *   theme = "pager",
- *   register_theme = FALSE
- * )
  */
+#[ViewsPager(
+  id: 'views_basic_full_pager',
+  title: new TranslatableMarkup('Views Basic Paged output, full pager'),
+  short_title: new TranslatableMarkup('VB Full'),
+  help: new TranslatableMarkup('Paged output, full Drupal style'),
+  theme: 'pager',
+  register_theme: FALSE,
+)]
 class ViewsBasicFullPager extends Full {
 
   /**
