@@ -11,11 +11,11 @@ use Drupal\ys_starterkit\Plugin\SingleContentSyncFieldProcessor\SmartDate;
 use Drupal\ys_starterkit\Plugin\SingleContentSyncFieldProcessor\ViewsBasicParams;
 
 /**
- * Verifies ys_starterkit's plugin annotations are discovered correctly.
+ * Verifies ys_starterkit's plugin declarations are discovered correctly.
  *
  * The field processor and action classes themselves add no logic beyond
- * their @SingleContentSyncFieldProcessor / @Action annotations, so the
- * annotation metadata (id, field_type, type) is the only thing ys_starterkit
+ * their @SingleContentSyncFieldProcessor annotation / #[Action] attribute, so
+ * that metadata (id, field_type, type) is the only thing ys_starterkit
  * actually contributes -- this is what these tests characterize.
  *
  * @group yalesites

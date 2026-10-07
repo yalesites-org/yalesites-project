@@ -73,36 +73,6 @@ content_spotlight:
       middle: 'Middle'
       bottom: 'Bottom'
     default: top
-quick_links:
-  field_style_variation:
-    values:
-      promotional: Full-width
-      subtle: Narrow
-    default: promotional
-post_list:
-  field_style_variation:
-    values:
-      'true': Featured
-      'false': Secondary
-    default: 'true'
-post_cards:
-  field_style_variation:
-    values:
-      'true': Featured
-      'false': Secondary
-    default: 'true'
-event_list:
-  field_style_variation:
-    values:
-      'true': Featured
-      'false': Secondary
-    default: 'true'
-event_cards:
-  field_style_variation:
-    values:
-      'true': Featured
-      'false': Secondary
-    default: 'true'
 wrapped_image:
   field_style_position:
     values:

@@ -102,22 +102,6 @@ class SiteSettingsFormGroupingTest extends YsKernelTestBase {
 
   /**
    * {@inheritdoc}
-   *
-   * Strict schema checking is off because ys_core.site ships no config schema.
-   * Writing that schema is explicitly not test-only work and is tracked in
-   * yalesites-org/YaleSites-Internal#579: as this module's README records, no
-   * schema type validates both the install defaults and the real saved values
-   * without first correcting them (custom_favicon is declared '' but holds an
-   * array of file ids, and a site that saved environment_indicator.show through
-   * this form before it moved holds integer 1 against a declared boolean).
-   * Suppressed the same way the six sibling settings-form kernel tests in this
-   * profile do, rather than pre-empting that ticket.
-   */
-  // phpcs:ignore DrupalPractice.Objects.StrictSchemaDisabled.StrictConfigSchema
-  protected $strictConfigSchema = FALSE;
-
-  /**
-   * {@inheritdoc}
    */
   protected function setUp(): void {
     parent::setUp();

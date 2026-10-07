@@ -3,6 +3,7 @@
 namespace Drupal\ys_views_basic\Plugin\views\filter;
 
 use Drupal\Core\Database\Connection;
+use Drupal\views\Attribute\ViewsFilter;
 use Drupal\views\Plugin\views\display\DisplayPluginBase;
 use Drupal\views\Plugin\views\filter\InOperator;
 use Drupal\views\ViewExecutable;
@@ -12,9 +13,8 @@ use Symfony\Component\DependencyInjection\ContainerInterface;
  * Filter posts by year.
  *
  * @ingroup views_filter_handlers
- *
- * @ViewsFilter("post_year_filter")
  */
+#[ViewsFilter('post_year_filter')]
 class PostYearFilter extends InOperator {
 
   /**
