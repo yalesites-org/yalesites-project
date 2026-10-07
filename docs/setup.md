@@ -134,7 +134,9 @@ Useful commands:
 
 - **`ddev describe`** — local URL, services, and ports.
 - **`ddev drush uli`** — one-time login link.
-- **`ddev phpunit`** — run PHPUnit with the project root **`phpunit.xml`**.
+- **`ddev phpunit <path>`** — run PHPUnit with the project root **`phpunit.xml`**, for example
+  `ddev phpunit web/profiles/custom/yalesites_profile/modules/custom/ys_embed/tests/src/Unit/BlueskyTest.php`.
+  Running the whole suite with no path currently fails on unrelated contrib test dependencies.
 - **`ddev redis-cli`** / **`ddev redis-flush`** — inspect or clear the local Redis instance. If these report `service redis does not exist`, run **`ddev restart`**: the Redis container is only created on a restart after the add-on files arrive (for example on first checkout of a branch that adds them).
 
 If **`ddev pull pantheon`** fails with **`mkdir .../.ddev/.downloads: file exists`** while Mutagen performance mode is on, set **`performance_mode: "none"`** for this project (already set in the committed `config.yaml`) or see comments in that file.

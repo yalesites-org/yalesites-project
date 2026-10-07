@@ -101,6 +101,16 @@
 # Ignore local lando settings. Each site will have unique values.
 .lando.local.yml
 
+# DDEV rewrites these on every start (both carry #ddev-generated) and their
+# contents vary with the DDEV version, so committing them produces spurious
+# diffs. settings.php keeps the IS_DDEV_PROJECT-guarded includes, and the
+# post-start hook in .ddev/config.yaml restores the redis one.
+/web/sites/*/settings.ddev.php
+/web/sites/*/settings.ddev.redis.php
+
+# PHPUnit result cache (written next to the working directory on each run).
+.phpunit.result.cache
+
 # Ignore packages installed by Node.
 /node_modules
 package-lock.json

@@ -69,7 +69,11 @@ if (!empty($_ENV['PANTHEON_ENVIRONMENT']) && !empty($_ENV['CACHE_HOST'])) {
 /**
  * Environment Indicator.
  */
-$env = $_ENV['PANTHEON_ENVIRONMENT'] ?? 'lando';
+// DDEV sets PANTHEON_ENVIRONMENT (for `ddev pull pantheon`), but the site is
+// still local. 'lando' is the local-environment key in $env_options below.
+$env = getenv('IS_DDEV_PROJECT') === 'true'
+  ? 'lando'
+  : ($_ENV['PANTHEON_ENVIRONMENT'] ?? 'lando');
 
 // Get version from profile info file.
 $profile_info_file = DRUPAL_ROOT . '/profiles/custom/yalesites_profile/yalesites_profile.info.yml';
