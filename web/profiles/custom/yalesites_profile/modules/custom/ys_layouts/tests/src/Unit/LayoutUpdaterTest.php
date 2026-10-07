@@ -414,6 +414,8 @@ class LayoutUpdaterTest extends UnitTestCase {
     $draft = $this->mockNode([$draftSection], 12, TRUE);
     $draft->expects($this->once())->method('setNewRevision')->with(FALSE);
     $draft->expects($this->once())->method('setSyncing')->with(TRUE);
+    // LayoutUpdaterDraftTest covers changed-time syncing with real entities.
+    $draft->method('getTranslationLanguages')->willReturn([]);
 
     $nodeStorage = $this->mockNodeStorage([1], [
       [
@@ -483,7 +485,15 @@ class LayoutUpdaterTest extends UnitTestCase {
     $node = $mockSet
       ? $this->getMockBuilder(Node::class)
         ->disableOriginalConstructor()
-        ->onlyMethods(['get', 'getRevisionId', 'save', 'setNewRevision', 'setSyncing', '__set'])
+        ->onlyMethods([
+          'get',
+          'getRevisionId',
+          'getTranslationLanguages',
+          'save',
+          'setNewRevision',
+          'setSyncing',
+          '__set',
+        ])
         ->getMock()
       : $this->createMock(NodeInterface::class);
     $node->method('get')->with('layout_builder__layout')->willReturn($layout);
