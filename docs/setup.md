@@ -134,9 +134,17 @@ Useful commands:
 
 - **`ddev describe`** — local URL, services, and ports.
 - **`ddev drush uli`** — one-time login link.
-- **`ddev phpunit <path>`** — run PHPUnit with the project root **`phpunit.xml`**, for example
-  `ddev phpunit web/profiles/custom/yalesites_profile/modules/custom/ys_embed/tests/src/Unit/BlueskyTest.php`.
-  Running the whole suite with no path currently fails on unrelated contrib test dependencies.
+- **`ddev phpunit <path>`** — run PHPUnit with the project root **`phpunit.xml`**. The command
+  supplies `SIMPLETEST_DB` and `SIMPLETEST_BASE_URL`, so kernel tests work as well as unit tests:
+
+  ```bash
+  ddev phpunit web/profiles/custom/yalesites_profile/modules/custom/ys_embed/tests
+  ```
+
+  Pass a module or test path, not the whole `modules/custom` tree. Drupal's unit and kernel
+  tests contaminate each other's container state when hundreds run in one PHPUnit process,
+  which produces failures that do not reproduce per module. Running with no path at all also
+  pulls in contrib tests with unmet dependencies.
 - **`ddev redis-cli`** / **`ddev redis-flush`** — inspect or clear the local Redis instance. If these report `service redis does not exist`, run **`ddev restart`**: the Redis container is only created on a restart after the add-on files arrive (for example on first checkout of a branch that adds them).
 
 If **`ddev pull pantheon`** fails with **`mkdir .../.ddev/.downloads: file exists`** while Mutagen performance mode is on, set **`performance_mode: "none"`** for this project (already set in the committed `config.yaml`) or see comments in that file.
