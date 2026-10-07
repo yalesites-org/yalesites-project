@@ -42,9 +42,21 @@ class AiDirectivesController extends ControllerBase {
   const CHUNK_SIZE = 50;
 
   /**
+   * Freshness of llms.txt: half the usual hour, as page cache and edge stack.
+   */
+  const MAX_AGE = MarkdownBuilder::MAX_AGE / 2;
+
+  /**
    * Longest description kept in llms.txt, before the trailing dots.
    */
   const DESCRIPTION_MAX_LENGTH = 200;
+
+  /**
+   * Default Metatag description template per bundle, filled on first use.
+   *
+   * @var string[]
+   */
+  protected array $defaultDescriptions = [];
 
   public function __construct(
     protected MarkdownEligibility $eligibility,
@@ -72,7 +84,6 @@ class AiDirectivesController extends ControllerBase {
     $system = $this->config('system.site');
     $cacheability = (new CacheableMetadata())
       ->addCacheTags([
-        'node_list',
         'config:cas.settings',
         // Eligibility checks anonymous view access.
         'config:user.role.anonymous',
@@ -128,15 +139,17 @@ class AiDirectivesController extends ControllerBase {
       $markdown .= "## " . $type->label() . "\n\n" . implode('', $lines[$id]) . "\n";
     }
 
-    $cacheability->setCacheMaxAge(MarkdownBuilder::MAX_AGE);
+    $cacheability->setCacheMaxAge(self::MAX_AGE);
     $response = new CacheableResponse($markdown, 200, [
       'Content-Type' => 'text/markdown; charset=utf-8',
     ]);
     $response->addCacheableDependency($cacheability);
-    // Hourly ceiling set on the header itself: see ContentFeedController in
+    // Ceiling set on the header itself: see ContentFeedController in
     // ys_beacon for why core's FinishResponseSubscriber must not override it.
     $response->setPublic();
-    $response->setMaxAge(MarkdownBuilder::MAX_AGE);
+    $response->setMaxAge(self::MAX_AGE);
+    // Expires bounds core's page cache, which would otherwise never expire.
+    $response->setExpires(new \DateTime('+' . self::MAX_AGE . ' seconds'));
     $response->setVary('Cookie', FALSE);
     return $response;
   }
@@ -145,8 +158,17 @@ class AiDirectivesController extends ControllerBase {
    * Returns the page's resolved Metatag description as short plain text.
    */
   protected function description(NodeInterface $node, BubbleableMetadata $bubbleable): string {
-    $template = $this->metatagManager->tagsFromEntityWithDefaults($node)['description'] ?? '';
-    $text = $this->metatagToken->replace($template, ['node' => $node], ['langcode' => $node->language()->getId()], $bubbleable);
+    $bundle = $node->bundle();
+    $this->defaultDescriptions[$bundle] ??= $this->metatagManager->defaultTagsFromEntity($node)['description'] ?? '';
+    $template = $this->metatagManager->tagsFromEntity($node)['description'] ?? '';
+    $template = $template ?: $this->defaultDescriptions[$bundle];
+    if ($template === '[node:field_teaser_text]') {
+      // Fast path: the token would resolve to the processed teaser.
+      $text = $node->hasField('field_teaser_text') ? (string) $node->get('field_teaser_text')->processed : '';
+    }
+    else {
+      $text = $this->metatagToken->replace($template, ['node' => $node], ['langcode' => $node->language()->getId()], $bubbleable);
+    }
     $text = trim(preg_replace('/\s+/u', ' ', PlainTextOutput::renderFromHtml($text)));
     if (mb_strlen($text) > self::DESCRIPTION_MAX_LENGTH) {
       $text = Unicode::truncate($text, self::DESCRIPTION_MAX_LENGTH, TRUE) . '...';

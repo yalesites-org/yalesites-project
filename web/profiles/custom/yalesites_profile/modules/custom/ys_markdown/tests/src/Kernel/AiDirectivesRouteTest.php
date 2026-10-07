@@ -10,7 +10,6 @@ use Drupal\filter\Entity\FilterFormat;
 use Drupal\metatag\Entity\MetatagDefaults;
 use Drupal\Tests\ys_core\Kernel\YsKernelTestBase;
 use Drupal\ys_markdown\Controller\AiDirectivesController;
-use Drupal\ys_markdown\MarkdownBuilder;
 use Drupal\node\Entity\Node;
 use Drupal\node\Entity\NodeType;
 use Drupal\path_alias\Entity\PathAlias;
@@ -183,7 +182,6 @@ class AiDirectivesRouteTest extends YsKernelTestBase {
    */
   protected function assertLlmsTags(array $tags): void {
     $expected = [
-      'node_list',
       'config:cas.settings',
       'config:ys_core.site',
       'config:system.site',
@@ -222,8 +220,13 @@ class AiDirectivesRouteTest extends YsKernelTestBase {
     $this->assertStringNotContainsString('Secret draft', $content);
     $this->assertStringNotContainsString('Private page', $content);
     $this->assertLlmsTags($response->getCacheableMetadata()->getCacheTags());
+    // The list refreshes hourly, not on every node save.
+    $this->assertNotContains('node_list', $response->getCacheableMetadata()->getCacheTags());
+    // Read off the controller: core overwrites Expires on a kernel response.
+    $expires = AiDirectivesController::create($this->container)->llms()->getExpires();
+    $this->assertEqualsWithDelta(time() + AiDirectivesController::MAX_AGE, $expires->getTimestamp(), 5);
     // Only the metadata is observable: core forces kernel requests private.
-    $this->assertSame(MarkdownBuilder::MAX_AGE, $response->getCacheableMetadata()->getCacheMaxAge());
+    $this->assertSame(AiDirectivesController::MAX_AGE, $response->getCacheableMetadata()->getCacheMaxAge());
   }
 
   /**
@@ -309,6 +312,14 @@ class AiDirectivesRouteTest extends YsKernelTestBase {
    */
   public function testLlmsPerPageOverrideWins(): void {
     $this->assertSame(': Custom override.', $this->llmsLineFor('A short teaser.', ['description' => 'Custom override.']));
+  }
+
+  /**
+   * A bundle default other than the teaser token is still resolved.
+   */
+  public function testLlmsUsesBundleDefaultTemplate(): void {
+    MetatagDefaults::create(['id' => 'node__page', 'tags' => ['description' => 'About [node:title]']])->save();
+    $this->assertSame(': About Described', $this->llmsLineFor('A short teaser.'));
   }
 
 }

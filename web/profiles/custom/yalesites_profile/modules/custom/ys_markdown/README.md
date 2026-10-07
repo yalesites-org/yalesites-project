@@ -70,12 +70,14 @@ that file must delete it, or the web server serves the file instead of Drupal.
   because they fetch pages in order to cite them, which sites want. Saving a
   change to that setting invalidates the `robotstxt` cache tag
   (`RobotsTxtInvalidator`), so toggling takes effect without a cache clear.
-- `/llms.txt` follows llmstxt.org: the site name, slogan, and a link to the `.md`
-  version of every page that would be served as Markdown, grouped into one
-  section per content type (ordered by label). The 200 is fresh for at most an
-  hour at the edge, as ys_beacon's feed is. It answers 404 when
-  the "Markdown version" setting (`ai_readability.markdown_enabled`) is off.
-  It is built by loading every published node on a cache miss.
+- `/llms.txt` follows llmstxt.org: the site name, slogan, and an entry for
+  every page that would be served as Markdown, as `- [Title](url.md): description`,
+  grouped into one section per content type (ordered by label). The description
+  is the page's resolved Metatag description (the teaser by default), stripped
+  of markup and cut at 200 characters. Entries refresh within an hour of an
+  edit. It answers 404 when the "Markdown version"
+  setting (`ai_readability.markdown_enabled`) is off. It is built by loading
+  every published node on a cache miss.
 
 Both read their setting through `AiReadabilitySettings::isEnabled()` (a missing
 key means on). `/llms.txt` carries the `config:ys_core.site` cache tag, so
