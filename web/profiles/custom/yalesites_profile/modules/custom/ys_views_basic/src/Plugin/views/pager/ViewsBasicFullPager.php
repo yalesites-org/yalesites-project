@@ -3,6 +3,7 @@
 namespace Drupal\ys_views_basic\Plugin\views\pager;
 
 use Drupal\views\Plugin\views\pager\Full;
+use Drupal\ys_views_basic\ViewsBasicManager;
 
 /**
  * The plugin to handle full pager.
@@ -27,8 +28,10 @@ class ViewsBasicFullPager extends Full {
     if (!$this->hasItemsPerPage()) {
       return;
     }
+    // The offset is $this->options['offset'], set by the managers through
+    // ViewExecutable::setOffset(). Not read from view->args: the two managers
+    // put it at different positions.
     $this->setItemsPerPage($this->itemsPerPage());
-    $this->setOffset($this->offset());
     $limit = $this->options['items_per_page'];
     $offset = $this->current_page * $this->options['items_per_page'] + $this->options['offset'];
     if ($this->hasTotalPages() && $this->pastLastPage()) {
@@ -58,7 +61,7 @@ class ViewsBasicFullPager extends Full {
    *   TRUE if items per page argument is set, FALSE otherwise.
    */
   protected function hasItemsPerPage(): bool {
-    return isset($this->view->args[5]);
+    return isset($this->view->args[ViewsBasicManager::viewArgumentIndex('items')]);
 
   }
 
@@ -80,18 +83,7 @@ class ViewsBasicFullPager extends Full {
    *   The number of items per page.
    */
   protected function itemsPerPage(): int {
-    return (int) $this->view->args[5];
-
-  }
-
-  /**
-   * Gets the offset for the query.
-   *
-   * @return int
-   *   The offset for the query.
-   */
-  protected function offset(): int {
-    return (int) $this->view->args[7];
+    return (int) $this->view->args[ViewsBasicManager::viewArgumentIndex('items')];
 
   }
 

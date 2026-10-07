@@ -1,0 +1,11 @@
+uuid: 27ae3a80-2093-42ed-91c6-1c2404006dce
+langcode: en
+status: true
+dependencies: {  }
+id: resource_portrait_grid
+block_id: 'inline_block:resource_portrait_grid'
+category: resource_listings
+label: 'Resources - Portrait Grid View'
+image_path: ''
+image_alt: ''
+weight: 1

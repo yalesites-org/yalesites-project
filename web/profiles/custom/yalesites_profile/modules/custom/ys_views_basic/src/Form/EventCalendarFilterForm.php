@@ -5,6 +5,7 @@ namespace Drupal\ys_views_basic\Form;
 use Drupal\Core\Form\FormBase;
 use Drupal\Core\Form\FormStateInterface;
 use Drupal\Core\Entity\EntityTypeManagerInterface;
+use Drupal\ys_views_basic\Service\ExposedTaxonomyFilterOptions;
 use Drupal\ys_views_basic\ViewsBasicManager;
 use Drupal\ys_views_basic\Service\EventsCalendarInterface;
 use Symfony\Component\DependencyInjection\ContainerInterface;
@@ -240,7 +241,7 @@ class EventCalendarFilterForm extends FormBase {
     if (!empty($exposedFilterOptions['show_category_filter'])) {
       $category_element = $this->createFilterElement(
         'Category',
-        $this->getTaxonomyOptions('event_category', $paramsDecoded['category_included_terms'] ?? NULL),
+        $this->getTaxonomyOptions('event_category', $paramsDecoded['category_included_terms'] ?? NULL, $paramsDecoded['terms_exclude'] ?? []),
         $currentValues['category']
       );
       // Remove AJAX from filter element.
@@ -253,7 +254,7 @@ class EventCalendarFilterForm extends FormBase {
     if (!empty($exposedFilterOptions['show_audience_filter'])) {
       $audience_element = $this->createFilterElement(
         'Audience',
-        $this->getTaxonomyOptions('audience', $paramsDecoded['audience_included_terms'] ?? NULL),
+        $this->getTaxonomyOptions('audience', $paramsDecoded['audience_included_terms'] ?? NULL, $paramsDecoded['terms_exclude'] ?? []),
         $currentValues['audience']
       );
       // Remove AJAX from filter element.
@@ -271,7 +272,7 @@ class EventCalendarFilterForm extends FormBase {
 
       $custom_vocab_element = $this->createFilterElement(
         $custom_vocab_label,
-        $this->getTaxonomyOptions('custom_vocab', $paramsDecoded['custom_vocab_included_terms'] ?? NULL),
+        $this->getTaxonomyOptions('custom_vocab', $paramsDecoded['custom_vocab_included_terms'] ?? NULL, $paramsDecoded['terms_exclude'] ?? []),
         $currentValues['custom_vocab']
       );
       // Remove AJAX from filter element.
@@ -315,6 +316,9 @@ class EventCalendarFilterForm extends FormBase {
    *   The filter element array.
    */
   private function createFilterElement(string $title, array $options, $default_value): array {
+    if (!$options) {
+      return ExposedTaxonomyFilterOptions::emptyFilterElement($this->t('@title', ['@title' => $title]));
+    }
     return [
       '#type' => 'select',
       '#title' => $this->t('@title', ['@title' => $title]),
@@ -338,11 +342,16 @@ class EventCalendarFilterForm extends FormBase {
    *   The vocabulary machine name.
    * @param mixed $parent_term_id
    *   The parent term ID from widget configuration, if any.
+   * @param array $excluded
+   *   The widget's excluded terms: plain ids, or legacy target_id arrays.
+   *   They are never offered, since picking one would return no events.
    *
    * @return array
    *   The taxonomy options.
    */
-  private function getTaxonomyOptions(string $vocabulary, $parent_term_id = NULL): array {
+  private function getTaxonomyOptions(string $vocabulary, $parent_term_id = NULL, array $excluded = []): array {
+    $excluded = array_map(fn ($term) => (int) (is_array($term) ? $term['target_id'] : $term), $excluded);
+
     // If a parent term is selected in the widget, show only its children.
     if (!empty($parent_term_id)) {
       $options = [];
@@ -357,13 +366,13 @@ class EventCalendarFilterForm extends FormBase {
         }
       }
 
-      return $options;
+      return ExposedTaxonomyFilterOptions::reduceTermsForExposure($options, $excluded);
     }
 
     // Default behavior: show all parent terms.
     $options = $this->viewsBasicManager->getTaxonomyParents($vocabulary);
     unset($options['']);
-    return $options;
+    return ExposedTaxonomyFilterOptions::reduceTermsForExposure($options, $excluded);
   }
 
   /**
