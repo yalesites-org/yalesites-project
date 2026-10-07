@@ -147,11 +147,15 @@ class AiDirectivesRouteTest extends YsKernelTestBase {
     require_once __DIR__ . '/../../../ys_markdown.deploy.php';
     $bundled = $this->container->get('extension.list.module')->getPath('robotstxt') . '/robots.txt';
     $this->config('robotstxt.settings')->set('content', file_get_contents(DRUPAL_ROOT . '/' . $bundled))->save();
+    $before = $this->container->get('cache_tags.invalidator.checksum')->getCurrentChecksum(['robotstxt']);
     ys_markdown_deploy_10001();
     $this->assertSame(
       file_get_contents(DRUPAL_ROOT . '/core/assets/scaffold/files/robots.txt'),
       $this->config('robotstxt.settings')->get('content')
     );
+    // The robots.txt response carries only the robotstxt tag, so a response
+    // cached before the deploy hook ran must be cleared.
+    $this->assertNotSame($before, $this->container->get('cache_tags.invalidator.checksum')->getCurrentChecksum(['robotstxt']));
   }
 
   /**
