@@ -60,22 +60,28 @@ class ContentExportControllerTest extends UnitTestCase {
    *   The node title.
    * @param bool $access
    *   Whether the current user may view the node.
-   * @param bool $broken
-   *   Whether building the node's row throws.
+   * @param string $broken
+   *   Where the node throws: 'label' (building the row), 'access' (the access
+   *   check), or an empty string for neither.
    *
    * @return \Drupal\node\NodeInterface
    *   The mock.
    */
-  protected function node(int $nid, string $title, bool $access = TRUE, bool $broken = FALSE): NodeInterface {
+  protected function node(int $nid, string $title, bool $access = TRUE, string $broken = ''): NodeInterface {
     $node = $this->createMock(NodeInterface::class);
     $node->method('id')->willReturn($nid);
-    if ($broken) {
+    if ($broken === 'label') {
       $node->method('label')->willThrowException(new \TypeError('boom'));
     }
     else {
       $node->method('label')->willReturn($title);
     }
-    $node->method('access')->with('view')->willReturn($access);
+    if ($broken === 'access') {
+      $node->method('access')->willThrowException(new \RuntimeException('hook broke'));
+    }
+    else {
+      $node->method('access')->with('view')->willReturn($access);
+    }
     $url = $this->createMock(Url::class);
     $url->method('toString')->willReturn('/page-' . $nid);
     $node->method('toUrl')->willReturn($url);
@@ -145,7 +151,7 @@ class ContentExportControllerTest extends UnitTestCase {
       ->with($this->anything(), ['@nid' => 2, '@message' => 'boom']);
     $this->storage->method('loadMultiple')->willReturn([
       1 => $this->node(1, 'A'),
-      2 => $this->node(2, 'B', TRUE, TRUE),
+      2 => $this->node(2, 'B', TRUE, 'label'),
       3 => $this->node(3, 'C'),
     ]);
     $rows = $this->exportRows([1, 2, 3]);
@@ -154,6 +160,25 @@ class ContentExportControllerTest extends UnitTestCase {
     $this->assertSame([''], array_unique(array_slice($rows[2], 1)));
     $this->assertSame('C', $rows[3][0]);
     $this->assertSame('Export complete: 2 of 3 rows exported (1 failed, 0 skipped)', $rows[4][0]);
+  }
+
+  /**
+   * Tests that an access check that throws becomes a bare placeholder row.
+   *
+   * @covers ::writeCsv
+   */
+  public function testThrowingAccessCheckGetsPlaceholder(): void {
+    $this->logger->expects($this->once())->method('error')
+      ->with($this->anything(), ['@nid' => 2, '@message' => 'hook broke']);
+    $this->storage->method('loadMultiple')->willReturn([
+      1 => $this->node(1, 'A'),
+      2 => $this->node(2, 'Hidden title', TRUE, 'access'),
+    ]);
+    $rows = $this->exportRows([1, 2]);
+    $this->assertSame('Export failed for node 2', $rows[2][0]);
+    $this->assertSame([''], array_unique(array_slice($rows[2], 1)));
+    $this->assertStringNotContainsString('Hidden', json_encode($rows));
+    $this->assertSame('Export complete: 1 of 2 rows exported (1 failed, 0 skipped)', $rows[3][0]);
   }
 
   /**
@@ -201,6 +226,25 @@ class ContentExportControllerTest extends UnitTestCase {
     $rows = $this->exportRows([1, 2]);
     $this->assertCount(2, $rows);
     $this->assertSame('Export complete: 0 of 2 rows exported (2 failed, 0 skipped)', $rows[1][0]);
+  }
+
+  /**
+   * Tests that a failed chunk does not stop later chunks from exporting.
+   *
+   * @covers ::writeCsv
+   */
+  public function testExportContinuesAfterFailedChunk(): void {
+    $this->logger->expects($this->once())->method('error');
+    $calls = 0;
+    $this->storage->method('loadMultiple')->willReturnCallback(function () use (&$calls) {
+      if ($calls++ === 0) {
+        throw new \RuntimeException('db gone');
+      }
+      return [51 => $this->node(51, 'Last')];
+    });
+    $rows = $this->exportRows(range(1, 51));
+    $this->assertSame('Last', $rows[1][0]);
+    $this->assertSame('Export complete: 1 of 51 rows exported (50 failed, 0 skipped)', $rows[2][0]);
   }
 
 }

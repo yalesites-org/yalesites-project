@@ -150,11 +150,17 @@ class ContentExportController extends ControllerBase {
         continue;
       }
       foreach ($chunk as $nid) {
-        if (!isset($nodes[$nid]) || !$nodes[$nid]->access('view')) {
+        if (!isset($nodes[$nid])) {
           $skipped[] = $nid;
           continue;
         }
+        // The access check is inside the try so an access hook that throws
+        // becomes a placeholder row rather than a cut-off file.
         try {
+          if (!$nodes[$nid]->access('view')) {
+            $skipped[] = $nid;
+            continue;
+          }
           fputcsv($handle, ContentExportBuilder::getRow($nodes[$nid], $bundle, $this->dateFormatter));
           $exported++;
         }
