@@ -9,3 +9,6 @@ image_fallback:
 custom_favicon: ''
 environment_indicator:
   show: true
+ai_readability:
+  markdown_enabled: true
+  block_ai_crawlers: true
