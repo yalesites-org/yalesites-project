@@ -40,3 +40,18 @@ function ys_layouts_deploy_9004() {
   \Drupal::service('ys_layouts.updater')->updateTextFormats('content_spotlight', 'field_text');
   \Drupal::service('ys_layouts.updater')->updateTextFormats('content_spotlight_portrait', 'field_text');
 }
+
+/**
+ * Updates post, event, and resource section locks.
+ *
+ * Lets the 50/50 section be added after post content, and repairs the Title
+ * and Metadata locks that deploy 9003 left wrong on events and resources.
+ * Also updates layouts cached by Layout Builder, and keeps each node's
+ * Updated date.
+ */
+function ys_layouts_deploy_9005() {
+  $updater = \Drupal::service('ys_layouts.updater');
+  foreach (['post', 'event', 'resource'] as $bundle) {
+    $updater->updateLocks($bundle);
+  }
+}
