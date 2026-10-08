@@ -97,6 +97,7 @@ third_party_settings:
               - tabs
               - text
               - video
+              - office_hours
             'Inline blocks':
               - 'inline_block:accordion'
               - 'inline_block:button_link'
@@ -107,13 +108,16 @@ third_party_settings:
               - 'inline_block:tabs'
               - 'inline_block:text'
               - 'inline_block:video'
+              - 'inline_block:office_hours'
             'YaleSites Layouts':
               - profile_contact_block
           sidebar:
             'Custom block types':
               - text
+              - office_hours
             'Inline blocks':
               - 'inline_block:text'
+              - 'inline_block:office_hours'
             'YaleSites Layouts':
               - profile_contact_block
       denylisted_blocks: {  }

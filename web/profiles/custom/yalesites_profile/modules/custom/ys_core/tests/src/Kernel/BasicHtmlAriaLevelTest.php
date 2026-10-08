@@ -2,7 +2,7 @@
 
 namespace Drupal\Tests\ys_core\Kernel;
 
-use Drupal\Core\Serialization\Yaml;
+use Drupal\Tests\ys_core\Traits\ReadsProfileConfigTrait;
 
 /**
  * Tests that the Basic HTML text format permits aria-level on headings.
@@ -19,6 +19,8 @@ use Drupal\Core\Serialization\Yaml;
  */
 class BasicHtmlAriaLevelTest extends YsKernelTestBase {
 
+  use ReadsProfileConfigTrait;
+
   /**
    * {@inheritdoc}
    */
@@ -28,14 +30,6 @@ class BasicHtmlAriaLevelTest extends YsKernelTestBase {
    * The heading tags the Basic HTML format permits (h2-h6; h1 is reserved).
    */
   protected const HEADING_TAGS = ['h2', 'h3', 'h4', 'h5', 'h6'];
-
-  /**
-   * Reads a Basic HTML config file from the profile's sync directory.
-   */
-  protected function readConfig(string $name): array {
-    $path = \Drupal::root() . '/profiles/custom/yalesites_profile/config/sync/' . $name . '.yml';
-    return Yaml::decode(file_get_contents($path));
-  }
 
   /**
    * The filter_html filter keeps aria-level on every heading it allows.
