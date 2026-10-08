@@ -27,7 +27,8 @@
   const TIME_FIELDS = "input.form-time, select.form-select";
   const COMMENT_FIELD = 'input[data-drupal-selector$="-comment"]';
   // Marks a comment whose value WE wrote, so retraction never deletes an
-  // editor's own prose. Read via dataset, removed via removeAttribute.
+  // editor's own prose. Read via dataset, removed via removeAttribute. It does
+  // not survive a save or an AJAX rebuild; reclaimLabel() restores it.
   const MARKER_ATTR = "data-ys-closed-marker";
 
   /**
@@ -181,18 +182,47 @@
     // silently stopped matching whenever the interface language or the
     // translation changed, orphaning a marker we had written ourselves.
     //
-    // The rule is now: never delete a string we did not write, as far as this
-    // DOM knows. Two cases therefore go un-retracted rather than risking an
-    // editor's note: a marker written before an earlier save, and one written
-    // before contrib's "Add time slot" AJAX replaced this table (the attribute
-    // does not survive the rebuild, the stored value does). In both, a stale
-    // "Closed" can render beside hours -- visible, and the editor can clear
-    // it. Silently eating their prose was neither. Fixing it properly needs
-    // the marker to stop being the rendered value at all; see the deferred
-    // half of this finding in the run log.
+    // The rule is: never delete a string we did not write, as far as this DOM
+    // knows. The attribute does not survive a save or contrib's "Add time
+    // slot" AJAX rebuild, so it is re-established on load by the narrow
+    // reclaim at the end of this function -- exact label match on an hourless
+    // day. That keeps retraction limited to the one string this widget writes,
+    // while letting a saved Closed day reopen exactly like a freshly ticked
+    // one.
     const retractLabel = () => {
       if (comment.dataset.ysClosedMarker === "1") {
         comment.value = "";
+        comment.removeAttribute(MARKER_ATTR);
+      }
+    };
+
+    // Reclaims the label across anything that drops the attribute but keeps
+    // the value: a save, contrib's "Add time slot" AJAX rebuild, and contrib's
+    // Copy, which carries the previous day's comment over (office_hours.js,
+    // copyPreviousDay, "Copy the comment").
+    //
+    // Without this a day the widget closed comes back looking like an editor's
+    // own note: the box checked but disabled, the time fields editable, and
+    // the word "Closed" left behind when hours are typed.
+    //
+    // Deliberately narrow. It needs an EXACT match against the current
+    // translation of the label, a day with no hours, and no other slot of the
+    // day carrying its own note -- which together are the only shape this
+    // widget ever writes. An editor who typed "Closed" themselves on an
+    // hourless day is claimed too, and that is the accepted cost: the outcome
+    // is the one they asked for, and unticking returns the field to them.
+    // Anything else they wrote is still never touched. If the interface
+    // language changes under a stored label it simply stops matching, and the
+    // day falls back to being treated as their note rather than being eaten.
+    const reclaimLabel = () => {
+      const othersBlank = dayComments.every(
+        (field) => field === comment || isBlank(field)
+      );
+      if (!hasHours() && othersBlank && comment.value.trim() === closedLabel) {
+        comment.dataset.ysClosedMarker = "1";
+      } else {
+        // Copy rewrites the comment without an input event, so a marker left
+        // over from before it would otherwise claim the copied note.
         comment.removeAttribute(MARKER_ATTR);
       }
     };
@@ -242,8 +272,9 @@
         // only when the comment is EMPTY
         // (OfficeHoursItemListFormatter, the `empty($info['comments'])` case),
         // and the comment cannot be empty or the day is not stored at all
-        // (OfficeHoursItem::isValueEmpty()). The data attribute is what marks
-        // it as ours, so provenance no longer depends on the string.
+        // (OfficeHoursItem::isValueEmpty()). The data attribute marks it as
+        // ours for this DOM; across a save or an AJAX rebuild the attribute is
+        // gone and reclaimLabel() re-establishes it from the value.
         if (dayComments.every(isBlank)) {
           comment.value = closedLabel;
           comment.dataset.ysClosedMarker = "1";
@@ -300,6 +331,13 @@
       field.addEventListener("change", sync);
     });
 
+    // Copy carries the previous day's comment over, so the label has to be
+    // reclaimed before the state is recomputed, not after.
+    const reclaimAndSync = () => {
+      reclaimLabel();
+      sync();
+    };
+
     // Contrib's Clear and Copy links rewrite the inputs without firing events.
     dayRows.forEach((row) => {
       row
@@ -308,11 +346,13 @@
         )
         .forEach((link) => {
           link.addEventListener("click", () => {
-            window.setTimeout(sync, 0);
+            window.setTimeout(reclaimAndSync, 0);
           });
         });
     });
 
+    // A saved or AJAX-rebuilt form arrives without the marker; see above.
+    reclaimLabel();
     sync();
     return allDayIndex + 1;
   };
