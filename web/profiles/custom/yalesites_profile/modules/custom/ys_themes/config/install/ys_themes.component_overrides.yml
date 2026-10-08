@@ -154,6 +154,11 @@ grand_hero:
       site: Contained
       full: 'Full Width'
     default: site
+  field_style_video_playback:
+    values:
+      loop: 'Loop continuously'
+      once: 'Play once and stop'
+    default: loop
 divider:
   field_style_position:
     values:
@@ -313,6 +318,11 @@ image_banner:
       site: Contained
       full: 'Full Width'
     default: site
+  field_style_video_playback:
+    values:
+      loop: 'Loop continuously'
+      once: 'Play once and stop'
+    default: loop
 accordion:
   field_style_color:
     values:
