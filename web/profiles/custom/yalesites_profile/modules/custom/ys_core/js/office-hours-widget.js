@@ -26,6 +26,8 @@
 ((Drupal, once) => {
   const TIME_FIELDS = "input.form-time, select.form-select";
   const COMMENT_FIELD = 'input[data-drupal-selector$="-comment"]';
+  const ALL_DAY_FIELD =
+    'input[type="checkbox"][data-drupal-selector$="-all-day"]';
   // Marks a comment whose value WE wrote, so retraction never deletes an
   // editor's own prose. Read via dataset, removed via removeAttribute. It does
   // not survive a save or an AJAX rebuild; reclaimLabel() restores it.
@@ -113,9 +115,7 @@
    */
   const addClosedControl = (dayRows) => {
     const firstRow = dayRows[0];
-    const allDay = firstRow.querySelector(
-      'input[type="checkbox"][data-drupal-selector$="-all-day"]'
-    );
+    const allDay = firstRow.querySelector(ALL_DAY_FIELD);
     // The All day column is optional in the field settings. Without it there
     // is nothing to sit beside and nothing to be mutually exclusive with.
     if (!allDay) {
@@ -338,17 +338,72 @@
       sync();
     };
 
-    // Contrib's Clear and Copy links rewrite the inputs without firing events.
+    // Contrib's Clear and Copy find the comment by `.form-text` and the All
+    // day box by `.form-checkbox`, two classes Gin Layout Builder renames
+    // (`glb-form-text`, `glb-form-checkbox`). In the Layout Builder modal and
+    // tray they only reach the times, so Copy leaves this day's old note and
+    // All day state beside the copied hours, and Clear leaves both behind.
+    // Redo those two parts by the fields' own selectors, mirroring contrib
+    // (office_hours.js, clearTimeSlot and copyPreviousDay). Outside Layout
+    // Builder contrib already did it, so this writes the same values again.
+    const firstRowTimes = timeFields([firstRow]);
+    const setAllDay = (checked) => {
+      allDay.checked = checked;
+      // What contrib's setAllDayTimeSlot does for this slot.
+      firstRowTimes.forEach((field) => {
+        const input = field;
+        input.disabled = checked;
+      });
+    };
+
+    const clearSlot = (row) => {
+      row.querySelectorAll(COMMENT_FIELD).forEach((field) => {
+        const input = field;
+        input.value = "";
+      });
+      if (row === firstRow) {
+        setAllDay(false);
+      }
+      reclaimAndSync();
+    };
+
+    // Sunday wraps to Saturday and slots pair up by position, as in contrib.
+    const copyPreviousDay = () => {
+      const day = Number(firstRow.getAttribute("office_hours_day"));
+      const previousRows = firstRow
+        .closest("tbody")
+        .querySelectorAll(
+          `tr.office-hours-slot[office_hours_day="${day === 0 ? 6 : day - 1}"]`
+        );
+      previousRows.forEach((source, i) => {
+        const note = source.querySelector(COMMENT_FIELD);
+        if (note && dayComments[i]) {
+          dayComments[i].value = note.value;
+        }
+      });
+      const previousAllDay = previousRows[0]
+        ? previousRows[0].querySelector(ALL_DAY_FIELD)
+        : null;
+      if (previousAllDay) {
+        setAllDay(previousAllDay.checked);
+      }
+      reclaimAndSync();
+    };
+
+    // Contrib's handlers run first; ours follow once they have finished.
     dayRows.forEach((row) => {
       row
-        .querySelectorAll(
-          '[data-drupal-selector$="clear"], [data-drupal-selector$="copy"]'
-        )
+        .querySelectorAll('[data-drupal-selector$="clear"]')
         .forEach((link) => {
           link.addEventListener("click", () => {
-            window.setTimeout(reclaimAndSync, 0);
+            window.setTimeout(clearSlot, 0, row);
           });
         });
+      row.querySelectorAll('[data-drupal-selector$="copy"]').forEach((link) => {
+        link.addEventListener("click", () => {
+          window.setTimeout(copyPreviousDay, 0);
+        });
+      });
     });
 
     // A saved or AJAX-rebuilt form arrives without the marker; see above.
