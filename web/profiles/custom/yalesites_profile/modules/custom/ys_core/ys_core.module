@@ -1122,10 +1122,12 @@ function ys_core_preprocess_html(&$variables) {
   // Adds the content type in a class to support specific content type styling.
   $variables['attributes']['class'][] = isset($variables['node_type']) ? "ys-content-type-{$variables['node_type']}" : NULL;
 
-  // Add font pairing data attribute to body tag.
+  // Add font pairing data attributes to body tag. Heading font and the two
+  // numeral styles are independent choices - see ys_core_update_10021().
   $config = \Drupal::config('ys_core.site');
-  $font_pairing = $config->get('font_pairing') ?? 'yalenew';
-  $variables['attributes']['data-font-pairing'] = $font_pairing;
+  $variables['attributes']['data-heading-font'] = $config->get('font_pairing.heading_font') ?? 'yalenew';
+  $variables['attributes']['data-heading-numerals'] = $config->get('font_pairing.heading_numerals') ?? 'oldstyle';
+  $variables['attributes']['data-body-numerals'] = $config->get('font_pairing.body_numerals') ?? 'oldstyle';
 
   // Remove environment indicator CSS class if the indicator is disabled.
   $show_indicator = $config->get(EnvironmentIndicatorPlatformAdminSetting::CONFIG_KEY) ?? EnvironmentIndicatorPlatformAdminSetting::DISPLAY_DEFAULT;
