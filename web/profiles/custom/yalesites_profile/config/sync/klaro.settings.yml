@@ -11,7 +11,7 @@ block_unknown: false
 log_unknown_resources: false
 block_unknown_label: 'Unknown services'
 block_unknown_description: 'Allow loading of unknown external resources'
-show_toggle_button: true
+show_toggle_button: false
 show_close_button: false
 deletable_cookie_domains: {  }
 exclude_urls: {  }
@@ -25,7 +25,7 @@ styles:
   - light
 process_descriptions: false
 override_css: true
-show_notice_title: true
+show_notice_title: false
 library:
   element_id: klaro
   storage_method: cookie
@@ -36,7 +36,7 @@ library:
   accept_all: true
   hide_decline_all: false
   hide_learn_more: false
-  learn_more_as_button: true
+  learn_more_as_button: false
   additional_class: yds-klaro
   disable_powered_by: true
   html_texts: false

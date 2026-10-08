@@ -6,5 +6,5 @@ _core:
   default_config_hash: DdVZR131nyy6OVL9mBguPmzKgAzSs-6NjqEdbkF55NI
 id: external_content
 label: 'Embedded external content'
-description: ''
+description: 'Videos, maps, forms and posts shown from other sites, such as YouTube, Vimeo, Google Maps, Instagram and X. Those sites may set their own cookies when the content loads.'
 weight: 6

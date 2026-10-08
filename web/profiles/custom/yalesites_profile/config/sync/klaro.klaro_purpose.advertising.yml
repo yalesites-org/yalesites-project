@@ -6,5 +6,5 @@ _core:
   default_config_hash: p0Xmtt8DXCK7YDyQCjx9e34PXU7oZopObzexorM4geo
 id: advertising
 label: 'Advertising and Marketing'
-description: ''
+description: 'Lets Google''s advertising tools measure how campaigns perform and show relevant ads.'
 weight: 0
