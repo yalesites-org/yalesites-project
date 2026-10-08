@@ -12,7 +12,7 @@ consentNotice:
   title: 'Cookies on this site'
   changeDescription: 'The services used on this site have changed since your last visit. Please review your choices.'
   description: 'This site uses cookies to understand how it is used and to show content from other services. Accept or decline them, or manage your choices.'
-  learnMore: 'Cookie settings'
+  learnMore: 'Cookie Settings'
 ok: 'Accept all'
 save: 'Save my choices'
 decline: 'Decline all'

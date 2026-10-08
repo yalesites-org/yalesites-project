@@ -10,7 +10,6 @@ description: 'Manages and deploys marketing tags.'
 default: false
 purposes:
   - analytics
-  - advertising
 cookies: {  }
 required: false
 opt_out: false
