@@ -353,6 +353,36 @@ class BeaconAzureAiSearchProviderTest extends UnitTestCase {
   }
 
   /**
+   * IsSetup() mirrors whether Beacon's key map secret is configured.
+   *
+   * It must not depend on the current endpoint resolving, or the server edit
+   * form used to re-point the endpoint would list no providers.
+   *
+   * @covers ::isSetup
+   * @dataProvider providerIsSetup
+   */
+  public function testIsSetupFollowsKeyMap(bool $has_map, bool $expected): void {
+    $credentials = $this->createMock(BeaconCredentials::class);
+    $credentials->method('hasKeyMap')->willReturn($has_map);
+    $credentials->expects($this->never())->method('apiKeyForEndpoint');
+
+    $provider = (new \ReflectionClass(BeaconAzureAiSearchProvider::class))->newInstanceWithoutConstructor();
+    $this->setProperty($provider, 'beaconCredentials', $credentials);
+
+    $this->assertSame($expected, $provider->isSetup());
+  }
+
+  /**
+   * A configured key map versus none.
+   */
+  public static function providerIsSetup(): array {
+    return [
+      'key map configured' => [TRUE, TRUE],
+      'no key map' => [FALSE, FALSE],
+    ];
+  }
+
+  /**
    * Sets a protected property on a provider under test via reflection.
    */
   private function setProperty(object $provider, string $name, mixed $value): void {
