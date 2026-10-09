@@ -31,7 +31,7 @@ class BeaconCredentialsTest extends UnitTestCase {
       'https://a.search.windows.net' => 'KEY_A',
       'https://b.search.windows.net' => 'KEY_B',
     ]);
-    $credentials = $this->buildCredentials($map, 'LEGACY');
+    $credentials = $this->buildCredentials($map);
 
     $this->assertSame('KEY_A', $credentials->apiKeyForEndpoint('https://a.search.windows.net'));
     $this->assertSame('KEY_B', $credentials->apiKeyForEndpoint('https://b.search.windows.net'));
@@ -49,7 +49,7 @@ class BeaconCredentialsTest extends UnitTestCase {
   public function testNormalizesEndpointAndMapKeysForMatching(): void {
     // Authored with mixed case and a trailing slash.
     $map = json_encode(['https://Beacon.Search.Windows.Net/' => 'KEY_A']);
-    $credentials = $this->buildCredentials($map, NULL);
+    $credentials = $this->buildCredentials($map);
 
     // Looked up scheme-less and lower-cased: normalization makes them match.
     $this->assertSame('KEY_A', $credentials->apiKeyForEndpoint('beacon.search.windows.net'));
@@ -58,9 +58,8 @@ class BeaconCredentialsTest extends UnitTestCase {
   /**
    * A populated map that lacks the endpoint fails closed and logs.
    *
-   * It must NOT fall back to the legacy key here: doing so would hand a pinned
-   * site the wrong service's key once multiple services are live. The missing
-   * endpoint is named in an actionable error so ops adds it to the map.
+   * The missing endpoint is named in an actionable error so ops adds it to the
+   * map.
    *
    * @covers ::apiKeyForEndpoint
    */
@@ -76,7 +75,7 @@ class BeaconCredentialsTest extends UnitTestCase {
       );
 
     $map = json_encode(['https://a.search.windows.net' => 'KEY_A']);
-    $credentials = $this->buildCredentials($map, 'LEGACY', $logger);
+    $credentials = $this->buildCredentials($map, $logger);
 
     $this->assertNull($credentials->apiKeyForEndpoint('https://c.search.windows.net'));
   }
@@ -91,7 +90,7 @@ class BeaconCredentialsTest extends UnitTestCase {
     $logger = $this->createMock(LoggerInterface::class);
     $logger->expects($this->once())->method('error');
 
-    $credentials = $this->buildCredentials($raw, 'LEGACY', $logger);
+    $credentials = $this->buildCredentials($raw, $logger);
 
     $this->assertNull($credentials->apiKeyForEndpoint('https://a.search.windows.net'));
   }
@@ -108,22 +107,27 @@ class BeaconCredentialsTest extends UnitTestCase {
   }
 
   /**
-   * An empty/absent map falls back to the legacy single key.
+   * An empty/absent map returns NULL and logs one actionable error.
    *
-   * This preserves the current single-service fleet before the map secret is
-   * populated (zero-downtime rollout), and is the expected pre-rollout state -
-   * so it is not treated as an error.
+   * There is no fallback key: the map secret is the only source of keys, so
+   * an unset map is a misconfiguration ops must fix.
    *
    * @covers ::apiKeyForEndpoint
    * @dataProvider providerEmptyMap
    */
-  public function testEmptyMapFallsBackToLegacyKey(?string $rawMap): void {
+  public function testEmptyMapReturnsNullAndLogsError(?string $rawMap): void {
     $logger = $this->createMock(LoggerInterface::class);
-    $logger->expects($this->never())->method('error');
+    $logger->expects($this->once())->method('error')
+      ->with(
+        $this->anything(),
+        $this->callback(function (array $context): bool {
+          return str_contains((string) ($context['@reason'] ?? ''), 'azure_ai_search_api_keys');
+        }),
+      );
 
-    $credentials = $this->buildCredentials($rawMap, 'LEGACY_VALUE', $logger);
+    $credentials = $this->buildCredentials($rawMap, $logger);
 
-    $this->assertSame('LEGACY_VALUE', $credentials->apiKeyForEndpoint('https://anything.search.windows.net'));
+    $this->assertNull($credentials->apiKeyForEndpoint('https://anything.search.windows.net'));
   }
 
   /**
@@ -138,55 +142,73 @@ class BeaconCredentialsTest extends UnitTestCase {
   }
 
   /**
-   * With no map and no legacy key, resolution returns NULL.
-   *
-   * @covers ::apiKeyForEndpoint
-   */
-  public function testNoMapAndNoLegacyReturnsNull(): void {
-    $credentials = $this->buildCredentials(NULL, NULL);
-
-    $this->assertNull($credentials->apiKeyForEndpoint('https://a.search.windows.net'));
-  }
-
-  /**
    * A repeated unresolved endpoint logs once per endpoint, not per call.
    *
    * @covers ::apiKeyForEndpoint
+   * @dataProvider providerUnresolvedMap
    */
-  public function testDedupesMissingKeyLogPerEndpoint(): void {
+  public function testDedupesMissingKeyLogPerEndpoint(?string $rawMap): void {
     $logger = $this->createMock(LoggerInterface::class);
     $logger->expects($this->once())->method('error');
 
-    $map = json_encode(['https://a.search.windows.net' => 'KEY_A']);
-    $credentials = $this->buildCredentials($map, NULL, $logger);
+    $credentials = $this->buildCredentials($rawMap, $logger);
 
     $credentials->apiKeyForEndpoint('https://z.search.windows.net');
     $credentials->apiKeyForEndpoint('https://z.search.windows.net');
   }
 
   /**
-   * Builds the resolver with a key repository stubbed for the two key entities.
+   * A map that cannot resolve the endpoint: absent, or missing the entry.
+   */
+  public static function providerUnresolvedMap(): array {
+    return [
+      'no map key entity' => [NULL],
+      'map without the endpoint' => [json_encode(['https://a.search.windows.net' => 'KEY_A'])],
+    ];
+  }
+
+  /**
+   * HasKeyMap() is FALSE for an absent or blank map, without logging.
+   *
+   * @covers ::hasKeyMap
+   * @dataProvider providerEmptyMap
+   */
+  public function testHasKeyMapFalseForEmptyMap(?string $rawMap): void {
+    $logger = $this->createMock(LoggerInterface::class);
+    $logger->expects($this->never())->method('error');
+
+    $this->assertFalse($this->buildCredentials($rawMap, $logger)->hasKeyMap());
+  }
+
+  /**
+   * HasKeyMap() is TRUE for a non-blank map, without logging.
+   *
+   * @covers ::hasKeyMap
+   */
+  public function testHasKeyMapTrueForPopulatedMap(): void {
+    $logger = $this->createMock(LoggerInterface::class);
+    $logger->expects($this->never())->method('error');
+
+    $map = json_encode(['https://a.search.windows.net' => 'KEY_A']);
+    $this->assertTrue($this->buildCredentials($map, $logger)->hasKeyMap());
+  }
+
+  /**
+   * Builds the resolver with a key repository stubbed for the map key entity.
    *
    * @param string|null $mapValue
    *   The value the azure_ai_search_api_keys key resolves to, or NULL when that
    *   key entity does not exist.
-   * @param string|null $legacyValue
-   *   The value the legacy azure_ai_search_api_key resolves to, or NULL when it
-   *   does not exist.
    * @param \Psr\Log\LoggerInterface|null $logger
    *   The logger to assert against, or NULL for a throwaway mock.
    *
    * @return \Drupal\ys_beacon\Service\BeaconCredentials
    *   The resolver under test.
    */
-  private function buildCredentials(?string $mapValue, ?string $legacyValue, ?LoggerInterface $logger = NULL): BeaconCredentials {
+  private function buildCredentials(?string $mapValue, ?LoggerInterface $logger = NULL): BeaconCredentials {
     $repository = $this->createMock(KeyRepositoryInterface::class);
-    $repository->method('getKey')->willReturnCallback(function (string $id) use ($mapValue, $legacyValue): ?KeyInterface {
-      $value = match ($id) {
-        BeaconCredentials::KEYS_MAP_KEY => $mapValue,
-        BeaconCredentials::LEGACY_KEY => $legacyValue,
-        default => NULL,
-      };
+    $repository->method('getKey')->willReturnCallback(function (string $id) use ($mapValue): ?KeyInterface {
+      $value = $id === BeaconCredentials::KEYS_MAP_KEY ? $mapValue : NULL;
       if ($value === NULL) {
         return NULL;
       }
