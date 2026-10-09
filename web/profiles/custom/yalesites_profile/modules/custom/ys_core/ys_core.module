@@ -1777,6 +1777,26 @@ function ys_core_field_widget_complete_form_alter(array &$field_widget_complete_
   }
 
   $field_widget_complete_form['#attached']['library'][] = 'ys_core/office_hours_widget';
+  _ys_core_office_hours_exceptions_empty_text($field_widget_complete_form);
+}
+
+/**
+ * Replaces contrib's empty exceptions text with plain wording.
+ *
+ * Contrib says "No exception day maintained, yet." under "0 exceptions".
+ *
+ * @param array $element
+ *   The office_hours widget form, searched recursively for the exceptions
+ *   table.
+ */
+function _ys_core_office_hours_exceptions_empty_text(array &$element): void {
+  if (($element['#field_type'] ?? NULL) === 'office_hours_exceptions') {
+    $element['#empty'] = t('No exceptions added yet.');
+    return;
+  }
+  foreach (Element::children($element) as $key) {
+    _ys_core_office_hours_exceptions_empty_text($element[$key]);
+  }
 }
 
 /**
