@@ -1,0 +1,6 @@
+name: 'YS Markdown Test'
+type: module
+description: 'Provides the ai_disable_indexing metatag tag without enabling ys_beacon.'
+package: Testing
+core_version_requirement: ^10 || ^11
+hidden: true
