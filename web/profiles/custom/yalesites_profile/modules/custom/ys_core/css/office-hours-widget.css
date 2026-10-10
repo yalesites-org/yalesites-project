@@ -17,6 +17,17 @@
   margin-top: 0.75rem;
 }
 
+/*
+ * A comment holding the Closed control's marker is never shown. The value
+ * attribute rule covers first paint, before the script runs; the script sets
+ * `hidden` from then on, which Gin's input display rules would otherwise
+ * override. Must match CLOSED_MARKER in js/office-hours-widget.js.
+ */
+.field--type-office-hours input[value="__ys_office_hours_closed__"],
+.field--type-office-hours input[hidden] {
+  display: none;
+}
+
 .field--type-office-hours .office-hours-closed {
   text-align: center;
   vertical-align: middle;
