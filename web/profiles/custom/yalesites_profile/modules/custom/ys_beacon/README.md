@@ -70,7 +70,10 @@ The module is installed on every site and is off by default.
    secrets but is no longer required for these four:
    - `portkey_llm_api_key` - Portkey API key for chat
    - `portkey_embedding_api_key` - Portkey API key for embeddings
-   - `azure_ai_search_api_key` - Azure AI Search admin key
+   - `azure_ai_search_api_keys` - Azure AI Search admin keys, as a JSON
+     object of endpoint URL => admin key, for example
+     `{"https://x.search.windows.net": "<key>"}`. Beacon uses the entry
+     matching the site's endpoint.
    - `azure_ai_search_url` - Azure AI Search endpoint URL
 2. User 1 (the platform superadmin) sets the per-site Azure index name at
    `/admin/config/yalesites/ys-beacon/admin`. This administration form is
@@ -212,9 +215,9 @@ Indexes are provisioned automatically by `BeaconIndexManager`:
 - Creation is strictly conditional: existence is checked first and the create
   call uses `POST /indexes`, which Azure rejects for existing indexes - an
   existing index is adopted as-is and never modified.
-- The configured `azure_ai_search_api_key` already performs document writes,
-  which require an Azure admin key, so the same key authorizes index
-  creation. No separate key is needed.
+- The key resolved for the site's endpoint from the `azure_ai_search_api_keys`
+  map already performs document writes, which require an Azure admin key, so
+  the same key authorizes index creation. No separate key is needed.
 
 The generated schema matches the Azure VDB provider template (`id` key,
 `drupal_entity_id`, `drupal_long_id`, `index_id`, `server_id`, `content`)
