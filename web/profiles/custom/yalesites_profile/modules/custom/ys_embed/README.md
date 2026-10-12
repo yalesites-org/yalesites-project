@@ -169,6 +169,12 @@ the container itself is not requested until the visitor accepts — stricter tha
 Klaro's shipped default, which loads GTM immediately and relies on the denied
 signals alone.
 
+The container loads only under the **Analytics** purpose. **Advertising and
+Marketing** is a separate `google_ads_consent_mode` app (Klaro's own) that
+updates only the `ad_*` signals, so the two choices stay independent. An
+ad tag inside GTM therefore runs only when Analytics is also on, and then
+only with the `ad_*` signals the visitor granted.
+
 **Governance gap:** anyone with GTM container access can add tags that bypass
 Klaro entirely, because those tags are configured in GTM rather than in Drupal.
 Consent gating in this repo cannot enforce anything about them.

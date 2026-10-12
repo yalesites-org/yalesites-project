@@ -4,5 +4,5 @@ status: true
 dependencies: {  }
 id: social_sharing
 label: 'Social sharing'
-description: 'Share this page to a social network.'
+description: 'The share buttons on pages come from AddToAny. Loading them lets AddToAny set its own cookies.'
 weight: 5
