@@ -24,7 +24,7 @@
  * override. Must match CLOSED_MARKER in js/office-hours-widget.js.
  */
 .field--type-office-hours input[value="__ys_office_hours_closed__"],
-.field--type-office-hours input[hidden] {
+.field--type-office-hours input[data-drupal-selector$="-comment"][hidden] {
   display: none;
 }
 

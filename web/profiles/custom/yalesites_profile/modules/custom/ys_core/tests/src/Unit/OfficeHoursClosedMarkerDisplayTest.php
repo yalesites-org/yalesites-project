@@ -37,6 +37,10 @@ class OfficeHoursClosedMarkerDisplayTest extends UnitTestCase {
       $this->markTestSkipped('The Atomic theme is not installed.');
     }
     require_once $theme;
+    // Atomic releases before atomic#537 do not have the function yet.
+    if (!function_exists('_atomic_office_hours_day')) {
+      $this->markTestSkipped('The installed Atomic has no _atomic_office_hours_day().');
+    }
   }
 
   /**
