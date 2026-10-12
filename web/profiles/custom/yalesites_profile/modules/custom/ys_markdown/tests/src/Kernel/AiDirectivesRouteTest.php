@@ -16,7 +16,9 @@ use Drupal\node\Entity\NodeType;
 use Drupal\path_alias\Entity\PathAlias;
 use Drupal\user\Entity\Role;
 use Drupal\user\RoleInterface;
+use Drupal\ys_beacon\Service\BeaconIndexability;
 use Symfony\Component\DependencyInjection\ContainerBuilder;
+use Symfony\Component\DependencyInjection\Reference;
 use Symfony\Component\HttpFoundation\Request;
 
 /**
@@ -33,7 +35,7 @@ class AiDirectivesRouteTest extends YsKernelTestBase {
    */
   protected static $modules = [
     'system', 'user', 'node', 'field', 'filter', 'text', 'path_alias',
-    'robotstxt', 'metatag', 'token', 'ys_markdown',
+    'robotstxt', 'metatag', 'token', 'ys_markdown', 'ys_markdown_test',
     // Production node grants: an unpublished page loses its anonymous grant.
     'workflows', 'content_moderation', 'ys_node_access',
   ];
@@ -50,12 +52,14 @@ class AiDirectivesRouteTest extends YsKernelTestBase {
   /**
    * {@inheritdoc}
    *
-   * Enabling ys_beacon would pull in the AI stack, so its indexability service
-   * is replaced by a small stand-in that the module's own services.yml uses.
+   * Enabling ys_beacon would pull in the AI stack, so only its indexability
+   * service is registered, and ys_markdown_test supplies its metatag tag. The
+   * exclusion then goes through the real Metatag path.
    */
   public function register(ContainerBuilder $container) {
     parent::register($container);
-    $container->register('ys_beacon.indexability', PublishedAnonymousIndexability::class);
+    $container->register('ys_beacon.indexability', BeaconIndexability::class)
+      ->addArgument(new Reference('metatag.manager'));
   }
 
   /**
@@ -384,6 +388,23 @@ class AiDirectivesRouteTest extends YsKernelTestBase {
   public function testExclusionInvalidatesRemovalTag(): void {
     $node = $this->listedPage();
     $before = $this->llmsTagChecksum();
+    $node->set('field_metatags', ['value' => Json::encode(['ai_disable_indexing' => 'disabled'])])->save();
+    $this->assertNotSame($before, $this->llmsTagChecksum());
+  }
+
+  /**
+   * Excluding a page that already stores "enabled" invalidates the tag.
+   *
+   * The edit form stores the AI setting on every save, and Metatag caches a
+   * page's token values per request, so the original's "enabled" must not
+   * answer for the saved page.
+   */
+  public function testExclusionOfStoredEnabledInvalidatesRemovalTag(): void {
+    $node = $this->listedPage();
+    $node->set('field_metatags', ['value' => Json::encode(['ai_disable_indexing' => 'enabled'])])->save();
+    $before = $this->llmsTagChecksum();
+    $node->set('field_teaser_text', ['value' => 'New', 'format' => 'heading_html'])->save();
+    $this->assertSame($before, $this->llmsTagChecksum(), 'An edit that keeps the page listed leaves the list alone.');
     $node->set('field_metatags', ['value' => Json::encode(['ai_disable_indexing' => 'disabled'])])->save();
     $this->assertNotSame($before, $this->llmsTagChecksum());
   }

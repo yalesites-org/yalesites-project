@@ -73,9 +73,16 @@ class BeaconIndexability {
     if (!isset($tags['ai_disable_indexing']) || $tags['ai_disable_indexing'] === '') {
       return $entity->getEntityTypeId() === 'media';
     }
-    // Token-replace only this tag. Metatag's per-entity token cache is primed
-    // with whatever subset is passed first, which is harmless in the indexing
-    // context.
+    // The checkbox stores one of these two literals. Answer them directly:
+    // Metatag caches token values per entity for the whole request, so during
+    // a save the original's value would also answer for the updated entity.
+    if (in_array($tags['ai_disable_indexing'], ['enabled', 'disabled'], TRUE)) {
+      return $tags['ai_disable_indexing'] === 'disabled';
+    }
+    // Token or legacy "1"/"0" values: token-replace only this tag.
+    // ponytail: these still hit Metatag's request cache, so a save that
+    // changes one of them can be judged by the original's value. The edit
+    // form never stores them; resolve tokens directly if that changes.
     $metatags = $this->metatagManager->generateTokenValues(['ai_disable_indexing' => $tags['ai_disable_indexing']], $entity);
     return isset($metatags['ai_disable_indexing']) && $metatags['ai_disable_indexing'] == 'disabled';
   }
