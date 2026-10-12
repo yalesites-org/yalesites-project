@@ -17,10 +17,16 @@
  * does not.
  *
  * The Closed control therefore writes the day's comment instead of submitting a
- * value of its own: ticking it clears that day's times and labels the day
- * Closed, which is exactly the state the front end will render. With the
- * comment column turned off in the field settings there is nowhere to record
- * the state, so no control is added rather than one that cannot store anything.
+ * value of its own: ticking it clears that day's times and stores
+ * CLOSED_MARKER as the comment. The marker is a fixed, language-independent
+ * value no editor would type, so it survives a save, contrib's "Add time slot"
+ * rebuild and its Copy previous day exactly as written, and the control can
+ * tell its own closed day from an editor's note by value alone. The editor
+ * never sees it: its comment field is hidden while it holds the marker, and
+ * the theme (atomic, _atomic_office_hours_day()) renders it as a closed day
+ * with no note. With the comment column turned off in the field settings there
+ * is nowhere to record the state, so no control is added rather than one that
+ * cannot store anything.
  */
 
 ((Drupal, once) => {
@@ -28,10 +34,9 @@
   const COMMENT_FIELD = 'input[data-drupal-selector$="-comment"]';
   const ALL_DAY_FIELD =
     'input[type="checkbox"][data-drupal-selector$="-all-day"]';
-  // Marks a comment whose value WE wrote, so retraction never deletes an
-  // editor's own prose. Read via dataset, removed via removeAttribute. It does
-  // not survive a save or an AJAX rebuild; reclaimLabel() restores it.
-  const MARKER_ATTR = "data-ys-closed-marker";
+  // What the Closed control stores as the day's comment. Must match the value
+  // atomic's _atomic_office_hours_day() translates; see the file docblock.
+  const CLOSED_MARKER = "__ys_office_hours_closed__";
 
   /**
    * Collects the time inputs belonging to one weekday, across its slot rows.
@@ -135,7 +140,6 @@
     const dayComments = commentFields(dayRows);
     const allDayCell = allDay.closest("td");
     const allDayIndex = allDayCell.cellIndex;
-    const closedLabel = Drupal.t("Closed");
 
     const closed = document.createElement("input");
     closed.type = "checkbox";
@@ -170,69 +174,20 @@
 
     const dayTimeFields = timeFields(dayRows);
     const isBlank = (field) => field.value.trim() === "";
+    const isMarker = (field) => field.value === CLOSED_MARKER;
     const hasHours = () => dayTimeFields.some((field) => field.value !== "");
 
-    // Retracts the label we wrote, and ONLY that.
-    //
-    // Provenance is tracked out of band, on a data attribute set at the moment
-    // we write the label, rather than inferred by comparing the stored string
-    // to the current translation of "Closed". Comparing the string cannot tell
-    // our marker from an editor who simply typed "Closed" -- and this function
-    // deletes what it matches, so that guess destroyed their note. It also
-    // silently stopped matching whenever the interface language or the
-    // translation changed, orphaning a marker we had written ourselves.
-    //
-    // The rule is: never delete a string we did not write, as far as this DOM
-    // knows. The attribute does not survive a save or contrib's "Add time
-    // slot" AJAX rebuild, so it is re-established on load by the narrow
-    // reclaim at the end of this function -- exact label match on an hourless
-    // day. That keeps retraction limited to the one string this widget writes,
-    // while letting a saved Closed day reopen exactly like a freshly ticked
-    // one.
-    const retractLabel = () => {
-      if (comment.dataset.ysClosedMarker === "1") {
+    // Retracts the marker, and ONLY the marker: anything else in the field is
+    // the editor's own note and is never deleted.
+    const retractMarker = () => {
+      if (isMarker(comment)) {
         comment.value = "";
-        comment.removeAttribute(MARKER_ATTR);
       }
     };
 
-    // Reclaims the label across anything that drops the attribute but keeps
-    // the value: a save, contrib's "Add time slot" AJAX rebuild, and contrib's
-    // Copy, which carries the previous day's comment over (office_hours.js,
-    // copyPreviousDay, "Copy the comment").
-    //
-    // Without this a day the widget closed comes back looking like an editor's
-    // own note: the box checked but disabled, the time fields editable, and
-    // the word "Closed" left behind when hours are typed.
-    //
-    // Deliberately narrow. It needs an EXACT match against the current
-    // translation of the label, a day with no hours, and no other slot of the
-    // day carrying its own note -- which together are the only shape this
-    // widget ever writes. An editor who typed "Closed" themselves on an
-    // hourless day is claimed too, and that is the accepted cost: the outcome
-    // is the one they asked for, and unticking returns the field to them.
-    // Anything else they wrote is still never touched. If the interface
-    // language changes under a stored label it simply stops matching, and the
-    // day falls back to being treated as their note rather than being eaten.
-    const reclaimLabel = () => {
-      const othersBlank = dayComments.every(
-        (field) => field === comment || isBlank(field)
-      );
-      if (!hasHours() && othersBlank && comment.value.trim() === closedLabel) {
-        comment.dataset.ysClosedMarker = "1";
-      } else {
-        // Copy rewrites the comment without an input event, so a marker left
-        // over from before it would otherwise claim the copied note.
-        comment.removeAttribute(MARKER_ATTR);
-      }
-    };
-
-    // A note the editor wrote themselves, on any slot of this day -- anything
-    // non-blank that is not a marker we wrote this session.
+    // A note the editor wrote themselves, on any slot of this day.
     const hasOwnNote = () =>
-      dayComments.some(
-        (field) => !isBlank(field) && field.dataset.ysClosedMarker !== "1"
-      );
+      dayComments.some((field) => !isBlank(field) && !isMarker(field));
 
     const sync = () => {
       const open = hasHours();
@@ -255,6 +210,16 @@
           input.disabled = closed.checked && !closed.disabled;
         });
       }
+      // The marker is never shown. The CSS hides the field on first paint by
+      // its server-rendered value attribute; once the value moves on, drop
+      // that attribute so the rule lets go of the field.
+      dayComments.forEach((field) => {
+        const input = field;
+        input.hidden = isMarker(input);
+        if (!input.hidden && input.getAttribute("value") === CLOSED_MARKER) {
+          input.removeAttribute("value");
+        }
+      });
     };
 
     closed.addEventListener("change", () => {
@@ -263,30 +228,22 @@
           const input = field;
           input.value = "";
         });
-        // Label the day only when no slot already carries a note: an editor
-        // who wrote "Closed for renovation" said it better than we would, and
-        // adding ours alongside would render both.
-        //
-        // The value written is the translated word, because it is what the
-        // front end renders: contrib applies its own `closed_format` label
-        // only when the comment is EMPTY
-        // (OfficeHoursItemListFormatter, the `empty($info['comments'])` case),
-        // and the comment cannot be empty or the day is not stored at all
-        // (OfficeHoursItem::isValueEmpty()). The data attribute marks it as
-        // ours for this DOM; across a save or an AJAX rebuild the attribute is
-        // gone and reclaimLabel() re-establishes it from the value.
+        // Mark the day only when no slot already carries a note: the box is
+        // disabled then anyway, and the note already stores the day. The
+        // comment cannot be left empty or the day is not stored at all
+        // (OfficeHoursItem::isValueEmpty()).
         if (dayComments.every(isBlank)) {
-          comment.value = closedLabel;
-          comment.dataset.ysClosedMarker = "1";
+          comment.value = CLOSED_MARKER;
         }
         sync();
         return;
       }
-      // Unticking means "I am about to set hours", so drop our label and move
-      // the cursor to the day's first From field. No re-sync needed: the box
-      // is only ever enabled here when our label is the day's sole comment,
-      // so retracting it already leaves the state correct.
-      retractLabel();
+      // Unticking means "I am about to set hours", so drop the marker and move
+      // the cursor to the day's first From field. The box is only ever enabled
+      // here when the marker is the day's sole comment, so retracting it
+      // leaves no comment behind.
+      retractMarker();
+      sync();
       // Re-enable before focusing: a disabled field drops focus. Unticking is
       // also the only way back to entering hours, since a disabled field can
       // no longer fire the change that auto-unticks Closed.
@@ -300,9 +257,9 @@
     });
 
     allDay.addEventListener("change", () => {
-      // Open around the clock contradicts our label, so retract it.
+      // Open around the clock contradicts the marker, so retract it.
       if (allDay.checked) {
-        retractLabel();
+        retractMarker();
       }
       // Contrib disables the time fields itself on All day, but leaves the
       // Closed state stale on the way back out, so recompute both directions.
@@ -311,9 +268,9 @@
 
     dayTimeFields.forEach((field) => {
       field.addEventListener("change", () => {
-        // Entering hours contradicts our label as surely as All day does.
+        // Entering hours contradicts the marker as surely as All day does.
         if (hasHours()) {
-          retractLabel();
+          retractMarker();
         }
         sync();
       });
@@ -321,22 +278,8 @@
 
     // Typing a note on a day with no hours is itself a closed day.
     dayComments.forEach((field) => {
-      // The moment the editor edits a comment it is theirs, even if what they
-      // typed happens to match our label -- so drop our claim on it. Bound on
-      // `input` rather than `change` so the claim is released as they type,
-      // before anything else can read the stale provenance.
-      field.addEventListener("input", () => {
-        field.removeAttribute(MARKER_ATTR);
-      });
       field.addEventListener("change", sync);
     });
-
-    // Copy carries the previous day's comment over, so the label has to be
-    // reclaimed before the state is recomputed, not after.
-    const reclaimAndSync = () => {
-      reclaimLabel();
-      sync();
-    };
 
     // Contrib's Clear and Copy find the comment by `.form-text` and the All
     // day box by `.form-checkbox`, two classes Gin Layout Builder renames
@@ -364,7 +307,7 @@
       if (row === firstRow) {
         setAllDay(false);
       }
-      reclaimAndSync();
+      sync();
     };
 
     // Sunday wraps to Saturday and slots pair up by position, as in contrib.
@@ -387,7 +330,7 @@
       if (previousAllDay) {
         setAllDay(previousAllDay.checked);
       }
-      reclaimAndSync();
+      sync();
     };
 
     // Contrib's handlers run first; ours follow once they have finished.
@@ -406,8 +349,6 @@
       });
     });
 
-    // A saved or AJAX-rebuilt form arrives without the marker; see above.
-    reclaimLabel();
     sync();
     return allDayIndex + 1;
   };

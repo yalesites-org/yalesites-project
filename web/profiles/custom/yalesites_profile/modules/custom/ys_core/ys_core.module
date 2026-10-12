@@ -1777,6 +1777,67 @@ function ys_core_field_widget_complete_form_alter(array &$field_widget_complete_
   }
 
   $field_widget_complete_form['#attached']['library'][] = 'ys_core/office_hours_widget';
+  _ys_core_office_hours_exceptions_empty_text($field_widget_complete_form);
+}
+
+/**
+ * Implements hook_entity_display_build_alter().
+ *
+ * Drops the Office Hours Closed control's marker from every formatter's
+ * output. The widget (js/office-hours-widget.js) stores it as the day's
+ * comment, and only atomic's Office Hours block template knows to hide it, so
+ * any other render of the field (a View, another display, a markdown feed)
+ * would print it as the day's note. Every one of those builds the field
+ * through an entity view display, which is where this runs.
+ */
+function ys_core_entity_display_build_alter(array &$build, array $context) {
+  foreach (Element::children($build) as $field_name) {
+    if (($build[$field_name]['#field_type'] ?? NULL) === 'office_hours') {
+      _ys_core_office_hours_strip_closed_marker($build[$field_name]);
+    }
+  }
+}
+
+/**
+ * Removes the Closed marker from every formatted string in a field build.
+ *
+ * The contrib formatters join a day's comments into one string before this
+ * runs, so the marker is cut out together with one adjacent ", " separator.
+ *
+ * @param array $element
+ *   The office_hours field's render array, walked recursively. Objects (the
+ *   field items themselves) are left untouched, so the stored value and
+ *   atomic's own filter on it are unaffected.
+ */
+function _ys_core_office_hours_strip_closed_marker(array &$element): void {
+  foreach ($element as &$value) {
+    if (is_array($value)) {
+      _ys_core_office_hours_strip_closed_marker($value);
+    }
+    elseif (is_string($value) && str_contains($value, '__ys_office_hours_closed__')) {
+      // Must match CLOSED_MARKER in js/office-hours-widget.js.
+      $value = preg_replace('/__ys_office_hours_closed__(, )?|, __ys_office_hours_closed__$/', '', $value);
+    }
+  }
+}
+
+/**
+ * Replaces contrib's empty exceptions text with plain wording.
+ *
+ * Contrib says "No exception day maintained, yet." under "0 exceptions".
+ *
+ * @param array $element
+ *   The office_hours widget form, searched recursively for the exceptions
+ *   table.
+ */
+function _ys_core_office_hours_exceptions_empty_text(array &$element): void {
+  if (($element['#field_type'] ?? NULL) === 'office_hours_exceptions') {
+    $element['#empty'] = t('No exceptions added yet.');
+    return;
+  }
+  foreach (Element::children($element) as $key) {
+    _ys_core_office_hours_exceptions_empty_text($element[$key]);
+  }
 }
 
 /**
