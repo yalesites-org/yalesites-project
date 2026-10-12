@@ -321,3 +321,14 @@ video_banner:
       max: Contained
       full: 'Full Width'
     default: max
+office_hours:
+  field_style_color:
+    values:
+      default: 'Default - No Color'
+      one: One
+      two: Two
+      three: Three
+      four: Four
+      five: Five
+      six: Six
+    default: default

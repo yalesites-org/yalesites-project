@@ -24,6 +24,7 @@ auto_added_reusable_block_content_bundles:
   inline_message: inline_message
   link_grid: link_grid
   media_grid: media_grid
+  office_hours: office_hours
   post_list: post_list
   pull_quote: pull_quote
   quick_links: quick_links
