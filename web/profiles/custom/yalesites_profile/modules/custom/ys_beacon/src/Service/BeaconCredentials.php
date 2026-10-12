@@ -27,14 +27,6 @@ class BeaconCredentials {
   public const KEYS_MAP_KEY = 'azure_ai_search_api_keys';
 
   /**
-   * Legacy single-key entity id, used as a pre-rollout fallback.
-   *
-   * Before the map secret is populated, a single-service fleet keeps resolving
-   * its one key from here, so the change ships without a hard cutover.
-   */
-  public const LEGACY_KEY = 'azure_ai_search_api_key';
-
-  /**
    * Endpoints already logged as unresolvable this request, to avoid log spam.
    *
    * The key is resolved on every Azure call, so a single misconfigured endpoint
@@ -58,20 +50,18 @@ class BeaconCredentials {
    *
    * @return string|null
    *   The matching API key, or NULL when none can be resolved (in which case an
-   *   actionable error has been logged, except for the expected pre-rollout
-   *   case where nothing is configured at all).
+   *   actionable error has been logged).
    */
   public function apiKeyForEndpoint(string $endpoint): ?string {
     $normalized = $this->normalize($endpoint);
 
-    $raw = $this->keyRepository->getKey(self::KEYS_MAP_KEY)?->getKeyValue();
-    $raw = is_string($raw) ? trim($raw) : '';
+    $raw = $this->rawKeyMap();
 
-    // No map configured yet: fall back to the legacy single key so a
-    // single-service fleet keeps working before the map is populated. This is
-    // the expected pre-rollout state, so it is not logged as an error.
+    // The map is the only source of keys, so an absent or blank map means no
+    // endpoint can authenticate.
     if ($raw === '') {
-      return $this->legacyKey();
+      $this->logMissing($normalized, 'the "azure_ai_search_api_keys" secret is missing or empty');
+      return NULL;
     }
 
     $map = json_decode($raw, TRUE);
@@ -86,22 +76,34 @@ class BeaconCredentials {
       }
     }
 
-    // The map is configured but has no entry for this endpoint. Fail closed
-    // rather than fall back to the legacy key: once multiple services are live,
-    // the legacy key would be the wrong service's key for a pinned site.
+    // The map is configured but has no entry for this endpoint. Fail closed:
+    // another service's key would be the wrong one for a pinned site.
     $this->logMissing($normalized, 'no API key is defined for this endpoint in the "azure_ai_search_api_keys" map; add it');
     return NULL;
   }
 
   /**
-   * Resolves the legacy single-value API key, if configured.
+   * Whether the endpoint => key map secret holds a non-blank value.
    *
-   * @return string|null
-   *   The legacy key value, or NULL when the key entity is absent or empty.
+   * Says only that Beacon's key source is configured, not that any particular
+   * endpoint resolves, and never logs.
+   *
+   * @return bool
+   *   TRUE when the azure_ai_search_api_keys secret is non-blank.
    */
-  protected function legacyKey(): ?string {
-    $value = $this->keyRepository->getKey(self::LEGACY_KEY)?->getKeyValue();
-    return (is_string($value) && $value !== '') ? $value : NULL;
+  public function hasKeyMap(): bool {
+    return $this->rawKeyMap() !== '';
+  }
+
+  /**
+   * Reads the trimmed map secret value.
+   *
+   * @return string
+   *   The raw JSON map, or an empty string when absent or blank.
+   */
+  protected function rawKeyMap(): string {
+    $raw = $this->keyRepository->getKey(self::KEYS_MAP_KEY)?->getKeyValue();
+    return is_string($raw) ? trim($raw) : '';
   }
 
   /**

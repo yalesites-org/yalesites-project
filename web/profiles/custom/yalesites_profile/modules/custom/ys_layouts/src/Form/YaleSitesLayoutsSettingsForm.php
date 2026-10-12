@@ -195,7 +195,10 @@ class YaleSitesLayoutsSettingsForm extends FormBase {
   protected function getLockedSectionNames($nodeBundleId) {
     return implode(
       ", ",
-      array_keys($this->layoutUpdater->getLockConfigs($nodeBundleId))
+      array_map(
+        fn($section) => $section['label'] ?: $section['layout_id'],
+        $this->layoutUpdater->getLockConfigs($nodeBundleId)
+      )
     );
   }
 

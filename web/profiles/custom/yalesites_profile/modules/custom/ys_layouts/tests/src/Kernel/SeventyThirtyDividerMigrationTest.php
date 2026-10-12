@@ -255,7 +255,7 @@ class SeventyThirtyDividerMigrationTest extends KernelTestBase {
 
     $this->container->get('module_handler')
       ->loadInclude('ys_layouts', 'php', 'ys_layouts.deploy');
-    $this->assertTrue(function_exists('ys_layouts_deploy_9005'));
+    $this->assertTrue(function_exists('ys_layouts_deploy_9006'));
 
     // Drive it the way `drush deploy:hook` does: hand it a $sandbox by
     // reference and call until it reports itself finished. Calling it once
@@ -264,7 +264,7 @@ class SeventyThirtyDividerMigrationTest extends KernelTestBase {
     $sandbox = [];
     $passes = 0;
     do {
-      $message = (string) ys_layouts_deploy_9005($sandbox);
+      $message = (string) ys_layouts_deploy_9006($sandbox);
       $passes++;
       $this->assertLessThan(10, $passes, 'The deploy hook never reported finished.');
     } while (($sandbox['#finished'] ?? 1) < 1);

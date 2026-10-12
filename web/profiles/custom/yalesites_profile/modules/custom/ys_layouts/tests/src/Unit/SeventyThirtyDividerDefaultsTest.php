@@ -18,7 +18,7 @@ use Drupal\ys_layouts\Service\LayoutUpdater;
  * populations, and missing either one is a visible regression on live sites:
  *
  *  1. Nodes whose Layout Builder layout has been overridden store their own
- *     sections. `ys_layouts_deploy_9005()` walks those, and
+ *     sections. `ys_layouts_deploy_9006()` walks those, and
  *     SeventyThirtyDividerMigrationTest covers it.
  *  2. Nodes still served by the content type's default display read the
  *     section out of config, which no deploy hook touches. Only

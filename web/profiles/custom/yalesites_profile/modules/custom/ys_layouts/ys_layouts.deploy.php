@@ -42,6 +42,21 @@ function ys_layouts_deploy_9004() {
 }
 
 /**
+ * Updates post, event, and resource section locks.
+ *
+ * Lets the 50/50 section be added after post content, and repairs the Title
+ * and Metadata locks that deploy 9003 left wrong on events and resources.
+ * Also updates layouts cached by Layout Builder, and keeps each node's
+ * Updated date.
+ */
+function ys_layouts_deploy_9005() {
+  $updater = \Drupal::service('ys_layouts.updater');
+  foreach (['post', 'event', 'resource'] as $bundle) {
+    $updater->updateLocks($bundle);
+  }
+}
+
+/**
  * Opts existing Two column (70/30) sections into their divider.
  *
  * The 70/30 separator is now gated on the section's Divider setting, which
@@ -50,7 +65,7 @@ function ys_layouts_deploy_9004() {
  * today. Covers the published revision and any pending draft. See
  * LayoutUpdater::enableSeventyThirtyDividers().
  */
-function ys_layouts_deploy_9005(array &$sandbox) {
+function ys_layouts_deploy_9006(array &$sandbox) {
   $updated = \Drupal::service('ys_layouts.updater')
     ->enableSeventyThirtyDividers($sandbox);
 
