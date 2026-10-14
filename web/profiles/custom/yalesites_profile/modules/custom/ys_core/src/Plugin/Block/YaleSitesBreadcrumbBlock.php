@@ -4,6 +4,7 @@ namespace Drupal\ys_core\Plugin\Block;
 
 use Drupal\Core\Block\BlockBase;
 use Drupal\Core\Cache\Cache;
+use Drupal\Core\Cache\CacheableMetadata;
 use Drupal\Core\Plugin\ContainerFactoryPluginInterface;
 use Drupal\Core\Routing\RouteMatchInterface;
 use Drupal\Core\Routing\UrlGeneratorInterface;
@@ -83,7 +84,8 @@ class YaleSitesBreadcrumbBlock extends BlockBase implements ContainerFactoryPlug
    * {@inheritdoc}
    */
   public function build() {
-    $breadcrumbs = $this->yaleSitesBreadcrumbsManager->build($this->routeMatch);
+    $cacheability = new CacheableMetadata();
+    $breadcrumbs = $this->yaleSitesBreadcrumbsManager->build($this->routeMatch, $cacheability);
     $links = [];
 
     // Process all breadcrumbs.
@@ -97,7 +99,8 @@ class YaleSitesBreadcrumbBlock extends BlockBase implements ContainerFactoryPlug
 
     $entity = $this->routeMatch->getParameter('node');
 
-    // Always show breadcrumbs for book pages.
+    // No page type forces breadcrumbs on since the book-specific override was
+    // removed; the variable is kept for the ys_breadcrumb_block theme hook.
     $alwaysShowBreadcrumbs = FALSE;
 
     // Adds the post or event title to the end of the breadcrumbs.
@@ -109,11 +112,14 @@ class YaleSitesBreadcrumbBlock extends BlockBase implements ContainerFactoryPlug
       ]);
     }
 
-    return [
+    $build = [
       '#theme' => 'ys_breadcrumb_block',
       '#items' => $links,
       '#always_show_breadcrumbs' => $alwaysShowBreadcrumbs,
     ];
+    // Vary by what the trail was built from and who can see each crumb.
+    $cacheability->applyTo($build);
+    return $build;
   }
 
   /**
