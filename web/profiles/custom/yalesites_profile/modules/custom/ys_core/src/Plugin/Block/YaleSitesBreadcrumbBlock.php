@@ -7,6 +7,7 @@ use Drupal\Core\Cache\Cache;
 use Drupal\Core\Plugin\ContainerFactoryPluginInterface;
 use Drupal\Core\Routing\RouteMatchInterface;
 use Drupal\Core\Routing\UrlGeneratorInterface;
+use Drupal\layout_builder\SectionStorageInterface;
 use Drupal\ys_core\YaleSitesBreadcrumbsManager;
 use Symfony\Component\DependencyInjection\ContainerInterface;
 
@@ -83,6 +84,62 @@ class YaleSitesBreadcrumbBlock extends BlockBase implements ContainerFactoryPlug
    * {@inheritdoc}
    */
   public function build() {
+    $section_storage = $this->routeMatch->getParameter('section_storage');
+    $links = $section_storage instanceof SectionStorageInterface
+      ? $this->buildLayoutBuilderLinks($section_storage)
+      : $this->buildLinks();
+
+    return [
+      '#theme' => 'ys_breadcrumb_block',
+      '#items' => $links,
+      '#always_show_breadcrumbs' => FALSE,
+    ];
+  }
+
+  /**
+   * Builds the preview trail on Layout Builder routes.
+   *
+   * Layout Builder re-renders its preview from its own form routes ("Configure
+   * section", "Add block"), so a trail built from the current route describes
+   * that form, not the page: "Home / Configure section", or nothing at all.
+   * The breadcrumb builders read the global request rather than a route match
+   * we could hand them, so name the page being laid out directly instead, the
+   * same "Home / <page>" the preview shows on first load.
+   *
+   * @param \Drupal\layout_builder\SectionStorageInterface $section_storage
+   *   The section storage the route is editing.
+   *
+   * @return array
+   *   Breadcrumb items for the ys_breadcrumb_block template.
+   */
+  protected function buildLayoutBuilderLinks(SectionStorageInterface $section_storage): array {
+    $links = [
+      [
+        'title' => $this->t('Home'),
+        'url' => $this->urlGenerator->generateFromRoute('<front>'),
+        'is_active' => FALSE,
+      ],
+    ];
+
+    $entity = ($section_storage->getContextsDuringPreview()[YaleSitesTitleBreadcrumbBlock::ENTITY_CONTEXT] ?? NULL)?->getContextValue();
+    if ($entity) {
+      $links[] = [
+        'title' => $entity->label(),
+        'url' => '',
+        'is_active' => TRUE,
+      ];
+    }
+
+    return $links;
+  }
+
+  /**
+   * Builds the trail for the current route from the breadcrumb manager.
+   *
+   * @return array
+   *   Breadcrumb items for the ys_breadcrumb_block template.
+   */
+  protected function buildLinks(): array {
     $breadcrumbs = $this->yaleSitesBreadcrumbsManager->build($this->routeMatch);
     $links = [];
 
@@ -97,9 +154,6 @@ class YaleSitesBreadcrumbBlock extends BlockBase implements ContainerFactoryPlug
 
     $entity = $this->routeMatch->getParameter('node');
 
-    // Always show breadcrumbs for book pages.
-    $alwaysShowBreadcrumbs = FALSE;
-
     // Adds the post or event title to the end of the breadcrumbs.
     if ($this->yaleSitesBreadcrumbsManager->hasLandingPage($this->routeMatch)) {
       array_push($links, [
@@ -109,11 +163,7 @@ class YaleSitesBreadcrumbBlock extends BlockBase implements ContainerFactoryPlug
       ]);
     }
 
-    return [
-      '#theme' => 'ys_breadcrumb_block',
-      '#items' => $links,
-      '#always_show_breadcrumbs' => $alwaysShowBreadcrumbs,
-    ];
+    return $links;
   }
 
   /**
