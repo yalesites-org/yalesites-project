@@ -98,11 +98,95 @@
        label: 'Allow blocks to be created in list items'
 --- a/core/modules/ckeditor5/js/ckeditor5.js
 +++ b/core/modules/ckeditor5/js/ckeditor5.js
-@@ -324,7 +324,19 @@
-       const addedCss = [
+@@ -265,32 +265,42 @@
+     if (!rule.selectorText) {
+       return;
+     }
+-    const offCanvasId = '#drupal-off-canvas';
++    // Drupal core's Layout Builder renders "Configure block" in the
++    // #drupal-off-canvas tray, but a block-browser UI like
++    // layout_builder_browser's "Add block" renders in the generic
++    // #drupal-modal wrapper core/misc/dialog/dialog.ajax.js creates for any
++    // non-off-canvas AJAX dialog. Both need the same style-fencing applied,
++    // or only one of the two entry points into editing the same CKEditor5
++    // field gets correctly scoped styles.
++    const dialogIds = ['#drupal-off-canvas', '#drupal-modal'];
+     const CKEditorClass = '.ck';
+     const styleFence = '[data-drupal-ck-style-fence]';
++    const matchedDialogId = (selector) =>
++      dialogIds.find((id) => selector.includes(id));
+     if (
+-      rule.selectorText.includes(offCanvasId) ||
++      dialogIds.some((id) => rule.selectorText.includes(id)) ||
+       rule.selectorText.includes(CKEditorClass)
+     ) {
+       rule.selectorText = rule.selectorText
+         .split(/,/g)
+         .map((selector) => {
+-          // Only change rules that include #drupal-off-canvas in the selector.
+-          if (selector.includes(offCanvasId)) {
++          // Only change rules that include a dialog ID in the selector.
++          const dialogId = matchedDialogId(selector);
++          if (dialogId) {
+             return `${selector.trim()}:not(${styleFence} *)`;
+           }
+           // Duplicate CKEditor 5 styles with higher specificity for proper
+-          // display in off canvas elements.
++          // display in off canvas/modal elements.
+           if (selector.includes(CKEditorClass)) {
+-            // Return both rules to avoid replacing the existing rules.
++            // Return the original rule plus one dialog-prefixed duplicate
++            // per dialog type, to avoid replacing the existing rules.
+             return [
+               selector.trim(),
+-              selector
+-                .trim()
+-                .replace(
+-                  CKEditorClass,
+-                  `${offCanvasId} ${styleFence} ${CKEditorClass}`,
+-                ),
++              ...dialogIds.map((id) =>
++                selector
++                  .trim()
++                  .replace(CKEditorClass, `${id} ${styleFence} ${CKEditorClass}`),
++              ),
+             ];
+           }
+           return selector;
+@@ -301,7 +311,7 @@
+   }
+ 
+   /**
+-   * Adds CSS to ensure proper styling of CKEditor 5 inside off-canvas dialogs.
++   * Adds CSS to ensure proper styling of CKEditor 5 inside fenced dialogs.
+    *
+    * @param {HTMLElement} element
+    *   The element the editor is attached to.
+@@ -315,19 +325,38 @@
+     // Only proceed if the styles haven't been added yet.
+     if (once('ckeditor5-off-canvas-reset', 'body').length) {
+       // For all rules on the page, add the donut scope for
+-      // rules containing the #drupal-off-canvas selector.
++      // rules containing a dialog wrapper selector.
+       [...document.styleSheets].forEach(processRules);
+ 
+-      const prefix = `#drupal-off-canvas-wrapper [${fenceName}]`;
++      // Generate the added rules below for both dialog wrapper types,
++      // rather than only whichever one happened to trigger this one-time
++      // setup, so the first editor to attach (in either an off-canvas tray
++      // or a modal) correctly sets up both for the rest of the page load.
++      const prefixes = [
++        `#drupal-off-canvas-wrapper [${fenceName}]`,
++        `#drupal-modal [${fenceName}]`,
++      ];
+       // Additional styles that need to be explicity added in addition to the
+       // prefixed versions of existing css in `existingCss`.
+-      const addedCss = [
++      const addedCss = prefixes.flatMap((prefix) => [
          `${prefix} .ck.ck-content * {display:revert;background:revert;color:initial;padding:revert;}`,
          `${prefix} .ck.ck-content li {display:list-item}`,
 -        `${prefix} .ck.ck-content ol li {list-style-type: decimal}`,
+-      ];
 +        // A plain `ol:not([type]) li` descendant selector can't tell "one
 +        // level down" from "two levels down" apart, so on its own it would
 +        // force every untyped nested list back to decimal, even under an
@@ -116,16 +200,35 @@
 +        `${prefix} .ck.ck-content ol[type='1'] ol:not([type]) li {list-style-type: lower-alpha}`,
 +        `${prefix} .ck.ck-content ol[type='1'] ol:not([type]) ol:not([type]) li {list-style-type: lower-roman}`,
 +        `${prefix} .ck.ck-content ol[type='a'] ol:not([type]) li {list-style-type: lower-roman}`,
-       ];
++      ]);
  
-       const prefixedCss = [...addedCss].join('\n');
-@@ -622,6 +634,112 @@
+-      const prefixedCss = [...addedCss].join('\n');
++      const prefixedCss = addedCss.join('\n');
  
-       // Store the save callback to be executed when this dialog is closed.
-       Drupal.ckeditor5.saveCallback = saveCallback;
-+    },
-+  };
-+
+       // Create a new style tag with the prefixed styles added above.
+       const offCanvasCssStyle = document.createElement('style');
+@@ -452,9 +481,15 @@
+             }
+           });
+ 
+-          const isOffCanvas = element.closest('#drupal-off-canvas');
++          // Layout Builder's "Configure block" opens in the off-canvas
++          // tray; a block-browser UI's "Add block" (e.g.
++          // layout_builder_browser) opens in the generic Drupal modal
++          // wrapper instead. Both need the same style-fencing fix.
++          const isFencedDialog = element.closest(
++            '#drupal-off-canvas, #drupal-modal',
++          );
+ 
+-          if (isOffCanvas) {
++          if (isFencedDialog) {
+             offCanvasCss(element);
+           }
+         })
+@@ -625,6 +660,112 @@
+     },
+   };
+ 
 +  Drupal.behaviors.editorStyleFix = {
 +    attach(context) {
 +      // CKEditor's DLL injects <style data-cke> tags that override native
@@ -229,9 +332,12 @@
 +          });
 +        }).observe(document.head, { childList: true });
 +      }
-     },
-   };
- 
++    },
++  };
++
+   // Redirect on hash change when the original hash has an associated CKEditor 5.
+   function redirectTextareaFragmentToCKEditor5Instance() {
+     const hash = window.location.hash.substring(1);
 --- a/core/modules/ckeditor5/src/Plugin/CKEditor4To5Upgrade/Core.php
 +++ b/core/modules/ckeditor5/src/Plugin/CKEditor4To5Upgrade/Core.php
 @@ -274,14 +274,16 @@
