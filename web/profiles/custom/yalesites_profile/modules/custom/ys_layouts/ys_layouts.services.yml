@@ -6,7 +6,7 @@ services:
   # Used to update layout builder configuration on existing entities.
   ys_layouts.updater:
     class: Drupal\ys_layouts\Service\LayoutUpdater
-    arguments: ['@config.factory', '@database', '@entity_type.manager', '@entity_field.manager', '@logger.channel.ys_layouts', '@messenger']
+    arguments: ['@config.factory', '@database', '@entity_type.manager', '@entity_field.manager', '@logger.channel.ys_layouts', '@messenger', '@keyvalue.expirable', '@tempstore.shared']
   # en_US Unicode collator used by ResourceAuthorBuilder for last-then-first
   # sorting of merged affiliated/non-affiliated authors. Registered as a
   # service so it can be injected and overridden in tests if needed.

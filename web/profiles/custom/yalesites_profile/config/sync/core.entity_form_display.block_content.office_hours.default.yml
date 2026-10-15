@@ -5,9 +5,11 @@ dependencies:
   config:
     - block_content.type.office_hours
     - field.field.block_content.office_hours.field_office_hours
+    - field.field.block_content.office_hours.field_style_color
   module:
     - hide_revision_field
     - office_hours
+    - ys_themes
 id: block_content.office_hours.default
 targetEntityType: block_content
 bundle: office_hours
@@ -20,6 +22,12 @@ content:
     settings:
       collapsed: false
       collapsed_exceptions: true
+    third_party_settings: {  }
+  field_style_color:
+    type: component_color_picker
+    weight: 3
+    region: content
+    settings: {  }
     third_party_settings: {  }
   info:
     type: string_textfield

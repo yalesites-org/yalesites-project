@@ -9,6 +9,7 @@ use Drupal\Tests\UnitTestCase;
 use Drupal\Tests\ys_core\Traits\LayoutBuilderEntityContextTestTrait;
 use Drupal\node\NodeInterface;
 use Drupal\ys_layouts\Plugin\Block\PageMetaBlock;
+use Drupal\ys_themes\ColorTokenResolver;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\RequestStack;
 use Symfony\Component\Routing\Route;
@@ -72,7 +73,7 @@ class PageMetaBlockTest extends UnitTestCase {
       'context_definitions' => $this->layoutBuilderEntityContextDefinitions(PageMetaBlock::class),
     ];
 
-    return new PageMetaBlock($configuration, 'page_meta_block', $definition, $this->routeMatch, $this->titleResolver, $this->requestStack);
+    return new PageMetaBlock($configuration, 'page_meta_block', $definition, $this->routeMatch, $this->titleResolver, $this->requestStack, $this->createMock(ColorTokenResolver::class));
   }
 
   /**
@@ -347,6 +348,57 @@ class PageMetaBlockTest extends UnitTestCase {
 
     $configuration = $block->getConfiguration();
     $this->assertSame('visually-hidden', $configuration['page_title_display']);
+  }
+
+  /**
+   * The section theme select follows breadcrumb display and defaults.
+   *
+   * @covers ::blockForm
+   */
+  public function testBlockFormExposesSectionThemeAfterBreadcrumbs(): void {
+    $block = $this->buildBlock();
+    $block->setStringTranslation($this->getStringTranslationStub());
+
+    $form = $block->blockForm([], new FormState());
+
+    $this->assertSame('select', $form['section_theme']['#type']);
+    $this->assertSame('default', $form['section_theme']['#default_value']);
+    $this->assertSame(
+      ['default', 'one', 'two', 'three', 'four', 'five', 'six'],
+      array_keys($form['section_theme']['#options'])
+    );
+    $keys = array_keys($form);
+    $this->assertGreaterThan(array_search('breadcrumb_display', $keys), array_search('section_theme', $keys));
+    $this->assertNotEmpty($form['section_theme']['#after_build']);
+  }
+
+  /**
+   * The section theme select carries the stored value.
+   *
+   * @covers ::blockForm
+   */
+  public function testBlockFormUsesConfiguredSectionTheme(): void {
+    $block = $this->buildBlock(['section_theme' => 'three']);
+    $block->setStringTranslation($this->getStringTranslationStub());
+
+    $form = $block->blockForm([], new FormState());
+
+    $this->assertSame('three', $form['section_theme']['#default_value']);
+  }
+
+  /**
+   * Submitting the form stores the selected section theme.
+   *
+   * @covers ::blockSubmit
+   */
+  public function testBlockSubmitStoresSectionTheme(): void {
+    $block = $this->buildBlock();
+    $form_state = new FormState();
+    $form_state->setValue('section_theme', 'five');
+
+    $block->blockSubmit([], $form_state);
+
+    $this->assertSame('five', $block->getConfiguration()['section_theme']);
   }
 
 }
