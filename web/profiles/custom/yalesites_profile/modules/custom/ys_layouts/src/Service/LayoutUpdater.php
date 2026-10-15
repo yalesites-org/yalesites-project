@@ -7,9 +7,13 @@ use Drupal\Core\Database\Connection;
 use Drupal\Core\Entity\EntityFieldManager;
 use Drupal\Core\Entity\EntityStorageException;
 use Drupal\Core\Entity\EntityTypeManagerInterface;
+use Drupal\Core\KeyValueStore\KeyValueExpirableFactoryInterface;
 use Drupal\Core\Messenger\MessengerInterface;
 use Drupal\Core\StringTranslation\StringTranslationTrait;
+use Drupal\Core\TempStore\SharedTempStoreFactory;
 use Drupal\block_content\Entity\BlockContent;
+use Drupal\layout_builder\Section;
+use Drupal\layout_builder\SectionStorageInterface;
 use Drupal\node\NodeInterface;
 use Psr\Log\LoggerInterface;
 
@@ -26,11 +30,36 @@ use Psr\Log\LoggerInterface;
  * future to accommodate other types of updates, such as adding or removing
  * default sections or blocks.
  *
+ * ::enableSeventyThirtyDividers() is batched (it takes a $sandbox and slices
+ * DIVIDER_BATCH_SIZE nodes per pass). updateLocks() is not yet.
+ *
  * @todo Consider using the Batch API to execute updateLocks in smaller chunks.
  */
 class LayoutUpdater {
 
   use StringTranslationTrait;
+
+  /**
+   * The layout id of the Two column (70/30) section.
+   *
+   * Matches ys_layouts.layouts.yml.
+   */
+  const SEVENTY_THIRTY_LAYOUT_ID = 'ys_layout_two_column';
+
+  /**
+   * Nodes converted per batch pass by ::enableSeventyThirtyDividers().
+   *
+   * Each node costs up to two revision loads and two saves, so the slice is
+   * sized for a comfortable request rather than for throughput -- a deploy
+   * that takes a few more passes is cheaper than one that times out half way
+   * through and leaves the platform with some sections converted and some not.
+   *
+   * A constant rather than config, matching the sibling service
+   * OrphanedInlineBlockCleaner::BATCH_SIZE (also 50): ys_layouts ships no
+   * settings object, so there is no form this could be read from. If one is
+   * ever added, this is a value to move into it.
+   */
+  const DIVIDER_BATCH_SIZE = 50;
 
   /**
    * The config factory service.
@@ -75,6 +104,20 @@ class LayoutUpdater {
   protected $messenger;
 
   /**
+   * The expirable key/value factory, to list cached layouts.
+   *
+   * @var \Drupal\Core\KeyValueStore\KeyValueExpirableFactoryInterface
+   */
+  protected $keyValueExpirable;
+
+  /**
+   * The shared tempstore factory, to write cached layouts.
+   *
+   * @var \Drupal\Core\TempStore\SharedTempStoreFactory
+   */
+  protected $tempStoreFactory;
+
+  /**
    * Constructs a new LayoutUpdater object.
    *
    * @param \Drupal\Core\Config\ConfigFactoryInterface $config_factory
@@ -89,6 +132,10 @@ class LayoutUpdater {
    *   The logger service.
    * @param \Drupal\Core\Messenger\MessengerInterface $messenger
    *   The messenger service.
+   * @param \Drupal\Core\KeyValueStore\KeyValueExpirableFactoryInterface $key_value_expirable
+   *   The expirable key/value factory.
+   * @param \Drupal\Core\TempStore\SharedTempStoreFactory $temp_store_factory
+   *   The shared tempstore factory.
    */
   public function __construct(
     ConfigFactoryInterface $config_factory,
@@ -97,6 +144,8 @@ class LayoutUpdater {
     EntityFieldManager $entity_field_manager,
     LoggerInterface $logger,
     MessengerInterface $messenger,
+    KeyValueExpirableFactoryInterface $key_value_expirable,
+    SharedTempStoreFactory $temp_store_factory,
   ) {
     $this->configFactory = $config_factory;
     $this->database = $database;
@@ -104,6 +153,8 @@ class LayoutUpdater {
     $this->entityFieldManager = $entity_field_manager;
     $this->logger = $logger;
     $this->messenger = $messenger;
+    $this->keyValueExpirable = $key_value_expirable;
+    $this->tempStoreFactory = $temp_store_factory;
   }
 
   /**
@@ -121,18 +172,15 @@ class LayoutUpdater {
    *
    * YaleSites uses layout builder on the default display of all content types.
    * The layout_builder_lock module is used to improve the authoring experience.
-   * Get the third party lock settings for each section of a content type. The
-   * returned array will take the form:
+   * Get the third party lock settings for each locked section of a content
+   * type. Sections are not keyed by layout ID because a content type can have
+   * several sections with the same layout (posts have two layout_onecol). The
+   * returned array is a list of:
    * @code
-   * 'ys_layout_banner' => [
-   *   5 => 5,
-   *   6 => 6,
-   *   8 => 8,
-   * ],
-   * 'ys_layout_page_meta' => [
-   *   2 => 2,
-   *   3 => 3,
-   *   4 => 4,
+   * [
+   *   'layout_id' => 'ys_layout_banner',
+   *   'label' => 'Banner',
+   *   'lock' => [5 => 5, 6 => 6, 8 => 8],
    * ],
    * @endcode
    *
@@ -140,7 +188,7 @@ class LayoutUpdater {
    *   The machine name of the content type (node bundle).
    *
    * @return array
-   *   All third party lock values organized by section ID.
+   *   A list of layout ID, section label, and lock values per locked section.
    */
   public function getLockConfigs($nodeBundleId) {
     $name = "core.entity_view_display.node.{$nodeBundleId}.default";
@@ -151,9 +199,12 @@ class LayoutUpdater {
     // Iterate over each layout builder section to get the locks for each one.
     if (!empty($lb['sections']) && is_array($lb['sections'])) {
       foreach ($lb['sections'] as $section) {
-        $layout_id = $section['layout_id'];
         if (!empty($section['third_party_settings']['layout_builder_lock']['lock']) && is_array($section['third_party_settings']['layout_builder_lock']['lock'])) {
-          $locks[$layout_id] = $section['third_party_settings']['layout_builder_lock']['lock'];
+          $locks[] = [
+            'layout_id' => $section['layout_id'],
+            'label' => $section['layout_settings']['label'] ?? NULL,
+            'lock' => $section['third_party_settings']['layout_builder_lock']['lock'],
+          ];
         }
       }
     }
@@ -188,41 +239,170 @@ class LayoutUpdater {
    */
   public function updateLocks($nodeBundleId) {
     $defaultLocks = $this->getLockConfigs($nodeBundleId);
+    /** @var \Drupal\Core\Entity\RevisionableStorageInterface $storage */
+    $storage = $this->entityTypeManager->getStorage('node');
     foreach ($this->getAllNodeIds($nodeBundleId) as $nid) {
 
       // Load the node or exit early if the node does not exist.
-      $node = $this->entityTypeManager->getStorage('node')->load($nid);
+      $node = $storage->load($nid);
       if (!$node instanceof NodeInterface) {
         continue;
       }
+      $revisions = [$node];
 
-      // Load the layout builder sections or exit early if none are set.
-      /** @var \Drupal\layout_builder\Field\LayoutSectionItemList $layout */
-      $layout = $node->get('layout_builder__layout');
-      if ($layout->isEmpty()) {
-        continue;
+      // Layout Builder edits the latest revision, so a pending draft needs the
+      // same locks. Update it in place rather than creating a new revision.
+      // Content moderation would otherwise force one; see setSyncing() below.
+      $latestId = $storage->getLatestRevisionId($nid);
+      if ($latestId && $latestId != $node->getRevisionId()) {
+        $latest = $storage->loadRevision($latestId);
+        if ($latest instanceof NodeInterface) {
+          $latest->setNewRevision(FALSE);
+          $revisions[] = $latest;
+        }
       }
 
-      foreach ($layout->getSections() as $section) {
-        // Authors can create their own sections. Check if this section is one
-        // of the default sections defined for this content type.
-        if (!array_key_exists($section->getLayoutId(), $defaultLocks)) {
+      foreach ($revisions as $revision) {
+        // Load the layout builder sections. Skip if none are set.
+        /** @var \Drupal\layout_builder\Field\LayoutSectionItemList $layout */
+        $layout = $revision->get('layout_builder__layout');
+        if ($layout->isEmpty()) {
           continue;
         }
-        // Set third-party settings for layout_builder_lock to match the config.
-        $locks = $defaultLocks[$section->getLayoutId()];
+        $this->applyDefaultLocks($defaultLocks, $layout->getSections());
+
+        // Saving stamps the request time as the changed time, so note each
+        // translation's changed time to put back afterwards.
+        $changed = [];
+        foreach (array_keys($revision->getTranslationLanguages()) as $langcode) {
+          $changed[$langcode] = $revision->getTranslation($langcode)->getChangedTime();
+        }
+
+        // Syncing stops content moderation from creating a new revision and
+        // changing which revision is default. Without it, saving the default
+        // revision would also bury a pending draft under a newer revision.
+        $revision->setSyncing(TRUE);
+        try {
+          $revision->save();
+          $this->restoreChangedTimes($revision, $changed);
+        }
+        catch (EntityStorageException $e) {
+          $this->logger->error(
+            'Error updating locks for node with ID @nid: @message',
+            ['@nid' => $nid, '@message' => $e->getMessage()]
+          );
+        }
+      }
+      $storage->resetCache([$nid]);
+    }
+
+    $this->updateCachedLayouts($nodeBundleId, $defaultLocks);
+  }
+
+  /**
+   * Applies the default locks to the sections that match a default section.
+   *
+   * @param array $defaultLocks
+   *   The result of getLockConfigs().
+   * @param \Drupal\layout_builder\Section[] $sections
+   *   The sections to update.
+   */
+  protected function applyDefaultLocks(array $defaultLocks, array $sections): void {
+    foreach ($sections as $section) {
+      // Authors can create their own sections. Only update sections that
+      // match one of the default sections defined for this content type.
+      $locks = $this->findDefaultLocks($defaultLocks, $section);
+      if ($locks !== NULL) {
         $section->setThirdPartySetting('layout_builder_lock', 'lock', $locks);
       }
-      try {
-        $node->save();
-      }
-      catch (EntityStorageException $e) {
-        $this->logger->error(
-          'Error updating locks for node with ID @nid: @message',
-          ['@nid' => $nid, '@message' => $e->getMessage()]
-        );
+    }
+  }
+
+  /**
+   * Puts a saved revision's changed times back to what they were.
+   *
+   * ChangedItem::preSave() has no way to keep the stored value when other
+   * fields change, so this writes it back to the node tables directly.
+   *
+   * @param \Drupal\node\NodeInterface $revision
+   *   The saved revision.
+   * @param int[] $changed
+   *   Changed times keyed by langcode, from before the save.
+   */
+  protected function restoreChangedTimes(NodeInterface $revision, array $changed): void {
+    $tables = ['node_field_revision' => ['vid', $revision->getRevisionId()]];
+    if ($revision->isDefaultRevision()) {
+      $tables['node_field_data'] = ['nid', $revision->id()];
+    }
+    foreach ($changed as $langcode => $time) {
+      foreach ($tables as $table => [$column, $id]) {
+        $this->database->update($table)
+          ->fields(['changed' => $time])
+          ->condition($column, $id)
+          ->condition('langcode', $langcode)
+          ->execute();
       }
     }
+  }
+
+  /**
+   * Applies the default locks to layouts cached by Layout Builder.
+   *
+   * Opening a node's Layout tab caches its layout for days. Saving that copy
+   * later would restore the old locks, so update it in place. Deleting it would
+   * throw away an editor's unsaved work.
+   *
+   * @param string $nodeBundleId
+   *   The machine name of the content type (node bundle).
+   * @param array $defaultLocks
+   *   The result of getLockConfigs().
+   */
+  protected function updateCachedLayouts(string $nodeBundleId, array $defaultLocks): void {
+    $collection = 'layout_builder.section_storage.overrides';
+    $items = $this->keyValueExpirable->get("tempstore.shared.$collection")->getAll();
+    foreach ($items as $key => $item) {
+      $sectionStorage = $item->data['section_storage'] ?? NULL;
+      if (!str_starts_with($key, 'node.') || !$sectionStorage instanceof SectionStorageInterface) {
+        continue;
+      }
+      if ($sectionStorage->getContextValue('entity')->bundle() !== $nodeBundleId) {
+        continue;
+      }
+      $this->applyDefaultLocks($defaultLocks, $sectionStorage->getSections());
+      // Write as the original owner so the editor keeps their lock on it.
+      $this->tempStoreFactory->get($collection, $item->owner)->set($key, $item->data);
+    }
+  }
+
+  /**
+   * Finds the default locks for a node section.
+   *
+   * Matches on layout ID and section label. A section with no label falls back
+   * to layout ID only, and only when exactly one default shares that layout.
+   *
+   * @param array $defaultLocks
+   *   The result of getLockConfigs().
+   * @param \Drupal\layout_builder\Section $section
+   *   The node's section.
+   *
+   * @return array|null
+   *   The lock values, or NULL if the section is not a default section.
+   */
+  protected function findDefaultLocks(array $defaultLocks, Section $section): ?array {
+    $candidates = array_filter($defaultLocks, fn($default) => $default['layout_id'] === $section->getLayoutId());
+    if (!$candidates) {
+      return NULL;
+    }
+    $label = $section->getLayoutSettings()['label'] ?? NULL;
+    if (empty($label)) {
+      return count($candidates) === 1 ? reset($candidates)['lock'] : NULL;
+    }
+    foreach ($candidates as $default) {
+      if ($default['label'] === $label) {
+        return $default['lock'];
+      }
+    }
+    return NULL;
   }
 
   /**
@@ -232,6 +412,223 @@ class LayoutUpdater {
     foreach ($this->getContentTypes() as $bundle) {
       $this->updateLocks($bundle->id());
     }
+  }
+
+  /**
+   * Opts every existing Two column (70/30) section into its divider.
+   *
+   * The 70/30 separator used to be drawn unconditionally in the component
+   * library, so the Divider checkbox did nothing on that layout while 50/50
+   * and 33/33/33 respected it. Now that the separator is gated on the toggle
+   * (yalesites-project#1514), a stored `divider` of 0 -- which is what every
+   * 70/30 section on the platform has, since the control was inert -- would
+   * silently remove a line the section renders today.
+   *
+   * Turning it on preserves current rendering, and from here on the toggle
+   * behaves like it does on the other multi-column layouts: off by default on
+   * a new section, per YSLayoutOptions::defaultConfiguration().
+   *
+   * Only sections already carrying a truthy `divider` are skipped, so this is
+   * idempotent and re-running it saves nothing. Sections whose layout has
+   * never been overridden are not stored on the node at all -- those come
+   * from the content type's default display in config, which carries its own
+   * `divider` value.
+   *
+   * **The pending draft is migrated as well as the published revision.** The
+   * content types that offer this layout are under content moderation, so a
+   * node can have a published default revision plus an unpublished draft
+   * holding its own copy of the sections. Migrating only the default revision
+   * would look correct until the editor published that draft, at which point
+   * the separator would vanish -- the exact regression this exists to prevent.
+   * Only the default and the latest revision are touched: publishing promotes
+   * the latest one, and older revisions are history that nothing renders, so
+   * rewriting them would multiply the deploy's writes for no visible effect.
+   * A non-default revision is written in place, leaving the
+   * default-revision pointer and the moderation state alone.
+   *
+   * One window this does NOT cover: a layout an editor has open in Layout
+   * Builder but has not saved lives in the shared tempstore (see
+   * getTempStoreNids() / getTempStoreNodes()) with the old value, and saving
+   * it after the deploy writes that stale copy back. Deliberately left alone
+   * -- rewriting someone's unsaved work mid-edit is more surprising than the
+   * narrow risk, and re-ticking the box fixes it.
+   *
+   * @return int
+   *   The number of revisions saved.
+   */
+  public function enableSeventyThirtyDividers(?array &$sandbox = NULL): int {
+    // Unbatched call -- no $sandbox handed in. Converts the whole set in one
+    // pass, which is what the tests and any manual drush invocation want.
+    if ($sandbox === NULL) {
+      return $this->convertSeventyThirtyRevisions($this->getSeventyThirtyNodeIds());
+    }
+
+    // First pass: enumerate the work once and keep it in the sandbox. The
+    // query is a LIKE over every stored layout section, so it is not something
+    // to re-run on each pass.
+    if (!isset($sandbox['ids'])) {
+      $sandbox['ids'] = $this->getSeventyThirtyNodeIds();
+      $sandbox['total'] = count($sandbox['ids']);
+      $sandbox['updated'] = 0;
+    }
+
+    $slice = array_splice($sandbox['ids'], 0, self::DIVIDER_BATCH_SIZE);
+    $sandbox['updated'] += $this->convertSeventyThirtyRevisions($slice);
+
+    // Drush's deploy:hook reads '#finished'; 1 ends the batch. Guard the
+    // divide so an empty candidate set finishes rather than dividing by zero.
+    $sandbox['#finished'] = $sandbox['total'] > 0
+      ? 1 - (count($sandbox['ids']) / $sandbox['total'])
+      : 1;
+
+    return $sandbox['updated'];
+  }
+
+  /**
+   * Opts the given nodes' 70/30 sections into their divider.
+   *
+   * Split out of ::enableSeventyThirtyDividers() so the batched and unbatched
+   * paths share one implementation rather than drifting apart.
+   *
+   * @param int[] $nids
+   *   Node ids to convert.
+   *
+   * @return int
+   *   The number of revisions saved.
+   */
+  protected function convertSeventyThirtyRevisions(array $nids): int {
+    $updated = 0;
+    /** @var \Drupal\node\NodeStorageInterface $nodeStorage */
+    $nodeStorage = $this->entityTypeManager->getStorage('node');
+
+    foreach ($nids as $nid) {
+      $node = $nodeStorage->load($nid);
+      if (!$node instanceof NodeInterface) {
+        continue;
+      }
+
+      // The published revision, plus the pending draft when there is one.
+      $vids = [(int) $node->getRevisionId()];
+      $latest = (int) $nodeStorage->getLatestRevisionId($nid);
+      if ($latest && !in_array($latest, $vids, TRUE)) {
+        $vids[] = $latest;
+      }
+
+      foreach ($vids as $vid) {
+        $revision = $vid === (int) $node->getRevisionId()
+          ? $node
+          : $nodeStorage->loadRevision($vid);
+        if ($revision instanceof NodeInterface && $this->addDividerToSections($revision)) {
+          $updated++;
+        }
+      }
+
+      // Release each node from the entity static cache as we go. The batch
+      // above bounds how many nodes one request touches; this bounds how much
+      // memory those touches accumulate within the request.
+      $nodeStorage->resetCache([$nid]);
+    }
+
+    return $updated;
+  }
+
+  /**
+   * Opts one revision's 70/30 sections into the divider and saves it.
+   *
+   * @param \Drupal\node\NodeInterface $revision
+   *   The node revision to update.
+   *
+   * @return bool
+   *   TRUE when the revision needed the change and was saved.
+   */
+  protected function addDividerToSections(NodeInterface $revision): bool {
+    /** @var \Drupal\layout_builder\Field\LayoutSectionItemList $layout */
+    $layout = $revision->get('layout_builder__layout');
+    $changed = FALSE;
+
+    foreach ($layout->getSections() as $section) {
+      if ($section->getLayoutId() !== self::SEVENTY_THIRTY_LAYOUT_ID) {
+        continue;
+      }
+      $settings = $section->getLayoutSettings();
+      // Already opted in, so re-running this is a no-op.
+      if (!empty($settings['divider'])) {
+        continue;
+      }
+      $settings['divider'] = 1;
+      $section->setLayoutSettings($settings);
+      $changed = TRUE;
+    }
+
+    if (!$changed) {
+      return FALSE;
+    }
+
+    try {
+      // Update this revision in place: without setNewRevision(FALSE) the save
+      // spawns a revision, and the loaded revision already carries its own
+      // default-revision flag, so a draft stays a draft. setSyncing() keeps
+      // content_moderation from reading this as an editor's state change.
+      $revision->setNewRevision(FALSE);
+      $revision->setSyncing(TRUE);
+      $revision->save();
+
+      return TRUE;
+    }
+    catch (EntityStorageException $e) {
+      $this->logger->error(
+        'Error enabling the 70/30 divider on node revision @vid: @message',
+        ['@vid' => $revision->getRevisionId(), '@message' => $e->getMessage()]
+      );
+
+      return FALSE;
+    }
+  }
+
+  /**
+   * Gets the IDs of nodes whose stored layout holds a 70/30 section.
+   *
+   * A cheap pre-filter so enableSeventyThirtyDividers() does not load every
+   * node on the site to discover that most of them have nothing to change.
+   * Queries the layout field's own storage the way getTempStoreNids() queries
+   * the tempstore table, rather than through the entity API, because the
+   * layout section is a serialized blob that an entity query cannot filter on.
+   *
+   * Reads the REVISION table rather than the default-revision one, so a node
+   * whose 70/30 section exists only in an unpublished draft is still a
+   * candidate.
+   *
+   * The LIKE is a deliberate superset: it matches the layout id anywhere in
+   * the serialized sections, so `ys_layout_two_column_50_50` matches as well
+   * and the caller still checks each section's real layout id. A false
+   * positive costs one wasted load; a false negative would silently skip
+   * content, which this cannot produce.
+   *
+   * @return int[]
+   *   Node IDs, or an empty array when no node has an overridden layout.
+   */
+  protected function getSeventyThirtyNodeIds(): array {
+    $table = 'node_revision__layout_builder__layout';
+
+    // Absent until at least one node's layout is overridden.
+    if (!$this->database->schema()->tableExists($table)) {
+      return [];
+    }
+
+    $ids = $this->database->select($table, 'l')
+      ->distinct()
+      ->fields('l', ['entity_id'])
+      ->condition(
+        'l.layout_builder__layout_section',
+        '%' . $this->database->escapeLike(self::SEVENTY_THIRTY_LAYOUT_ID) . '%',
+        'LIKE'
+      )
+      ->execute()
+      ->fetchCol();
+
+    // fetchCol() returns strings; cast so the documented type is the real one,
+    // matching getTempStoreNids().
+    return array_map('intval', $ids);
   }
 
   /**

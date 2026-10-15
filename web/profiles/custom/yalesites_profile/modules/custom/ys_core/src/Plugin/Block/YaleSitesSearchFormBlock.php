@@ -2,21 +2,22 @@
 
 namespace Drupal\ys_core\Plugin\Block;
 
+use Drupal\Core\Block\Attribute\Block;
 use Drupal\Core\Block\BlockBase;
 use Drupal\Core\Cache\Cache;
 use Drupal\Core\Config\ConfigFactoryInterface;
 use Drupal\Core\Plugin\ContainerFactoryPluginInterface;
+use Drupal\Core\StringTranslation\TranslatableMarkup;
 use Symfony\Component\DependencyInjection\ContainerInterface;
 
 /**
  * Adds a search form block.
- *
- * @Block(
- *   id = "ys_search_form_block",
- *   admin_label = @Translation("YaleSites Search Form Block"),
- *   category = @Translation("YaleSites Core"),
- * )
  */
+#[Block(
+  id: 'ys_search_form_block',
+  admin_label: new TranslatableMarkup('YaleSites Search Form Block'),
+  category: new TranslatableMarkup('YaleSites Core'),
+)]
 class YaleSitesSearchFormBlock extends BlockBase implements ContainerFactoryPluginInterface {
 
   /**

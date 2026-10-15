@@ -70,12 +70,18 @@ class ColumnReferenceTableTraitTest extends UnitTestCase {
   /**
    * ColumnReferenceTable() sets a "Column"/"Notes" header.
    *
+   * Each cell is an array rather than a bare string so it can carry
+   * scope="col" (WCAG 2.1 AA 1.3.1).
+   *
    * @covers ::columnReferenceTable
    */
   public function testColumnReferenceTableSetsHeader() {
     $table = $this->traitObject()->build(['title' => 'Title'], []);
 
-    $this->assertSame(['Column', 'Notes'], $table['#header']);
+    $this->assertSame([
+      ['data' => 'Column', 'scope' => 'col'],
+      ['data' => 'Notes', 'scope' => 'col'],
+    ], $table['#header']);
   }
 
 }
