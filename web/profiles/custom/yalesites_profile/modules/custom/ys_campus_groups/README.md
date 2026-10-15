@@ -34,7 +34,9 @@ This module uses Drupal core migration. The following are the migrations that ar
 
 ## The Event Migration
 
-Specific unique plugins will be mentioned here. Most migration fields are text strings, so, for example `field_event_room: campus_groups_room` is simply adding the `campus_groups_room` to the `field_event_room`.
+Specific unique plugins will be mentioned here. Most migration fields are text strings, so, for example `field_ticket_registration_url: ticket_registration_url` is simply adding the `ticket_registration_url` to the `field_ticket_registration_url`.
+
+Campus Groups does not set any location or stream field.
 
 ## Scheduling
 The cron run is scheduled in the `ys_campus_groups.module` file to run every hour. Note that due to caching of the API, caching of Drupal, and any edge caching, data can take longer than an hour to show up.

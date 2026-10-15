@@ -3,20 +3,21 @@
 namespace Drupal\ys_alert\Plugin\Block;
 
 use Drupal\Core\Access\AccessResult;
+use Drupal\Core\Block\Attribute\Block;
 use Drupal\Core\Block\BlockBase;
 use Drupal\Core\Plugin\ContainerFactoryPluginInterface;
 use Drupal\Core\Session\AccountInterface;
+use Drupal\Core\StringTranslation\TranslatableMarkup;
 use Drupal\ys_alert\AlertManager;
 use Symfony\Component\DependencyInjection\ContainerInterface;
 
 /**
  * Provides a block to render an active alert.
- *
- * @Block(
- *   id = "alert_block",
- *   admin_label = @Translation("Alert block"),
- * )
  */
+#[Block(
+  id: 'alert_block',
+  admin_label: new TranslatableMarkup('Alert block'),
+)]
 class AlertBlock extends BlockBase implements ContainerFactoryPluginInterface {
 
   /**

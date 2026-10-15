@@ -6,7 +6,7 @@ use Drupal\Core\Form\FormBase;
 use Drupal\Core\Form\FormStateInterface;
 use Drupal\Core\Entity\EntityTypeManagerInterface;
 use Drupal\ys_views_basic\ViewsBasicManager;
-use Drupal\ys_views_basic\Service\EventsCalendarInterface;
+use Drupal\ys_views_basic\Service\EventsCalendar;
 use Symfony\Component\DependencyInjection\ContainerInterface;
 
 /**
@@ -36,7 +36,7 @@ class EventCalendarFilterForm extends FormBase {
   /**
    * The events calendar service.
    *
-   * @var \Drupal\ys_views_basic\Service\EventsCalendarInterface
+   * @var \Drupal\ys_views_basic\Service\EventsCalendar
    */
   protected $eventsCalendar;
 
@@ -47,10 +47,10 @@ class EventCalendarFilterForm extends FormBase {
    *   The views basic manager service.
    * @param \Drupal\Core\Entity\EntityTypeManagerInterface $entityTypeManager
    *   The entity type manager service.
-   * @param \Drupal\ys_views_basic\Service\EventsCalendarInterface $eventsCalendar
+   * @param \Drupal\ys_views_basic\Service\EventsCalendar $eventsCalendar
    *   The events calendar service.
    */
-  public function __construct(ViewsBasicManager $viewsBasicManager, EntityTypeManagerInterface $entityTypeManager, EventsCalendarInterface $eventsCalendar) {
+  public function __construct(ViewsBasicManager $viewsBasicManager, EntityTypeManagerInterface $entityTypeManager, EventsCalendar $eventsCalendar) {
     $this->viewsBasicManager = $viewsBasicManager;
     $this->entityTypeManager = $entityTypeManager;
     $this->eventsCalendar = $eventsCalendar;

@@ -103,12 +103,12 @@ class SystemInstructionsController extends ControllerBase {
     $users = $this->userStorage->loadMultiple($user_ids);
 
     $header = [
-      $this->t('Version'),
-      $this->t('Created'),
-      $this->t('Author'),
-      $this->t('Status'),
-      $this->t('Notes'),
-      $this->t('Actions'),
+      ['data' => $this->t('Version'), 'scope' => 'col'],
+      ['data' => $this->t('Created'), 'scope' => 'col'],
+      ['data' => $this->t('Author'), 'scope' => 'col'],
+      ['data' => $this->t('Status'), 'scope' => 'col'],
+      ['data' => $this->t('Notes'), 'scope' => 'col'],
+      ['data' => $this->t('Actions'), 'scope' => 'col'],
     ];
 
     $rows = [];

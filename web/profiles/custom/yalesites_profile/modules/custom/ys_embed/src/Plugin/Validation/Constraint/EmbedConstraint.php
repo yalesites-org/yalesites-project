@@ -2,18 +2,19 @@
 
 namespace Drupal\ys_embed\Plugin\Validation\Constraint;
 
-use Symfony\Component\Validator\Constraint;
+use Drupal\Core\StringTranslation\TranslatableMarkup;
+use Drupal\Core\Validation\Attribute\Constraint;
+use Symfony\Component\Validator\Constraint as SymfonyConstraint;
 
 /**
  * Validation constraint for embed media objects.
- *
- * @Constraint(
- *   id = "embed",
- *   label = @Translation("Embed", context = "Validation"),
- *   type = "string"
- * )
  */
-class EmbedConstraint extends Constraint {
+#[Constraint(
+  id: 'embed',
+  label: new TranslatableMarkup('Embed', [], ['context' => 'Validation']),
+  type: 'string',
+)]
+class EmbedConstraint extends SymfonyConstraint {
 
   /**
    * Violation message for video embed codes.
