@@ -100,7 +100,7 @@ class TaxonomyDisplayBlock extends BlockBase implements ContextAwarePluginInterf
   public function defaultConfiguration(): array {
     return [
       'vocabularies' => [],
-      'theme_selection' => 'default',
+      'theme_selection' => 'one',
     ];
   }
 
@@ -155,6 +155,7 @@ class TaxonomyDisplayBlock extends BlockBase implements ContextAwarePluginInterf
           '#type' => 'select',
           '#title' => $this->t('Theme'),
           '#options' => [
+            'default' => $this->t('Default - No Color'),
             'one' => $this->t('One'),
             'two' => $this->t('Two'),
             'three' => $this->t('Three'),
