@@ -2,7 +2,10 @@
 
 namespace Drupal\ys_mathjax\Plugin\Filter;
 
+use Drupal\Core\StringTranslation\TranslatableMarkup;
+use Drupal\filter\Attribute\Filter;
 use Drupal\filter\FilterProcessResult;
+use Drupal\filter\Plugin\FilterInterface;
 use Drupal\mathjax\Plugin\Filter\MathjaxFilter;
 use Drupal\ys_mathjax\MathDelimiterDetector;
 
@@ -14,16 +17,14 @@ use Drupal\ys_mathjax\MathDelimiterDetector;
  * every page that renders this text format (the WYSIWYG Text block is used on
  * nearly every page). When no math is found the text is returned unchanged and
  * no library is attached.
- *
- * @Filter(
- *   id = "filter_ys_mathjax",
- *   module = "ys_mathjax",
- *   title = @Translation("YaleSites MathJax (conditional)"),
- *   description = @Translation("Renders math inside the configured delimiters with MathJax, loading the library only on pages that contain math."),
- *   type = Drupal\filter\Plugin\FilterInterface::TYPE_TRANSFORM_REVERSIBLE,
- *   weight = 100
- * )
  */
+#[Filter(
+  id: 'filter_ys_mathjax',
+  title: new TranslatableMarkup('YaleSites MathJax (conditional)'),
+  description: new TranslatableMarkup('Renders math inside the configured delimiters with MathJax, loading the library only on pages that contain math.'),
+  type: FilterInterface::TYPE_TRANSFORM_REVERSIBLE,
+  weight: 100,
+)]
 class YsMathjaxFilter extends MathjaxFilter {
 
   /**

@@ -2,24 +2,23 @@
 
 namespace Drupal\ys_views_content_resources\Plugin\Field\FieldFormatter;
 
+use Drupal\Core\Field\Attribute\FieldFormatter;
 use Drupal\Core\Field\FieldDefinitionInterface;
 use Drupal\Core\Field\FieldItemListInterface;
 use Drupal\Core\Field\FormatterBase;
 use Drupal\Core\Plugin\ContainerFactoryPluginInterface;
+use Drupal\Core\StringTranslation\TranslatableMarkup;
 use Drupal\ys_views_content_resources\ViewsContentResourcesManager;
 use Symfony\Component\DependencyInjection\ContainerInterface;
 
 /**
  * Plugin implementation of the 'views_content_resources_default' formatter.
- *
- * @FieldFormatter(
- *   id = "views_content_resources_default_formatter",
- *   label = @Translation("Views Content Resources View"),
- *   field_types = {
- *     "views_content_resources_params"
- *   }
- * )
  */
+#[FieldFormatter(
+  id: 'views_content_resources_default_formatter',
+  label: new TranslatableMarkup('Views Content Resources View'),
+  field_types: ['views_content_resources_params'],
+)]
 class ViewsContentResourcesDefaultFormatter extends FormatterBase implements ContainerFactoryPluginInterface {
 
   /**

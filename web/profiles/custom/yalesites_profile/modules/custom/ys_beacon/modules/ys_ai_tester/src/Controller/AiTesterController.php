@@ -16,15 +16,18 @@ use Drupal\Core\Render\Markup;
 use Drupal\Core\Url;
 use Drupal\ys_ai_tester\AnswerBackendRegistry;
 use Drupal\ys_ai_tester\RunComparator;
+use Drupal\ys_ai_tester\RunExporter;
+use Drupal\ys_ai_tester\TesterRunStorageTrait;
 use Symfony\Component\DependencyInjection\ContainerInterface;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Response;
-use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
 
 /**
  * Controller for AI Tester run detail and file download routes.
  */
 class AiTesterController extends ControllerBase {
+
+  use TesterRunStorageTrait;
 
   /**
    * Constructs the AI Tester controller.
@@ -37,12 +40,15 @@ class AiTesterController extends ControllerBase {
    *   The run comparator.
    * @param \Drupal\ys_ai_tester\AnswerBackendRegistry $backendRegistry
    *   The answer backend registry, used to label a run's assistant.
+   * @param \Drupal\ys_ai_tester\RunExporter $runExporter
+   *   Builds the body of every downloadable artefact this controller serves.
    */
   public function __construct(
     protected Connection $database,
     protected DateFormatterInterface $dateFormatter,
     protected RunComparator $runComparator,
     protected AnswerBackendRegistry $backendRegistry,
+    protected RunExporter $runExporter,
   ) {}
 
   /**
@@ -54,6 +60,7 @@ class AiTesterController extends ControllerBase {
       $container->get('date.formatter'),
       $container->get('ys_ai_tester.run_comparator'),
       $container->get('ys_ai_tester.answer_backend_registry'),
+      $container->get('ys_ai_tester.run_exporter'),
     );
   }
 
@@ -73,16 +80,12 @@ class AiTesterController extends ControllerBase {
     return [
       '#type' => 'container',
       'meta' => [
-        '#markup' => $this->t(
-          '<p><strong>Run #@id</strong> — @date — File: @file — Assistant: @backend — Status: @status</p>',
-          [
-            '@id' => $run->id,
-            '@date' => $this->dateFormatter->format($run->created, 'medium'),
-            '@file' => $run->source_filename,
-            '@backend' => $this->backendRegistry->labelFor((string) $run->backend),
-            '@status' => $run->status,
-          ]
-        ),
+        '#theme' => 'ys_ai_tester_run_summary',
+        '#id' => $run->id,
+        '#date' => $this->dateFormatter->format($run->created, 'medium'),
+        '#file' => $run->source_filename,
+        '#backend' => $this->backendRegistry->labelFor((string) $run->backend),
+        '#status' => $run->status,
       ],
       'downloads' => [
         '#type' => 'container',
@@ -145,29 +148,18 @@ class AiTesterController extends ControllerBase {
         ? $this->t('cited')
         : $this->t('retrieved, not cited');
 
+      $has_url = $url !== NULL && $url !== '';
+
       // The title links to its source when a URL is present; the cited flag
-      // lets a tester evaluate citation quality at a glance.
-      $item = [
-        'link' => $this->citationLink($title, $url),
-        'flag' => ['#markup' => ' — <em>' . $flag . '</em>'],
+      // lets a tester evaluate citation quality at a glance. The line's markup
+      // lives in the template — this decides only what goes on it.
+      $items[] = [
+        '#theme' => 'ys_ai_tester_citation',
+        '#link' => $this->citationLink($title, $url),
+        '#flag' => $flag,
+        '#only_here' => $has_url && isset($only_here_urls[$url]),
+        '#url' => $has_url ? $url : '',
       ];
-
-      if ($url !== NULL && $url !== '' && isset($only_here_urls[$url])) {
-        $item['only_here'] = [
-          '#type' => 'html_tag',
-          '#tag' => 'span',
-          '#attributes' => [
-            'class' => ['ys-compare-badge', 'ys-compare-badge--only_here'],
-          ],
-          '#value' => $this->t('only in this run'),
-        ];
-      }
-
-      $item['url'] = ($url !== NULL && $url !== '')
-        ? ['#markup' => '<br><small>' . Html::escape($url) . '</small>']
-        : [];
-
-      $items[] = $item;
     }
 
     return [
@@ -239,10 +231,20 @@ class AiTesterController extends ControllerBase {
 
     return [
       '#type' => 'link',
-      '#title' => Markup::create(
-        Html::escape($title)
-        . '<span class="visually-hidden"> ' . $this->t('(opens in new window)') . '</span>'
-      ),
+      // A render array, not a markup string: the link generator renders it,
+      // so the escaping and the <span> are both core's job rather than this
+      // method's.
+      '#title' => [
+        'text' => ['#plain_text' => $title],
+        'cue' => [
+          '#type' => 'html_tag',
+          '#tag' => 'span',
+          '#attributes' => ['class' => ['visually-hidden']],
+          // Leading space so the cue does not run into the title when a
+          // screen reader reads the link name as one string.
+          '#value' => ' ' . $this->t('(opens in new window)'),
+        ],
+      ],
       '#url' => Url::fromUri($url),
       '#attributes' => [
         'target' => '_blank',
@@ -252,26 +254,10 @@ class AiTesterController extends ControllerBase {
   }
 
   /**
-   * Returns run results as a downloadable JSON file.
+   * Returns a run's results as a downloadable JSON file.
    */
   public function downloadJson(int $run_id): JsonResponse {
-    $this->loadRunOr404($run_id, 'id');
-
-    $results = $this->loadResultRows($run_id);
-
-    $output = [];
-    foreach ($results as $result) {
-      $output[] = [
-        'question' => $result->question,
-        'answer' => $result->answer,
-        // Exported so a failed question is not read as an assistant that
-        // answered nothing — the export is the artefact people quote.
-        'error' => (string) ($result->error ?? ''),
-        'citations' => $this->decodeCitations($result->citations),
-      ];
-    }
-
-    $response = new JsonResponse($output);
+    $response = new JsonResponse($this->runExporter->runJson($run_id));
     $response->headers->set('Content-Disposition', 'attachment; filename="run-' . $run_id . '.json"');
     return $response;
   }
@@ -282,121 +268,49 @@ class AiTesterController extends ControllerBase {
    * One question per line, ready to edit and re-upload as a new run.
    */
   public function downloadQuestions(int $run_id): Response {
-    $run = $this->loadRunOr404($run_id, 'source_content');
-
-    $response = new Response($run->source_content);
-    $response->headers->set('Content-Type', 'text/plain; charset=utf-8');
-    $response->headers->set('X-Content-Type-Options', 'nosniff');
-    $response->headers->set('Content-Disposition', 'attachment; filename="run-' . $run_id . '-questions.txt"');
-    return $response;
+    return $this->fileResponse(
+      $this->runExporter->questions($run_id),
+      'text/plain; charset=utf-8',
+      'run-' . $run_id . '-questions.txt'
+    );
   }
 
   /**
    * Returns the run's results as a downloadable, spreadsheet-friendly CSV.
    */
   public function downloadCsv(int $run_id): Response {
-    $this->loadRunOr404($run_id, 'id');
-
-    $results = $this->loadResultRows($run_id);
-
-    $rows = [];
-    foreach ($results as $result) {
-      // Drop URL-less citations from the Sources column: they carry no URL to
-      // list, matching how the comparison CSV omits them.
-      $sources = array_filter(
-        $this->decodeCitations($result->citations),
-        static fn (array $citation): bool => !empty($citation['url']),
-      );
-      $rows[] = [
-        'question' => (string) $result->question,
-        'answer' => (string) $result->answer,
-        'error' => (string) ($result->error ?? ''),
-        'sources' => $this->joinSourceUrls($sources),
-      ];
-    }
-
-    $response = new Response($this->buildResultsCsv($rows));
-    $response->headers->set('Content-Type', 'text/csv; charset=utf-8');
-    $response->headers->set('X-Content-Type-Options', 'nosniff');
-    $response->headers->set('Content-Disposition', 'attachment; filename="run-' . $run_id . '.csv"');
-    return $response;
-  }
-
-  /**
-   * Loads a run's result rows in delta order.
-   *
-   * @param int $run_id
-   *   The run id.
-   *
-   * @return object[]
-   *   Result rows, each with question, answer, and citations properties.
-   */
-  protected function loadResultRows(int $run_id): array {
-    return $this->database->query(
-      'SELECT question, answer, citations, error FROM {ys_ai_tester_result}
-       WHERE run_id = :run_id ORDER BY delta ASC',
-      [':run_id' => $run_id]
-    )->fetchAll();
-  }
-
-  /**
-   * Builds the run-detail results CSV body.
-   *
-   * Prepends a UTF-8 BOM so Excel renders non-ASCII characters correctly, and
-   * runs every cell through csvCell() to neutralize spreadsheet formula
-   * injection. Multiline answers are quoted by fputcsv and stay in one cell.
-   *
-   * @param array $rows
-   *   Result rows, each with 'question', 'answer', 'error', and 'sources'
-   *   strings.
-   *
-   * @return string
-   *   The CSV file body, including the leading BOM.
-   */
-  protected function buildResultsCsv(array $rows): string {
-    return $this->buildCsv(
-      ['Question', 'Answer', 'Error', 'Sources'],
-      array_map(static fn (array $row): array => [
-        $row['question'],
-        $row['answer'],
-        $row['error'] ?? '',
-        $row['sources'],
-      ], $rows)
+    return $this->fileResponse(
+      $this->runExporter->runCsv($run_id),
+      'text/csv; charset=utf-8',
+      'run-' . $run_id . '.csv'
     );
   }
 
   /**
-   * Writes a header and rows into a hardened, Excel-safe CSV body.
+   * Wraps an exported body in a download response.
    *
-   * Prepends a UTF-8 BOM so Excel renders non-ASCII characters correctly rather
-   * than as mojibake, and runs every cell through csvCell() to neutralize
-   * spreadsheet formula injection. Multiline answers are quoted by fputcsv and
-   * stay in one cell.
+   * X-Content-Type-Options is set on every file served through here: without
+   * it a browser may sniff the body and treat it as something other than what
+   * the Content-Type says. The two JSON routes build their own JsonResponse
+   * and so do not carry it — a pre-existing gap, left alone because adding the
+   * header is a behaviour change rather than part of this extraction.
    *
-   * Both CSV exports go through here. They previously each carried their own
-   * copy of this loop, and had already drifted: the comparison export was
-   * missing the BOM, so an answer containing a curly quote or an em dash -
-   * which assistant answers routinely do - opened as mojibake in Excel.
+   * @param string $body
+   *   The already-built file body.
+   * @param string $content_type
+   *   The Content-Type header value.
+   * @param string $filename
+   *   The filename offered in the Content-Disposition header.
    *
-   * @param array $header
-   *   The header row, written verbatim; these are code-controlled literals.
-   * @param array $rows
-   *   Rows of already-ordered cell values.
-   *
-   * @return string
-   *   The CSV file body, including the leading BOM.
+   * @return \Symfony\Component\HttpFoundation\Response
+   *   The download response.
    */
-  protected function buildCsv(array $header, array $rows): string {
-    $handle = fopen('php://temp', 'r+');
-    fputcsv($handle, $header);
-    foreach ($rows as $row) {
-      fputcsv($handle, array_map([$this, 'csvCell'], $row));
-    }
-    rewind($handle);
-    $csv = stream_get_contents($handle);
-    fclose($handle);
-
-    return "\xEF\xBB\xBF" . $csv;
+  protected function fileResponse(string $body, string $content_type, string $filename): Response {
+    $response = new Response($body);
+    $response->headers->set('Content-Type', $content_type);
+    $response->headers->set('X-Content-Type-Options', 'nosniff');
+    $response->headers->set('Content-Disposition', 'attachment; filename="' . $filename . '"');
+    return $response;
   }
 
   /**
@@ -492,26 +406,33 @@ class AiTesterController extends ControllerBase {
   }
 
   /**
-   * Wraps already-safe inner markup in a tagged element.
+   * Builds a classed element around already-safe inner markup.
    *
-   * Collapses the comparison view's repeated "<tag class>…</tag>" #markup
-   * fragments. Callers must pass inner content that is already safe (a t()
-   * string, an Html::escape() result, or the diff's own escaped markup); the
-   * class is built from internal, non-user values.
+   * Collapses the comparison view's repeated "<tag class>…</tag>" elements.
+   * Callers must pass inner content that is already safe (a t() string, an
+   * Html::escape() result, or the diff's own escaped markup) — html_tag passes
+   * MarkupInterface through untouched, which is the whole point here, so
+   * anything handed in unescaped would reach the page unescaped.
    *
    * @param string $class
-   *   The element class attribute.
+   *   The element's class attribute, space-separated.
    * @param string|\Drupal\Component\Render\MarkupInterface $inner
    *   The already-safe inner markup.
    * @param string $tag
    *   The HTML tag name.
    *
    * @return array
-   *   A #markup render element.
+   *   An html_tag render element.
    */
   protected function wrap(string $class, string|MarkupInterface $inner, string $tag = 'div'): array {
     return [
-      '#markup' => Markup::create('<' . $tag . ' class="' . $class . '">' . $inner . '</' . $tag . '>'),
+      '#type' => 'html_tag',
+      '#tag' => $tag,
+      '#attributes' => ['class' => explode(' ', $class)],
+      // Marked safe rather than left to html_tag's Xss::filterAdmin: the diff
+      // accumulator's <del>/<ins> runs and an already-escaped answer must
+      // reach the page exactly as built, not re-filtered.
+      '#value' => $inner instanceof MarkupInterface ? $inner : Markup::create($inner),
     ];
   }
 
@@ -524,26 +445,24 @@ class AiTesterController extends ControllerBase {
    *   The run meta: id, created, source_filename, status, backend, host.
    *
    * @return array
-   *   A #markup render element.
+   *   A ys_ai_tester_compare_run_meta render element.
    */
   protected function runMetaBlock(string|MarkupInterface $label, array $meta): array {
     $host = (string) ($meta['host'] ?? '');
 
-    return $this->wrap('ys-compare-meta__run', $this->t(
-      '<strong>@label — Run #@id</strong><br>@date<br>File: @file<br>Assistant: @backend<br>Status: @status<br>Host: @host',
-      [
-        '@label' => $label,
-        '@id' => $meta['id'],
-        '@date' => $this->dateFormatter->format($meta['created'], 'medium'),
-        '@file' => $meta['source_filename'],
-        '@backend' => $this->backendRegistry->labelFor($meta['backend']),
-        '@status' => $meta['status'],
-        // Stated on every comparison, not only the cross-host ones: citation
-        // matching ignores this host, so a reader has to be able to see whether
-        // the two sides were answered on the same site at all.
-        '@host' => $host !== '' ? $host : $this->t('unknown (no citation named one)'),
-      ]
-    ));
+    return [
+      '#theme' => 'ys_ai_tester_compare_run_meta',
+      '#label' => $label,
+      '#id' => $meta['id'],
+      '#date' => $this->dateFormatter->format($meta['created'], 'medium'),
+      '#file' => $meta['source_filename'],
+      '#backend' => $this->backendRegistry->labelFor($meta['backend']),
+      '#status' => $meta['status'],
+      // Stated on every comparison, not only the cross-host ones: citation
+      // matching ignores this host, so a reader has to be able to see whether
+      // the two sides were answered on the same site at all.
+      '#host' => $host !== '' ? $host : $this->t('unknown (no citation named one)'),
+    ];
   }
 
   /**
@@ -1106,20 +1025,9 @@ class AiTesterController extends ControllerBase {
 
   /**
    * Returns the run comparison as a downloadable JSON file.
-   *
-   * This file doubles as the analysis package a reviewer hands to an LLM, so
-   * its size is a token budget rather than a detail. See withoutSourceText()
-   * for what is left out of it and why.
    */
   public function downloadComparisonJson(int $run_a, int $run_b): JsonResponse {
-    $data = $this->runComparator->compare($run_a, $run_b);
-
-    $response = new JsonResponse([
-      'run_a' => $data['run_a'],
-      'run_b' => $data['run_b'],
-      'summary' => $data['summary'],
-      'pairs' => array_map([$this, 'withoutSourceText'], $data['pairs']),
-    ]);
+    $response = new JsonResponse($this->runExporter->comparisonJson($run_a, $run_b));
     $response->headers->set(
       'Content-Disposition',
       'attachment; filename="compare-' . $run_a . '-' . $run_b . '.json"'
@@ -1128,145 +1036,14 @@ class AiTesterController extends ControllerBase {
   }
 
   /**
-   * Strips every retrieved source's full text from one comparison pair.
-   *
-   * CitationFormatter::format() stores both 'content' — the entire retrieved
-   * chunk — and 'excerpt', that same text's first 300 characters. Exporting
-   * both made the file grow with however long the indexed pages happened to be,
-   * multiplied by up to top_k (default 10) sources per question per side, while
-   * adding no category of information the excerpt does not already carry. That
-   * is what put the download beyond what an LLM will accept in one go.
-   *
-   * Dropping 'content' bounds every source at its excerpt, so the export scales
-   * with the number of questions instead of the length of the site's pages.
-   * Nothing reads the field: the compare view never rendered it and the CSV
-   * never emitted it. The stored citation keeps it, so this narrows the export
-   * only.
-   *
-   * @param array $pair
-   *   One comparison pair from the run comparator.
-   *
-   * @return array
-   *   The pair with 'content' removed from every citation on both sides.
-   */
-  protected function withoutSourceText(array $pair): array {
-    foreach (['a', 'b'] as $key) {
-      // A question asked in only one run has a null side, which must stay null:
-      // the prompt reads an absent side as "not asked in this run".
-      if (!isset($pair[$key]['citations'])) {
-        continue;
-      }
-      foreach (array_keys($pair[$key]['citations']) as $index) {
-        unset($pair[$key]['citations'][$index]['content']);
-      }
-    }
-    return $pair;
-  }
-
-  /**
    * Returns the run comparison as a downloadable CSV file.
    */
   public function downloadComparisonCsv(int $run_a, int $run_b): Response {
-    $data = $this->runComparator->compare($run_a, $run_b);
-
-    $rows = [];
-    foreach ($data['pairs'] as $pair) {
-      $a = $pair['a'];
-      $b = $pair['b'];
-      $overlap = $pair['citation_overlap'];
-      $rows[] = [
-        $pair['question'],
-        $pair['status'],
-        $a['answer'] ?? '',
-        $b['answer'] ?? '',
-        (string) ($a['error'] ?? ''),
-        (string) ($b['error'] ?? ''),
-        (string) ($a['cited'] ?? ''),
-        (string) ($b['cited'] ?? ''),
-        (string) ($a['len'] ?? ''),
-        (string) ($b['len'] ?? ''),
-        $this->joinSourceUrls($overlap['both']),
-        $this->joinSourceUrls($overlap['only_a']),
-        $this->joinSourceUrls($overlap['only_b']),
-      ];
-    }
-
-    $response = new Response($this->buildCsv([
-      'question', 'status', 'answer_a', 'answer_b',
-      'error_a', 'error_b',
-      'cited_a', 'cited_b', 'len_a', 'len_b',
-      'shared_sources', 'only_a_sources', 'only_b_sources',
-    ], $rows));
-    $response->headers->set('Content-Type', 'text/csv; charset=utf-8');
-    // Matches the other two file responses on this controller; without it a
-    // browser may sniff the body and treat it as something other than CSV.
-    $response->headers->set('X-Content-Type-Options', 'nosniff');
-    $response->headers->set(
-      'Content-Disposition',
-      'attachment; filename="compare-' . $run_a . '-' . $run_b . '.csv"'
+    return $this->fileResponse(
+      $this->runExporter->comparisonCsv($run_a, $run_b),
+      'text/csv; charset=utf-8',
+      'compare-' . $run_a . '-' . $run_b . '.csv'
     );
-    return $response;
-  }
-
-  /**
-   * Joins citation URLs for a CSV cell.
-   */
-  protected function joinSourceUrls(array $sources): string {
-    return implode(' | ', array_map(static fn (array $s): string => (string) $s['url'], $sources));
-  }
-
-  /**
-   * Neutralizes spreadsheet formula injection in a CSV cell.
-   *
-   * Cells beginning with =, +, -, @ can be executed as formulas by a
-   * spreadsheet, including when the trigger hides behind leading whitespace or
-   * control characters. Prefixing a single quote forces the cell to be text.
-   */
-  protected function csvCell(string $value): string {
-    if ($value === '') {
-      return $value;
-    }
-
-    $trimmed = ltrim($value, " \t\r\n");
-    if (in_array($value[0], ["\t", "\r", "\n"], TRUE)
-      || ($trimmed !== '' && in_array($trimmed[0], ['=', '+', '-', '@'], TRUE))) {
-      return "'" . $value;
-    }
-    return $value;
-  }
-
-  /**
-   * Loads a tester run row by id, or throws a 404.
-   *
-   * @param int $run_id
-   *   The run id.
-   * @param string $fields
-   *   The columns to select (a code-controlled field list, not user input).
-   *
-   * @return object
-   *   The run row.
-   *
-   * @throws \Symfony\Component\HttpKernel\Exception\NotFoundHttpException
-   *   When no run with the given id exists.
-   */
-  private function loadRunOr404(int $run_id, string $fields): object {
-    $run = $this->database->query(
-      'SELECT ' . $fields . ' FROM {ys_ai_tester_run} WHERE id = :id',
-      [':id' => $run_id]
-    )->fetchObject();
-
-    if (!$run) {
-      throw new NotFoundHttpException();
-    }
-
-    return $run;
-  }
-
-  /**
-   * Decodes a JSON-encoded citations string to an array.
-   */
-  private function decodeCitations(?string $citations): array {
-    return json_decode($citations ?? '', TRUE) ?? [];
   }
 
 }

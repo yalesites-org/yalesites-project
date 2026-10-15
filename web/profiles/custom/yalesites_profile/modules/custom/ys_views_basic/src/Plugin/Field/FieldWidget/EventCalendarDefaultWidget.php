@@ -2,20 +2,19 @@
 
 namespace Drupal\ys_views_basic\Plugin\Field\FieldWidget;
 
+use Drupal\Core\Field\Attribute\FieldWidget;
 use Drupal\Core\Field\FieldItemListInterface;
 use Drupal\Core\Form\FormStateInterface;
+use Drupal\Core\StringTranslation\TranslatableMarkup;
 
 /**
  * Plugin implementation of the 'event_calendar_default' widget.
- *
- * @FieldWidget(
- *   id = "event_calendar_default_widget",
- *   label = @Translation("Event calendar default widget"),
- *   field_types = {
- *     "event_calendar_basic_params"
- *   }
- * )
  */
+#[FieldWidget(
+  id: 'event_calendar_default_widget',
+  label: new TranslatableMarkup('Event calendar default widget'),
+  field_types: ['event_calendar_basic_params'],
+)]
 class EventCalendarDefaultWidget extends ViewsBasicDefaultWidget {
 
   /**

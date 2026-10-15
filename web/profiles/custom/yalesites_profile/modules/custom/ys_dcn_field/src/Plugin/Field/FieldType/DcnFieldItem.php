@@ -2,24 +2,24 @@
 
 namespace Drupal\ys_dcn_field\Plugin\Field\FieldType;
 
+use Drupal\Core\Field\Attribute\FieldType;
 use Drupal\Core\Field\FieldItemBase;
 use Drupal\Core\Field\FieldStorageDefinitionInterface;
 use Drupal\Core\Form\FormStateInterface;
+use Drupal\Core\StringTranslation\TranslatableMarkup;
 use Drupal\Core\TypedData\DataDefinition;
 use Drupal\Core\TypedData\DataReferenceTargetDefinition;
 
 /**
  * Plugin implementation of the 'dcn_field' field type.
- *
- * @FieldType(
- *   id = "dcn_field",
- *   label = @Translation("Document Control Number"),
- *   description = @Translation("Stores a DCN type (taxonomy reference) and identifier (text)."),
- *   default_widget = "dcn_field_default",
- *   default_formatter = "dcn_field_default",
- *   category = @Translation("Reference"),
- * )
  */
+#[FieldType(
+  id: 'dcn_field',
+  label: new TranslatableMarkup('Document Control Number'),
+  description: new TranslatableMarkup('Stores a DCN type (taxonomy reference) and identifier (text).'),
+  default_widget: 'dcn_field_default',
+  default_formatter: 'dcn_field_default',
+)]
 class DcnFieldItem extends FieldItemBase {
 
   /**
