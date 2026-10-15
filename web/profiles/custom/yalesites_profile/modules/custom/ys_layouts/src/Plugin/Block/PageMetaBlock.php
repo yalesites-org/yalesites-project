@@ -2,66 +2,43 @@
 
 namespace Drupal\ys_layouts\Plugin\Block;
 
+use Drupal\Core\Block\Attribute\Block;
 use Drupal\Core\Block\BlockBase;
 use Drupal\Core\Controller\TitleResolver;
 use Drupal\Core\Form\FormStateInterface;
 use Drupal\Core\Plugin\ContainerFactoryPluginInterface;
+use Drupal\Core\Plugin\Context\ContextDefinition;
 use Drupal\Core\Routing\RouteMatchInterface;
+use Drupal\Core\StringTranslation\TranslatableMarkup;
 use Drupal\node\NodeInterface;
+use Drupal\ys_themes\ColorTokenResolver;
+use Drupal\ys_core\Plugin\Block\LayoutBuilderEntityContextTrait;
+use Drupal\ys_layouts\Plugin\Layout\YSLayoutOptions;
 use Symfony\Component\DependencyInjection\ContainerInterface;
 use Symfony\Component\HttpFoundation\RequestStack;
 
 /**
  * Block for page meta data that appears above pages.
  *
- * The context slot is named "layout_builder.entity" rather than given a short
- * local name such as "entity", and that name is load-bearing.
- * \Drupal\Core\Plugin\Context\ContextHandler::applyContextMapping() resolves a
- * slot against the plugin's stored context_mapping and falls back to the
- * slot's OWN name when the mapping has no entry for it, so for an unmapped
- * slot the name decides which of Layout Builder's contexts it picks up.
- *
- * Layout Builder offers the rendered entity under different keys depending on
- * the path. LayoutBuilderEntityViewDisplay supplies both "entity" and
- * "layout_builder.entity" while rendering, but in the Layout Builder preview
- * OverridesSectionStorage::getContextsDuringPreview() copies "entity" to
- * "layout_builder.entity" and then unsets "entity", and
- * DefaultsSectionStorage::getContextsDuringPreview() only ever sets
- * "layout_builder.entity". That key is therefore the only one present on every
- * path, so an unmapped slot named after it resolves everywhere.
- *
- * This is what avoids a data update, which is the reason this approach was
- * previously passed over. Core's own field blocks use a slot named "entity"
- * plus a stored context_mapping of {entity: layout_builder.entity}, written at
- * placement time by LayoutBuilderEntityViewDisplay::setComponent() precisely
- * because a bare "entity" slot would not resolve during preview. Every page
- * that already carries this block stored an EMPTY context_mapping, so taking
- * that route would mean writing the mapping into the layout_builder__layout
- * field of every node with an overridden layout on every site, and any node
- * the update missed would silently keep the bug.
- *
- * @Block(
- *   id = "page_meta_block",
- *   admin_label = @Translation("Page Meta Block"),
- *   category = @Translation("YaleSites Layouts"),
- *   context_definitions = {
- *     "layout_builder.entity" = @ContextDefinition("entity",
- *       label = @Translation("Entity being viewed"),
- *       required = FALSE
- *     )
- *   }
- * )
+ * The "layout_builder.entity" context slot and its name are explained on
+ * \Drupal\ys_core\Plugin\Block\LayoutBuilderEntityContextTrait. An
+ * attribute cannot be inherited from a trait, so the slot is declared here.
  */
+#[Block(
+  id: 'page_meta_block',
+  admin_label: new TranslatableMarkup('Page Meta Block'),
+  category: new TranslatableMarkup('YaleSites Layouts'),
+  context_definitions: [
+    'layout_builder.entity' => new ContextDefinition(
+      data_type: 'entity',
+      label: new TranslatableMarkup('Entity being viewed'),
+      required: FALSE,
+    ),
+  ],
+)]
 class PageMetaBlock extends BlockBase implements ContainerFactoryPluginInterface {
 
-  /**
-   * Name of the context slot holding the entity Layout Builder is rendering.
-   *
-   * Matches the context ID Layout Builder publishes, so that an empty stored
-   * context_mapping still resolves. Keep in sync with the plugin annotation,
-   * which cannot reference this constant.
-   */
-  const ENTITY_CONTEXT = 'layout_builder.entity';
+  use LayoutBuilderEntityContextTrait;
 
   /**
    * The current route match.
@@ -85,6 +62,13 @@ class PageMetaBlock extends BlockBase implements ContainerFactoryPluginInterface
   protected $requestStack;
 
   /**
+   * The color token resolver.
+   *
+   * @var \Drupal\ys_themes\ColorTokenResolver
+   */
+  protected ColorTokenResolver $colorTokenResolver;
+
+  /**
    * Constructs a new PageMetaBlock object.
    *
    * @param array $configuration
@@ -99,12 +83,15 @@ class PageMetaBlock extends BlockBase implements ContainerFactoryPluginInterface
    *   The title resolver.
    * @param \Symfony\Component\HttpFoundation\RequestStack $request_stack
    *   The request stack.
+   * @param \Drupal\ys_themes\ColorTokenResolver $color_token_resolver
+   *   The color token resolver, used for the section theme swatch picker.
    */
-  public function __construct(array $configuration, $plugin_id, $plugin_definition, RouteMatchInterface $route_match, TitleResolver $title_resolver, RequestStack $request_stack) {
+  public function __construct(array $configuration, $plugin_id, $plugin_definition, RouteMatchInterface $route_match, TitleResolver $title_resolver, RequestStack $request_stack, ColorTokenResolver $color_token_resolver) {
     parent::__construct($configuration, $plugin_id, $plugin_definition);
     $this->routeMatch = $route_match;
     $this->titleResolver = $title_resolver;
     $this->requestStack = $request_stack;
+    $this->colorTokenResolver = $color_token_resolver;
   }
 
   /**
@@ -118,6 +105,7 @@ class PageMetaBlock extends BlockBase implements ContainerFactoryPluginInterface
       $container->get('current_route_match'),
       $container->get('title_resolver'),
       $container->get('request_stack'),
+      $container->get('ys_themes.color_token_resolver'),
     );
   }
 
@@ -169,12 +157,8 @@ class PageMetaBlock extends BlockBase implements ContainerFactoryPluginInterface
    *   The page title, or an empty string when no source resolves one.
    */
   protected function getPageTitle() {
-    // Read through getContexts() rather than getContextValue() so a plugin
-    // definition cached before this slot existed cannot throw during the
-    // window between a code deploy and the cache rebuild that follows it.
-    $context = $this->getContexts()[self::ENTITY_CONTEXT] ?? NULL;
-    $entity = $context ? $context->getContextValue() : NULL;
-    if ($entity instanceof NodeInterface) {
+    $entity = $this->getRenderedEntityNode();
+    if ($entity) {
       return $entity->label();
     }
 
@@ -194,31 +178,6 @@ class PageMetaBlock extends BlockBase implements ContainerFactoryPluginInterface
     }
 
     return '';
-  }
-
-  /**
-   * {@inheritdoc}
-   *
-   * Removes the context-assignment select that BlockBase adds for any plugin
-   * declaring a context. Editors open this form routinely to set Title
-   * Display, and the Page Meta section is not locked against block update, so
-   * the select would be visible to them -- listing raw context IDs on a form
-   * the platform deliberately keeps plain. There is also nothing to choose:
-   * this block always wants the entity Layout Builder is rendering, and
-   * picking one of the route-derived entity contexts instead would store a
-   * context_mapping that reinstates the very bug this resolves, on that page
-   * only and invisibly. Leaving the mapping empty also keeps this change
-   * revertible: a stored mapping naming a slot a reverted plugin no longer
-   * declares makes applyContextMapping() throw.
-   *
-   * ConfigureBlockFormBase::submitForm() reads context_mapping with a default
-   * of [], so removing the element stores the empty mapping unchanged.
-   */
-  public function buildConfigurationForm(array $form, FormStateInterface $form_state) {
-    $form = parent::buildConfigurationForm($form, $form_state);
-    unset($form['context_mapping']);
-
-    return $form;
   }
 
   /**
@@ -253,7 +212,29 @@ class PageMetaBlock extends BlockBase implements ContainerFactoryPluginInterface
       '#description' => $this->t('Breadcrumbs help visitors understand where a page sits within the site. They are shown by default.'),
     ];
 
+    // Same options and swatch picker as a One column section's Section Theme.
+    $form['section_theme'] = YSLayoutOptions::sectionThemeElement($config['section_theme'] ?? 'default') + [
+      '#after_build' => [
+        [$this, 'processColorPicker'],
+      ],
+    ];
+
     return $form;
+  }
+
+  /**
+   * After build callback to add the color picker palette UI.
+   *
+   * Mirrors YSLayoutOptions::processColorPicker().
+   */
+  public function processColorPicker(array $element, FormStateInterface $form_state) {
+    return $this->colorTokenResolver->processColorPicker(
+      $element,
+      $form_state,
+      $form_state->getCompleteForm(),
+      'layout_section',
+      'ys_layout_options',
+    );
   }
 
   /**
@@ -263,6 +244,7 @@ class PageMetaBlock extends BlockBase implements ContainerFactoryPluginInterface
     parent::blockSubmit($form, $form_state);
     $this->configuration['page_title_display'] = $form_state->getValue('page_title_display');
     $this->configuration['breadcrumb_display'] = $form_state->getValue('breadcrumb_display');
+    $this->configuration['section_theme'] = $form_state->getValue('section_theme');
   }
 
 }

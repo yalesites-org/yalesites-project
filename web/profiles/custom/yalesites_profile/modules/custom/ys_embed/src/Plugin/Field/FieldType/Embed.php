@@ -2,6 +2,7 @@
 
 namespace Drupal\ys_embed\Plugin\Field\FieldType;
 
+use Drupal\Core\Field\Attribute\FieldType;
 use Drupal\Core\Field\FieldItemBase;
 use Drupal\Core\Field\FieldStorageDefinitionInterface;
 use Drupal\Core\StringTranslation\TranslatableMarkup;
@@ -14,15 +15,14 @@ use Drupal\Core\TypedData\DataDefinition;
  * field defines an overloaded database table so that future embed types have a
  * space for storing a variety of values. Some embed sources only require a URL
  * while others require a series of parameters.
- *
- * @FieldType(
- *   id = "embed",
- *   label = @Translation("Embed"),
- *   description = @Translation("Embed codes and metadata."),
- *   default_widget = "embed_default",
- *   default_formatter = "embed_formatter"
- * )
  */
+#[FieldType(
+  id: 'embed',
+  label: new TranslatableMarkup('Embed'),
+  description: new TranslatableMarkup('Embed codes and metadata.'),
+  default_widget: 'embed_default',
+  default_formatter: 'embed_formatter',
+)]
 class Embed extends FieldItemBase {
 
   /**
