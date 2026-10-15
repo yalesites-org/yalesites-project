@@ -2,21 +2,22 @@
 
 namespace Drupal\ys_core\Plugin\EntityReferenceSelection;
 
-use Drupal\Core\Entity\Plugin\EntityReferenceSelection\DefaultSelection;
+use Drupal\Core\Entity\Attribute\EntityReferenceSelection;
 use Drupal\Core\Entity\EntityInterface;
 use Drupal\Core\Entity\FieldableEntityInterface;
+use Drupal\Core\Entity\Plugin\EntityReferenceSelection\DefaultSelection;
+use Drupal\Core\StringTranslation\TranslatableMarkup;
 
 /**
  * Custom entity reference selection handler for CAS indicator and content type.
- *
- * @EntityReferenceSelection(
- *   id = "cas_aware",
- *   label = @Translation("CAS Aware Selection"),
- *   entity_types = {"node"},
- *   group = "cas_aware",
- *   weight = 1
- * )
  */
+#[EntityReferenceSelection(
+  id: 'cas_aware',
+  label: new TranslatableMarkup('CAS Aware Selection'),
+  entity_types: ['node'],
+  group: 'cas_aware',
+  weight: 1,
+)]
 class CasAwareSelection extends DefaultSelection {
 
   /**

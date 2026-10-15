@@ -23,6 +23,7 @@ dependencies:
     - block_content.type.inline_message
     - block_content.type.link_grid
     - block_content.type.media_grid
+    - block_content.type.office_hours
     - block_content.type.post_list
     - block_content.type.pull_quote
     - block_content.type.quick_links
@@ -171,6 +172,7 @@ permissions:
   - 'create media'
   - 'create media_grid block content'
   - 'create new books'
+  - 'create office_hours block content'
   - 'create page content'
   - 'create post content'
   - 'create post_list block content'
@@ -254,6 +256,8 @@ permissions:
   - 'delete any media'
   - 'delete any media_grid block content'
   - 'delete any media_grid block content revisions'
+  - 'delete any office_hours block content'
+  - 'delete any office_hours block content revisions'
   - 'delete any page content'
   - 'delete any post content'
   - 'delete any post_list block content'
@@ -342,6 +346,7 @@ permissions:
   - 'edit any inline_message block content'
   - 'edit any link_grid block content'
   - 'edit any media_grid block content'
+  - 'edit any office_hours block content'
   - 'edit any page content'
   - 'edit any post content'
   - 'edit any post_list block content'
@@ -419,6 +424,7 @@ permissions:
   - 'revert any inline_message block content revisions'
   - 'revert any link_grid block content revisions'
   - 'revert any media_grid block content revisions'
+  - 'revert any office_hours block content revisions'
   - 'revert any post_list block content revisions'
   - 'revert any pull_quote block content revisions'
   - 'revert any quick_links block content revisions'
@@ -476,6 +482,7 @@ permissions:
   - 'view any inline_message block content history'
   - 'view any link_grid block content history'
   - 'view any media_grid block content history'
+  - 'view any office_hours block content history'
   - 'view any post_list block content history'
   - 'view any pull_quote block content history'
   - 'view any quick_links block content history'

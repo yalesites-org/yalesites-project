@@ -4,6 +4,7 @@ namespace Drupal\ys_views_content_resources\Plugin\views\filter;
 
 use Drupal\Core\Cache\CacheBackendInterface;
 use Drupal\Core\Database\Connection;
+use Drupal\views\Attribute\ViewsFilter;
 use Drupal\views\Plugin\views\display\DisplayPluginBase;
 use Drupal\views\Plugin\views\filter\InOperator;
 use Drupal\views\ViewExecutable;
@@ -13,9 +14,8 @@ use Symfony\Component\DependencyInjection\ContainerInterface;
  * Filter resources by year.
  *
  * @ingroup views_filter_handlers
- *
- * @ViewsFilter("resource_year_filter")
  */
+#[ViewsFilter('resource_year_filter')]
 class ResourceYearFilter extends InOperator {
 
   /**

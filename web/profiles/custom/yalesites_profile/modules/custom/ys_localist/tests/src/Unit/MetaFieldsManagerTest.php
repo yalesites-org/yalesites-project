@@ -3,8 +3,10 @@
 namespace Drupal\Tests\ys_localist\Unit;
 
 use Drupal\Core\Datetime\DateFormatter;
+use Drupal\Core\Entity\EntityStorageInterface;
 use Drupal\Core\Entity\EntityTypeManager;
 use Drupal\Tests\UnitTestCase;
+use Drupal\taxonomy\Entity\Term;
 use Drupal\ys_localist\LocalistManager;
 use Drupal\ys_localist\MetaFieldsManager;
 
@@ -270,6 +272,117 @@ class MetaFieldsManagerTest extends UnitTestCase {
     $expected = "<p>Yale\x92s event</p>\n\n<p>Second paragraph.</p>";
 
     $this->assertSame($expected, $this->metaFieldsManager->stripEmptyParagraphs($invalidUtf8));
+  }
+
+  /**
+   * A reference item with no target ID is skipped, not loaded.
+   *
+   * An entity-reference field can hold an item whose target_id is NULL.
+   * Passing that to EntityStorageBase::load() trips its "Cannot load the ...
+   * entity with NULL ID" assertion and takes the whole page down with a 500.
+   *
+   * @covers ::getFilterValues
+   */
+  public function testFilterValuesSkipReferenceItemsWithNoTargetId(): void {
+    $storage = $this->createMock(EntityStorageInterface::class);
+    $storage->expects($this->never())->method('load');
+    $entityTypeManager = $this->createMock(EntityTypeManager::class);
+    $entityTypeManager->method('getStorage')->with('taxonomy_term')->willReturn($storage);
+
+    $manager = new MetaFieldsManager(
+      $this->createMock(DateFormatter::class),
+      $entityTypeManager,
+      $this->createMock(LocalistManager::class),
+    );
+
+    $node = new \stdClass();
+    $node->field_event_topics = new class {
+
+      /**
+       * Mimics a field item list holding one empty reference item.
+       */
+      public function getValue(): array {
+        return [['target_id' => NULL]];
+      }
+
+    };
+
+    $reflection = new \ReflectionClass($manager);
+    $method = $reflection->getMethod('getFilterValues');
+    $method->setAccessible(TRUE);
+
+    $this->assertSame([], $method->invoke($manager, $node, 'field_event_topics'));
+  }
+
+  /**
+   * Resolving a taxonomy term name tolerates a missing term.
+   *
+   * The field_event_source reference can carry a NULL target_id, and a term
+   * that has been deleted returns NULL from load(). Either one used to be
+   * dereferenced straight into ->getName(), so deleting a referenced term
+   * returned a 500 on every event page using it.
+   *
+   * @covers ::getTermName
+   *
+   * @dataProvider providerUnresolvableTerms
+   */
+  public function testTermNameIsEmptyWhenTermCannotBeResolved($termId, $loaded): void {
+    $storage = $this->createMock(EntityStorageInterface::class);
+    $storage->method('load')->willReturn($loaded);
+    $entityTypeManager = $this->createMock(EntityTypeManager::class);
+    $entityTypeManager->method('getStorage')->with('taxonomy_term')->willReturn($storage);
+
+    $manager = new MetaFieldsManager(
+      $this->createMock(DateFormatter::class),
+      $entityTypeManager,
+      $this->createMock(LocalistManager::class),
+    );
+
+    $reflection = new \ReflectionClass($manager);
+    $method = $reflection->getMethod('getTermName');
+    $method->setAccessible(TRUE);
+
+    $this->assertSame('', $method->invoke($manager, $termId));
+  }
+
+  /**
+   * Data provider of term IDs that resolve to no term.
+   *
+   * @return array<string, array{mixed, mixed}>
+   *   Test cases of a term ID and what load() returns for it.
+   */
+  public static function providerUnresolvableTerms(): array {
+    return [
+      'no target id at all' => [NULL, NULL],
+      'empty target id' => ['', NULL],
+      'term has been deleted' => ['42', NULL],
+    ];
+  }
+
+  /**
+   * An existing term resolves to its name.
+   *
+   * @covers ::getTermName
+   */
+  public function testTermNameIsResolvedWhenTermExists(): void {
+    $term = $this->createMock(Term::class);
+    $term->method('getName')->willReturn('Localist');
+    $storage = $this->createMock(EntityStorageInterface::class);
+    $storage->method('load')->with('42')->willReturn($term);
+    $entityTypeManager = $this->createMock(EntityTypeManager::class);
+    $entityTypeManager->method('getStorage')->with('taxonomy_term')->willReturn($storage);
+
+    $manager = new MetaFieldsManager(
+      $this->createMock(DateFormatter::class),
+      $entityTypeManager,
+      $this->createMock(LocalistManager::class),
+    );
+
+    $reflection = new \ReflectionClass($manager);
+    $method = $reflection->getMethod('getTermName');
+    $method->setAccessible(TRUE);
+
+    $this->assertSame('Localist', $method->invoke($manager, '42'));
   }
 
 }
