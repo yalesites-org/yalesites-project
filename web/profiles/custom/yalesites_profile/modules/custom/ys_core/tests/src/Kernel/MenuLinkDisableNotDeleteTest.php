@@ -166,6 +166,9 @@ class MenuLinkDisableNotDeleteTest extends YsKernelTestBase {
     $this->assertSame(1, $form['menu']['enabled']['#default_value']);
     $this->assertNotEmpty($form['menu']['enabled']['#description']);
     $this->assertSame(1, $form['menu']['link']['hidden']['#default_value']);
+    // Both descriptions show inline, not behind Gin's "?" toggle.
+    $this->assertTrue($form['menu']['enabled']['#ys_description_inline']);
+    $this->assertTrue($form['menu']['link']['hidden']['#ys_description_inline']);
     $this->assertContains('ys_core/menu_link_form', $form['menu']['#attached']['library']);
     $this->assertSame(
       ['::submitForm', '::save', 'ys_core_menu_ui_node_form_submit'],
@@ -193,6 +196,17 @@ class MenuLinkDisableNotDeleteTest extends YsKernelTestBase {
     $draft->setNewRevision(TRUE);
     $draft->isDefaultRevision(FALSE);
     return $draft;
+  }
+
+  /**
+   * Publishes the latest (draft) revision, as the moderation control does.
+   */
+  protected function publishLatest(NodeInterface $node): void {
+    $node_storage = $this->container->get('entity_type.manager')->getStorage('node');
+    $latest = $node_storage->loadRevision($node_storage->getLatestRevisionId($node->id()));
+    $latest->setNewRevision(TRUE);
+    $latest->isDefaultRevision(TRUE);
+    $latest->save();
   }
 
   /**
@@ -279,6 +293,71 @@ class MenuLinkDisableNotDeleteTest extends YsKernelTestBase {
     $this->submitMenu($node_storage->loadUnchanged($node->id()), ['enabled' => 1, 'hidden' => 0, 'entity_id' => $id]);
     $this->assertTrue($live());
     $this->assertTrue($latest());
+  }
+
+  /**
+   * Publishing a draft outside the node form applies its pending link.
+   *
+   * The content moderation "Change to" control, bulk publish, and scheduled
+   * publish save the node without running the form's menu handler.
+   */
+  public function testPublishingDraftOutsideFormAppliesPendingLink(): void {
+    $node = Node::create(['type' => 'page', 'title' => 'Child', 'status' => 1]);
+    $node->save();
+    $first_revision = $node->getRevisionId();
+    $node->setNewRevision(TRUE);
+    $node->save();
+    $link = MenuLinkContent::create([
+      'title' => 'Child',
+      'link' => ['uri' => 'entity:node/' . $node->id()],
+      'menu_name' => 'main',
+      'enabled' => 1,
+    ]);
+    $link->save();
+    $id = $link->id();
+    $storage = $this->container->get('entity_type.manager')->getStorage('menu_link_content');
+    $node_storage = $this->container->get('entity_type.manager')->getStorage('node');
+    $menu_link_manager = $this->container->get('plugin.manager.menu.link');
+    $live = function () use ($storage, $id) {
+      $storage->resetCache();
+      return $storage->load($id)->isEnabled();
+    };
+
+    // An editor hides the link on a draft.
+    $draft = $this->draft($node);
+    $draft->save();
+    $this->submitMenu($draft, ['enabled' => 1, 'hidden' => 1, 'entity_id' => $id]);
+    $this->assertTrue($live());
+
+    // A save of the live revision (not the draft) leaves the link alone.
+    $node_storage->loadUnchanged($node->id())->save();
+    $this->assertTrue($live());
+
+    // So does reverting to an older revision, which abandons the draft.
+    $old = $node_storage->loadRevision($first_revision);
+    $old->setNewRevision(TRUE);
+    $old->isDefaultRevision(TRUE);
+    $old->save();
+    $this->assertTrue($live());
+
+    // A new draft that hides the link again.
+    $draft = $this->draft($node);
+    $draft->save();
+    $this->submitMenu($draft, ['enabled' => 1, 'hidden' => 1, 'entity_id' => $id]);
+
+    // Publishing the draft, as the moderation control does, hides it.
+    $this->publishLatest($node);
+    $this->assertFalse($live());
+    $this->assertFalse((bool) $menu_link_manager->getDefinition($link->getPluginId())['enabled']);
+    $this->assertEquals($storage->getLatestRevisionId($id), $storage->load($id)->getRevisionId());
+
+    // Showing it again on a draft, then publishing, re-enables it.
+    $draft = $this->draft($node);
+    $draft->save();
+    $this->submitMenu($draft, ['enabled' => 1, 'hidden' => 0, 'entity_id' => $id]);
+    $this->assertFalse($live());
+    $this->publishLatest($node);
+    $this->assertTrue($live());
   }
 
 }
