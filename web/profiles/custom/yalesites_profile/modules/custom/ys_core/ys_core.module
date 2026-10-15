@@ -1677,10 +1677,9 @@ function ys_core_menu_link_content_form_after_build(array $form, FormStateInterf
 /**
  * Implements hook_form_BASE_FORM_ID_alter() for node_form.
  *
- * Core menu_ui deletes a node's menu link when "Provide a menu link" is
- * unchecked, which also drops the page's breadcrumb trail and nested alias.
- * Swap core's submit handler for one that disables the link instead, and
- * show the box unchecked while the link is disabled.
+ * Adds "Hide from menu" to an existing menu link: it disables the link
+ * instead of deleting it, so the page keeps its breadcrumb trail and nested
+ * alias. Unchecking "Provide a menu link" still deletes the link, as in core.
  *
  * @see https://github.com/yalesites-org/YaleSites-Internal/issues/1406
  */
@@ -1688,11 +1687,19 @@ function ys_core_form_node_form_alter(array &$form, FormStateInterface $form_sta
   if (!isset($form['menu']['enabled'])) {
     return;
   }
-  $form['menu']['enabled']['#description'] = t('Unchecking hides this page from the menu but keeps its breadcrumbs and URL.');
+  $form['menu']['enabled']['#description'] = t('Unchecking removes this page from the menu and takes it out of its section, which changes its breadcrumbs and web address.');
+  $form['menu']['#attached']['library'][] = 'ys_core/menu_link_form';
 
   $link = _ys_core_node_menu_link_active($form['menu']['link']['entity_id']['#value'] ?? 0);
-  if ($link && !$link->isEnabled()) {
-    $form['menu']['enabled']['#default_value'] = 0;
+  if ($link) {
+    // Inside core's link container, so it shares its visibility #states.
+    $form['menu']['link']['hidden'] = [
+      '#type' => 'checkbox',
+      '#title' => t('Hide from menu'),
+      '#description' => t("Hides this page from the navigation. It stays in its section, so its breadcrumbs and web address don't change."),
+      '#default_value' => (int) !$link->isEnabled(),
+      '#weight' => -10,
+    ];
   }
 
   foreach ($form['actions'] ?? [] as $action => $element) {
@@ -1701,14 +1708,12 @@ function ys_core_form_node_form_alter(array &$form, FormStateInterface $form_sta
       $form['actions'][$action]['#submit'][$key] = 'ys_core_menu_ui_node_form_submit';
     }
   }
-  // Runs after menu_ui_node_builder(), which menu_ui added before us.
-  $form['#entity_builders'][] = 'ys_core_node_menu_builder';
 }
 
 /**
  * Loads the latest revision of a node's menu link, the one the form shows.
  *
- * A draft can hold a pending link revision (for example re-enabled) that the
+ * A draft can hold a pending link revision (for example hidden) that the
  * live link does not have yet.
  */
 function _ys_core_node_menu_link_active($link_id): ?MenuLinkContent {
@@ -1716,51 +1721,24 @@ function _ys_core_node_menu_link_active($link_id): ?MenuLinkContent {
 }
 
 /**
- * Entity builder for node_form: leaves an already-hidden link untouched.
- *
- * An unchecked box over a disabled link means "no change", but core's
- * MenuSettingsConstraintValidator reads it on a draft as removing the link
- * and refuses the save. Clearing the menu values makes it skip validation.
- */
-function ys_core_node_menu_builder($entity_type, NodeInterface $node, array &$form, FormStateInterface $form_state) {
-  $values = $node->menu ?? [];
-  $link = empty($values['enabled']) ? _ys_core_node_menu_link_active($values['entity_id'] ?? 0) : NULL;
-  if ($link && !$link->isEnabled()) {
-    $node->menu = [];
-  }
-}
-
-/**
  * Submit handler replacing menu_ui_form_node_form_submit().
  *
- * Unchecked with an existing link: disable it on a published save, keep
- * everything else. Core's validator already refuses this on a draft when the
- * link is enabled.
- * Checked: let core save the link, enabled. On a draft it is saved as a
- * pending revision, so the live link changes only when the draft is published.
+ * Applies "Hide from menu" to an existing link, then lets core save it.
+ * On a draft the link is saved as a pending revision, so the live link
+ * changes only when the draft is published.
  */
 function ys_core_menu_ui_node_form_submit(array $form, FormStateInterface $form_state) {
   $values = $form_state->getValue('menu');
-  $link = empty($values['entity_id']) ? NULL : MenuLinkContent::load($values['entity_id']);
-  $published = $form_state->getFormObject()->getEntity()->isDefaultRevision();
-  if ($link) {
+  if (!empty($values['enabled']) && !empty($values['entity_id'])) {
+    $link = MenuLinkContent::load($values['entity_id']);
     // Core marks the link non-default on a draft but does not start a new
     // revision, so its save would overwrite the live link. On a published
     // save, a new revision supersedes any pending one a draft left behind.
+    $published = $form_state->getFormObject()->getEntity()->isDefaultRevision();
     $link->setNewRevision(!$published || !$link->isLatestRevision());
-  }
-  if ($link && empty($values['enabled'])) {
-    // Also save when a draft left a pending enabled revision on top, so it
-    // stops being the latest and the form shows the box unchecked.
-    if ($published && ($link->isEnabled() || !$link->isLatestRevision())) {
-      $link->set('enabled', FALSE)->save();
-    }
-    return;
-  }
-  if ($link) {
     // _menu_ui_node_save() loads this same statically cached object, applies
     // the form values and the node's revision status, and saves it once.
-    $link->set('enabled', TRUE);
+    $link->set('enabled', empty($values['hidden']));
   }
   menu_ui_form_node_form_submit($form, $form_state);
 }
