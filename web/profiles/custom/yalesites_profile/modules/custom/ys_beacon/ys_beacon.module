@@ -9,11 +9,13 @@ use Drupal\config_ignore\ConfigIgnoreConfig;
 use Drupal\Core\Cache\Cache;
 use Drupal\Core\Entity\EntityInterface;
 use Drupal\Core\Form\FormStateInterface;
+use Drupal\Core\Render\Element;
 use Drupal\Core\Url;
 use Drupal\media\MediaInterface;
 use Drupal\search_api\Entity\Index;
 use Drupal\search_api\Utility\Utility;
 use Drupal\ys_beacon\Form\YsBeaconSettings;
+use Drupal\ys_core\AiReadabilitySettings;
 
 /**
  * Implements hook_theme().
@@ -249,7 +251,9 @@ function ys_beacon_config_ignore_ignored_alter(ConfigIgnoreConfig $ignored) {
  * Implements hook_field_widget_single_element_WIDGET_TYPE_form_alter().
  *
  * Shows the AI Metadata group on entity forms only when the platform-level
- * toggle is on, and defaults new media to excluded from the AI index.
+ * toggle is on, and defaults new media to excluded from the AI index. With the
+ * toggle off, node forms keep just the exclude checkbox while markdown output
+ * is on, so editors can still keep a page out of .md and /llms.txt.
  */
 function ys_beacon_field_widget_single_element_metatag_firehose_form_alter(&$field_widget_complete_form, FormStateInterface $form_state, $context) {
   $config = \Drupal::config('ys_beacon.settings');
@@ -257,7 +261,18 @@ function ys_beacon_field_widget_single_element_metatag_firehose_form_alter(&$fie
   $form_object = $form_state->getFormObject();
   $entity = $form_object->getEntity();
   if (!$config->get('enable_metadata_fields')) {
-    unset($field_widget_complete_form['ys_beacon']);
+    $markdown_on = AiReadabilitySettings::isEnabled(\Drupal::config('ys_core.site'), AiReadabilitySettings::MARKDOWN_ENABLED);
+    if ($markdown_on && $entity->getEntityTypeId() === 'node' && isset($field_widget_complete_form['ys_beacon'])) {
+      // Keep the exclude checkbox only.
+      foreach (Element::children($field_widget_complete_form['ys_beacon']) as $key) {
+        if ($key !== 'ai_disable_indexing') {
+          unset($field_widget_complete_form['ys_beacon'][$key]);
+        }
+      }
+    }
+    else {
+      unset($field_widget_complete_form['ys_beacon']);
+    }
   }
   elseif (_ys_beacon_is_new_media_with_ai_tags($entity, $field_widget_complete_form)) {
     $field_widget_complete_form['ys_beacon']['ai_disable_indexing']['#default_value'] = 'disabled';
