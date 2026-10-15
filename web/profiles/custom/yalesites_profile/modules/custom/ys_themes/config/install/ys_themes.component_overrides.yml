@@ -157,6 +157,11 @@ grand_hero:
       site: Contained
       full: 'Full Width'
     default: site
+  field_style_video_playback:
+    values:
+      loop: 'Loop continuously'
+      once: 'Play once and stop'
+    default: loop
 divider:
   field_style_position:
     values:
@@ -334,6 +339,11 @@ image_banner:
       site: Contained
       full: 'Full Width'
     default: site
+  field_style_video_playback:
+    values:
+      loop: 'Loop continuously'
+      once: 'Play once and stop'
+    default: loop
 video_banner:
   field_style_width:
     values:
@@ -344,10 +354,10 @@ office_hours:
   field_style_color:
     values:
       default: 'Default - No Color'
-      one: 'One'
-      two: 'Two'
-      three: 'Three'
-      four: 'Four'
-      five: 'Five'
-      six: 'Six'
+      one: One
+      two: Two
+      three: Three
+      four: Four
+      five: Five
+      six: Six
     default: default
