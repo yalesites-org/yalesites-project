@@ -170,7 +170,7 @@ class ProfileMetaBlock extends BlockBase implements ContainerFactoryPluginInterf
       '#default_value' => $config['image_style'] ?? 'inline',
       '#options' => [
         'inline' => $this->t('Inline'),
-        'outdent' => $this->t('Outdent'),
+        'outdent' => $this->t('Offset'),
       ],
     ];
 

@@ -88,7 +88,7 @@ class YSLayoutOptions extends LayoutDefault implements ContainerFactoryPluginInt
       '#title' => $this->t('Component theme'),
       '#default_value' => $saved_theme,
       '#options' => [
-        'default' => $this->t('Default - no color'),
+        'default' => $this->t('Default - No Color'),
         'one' => $this->t('One'),
         'two' => $this->t('Two'),
         'three' => $this->t('Three'),

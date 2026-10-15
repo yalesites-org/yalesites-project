@@ -171,7 +171,7 @@ class TaxonomyDisplayBlock extends BlockBase implements ContextAwarePluginInterf
       else {
         $form['no_vocabulary_fields'] = [
           '#type' => 'markup',
-          '#markup' => $this->t('No taxonomy fields found on this content type.'),
+          '#markup' => $this->t('This content type has no tags or categories.'),
         ];
       }
 

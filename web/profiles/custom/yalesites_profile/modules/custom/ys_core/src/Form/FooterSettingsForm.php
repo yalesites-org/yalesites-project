@@ -198,7 +198,7 @@ class FooterSettingsForm extends ConfigFormBase {
 
     $form['footer_logos']['school_logo_group']['school_logo'] = [
       '#type' => 'media_library',
-      '#title' => $this->t('School logo'),
+      '#title' => $this->t('School Logo'),
       '#allowed_bundles' => ['image'],
       '#required' => FALSE,
       '#default_value' => ($footerConfig->get('content.school_logo')) ? $footerConfig->get('content.school_logo') : NULL,
@@ -206,7 +206,7 @@ class FooterSettingsForm extends ConfigFormBase {
 
     $form['footer_logos']['school_logo_group']['school_logo_url'] = [
       '#type' => 'linkit',
-      '#title' => $this->t('School logo URL'),
+      '#title' => $this->t('School Logo URL'),
       '#description' => $this->t('Type the URL or autocomplete for internal paths.'),
       '#autocomplete_route_name' => 'linkit.autocomplete',
       '#autocomplete_route_parameters' => [
