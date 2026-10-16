@@ -142,13 +142,29 @@ class TaxonomyDisplayBlock extends BlockBase implements ContextAwarePluginInterf
       }
 
       if (!empty($vocabulary_fields)) {
+        $vocabulary_fields_title = $this->t('Select vocabularies to display');
         $form['vocabulary_fields'] = [
           '#type' => 'checkboxes',
-          '#title' => $this->t('Select vocabularies to display'),
+          '#title' => $vocabulary_fields_title,
           '#options' => $vocabulary_fields,
           '#default_value' => $this->configuration['vocabulary_fields'] ?? [],
           '#description' => $this->t('Choose which vocabularies should be displayed in this block.'),
           '#required' => TRUE,
+          // Layout Builder Browser strips #ajax from this form's submit, so a
+          // server-side "required" error reloads the form as a standalone page
+          // and the editor leaves the dialog. Other blocks avoid that because
+          // the browser enforces their HTML5 required attribute, which a
+          // checkbox group cannot carry; this check gives the group the same
+          // browser-side validation. #required stays as the no-JS fallback.
+          '#attributes' => [
+            'class' => ['js-ys-required-checkboxes'],
+            'data-ys-required-message' => $this->t('@name field is required.', [
+              '@name' => $vocabulary_fields_title,
+            ]),
+          ],
+          '#attached' => [
+            'library' => ['ys_layouts/required_checkboxes'],
+          ],
         ];
 
         $form['theme_selection'] = [
