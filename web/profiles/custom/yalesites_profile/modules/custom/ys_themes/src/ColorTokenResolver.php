@@ -13,11 +13,33 @@ use Psr\Log\LoggerInterface;
 class ColorTokenResolver {
 
   /**
+   * The palette slots an editor can select, in the order they are shown.
+   *
+   * Slots six to eight are internal, and slot nine is the secondary
+   * background, which is selectable -- hence the gap. This is the swatch
+   * display order only; the component option-to-slot mapping in
+   * getColorStylesForEntity() states the same six slots for itself, so that a
+   * change here cannot repaint every component.
+   */
+  const PALETTE_SWATCH_SLOTS = ['one', 'two', 'three', 'four', 'five', 'nine'];
+
+  /**
    * The path to the tokens JSON file.
    *
    * @var string
    */
   protected $jsonPath;
+
+  /**
+   * Parsed global theme colors, or NULL before the first parse.
+   *
+   * The token file is read once per request rather than once per caller: the
+   * theme settings form alone resolves colors for 41 radios, and every option
+   * needs the same parsed palette data.
+   *
+   * @var array|null
+   */
+  protected $globalThemeColors = NULL;
 
   /**
    * The logger service.
@@ -115,6 +137,23 @@ class ColorTokenResolver {
    *   Structure matches the Twig template: tokens['global-themes'].
    */
   public function getGlobalThemeColors() {
+    if ($this->globalThemeColors === NULL) {
+      $this->globalThemeColors = $this->loadGlobalThemeColors();
+    }
+
+    return $this->globalThemeColors;
+  }
+
+  /**
+   * Reads and parses the token file.
+   *
+   * @return array
+   *   Array of themes with their color slots and hex values, or an empty array
+   *   if the token file is missing or unusable.
+   *
+   * @see \Drupal\ys_themes\ColorTokenResolver::getGlobalThemeColors()
+   */
+  protected function loadGlobalThemeColors() {
     if (!file_exists($this->jsonPath)) {
       $this->logger->warning('Color token JSON file not found: @json', [
         '@json' => $this->jsonPath,
@@ -130,7 +169,7 @@ class ColorTokenResolver {
         return [];
       }
 
-      return $this->parseBuiltJson($json['global-themes']);
+      return $this->parseBuiltJson($json['global-themes'], $json);
     }
     catch (\Exception $e) {
       $this->logger->error('Error parsing color token files: @message', [
@@ -145,15 +184,14 @@ class ColorTokenResolver {
    *
    * @param array $global_themes
    *   The global-themes data from tokens['global-themes'].
+   * @param array $full_json
+   *   The whole decoded token file, used to name colors by their HSL value.
    *
    * @return array
    *   Array of themes with their color slots and hex values.
    *   Structure matches: { theme_id: { label: "...", colors: {...} } }.
    */
-  protected function parseBuiltJson(array $global_themes) {
-    // Build a lookup map of HSL values to color token names.
-    // We need the full JSON to build the lookup, so get it from the file.
-    $full_json = json_decode(file_get_contents($this->jsonPath), TRUE);
+  protected function parseBuiltJson(array $global_themes, array $full_json) {
     $color_lookup = $this->buildColorLookup($full_json);
 
     $themes = [];
@@ -248,6 +286,83 @@ class ColorTokenResolver {
   public function getThemeColors($theme_id) {
     $themes = $this->getGlobalThemeColors();
     return $themes[$theme_id]['colors'] ?? [];
+  }
+
+  /**
+   * Builds the color swatches shown beside a theme settings form option.
+   *
+   * Resolved to hex rather than left as var(--global-themes-...) in the
+   * template: the token stylesheet that defines those custom properties is only
+   * attached by the front-end theme, and it stops at slot-eight, so the sixth
+   * palette chip (slot-nine) has no custom property to reference at all. The
+   * token JSON this service reads does have it.
+   *
+   * @param string $setting_name
+   *   The setting the option belongs to, e.g. 'global_theme'.
+   * @param string $option_value
+   *   The option being labelled, e.g. 'one'.
+   *
+   * @return array
+   *   A list of ['slot' => 'one', 'hex' => '#00366b', 'token_name' =>
+   *   'Blue Yale'], in display order. Empty when the option is unknown or the
+   *   palette defines none of the slots it asks for.
+   */
+  public function buildThemeSettingSwatches($setting_name, $option_value) {
+    $options = $this->themeSettingsManager->getOptions();
+    $option = $options[$setting_name]['values'][$option_value] ?? NULL;
+    if (!$option) {
+      return [];
+    }
+
+    // A global_theme option is itself a palette, so it shows that palette's own
+    // selectable slots. Every other setting's options name slots inside
+    // whichever palette is currently in effect.
+    $is_palette = ($setting_name === 'global_theme');
+    $theme_id = $is_palette
+      ? $option_value
+      : ($this->themeSettingsManager->getSetting('global_theme') ?? 'one');
+    $slots = $is_palette ? self::PALETTE_SWATCH_SLOTS : array_filter([
+      $option['color_theme'] ?? NULL,
+      $option['color_theme_2'] ?? NULL,
+    ]);
+
+    $colors = $this->getThemeColors($theme_id);
+    $swatches = [];
+    foreach ($slots as $slot) {
+      $color = $colors['slot-' . $slot] ?? NULL;
+      if (!empty($color['hex'])) {
+        $swatches[] = [
+          'slot' => $slot,
+          'hex' => $color['hex'],
+          'token_name' => $color['name'] ?? '',
+        ];
+      }
+    }
+
+    return $swatches;
+  }
+
+  /**
+   * Maps every palette's slots to their hex values.
+   *
+   * Handed to the browser so the settings form can re-tint the component
+   * swatches when a different palette is selected, without a round trip.
+   *
+   * @return array
+   *   Hex values keyed by theme ID then by slot, e.g.
+   *   ['one' => ['slot-one' => '#00366b', ...], ...].
+   */
+  public function getSlotHexMap() {
+    $map = [];
+    foreach ($this->getGlobalThemeColors() as $theme_id => $theme) {
+      foreach ($theme['colors'] ?? [] as $slot => $color) {
+        if (!empty($color['hex'])) {
+          $map[$theme_id][$slot] = $color['hex'];
+        }
+      }
+    }
+
+    return $map;
   }
 
   /**
@@ -385,15 +500,24 @@ class ColorTokenResolver {
     ];
 
     // Section layout mapping: one→slot-one, two→slot-four, three→slot-five,
-    // four→slot-two, five→slot-nine.
+    // four→slot-two, five→slot-nine, six→slot-three.
     //
-    // Unlike every other mapping in this method, sections deliberately expose
-    // five options rather than six: slot-three is the one palette slot they do
-    // not offer. Ticket #897 (commit 1a06ebc6f) reworked this mapping and
-    // dropped slot-three, and it has not been offered to sections since;
-    // #1153 later added the 'five' => slot-nine entry. Keep this list at five
-    // unless that product decision is revisited (see #1506); the corresponding
-    // form options live in YSLayoutOptions.
+    // Sections offered only five options for a long time -- slot-three was
+    // the single palette slot they never exposed, dropped by #897 (commit
+    // 1a06ebc6f) and left out when #1153 added the 'five' => slot-nine entry.
+    // #1518 restored it as 'six', so sections now match the block pickers at
+    // six options. This list is mirrored in several other places that must
+    // move together: the form options in YSLayoutOptions, the ordering array
+    // in processColorPicker() below, the per-theme blocks in the component
+    // library's _yds-layout.scss (which is what actually paints the page --
+    // this resolver only drives the admin swatches), that library's
+    // layout-props.yml and theme-constants.js (Storybook/visreg coverage),
+    // and the option-count callout in docs/color-theme.md.
+    //
+    // The rendered markup keeps section and block apart the same way this
+    // method does: a section emits `data-section-theme`, a block emits
+    // `data-component-theme`. See docs/color-theme.md, "Two colour dials, two
+    // attributes" (YaleSites-Internal#1630).
     if ($entity_type === 'layout_section' && $bundle === 'ys_layout_options') {
       return $this->buildColorStyles([
         'one' => 'one',
@@ -401,11 +525,16 @@ class ColorTokenResolver {
         'three' => 'five',
         'four' => 'two',
         'five' => 'nine',
+        'six' => 'three',
       ], $global_themes, $theme_four_slot_swap);
     }
 
     // Base mapping: options map directly to global slots (1:1).
     // This matches accordion, wrapped_callout, tile, and most components.
+    // These are the same six slots as self::PALETTE_SWATCH_SLOTS, but stated
+    // separately on purpose: that constant is a display order for the theme
+    // settings swatches, and reordering it must not remap the color every
+    // component renders.
     $base_mapping = [
       'one' => 'one',
       'two' => 'two',
@@ -626,10 +755,12 @@ class ColorTokenResolver {
     $color_styles = $all_color_styles[$global_theme] ?? $all_color_styles['one'] ?? [];
 
     $is_section_layout = ($entity_type === 'layout_section' && $bundle === 'ys_layout_options');
+    // Match YSLayoutOptions theme select: default + one–six. Also passed
+    // through as '#palette_order' below, so it is declared once here rather
+    // than repeated.
+    $palette_order = $is_section_layout ? ['default', 'one', 'two', 'three', 'four', 'five', 'six'] : NULL;
     if ($is_section_layout) {
-      // Match YSLayoutOptions theme select: default + one–five.
-      $desired_order = ['default', 'one', 'two', 'three', 'four', 'five'];
-      $palette_options = $this->reorderPaletteOptions($palette_options, $desired_order);
+      $palette_options = $this->reorderPaletteOptions($palette_options, $palette_order);
       $element['#options'] = $palette_options;
     }
 
@@ -643,9 +774,6 @@ class ColorTokenResolver {
       $background_color_var = $color_styles[$option_key][0] ?? NULL;
       $color_info[$option_key] = $this->buildColorInfo($option_key, $background_color_var);
     }
-
-    // Set palette order for section layouts.
-    $palette_order = $is_section_layout ? ['default', 'one', 'two', 'three', 'four', 'five'] : NULL;
 
     $palette_render = [
       '#theme' => 'component_color_picker',

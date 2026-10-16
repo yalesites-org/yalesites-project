@@ -42,12 +42,14 @@
   mask-size: contain;
 }
 
-/* Toolbar span rules beat badge.css on specificity, so re-assert the pill
-   here. Gin's `.toolbar .toolbar-menu .toolbar-menu span` sets the text color,
-   and its vertical tray (mobile Manage tray) rule
-   `.toolbar .toolbar-tray-vertical .toolbar-menu span` sets block display and
-   link padding that stretch the pill into a wide bar. */
-.toolbar-menu .menu-item .ys-dashboard-badge.ys-dashboard-badge--unread {
+/* Gin toolbar's `.toolbar .toolbar-menu .toolbar-menu span` color rule wins
+   on specificity, so re-assert the badge's white text inside the toolbar.
+   Gin's vertical (mobile) tray also gives every menu span `display: block`
+   and menu-item padding, which stretches the pill across the row, so restore
+   the pill's own display and padding from badge.css too. The leading
+   `.toolbar` (0,5,0) is needed to beat Gin's vertical-tray `span:hover`
+   color rule (0,4,1). */
+.toolbar .toolbar-menu .menu-item .ys-dashboard-badge.ys-dashboard-badge--unread {
   display: inline-block;
   padding: 0 0.4em;
   color: #fff;

@@ -263,11 +263,40 @@ class ContentExportBuilder {
   }
 
   /**
+   * Writes one CSV row, with PHP's legacy backslash escaping disabled.
+   *
+   * Every row in the export goes through here so the escape setting cannot
+   * drift between the header and the data rows. The empty $escape matters for
+   * security: with PHP's default, a value containing \" is written with an
+   * un-doubled quote, which terminates the field early for an RFC 4180 reader
+   * such as Excel, Numbers or Google Sheets. Everything after it in that value
+   * is then re-parsed as additional cells that never passed through
+   * sanitizeCell() — defeating the formula guard entirely. Disabling the
+   * escape always doubles the quote, so a value cannot leave its own field.
+   * It also removes a PHP 8.4 deprecation warning.
+   *
+   * @param resource $handle
+   *   The open stream to write to.
+   * @param array $values
+   *   The row values, already passed through sanitizeCell().
+   */
+  public static function writeRow($handle, array $values): void {
+    fputcsv($handle, $values, ',', '"', '');
+  }
+
+  /**
    * Neutralises CSV formula injection (CWE-1236).
    *
-   * Spreadsheet apps treat a cell beginning with =, +, -, @, tab or carriage
-   * return as a formula. Prefixing such a value with a single quote forces it
-   * to be read as text.
+   * Spreadsheet apps treat a cell beginning with =, +, -, @, tab, carriage
+   * return or newline as a formula, including when the trigger hides behind
+   * leading whitespace that the spreadsheet trims on import. Prefixing such a
+   * value with a single quote forces it to be read as text.
+   *
+   * Deliberately kept identical to
+   * \Drupal\ys_ai_tester\RunExporter::csvCell(). Sharing one
+   * helper would mean ys_content_export (which depends only on node) taking a
+   * dependency on a heavier module to reuse six lines; see
+   * yalesites-org/YaleSites-Internal#1759.
    *
    * @param string $value
    *   The raw cell value.
@@ -276,7 +305,13 @@ class ContentExportBuilder {
    *   The value, safe to write to a CSV cell.
    */
   public static function sanitizeCell(string $value): string {
-    if ($value !== '' && preg_match('/^[=+\-@\t\r]/', $value)) {
+    if ($value === '') {
+      return $value;
+    }
+
+    $trimmed = ltrim($value, " \t\r\n");
+    if (in_array($value[0], ["\t", "\r", "\n"], TRUE)
+      || ($trimmed !== '' && in_array($trimmed[0], ['=', '+', '-', '@'], TRUE))) {
       return "'" . $value;
     }
     return $value;
