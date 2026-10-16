@@ -3,12 +3,14 @@
 namespace Drupal\ys_layouts\Plugin\Block;
 
 use Drupal\Component\Utility\Html;
+use Drupal\Core\Block\Attribute\Block;
 use Drupal\Core\Block\BlockBase;
 use Drupal\Core\Cache\Cache;
 use Drupal\Core\Entity\EntityTypeManagerInterface;
 use Drupal\Core\Form\FormStateInterface;
 use Drupal\Core\Plugin\ContainerFactoryPluginInterface;
 use Drupal\Core\Routing\RouteMatchInterface;
+use Drupal\Core\StringTranslation\TranslatableMarkup;
 use Drupal\node\NodeInterface;
 use Drupal\views\Views;
 use Symfony\Component\DependencyInjection\ContainerInterface;
@@ -24,14 +26,12 @@ use Symfony\Component\HttpFoundation\RequestStack;
  * Hides itself entirely when the route node has no field_related_content
  * or the field is empty, so the locked Related Resources Layout Builder
  * section collapses for nodes that haven't picked any related items.
- *
- * @Block(
- *   id = "related_content_block",
- *   admin_label = @Translation("Related Content"),
- *   category = @Translation("YaleSites Layouts"),
- *   description = @Translation("Displays a curated list of related content as cards, sourced from the current page's Related Content field."),
- * )
  */
+#[Block(
+  id: 'related_content_block',
+  admin_label: new TranslatableMarkup('Related Content'),
+  category: new TranslatableMarkup('YaleSites Layouts'),
+)]
 class RelatedContentBlock extends BlockBase implements ContainerFactoryPluginInterface {
 
   /**

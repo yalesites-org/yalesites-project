@@ -2,23 +2,24 @@
 
 namespace Drupal\ys_core\Plugin\Block;
 
+use Drupal\Core\Block\Attribute\Block;
 use Drupal\Core\Block\BlockBase;
 use Drupal\Core\Cache\Cache;
 use Drupal\Core\Plugin\ContainerFactoryPluginInterface;
 use Drupal\Core\Routing\RouteMatchInterface;
 use Drupal\Core\Routing\UrlGeneratorInterface;
+use Drupal\Core\StringTranslation\TranslatableMarkup;
 use Drupal\ys_core\YaleSitesBreadcrumbsManager;
 use Symfony\Component\DependencyInjection\ContainerInterface;
 
 /**
  * Provides a block to display the breadcrumbs.
- *
- * @Block(
- *   id = "ys_breadcrumb_block",
- *   admin_label = @Translation("YaleSites Breadcrumbs"),
- *   category = @Translation("YaleSites Core"),
- * )
  */
+#[Block(
+  id: 'ys_breadcrumb_block',
+  admin_label: new TranslatableMarkup('YaleSites Breadcrumbs'),
+  category: new TranslatableMarkup('YaleSites Core'),
+)]
 class YaleSitesBreadcrumbBlock extends BlockBase implements ContainerFactoryPluginInterface {
 
   /**
