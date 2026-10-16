@@ -2,6 +2,7 @@
 
 namespace Drupal\Tests\ys_core\Unit;
 
+use Drupal\Core\Cache\CacheableMetadata;
 use Drupal\Core\DependencyInjection\ContainerBuilder;
 use Drupal\Core\Link;
 use Drupal\Core\Menu\MenuLinkInterface;
@@ -124,27 +125,25 @@ class YaleSitesBreadcrumbBlockTest extends UnitTestCase {
   }
 
   /**
-   * On a Layout Builder route the trail names the page, not the form.
+   * A page in no menu previews no breadcrumb, as on the published page.
    *
    * Layout Builder re-renders the preview from its own form routes ("Configure
    * section", "Add section"), so a trail built from the current route showed
    * "Home / Configure section" or nothing at all
-   * (yalesites-org/YaleSites-Internal#1826). A page not in the main menu
-   * reads "Home / (page title)".
+   * (yalesites-org/YaleSites-Internal#1826). A published page with no menu
+   * link shows no breadcrumb (yalesites-org/YaleSites-Internal#1406), so the
+   * preview must not invent a "Home / (page title)" trail for it.
    *
    * @covers ::build
    */
-  public function testLayoutBuilderRouteShowsPageBeingLaidOut(): void {
+  public function testLayoutBuilderRouteShowsNoBreadcrumbForPageInNoMenu(): void {
     $this->onLayoutBuilderRouteFor('My Page');
     $this->menuLinkManager->method('loadLinksByRoute')->willReturn([]);
 
-    $items = $this->buildBlock()->build()['#items'];
+    $build = $this->buildBlock()->build();
 
-    $this->assertCount(2, $items);
-    $this->assertSame('Home', (string) $items[0]['title']);
-    $this->assertSame('/', $items[0]['url']);
-    $this->assertFalse($items[0]['is_active']);
-    $this->assertSame(['title' => 'My Page', 'url' => '', 'is_active' => TRUE], $items[1]);
+    $this->assertSame([], $build['#items']);
+    $this->assertFalse($build['#always_show_breadcrumbs']);
   }
 
   /**
@@ -215,6 +214,29 @@ class YaleSitesBreadcrumbBlockTest extends UnitTestCase {
     $items = $this->buildBlock()->build()['#items'];
 
     $this->assertSame([['title' => 'About', 'url' => '/about', 'is_active' => FALSE]], $items);
+  }
+
+  /**
+   * Outside Layout Builder the manager's cacheability reaches the render array.
+   *
+   * The manager drops crumbs the user cannot access and reports what that
+   * depended on (yalesites-org/YaleSites-Internal#1406); the block must apply
+   * it, or one user's trail is served to another.
+   *
+   * @covers ::build
+   */
+  public function testOtherRoutesApplyBreadcrumbManagerCacheability(): void {
+    $this->routeMatch->method('getParameter')->willReturn(NULL);
+    $this->breadcrumbsManager->method('build')
+      ->willReturnCallback(function ($route, CacheableMetadata $cacheability) {
+        $cacheability->addCacheTags(['node:79']);
+        return [];
+      });
+    $this->breadcrumbsManager->method('hasLandingPage')->willReturn(FALSE);
+
+    $build = $this->buildBlock()->build();
+
+    $this->assertContains('node:79', $build['#cache']['tags']);
   }
 
 }

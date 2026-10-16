@@ -111,9 +111,10 @@ class YaleSitesBreadcrumbBlock extends BlockBase implements ContainerFactoryPlug
    * {@inheritdoc}
    */
   public function build() {
+    $cacheability = new CacheableMetadata();
     $section_storage = $this->routeMatch->getParameter('section_storage');
     if (!$section_storage instanceof SectionStorageInterface) {
-      $links = $this->buildLinks();
+      $links = $this->buildLinks($cacheability);
     }
     else {
       $entity = ($section_storage->getContextsDuringPreview()[YaleSitesTitleBreadcrumbBlock::ENTITY_CONTEXT] ?? NULL)?->getContextValue();
@@ -122,7 +123,7 @@ class YaleSitesBreadcrumbBlock extends BlockBase implements ContainerFactoryPlug
       // The block's cache varies only by route, so tie the preview trail to
       // the page and menus it is built from, or a renamed page keeps its old
       // title.
-      $cacheability = (new CacheableMetadata())->addCacheTags([
+      $cacheability->addCacheTags([
         'config:menu_breadcrumb.settings',
         ...array_map(fn($menu) => "config:system.menu.$menu", $menus),
       ]);
@@ -136,9 +137,8 @@ class YaleSitesBreadcrumbBlock extends BlockBase implements ContainerFactoryPlug
       '#items' => $links,
       '#always_show_breadcrumbs' => FALSE,
     ];
-    if (isset($cacheability)) {
-      $cacheability->applyTo($build);
-    }
+    // Vary by what the trail was built from and who can see each crumb.
+    $cacheability->applyTo($build);
     return $build;
   }
 
@@ -151,7 +151,8 @@ class YaleSitesBreadcrumbBlock extends BlockBase implements ContainerFactoryPlug
    * The breadcrumb builders read the global request rather than a route match
    * we could hand them, so build the trail for the page being laid out
    * directly: its menu trail, the same one menu_breadcrumb shows on the
-   * published page, or "Home / <page>" when the page is not in a menu.
+   * published page. A page in no menu gets no breadcrumb, as on the
+   * published page (yalesites-org/YaleSites-Internal#1406).
    *
    * @param \Drupal\Core\Entity\EntityInterface|null $entity
    *   The entity being laid out, if Layout Builder supplied one.
@@ -159,25 +160,23 @@ class YaleSitesBreadcrumbBlock extends BlockBase implements ContainerFactoryPlug
    *   Menus to look for the entity in, in order.
    *
    * @return array
-   *   Breadcrumb items for the ys_breadcrumb_block template.
+   *   Breadcrumb items for the ys_breadcrumb_block template, or an empty array
+   *   when the entity is not in any of the menus.
    */
   protected function buildLayoutBuilderLinks(?EntityInterface $entity, array $menus): array {
-    $links = [
+    $trail = $entity ? $this->getMenuTrail($entity, $menus) : [];
+    if (!$trail) {
+      return [];
+    }
+
+    // The current page is the last crumb, unlinked, as on the front end.
+    $current = array_pop($trail);
+    return [
       [
         'title' => $this->t('Home'),
         'url' => $this->urlGenerator->generateFromRoute('<front>'),
         'is_active' => FALSE,
       ],
-    ];
-    if (!$entity) {
-      return $links;
-    }
-
-    $trail = $this->getMenuTrail($entity, $menus) ?: [['title' => $entity->label()]];
-    // The current page is the last crumb, unlinked, as on the front end.
-    $current = array_pop($trail);
-    return [
-      ...$links,
       ...$trail,
       ['title' => $current['title'], 'url' => '', 'is_active' => TRUE],
     ];
@@ -241,11 +240,14 @@ class YaleSitesBreadcrumbBlock extends BlockBase implements ContainerFactoryPlug
   /**
    * Builds the trail for the current route from the breadcrumb manager.
    *
+   * @param \Drupal\Core\Cache\CacheableMetadata $cacheability
+   *   Receives the breadcrumb's and its access checks' cacheability.
+   *
    * @return array
    *   Breadcrumb items for the ys_breadcrumb_block template.
    */
-  protected function buildLinks(): array {
-    $breadcrumbs = $this->yaleSitesBreadcrumbsManager->build($this->routeMatch);
+  protected function buildLinks(CacheableMetadata $cacheability): array {
+    $breadcrumbs = $this->yaleSitesBreadcrumbsManager->build($this->routeMatch, $cacheability);
     $links = [];
 
     // Process all breadcrumbs.
