@@ -50,7 +50,45 @@ class YaleSitesBreadcrumbsManager extends ControllerBase implements ContainerInj
    *   An array of Drupal links.
    */
   public function build($route): array {
+    if ($this->isLayoutBuilderMoveEndpoint($route)) {
+      return [];
+    }
+
     return $this->removeEmptyLinks($this->breadcrumbManager->build($route)->getLinks());
+  }
+
+  /**
+   * Checks whether a route is Layout Builder's block-move endpoint.
+   *
+   * Core's PathBasedBreadcrumbBuilder resolves a title for every ancestor of
+   * the request path. layout_builder.move_block is the only route under
+   * /layout_builder/ with more than eight segments, so it is the only one with
+   * an eight-segment ancestor - and that ancestor matches
+   * layout_builder.move_block_form, whose title callback reads the segment as
+   * a component UUID when the move URL puts a region name there.
+   * Section::getComponent() then throws, 500-ing the whole AJAX response after
+   * the move has already been written to the tempstore, which is what strands
+   * the page with stale contextual links.
+   *
+   * Scoped to this one route on purpose. Every sibling endpoint (add_block,
+   * update_block, remove_block, configure_section, and ys_layouts' clone and
+   * detach) is eight segments or fewer, so no ancestor of theirs matches a
+   * route with a throwing title callback - add_block and update_block carry a
+   * plain _title string. Skipping breadcrumbs for them too would blank the
+   * breadcrumb component in the Layout Builder preview on paths that work.
+   *
+   * The trade-off that remains: after a move, the rebuilt preview renders the
+   * breadcrumb component empty until the next full page load. That is worth a
+   * great deal less than a 500 on every drag.
+   *
+   * @param \Drupal\Core\Routing\RouteMatchInterface $route
+   *   The route match to check.
+   *
+   * @return bool
+   *   TRUE if breadcrumbs should be skipped for this route.
+   */
+  protected function isLayoutBuilderMoveEndpoint($route): bool {
+    return $route->getRouteName() === 'layout_builder.move_block';
   }
 
   /**

@@ -8,9 +8,10 @@ use Drupal\ys_views_basic\Plugin\views\pager\ViewsBasicFullPager;
 /**
  * Unit tests for the ViewsBasicFullPager views pager plugin.
  *
- * The pager reads its items-per-page (view->args[5]) and offset
- * (view->args[7]) from contextual arguments set by
- * ViewsBasicManager::setupView(), and clamps the query to the view's
+ * The pager reads its items-per-page from view->args[5], set by both
+ * ViewsBasicManager::setupView() and ViewsContentResourcesManager::setupView().
+ * The offset comes from the pager's own "offset" option, which the managers
+ * set through ViewExecutable::setOffset(). The query is clamped to the view's
  * "total_pages" option once the requested page runs past it.
  *
  * @coversDefaultClass \Drupal\ys_views_basic\Plugin\views\pager\ViewsBasicFullPager
@@ -73,7 +74,7 @@ class ViewsBasicFullPagerTest extends UnitTestCase {
    * @covers ::query
    */
   public function testQuerySetsLimitAndOffsetFromArguments() {
-    // args[5] = items per page, args[7] = offset.
+    // args[5] = items per page; the offset comes from the pager option.
     $args = [NULL, NULL, NULL, NULL, NULL, '20', NULL, '5'];
     [$pager, $query] = $this->createPager($args, ['items_per_page' => 20, 'offset' => 5]);
 
@@ -108,23 +109,41 @@ class ViewsBasicFullPagerTest extends UnitTestCase {
   }
 
   /**
-   * ItemsPerPage()/offset() cast their view arguments to integers.
+   * Content Resources listings keep their offset.
+   *
+   * ViewsContentResourcesManager has no event_time_period argument, so its
+   * args[6] is the offset and args[7] is a JSON string. The pager must not
+   * read the offset by position, or a resource listing's offset becomes 0.
+   *
+   * @covers ::query
+   */
+  public function testQueryKeepsOffsetOptionForContentResourcesArguments() {
+    $args = [
+      'resource', 'all', NULL, 'field_publish_date:DESC', 'card', '10', '3',
+      '{"show_category":0}',
+    ];
+    [$pager, $query] = $this->createPager($args, ['items_per_page' => 10, 'offset' => 3]);
+
+    $query->expects($this->once())->method('setLimit')->with(10);
+    $query->expects($this->once())->method('setOffset')->with(3);
+
+    $pager->query();
+  }
+
+  /**
+   * ItemsPerPage() casts its view argument to an integer.
    *
    * @covers ::itemsPerPage
-   * @covers ::offset
    */
-  public function testItemsPerPageAndOffsetCastArgumentsToInt() {
-    $args = [NULL, NULL, NULL, NULL, NULL, '15', NULL, '3'];
+  public function testItemsPerPageCastsArgumentToInt() {
+    $args = [NULL, NULL, NULL, NULL, NULL, '15'];
     [$pager] = $this->createPager($args);
 
     $reflection = new \ReflectionClass($pager);
     $itemsPerPage = $reflection->getMethod('itemsPerPage');
     $itemsPerPage->setAccessible(TRUE);
-    $offset = $reflection->getMethod('offset');
-    $offset->setAccessible(TRUE);
 
     $this->assertSame(15, $itemsPerPage->invoke($pager));
-    $this->assertSame(3, $offset->invoke($pager));
   }
 
   /**

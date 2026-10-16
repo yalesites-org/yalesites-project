@@ -1,0 +1,11 @@
+uuid: 10fc7a9a-1dad-4a80-b510-542d32c38803
+langcode: en
+status: true
+dependencies: {  }
+id: resource_condensed
+block_id: 'inline_block:resource_condensed'
+category: resource_listings
+label: 'Resources - Condensed View'
+image_path: ''
+image_alt: ''
+weight: 3

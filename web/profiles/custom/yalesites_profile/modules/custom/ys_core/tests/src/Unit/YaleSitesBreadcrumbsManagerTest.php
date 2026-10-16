@@ -114,4 +114,83 @@ class YaleSitesBreadcrumbsManagerTest extends UnitTestCase {
     ];
   }
 
+  /**
+   * Tests that the block-move endpoint never reaches the breadcrumb builder.
+   *
+   * The breadcrumb builder must not even be consulted: core resolves a title
+   * for every ancestor of the request path, and the eight-segment ancestor of
+   * a move URL matches layout_builder.move_block_form, whose title callback
+   * throws on what is really a region name. Returning early is the fix, so
+   * "never called" is the assertion that proves the guard sits in front of it.
+   *
+   * @covers ::build
+   */
+  public function testBuildSkipsTheBlockMoveEndpoint(): void {
+    $this->breadcrumbBuilder->expects($this->never())->method('build');
+
+    $this->assertSame([], $this->manager->build($this->routeMatchFor('layout_builder.move_block')));
+  }
+
+  /**
+   * Tests that every other route still builds breadcrumbs.
+   *
+   * The guard is deliberately scoped to the one route whose ancestor collides.
+   * Its Layout Builder siblings are eight segments or fewer, so nothing of
+   * theirs matches a throwing title callback, and blanking the breadcrumb
+   * component in their AJAX rebuild would be a regression on working paths.
+   * layout_builder.overrides.node.view is the Layout Builder editing page -
+   * a real page an editor looks at - and must keep its breadcrumbs too.
+   *
+   * @covers ::build
+   *
+   * @dataProvider breadcrumbBuildingRouteProvider
+   */
+  public function testBuildStillRunsOnEveryOtherRoute(string $route_name): void {
+    $link = $this->createMock(Link::class);
+    $link->method('getText')->willReturn('Home');
+    $breadcrumb = $this->createMock(Breadcrumb::class);
+    $breadcrumb->method('getLinks')->willReturn([$link]);
+
+    $route = $this->routeMatchFor($route_name);
+    $this->breadcrumbBuilder->expects($this->once())
+      ->method('build')
+      ->with($route)
+      ->willReturn($breadcrumb);
+
+    $this->assertSame([$link], array_values($this->manager->build($route)));
+  }
+
+  /**
+   * Provides routes that must still get breadcrumbs.
+   *
+   * @return array
+   *   Each case: [route name].
+   */
+  public static function breadcrumbBuildingRouteProvider(): array {
+    return [
+      'the move CONFIRMATION FORM, not the move itself' => ['layout_builder.move_block_form'],
+      'add block' => ['layout_builder.add_block'],
+      'update block' => ['layout_builder.update_block'],
+      'remove block' => ['layout_builder.remove_block'],
+      'ys_layouts clone block' => ['ys_layouts.clone_block'],
+      'the Layout Builder editing page' => ['layout_builder.overrides.node.view'],
+      'an ordinary node page' => ['entity.node.canonical'],
+    ];
+  }
+
+  /**
+   * Builds a route match reporting the given route name.
+   *
+   * @param string $route_name
+   *   The route name.
+   *
+   * @return \Drupal\Core\Routing\RouteMatchInterface|\PHPUnit\Framework\MockObject\MockObject
+   *   The route match.
+   */
+  protected function routeMatchFor(string $route_name) {
+    $route = $this->createMock(RouteMatchInterface::class);
+    $route->method('getRouteName')->willReturn($route_name);
+    return $route;
+  }
+
 }

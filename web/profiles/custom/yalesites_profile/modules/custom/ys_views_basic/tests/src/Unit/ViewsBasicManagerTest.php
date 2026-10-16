@@ -9,6 +9,10 @@ use Drupal\Core\Form\FormStateInterface;
 use Drupal\Core\Routing\RouteMatchInterface;
 use Drupal\Tests\UnitTestCase;
 use Drupal\taxonomy\TermStorageInterface;
+use Drupal\views\Plugin\views\display\DisplayPluginBase;
+use Drupal\views\ViewExecutable;
+use Drupal\views\ViewExecutableFactory;
+use Drupal\ys_views_basic\Service\ExposedTaxonomyFilterOptions;
 use Drupal\ys_views_basic\ViewsBasicManager;
 
 /**
@@ -68,6 +72,20 @@ class ViewsBasicManagerTest extends UnitTestCase {
   protected $cacheTagsInvalidator;
 
   /**
+   * The view executable factory mock.
+   *
+   * @var \Drupal\views\ViewExecutableFactory|\PHPUnit\Framework\MockObject\MockObject
+   */
+  protected $viewExecutableFactory;
+
+  /**
+   * The exposed taxonomy filter options mock.
+   *
+   * @var \Drupal\ys_views_basic\Service\ExposedTaxonomyFilterOptions|\PHPUnit\Framework\MockObject\MockObject
+   */
+  protected $exposedTaxonomyFilterOptions;
+
+  /**
    * The manager under test.
    *
    * @var \Drupal\ys_views_basic\ViewsBasicManager
@@ -93,12 +111,16 @@ class ViewsBasicManagerTest extends UnitTestCase {
     $this->entityDisplayRepository = $this->createMock(EntityDisplayRepository::class);
     $this->routeMatch = $this->createMock(RouteMatchInterface::class);
     $this->cacheTagsInvalidator = $this->createMock(CacheTagsInvalidatorInterface::class);
+    $this->viewExecutableFactory = $this->createMock(ViewExecutableFactory::class);
+    $this->exposedTaxonomyFilterOptions = $this->createMock(ExposedTaxonomyFilterOptions::class);
 
     $this->manager = new ViewsBasicManager(
       $this->entityTypeManager,
       $this->entityDisplayRepository,
       $this->routeMatch,
-      $this->cacheTagsInvalidator
+      $this->cacheTagsInvalidator,
+      $this->viewExecutableFactory,
+      $this->exposedTaxonomyFilterOptions
     );
   }
 
@@ -157,6 +179,8 @@ class ViewsBasicManagerTest extends UnitTestCase {
         ['entity_display.repository', 1, $this->entityDisplayRepository],
         ['current_route_match', 1, $this->routeMatch],
         ['cache_tags.invalidator', 1, $this->cacheTagsInvalidator],
+        ['views.executable', 1, $this->viewExecutableFactory],
+        ['ys_views_basic.exposed_taxonomy_filter_options', 1, $this->exposedTaxonomyFilterOptions],
       ]);
 
     $manager = ViewsBasicManager::create($container);
@@ -171,7 +195,7 @@ class ViewsBasicManagerTest extends UnitTestCase {
   public function testEntityTypeListReturnsLabelsWithImageMarkup() {
     $list = $this->manager->entityTypeList();
 
-    $this->assertSame(['post', 'event', 'page', 'profile'], array_keys($list));
+    $this->assertSame(['post', 'event', 'page', 'profile', 'resource'], array_keys($list));
     $this->assertStringContainsString('Posts', $list['post']);
     $this->assertStringContainsString('<img src=', $list['post']);
   }
@@ -189,14 +213,14 @@ class ViewsBasicManagerTest extends UnitTestCase {
   }
 
   /**
-   * ViewModeList() includes the "directory" mode only for profiles.
+   * ViewModeList() no longer offers the retired "directory" mode (#1682).
    *
    * @covers ::viewModeList
    */
-  public function testViewModeListForProfileIncludesDirectory() {
+  public function testViewModeListForProfile() {
     $list = $this->manager->viewModeList('profile');
 
-    $this->assertArrayHasKey('directory', $list);
+    $this->assertSame(['card', 'list_item', 'condensed'], array_keys($list));
   }
 
   /**
@@ -400,12 +424,51 @@ class ViewsBasicManagerTest extends UnitTestCase {
   public function testGetDefaultParamValueSimpleArrayOptionsDefaultAndPassThrough() {
     $this->assertSame([], $this->manager->getDefaultParamValue('event_field_options', json_encode([])));
     $this->assertSame([], $this->manager->getDefaultParamValue('post_field_options', json_encode([])));
+    $this->assertSame([], $this->manager->getDefaultParamValue('profile_field_options', json_encode([])));
     $this->assertSame([], $this->manager->getDefaultParamValue('exposed_filter_options', json_encode([])));
 
     $params = json_encode(['event_field_options' => ['hide_add_to_calendar' => 1]]);
     $this->assertSame(
       ['hide_add_to_calendar' => 1],
       $this->manager->getDefaultParamValue('event_field_options', $params)
+    );
+
+    $profile_params = json_encode(['profile_field_options' => ['show_email' => 'show_email']]);
+    $this->assertSame(
+      ['show_email' => 'show_email'],
+      $this->manager->getDefaultParamValue('profile_field_options', $profile_params)
+    );
+  }
+
+  /**
+   * GetDefaultParamValue('card_size', ...) keeps the large grid (#1648).
+   *
+   * Listings saved before the dial existed carry no card_size key and must keep
+   * rendering exactly as they did. A listing saved against the numeric dial the
+   * control briefly used resolves to the size that renders the same grid, so it
+   * reads correctly whether or not the deploy hook has converted it yet.
+   *
+   * @covers ::getDefaultParamValue
+   */
+  public function testGetDefaultParamValueCardSizeDefaultsToLarge() {
+    $this->assertSame('large', $this->manager->getDefaultParamValue('card_size', json_encode([])));
+    $this->assertSame(
+      'small',
+      $this->manager->getDefaultParamValue('card_size', json_encode(['card_size' => 'small']))
+    );
+    // A stray cards_per_row key is not read at all: that shape never shipped
+    // (absent from develop and from this PR's base), so there is no stored
+    // data to honour and no conversion to make. It is simply an absent
+    // card_size, which takes the default.
+    $this->assertSame(
+      'large',
+      $this->manager->getDefaultParamValue('card_size', json_encode(['cards_per_row' => 4]))
+    );
+    // Anything outside the offered set falls back rather than emitting a grid
+    // the SCSS has no rule for.
+    $this->assertSame(
+      'large',
+      $this->manager->getDefaultParamValue('card_size', json_encode(['card_size' => 'enormous']))
     );
   }
 
@@ -425,6 +488,70 @@ class ViewsBasicManagerTest extends UnitTestCase {
 
     $params = json_encode(['category_filter_label' => 'Custom Label']);
     $this->assertSame('Custom Label', $this->manager->getDefaultParamValue('category_filter_label', $params));
+  }
+
+  /**
+   * GetDefaultParamValue() for include/exclude operators falls back per #1316.
+   *
+   * A block saved after the split reads its own key; one saved before it
+   * (only the legacy 'operator' key) falls back to that for both; one with
+   * neither key defaults to "+" (OR).
+   *
+   * @covers ::getDefaultParamValue
+   */
+  public function testGetDefaultParamValueOperatorSplitFallsBackToLegacy() {
+    $split = json_encode(['include_operator' => ',', 'exclude_operator' => '+']);
+    $this->assertSame(',', $this->manager->getDefaultParamValue('include_operator', $split));
+    $this->assertSame('+', $this->manager->getDefaultParamValue('exclude_operator', $split));
+
+    $legacy = json_encode(['operator' => ',']);
+    $this->assertSame(',', $this->manager->getDefaultParamValue('include_operator', $legacy));
+    $this->assertSame(',', $this->manager->getDefaultParamValue('exclude_operator', $legacy));
+
+    $neither = json_encode([]);
+    $this->assertSame('+', $this->manager->getDefaultParamValue('include_operator', $neither));
+    $this->assertSame('+', $this->manager->getDefaultParamValue('exclude_operator', $neither));
+  }
+
+  /**
+   * ResolveTermOperators() resolves each operator independently, per #1316.
+   *
+   * This is the fix for the correctness bug the split addresses: a shared
+   * operator meant choosing "All" made includes stricter and excludes
+   * *looser* at the same time (implode() joining the exclude list with ","
+   * only excludes a node carrying every excluded term, not any one).
+   * Resolving them independently is what setupView() joins each term list
+   * with, so proving this returns the right pair per input is what proves
+   * the two lists can no longer affect each other's behavior.
+   *
+   * @covers ::resolveTermOperators
+   */
+  public function testResolveTermOperatorsAreIndependent() {
+    // Both explicit, and different from each other.
+    $this->assertSame(
+      [',', '+'],
+      $this->manager->resolveTermOperators(['include_operator' => ',', 'exclude_operator' => '+'])
+    );
+    $this->assertSame(
+      ['+', ','],
+      $this->manager->resolveTermOperators(['include_operator' => '+', 'exclude_operator' => ','])
+    );
+
+    // Legacy 'operator' key applies to both (pre-#1316 saved block).
+    $this->assertSame([',', ','], $this->manager->resolveTermOperators(['operator' => ',']));
+
+    // Neither key present defaults both to "+" (OR).
+    $this->assertSame(['+', '+'], $this->manager->resolveTermOperators([]));
+
+    // The new keys win over a legacy key present alongside them.
+    $this->assertSame(
+      [',', '+'],
+      $this->manager->resolveTermOperators([
+        'operator' => '+',
+        'include_operator' => ',',
+        'exclude_operator' => '+',
+      ])
+    );
   }
 
   /**
@@ -548,6 +675,45 @@ class ViewsBasicManagerTest extends UnitTestCase {
   }
 
   /**
+   * GetTagsForVocabularies() groups terms under their vocabulary's label.
+   *
+   * @covers ::getTagsForVocabularies
+   */
+  public function testGetTagsForVocabulariesGroupsByVocabularyLabel() {
+    $this->vocabularyStorage->method('load')->willReturnMap([
+      ['post_category', $this->createVocabularyMock('post_category', 'Post Category')],
+      ['tags', $this->createVocabularyMock('tags', 'Tags')],
+    ]);
+    $this->termStorage->method('loadTree')
+      ->willReturnMap([
+        ['post_category', 0, NULL, FALSE, [$this->createTreeItem(1, 'Announcements')]],
+        ['tags', 0, NULL, FALSE, [$this->createTreeItem(3, 'Zebra'), $this->createTreeItem(2, 'Apple')]],
+      ]);
+
+    $tags = $this->manager->getTagsForVocabularies(['post_category', 'tags']);
+
+    // Groups appear in the order the vocabulary ids were given.
+    $this->assertSame(['Post Category', 'Tags'], array_keys($tags));
+    $this->assertSame([1 => 'Announcements'], $tags['Post Category']);
+    // Terms within a group are alphabetical (asort preserves keys).
+    $this->assertSame([2, 3], array_keys($tags['Tags']));
+    $this->assertSame('Apple', $tags['Tags'][2]);
+  }
+
+  /**
+   * GetTagsForVocabularies() skips a vocabulary id that fails to load.
+   *
+   * @covers ::getTagsForVocabularies
+   */
+  public function testGetTagsForVocabulariesSkipsMissingVocabulary() {
+    $this->vocabularyStorage->method('load')->willReturn(NULL);
+
+    $tags = $this->manager->getTagsForVocabularies(['not_a_real_vocabulary']);
+
+    $this->assertSame([], $tags);
+  }
+
+  /**
    * GetTaxonomyParents() lists top-level terms with an "All Items" option.
    *
    * @covers ::getTaxonomyParents
@@ -563,14 +729,14 @@ class ViewsBasicManagerTest extends UnitTestCase {
   }
 
   /**
-   * GetChildTermsByParentId() lists descendant term IDs keyed by themselves.
+   * GetChildTermsByParentId() delegates to the exposed filter options service.
    *
    * @covers ::getChildTermsByParentId
    */
   public function testGetChildTermsByParentIdReturnsDescendantIds() {
-    $this->termStorage->method('loadTree')
-      ->with('event_category', 4, NULL)
-      ->willReturn([$this->createTreeItem(5, 'Concerts'), $this->createTreeItem(6, 'Readings')]);
+    $this->exposedTaxonomyFilterOptions->method('getDescendantTermIds')
+      ->with('event_category', 4)
+      ->willReturn([5 => 5, 6 => 6]);
 
     $children = $this->manager->getChildTermsByParentId(4, 'event_category');
 
@@ -589,6 +755,170 @@ class ViewsBasicManagerTest extends UnitTestCase {
 
     $this->assertSame(12, $method->invoke($this->manager, '12'));
     $this->assertSame(12, $method->invoke($this->manager, ['target_id' => '12']));
+    // The cast applies to the whole ternary, so an empty value is 0 rather
+    // than a TypeError from returning an uncast string.
+    $this->assertSame(0, $method->invoke($this->manager, ''));
+  }
+
+  /**
+   * Runs setupView() on a mock view and returns the display options it set.
+   *
+   * @param array $params
+   *   The block params, merged over the minimum setupView() reads.
+   * @param array $filters
+   *   The display's filters before setup.
+   *
+   * @return array
+   *   Every display option setupView() set, keyed by option name.
+   */
+  protected function runSetupView(array $params, array $filters): array {
+    $params += [
+      'sort_by' => 'field_publish_date:DESC',
+      'display' => 'all',
+      'limit' => 10,
+      'view_mode' => 'card',
+    ];
+    $set = [];
+    $display = $this->createMock(DisplayPluginBase::class);
+    $display->method('getOption')->willReturnCallback(
+      function ($name) use (&$set, $filters) {
+        return $name === 'filters' ? $filters : ($set[$name] ?? NULL);
+      }
+    );
+    $display->method('setOption')->willReturnCallback(
+      function ($name, $value) use (&$set) {
+        $set[$name] = $value;
+      }
+    );
+    $view = $this->createMock(ViewExecutable::class);
+    $view->method('getDisplay')->willReturn($display);
+    $view->method('preview')->willReturn(['#rows' => []]);
+
+    $this->manager->setupView($view, json_encode($params));
+    return $set;
+  }
+
+  /**
+   * Builds an exposed taxonomy filter as the scaffold views hold it.
+   */
+  protected function taxonomyFilter(string $vid): array {
+    return [
+      'plugin_id' => 'taxonomy_index_tid',
+      'vid' => $vid,
+      'exposed' => TRUE,
+      'expose' => ['reduce' => FALSE],
+    ];
+  }
+
+  /**
+   * Provides each non-resource listing type with its category filter.
+   *
+   * @return array
+   *   Rows of type, category filter name, category vocabulary id.
+   */
+  public static function categoryFilterProvider(): array {
+    return [
+      'post' => ['post', 'field_category_target_id', 'post_category'],
+      'event' => ['event', 'field_category_target_id', 'event_category'],
+      'page' => ['page', 'field_category_target_id_1', 'page_category'],
+      'profile' => ['profile', 'field_affiliation_target_id', 'affiliation'],
+    ];
+  }
+
+  /**
+   * Every listing type stops offering excluded terms in its taxonomy filters.
+   *
+   * The category filter and custom vocabulary also pass their included parent
+   * term; audience passes exclusions only.
+   *
+   * @covers ::setupView
+   *
+   * @dataProvider categoryFilterProvider
+   */
+  public function testSetupViewConstrainsTaxonomyFiltersForEveryListingType(string $type, string $category_filter, string $vid) {
+    $vocabulary = $this->createMock('Drupal\taxonomy\VocabularyInterface');
+    $vocabulary->method('label')->willReturn('Custom');
+    $this->vocabularyStorage->method('load')->with('custom_vocab')->willReturn($vocabulary);
+
+    $calls = [];
+    $this->exposedTaxonomyFilterOptions->method('apply')->willReturnCallback(
+      function ($filters, $name, $excluded, $parent = NULL) use (&$calls) {
+        $calls[$name] = [$excluded, $parent];
+        return TRUE;
+      }
+    );
+
+    $this->runSetupView([
+      'filters' => ['types' => [$type], 'terms_exclude' => ['5', ['target_id' => '7']]],
+      'exposed_filter_options' => [
+        'show_category_filter' => 'show_category_filter',
+        'show_custom_vocab_filter' => 'show_custom_vocab_filter',
+        'show_audience_filter' => 'show_audience_filter',
+      ],
+      'category_included_terms' => 4,
+      'custom_vocab_included_terms' => 9,
+    ], [
+      'status' => ['plugin_id' => 'boolean'],
+      $category_filter => $this->taxonomyFilter($vid),
+      'field_custom_vocab_target_id' => $this->taxonomyFilter('custom_vocab'),
+      'field_audience_target_id' => $this->taxonomyFilter('audience'),
+    ]);
+
+    $this->assertSame([
+      $category_filter => [[5, 7], 4],
+      'field_custom_vocab_target_id' => [[5, 7], 9],
+      'field_audience_target_id' => [[5, 7], NULL],
+    ], $calls);
+  }
+
+  /**
+   * A resource listing runs every exposed taxonomy filter through apply().
+   *
+   * Category and custom vocabulary pass their included parent term; the
+   * other taxonomy filters pass exclusions only; non-taxonomy filters are
+   * never touched.
+   *
+   * @covers ::setupView
+   */
+  public function testSetupViewConstrainsResourceTaxonomyFilters() {
+    $vocabulary = $this->createMock('Drupal\taxonomy\VocabularyInterface');
+    $vocabulary->method('label')->willReturn('Custom');
+    $this->vocabularyStorage->method('load')->with('custom_vocab')->willReturn($vocabulary);
+    $calls = [];
+    $this->exposedTaxonomyFilterOptions->method('apply')->willReturnCallback(
+      function ($filters, $name, $excluded, $parent = NULL) use (&$calls) {
+        $calls[$name] = [$excluded, $parent];
+        return TRUE;
+      }
+    );
+
+    $this->runSetupView([
+      'filters' => ['types' => ['resource'], 'terms_exclude' => ['5', ['target_id' => '7']]],
+      'exposed_filter_options' => [
+        'show_category_filter' => 'show_category_filter',
+        'show_custom_vocab_filter' => 'show_custom_vocab_filter',
+        'show_audience_filter' => 'show_audience_filter',
+        'show_discipline_filter' => 'show_discipline_filter',
+        'show_year_filter' => 'show_year_filter',
+      ],
+      'category_included_terms' => 4,
+      'custom_vocab_included_terms' => 9,
+    ], [
+      'status' => ['plugin_id' => 'boolean'],
+      'field_category_target_id' => $this->taxonomyFilter('resource_category'),
+      'field_custom_vocab_target_id' => $this->taxonomyFilter('custom_vocab'),
+      'field_audience_target_id' => $this->taxonomyFilter('audience'),
+      'field_discipline_target_id' => $this->taxonomyFilter('discipline'),
+      'field_geographic_areas_target_id' => $this->taxonomyFilter('geographic_areas'),
+      'resource_year_filter' => ['plugin_id' => 'resource_year_filter', 'exposed' => TRUE],
+    ]);
+
+    $this->assertSame([
+      'field_category_target_id' => [[5, 7], 4],
+      'field_custom_vocab_target_id' => [[5, 7], 9],
+      'field_audience_target_id' => [[5, 7], NULL],
+      'field_discipline_target_id' => [[5, 7], NULL],
+    ], $calls, 'Geographic areas was not enabled, so it was removed, not constrained.');
   }
 
   /**
