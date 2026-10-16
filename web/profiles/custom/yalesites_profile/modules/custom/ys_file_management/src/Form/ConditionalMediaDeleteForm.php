@@ -9,7 +9,7 @@ use Drupal\file\FileInterface;
 use Drupal\file\FileUsage\FileUsageInterface;
 use Drupal\file\Plugin\Field\FieldType\FileItem;
 use Drupal\media\MediaInterface;
-use Drupal\ys_file_management\Service\MediaFileDeleterInterface;
+use Drupal\ys_file_management\Service\MediaFileDeleter;
 use Symfony\Component\DependencyInjection\ContainerInterface;
 
 /**
@@ -38,9 +38,9 @@ class ConditionalMediaDeleteForm extends ContentEntityDeleteForm {
   /**
    * The media file deleter service.
    *
-   * @var \Drupal\ys_file_management\Service\MediaFileDeleterInterface
+   * @var \Drupal\ys_file_management\Service\MediaFileDeleter
    */
-  protected MediaFileDeleterInterface $mediaFileDeleter;
+  protected MediaFileDeleter $mediaFileDeleter;
 
   /**
    * The file usage service.
