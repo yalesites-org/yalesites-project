@@ -6,6 +6,7 @@
  */
 
 use Drupal\Core\Entity\ContentEntityInterface;
+use Drupal\Core\Entity\Display\EntityViewDisplayInterface;
 use Drupal\Core\Field\FieldDefinitionInterface;
 use Drupal\Core\Field\FieldFilteredMarkup;
 use Drupal\field\Entity\FieldStorageConfig;
@@ -356,5 +357,17 @@ function ys_themes_preprocess_html(&$variables) {
         }
       }
     }
+  }
+}
+
+/**
+ * Implements hook_ENTITY_TYPE_view_alter() for block_content entities.
+ */
+function ys_themes_block_content_view_alter(array &$build, ContentEntityInterface $entity, EntityViewDisplayInterface $display) {
+  // Editors see Divider widths as "75%", but the divider component matches
+  // data-divider-width on the bare number. Render the stored key without the
+  // percent sign so the width does not depend on the option label.
+  if ($entity->bundle() === 'divider' && isset($build['field_style_width'][0])) {
+    $build['field_style_width'][0]['#markup'] = rtrim($entity->get('field_style_width')->value, '%');
   }
 }

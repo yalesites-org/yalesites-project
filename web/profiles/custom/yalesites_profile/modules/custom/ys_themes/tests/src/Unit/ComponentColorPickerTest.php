@@ -43,6 +43,13 @@ class ComponentColorPickerTest extends UnitTestCase {
   protected $renderer;
 
   /**
+   * The option label passed to buildColorInfo(), keyed by option key.
+   *
+   * @var array
+   */
+  protected $buildColorInfoLabels = [];
+
+  /**
    * The widget under test.
    *
    * @var \Drupal\ys_themes\Plugin\Field\FieldWidget\ComponentColorPicker
@@ -57,7 +64,8 @@ class ComponentColorPickerTest extends UnitTestCase {
 
     $theme_settings_manager = $this->createMock(ThemeSettingsManager::class);
     $this->colorTokenResolver = $this->createMock(ColorTokenResolver::class);
-    $this->colorTokenResolver->method('buildColorInfo')->willReturnCallback(function ($key, $var) {
+    $this->colorTokenResolver->method('buildColorInfo')->willReturnCallback(function ($key, $var, $label = NULL) {
+      $this->buildColorInfoLabels[$key] = $label;
       return [
         'css_var' => (string) $var,
         'hex' => '#abcabc',
@@ -214,6 +222,31 @@ class ComponentColorPickerTest extends UnitTestCase {
     $this->widget->processColorPicker($element, $form_state, $complete_form);
 
     $this->assertSame(['1' => '1', 'two' => 'Two'], $rendered['#palette_options']);
+  }
+
+  /**
+   * Tests process color picker hands each option label to buildColorInfo().
+   *
+   * The resolver names the 'default' swatch from that label, so editors see
+   * "Default - No Color" rather than a generic "Default".
+   *
+   * @covers ::processColorPicker
+   */
+  public function testProcessColorPickerPassesOptionLabelToBuildColorInfo(): void {
+    $this->renderer->method('render')->willReturn('<div></div>');
+
+    $element = [
+      '#palette_options' => ['default' => 'Default - No Color', 'one' => 'One'],
+      '#global_theme' => 'one',
+      '#selected_value' => 'default',
+      '#color_styles' => [],
+    ];
+    $form_state = $this->createMock(FormStateInterface::class);
+    $complete_form = [];
+
+    $this->widget->processColorPicker($element, $form_state, $complete_form);
+
+    $this->assertSame(['default' => 'Default - No Color', 'one' => 'One'], $this->buildColorInfoLabels);
   }
 
 }
