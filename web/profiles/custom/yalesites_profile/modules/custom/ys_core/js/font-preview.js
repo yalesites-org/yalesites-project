@@ -1,25 +1,33 @@
 (function ($, Drupal, once) {
-  'use strict';
+  // Maps each select's form element name to the preview data attribute it
+  // controls, so the preview stays correct however many of the three
+  // controls a user changes.
+  const CONTROLS = {
+    heading_font: "data-heading-font",
+    heading_numerals: "data-heading-numerals",
+    body_numerals: "data-body-numerals",
+  };
 
   Drupal.behaviors.fontPreview = {
-    attach: function (context, settings) {
-      once('font-preview', '.font-pairing-selector', context).forEach(function (element) {
-        // Show initial preview based on default selection
-        const $selectedRadio = $('input[name="font_pairing"]:checked', element);
-        if ($selectedRadio.length) {
-          showPreview($selectedRadio.val());
+    attach(context, settings) {
+      once("font-preview", ".font-preview-container", context).forEach(
+        function (container) {
+          const $container = $(container);
+
+          Object.keys(CONTROLS).forEach(function (name) {
+            const attribute = CONTROLS[name];
+            // Each preview only carries the attribute(s) it actually renders
+            // from, so this scopes the listener to the previews that care.
+            if (!$container.is(`[${attribute}]`)) {
+              return;
+            }
+
+            $(`select[name="${name}"]`, context).on("change", function () {
+              $container.attr(attribute, $(this).val());
+            });
+          });
         }
-
-        // Update preview when selection changes
-        $(element).on('change', 'input[name="font_pairing"]', function() {
-          showPreview($(this).val());
-        });
-      });
-
-      function showPreview(fontPairing) {
-        $('.font-preview').removeClass('is-active');
-        $('.font-preview-' + fontPairing).addClass('is-active');
-      }
-    }
+      );
+    },
   };
 })(jQuery, Drupal, once);
