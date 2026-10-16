@@ -20,6 +20,13 @@ class GoogleMaps extends EmbedSourceBase implements EmbedSourceInterface {
 
   /**
    * {@inheritdoc}
+   *
+   * Google Maps is a Google service; the embed sets Google cookies.
+   */
+  protected static $klaroService = 'google_maps';
+
+  /**
+   * {@inheritdoc}
    */
   protected static $pattern = '/^<iframe[^>]*src=\"https:\/\/www\.google\.com\/maps\/embed(?<map_params>\?.+?)\".*$/s';
 

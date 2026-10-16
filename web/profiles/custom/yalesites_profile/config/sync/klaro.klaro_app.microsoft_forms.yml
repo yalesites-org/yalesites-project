@@ -1,0 +1,28 @@
+uuid: ca892896-78c5-4d4c-b1ac-51081266711e
+langcode: en
+status: true
+dependencies: {  }
+id: microsoft_forms
+label: 'Microsoft Forms'
+description: 'Microsoft Forms is a survey service by Microsoft Corporation (USA).'
+default: false
+purposes:
+  - external_content
+cookies: {  }
+required: false
+opt_out: false
+only_once: false
+contextual_consent_only: null
+contextual_consent_text: null
+info_url: 'https://forms.office.com/'
+privacy_policy_url: 'https://privacy.microsoft.com/privacystatement'
+javascripts:
+  - forms.office.com
+  - forms.microsoft.com
+callback_code: ''
+on_init: ''
+on_accept: ''
+on_decline: ''
+wrapper_identifier: {  }
+attachments: {  }
+weight: 0
