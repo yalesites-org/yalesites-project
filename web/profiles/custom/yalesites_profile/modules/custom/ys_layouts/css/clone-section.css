@@ -1,0 +1,157 @@
+/**
+ * @file
+ * Styling for the "Clone" action on the Layout Builder section toolbar.
+ *
+ * The section actions are not a flex row: gin_lb positions each one absolutely
+ * at a hardcoded offset (Remove an 18px icon at left 0, Configure an
+ * icon-plus-label at left 20px) and atomic pins section_library's "Add Section
+ * to Library" at left 275px. Clone is given the same treatment as Remove — an
+ * 18px masked icon with its label off-screen — and placed between Remove and
+ * Configure so the actions read as one set.
+ *
+ * Why between them rather than to Configure's right: Configure's width is the
+ * section label, which editors can set, so it is unbounded (measured 196-219px
+ * for the labels this platform ships). A fixed-width icon placed *before* the
+ * variable-width label cannot collide at any label length, whereas anything to
+ * Configure's right overlaps either Configure or the library link.
+ *
+ * Shifting Configure 20px right is gin_lb's own answer to this: its gin_lb_plus
+ * submodule ships `.layout-builder__link--configure { left: 40px }` when it adds
+ * a fourth item to the row. Configure then ends at 259px worst case, clear of
+ * the library link.
+ *
+ * The left-to-right order here has to match the markup order, or the toolbar
+ * reads in one order and takes focus in another (WCAG 2.4.3). The ordering half
+ * lives in SectionCloneLinkBuilder::insertClone(); change one and check both.
+ *
+ * The `.gin--dark-mode` rules at the end of this file mirror the ones atomic
+ * already carries for Remove, and belong beside them in atomic's
+ * admin-theme.css the next time that file is touched. They are kept here so
+ * this fix stays in one repo; moving them is a follow-up, not a change to make
+ * from a review round.
+ */
+
+/*
+ * Scoped to the sections that actually get a Clone action, so a section where
+ * cloning is refused does not show an empty slot where Configure used to sit.
+ * The class is added by SectionCloneLinkBuilder::preRender() from the same
+ * access decision that gates the link.
+ */
+.ys-has-clone-action .layout-builder__link--configure {
+  left: 40px;
+}
+
+.layout-builder__link--clone {
+  /* Duplicate: a sheet copied over another, the conventional clone glyph.
+     Declared once because the rule needs it three times: masked,
+     -webkit-masked, and as the background-image of the hover ::after below.
+     Filled white like gin_lb's own Remove glyph, which serves both uses — a
+     mask reads the alpha channel, so the fill colour is immaterial there, while
+     the hover ::after paints the glyph itself and needs to be white. */
+  --icon-clone-section: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="17" height="17"><path fill="white" d="M15 1H4a2 2 0 0 0-2 2v12h2V3h11V1zm4 4H8a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h11a2 2 0 0 0 2-2V7a2 2 0 0 0-2-2zm0 16H8V7h11v14z"/></svg>');
+
+  /* Geometry matched to gin_lb's .layout-builder__link--remove so the two
+     icon-only actions are the same size and sit on the same baseline. The
+     label is pushed off-screen rather than removed, so it remains the link's
+     accessible name — the technique core's Remove action already uses here.
+     .visually-hidden would collapse the 18px icon box, so it is not an option. */
+  position: absolute;
+  z-index: 2;
+  top: -18px;
+  left: 20px;
+  width: 18px;
+  height: 18px;
+  white-space: nowrap;
+  text-indent: -9999px;
+
+  /* With a mask, background-color IS the icon colour. */
+  background-color: var(--gin-border-color-form-element);
+  mask-image: var(--icon-clone-section);
+  mask-repeat: no-repeat;
+  mask-position: center;
+  mask-size: 17px 17px;
+  -webkit-mask-image: var(--icon-clone-section);
+  -webkit-mask-repeat: no-repeat;
+  -webkit-mask-position: center;
+  -webkit-mask-size: 17px 17px;
+}
+
+/* Hovering the section lights all of its actions, as gin_lb does for Remove. */
+.layout-builder__section:hover .layout-builder__link--clone {
+  background-color: var(--gin-color-primary);
+}
+
+/*
+ * Direct hover/focus. Setting the mask's colour is not what gin_lb does to
+ * Remove and does not look the same: gin_lb drops the mask entirely so
+ * background-color fills the whole 18x18 box as a solid tile, then paints the
+ * glyph back on top through an ::after. Clone reproduces that exactly, or the
+ * two icons sitting side by side behave differently under the pointer — which
+ * is what review caught. The !important matches gin_lb's own on this rule.
+ *
+ * `:focus` is included deliberately, and it is the one place Clone does *not*
+ * copy Remove: gin_lb styles Remove on `:hover` only, so Remove has no visible
+ * focus treatment of its own. Giving a keyboard user the same clear indication
+ * a mouse user gets is worth the small asymmetry; the fix is to add `:focus` to
+ * Remove when these rules move to atomic, not to drop it here.
+ */
+.layout-builder__link--clone:hover,
+.layout-builder__link--clone:focus {
+  background-color: var(--gin-color-primary) !important;
+  mask-image: none;
+  -webkit-mask-image: none;
+}
+
+/*
+ * The glyph, repainted over the solid tile. z-index -1 keeps it above the
+ * link's own background but below its text, which is gin_lb's arrangement for
+ * Remove; the custom property is inherited from the originating element.
+ */
+.layout-builder__link--clone:hover::after,
+.layout-builder__link--clone:focus::after {
+  position: absolute;
+  z-index: -1;
+  inset: 0;
+  padding: 6px;
+  content: "";
+  background: var(--icon-clone-section) no-repeat center / 17px 17px;
+}
+
+/*
+ * Atomic keeps these actions blue on white, including a mask-aware rule for
+ * Remove (admin-theme.css). Clone uses the same mask-on-element pattern so it
+ * needs the same treatment. Ordered after the rules above so it wins on source
+ * order.
+ */
+.gin--dark-mode .layout-builder__link--clone {
+  background-color: var(--ys-contrast-blue);
+}
+
+/*
+ * Atomic gives Remove's hover tile a black fill (admin-theme.css, issue #1086)
+ * and paints every other action's hovered icon white with a blanket
+ * `.gin--dark-mode .layout-builder__link:hover::after` rule. That blanket rule
+ * is !important and equal in specificity to a plain `--clone` selector, so it
+ * would win Clone's fill on source order alone. The extra `.layout-builder__
+ * section` class buys the one point of specificity that settles it in Clone's
+ * favour without depending on which stylesheet loads last.
+ */
+.gin--dark-mode
+  .layout-builder__section
+  .layout-builder__link--clone:hover::after,
+.gin--dark-mode
+  .layout-builder__section
+  .layout-builder__link--clone:focus::after {
+  background-color: var(--ys-contrast-black) !important;
+}
+
+/*
+ * The tile under that glyph. Atomic pins Remove's to --ys-contrast-blue in both
+ * states, which outranks gin_lb's hover colour, so Clone has to be pinned the
+ * same way or the two tiles differ on hover — measured at rgb(0, 86, 179) for
+ * Remove against rgb(130, 191, 232) for Clone before this rule.
+ */
+.gin--dark-mode .layout-builder__section .layout-builder__link--clone:hover,
+.gin--dark-mode .layout-builder__section .layout-builder__link--clone:focus {
+  background-color: var(--ys-contrast-blue) !important;
+}

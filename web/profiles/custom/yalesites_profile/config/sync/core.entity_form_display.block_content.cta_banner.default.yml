@@ -4,6 +4,7 @@ status: true
 dependencies:
   config:
     - block_content.type.cta_banner
+    - field.field.block_content.cta_banner.field_button_style_consistency
     - field.field.block_content.cta_banner.field_heading
     - field.field.block_content.cta_banner.field_heading_level
     - field.field.block_content.cta_banner.field_instructions
@@ -30,6 +31,12 @@ targetEntityType: block_content
 bundle: cta_banner
 mode: default
 content:
+  field_button_style_consistency:
+    type: options_select
+    weight: 12
+    region: content
+    settings: {  }
+    third_party_settings: {  }
   field_heading:
     type: text_textfield
     weight: 3

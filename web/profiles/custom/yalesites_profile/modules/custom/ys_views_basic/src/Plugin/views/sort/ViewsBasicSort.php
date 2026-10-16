@@ -2,6 +2,7 @@
 
 namespace Drupal\ys_views_basic\Plugin\views\sort;
 
+use Drupal\views\Attribute\ViewsSort;
 use Drupal\views\Plugin\views\sort\SortPluginBase;
 use Drupal\ys_views_basic\ViewsBasicManager;
 
@@ -9,9 +10,8 @@ use Drupal\ys_views_basic\ViewsBasicManager;
  * Sort that receives JSON overrides from a Views Basic field.
  *
  * @ingroup views_sort_handlers
- *
- * @ViewsSort("views_basic_sort")
  */
+#[ViewsSort('views_basic_sort')]
 class ViewsBasicSort extends SortPluginBase {
 
   /**

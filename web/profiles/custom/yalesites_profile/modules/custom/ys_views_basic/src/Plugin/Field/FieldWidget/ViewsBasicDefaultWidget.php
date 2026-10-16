@@ -2,21 +2,20 @@
 
 namespace Drupal\ys_views_basic\Plugin\Field\FieldWidget;
 
+use Drupal\Core\Field\Attribute\FieldWidget;
 use Drupal\Core\Field\FieldItemListInterface;
 use Drupal\Core\Form\FormStateInterface;
+use Drupal\Core\StringTranslation\TranslatableMarkup;
 use Drupal\ys_views_basic\ViewsBasicManager;
 
 /**
  * Plugin implementation of the 'views_basic_default' widget.
- *
- * @FieldWidget(
- *   id = "views_basic_default_widget",
- *   label = @Translation("Views basic default widget"),
- *   field_types = {
- *     "views_basic_params"
- *   }
- * )
  */
+#[FieldWidget(
+  id: 'views_basic_default_widget',
+  label: new TranslatableMarkup('Views basic default widget'),
+  field_types: ['views_basic_params'],
+)]
 class ViewsBasicDefaultWidget extends ViewsBasicWidgetBase {
 
   /**

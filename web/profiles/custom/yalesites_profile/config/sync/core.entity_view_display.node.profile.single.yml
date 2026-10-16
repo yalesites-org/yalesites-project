@@ -58,6 +58,7 @@ third_party_settings:
       allowed_layouts:
         - layout_onecol
         - ys_layout_two_column
+        - ys_layout_two_column_30_70
       denylisted_blocks: {  }
       allowlisted_blocks:
         'YaleSites Layouts':
@@ -80,6 +81,7 @@ third_party_settings:
       allowed_layouts:
         - layout_onecol
         - ys_layout_two_column
+        - ys_layout_two_column_30_70
       allowlisted_blocks:
         layout_onecol:
           all_regions:
@@ -97,6 +99,7 @@ third_party_settings:
               - tabs
               - text
               - video
+              - office_hours
             'Inline blocks':
               - 'inline_block:accordion'
               - 'inline_block:button_link'
@@ -123,11 +126,13 @@ third_party_settings:
               - 'inline_block:tabs'
               - 'inline_block:text'
               - 'inline_block:video'
+              - 'inline_block:office_hours'
             'YaleSites Layouts':
               - profile_contact_block
           sidebar:
             'Custom block types':
               - text
+              - office_hours
             'Inline blocks':
               - 'inline_block:event_card'
               - 'inline_block:event_condensed'
@@ -141,11 +146,102 @@ third_party_settings:
               - 'inline_block:resource_condensed'
               - 'inline_block:resource_portrait_grid'
               - 'inline_block:text'
+              - 'inline_block:office_hours'
+            'YaleSites Layouts':
+              - profile_contact_block
+        ys_layout_two_column_30_70:
+          content:
+            'Custom block types':
+              - accordion
+              - button_link
+              - divider
+              - image
+              - pull_quote
+              - reference_card
+              - tabs
+              - text
+              - video
+              - office_hours
+            'Inline blocks':
+              - 'inline_block:accordion'
+              - 'inline_block:button_link'
+              - 'inline_block:divider'
+              - 'inline_block:event_card'
+              - 'inline_block:event_condensed'
+              - 'inline_block:event_list_item'
+              - 'inline_block:image'
+              - 'inline_block:page_card'
+              - 'inline_block:page_condensed'
+              - 'inline_block:page_list_item'
+              - 'inline_block:post_card'
+              - 'inline_block:post_condensed'
+              - 'inline_block:post_list_item'
+              - 'inline_block:profile_card'
+              - 'inline_block:profile_condensed'
+              - 'inline_block:profile_list_item'
+              - 'inline_block:pull_quote'
+              - 'inline_block:reference_card'
+              - 'inline_block:resource_card'
+              - 'inline_block:resource_condensed'
+              - 'inline_block:resource_list_item'
+              - 'inline_block:resource_portrait_grid'
+              - 'inline_block:tabs'
+              - 'inline_block:text'
+              - 'inline_block:video'
+              - 'inline_block:office_hours'
+            'YaleSites Layouts':
+              - profile_contact_block
+          sidebar:
+            'Custom block types':
+              - text
+              - office_hours
+            'Inline blocks':
+              - 'inline_block:event_card'
+              - 'inline_block:event_condensed'
+              - 'inline_block:page_card'
+              - 'inline_block:page_condensed'
+              - 'inline_block:post_card'
+              - 'inline_block:post_condensed'
+              - 'inline_block:profile_card'
+              - 'inline_block:profile_condensed'
+              - 'inline_block:resource_card'
+              - 'inline_block:resource_condensed'
+              - 'inline_block:resource_portrait_grid'
+              - 'inline_block:text'
+              - 'inline_block:office_hours'
             'YaleSites Layouts':
               - profile_contact_block
       denylisted_blocks: {  }
       restricted_categories:
         ys_layout_two_column:
+          sidebar:
+            - 'Chaos Tools'
+            - 'Content fields'
+            - 'Custom blocks'
+            - Devel
+            - Forms
+            - Help
+            - 'Lists (Views)'
+            - Menus
+            - System
+            - Webform
+            - 'YaleSites Core'
+            - 'YaleSites alert'
+            - core
+          content:
+            - 'Chaos Tools'
+            - 'Content fields'
+            - 'Custom blocks'
+            - Forms
+            - Help
+            - 'Lists (Views)'
+            - Menus
+            - System
+            - Webform
+            - 'YaleSites Core'
+            - 'YaleSites alert'
+            - core
+        ys_layout_two_column_30_70:
           sidebar:
             - 'Chaos Tools'
             - 'Content fields'

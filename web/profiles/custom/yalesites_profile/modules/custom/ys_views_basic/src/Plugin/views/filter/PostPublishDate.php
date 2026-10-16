@@ -2,6 +2,7 @@
 
 namespace Drupal\ys_views_basic\Plugin\views\filter;
 
+use Drupal\views\Attribute\ViewsFilter;
 use Drupal\views\Plugin\views\filter\FilterPluginBase;
 use Drupal\ys_views_basic\ViewsBasicManager;
 
@@ -9,9 +10,8 @@ use Drupal\ys_views_basic\ViewsBasicManager;
  * Excludes posts whose publish date has not yet been reached.
  *
  * @ingroup views_filter_handlers
- *
- * @ViewsFilter("post_publish_date")
  */
+#[ViewsFilter('post_publish_date')]
 class PostPublishDate extends FilterPluginBase {
 
   /**

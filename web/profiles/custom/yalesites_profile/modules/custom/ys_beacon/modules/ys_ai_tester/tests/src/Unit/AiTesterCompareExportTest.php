@@ -10,6 +10,7 @@ use Drupal\Tests\UnitTestCase;
 use Drupal\ys_ai_tester\AnswerBackendRegistry;
 use Drupal\ys_ai_tester\Controller\AiTesterController;
 use Drupal\ys_ai_tester\RunComparator;
+use Drupal\ys_ai_tester\RunExporter;
 use Symfony\Component\DependencyInjection\ContainerBuilder;
 
 /**
@@ -60,7 +61,27 @@ class AiTesterCompareExportTest extends UnitTestCase {
       $date_formatter,
       $comparator,
       $registry,
+      $this->createMock(RunExporter::class),
     );
+  }
+
+  /**
+   * Builds the exporter with a comparator stubbed to return $data.
+   *
+   * The JSON download is built by the exporter now, not by the controller, so
+   * the three tests below reach it directly instead of through a Response.
+   *
+   * @param array $data
+   *   The comparison structure the stubbed comparator returns.
+   *
+   * @return \Drupal\ys_ai_tester\RunExporter
+   *   The exporter under test.
+   */
+  protected function exporterReturning(array $data): RunExporter {
+    $comparator = $this->createMock(RunComparator::class);
+    $comparator->method('compare')->willReturn($data);
+
+    return new RunExporter($this->createMock(Connection::class), $comparator);
   }
 
   /**
@@ -326,15 +347,11 @@ class AiTesterCompareExportTest extends UnitTestCase {
    * its excerpt. Nothing reads the field: the compare view never rendered it
    * and the CSV never emitted it.
    *
-   * @covers ::downloadComparisonJson
+   * @covers \Drupal\ys_ai_tester\RunExporter::comparisonJson
    */
   public function testComparisonJsonDropsFullSourceTextKeepingExcerpt(): void {
-    $controller = $this->controllerReturning($this->comparisonWithCitations());
-
-    $payload = json_decode(
-      (string) $controller->downloadComparisonJson(7, 9)->getContent(),
-      TRUE
-    );
+    $payload = $this->exporterReturning($this->comparisonWithCitations())
+      ->comparisonJson(7, 9);
 
     foreach (['a', 'b'] as $side) {
       $citation = $payload['pairs'][0][$side]['citations'][0];
@@ -354,19 +371,14 @@ class AiTesterCompareExportTest extends UnitTestCase {
    * The prompt tells the model an absent side means "not asked in this run", so
    * stripping citations must not turn a null side into an empty object.
    *
-   * @covers ::downloadComparisonJson
+   * @covers \Drupal\ys_ai_tester\RunExporter::comparisonJson
    */
   public function testComparisonJsonKeepsAnUnpairedSideNull(): void {
     $data = $this->comparisonWithCitations();
     $data['pairs'][0]['b'] = NULL;
     $data['pairs'][0]['status'] = 'only_a';
 
-    $payload = json_decode(
-      (string) $this->controllerReturning($data)
-        ->downloadComparisonJson(7, 9)
-        ->getContent(),
-      TRUE
-    );
+    $payload = $this->exporterReturning($data)->comparisonJson(7, 9);
 
     $this->assertNull($payload['pairs'][0]['b']);
     $this->assertArrayNotHasKey(
@@ -378,15 +390,11 @@ class AiTesterCompareExportTest extends UnitTestCase {
   /**
    * The run meta and summary blocks survive the citation stripping untouched.
    *
-   * @covers ::downloadComparisonJson
+   * @covers \Drupal\ys_ai_tester\RunExporter::comparisonJson
    */
   public function testComparisonJsonKeepsRunMetaAndSummary(): void {
-    $payload = json_decode(
-      (string) $this->controllerReturning($this->comparisonWithCitations())
-        ->downloadComparisonJson(7, 9)
-        ->getContent(),
-      TRUE
-    );
+    $payload = $this->exporterReturning($this->comparisonWithCitations())
+      ->comparisonJson(7, 9);
 
     $this->assertSame(7, $payload['run_a']['id']);
     $this->assertSame('beacon', $payload['run_a']['backend']);
