@@ -1,0 +1,26 @@
+{
+  "global-themes": {
+    "one": {
+      "label": "Old Blues",
+      "colors": {
+        "slot-one": "hsl(210, 100%, 21%)",
+        "slot-two": "hsl(213, 66%, 45%)",
+        "slot-three": "hsl(212, 100%, 69%)",
+        "slot-four": "hsl(0, 0%, 97%)",
+        "slot-five": "hsl(0, 0%, 13%)",
+        "slot-six": "hsl(0, 0%, 100%)",
+        "slot-seven": "hsl(0, 0%, 0%)",
+        "slot-eight": "hsl(0, 0%, 100%)",
+        "slot-nine": "hsl(0, 0%, 85%)"
+      }
+    }
+  },
+  "color": {
+    "blue": {
+      "yale": "hsl(210, 100%, 21%)"
+    },
+    "gray": {
+      "200": "hsl(0, 0%, 85%)"
+    }
+  }
+}

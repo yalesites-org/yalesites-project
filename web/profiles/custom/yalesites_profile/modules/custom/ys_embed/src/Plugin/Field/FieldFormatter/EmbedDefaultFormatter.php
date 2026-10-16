@@ -2,23 +2,24 @@
 
 namespace Drupal\ys_embed\Plugin\Field\FieldFormatter;
 
+use Drupal\Core\Field\Attribute\FieldFormatter;
 use Drupal\Core\Field\FieldDefinitionInterface;
 use Drupal\Core\Field\FieldItemListInterface;
 use Drupal\Core\Field\FormatterBase;
 use Drupal\Core\Logger\LoggerChannelFactoryInterface;
 use Drupal\Core\Plugin\ContainerFactoryPluginInterface;
+use Drupal\Core\StringTranslation\TranslatableMarkup;
 use Drupal\ys_embed\Plugin\EmbedSourceManager;
 use Symfony\Component\DependencyInjection\ContainerInterface;
 
 /**
  * Plugin implementation embed formatter.
- *
- * @FieldFormatter(
- *   id = "embed_formatter",
- *   label = @Translation("Embed Default Formatter"),
- *   field_types = {"embed"}
- * )
  */
+#[FieldFormatter(
+  id: 'embed_formatter',
+  label: new TranslatableMarkup('Embed Default Formatter'),
+  field_types: ['embed'],
+)]
 class EmbedDefaultFormatter extends FormatterBase implements ContainerFactoryPluginInterface {
 
   /**

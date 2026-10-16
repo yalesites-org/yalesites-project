@@ -2,6 +2,7 @@
 
 namespace Drupal\ys_views_basic\Plugin\views\filter;
 
+use Drupal\views\Attribute\ViewsFilter;
 use Drupal\views\Plugin\views\filter\FilterPluginBase;
 use Drupal\views\Views;
 
@@ -9,9 +10,8 @@ use Drupal\views\Views;
  * Excludes taxonomy terms by ID.
  *
  * @ingroup views_filter_handlers
- *
- * @ViewsFilter("exclude_taxonomy_terms")
  */
+#[ViewsFilter('exclude_taxonomy_terms')]
 class ExcludeTaxonomyTerms extends FilterPluginBase {
 
   /**
