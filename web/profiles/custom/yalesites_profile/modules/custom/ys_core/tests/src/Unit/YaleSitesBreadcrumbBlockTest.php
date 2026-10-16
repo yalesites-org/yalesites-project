@@ -89,21 +89,28 @@ class YaleSitesBreadcrumbBlockTest extends UnitTestCase {
   /**
    * Puts a node on a Layout Builder route, as the entity being laid out.
    */
-  protected function onLayoutBuilderRouteFor(string $label): void {
+  protected function onLayoutBuilderRouteFor(string $label, bool $is_new = FALSE): void {
     $url = $this->createMock(Url::class);
     $url->method('getRouteName')->willReturn('entity.node.canonical');
     $url->method('getRouteParameters')->willReturn(['node' => 5]);
     $node = $this->createMock(NodeInterface::class);
     $node->method('label')->willReturn($label);
-    $node->method('isNew')->willReturn(FALSE);
+    $node->method('isNew')->willReturn($is_new);
     $node->method('toUrl')->willReturn($url);
     $node->method('getCacheTags')->willReturn(['node:5']);
     $node->method('getCacheContexts')->willReturn([]);
     $node->method('getCacheMaxAge')->willReturn(-1);
     $context = $this->createMock(ContextInterface::class);
     $context->method('getContextValue')->willReturn($node);
+    $this->onLayoutBuilderRouteWithContexts(['layout_builder.entity' => $context]);
+  }
+
+  /**
+   * Puts the block on a Layout Builder route with the given preview contexts.
+   */
+  protected function onLayoutBuilderRouteWithContexts(array $contexts): void {
     $storage = $this->createMock(SectionStorageInterface::class);
-    $storage->method('getContextsDuringPreview')->willReturn(['layout_builder.entity' => $context]);
+    $storage->method('getContextsDuringPreview')->willReturn($contexts);
 
     $this->routeMatch->method('getParameter')->willReturnMap([
       ['section_storage', $storage],
@@ -144,6 +151,33 @@ class YaleSitesBreadcrumbBlockTest extends UnitTestCase {
 
     $this->assertSame([], $build['#items']);
     $this->assertFalse($build['#always_show_breadcrumbs']);
+  }
+
+  /**
+   * A preview with no entity context renders no breadcrumb.
+   *
+   * @covers ::build
+   */
+  public function testLayoutBuilderRouteWithoutEntityShowsNoBreadcrumb(): void {
+    $this->onLayoutBuilderRouteWithContexts([]);
+    $this->menuLinkManager->expects($this->never())->method('loadLinksByRoute');
+
+    $this->assertSame([], $this->buildBlock()->build()['#items']);
+  }
+
+  /**
+   * A content type's default layout previews unsaved sample content.
+   *
+   * The sample entity has no URL, so it is never looked up in a menu and the
+   * preview renders no breadcrumb.
+   *
+   * @covers ::build
+   */
+  public function testLayoutBuilderRouteForNewEntityShowsNoBreadcrumb(): void {
+    $this->onLayoutBuilderRouteFor('Sample page', TRUE);
+    $this->menuLinkManager->expects($this->never())->method('loadLinksByRoute');
+
+    $this->assertSame([], $this->buildBlock()->build()['#items']);
   }
 
   /**
