@@ -8,8 +8,6 @@
  * the form as well and stays there until the alert is confirmed.
  */
 
-/* global once */
-
 (() => {
   /**
    * Writes the "not saved yet" warning into the form's live region.

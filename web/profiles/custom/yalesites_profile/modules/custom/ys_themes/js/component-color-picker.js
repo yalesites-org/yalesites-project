@@ -4,8 +4,6 @@
  */
 
 (function (Drupal, once) {
-  'use strict';
-
   /**
    * Finds the select element for the color picker.
    *
@@ -19,11 +17,13 @@
     if (!wrapper) {
       return null;
     }
-    const selects = Array.from(wrapper.querySelectorAll('select'));
-    return selects.find(sel => sel.name && sel.name.length > 0) ||
-           selects.find(sel => sel.classList.contains('palette-select-hidden')) ||
-           selects[0] ||
-           null;
+    const selects = Array.from(wrapper.querySelectorAll("select"));
+    return (
+      selects.find((sel) => sel.name && sel.name.length > 0) ||
+      selects.find((sel) => sel.classList.contains("palette-select-hidden")) ||
+      selects[0] ||
+      null
+    );
   }
 
   /**
@@ -33,15 +33,14 @@
    *   The selector element.
    */
   function applyCircleColors(selector) {
-    selector.querySelectorAll('.palette-circle').forEach((circle) => {
-      const hexValue = circle.getAttribute('data-hex');
+    selector.querySelectorAll(".palette-circle").forEach((circle) => {
+      const hexValue = circle.getAttribute("data-hex");
       if (hexValue) {
-        circle.style.setProperty('background-color', hexValue);
-      }
-      else {
-        const colorValue = circle.getAttribute('data-color');
-        if (colorValue && !colorValue.startsWith('var(')) {
-          circle.style.setProperty('background-color', colorValue);
+        circle.style.setProperty("background-color", hexValue);
+      } else {
+        const colorValue = circle.getAttribute("data-color");
+        if (colorValue && !colorValue.startsWith("var(")) {
+          circle.style.setProperty("background-color", colorValue);
         }
       }
     });
@@ -57,10 +56,12 @@
    */
   function dispatchEvent(element, eventType) {
     if (element) {
-      element.dispatchEvent(new Event(eventType, {
-        bubbles: true,
-        cancelable: true,
-      }));
+      element.dispatchEvent(
+        new Event(eventType, {
+          bubbles: true,
+          cancelable: true,
+        })
+      );
     }
   }
 
@@ -78,20 +79,20 @@
     const selectName = selectElement.name;
     if (selectName) {
       form.querySelectorAll(`[name="${selectName}"]`).forEach((input) => {
-        if (input !== selectElement && input.type === 'hidden') {
+        if (input !== selectElement && input.type === "hidden") {
           input.value = paletteValue;
         }
       });
     }
 
-    dispatchEvent(form, 'formUpdated');
+    dispatchEvent(form, "formUpdated");
 
     const fieldWrapper = selectElement.closest(
-      '.field--widget-component-color-picker, .js-form-item, .form-item'
+      ".field--widget-component-color-picker, .js-form-item, .form-item"
     );
     if (fieldWrapper) {
-      dispatchEvent(fieldWrapper, 'change');
-      dispatchEvent(fieldWrapper, 'formUpdated');
+      dispatchEvent(fieldWrapper, "change");
+      dispatchEvent(fieldWrapper, "formUpdated");
     }
   }
 
@@ -108,8 +109,7 @@
       Array.from(selectElement.options).forEach((option) => {
         option.selected = option.value === paletteValue;
       });
-    }
-    else {
+    } else {
       selectElement.value = paletteValue;
     }
   }
@@ -126,7 +126,10 @@
     const currentValue = selectElement.value;
     if (currentValue) {
       options.forEach((opt) => {
-        opt.setAttribute('data-selected', opt.getAttribute('data-palette') === currentValue ? 'true' : 'false');
+        opt.setAttribute(
+          "data-selected",
+          opt.getAttribute("data-palette") === currentValue ? "true" : "false"
+        );
       });
     }
   }
@@ -135,9 +138,9 @@
    * Initialize component color picker widgets.
    */
   function initComponentColorPicker(selector) {
-    const container = selector.querySelector('[data-palette-container]');
-    const wrapper = selector.closest('.component-color-picker-wrapper');
-    const options = selector.querySelectorAll('.palette-option');
+    const container = selector.querySelector("[data-palette-container]");
+    const wrapper = selector.closest(".component-color-picker-wrapper");
+    const options = selector.querySelectorAll(".palette-option");
     const selectElement = findSelectElement(wrapper);
 
     if (!container || !selectElement) {
@@ -145,31 +148,38 @@
     }
 
     applyCircleColors(selector);
-    selector.classList.add('expanded');
+    selector.classList.add("expanded");
 
     // Handle palette option clicks.
-    container.addEventListener('click', (e) => {
-      const clickedOption = e.target.closest('.palette-option');
-      if (!clickedOption || clickedOption.getAttribute('data-selected') === 'true') {
+    container.addEventListener("click", (e) => {
+      const clickedOption = e.target.closest(".palette-option");
+      if (
+        !clickedOption ||
+        clickedOption.getAttribute("data-selected") === "true"
+      ) {
         return;
       }
 
-      const paletteValue = clickedOption.getAttribute('data-palette');
-      if (!Array.from(selectElement.options).some((option) => option.value === paletteValue)) {
+      const paletteValue = clickedOption.getAttribute("data-palette");
+      if (
+        !Array.from(selectElement.options).some(
+          (option) => option.value === paletteValue
+        )
+      ) {
         return;
       }
 
-      options.forEach((opt) => opt.setAttribute('data-selected', 'false'));
-      clickedOption.setAttribute('data-selected', 'true');
+      options.forEach((opt) => opt.setAttribute("data-selected", "false"));
+      clickedOption.setAttribute("data-selected", "true");
 
       updateSelectValue(selectElement, paletteValue);
-      dispatchEvent(selectElement, 'input');
-      dispatchEvent(selectElement, 'change');
+      dispatchEvent(selectElement, "input");
+      dispatchEvent(selectElement, "change");
 
-      const form = selectElement.closest('form');
+      const form = selectElement.closest("form");
       if (form) {
-        dispatchEvent(form, 'change');
-        if (form.id && form.id.includes('layout-builder')) {
+        dispatchEvent(form, "change");
+        if (form.id && form.id.includes("layout-builder")) {
           handleLayoutBuilderForm(form, selectElement, paletteValue);
         }
       }
@@ -181,14 +191,16 @@
   /**
    * Attach component color picker behavior.
    */
-  if (typeof Drupal !== 'undefined' && Drupal.behaviors) {
+  if (typeof Drupal !== "undefined" && Drupal.behaviors) {
     Drupal.behaviors.componentColorPicker = {
-      attach: function (context, settings) {
-        const selectors = once('component-color-picker', '[data-palette-selector]', context);
+      attach(context, settings) {
+        const selectors = once(
+          "component-color-picker",
+          "[data-palette-selector]",
+          context
+        );
         selectors.forEach(initComponentColorPicker);
       },
     };
   }
-
 })(Drupal, once);
-
