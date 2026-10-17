@@ -16,6 +16,14 @@ Tests form integration and permissions:
 - Field has proper accessibility attributes and labeling
 - Field works correctly with different user roles
 
+### Kernel Tests for Bulk CAS Protection (`Kernel/CasProtection*Test.php`)
+Cover the CAS protect and Remove CAS protection bulk actions on the Manage views:
+- `CasProtectionUpdaterTest` - grants rewritten on save, items already in the target state skipped, drafts in progress carried forward and kept as the latest revision, moderation states preserved, Contributors denied on published content, missing nodes and fields
+- `CasProtectionBatchTest` - large selections spread across passes, every outcome counted, one failure not stopping the rest, finish messages
+- `CasProtectionBulkActionTest` - both actions on all five Manage views as shipped, selection recorded without saving, routes and CSRF, the confirmation page's warning and item list, confirming and removing end to end
+
+The bulk form's own redirect (core's `node_bulk_form`) and the batch progress page are not driven by these tests; see manual testing below.
+
 ### Manual Testing Required
 Browser interactions must be tested manually:
 - Modal appears when enabling CAS protection (not when disabling)
@@ -30,6 +38,8 @@ Browser interactions must be tested manually:
 - Modal behavior with multiple checkbox toggles
 - Modal styling and visual appearance
 - Flexible content system supports unlimited paragraphs and mixed content types
+- Bulk "CAS protect" on a Manage view lands on the confirmation page, which shows the same warning as the modal; the batch runs on confirm and the CAS Protected column reflects the change
+- Bulk "Remove CAS protection" runs the batch with no warning
 
 **Note**: Automated browser testing is not feasible in this environment due to the lack of WebDriver setup and complexity of custom modules within profiles. Manual testing has confirmed all functionality works correctly.
 
