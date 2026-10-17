@@ -42,7 +42,7 @@
       function updateDescription() {
         // Target descriptions within the book form wrapper
         $(context)
-          .find('.book-outline-form .description')
+          .find(".book-outline-form .description")
           .each(function () {
             const $description = $(this);
             $description.html((index, html) =>
@@ -63,7 +63,7 @@
 
       $(context)
         .find(".book-outline-form")
-        .drupalSetSummary((context) => {
+        .drupalSetSummary(() => {
           const val = $select[0].value;
 
           if (val === "0") {

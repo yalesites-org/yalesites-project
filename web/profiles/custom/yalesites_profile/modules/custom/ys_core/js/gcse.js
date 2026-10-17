@@ -1,18 +1,18 @@
 ((Drupal) => {
   Drupal.behaviors.gcseSearchTab = {
-    attach: function (context, settings) {
-      gcseLoad();
-
+    attach(context, settings) {
       function gcseLoad() {
-        var cx = '013786538304926843299:7eimwqn6viu';
-        var gcse = document.createElement('script');
-        gcse.type = 'text/javascript';
+        const cx = "013786538304926843299:7eimwqn6viu";
+        const gcse = document.createElement("script");
+        gcse.type = "text/javascript";
         gcse.async = true;
-        gcse.src = 'https://cse.google.com/cse.js?cx=' + cx;
-        var s = document.getElementsByTagName('script')[0];
+        gcse.src = `https://cse.google.com/cse.js?cx=${cx}`;
+        const s = document.getElementsByTagName("script")[0];
         s.parentNode.insertBefore(gcse, s);
         window.gcseLoaded = true;
       }
-    }
+
+      gcseLoad();
+    },
   };
 })(Drupal);

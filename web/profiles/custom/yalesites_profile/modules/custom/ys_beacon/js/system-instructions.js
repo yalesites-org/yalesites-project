@@ -27,9 +27,7 @@
       );
 
       editors.forEach(function processEditor(textarea) {
-        const counter = document.getElementById(
-          "instructions-character-count"
-        );
+        const counter = document.getElementById("instructions-character-count");
         if (!counter) {
           return;
         }
