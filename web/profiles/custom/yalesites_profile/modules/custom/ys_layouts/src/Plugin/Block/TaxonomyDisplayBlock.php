@@ -152,10 +152,10 @@ class TaxonomyDisplayBlock extends BlockBase implements ContextAwarePluginInterf
           '#required' => TRUE,
           // Layout Builder Browser strips #ajax from this form's submit, so a
           // server-side "required" error reloads the form as a standalone page
-          // and the editor leaves the dialog. Other blocks avoid that because
-          // the browser enforces their HTML5 required attribute, which a
-          // checkbox group cannot carry; this check gives the group the same
-          // browser-side validation. #required stays as the no-JS fallback.
+          // and the editor leaves the dialog. A checkbox group cannot carry
+          // HTML5 required either, so this check blocks the submit while no
+          // vocabulary is checked and shows Drupal's inline error under the
+          // field instead. #required stays as the no-JS fallback.
           '#attributes' => [
             'class' => ['js-ys-required-checkboxes'],
             'data-ys-required-message' => $this->t('@name field is required.', [
