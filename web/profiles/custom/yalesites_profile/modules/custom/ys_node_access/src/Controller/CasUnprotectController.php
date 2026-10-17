@@ -17,8 +17,15 @@ use Symfony\Component\HttpFoundation\Response;
  * warns when protection is being enabled. The batch is still what does the
  * work, so a large selection is spread across requests rather than timing out.
  *
- * The route requires a CSRF token, which core adds to the URL the bulk form
- * redirects to, so this cannot be triggered by a link from another site.
+ * The route deliberately has no CSRF token. It decides nothing itself: all it
+ * can do is run the selection the Remove CAS protection action stored for the
+ * current user, which only a submission of the bulk form can store, and that
+ * form is protected by its own form token. A forged request can therefore only
+ * run a removal the editor already chose, and the selection is deleted the
+ * first time it is read. A token requirement cannot work here in any case:
+ * core builds the bulk form's redirect URL with the token's render
+ * placeholder, which a redirect never replaces, so every request was denied.
+ * See \Drupal\Core\Access\RouteProcessorCsrf::processOutbound().
  *
  * @see \Drupal\ys_node_access\Plugin\Action\CasUnprotect
  */

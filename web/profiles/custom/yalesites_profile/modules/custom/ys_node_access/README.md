@@ -8,7 +8,7 @@ The YaleSites Node Access module offers a flexible mechanism that allows site au
 The Manage Pages, Posts, Events, Profiles and Resources views offer two bulk actions in their **Action** dropdown: **CAS protect** and **Remove CAS protection**.
 
 - **CAS protect** never saves on its own. The action records the selection in the private tempstore and the bulk form redirects to `/admin/content/cas-protection/protect`. That page shows the same warning as the node form's modal, then lists the selected items. Nothing changes until the editor confirms, and **Cancel** leaves every item as it was.
-- **Remove CAS protection** has no warning, matching the node form, which only warns when enabling. Its route (`/admin/content/cas-protection/remove`) starts the batch straight away. The route requires a CSRF token, which core adds to the URL the bulk form redirects to.
+- **Remove CAS protection** has no warning, matching the node form, which only warns when enabling. Its route (`/admin/content/cas-protection/remove`) starts the batch straight away. That route has no CSRF token, on purpose; `CasUnprotectController` explains why.
 
 Both run as a batch (`CasProtectionBatch`), ten nodes per pass, so a large selection doesn't hit a request's time limit. Each node is loaded and access-checked again when its turn comes. The finish message reports how many items changed, and counts separately the ones that were skipped because they already had the value, that the editor could no longer change, that had been deleted, or that failed to save.
 
