@@ -14,6 +14,9 @@ use Drupal\views\ViewExecutable;
 use Drupal\views\ViewExecutableFactory;
 use Drupal\ys_views_basic\Service\ExposedTaxonomyFilterOptions;
 use Drupal\ys_views_basic\ViewsBasicManager;
+use Symfony\Component\HttpFoundation\Request;
+
+require_once __DIR__ . '/../../../ys_views_basic.module';
 
 /**
  * Unit tests for ViewsBasicManager.
@@ -84,6 +87,20 @@ class ViewsBasicManagerTest extends UnitTestCase {
    * @var \Drupal\ys_views_basic\Service\ExposedTaxonomyFilterOptions|\PHPUnit\Framework\MockObject\MockObject
    */
   protected $exposedTaxonomyFilterOptions;
+
+  /**
+   * Every input runSetupView()'s view received through setExposedInput().
+   *
+   * @var array
+   */
+  protected $exposedInputCalls = [];
+
+  /**
+   * The arguments runSetupView()'s view received through setArguments().
+   *
+   * @var array
+   */
+  protected $viewArguments = [];
 
   /**
    * The manager under test.
@@ -767,11 +784,17 @@ class ViewsBasicManagerTest extends UnitTestCase {
    *   The block params, merged over the minimum setupView() reads.
    * @param array $filters
    *   The display's filters before setup.
+   * @param array|null $query
+   *   The request query the view sees, or NULL for a view with no request.
+   * @param string|null $blockUuid
+   *   The host block UUID passed to setupView().
+   * @param string|null $listingKey
+   *   The listing key passed to setupView() (the AJAX path).
    *
    * @return array
    *   Every display option setupView() set, keyed by option name.
    */
-  protected function runSetupView(array $params, array $filters): array {
+  protected function runSetupView(array $params, array $filters, ?array $query = NULL, ?string $blockUuid = NULL, ?string $listingKey = NULL): array {
     $params += [
       'sort_by' => 'field_publish_date:DESC',
       'display' => 'all',
@@ -793,8 +816,23 @@ class ViewsBasicManagerTest extends UnitTestCase {
     $view = $this->createMock(ViewExecutable::class);
     $view->method('getDisplay')->willReturn($display);
     $view->method('preview')->willReturn(['#rows' => []]);
+    if ($query !== NULL) {
+      $view->method('getRequest')->willReturn(new Request($query));
+    }
+    $this->exposedInputCalls = [];
+    $view->method('setExposedInput')->willReturnCallback(
+      function ($input) {
+        $this->exposedInputCalls[] = $input;
+      }
+    );
+    $this->viewArguments = [];
+    $view->method('setArguments')->willReturnCallback(
+      function (array $args) {
+        $this->viewArguments = array_values($args);
+      }
+    );
 
-    $this->manager->setupView($view, json_encode($params));
+    $this->manager->setupView($view, json_encode($params), $blockUuid, FALSE, $listingKey);
     return $set;
   }
 
@@ -919,6 +957,211 @@ class ViewsBasicManagerTest extends UnitTestCase {
       'field_audience_target_id' => [[5, 7], NULL],
       'field_discipline_target_id' => [[5, 7], NULL],
     ], $calls, 'Geographic areas was not enabled, so it was removed, not constrained.');
+  }
+
+  /**
+   * Minimal params for a post listing, as setupView() reads them.
+   */
+  protected function listingParams(): array {
+    return ['filters' => ['types' => ['post']]];
+  }
+
+  /**
+   * The listing key is 8 hex characters and differs between two blocks.
+   *
+   * @covers ::listingKey
+   */
+  public function testListingKeyIsShortAndDistinct() {
+    $a = '6f1d0c1e-9a3b-4c2d-8e7f-0a1b2c3d4e5f';
+    $b = '0b9e8d7c-6a5f-4e3d-2c1b-a09f8e7d6c5b';
+    $this->assertMatchesRegularExpression('/^[0-9a-f]{8}$/', ViewsBasicManager::listingKey($a));
+    $this->assertNotSame(ViewsBasicManager::listingKey($a), ViewsBasicManager::listingKey($b));
+  }
+
+  /**
+   * Builds a scaffold view argument list holding a field_display_options arg.
+   *
+   * @param string|null $display_options
+   *   The raw field_display_options argument, or NULL to leave it out.
+   */
+  protected function argsWithDisplayOptions(?string $display_options): array {
+    $args = array_fill(0, count(ViewsBasicManager::VIEW_ARGUMENT_ORDER), '');
+    $index = ViewsBasicManager::viewArgumentIndex('field_display_options');
+    if ($display_options === NULL) {
+      return array_slice($args, 0, $index);
+    }
+    $args[$index] = $display_options;
+    return $args;
+  }
+
+  /**
+   * The listing key is read back from the field_display_options argument.
+   *
+   * @covers ::listingKeyFromArgs
+   */
+  public function testListingKeyFromArgs() {
+    $this->assertSame('abcd1234', ViewsBasicManager::listingKeyFromArgs(
+      $this->argsWithDisplayOptions(json_encode(['show_tags' => 0, 'listing_key' => 'abcd1234']))
+    ));
+    $this->assertNull(ViewsBasicManager::listingKeyFromArgs(
+      $this->argsWithDisplayOptions(json_encode(['show_tags' => 0]))
+    ), 'No listing_key in the options.');
+    $this->assertNull(ViewsBasicManager::listingKeyFromArgs(
+      $this->argsWithDisplayOptions(json_encode(['listing_key' => NULL]))
+    ), 'A NULL listing_key, as written for a preview.');
+    $this->assertNull(ViewsBasicManager::listingKeyFromArgs(
+      $this->argsWithDisplayOptions('{not json')
+    ), 'Invalid JSON.');
+    $this->assertNull(ViewsBasicManager::listingKeyFromArgs(
+      $this->argsWithDisplayOptions(NULL)
+    ), 'The argument is absent.');
+    $this->assertNull(ViewsBasicManager::listingKeyFromArgs([]));
+  }
+
+  /**
+   * Another listing's filter values are dropped for this listing.
+   *
+   * @covers ::setupView
+   */
+  public function testSetupViewIgnoresAnotherListingsFilters() {
+    $uuid = '6f1d0c1e-9a3b-4c2d-8e7f-0a1b2c3d4e5f';
+    $other = ViewsBasicManager::listingKey('0b9e8d7c-6a5f-4e3d-2c1b-a09f8e7d6c5b');
+    $this->runSetupView($this->listingParams(), [], ['search' => 'x', 'listing' => $other], $uuid);
+    $this->assertSame([['listing' => $other]], $this->exposedInputCalls, 'The input keeps the URL\'s listing, since pager links are built from it.');
+  }
+
+  /**
+   * The listing a URL's filter values came from keeps them.
+   *
+   * @covers ::setupView
+   */
+  public function testSetupViewKeepsItsOwnFilters() {
+    $uuid = '6f1d0c1e-9a3b-4c2d-8e7f-0a1b2c3d4e5f';
+    $own = ViewsBasicManager::listingKey($uuid);
+    $this->runSetupView($this->listingParams(), [], ['search' => 'x', 'listing' => $own], $uuid);
+    $this->assertSame([], $this->exposedInputCalls);
+  }
+
+  /**
+   * A link with no listing argument (made before the fix) applies as before.
+   *
+   * @covers ::setupView
+   */
+  public function testSetupViewLeavesLegacyLinksAlone() {
+    $this->runSetupView($this->listingParams(), [], ['search' => 'x'], '6f1d0c1e-9a3b-4c2d-8e7f-0a1b2c3d4e5f');
+    $this->assertSame([], $this->exposedInputCalls);
+  }
+
+  /**
+   * A view with no block and no listing key (a preview) is left alone.
+   *
+   * @covers ::setupView
+   */
+  public function testSetupViewWithoutListingKeyLeavesInputAlone() {
+    $this->runSetupView($this->listingParams(), [], ['search' => 'x', 'listing' => 'abcd1234']);
+    $this->assertSame([], $this->exposedInputCalls);
+  }
+
+  /**
+   * A view with no request is left alone.
+   *
+   * @covers ::setupView
+   */
+  public function testSetupViewWithoutRequestLeavesInputAlone() {
+    $this->runSetupView($this->listingParams(), [], NULL, '6f1d0c1e-9a3b-4c2d-8e7f-0a1b2c3d4e5f');
+    $this->assertSame([], $this->exposedInputCalls);
+  }
+
+  /**
+   * The AJAX path, with a listing key but no block UUID, behaves the same.
+   *
+   * @covers ::setupView
+   */
+  public function testSetupViewUsesPassedListingKeyOnAjax() {
+    $this->runSetupView($this->listingParams(), [], ['search' => 'x', 'listing' => 'ffff0000'], NULL, 'abcd1234');
+    $this->assertSame([['listing' => 'ffff0000']], $this->exposedInputCalls, 'The input keeps the URL\'s listing, since pager links are built from it.');
+
+    $this->runSetupView($this->listingParams(), [], ['search' => 'x', 'listing' => 'abcd1234'], NULL, 'abcd1234');
+    $this->assertSame([], $this->exposedInputCalls);
+  }
+
+  /**
+   * The block UUID wins over a passed listing key.
+   *
+   * @covers ::setupView
+   */
+  public function testSetupViewBlockUuidWinsOverListingKey() {
+    $uuid = '6f1d0c1e-9a3b-4c2d-8e7f-0a1b2c3d4e5f';
+    $this->runSetupView($this->listingParams(), [], [], $uuid, 'abcd1234');
+    $this->assertSame(ViewsBasicManager::listingKey($uuid), ViewsBasicManager::listingKeyFromArgs($this->viewArguments));
+  }
+
+  /**
+   * The listing key rides the field_display_options view argument.
+   *
+   * @covers ::setupView
+   */
+  public function testSetupViewWritesListingKeyIntoDisplayOptions() {
+    $uuid = '6f1d0c1e-9a3b-4c2d-8e7f-0a1b2c3d4e5f';
+    $this->runSetupView($this->listingParams(), [], [], $uuid);
+    $options = json_decode($this->viewArguments[ViewsBasicManager::viewArgumentIndex('field_display_options')], TRUE);
+    $this->assertSame(ViewsBasicManager::listingKey($uuid), $options['listing_key']);
+
+    $this->runSetupView($this->listingParams(), []);
+    $options = json_decode($this->viewArguments[ViewsBasicManager::viewArgumentIndex('field_display_options')], TRUE);
+    $this->assertArrayHasKey('listing_key', $options);
+    $this->assertNull($options['listing_key']);
+  }
+
+  /**
+   * Runs the exposed form alter for a view with the given id and arguments.
+   *
+   * @param string $view_id
+   *   The view id.
+   * @param array $args
+   *   The view's arguments.
+   *
+   * @return array
+   *   The altered form.
+   */
+  protected function alterExposedForm(string $view_id, array $args): array {
+    $view = $this->createMock(ViewExecutable::class);
+    $view->method('id')->willReturn($view_id);
+    $view->filter = [];
+    $view->args = $args;
+    $form_state = $this->createMock(FormStateInterface::class);
+    $form_state->method('get')->with('view')->willReturn($view);
+    $form = [];
+    ys_views_basic_form_views_exposed_form_alter($form, $form_state);
+    return $form;
+  }
+
+  /**
+   * A scaffold listing's exposed form carries its listing key.
+   *
+   * @covers ::listingKeyFromArgs
+   */
+  public function testExposedFormCarriesListingKey() {
+    $args = $this->argsWithDisplayOptions(json_encode(['listing_key' => 'abcd1234']));
+    foreach (ViewsBasicManager::SCAFFOLD_VIEWS as $view_id) {
+      $form = $this->alterExposedForm($view_id, $args);
+      $this->assertSame(['#type' => 'hidden', '#value' => 'abcd1234'], $form['listing'] ?? NULL, $view_id);
+      $this->assertSame(['ys_views_basic/listing_ajax'], $form['#attached']['library'] ?? NULL, $view_id);
+    }
+  }
+
+  /**
+   * No hidden field without a key, or on content_resources.
+   *
+   * @covers ::listingKeyFromArgs
+   */
+  public function testExposedFormWithoutListingKey() {
+    $form = $this->alterExposedForm('views_basic_scaffold', $this->argsWithDisplayOptions(json_encode(['show_tags' => 0])));
+    $this->assertArrayNotHasKey('listing', $form);
+    $this->assertArrayNotHasKey('#attached', $form);
+    $form = $this->alterExposedForm('content_resources', $this->argsWithDisplayOptions(json_encode(['listing_key' => 'abcd1234'])));
+    $this->assertArrayNotHasKey('listing', $form);
+    $this->assertArrayNotHasKey('#attached', $form);
   }
 
   /**
