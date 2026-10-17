@@ -35,3 +35,10 @@ term_operator:
     - core/once
     - core/jquery
 
+listing_ajax:
+  js:
+    assets/js/views-basic-listing-ajax.js: {}
+  dependencies:
+    - core/drupal
+    - core/drupalSettings
+    - views/views.ajax

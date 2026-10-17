@@ -393,7 +393,7 @@ function ys_views_basic_views_pre_view(ViewExecutable $view, $display_id, array 
     // the wrong JSON, leaving every AJAX re-render without its stored display,
     // sort, view mode and filters (#1648).
     $settings_arg = ViewsBasicManager::viewArgumentIndex('original_settings');
-    $viewsBasicManager->setupView($view, $args[$settings_arg] ?? end($args), NULL, $block_has_heading);
+    $viewsBasicManager->setupView($view, $args[$settings_arg] ?? end($args), NULL, $block_has_heading, ViewsBasicManager::listingKeyFromArgs($args));
   }
   finally {
     unset($processing[$object_id]);
@@ -641,6 +641,11 @@ function _ys_views_basic_listing_form_tabs(array $element, FormStateInterface $f
  *
  * Replaces an exposed taxonomy filter that has no choices with a message.
  * This replaces the old YaleSites-Internal#162 rule that hid such filters.
+ *
+ * On the scaffold views, also adds a hidden field naming the listing, so a
+ * no-JS submit carries it in the URL and only that listing applies the filter
+ * values (YaleSites-Internal#1926). The listing_ajax library does the same for
+ * a submit with JS on.
  */
 function ys_views_basic_form_views_exposed_form_alter(array &$form, FormStateInterface $form_state): void {
   $view = $form_state->get('view');
@@ -648,6 +653,18 @@ function ys_views_basic_form_views_exposed_form_alter(array &$form, FormStateInt
   $listing_views = [...ViewsBasicManager::SCAFFOLD_VIEWS, 'content_resources'];
   if (!in_array($view->id(), $listing_views, TRUE)) {
     return;
+  }
+  // content_resources builds its own, different argument list.
+  if (in_array($view->id(), ViewsBasicManager::SCAFFOLD_VIEWS, TRUE)) {
+    $listing_key = ViewsBasicManager::listingKeyFromArgs($view->args);
+    if ($listing_key !== NULL) {
+      $form[ViewsBasicManager::LISTING_QUERY_KEY] = [
+        '#type' => 'hidden',
+        '#value' => $listing_key,
+      ];
+      // Stops the JS submit re-sending the page's own query (#1926).
+      $form['#attached']['library'][] = 'ys_views_basic/listing_ajax';
+    }
   }
   foreach ($view->filter as $handler) {
     if ($handler->getPluginId() !== 'taxonomy_index_tid' || !$handler->isExposed()) {

@@ -318,6 +318,50 @@ class ViewsBasicManager extends ControllerBase implements ContainerInjectionInte
   ];
 
   /**
+   * The query argument naming which listing a URL's filter values belong to.
+   *
+   * Every listing block renders one of the shared scaffold views, so their
+   * exposed filters share identifiers (search, field_category_target_id, ...).
+   * Without this, a no-JS submit, a reload or a shared link applies one
+   * listing's ?search= to every listing on the page. The exposed form carries
+   * the listing's key in this argument, and ::setupView() drops the filter
+   * values of any listing whose key does not match (YaleSites-Internal#1926).
+   */
+  const LISTING_QUERY_KEY = 'listing';
+
+  /**
+   * Derives the listing key for a listing block from its UUID.
+   *
+   * A crc32b hash gives 8 hex characters: stable across requests, so a shared
+   * link still names the same listing, and short enough to sit in the URL. A
+   * collision between the few listings on one page is negligible.
+   *
+   * @param string $uuid
+   *   The host block content UUID.
+   *
+   * @return string
+   *   The listing key.
+   */
+  public static function listingKey(string $uuid): string {
+    return hash('crc32b', $uuid);
+  }
+
+  /**
+   * Reads the listing key back from a scaffold view's arguments.
+   *
+   * @param array $args
+   *   The view arguments ::setupView() wrote.
+   *
+   * @return string|null
+   *   The listing key, or NULL when the arguments carry none.
+   */
+  public static function listingKeyFromArgs(array $args): ?string {
+    $options = json_decode($args[self::viewArgumentIndex('field_display_options')] ?? '', TRUE);
+    $key = is_array($options) ? ($options['listing_key'] ?? NULL) : NULL;
+    return is_string($key) ? $key : NULL;
+  }
+
+  /**
    * Returns the positional index of a scaffold view argument.
    *
    * @param string $name
@@ -600,11 +644,16 @@ class ViewsBasicManager extends ControllerBase implements ContainerInjectionInte
    *   field-display options so hook_views_pre_render() can stamp the level on
    *   each result entity (mirrors how show_categories flows). Defaults to FALSE
    *   so the AJAX/preview paths, which have no block entity, fall back to H2.
+   * @param string|null $listingKey
+   *   The listing key (see ::listingKey()), for the AJAX path, which has no
+   *   block UUID and recovers the key from the incoming view arguments.
+   *   Ignored when $blockUuid is given.
    *
    * @return void
    *   No return value.
    */
-  public function setupView(&$view, $params, $blockUuid = NULL, $blockHasHeading = FALSE) {
+  public function setupView(&$view, $params, $blockUuid = NULL, $blockHasHeading = FALSE, ?string $listingKey = NULL) {
+    $listingKey = $blockUuid ? self::listingKey($blockUuid) : $listingKey;
     $paramsDecoded = json_decode($params, TRUE);
     $pinned_to_top = isset($paramsDecoded['pinned_to_top']) ? (bool) $paramsDecoded['pinned_to_top'] : FALSE;
 
@@ -840,6 +889,9 @@ class ViewsBasicManager extends ControllerBase implements ContainerInjectionInte
       // the style plugin that builds the collection wrapper rather than
       // per result row.
       'card_size' => $this->getDefaultParamValue('card_size', $params),
+      // Rides the view arguments so the AJAX re-render of the exposed form
+      // keeps its hidden listing field (YaleSites-Internal#1926).
+      'listing_key' => $listingKey,
     ];
 
     $event_field_display_options = [
@@ -926,6 +978,22 @@ class ViewsBasicManager extends ControllerBase implements ContainerInjectionInte
     $view->setArguments($view_args);
     // See ViewsBasicFullPager::query().
     $view->setOffset((int) $view_args['offset']);
+
+    // Filter values in the URL that another listing submitted are not ours:
+    // run this listing unfiltered. The input is non-empty on purpose, since an
+    // empty array makes Views fall back to the request query. It keeps the
+    // URL's own listing value, not this listing's key, because the pager
+    // builds its links from the exposed input: our key there would point the
+    // other listing's filter at this one on the next page. A URL with no
+    // listing argument (a link made before YaleSites-Internal#1926) applies
+    // to every listing, as it always did.
+    if ($listingKey !== NULL) {
+      $urlListing = $view->getRequest()?->query->all()[self::LISTING_QUERY_KEY] ?? NULL;
+      if ($urlListing !== NULL && $urlListing !== $listingKey) {
+        $view->setExposedInput([self::LISTING_QUERY_KEY => $urlListing]);
+      }
+    }
+
     $view->execute();
 
     // Unset the pager. Needs to be done after view->execute();
