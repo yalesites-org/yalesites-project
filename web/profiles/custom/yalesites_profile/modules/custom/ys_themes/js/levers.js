@@ -2,13 +2,13 @@
   Drupal.behaviors.ysLevers = {
     attach(context, settings) {
       // eslint-disable-line
-      once("ysLevers", ".layout-container", context).forEach((element) => {
+      once('ysLevers', '.layout-container', context).forEach((element) => {
         // Update root CSS variables
         function updateRoot(selector, value) {
           const prefix = selector.match(/--([a-z]*[0-9]*)/g);
           document.documentElement.style.setProperty(
             selector,
-            `var(${prefix[0]}-${value})`
+            `var(${prefix[0]}-${value})`,
           );
         }
 
@@ -18,11 +18,11 @@
           // These convert from element[data-attribute-name] to attributeName
           const dataAttribute = selector.match(/\[(.*?)\]/);
           const convertedAttributeName = dataAttribute[1]
-            .replace("data-", "")
+            .replace('data-', '')
             .replace(/-([a-z]?)/g, (m, g) => g.toUpperCase());
           for (let i = 0; i < elements.length; i++) {
             // Skip the CTA button in the header
-            if (!elements[i].classList.contains("utility-nav__cta")) {
+            if (!elements[i].classList.contains('utility-nav__cta')) {
               elements[i].dataset[convertedAttributeName] = value;
             }
           }
@@ -30,16 +30,16 @@
 
         function initStyleDrawer() {
           const formItems = context.querySelectorAll(
-            "input.ys-themes--setting"
+            'input.ys-themes--setting',
           );
 
           for (let i = 0; i < formItems.length; i++) {
-            formItems[i].addEventListener("click", (event) => {
+            formItems[i].addEventListener('click', (event) => {
               const { propType, selector } = event.target.dataset;
-              if (propType === "root") {
+              if (propType === 'root') {
                 updateRoot(selector, formItems[i].value);
               }
-              if (propType === "element") {
+              if (propType === 'element') {
                 updateElement(selector, formItems[i].value);
               }
             });
@@ -59,19 +59,19 @@
 
       // Get all radio inputs in the glogal_theme name group
       const radioInputs = document.querySelectorAll(
-        'input[name="global_theme"]'
+        'input[name="global_theme"]',
       );
 
       // Add event listener to each radio input
       radioInputs.forEach((input) => {
-        input.addEventListener("change", function () {
+        input.addEventListener('change', function () {
           if (this.checked) {
-            this.setAttribute("checked", "checked");
+            this.setAttribute('checked', 'checked');
 
             // Remove the 'checked' attribute from other radio inputs
             radioInputs.forEach((otherInput) => {
               if (otherInput !== this) {
-                otherInput.removeAttribute("checked");
+                otherInput.removeAttribute('checked');
               }
             });
           }
@@ -89,7 +89,7 @@
 
           if (paletteColors) {
             document
-              .querySelectorAll("span.component-color[data-slot]")
+              .querySelectorAll('span.component-color[data-slot]')
               .forEach((swatch) => {
                 const hex = paletteColors[`slot-${swatch.dataset.slot}`];
                 if (hex) {
@@ -109,13 +109,13 @@
 
         // Add event listener to each radio input
         groupInputs.forEach((input) => {
-          input.addEventListener("change", function () {
+          input.addEventListener('change', function () {
             if (this.checked) {
-              this.setAttribute("checked", "checked");
+              this.setAttribute('checked', 'checked');
               // Remove the 'checked' attribute from other radio inputs
               groupInputs.forEach((otherInput) => {
                 if (otherInput !== this) {
-                  otherInput.removeAttribute("checked");
+                  otherInput.removeAttribute('checked');
                 }
               });
             }

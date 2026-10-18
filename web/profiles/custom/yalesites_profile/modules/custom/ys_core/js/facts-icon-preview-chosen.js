@@ -17,17 +17,17 @@
       // Function to check if a select has icon options
       function hasIconOptions($select) {
         let hasIcons = false;
-        $select.find("option").each(function () {
+        $select.find('option').each(function () {
           const value = $(this).val();
           if (
             value &&
-            (value.includes("graduation-cap") ||
-              value.includes("trophy") ||
-              value.includes("globe") ||
-              value.includes("book") ||
-              value.includes("medal") ||
-              value.includes("university") ||
-              value.includes("award"))
+            (value.includes('graduation-cap') ||
+              value.includes('trophy') ||
+              value.includes('globe') ||
+              value.includes('book') ||
+              value.includes('medal') ||
+              value.includes('university') ||
+              value.includes('award'))
           ) {
             hasIcons = true;
             return false; // break
@@ -43,11 +43,11 @@
         }
 
         // Find the appropriate container for the preview
-        const $container = $select.closest(".form-item");
-        const $chosenContainer = $select.siblings(".chosen-container");
+        const $container = $select.closest('.form-item');
+        const $chosenContainer = $select.siblings('.chosen-container');
 
         // Check if wrapper already exists
-        let $wrapper = $container.find(".icon-field-wrapper");
+        let $wrapper = $container.find('.icon-field-wrapper');
         if ($wrapper.length === 0) {
           // Create wrapper div for horizontal layout
           $wrapper = $('<div class="icon-field-wrapper"></div>');
@@ -64,10 +64,10 @@
         }
 
         // Create preview container if it doesn't exist
-        let $preview = $wrapper.find(".icon-preview");
+        let $preview = $wrapper.find('.icon-preview');
         if ($preview.length === 0) {
           $preview = $(
-            '<div class="icon-preview"><div class="preview-loading">Loading preview...</div></div>'
+            '<div class="icon-preview"><div class="preview-loading">Loading preview...</div></div>',
           );
           $wrapper.append($preview);
         }
@@ -79,49 +79,49 @@
           // Show loading state
           $preview
             .html('<div class="preview-loading">Loading preview...</div>')
-            .removeClass("has-icon has-fallback");
+            .removeClass('has-icon has-fallback');
 
           // Make AJAX request to get properly rendered icon
           $.ajax({
-            url: "/admin/ys_core/facts-icon-preview",
-            method: "GET",
+            url: '/admin/ys_core/facts-icon-preview',
+            method: 'GET',
             data: { icon: selectedValue },
-            dataType: "json",
+            dataType: 'json',
             timeout: 5000,
           })
             .done(function (response) {
-              if (selectedValue && selectedValue !== "_none") {
+              if (selectedValue && selectedValue !== '_none') {
                 // Create preview element using the server-rendered icon
                 const $iconContainer = $(
-                  '<div class="icon-preview-icon"></div>'
+                  '<div class="icon-preview-icon"></div>',
                 );
 
                 // Use the server-rendered icon HTML
                 $iconContainer.html(response.html);
-                $preview.html($iconContainer).addClass("has-icon");
+                $preview.html($iconContainer).addClass('has-icon');
               } else {
                 $preview
                   .html('<div class="no-icon-selected">No icon selected</div>')
-                  .removeClass("has-icon");
+                  .removeClass('has-icon');
               }
             })
             .fail(function (xhr, status, error) {
-              console.error("Icon preview AJAX request failed:", status, error);
+              console.error('Icon preview AJAX request failed:', status, error);
 
               // Fallback to text-based preview
-              if (selectedValue && selectedValue !== "_none") {
+              if (selectedValue && selectedValue !== '_none') {
                 const iconText = selectedValue
-                  .replace("-solid", "")
-                  .replace(/-/g, " ");
+                  .replace('-solid', '')
+                  .replace(/-/g, ' ');
                 $preview
                   .html(
-                    `<div class="preview-fallback">[Icon: ${iconText}]</div>`
+                    `<div class="preview-fallback">[Icon: ${iconText}]</div>`,
                   )
-                  .addClass("has-fallback");
+                  .addClass('has-fallback');
               } else {
                 $preview
                   .html('<div class="no-icon-selected">No icon selected</div>')
-                  .removeClass("has-fallback");
+                  .removeClass('has-fallback');
               }
             });
         }
@@ -130,15 +130,15 @@
         setTimeout(updatePreview, 100);
 
         // Handle regular select change events
-        $select.on("change.factsIconPreview", updatePreview);
+        $select.on('change.factsIconPreview', updatePreview);
 
         // Handle Chosen-specific events if Chosen is present
         if ($chosenContainer.length > 0) {
-          $select.on("chosen:ready.factsIconPreview", function () {
+          $select.on('chosen:ready.factsIconPreview', function () {
             setTimeout(updatePreview, 100);
           });
 
-          $select.on("chosen:updated.factsIconPreview", function () {
+          $select.on('chosen:updated.factsIconPreview', function () {
             setTimeout(updatePreview, 100);
           });
         }
@@ -146,14 +146,14 @@
 
       // Main processing logic
       function processSelects() {
-        const $allSelects = $("select", context);
+        const $allSelects = $('select', context);
 
         // Process each select element once
-        once("facts-icon-preview-chosen", $allSelects.get(), context).forEach(
+        once('facts-icon-preview-chosen', $allSelects.get(), context).forEach(
           function (element) {
             const $select = $(element);
             initializePreview($select);
-          }
+          },
         );
       }
 
@@ -163,16 +163,16 @@
       // Also process selects after a delay to catch any that were enhanced by Chosen after page load
       setTimeout(function () {
         // Look for selects that may have been enhanced by Chosen
-        $("select", context).each(function () {
+        $('select', context).each(function () {
           const $select = $(this);
-          const $chosenContainer = $select.siblings(".chosen-container");
+          const $chosenContainer = $select.siblings('.chosen-container');
 
           // If this select has been enhanced by Chosen but we haven't processed it yet
           if ($chosenContainer.length > 0 && hasIconOptions($select)) {
-            once("facts-icon-preview-chosen-delayed", [this], context).forEach(
+            once('facts-icon-preview-chosen-delayed', [this], context).forEach(
               function (element) {
                 initializePreview($(element));
-              }
+              },
             );
           }
         });

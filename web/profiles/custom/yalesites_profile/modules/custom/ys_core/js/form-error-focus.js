@@ -5,7 +5,7 @@
   const canFocus = (el) =>
     el.matches(FOCUSABLE) &&
     !el.disabled &&
-    el.getAttribute("tabindex") !== "-1" &&
+    el.getAttribute('tabindex') !== '-1' &&
     el.getClientRects().length > 0;
 
   /**
@@ -25,12 +25,12 @@
     if (canFocus(invalid)) {
       return invalid;
     }
-    const group = invalid.closest("fieldset, .js-form-item") || invalid;
+    const group = invalid.closest('fieldset, .js-form-item') || invalid;
     const controls = [...group.querySelectorAll(FOCUSABLE)].filter(canFocus);
     // Skip buttons (Gin's help toggle) when a form control is there.
     return (
       controls.find((el) => el.checked) ||
-      controls.find((el) => !el.matches("button, a")) ||
+      controls.find((el) => !el.matches('button, a')) ||
       controls[0]
     );
   };
@@ -47,9 +47,9 @@
    */
   const restoreErrorLink = (el) => {
     const error = `${el.id}--error-message`;
-    const ids = (el.getAttribute("aria-describedby") || "").split(" ");
+    const ids = (el.getAttribute('aria-describedby') || '').split(' ');
     if (el.id && document.getElementById(error) && !ids.includes(error)) {
-      el.setAttribute("aria-describedby", [...ids, error].join(" ").trim());
+      el.setAttribute('aria-describedby', [...ids, error].join(' ').trim());
     }
   };
 
@@ -88,9 +88,9 @@
   Drupal.behaviors.ysCoreFormErrorFocus = {
     attach(context) {
       const invalid = once(
-        "ys-core-form-error-focus",
+        'ys-core-form-error-focus',
         '[aria-invalid="true"]',
-        context
+        context,
       );
       if (!invalid.length) {
         return;
@@ -99,9 +99,9 @@
         const { view } = editor.editing;
         view.change((writer) => {
           writer.setAttribute(
-            "aria-describedby",
-            textarea.getAttribute("aria-describedby"),
-            view.document.getRoot()
+            'aria-describedby',
+            textarea.getAttribute('aria-describedby'),
+            view.document.getRoot(),
           );
         });
         if (textarea === invalid[0]) {
@@ -114,7 +114,7 @@
         invalid
           .filter((el) => el.dataset.ckeditor5Id)
           .forEach((textarea) =>
-            withEditor(textarea, describeEditor(textarea))
+            withEditor(textarea, describeEditor(textarea)),
           );
         if (!invalid[0].dataset.ckeditor5Id) {
           focusTarget(invalid[0])?.focus();

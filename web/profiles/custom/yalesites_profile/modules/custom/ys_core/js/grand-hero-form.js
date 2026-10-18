@@ -20,9 +20,9 @@
     activeRetries: {},
 
     getFormId($context) {
-      const $form = $context.is("form") ? $context : $context.closest("form");
-      if (!$form.length) return "unknown-form";
-      return $form.attr("id") || $form.attr("name") || "unknown-form";
+      const $form = $context.is('form') ? $context : $context.closest('form');
+      if (!$form.length) return 'unknown-form';
+      return $form.attr('id') || $form.attr('name') || 'unknown-form';
     },
 
     cancelRetries(formId) {
@@ -33,7 +33,7 @@
     },
 
     updateFieldVisibility($replaceHeadingCheckbox, $overlayField) {
-      const isChecked = $replaceHeadingCheckbox.is(":checked");
+      const isChecked = $replaceHeadingCheckbox.is(':checked');
       if (isChecked) {
         $overlayField.fadeIn(200);
       } else {
@@ -49,7 +49,7 @@
         }
 
         const $replaceHeadingCheckbox = $context.find(
-          this.selectors.replaceHeadingCheckbox
+          this.selectors.replaceHeadingCheckbox,
         );
         const $overlayField = $context.find(this.selectors.overlayField);
 
@@ -59,7 +59,7 @@
 
         this.updateFieldVisibility($replaceHeadingCheckbox, $overlayField);
 
-        $replaceHeadingCheckbox.on("change", () => {
+        $replaceHeadingCheckbox.on('change', () => {
           this.updateFieldVisibility($replaceHeadingCheckbox, $overlayField);
         });
 
@@ -67,7 +67,7 @@
         this.cancelRetries(formId);
         return true;
       } catch (error) {
-        console.error("Grand Hero Form: Initialization error", error);
+        console.error('Grand Hero Form: Initialization error', error);
         return false;
       }
     },
@@ -96,12 +96,12 @@
   Drupal.behaviors.grandHeroForm = {
     attach(context, settings) {
       once(
-        "grandHeroForm",
-        "form.layout-builder-add-block, form.layout-builder-update-block",
-        context
+        'grandHeroForm',
+        'form.layout-builder-add-block, form.layout-builder-update-block',
+        context,
       ).forEach(function (form) {
         const $form = $(form);
-        if ($form.find("#grand-hero-settings").length) {
+        if ($form.find('#grand-hero-settings').length) {
           GrandHeroForm.attemptInit($form);
         }
       });
@@ -109,22 +109,22 @@
   };
 
   $(document).on(
-    "dialog:aftercreate",
+    'dialog:aftercreate',
     function (event, dialog, $element, settings) {
       const $targetForm = $element
-        .find("form.layout-builder-add-block, form.layout-builder-update-block")
-        .has("#grand-hero-settings");
+        .find('form.layout-builder-add-block, form.layout-builder-update-block')
+        .has('#grand-hero-settings');
       if ($targetForm.length) {
         GrandHeroForm.attemptInit($targetForm);
       }
-    }
+    },
   );
 
-  $(document).on("drupalAjaxComplete", function (event, xhr, settings) {
-    if (settings.selector && settings.selector.includes("layout-builder")) {
+  $(document).on('drupalAjaxComplete', function (event, xhr, settings) {
+    if (settings.selector && settings.selector.includes('layout-builder')) {
       const $newForm = $(
-        "form.layout-builder-add-block, form.layout-builder-update-block"
-      ).has("#grand-hero-settings");
+        'form.layout-builder-add-block, form.layout-builder-update-block',
+      ).has('#grand-hero-settings');
       if ($newForm.length) {
         GrandHeroForm.attemptInit($newForm);
       }
