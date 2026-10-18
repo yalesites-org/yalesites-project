@@ -4,14 +4,14 @@
 
 ## Block picker grouping
 
-The Layout Builder Browser groups the 14 listing blocks into four categories
+The Layout Builder Browser groups the 17 listing blocks into five categories
 (`layout_builder_browser_blockcat`):
 
 | Category | Blocks |
 |---|---|
 | Post Listings | Posts — Card Grid / List / Condensed |
 | Event Listings | Events — Card Grid / List / Condensed / Calendar |
-| People Listings | People — Card Grid / List / Directory / Condensed |
+| People Listings | People — Card Grid / List / Condensed |
 | Page Listings | Pages — Card Grid / List / Condensed |
 | Resource Views | Resources — Card Grid / Portrait Grid / List / Condensed (#1723) |
 
@@ -23,7 +23,6 @@ The Layout Builder Browser groups the 14 listing blocks into four categories
 | Portrait Grid (resources) | ✅ | ✅ | ✅ | ✅ | ✅ |
 | List | ✅ | ✅ | ❌ | ❌ | ❌ |
 | Condensed | ✅ | ✅ | ✅ | ✅ | ✅ |
-| Directory (profiles) | ✅ | ✅ | ❌ | ❌ | ❌ |
 | Calendar (events) | ✅ | ❌ | ❌ | ❌ | ❌ |
 
 Implemented via the `entity_view_mode_restriction_by_region` plugin in each
@@ -42,14 +41,12 @@ was removed, and no previously-unrestricted region was newly restricted.
 Displays updated: `node.page.default`, `node.page.single`, `node.post.default`,
 `node.profile.default`, `node.profile.single`.
 
-## Known gaps — handled by the #1171 QA pass
+## Decisions and checks from the #1171 QA pass
 
-- **Full-width (`layout_onecol`) and banner regions** were intentionally left
-  untouched. On the audited displays `layout_onecol` only allowlists a taxonomy
-  block (not inline blocks), and the banner region is reserved for hero/banner
-  blocks; the predecessor listing blocks are not present in either. Whether the
-  new listing blocks should be explicitly allowlisted in full-width
-  `layout_onecol` is a product decision to confirm during QA.
+- **Full-width sections allow every listing display.** Decided Oct 16 in the
+  #1171 QA pass: no listing display is restricted in a full-width section, which
+  matches the Full width column of the matrix above. The banner region stays
+  reserved for hero/banner blocks.
 - **Calendar full-width-only** is unchanged from the existing `event_calendar`
   behaviour.
 - **Manual Layout Builder verification** of every mode × region combination
