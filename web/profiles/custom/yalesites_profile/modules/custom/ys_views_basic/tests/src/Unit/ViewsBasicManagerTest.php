@@ -209,7 +209,29 @@ class ViewsBasicManagerTest extends UnitTestCase {
     $list = $this->manager->viewModeList('post');
 
     $this->assertSame(['card', 'list_item', 'condensed'], array_keys($list));
-    $this->assertStringContainsString('Post Card Grid', $list['card']);
+    $this->assertStringStartsWith('Card Grid<img', $list['card']);
+  }
+
+  /**
+   * Every content type names its displays the same way (#1171 product call).
+   *
+   * The wizard asks for the content type first, so the display names drop it:
+   * "Card Grid", "List", "Condensed" and "Portrait Grid" everywhere.
+   *
+   * @covers ::viewModeList
+   */
+  public function testViewModeLabelsDropTheContentType() {
+    $expected = [
+      'card' => 'Card Grid',
+      'list_item' => 'List',
+      'condensed' => 'Condensed',
+      'portrait_grid' => 'Portrait Grid',
+    ];
+    foreach (array_keys(ViewsBasicManager::ALLOWED_ENTITIES) as $type) {
+      foreach ($this->manager->viewModeList($type) as $mode => $label) {
+        $this->assertStringStartsWith($expected[$mode] . '<img', $label, "$type $mode");
+      }
+    }
   }
 
   /**
@@ -231,9 +253,12 @@ class ViewsBasicManagerTest extends UnitTestCase {
   public function testSortByListForEvent() {
     $list = $this->manager->sortByList('event');
 
+    // Soonest first is listed first, so a new event listing defaults to it
+    // (the select falls back to its first option); the saved keys are
+    // unchanged, so existing listings keep their sort (#1864).
     $this->assertSame([
-      'field_event_date:DESC' => 'Event Date - newer first',
-      'field_event_date:ASC' => 'Event Date - older first',
+      'field_event_date:ASC' => 'Event Date - soonest first',
+      'field_event_date:DESC' => 'Event Date - latest first',
     ], $list);
   }
 
@@ -270,7 +295,7 @@ class ViewsBasicManagerTest extends UnitTestCase {
     $result = $this->manager->getLabel('post', 'view_modes', 'list_item');
 
     $this->assertIsArray($result);
-    $this->assertSame('Post List', $result['label']);
+    $this->assertSame('List', $result['label']);
   }
 
   /**
@@ -767,18 +792,23 @@ class ViewsBasicManagerTest extends UnitTestCase {
    *   The block params, merged over the minimum setupView() reads.
    * @param array $filters
    *   The display's filters before setup.
+   * @param array $setup_args
+   *   Extra arguments for setupView() after the params: block UUID and block
+   *   heading flag.
+   * @param array|null $view_args
+   *   Receives the arguments setupView() handed the view, keyed by name.
    *
    * @return array
    *   Every display option setupView() set, keyed by option name.
    */
-  protected function runSetupView(array $params, array $filters): array {
+  protected function runSetupView(array $params, array $filters, array $setup_args = [], ?array &$view_args = NULL): array {
     $params += [
       'sort_by' => 'field_publish_date:DESC',
       'display' => 'all',
       'limit' => 10,
       'view_mode' => 'card',
     ];
-    $set = [];
+    $set = ['pager' => ['type' => 'views_basic_full_pager', 'options' => ['id' => 0]]];
     $display = $this->createMock(DisplayPluginBase::class);
     $display->method('getOption')->willReturnCallback(
       function ($name) use (&$set, $filters) {
@@ -793,9 +823,65 @@ class ViewsBasicManagerTest extends UnitTestCase {
     $view = $this->createMock(ViewExecutable::class);
     $view->method('getDisplay')->willReturn($display);
     $view->method('preview')->willReturn(['#rows' => []]);
+    $view->method('setArguments')->willReturnCallback(
+      function (array $args) use (&$view_args) {
+        $view_args = $args;
+      }
+    );
 
-    $this->manager->setupView($view, json_encode($params));
+    $this->manager->setupView($view, json_encode($params), ...$setup_args);
     return $set;
+  }
+
+  /**
+   * A block's pager element survives the AJAX re-render (#1921).
+   *
+   * The full-page render derives the element from the block UUID. The AJAX
+   * pager request has no block entity, so the UUID must ride the view
+   * arguments and come back in through setupView(); otherwise the re-render
+   * reads ?page= at element 0 and always shows page 1.
+   *
+   * @covers ::setupView
+   * @covers ::incomingDisplayContext
+   */
+  public function testSetupViewCarriesBlockUuidThroughViewArguments() {
+    $params = [
+      'filters' => ['types' => ['post']],
+      'display' => 'pager',
+    ];
+    $uuid = '11111111-1111-1111-1111-111111111111';
+
+    // Full-page render: element from the UUID, UUID written into the args.
+    $set = $this->runSetupView($params, [], [$uuid, TRUE], $view_args);
+    $element = $set['pager']['options']['id'];
+    $this->assertNotSame(0, $element);
+
+    // AJAX re-render: no block entity, UUID recovered from the arguments.
+    $context = ViewsBasicManager::incomingDisplayContext(array_values($view_args));
+    $this->assertSame(['block_has_heading' => TRUE, 'block_uuid' => $uuid], $context);
+    $set = $this->runSetupView($params, [], [$context['block_uuid'], $context['block_has_heading']], $ajax_args);
+    $this->assertSame($element, $set['pager']['options']['id']);
+    $this->assertSame($view_args['field_display_options'], $ajax_args['field_display_options']);
+  }
+
+  /**
+   * Missing or malformed arguments yield no block context.
+   *
+   * @covers ::incomingDisplayContext
+   */
+  public function testIncomingDisplayContextToleratesBadArguments() {
+    $index = ViewsBasicManager::viewArgumentIndex('field_display_options');
+    $args = static function ($options) use ($index) {
+      $list = array_fill(0, $index + 1, NULL);
+      $list[$index] = is_string($options) ? $options : json_encode($options);
+      return $list;
+    };
+    $empty = ['block_has_heading' => FALSE, 'block_uuid' => NULL];
+
+    $this->assertSame($empty, ViewsBasicManager::incomingDisplayContext([]));
+    $this->assertSame($empty, ViewsBasicManager::incomingDisplayContext($args('not json')));
+    $this->assertSame($empty, ViewsBasicManager::incomingDisplayContext($args(['block_uuid' => ['x']])));
+    $this->assertSame($empty, ViewsBasicManager::incomingDisplayContext($args(['block_uuid' => ''])));
   }
 
   /**

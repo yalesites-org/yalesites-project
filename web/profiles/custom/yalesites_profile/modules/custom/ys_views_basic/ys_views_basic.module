@@ -378,22 +378,18 @@ function ys_views_basic_views_pre_view(ViewExecutable $view, $display_id, array 
   try {
     $viewsBasicManager = \Drupal::service('ys_views_basic.views_basic_manager');
     // setupView() rebuilds the field-display options from the stored params,
-    // which do not carry the host block's heading-presence signal (it is a
-    // block-entity fact resolved by the formatter, not a saved param). Recover
-    // it from the incoming view arguments so exposed-filter and pager AJAX
-    // re-renders keep the same result-card heading level as the initial render.
-    $display_arg = ViewsBasicManager::viewArgumentIndex('field_display_options');
-    $block_has_heading = FALSE;
-    if (isset($args[$display_arg])) {
-      $incoming_display = json_decode($args[$display_arg]);
-      $block_has_heading = !empty($incoming_display->block_has_heading);
-    }
+    // which do not carry the host block's facts (heading presence, UUID):
+    // those are resolved from the block entity by the formatter. Recover them
+    // from the incoming view arguments so exposed-filter and pager AJAX
+    // re-renders keep the same result-card heading level and read ?page= at
+    // the same pager element as the initial render (#1921).
+    $context = ViewsBasicManager::incomingDisplayContext($args);
     // Resolved by name, never with end($args): original_settings is no longer
     // the last argument, and taking the last one silently handed setupView()
     // the wrong JSON, leaving every AJAX re-render without its stored display,
     // sort, view mode and filters (#1648).
     $settings_arg = ViewsBasicManager::viewArgumentIndex('original_settings');
-    $viewsBasicManager->setupView($view, $args[$settings_arg] ?? end($args), NULL, $block_has_heading);
+    $viewsBasicManager->setupView($view, $args[$settings_arg] ?? end($args), $context['block_uuid'], $context['block_has_heading']);
   }
   finally {
     unset($processing[$object_id]);
