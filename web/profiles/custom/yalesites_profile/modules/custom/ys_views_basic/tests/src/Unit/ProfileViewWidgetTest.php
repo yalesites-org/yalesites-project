@@ -67,6 +67,26 @@ class ProfileViewWidgetTest extends UnitTestCase {
   }
 
   /**
+   * The exposed category filter toggle reads "Show Affiliation" (#1171).
+   *
+   * The visitor-facing filter is labelled Affiliation, so the editor toggle
+   * that turns it on says the same. The other toggles are unchanged.
+   *
+   * @covers ::getExposedFilterOptions
+   */
+  public function testExposedCategoryFilterToggleSaysAffiliation() {
+    $widget = $this->widget('profile_card');
+    // The custom vocabulary label is memoized on the base; seed it so the test
+    // does not need a vocabulary storage.
+    $ref = new \ReflectionProperty($widget, 'customVocabularyLabel');
+    $ref->setAccessible(TRUE);
+    $ref->setValue($widget, 'Custom Vocab');
+    $options = $this->invoke($widget, 'getExposedFilterOptions');
+    $this->assertSame('Show Affiliation', (string) $options['show_category_filter']);
+    $this->assertSame(['show_search_filter', 'show_category_filter', 'show_custom_vocab_filter', 'show_audience_filter'], array_keys($options));
+  }
+
+  /**
    * The category vocabulary resolves to "affiliation" for profiles.
    *
    * @covers \Drupal\ys_views_basic\Plugin\Field\FieldWidget\ViewsBasicWidgetBase::getCategoryVocabulary
