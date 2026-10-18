@@ -8,8 +8,11 @@ use Drupal\Core\Entity\EntityTypeManagerInterface;
 use Drupal\Core\Form\FormStateInterface;
 use Drupal\Core\Routing\RouteMatchInterface;
 use Drupal\Tests\UnitTestCase;
+use Drupal\layout_builder\OverridesSectionStorageInterface;
+use Drupal\node\NodeInterface;
 use Drupal\taxonomy\TermStorageInterface;
 use Drupal\views\Plugin\views\display\DisplayPluginBase;
+use Drupal\views\Plugin\views\query\Sql;
 use Drupal\views\ViewExecutable;
 use Drupal\views\ViewExecutableFactory;
 use Drupal\ys_views_basic\Service\ExposedTaxonomyFilterOptions;
@@ -793,13 +796,14 @@ class ViewsBasicManagerTest extends UnitTestCase {
    * @param array $filters
    *   The display's filters before setup.
    * @param array $setup_args
-   *   Extra arguments for setupView() after the params: block UUID and block
-   *   heading flag.
+   *   Extra arguments for setupView() after the params: block UUID, block
+   *   heading flag and host node ID.
    * @param array|null $view_args
    *   Receives the arguments setupView() handed the view, keyed by name.
    *
    * @return array
-   *   Every display option setupView() set, keyed by option name.
+   *   Every display option setupView() set, keyed by option name, plus
+   *   'where': each [field, value, operator] condition added to the query.
    */
   protected function runSetupView(array $params, array $filters, array $setup_args = [], ?array &$view_args = NULL): array {
     $params += [
@@ -823,6 +827,14 @@ class ViewsBasicManagerTest extends UnitTestCase {
     $view = $this->createMock(ViewExecutable::class);
     $view->method('getDisplay')->willReturn($display);
     $view->method('preview')->willReturn(['#rows' => []]);
+    $query = $this->createMock(Sql::class);
+    $query->method('ensureTable')->willReturn('node_field_data');
+    $query->method('addWhere')->willReturnCallback(
+      function ($group, $field, $value, $operator) use (&$set) {
+        $set['where'][] = [$field, $value, $operator];
+      }
+    );
+    $view->method('getQuery')->willReturn($query);
     $view->method('setArguments')->willReturnCallback(
       function (array $args) use (&$view_args) {
         $view_args = $args;
@@ -858,7 +870,7 @@ class ViewsBasicManagerTest extends UnitTestCase {
 
     // AJAX re-render: no block entity, UUID recovered from the arguments.
     $context = ViewsBasicManager::incomingDisplayContext(array_values($view_args));
-    $this->assertSame(['block_has_heading' => TRUE, 'block_uuid' => $uuid], $context);
+    $this->assertSame(['block_has_heading' => TRUE, 'block_uuid' => $uuid, 'host_nid' => NULL], $context);
     $set = $this->runSetupView($params, [], [$context['block_uuid'], $context['block_has_heading']], $ajax_args);
     $this->assertSame($element, $set['pager']['options']['id']);
     $this->assertSame($view_args['field_display_options'], $ajax_args['field_display_options']);
@@ -876,12 +888,71 @@ class ViewsBasicManagerTest extends UnitTestCase {
       $list[$index] = is_string($options) ? $options : json_encode($options);
       return $list;
     };
-    $empty = ['block_has_heading' => FALSE, 'block_uuid' => NULL];
+    $empty = ['block_has_heading' => FALSE, 'block_uuid' => NULL, 'host_nid' => NULL];
 
     $this->assertSame($empty, ViewsBasicManager::incomingDisplayContext([]));
     $this->assertSame($empty, ViewsBasicManager::incomingDisplayContext($args('not json')));
     $this->assertSame($empty, ViewsBasicManager::incomingDisplayContext($args(['block_uuid' => ['x']])));
     $this->assertSame($empty, ViewsBasicManager::incomingDisplayContext($args(['block_uuid' => ''])));
+    $this->assertSame($empty, ViewsBasicManager::incomingDisplayContext($args(['host_nid' => 'x'])));
+    $this->assertSame($empty, ViewsBasicManager::incomingDisplayContext($args(['host_nid' => 0])));
+    $this->assertSame($empty, ViewsBasicManager::incomingDisplayContext($args(['host_nid' => -5])));
+  }
+
+  /**
+   * The host page stays out of the results on the AJAX re-render (#1921).
+   *
+   * The full-page render leaves out the node the listing sits on unless the
+   * editor turned "include the current page" on. The pager and exposed-filter
+   * AJAX requests run on the views.ajax route, which has no node parameter,
+   * so the host node ID must ride the view arguments; otherwise the first
+   * pager click puts the host page back in and the total goes up by one.
+   *
+   * @covers ::setupView
+   * @covers ::incomingDisplayContext
+   */
+  public function testSetupViewExcludesHostNodeOnAjaxRerender() {
+    $params = [
+      'filters' => ['types' => ['page']],
+      'display' => 'pager',
+    ];
+    $uuid = '11111111-1111-1111-1111-111111111111';
+    $exclude_42 = [['node_field_data.nid', 42, '<>']];
+
+    // Full-page render: the host node comes from the route.
+    $node = $this->createMock(NodeInterface::class);
+    $node->method('id')->willReturn('42');
+    $storage = NULL;
+    $this->routeMatch->method('getParameter')->willReturnCallback(
+      function ($name) use (&$node, &$storage) {
+        return ['node' => $node, 'section_storage' => $storage][$name] ?? NULL;
+      }
+    );
+    $set = $this->runSetupView($params, [], [$uuid, FALSE], $view_args);
+    $this->assertSame($exclude_42, $set['where']);
+
+    // AJAX re-render: no node on the route, host node recovered from the
+    // arguments the full-page render wrote.
+    $node = NULL;
+    $context = ViewsBasicManager::incomingDisplayContext(array_values($view_args));
+    $this->assertSame(42, $context['host_nid']);
+    $ajax_setup_args = [$context['block_uuid'], $context['block_has_heading'], $context['host_nid']];
+    $set = $this->runSetupView($params, [], $ajax_setup_args, $ajax_args);
+    $this->assertSame($exclude_42, $set['where']);
+    $this->assertSame($view_args['field_display_options'], $ajax_args['field_display_options']);
+
+    // Layout Builder AJAX: the page comes from the overrides section storage,
+    // and it wins over whatever the arguments say.
+    $layout_node = $this->createConfiguredMock(NodeInterface::class, ['id' => '7']);
+    $storage = $this->createMock(OverridesSectionStorageInterface::class);
+    $storage->method('getContextValue')->with('entity')->willReturn($layout_node);
+    $set = $this->runSetupView($params, [], [$uuid, FALSE, 42]);
+    $this->assertSame([['node_field_data.nid', 7, '<>']], $set['where']);
+
+    // "Include the current page" on: no exclusion on either path.
+    $params['show_current_entity'] = 1;
+    $set = $this->runSetupView($params, [], [$uuid, FALSE, 42]);
+    $this->assertArrayNotHasKey('where', $set);
   }
 
   /**

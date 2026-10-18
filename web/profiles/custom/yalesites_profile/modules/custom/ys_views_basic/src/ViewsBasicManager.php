@@ -8,6 +8,7 @@ use Drupal\Core\DependencyInjection\ContainerInjectionInterface;
 use Drupal\Core\Entity\EntityDisplayRepository;
 use Drupal\Core\Entity\EntityTypeManagerInterface;
 use Drupal\Core\Routing\RouteMatchInterface;
+use Drupal\layout_builder\OverridesSectionStorageInterface;
 use Drupal\node\NodeInterface;
 use Drupal\views\ViewEntityInterface;
 use Drupal\views\ViewExecutableFactory;
@@ -602,12 +603,27 @@ class ViewsBasicManager extends ControllerBase implements ContainerInjectionInte
    *   field-display options so hook_views_pre_render() can stamp the level on
    *   each result entity (mirrors how show_categories flows). Defaults to FALSE
    *   so the AJAX/preview paths, which have no block entity, fall back to H2.
+   * @param int|null $hostNid
+   *   The node the listing is placed on, for requests whose route has no node
+   *   parameter (the views.ajax pager and exposed-filter re-render). The
+   *   current route's node, or Layout Builder's overridden page, wins when
+   *   there is one.
    *
    * @return void
    *   No return value.
    */
-  public function setupView(&$view, $params, $blockUuid = NULL, $blockHasHeading = FALSE) {
+  public function setupView(&$view, $params, $blockUuid = NULL, $blockHasHeading = FALSE, ?int $hostNid = NULL) {
     $paramsDecoded = json_decode($params, TRUE);
+    $routeNode = $this->routeMatch->getParameter('node');
+    // Layout Builder's own AJAX routes (add, update, move block) carry the
+    // page only through the section storage.
+    $sectionStorage = $this->routeMatch->getParameter('section_storage');
+    if (!$routeNode instanceof NodeInterface && $sectionStorage instanceof OverridesSectionStorageInterface) {
+      $routeNode = $sectionStorage->getContextValue('entity');
+    }
+    if ($routeNode instanceof NodeInterface) {
+      $hostNid = (int) $routeNode->id();
+    }
     $pinned_to_top = isset($paramsDecoded['pinned_to_top']) ? (bool) $paramsDecoded['pinned_to_top'] : FALSE;
 
     /* Events need to have aggregation turned on in the view. Therefore, we
@@ -843,6 +859,9 @@ class ViewsBasicManager extends ControllerBase implements ContainerInjectionInte
       // The host block, carried for the AJAX re-render, which has no block
       // entity to derive the per-instance pager element from (#1921).
       'block_uuid' => $blockUuid,
+      // The host node, carried for the AJAX re-render, whose views.ajax route
+      // has no node to leave out of the results (#1921).
+      'host_nid' => $hostNid,
       // Card-size dial (#1648). It rides the shared field_display_options
       // bucket rather than taking a positional arg of its own because it
       // applies to every content type's card grid, and because it is read by
@@ -889,16 +908,12 @@ class ViewsBasicManager extends ControllerBase implements ContainerInjectionInte
      * Includes current node, if specified in settings.
      */
     $includeCurrent = $paramsDecoded['show_current_entity'] ?? 0;
-    if (!$includeCurrent) {
-      $node = $this->routeMatch->getParameter('node');
-      if ($node instanceof NodeInterface) {
-        $currentNid = $node->id();
-        /** @var Drupal\views\Plugin\views\query\Sql $query */
-        $query = $view->getQuery();
-        $baseTableAlias = $query->ensureTable('node_field_data');
-        if ($baseTableAlias) {
-          $query->addWhere(0, "$baseTableAlias.nid", $currentNid, '<>');
-        }
+    if (!$includeCurrent && $hostNid) {
+      /** @var \Drupal\views\Plugin\views\query\Sql $query */
+      $query = $view->getQuery();
+      $baseTableAlias = $query->ensureTable('node_field_data');
+      if ($baseTableAlias) {
+        $query->addWhere(0, "$baseTableAlias.nid", $hostNid, '<>');
       }
     }
 
@@ -986,21 +1001,25 @@ class ViewsBasicManager extends ControllerBase implements ContainerInjectionInte
    * setupView() writes what it knows about the block into
    * field_display_options and this reads it back. The arguments come from the
    * browser, but the UUID is only ever hashed by ::pagerElementId(), so any
-   * string yields an element in its small fixed range.
+   * string yields an element in its small fixed range, and the host node ID
+   * only ever removes that one node from a listing.
    *
    * @param array $args
    *   The incoming positional view arguments.
    *
    * @return array
-   *   'block_has_heading' (bool) and 'block_uuid' (string|null).
+   *   'block_has_heading' (bool), 'block_uuid' (string|null) and 'host_nid'
+   *   (positive int|null).
    */
   public static function incomingDisplayContext(array $args): array {
     $index = self::viewArgumentIndex('field_display_options');
     $options = isset($args[$index]) && is_string($args[$index]) ? json_decode($args[$index], TRUE) : NULL;
     $uuid = is_array($options) ? ($options['block_uuid'] ?? NULL) : NULL;
+    $nid = is_array($options) ? ($options['host_nid'] ?? NULL) : NULL;
     return [
       'block_has_heading' => is_array($options) && !empty($options['block_has_heading']),
       'block_uuid' => is_string($uuid) && $uuid !== '' ? $uuid : NULL,
+      'host_nid' => is_int($nid) && $nid > 0 ? $nid : NULL,
     ];
   }
 
