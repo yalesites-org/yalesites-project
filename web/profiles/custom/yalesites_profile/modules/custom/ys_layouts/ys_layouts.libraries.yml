@@ -1,8 +1,22 @@
+block_dialog:
+  version: VERSION
+  css:
+    theme:
+      css/block-dialog.css: {}
+
 detach_reusable_block:
   version: VERSION
   css:
     theme:
       css/detach-reusable-block.css: {}
+
+# Icon + spacing for the "Clone" action on the section toolbar. Attached by
+# SectionCloneLinkBuilder when it adds the link.
+clone_section:
+  version: VERSION
+  css:
+    theme:
+      css/clone-section.css: {}
 
 ys_layout_banner:
   version: VERSION
@@ -24,3 +38,18 @@ ys_layout_three_column_33_33_33:
   css:
     theme:
       layouts/three_column_33_33_33/three-column_33_33_33.css: {}
+ys_layout_onecol:
+  version: VERSION
+  css:
+    theme:
+      layouts/onecol/onecol.css: {}
+
+# Browser-side "required" check for a checkbox group, so its error stays in
+# the Layout Builder dialog. Attached by TaxonomyDisplayBlock::blockForm().
+required_checkboxes:
+  version: VERSION
+  js:
+    js/required-checkboxes.js: {}
+  dependencies:
+    - core/drupal
+    - core/once

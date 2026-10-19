@@ -2,11 +2,17 @@
 
 namespace Drupal\ys_views_basic\Form;
 
+use Drupal\Core\Ajax\AjaxResponse;
+use Drupal\Core\Ajax\AnnounceCommand;
+use Drupal\Core\Ajax\ReplaceCommand;
+use Drupal\Core\Datetime\DrupalDateTime;
 use Drupal\Core\Form\FormBase;
+use Drupal\Core\Form\FormBuilderInterface;
 use Drupal\Core\Form\FormStateInterface;
 use Drupal\Core\Entity\EntityTypeManagerInterface;
+use Drupal\Core\StringTranslation\TranslatableMarkup;
 use Drupal\ys_views_basic\ViewsBasicManager;
-use Drupal\ys_views_basic\Service\EventsCalendarInterface;
+use Drupal\ys_views_basic\Service\EventsCalendar;
 use Symfony\Component\DependencyInjection\ContainerInterface;
 
 /**
@@ -36,7 +42,7 @@ class EventCalendarFilterForm extends FormBase {
   /**
    * The events calendar service.
    *
-   * @var \Drupal\ys_views_basic\Service\EventsCalendarInterface
+   * @var \Drupal\ys_views_basic\Service\EventsCalendar
    */
   protected $eventsCalendar;
 
@@ -47,10 +53,10 @@ class EventCalendarFilterForm extends FormBase {
    *   The views basic manager service.
    * @param \Drupal\Core\Entity\EntityTypeManagerInterface $entityTypeManager
    *   The entity type manager service.
-   * @param \Drupal\ys_views_basic\Service\EventsCalendarInterface $eventsCalendar
+   * @param \Drupal\ys_views_basic\Service\EventsCalendar $eventsCalendar
    *   The events calendar service.
    */
-  public function __construct(ViewsBasicManager $viewsBasicManager, EntityTypeManagerInterface $entityTypeManager, EventsCalendarInterface $eventsCalendar) {
+  public function __construct(ViewsBasicManager $viewsBasicManager, EntityTypeManagerInterface $entityTypeManager, EventsCalendar $eventsCalendar) {
     $this->viewsBasicManager = $viewsBasicManager;
     $this->entityTypeManager = $entityTypeManager;
     $this->eventsCalendar = $eventsCalendar;
@@ -90,6 +96,7 @@ class EventCalendarFilterForm extends FormBase {
       'atomic/chosen-select',
       'atomic/calendar',
       'ys_views_basic/ys_views_basic',
+      'ys_views_basic/event_calendar_live_filter',
     ];
 
     // Store the calendar wrapper ID in the form state.
@@ -109,8 +116,12 @@ class EventCalendarFilterForm extends FormBase {
     // Add hidden fields.
     $this->addHiddenFields($form, $paramsDecoded, $form_state);
 
-    // Render initial calendar.
-    $this->renderCalendar($form, $this->getFiltersFromParams($paramsDecoded), $form_state);
+    // Render the calendar. A rebuild comes from a no-JS Apply, so it shows the
+    // visitor's choices; a first load shows only the block's own filters.
+    $filters = $form_state->isRebuilding()
+      ? $this->getFiltersFromFormState($form_state)
+      : $this->getFiltersFromParams($paramsDecoded);
+    $this->renderCalendar($form, $filters, $form_state);
 
     return $form;
   }
@@ -119,15 +130,21 @@ class EventCalendarFilterForm extends FormBase {
    * {@inheritdoc}
    */
   public function submitForm(array &$form, FormStateInterface $form_state) {
-    // Form submission is handled via AJAX callback.
-    // This method is called but the actual filtering happens in
-    // ajaxFilterCallback.
+    // With JavaScript, filtering happens in ajaxFilterCallback. Without it,
+    // Apply is a plain POST: rebuild so the calendar renders the submitted
+    // filters instead of redirecting back to an unfiltered page.
+    if (!$this->getRequest()->query->has(FormBuilderInterface::AJAX_FORM_REQUEST)) {
+      $form_state->setRebuild();
+    }
   }
 
   /**
    * AJAX callback for filter form.
+   *
+   * Replaces the calendar and announces the new result count to screen
+   * readers, since filters apply without the visitor pressing a button.
    */
-  public function ajaxFilterCallback(array &$form, FormStateInterface $form_state) {
+  public function ajaxFilterCallback(array &$form, FormStateInterface $form_state): AjaxResponse {
     // Ensure navigated month/year from user input are persisted in form state.
     $user_input = (array) $form_state->getUserInput();
     $filters_container_input = $user_input['filters_container'] ?? [];
@@ -195,8 +212,41 @@ class EventCalendarFilterForm extends FormBase {
     // Render updated calendar.
     $this->renderCalendar($form, $filters, $form_state);
 
-    // Return just the calendar container.
-    return $form['calendar_container']['calendar'];
+    $calendar = $form['calendar_container']['calendar'];
+    $response = new AjaxResponse();
+    $response->addCommand(new ReplaceCommand('#' . self::CALENDAR_WRAPPER_ID, $calendar));
+    $response->addCommand(new AnnounceCommand((string) $this->buildResultsAnnouncement($calendar['calendar_content']['#month_data']), 'polite'));
+    return $response;
+  }
+
+  /**
+   * Builds the screen reader message for the calendar's results.
+   *
+   * @param array $grid
+   *   The calendar grid from EventsCalendar::getCalendar(). Its second row
+   *   always lies in the displayed month; the first and last rows can hold
+   *   days from the adjacent months, which are not counted.
+   *
+   * @return \Drupal\Core\StringTranslation\TranslatableMarkup
+   *   The message, counting each event once however many days it spans.
+   */
+  protected function buildResultsAnnouncement(array $grid): TranslatableMarkup {
+    $month = $grid[1][0]['date']['month'] ?? date('m');
+    $year = $grid[1][0]['date']['year'] ?? date('Y');
+    $urls = [];
+    foreach ($grid as $row) {
+      foreach ($row as $cell) {
+        if ($cell['date']['month'] === $month && $cell['date']['year'] === $year) {
+          foreach ($cell['events'] as $event) {
+            $urls[$event['url']] = TRUE;
+          }
+        }
+      }
+    }
+    $label = (new DrupalDateTime("$year-$month-01"))->format('F Y');
+    return $urls
+      ? $this->formatPlural(count($urls), '1 event found for @month.', '@count events found for @month.', ['@month' => $label])
+      : $this->t('No events found for @month.', ['@month' => $label]);
   }
 
   /**
@@ -222,7 +272,8 @@ class EventCalendarFilterForm extends FormBase {
 
     $weight = 0;
 
-    // Search filter (no AJAX - will use Apply button).
+    // Search filter. The calendar component debounces typing in inputs with
+    // the ys-events-search-input class; the live filter script then submits.
     if (!empty($exposedFilterOptions['show_search_filter'])) {
       $form['filters_container']['search'] = [
         '#type' => 'textfield',
@@ -230,7 +281,7 @@ class EventCalendarFilterForm extends FormBase {
         '#default_value' => $currentValues['search'],
         '#attributes' => [
           'placeholder' => $this->t('Search events'),
-          'class' => ['form-text'],
+          'class' => ['form-text', 'ys-events-search-input'],
         ],
         '#weight' => $weight++,
       ];
@@ -280,7 +331,9 @@ class EventCalendarFilterForm extends FormBase {
       $form['filters_container']['custom_vocab_included_terms'] = $custom_vocab_element;
     }
 
-    // Add Apply button only when at least one filter is configured.
+    // Add Apply button only when at least one filter is configured. With
+    // JavaScript the filters apply themselves, so js-hide hides the button;
+    // without it, Apply is the only way to submit.
     if ($weight > 0) {
       $form['filters_container']['actions'] = [
         '#type' => 'actions',
@@ -293,9 +346,12 @@ class EventCalendarFilterForm extends FormBase {
           'callback' => '::ajaxFilterCallback',
           'wrapper' => self::CALENDAR_WRAPPER_ID,
           'progress' => ['type' => 'none'],
+          // Keep focus on the filter the visitor changed, not the hidden
+          // button that submitted the change.
+          'disable-refocus' => TRUE,
         ],
         '#attributes' => [
-          'class' => ['button', 'button--primary'],
+          'class' => ['button', 'button--primary', 'js-hide'],
         ],
       ];
     }

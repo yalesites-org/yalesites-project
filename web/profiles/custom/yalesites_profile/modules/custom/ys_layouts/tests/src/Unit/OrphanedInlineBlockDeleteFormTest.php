@@ -6,7 +6,7 @@ use Drupal\Core\Form\FormState;
 use Drupal\Core\Messenger\MessengerInterface;
 use Drupal\Tests\UnitTestCase;
 use Drupal\ys_layouts\Form\OrphanedInlineBlockDeleteForm;
-use Drupal\ys_layouts\Service\OrphanedInlineBlockCleanerInterface;
+use Drupal\ys_layouts\Service\OrphanedInlineBlockCleaner;
 
 /**
  * Tests the orphaned inline block deletion confirm form.
@@ -26,7 +26,7 @@ class OrphanedInlineBlockDeleteFormTest extends UnitTestCase {
   /**
    * The orphaned inline block cleaner mock.
    *
-   * @var \Drupal\ys_layouts\Service\OrphanedInlineBlockCleanerInterface|\PHPUnit\Framework\MockObject\MockObject
+   * @var \Drupal\ys_layouts\Service\OrphanedInlineBlockCleaner|\PHPUnit\Framework\MockObject\MockObject
    */
   protected $cleaner;
 
@@ -50,7 +50,7 @@ class OrphanedInlineBlockDeleteFormTest extends UnitTestCase {
   protected function setUp(): void {
     parent::setUp();
 
-    $this->cleaner = $this->createMock(OrphanedInlineBlockCleanerInterface::class);
+    $this->cleaner = $this->createMock(OrphanedInlineBlockCleaner::class);
     $this->messenger = $this->createMock(MessengerInterface::class);
 
     $this->form = new OrphanedInlineBlockDeleteForm($this->cleaner);

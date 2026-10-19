@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Drupal\ys_layouts\Plugin\Block;
 
+use Drupal\Core\Block\Attribute\Block;
 use Drupal\Core\Block\BlockBase;
 use Drupal\Core\Entity\EntityTypeManagerInterface;
 use Drupal\Core\Form\FormStateInterface;
@@ -12,6 +13,7 @@ use Drupal\Core\Plugin\ContextAwarePluginAssignmentTrait;
 use Drupal\Core\Plugin\ContextAwarePluginInterface;
 use Drupal\Core\Plugin\ContextAwarePluginTrait;
 use Drupal\Core\Routing\CurrentRouteMatch;
+use Drupal\Core\StringTranslation\TranslatableMarkup;
 use Drupal\node\Entity\Node;
 use Drupal\ys_themes\ColorTokenResolver;
 use Symfony\Component\DependencyInjection\ContainerInterface;
@@ -19,13 +21,12 @@ use Symfony\Component\HttpFoundation\RequestStack;
 
 /**
  * Provides a yalesites taxonomy display block block.
- *
- * @Block(
- *   id = "ys_taxonomy_display_block",
- *   admin_label = @Translation("Taxonomy Display Block"),
- *   category = @Translation("YaleSites Layouts"),
- * )
  */
+#[Block(
+  id: 'ys_taxonomy_display_block',
+  admin_label: new TranslatableMarkup('Taxonomy Display Block'),
+  category: new TranslatableMarkup('YaleSites Layouts'),
+)]
 class TaxonomyDisplayBlock extends BlockBase implements ContextAwarePluginInterface, ContainerFactoryPluginInterface {
 
   use ContextAwarePluginTrait;
@@ -141,13 +142,29 @@ class TaxonomyDisplayBlock extends BlockBase implements ContextAwarePluginInterf
       }
 
       if (!empty($vocabulary_fields)) {
+        $vocabulary_fields_title = $this->t('Select vocabularies to display');
         $form['vocabulary_fields'] = [
           '#type' => 'checkboxes',
-          '#title' => $this->t('Select vocabularies to display'),
+          '#title' => $vocabulary_fields_title,
           '#options' => $vocabulary_fields,
           '#default_value' => $this->configuration['vocabulary_fields'] ?? [],
           '#description' => $this->t('Choose which vocabularies should be displayed in this block.'),
           '#required' => TRUE,
+          // Layout Builder Browser strips #ajax from this form's submit, so a
+          // server-side "required" error reloads the form as a standalone page
+          // and the editor leaves the dialog. A checkbox group cannot carry
+          // HTML5 required either, so this check blocks the submit while no
+          // vocabulary is checked and shows Drupal's inline error under the
+          // field instead. #required stays as the no-JS fallback.
+          '#attributes' => [
+            'class' => ['js-ys-required-checkboxes'],
+            'data-ys-required-message' => $this->t('@name field is required.', [
+              '@name' => $vocabulary_fields_title,
+            ]),
+          ],
+          '#attached' => [
+            'library' => ['ys_layouts/required_checkboxes'],
+          ],
         ];
 
         $form['theme_selection'] = [

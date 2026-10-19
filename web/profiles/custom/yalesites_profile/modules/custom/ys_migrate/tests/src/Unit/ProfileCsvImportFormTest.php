@@ -179,7 +179,7 @@ class ProfileCsvImportFormTest extends UnitTestCase {
     $form = $this->form->buildForm([], new FormState());
 
     $this->assertEquals('table', $form['columns']['#type']);
-    $this->assertEquals(['Column', 'Notes'], $form['columns']['#header']);
+    // The header shape itself is ColumnReferenceTableTraitTest's contract.
     $this->assertEquals('managed_file', $form['csv_file']['#type']);
     $this->assertTrue($form['csv_file']['#required']);
     $this->assertTrue($form['preview']['#default_value']);

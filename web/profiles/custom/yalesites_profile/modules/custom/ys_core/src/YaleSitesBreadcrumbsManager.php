@@ -3,8 +3,10 @@
 namespace Drupal\ys_core;
 
 use Drupal\Core\Breadcrumb\BreadcrumbBuilderInterface;
+use Drupal\Core\Cache\CacheableMetadata;
 use Drupal\Core\Controller\ControllerBase;
 use Drupal\Core\DependencyInjection\ContainerInjectionInterface;
+use Drupal\Core\Link;
 use Symfony\Component\DependencyInjection\ContainerInterface;
 
 /**
@@ -46,11 +48,27 @@ class YaleSitesBreadcrumbsManager extends ControllerBase implements ContainerInj
   /**
    * Get a list of breadcrumb links using the Drupal BreadcrumbBuilder.
    *
+   * Links the current user cannot access, such as an unpublished parent page,
+   * are dropped.
+   *
+   * @param \Drupal\Core\Routing\RouteMatchInterface $route
+   *   The route to build the breadcrumb for.
+   * @param \Drupal\Core\Cache\CacheableMetadata|null $cacheability
+   *   Receives the breadcrumb's and the access checks' cacheability, so the
+   *   caller can apply it to its render array.
+   *
    * @return \Drupal\Core\Link[]
    *   An array of Drupal links.
    */
-  public function build($route): array {
-    return $this->removeEmptyLinks($this->breadcrumbManager->build($route)->getLinks());
+  public function build($route, ?CacheableMetadata $cacheability = NULL): array {
+    $cacheability ??= new CacheableMetadata();
+    $breadcrumb = $this->breadcrumbManager->build($route);
+    $cacheability->addCacheableDependency($breadcrumb);
+    return array_filter($this->removeEmptyLinks($breadcrumb->getLinks()), function (Link $link) use ($cacheability) {
+      $access = $link->getUrl()->access(NULL, TRUE);
+      $cacheability->addCacheableDependency($access);
+      return $access->isAllowed();
+    });
   }
 
   /**
