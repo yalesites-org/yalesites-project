@@ -2,10 +2,15 @@
 
 namespace Drupal\Tests\ys_core\Unit;
 
+use Drupal\Core\Access\AccessResult;
 use Drupal\Core\Breadcrumb\Breadcrumb;
+use Drupal\Core\Cache\CacheableMetadata;
+use Drupal\Core\Cache\Context\CacheContextsManager;
+use Drupal\Core\DependencyInjection\ContainerBuilder;
 use Drupal\Core\Breadcrumb\BreadcrumbBuilderInterface;
 use Drupal\Core\Link;
 use Drupal\Core\Routing\RouteMatchInterface;
+use Drupal\Core\Url;
 use Drupal\Tests\UnitTestCase;
 use Drupal\node\NodeInterface;
 use Drupal\ys_core\YaleSitesBreadcrumbsManager;
@@ -40,32 +45,77 @@ class YaleSitesBreadcrumbsManagerTest extends UnitTestCase {
    */
   protected function setUp(): void {
     parent::setUp();
+    // Adding cache contexts asserts they are valid via this service.
+    $cache_contexts_manager = $this->createMock(CacheContextsManager::class);
+    $cache_contexts_manager->method('assertValidTokens')->willReturn(TRUE);
+    $container = new ContainerBuilder();
+    $container->set('cache_contexts_manager', $cache_contexts_manager);
+    \Drupal::setContainer($container);
+
     $this->breadcrumbBuilder = $this->createMock(BreadcrumbBuilderInterface::class);
     $this->manager = new YaleSitesBreadcrumbsManager($this->breadcrumbBuilder);
+  }
+
+  /**
+   * Builds a link mock with the given text and URL access result.
+   */
+  protected function link(string $text, ?AccessResult $access = NULL): Link {
+    $url = $this->createMock(Url::class);
+    $url->method('access')->with(NULL, TRUE)->willReturn($access ?? AccessResult::allowed());
+    $link = $this->createMock(Link::class);
+    $link->method('getText')->willReturn($text);
+    $link->method('getUrl')->willReturn($url);
+    return $link;
+  }
+
+  /**
+   * Returns a real breadcrumb holding the given links for the builder mock.
+   */
+  protected function mockBreadcrumb(array $links): RouteMatchInterface {
+    $breadcrumb = new Breadcrumb();
+    $breadcrumb->setLinks($links);
+    $breadcrumb->addCacheContexts(['route.menu_active_trails:main']);
+    $breadcrumb->addCacheTags(['config:system.menu.main']);
+    $route = $this->createMock(RouteMatchInterface::class);
+    $this->breadcrumbBuilder->method('build')->with($route)->willReturn($breadcrumb);
+    return $route;
   }
 
   /**
    * @covers ::build
    */
   public function testBuildRemovesLinksWithEmptyText(): void {
-    $home = $this->createMock(Link::class);
-    $home->method('getText')->willReturn('Home');
+    $home = $this->link('Home');
+    $empty = $this->link('');
+    $about = $this->link('About');
+    $route = $this->mockBreadcrumb([$home, $empty, $about]);
 
-    $empty = $this->createMock(Link::class);
-    $empty->method('getText')->willReturn('');
+    $this->assertSame([$home, $about], array_values($this->manager->build($route)));
+  }
 
-    $about = $this->createMock(Link::class);
-    $about->method('getText')->willReturn('About');
+  /**
+   * Inaccessible crumbs are dropped and every cacheability input is kept.
+   *
+   * @covers ::build
+   */
+  public function testBuildRemovesInaccessibleLinksAndCarriesCacheability(): void {
+    $home = $this->link('Home', AccessResult::allowed()->addCacheContexts(['user.permissions']));
+    $parent = $this->link('Parent', AccessResult::forbidden()->addCacheTags(['node:79']));
+    $child = $this->link('Child', AccessResult::allowed()->addCacheTags(['node:80']));
+    $route = $this->mockBreadcrumb([$home, $parent, $child]);
 
-    $breadcrumb = $this->createMock(Breadcrumb::class);
-    $breadcrumb->method('getLinks')->willReturn([$home, $empty, $about]);
+    $cacheability = new CacheableMetadata();
+    $links = $this->manager->build($route, $cacheability);
 
-    $route = $this->createMock(RouteMatchInterface::class);
-    $this->breadcrumbBuilder->method('build')->with($route)->willReturn($breadcrumb);
-
-    $links = $this->manager->build($route);
-
-    $this->assertSame([$home, $about], array_values($links));
+    $this->assertSame([$home, $child], array_values($links));
+    $this->assertEqualsCanonicalizing(
+      ['config:system.menu.main', 'node:79', 'node:80'],
+      $cacheability->getCacheTags(),
+    );
+    $this->assertEqualsCanonicalizing(
+      ['route.menu_active_trails:main', 'user.permissions'],
+      $cacheability->getCacheContexts(),
+    );
   }
 
   /**
