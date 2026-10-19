@@ -1227,10 +1227,22 @@ class ViewsBasicManagerTest extends UnitTestCase {
    * @covers ::setupView
    */
   public function testSetupViewUsesPassedListingKeyOnAjax() {
-    $this->runSetupView($this->listingParams(), [], [NULL, FALSE, NULL, 'abcd1234'], $unused, ['search' => 'x', 'listing' => 'ffff0000']);
+    $this->runSetupView(
+      $this->listingParams(),
+      [],
+      [NULL, FALSE, NULL, 'abcd1234'],
+      $unused,
+      ['search' => 'x', 'listing' => 'ffff0000'],
+    );
     $this->assertSame([['listing' => 'ffff0000']], $this->exposedInputCalls, 'The input keeps the URL\'s listing, since pager links are built from it.');
 
-    $this->runSetupView($this->listingParams(), [], [NULL, FALSE, NULL, 'abcd1234'], $unused, ['search' => 'x', 'listing' => 'abcd1234']);
+    $this->runSetupView(
+      $this->listingParams(),
+      [],
+      [NULL, FALSE, NULL, 'abcd1234'],
+      $unused,
+      ['search' => 'x', 'listing' => 'abcd1234'],
+    );
     $this->assertSame([], $this->exposedInputCalls);
   }
 
