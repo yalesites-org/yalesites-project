@@ -5,7 +5,6 @@ namespace Drupal\Tests\ys_node_access\Kernel;
 use Drupal\Core\Form\EnforcedResponseException;
 use Drupal\Core\Form\FormState;
 use Drupal\Core\Routing\RouteObjectInterface;
-use Drupal\Core\Url;
 use Drupal\Tests\ys_core\Traits\ReadsProfileConfigTrait;
 use Drupal\system\Entity\Action;
 use Drupal\ys_node_access\CasProtectionBatch;
@@ -131,9 +130,6 @@ class CasProtectionBulkActionTest extends CasProtectionKernelTestBase {
 
   /**
    * Each action sends the bulk form to its own route.
-   *
-   * Removal also needs a CSRF token, which core adds to the URL it redirects
-   * to.
    */
   public function testActionsRedirectToTheirRoutes(): void {
     $definitions = $this->container->get('plugin.manager.action')->getDefinitions();
@@ -145,10 +141,33 @@ class CasProtectionBulkActionTest extends CasProtectionKernelTestBase {
     $this->assertSame('access content overview', $confirm->getRequirement('_permission'));
     $remove = $route_provider->getRouteByName('ys_node_access.cas_unprotect');
     $this->assertSame('access content overview', $remove->getRequirement('_permission'));
-    $this->assertSame('TRUE', $remove->getRequirement('_csrf_token'));
+  }
 
+  /**
+   * The URL the bulk form redirects to actually lets the editor in.
+   *
+   * This follows the bulk form's own path -- a form redirect to the action's
+   * confirm_form_route_name, built by the form submitter -- and then checks
+   * access on the resulting URL. Checking each route's requirements on their
+   * own is not enough: the removal route once required a CSRF token, which
+   * looked satisfiable that way, but a URL built for a redirect only ever
+   * carries the token's render placeholder, so every editor was denied.
+   */
+  public function testEditorCanFollowTheBulkFormRedirect(): void {
     $this->setCurrentUser($this->editor);
-    $this->assertStringContainsString('token=', Url::fromRoute('ys_node_access.cas_unprotect')->toString());
+    $session = $this->container->get('request_stack')->getCurrentRequest()->getSession();
+
+    foreach (['ys_node_access.cas_protect_confirm', 'ys_node_access.cas_unprotect'] as $route_name) {
+      $form_state = new FormState();
+      $form_state->setRedirect($route_name, [], ['query' => ['destination' => '/admin/content/manage-pages']]);
+      $target = $this->container->get('form_submitter')->redirectForm($form_state)->getTargetUrl();
+
+      $request = Request::create($target);
+      $request->setSession($session);
+      $request->attributes->add($this->container->get('router.no_access_checks')->matchRequest($request));
+      $this->assertSame($route_name, $request->attributes->get(RouteObjectInterface::ROUTE_NAME));
+      $this->assertTrue($this->container->get('access_manager')->checkRequest($request, $this->editor), "The editor can open $target");
+    }
   }
 
   /**

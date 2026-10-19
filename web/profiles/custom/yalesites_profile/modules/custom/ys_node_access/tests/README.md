@@ -20,7 +20,7 @@ Tests form integration and permissions:
 Cover the CAS protect and Remove CAS protection bulk actions on the Manage views:
 - `CasProtectionUpdaterTest` - grants rewritten on save, items already in the target state skipped, drafts in progress carried forward and kept as the latest revision, moderation states preserved, Contributors denied on published content, missing nodes and fields
 - `CasProtectionBatchTest` - large selections spread across passes, every outcome counted, one failure not stopping the rest, finish messages
-- `CasProtectionBulkActionTest` - both actions on all five Manage views as shipped, selection recorded without saving, routes and CSRF, the confirmation page's warning and item list, confirming and removing end to end
+- `CasProtectionBulkActionTest` - both actions on all five Manage views as shipped, selection recorded without saving, routes reachable through the bulk form's real redirect, the confirmation page's warning and item list, confirming and removing end to end
 
 The bulk form's own redirect (core's `node_bulk_form`) and the batch progress page are not driven by these tests; see manual testing below.
 
