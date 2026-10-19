@@ -66,8 +66,7 @@ class VocabularyTableHeaderScopeTest extends YsKernelTestBase {
   public function testVocabularyTableHeadersDeclareColumnScope(): void {
     // Built by hand rather than from the container: the controller's only
     // YaleSites dependency needs nothing but the two entity managers, so the
-    // ys_core module (which ys_taxonomy_manager does not declare) stays out of
-    // the kernel.
+    // ys_core module (a declared dependency) can stay out of the kernel.
     $entity_type_manager = $this->container->get('entity_type.manager');
     $entity_field_manager = $this->container->get('entity_field.manager');
     $controller = new YsTaxonomyManagerMainController(

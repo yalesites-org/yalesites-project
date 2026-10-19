@@ -48,3 +48,13 @@ ys_layout_onecol:
   css:
     theme:
       layouts/onecol/onecol.css: {}
+
+# Browser-side "required" check for a checkbox group, so its error stays in
+# the Layout Builder dialog. Attached by TaxonomyDisplayBlock::blockForm().
+required_checkboxes:
+  version: VERSION
+  js:
+    js/required-checkboxes.js: {}
+  dependencies:
+    - core/drupal
+    - core/once

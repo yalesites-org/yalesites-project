@@ -150,29 +150,6 @@
           $(window).trigger("resize.dialogResize");
         });
       });
-
-      // Handle Enter key submission in event calendar filter form search field.
-      const searchFields = once(
-        "event-calendar-search-enter",
-        'form#event-calendar-filter-form input[name="search"], form#event-calendar-filter-form .form-item-search input[type="text"]',
-        context
-      );
-
-      searchFields.forEach((searchField) => {
-        searchField.addEventListener("keydown", function (event) {
-          if (event.key === "Enter" || event.keyCode === 13) {
-            event.preventDefault();
-            event.stopImmediatePropagation();
-            const form = this.closest("form");
-            const submitButton = form?.querySelector(
-              'input[type="submit"], button[type="submit"], .form-submit, .button--primary'
-            );
-            if (submitButton) {
-              $(submitButton).trigger("mousedown").trigger("click");
-            }
-          }
-        });
-      });
     },
   };
 })(Drupal, once, jQuery);

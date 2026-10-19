@@ -35,3 +35,12 @@ term_operator:
     - core/once
     - core/jquery
 
+event_calendar_live_filter:
+  js:
+    assets/js/event-calendar-live-filter.js: {}
+  dependencies:
+    - core/drupal
+    - core/drupal.ajax
+    - core/drupal.announce
+    - core/jquery
+    - core/once
