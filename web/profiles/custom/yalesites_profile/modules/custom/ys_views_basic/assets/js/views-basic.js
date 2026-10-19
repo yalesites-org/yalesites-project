@@ -1,6 +1,6 @@
 ((Drupal) => {
   Drupal.behaviors.ysViewsBasic = {
-    attach: function (context) { // eslint-disable-line
+    attach(context) {
       // Function to handle radio input checked behavior based on radio element selection.
       function handleRadioInputs(radioGroup) {
         // Get references to the radio input elements within the specified group
@@ -8,13 +8,13 @@
 
         // Add event listener to each radio input
         radioInputs.forEach((input) => {
-          input.addEventListener("change", function () {
+          input.addEventListener('change', function () {
             if (this.checked) {
-              this.setAttribute("checked", "checked");
+              this.setAttribute('checked', 'checked');
               // Remove the 'checked' attribute from other radio inputs
               radioInputs.forEach((otherInput) => {
                 if (otherInput !== this) {
-                  otherInput.removeAttribute("checked");
+                  otherInput.removeAttribute('checked');
                 }
               });
             }
@@ -44,38 +44,38 @@
       });
 
       // Handle limit display
-      const editLimitWrapperElement = document.querySelector("#edit-limit");
+      const editLimitWrapperElement = document.querySelector('#edit-limit');
       const displayElement = document.querySelector(
-        'select[name="settings[block_form][group_user_selection][options][display]"'
+        'select[name="settings[block_form][group_user_selection][options][display]"',
       );
 
       // If they're ever gone from the form, don't deal with this.
       if (editLimitWrapperElement && displayElement) {
-        const limitLabel = editLimitWrapperElement.querySelector("label");
+        const limitLabel = editLimitWrapperElement.querySelector('label');
 
         const updateLimitElement = () => {
           const { value } = displayElement;
 
           // First evaluate whether to hide/show the limit
-          const newLimitDisplayValue = value === "all" ? "display: none" : "";
-          editLimitWrapperElement.setAttribute("style", newLimitDisplayValue);
+          const newLimitDisplayValue = value === 'all' ? 'display: none' : '';
+          editLimitWrapperElement.setAttribute('style', newLimitDisplayValue);
 
           // Change the title
           switch (value) {
-            case "all":
+            case 'all':
               break;
-            case "limit":
-              limitLabel.textContent = "Items";
+            case 'limit':
+              limitLabel.textContent = 'Items';
               break;
-            case "pager":
-              limitLabel.textContent = "Items Per Page";
+            case 'pager':
+              limitLabel.textContent = 'Items Per Page';
               break;
             default:
               break;
           }
         };
 
-        displayElement.addEventListener("change", updateLimitElement);
+        displayElement.addEventListener('change', updateLimitElement);
         updateLimitElement();
       }
 
@@ -84,7 +84,7 @@
         'input[name="settings[block_form][group_user_selection][entity_and_view_mode][entity_types]"], input[name="block_form[group_user_selection][entity_and_view_mode][entity_types]"]';
       const viewModeSelector =
         'input[name="settings[block_form][group_user_selection][entity_and_view_mode][view_mode]"], input[name="block_form[group_user_selection][entity_and_view_mode][view_mode]"]';
-      const eventTimePeriod = document.querySelector("#edit-event-time-period");
+      const eventTimePeriod = document.querySelector('#edit-event-time-period');
 
       const entityTypes = document.querySelectorAll(entityTypesSelector);
       const viewModes = document.querySelectorAll(viewModeSelector);
@@ -92,23 +92,23 @@
       // Function to handle visibility based on conditions
       function updateVisibility() {
         const entityType = Array.from(entityTypes).find(
-          (input) => input.checked
+          (input) => input.checked,
         )?.value;
         const viewMode = Array.from(viewModes).find(
-          (input) => input.checked
+          (input) => input.checked,
         )?.value;
 
         if (eventTimePeriod) {
           eventTimePeriod.style.display =
-            entityType === "event" && viewMode === "calendar" ? "none" : "";
+            entityType === 'event' && viewMode === 'calendar' ? 'none' : '';
         }
       }
 
       entityTypes.forEach((input) =>
-        input.addEventListener("change", updateVisibility)
+        input.addEventListener('change', updateVisibility),
       );
       viewModes.forEach((input) =>
-        input.addEventListener("change", updateVisibility)
+        input.addEventListener('change', updateVisibility),
       );
       updateVisibility();
     },
