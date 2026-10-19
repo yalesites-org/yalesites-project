@@ -57,8 +57,8 @@ function yalesites_git_clone() {
   [ -z "$name" ] && _error "You must provide a name" && exit 1
 
   # Clone if directory doesn't exist
-  [ ! -d "$git_path" ] && 
-    _say "Cloning the $branch branch of the $name repo" && 
+  [ ! -d "$git_path" ] &&
+    _say "Cloning the $branch branch of the $name repo" &&
     git clone git@github.com:yalesites-org/"$name".git "$git_path" -b "$branch"
 }
 
@@ -107,11 +107,11 @@ function clone_or_switch_branch() {
   yalesites_git_clone "$name" "$git_path" "$target_branch"
 
   # Check if it was successful, if not, use the backup branch
-  [ ! -d "$git_path" ] && _error "$target_branch not found, defaulting to $backup_branch" && 
+  [ ! -d "$git_path" ] && _error "$target_branch not found, defaulting to $backup_branch" &&
     yalesites_git_clone "$name" "$git_path" "$backup_branch"
 
   # Fail if still not there
-  [ ! -d "$git_path" ] && _error "$backup_branch not found; houston, we have a problem..." && exit 1 
+  [ ! -d "$git_path" ] && _error "$backup_branch not found; houston, we have a problem..." && exit 1
 
   # Get current branch of repo
   current_branch=$(current_branch_for_path "$git_path")
@@ -194,7 +194,7 @@ function _local-git-checkout() {
   local cl_path="$atomic_path/_yale-packages/component-library-twig"
   local yalesites_path="./"
 
-  # If atomic changes branches, we need to know this so we can know to 
+  # If atomic changes branches, we need to know this so we can know to
   # clear Drupal's cache toward the end of the script.
   local atomic_changed=false
 
@@ -252,6 +252,7 @@ function _local-git-checkout() {
   # source say.sh so we can use the _say and _error functions
   [ -e "$utils_path/say.sh" ] || (echo -e "[$0] Say utility not found.  You must run this from the yalesites root directory: " && exit 1)
   source ./scripts/local/util/say.sh
+  source ./scripts/local/local-dev-tool.sh
 
   # enable debugging or verbose mode if requested
   [ "$debug" = true ] && _say "Debug mode enabled" && set -x
@@ -288,7 +289,7 @@ function _local-git-checkout() {
 
   # Move yalesites branch
   clone_or_switch_branch "yalesites-project" "$yalesites_path" "$yalesites_branch" "$default_yalesites_branch"
-  
+
   # If current branch did change
   if [ "$(current_branch_for_path "$atomic_path")" != "$atomic_branch" ]; then
     atomic_changed=true
@@ -343,7 +344,7 @@ function _local-git-checkout() {
   # You can't do this because only one npm link can exist at a time on a node_module folder :(
   # npm link @yalesites-org/tokens
   # So we do it ourselves
-  rm -rf node_modules/@yalesitesorg/tokens 
+  rm -rf node_modules/@yalesitesorg/tokens
   cd node_modules/@yalesites-org || (_error "Could not find component-library-twig repo. Are you in the right directory?" && exit 1)
   ln -s ../../_yale-packages/tokens tokens
   cd ../..
@@ -366,7 +367,7 @@ function _local-git-checkout() {
   [ ! -L "component-library-twig" ] && ln -s atomic/_yale-packages/component-library-twig component-library-twig
   [ ! -L "tokens" ] && ln -s atomic/_yale-packages/tokens tokens
 
-  [ "$atomic_changed" = true ] && _say "Atomic theme changed, so we need to clear Drupal cache; this could take a while" && lando drush cr
+  [ "$atomic_changed" = true ] && _say "Atomic theme changed, so we need to clear Drupal cache; this could take a while" && ys_local_drush cr
 
   _say "********************"
   _say "All done!"
