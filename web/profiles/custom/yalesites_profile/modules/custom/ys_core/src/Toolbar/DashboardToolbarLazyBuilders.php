@@ -64,14 +64,24 @@ class DashboardToolbarLazyBuilders implements TrustedCallbackInterface {
     if ($count <= 0) {
       return $build;
     }
+    // ARIA ignores aria-label on a role-less span, so some screen readers read
+    // only the bare number. Hide the visible pill from assistive tech and add
+    // the phrase as visually hidden text; it joins the link's accessible name.
     $build['badge'] = [
       '#type' => 'html_tag',
       '#tag' => 'span',
       '#value' => $count,
       '#attributes' => [
         'class' => ['ys-dashboard-badge', 'ys-dashboard-badge--unread'],
-        'aria-label' => $this->formatPlural($count, '1 unread announcement', '@count unread announcements'),
+        'aria-hidden' => 'true',
       ],
+    ];
+    // The leading space keeps the name from reading "Dashboard2 unread...".
+    $build['label'] = [
+      '#type' => 'html_tag',
+      '#tag' => 'span',
+      '#value' => ' ' . $this->formatPlural($count, '1 unread announcement', '@count unread announcements'),
+      '#attributes' => ['class' => ['visually-hidden']],
     ];
     return $build;
   }
