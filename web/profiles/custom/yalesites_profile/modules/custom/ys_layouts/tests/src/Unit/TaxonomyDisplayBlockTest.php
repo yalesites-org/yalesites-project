@@ -157,6 +157,41 @@ class TaxonomyDisplayBlockTest extends UnitTestCase {
    * @covers ::blockForm
    */
   public function testBlockFormOffersMatchingVocabularyField(): void {
+    $form = $this->buildFormWithAudienceField();
+
+    $this->assertArrayHasKey('vocabulary_fields', $form);
+    $this->assertSame(['field_audience' => 'Audience'], $form['vocabulary_fields']['#options']);
+  }
+
+  /**
+   * The required vocabulary group is checked in the browser before submit.
+   *
+   * Layout Builder Browser strips #ajax from the block form's submit, so a
+   * server-side "required" failure navigates away from the dialog. The group
+   * therefore carries the hook and message the client-side check needs, and
+   * stays #required as the no-JavaScript fallback.
+   *
+   * @covers ::blockForm
+   */
+  public function testBlockFormValidatesVocabularyGroupInTheBrowser(): void {
+    $element = $this->buildFormWithAudienceField()['vocabulary_fields'];
+
+    $this->assertTrue($element['#required']);
+    $this->assertContains('ys_layouts/required_checkboxes', $element['#attached']['library']);
+    $this->assertContains('js-ys-required-checkboxes', $element['#attributes']['class']);
+    $this->assertSame(
+      'Select vocabularies to display field is required.',
+      (string) $element['#attributes']['data-ys-required-message']
+    );
+  }
+
+  /**
+   * Builds the block form for a page with one Audience taxonomy field.
+   *
+   * @return array
+   *   The block form.
+   */
+  protected function buildFormWithAudienceField(): array {
     $vocabulary = $this->createMock(VocabularyInterface::class);
     $vocabularyStorage = $this->createMock(EntityStorageInterface::class);
     $vocabularyStorage->method('load')->with('audience')->willReturn($vocabulary);
@@ -177,10 +212,7 @@ class TaxonomyDisplayBlockTest extends UnitTestCase {
     $this->requestStack->method('getCurrentRequest')->willReturn($request);
     $this->block->setStringTranslation($this->getStringTranslationStub());
 
-    $form = $this->block->blockForm([], new FormState());
-
-    $this->assertArrayHasKey('vocabulary_fields', $form);
-    $this->assertSame(['field_audience' => 'Audience'], $form['vocabulary_fields']['#options']);
+    return $this->block->blockForm([], new FormState());
   }
 
   /**
