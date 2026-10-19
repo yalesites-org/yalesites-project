@@ -14,6 +14,7 @@ use Drupal\Core\Routing\RouteMatchInterface;
 use Drupal\Core\Routing\RouteObjectInterface;
 use Drupal\Core\Url;
 use Drupal\link\Plugin\Field\FieldWidget\LinkWidget;
+use Drupal\menu_link_content\Entity\MenuLinkContent;
 use Drupal\node\Entity\Node;
 use Drupal\node\NodeInterface;
 use Drupal\Component\Utility\NestedArray;
@@ -1039,9 +1040,11 @@ function _ys_core_clear_announcements_cache_if_source($node) {
  *
  * Clears entity and page cache when field_external_source is updated on a node.
  * This ensures the ExternalSourceRedirectSubscriber sees fresh field data.
+ * Also applies a published draft's pending menu link changes.
  */
 function ys_core_node_update($node) {
   _ys_core_clear_announcements_cache_if_source($node);
+  _ys_core_publish_pending_menu_links($node);
 
   // Only process nodes that have the external source field.
   if (!$node->hasField('field_external_source')) {
@@ -1727,6 +1730,147 @@ function ys_core_menu_link_content_form_after_build(array $form, FormStateInterf
     $form['menu_link_description']['#access'] = FALSE;
   }
   return $form;
+}
+
+/**
+ * Implements hook_form_BASE_FORM_ID_alter() for node_form.
+ *
+ * Adds "Hide from menu" to an existing menu link: it disables the link
+ * instead of deleting it, so the page keeps its breadcrumb trail and nested
+ * alias. Unchecking "Provide a menu link" still deletes the link, as in core.
+ *
+ * @see https://github.com/yalesites-org/YaleSites-Internal/issues/1406
+ */
+function ys_core_form_node_form_alter(array &$form, FormStateInterface $form_state) {
+  if (!isset($form['menu']['enabled'])) {
+    return;
+  }
+  $form['menu']['enabled']['#description'] = t('Unchecking removes this page from the menu and takes it out of its section, which changes its breadcrumbs and web address.');
+  // Shown below the box, not behind the admin theme's "?" toggle: editors
+  // need to see these consequences before they save.
+  // @see ys_admin_theme_preprocess_form_element()
+  $form['menu']['enabled']['#ys_description_inline'] = TRUE;
+  $form['menu']['#attached']['library'][] = 'ys_core/menu_link_form';
+
+  $link = _ys_core_node_menu_link_active($form['menu']['link']['entity_id']['#value'] ?? 0);
+  if ($link) {
+    // Inside core's link container, so it shares its visibility #states.
+    $form['menu']['link']['hidden'] = [
+      '#type' => 'checkbox',
+      '#title' => t('Hide from menu'),
+      '#description' => t("Hides this page from the navigation. It stays in its section, so its breadcrumbs and web address don't change."),
+      '#default_value' => (int) !$link->isEnabled(),
+      '#ys_description_inline' => TRUE,
+      // Below the link fields, so it does not read as an undo of "Provide a
+      // menu link" directly above it.
+      '#weight' => 10,
+    ];
+  }
+
+  foreach ($form['actions'] ?? [] as $action => $element) {
+    $key = is_array($element) ? array_search('menu_ui_form_node_form_submit', $element['#submit'] ?? [], TRUE) : FALSE;
+    if ($key !== FALSE) {
+      $form['actions'][$action]['#submit'][$key] = 'ys_core_menu_ui_node_form_submit';
+    }
+  }
+}
+
+/**
+ * Loads the latest revision of a node's menu link, the one the form shows.
+ *
+ * A draft can hold a pending link revision (for example hidden) that the
+ * live link does not have yet.
+ */
+function _ys_core_node_menu_link_active($link_id): ?MenuLinkContent {
+  return $link_id ? \Drupal::service('entity.repository')->getActive('menu_link_content', $link_id) : NULL;
+}
+
+/**
+ * Submit handler replacing menu_ui_form_node_form_submit().
+ *
+ * Applies "Hide from menu" to an existing link, then lets core save it.
+ * On a draft the link is saved as a pending revision, so the live link
+ * changes only when the draft is published.
+ */
+function ys_core_menu_ui_node_form_submit(array $form, FormStateInterface $form_state) {
+  $values = $form_state->getValue('menu');
+  if (!empty($values['enabled']) && !empty($values['entity_id'])) {
+    $link = MenuLinkContent::load($values['entity_id']);
+    // Core marks the link non-default on a draft but does not start a new
+    // revision, so its save would overwrite the live link. On a published
+    // save, a new revision supersedes any pending one a draft left behind.
+    $published = $form_state->getFormObject()->getEntity()->isDefaultRevision();
+    $link->setNewRevision(!$published || !$link->isLatestRevision());
+    // _menu_ui_node_save() loads this same statically cached object, applies
+    // the form values and the node's revision status, and saves it once.
+    $link->set('enabled', empty($values['hidden']));
+  }
+  menu_ui_form_node_form_submit($form, $form_state);
+}
+
+/**
+ * Implements hook_ENTITY_TYPE_delete() for menu_link_content.
+ *
+ * A page's alias is built from its menu link's parent, but nothing rebuilds
+ * it when the link goes away: the node form deletes the link after saving the
+ * node, and menu admin deletes do not save the node at all. Rebuild it now, as
+ * the node's next save would, so the page leaves its section's web address
+ * right away.
+ */
+function ys_core_menu_link_content_delete(MenuLinkContent $link) {
+  if (!\Drupal::hasService('pathauto.generator')) {
+    return;
+  }
+  $url = $link->getUrlObject();
+  if (!$url->isRouted() || $url->getRouteName() !== 'entity.node.canonical') {
+    return;
+  }
+  $node = Node::load($url->getRouteParameters()['node'] ?? 0);
+  if ($node) {
+    \Drupal::service('pathauto.generator')->updateEntityAlias($node, 'update');
+  }
+}
+
+/**
+ * Applies a node's pending menu link revisions when its draft is published.
+ *
+ * The node form saves "Hide from menu" on a draft as a pending link revision
+ * and its submit handler makes it live on publish. Publishing elsewhere (the
+ * content moderation "Change to" control, bulk or scheduled publish) skips
+ * that handler, so do it here. Only a save that starts from the pending
+ * draft counts; re-saving or reverting to another revision leaves it alone.
+ */
+function _ys_core_publish_pending_menu_links(NodeInterface $node): void {
+  $original = $node->original ?? NULL;
+  if (!$original || !$node->isDefaultRevision() || $node->getLoadedRevisionId() == $original->getRevisionId()) {
+    return;
+  }
+  // The save must start from the draft itself, the newest revision before
+  // this one. Reverting to an older revision leaves the draft unpublished.
+  $previous = \Drupal::entityTypeManager()->getStorage('node')->getQuery()
+    ->allRevisions()
+    ->accessCheck(FALSE)
+    ->condition('nid', $node->id())
+    ->condition('vid', $node->getRevisionId(), '<')
+    ->sort('vid', 'DESC')
+    ->range(0, 1)
+    ->execute();
+  if (key($previous) != $node->getLoadedRevisionId()) {
+    return;
+  }
+  $storage = \Drupal::entityTypeManager()->getStorage('menu_link_content');
+  $ids = $storage->getQuery()
+    ->accessCheck(FALSE)
+    ->condition('link.uri', ['entity:node/' . $node->id(), 'internal:/node/' . $node->id()], 'IN')
+    ->execute();
+  foreach ($storage->loadMultiple($ids) as $id => $link) {
+    if (!$link->isLatestRevision()) {
+      $latest = _ys_core_node_menu_link_active($id);
+      $latest->setNewRevision(TRUE);
+      $latest->isDefaultRevision(TRUE);
+      $latest->save();
+    }
+  }
 }
 
 /**
