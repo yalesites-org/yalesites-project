@@ -99,4 +99,16 @@ class ProfileViewWidget extends ViewsBasicWidgetBase {
     return $this->t('Show Affiliations');
   }
 
+  /**
+   * {@inheritdoc}
+   *
+   * The visitor-facing filter is labelled Affiliation, so the toggle that
+   * turns it on says the same (#1171).
+   */
+  protected function getExposedFilterOptions(): array {
+    $options = parent::getExposedFilterOptions();
+    $options['show_category_filter'] = $this->t('Show Affiliation');
+    return $options;
+  }
+
 }

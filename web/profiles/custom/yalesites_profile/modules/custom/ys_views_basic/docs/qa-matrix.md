@@ -11,7 +11,7 @@ acceptance criteria.
 
 | Test | Covers |
 |---|---|
-| `Unit/ListingBundleDefinitionTest` | The 12-bundle definition, (type, view_mode, thumbnail, card-size) resolution, throw-on-unknown, the `(type, view_mode)` migration mapping (profile directory to `profile_card`), the predecessor presets, and `directoryToCardParams()`. |
+| `Unit/ListingBundleDefinitionTest` | The 16-bundle definition, (type, view_mode, thumbnail, card-size) resolution, throw-on-unknown, the `(type, view_mode)` migration mapping (profile directory to `profile_card`), the predecessor presets, and `directoryToCardParams()`. |
 | `Unit/PostViewWidgetTest` | Post content type, bundle-driven view mode, the post-only year filter, the eyebrow option (no #states), stored `post_field_options`, and the detail-group form sectioning. |
 | `Unit/EventViewWidgetTest` | Event content type, excluded year filter, event field options + time period (no #states), stored `event_field_options` + `filters.event_time_period`. |
 | `Unit/PageViewWidgetTest` | Page content type, bundle-driven view modes, no entity-specific controls, excluded year filter. |
@@ -32,9 +32,10 @@ and behave correctly:
 | Block types | Key settings to verify |
 |---|---|
 | `post_card` / `post_list_item` / `post_condensed` | show eyebrow; show thumbnail (card + list only); show year filter; terms include/exclude; sort by publish date; pinned to top |
-| `event_card` / `event_list_item` / `event_condensed` | event time period (future/past/all); hide add-to-calendar; sort by event date; category/audience filters; events use the distinct-de-duplicated events scaffold |
+| `event_card` / `event_list_item` / `event_condensed` | event time period (future/past/all); hide add-to-calendar; sort by event date (new listings default to "soonest first", #1864); category/audience filters; events use the events scaffold, and a multi-date event shows one row per date (decided Oct 16, matches #530) |
 | `page_card` / `page_list_item` / `page_condensed` | category filter uses `page_category` (`field_category_target_id_1`); sort by title |
-| `profile_card` / `profile_list_item` / `profile_condensed` | "Affiliations" label; affiliation filter; sort by last name |
+| `profile_card` / `profile_list_item` / `profile_condensed` | "Affiliations" label; "Show Affiliation" filter toggle; affiliation filter; department/email/phone/pronouns (card and list); sort by last name |
+| `resource_card` / `resource_portrait_grid` / `resource_list_item` / `resource_condensed` | teaser text, discipline, journal name and issue, authors, publish date; search fields; year, academic year, discipline, areas of study and geographic areas filters; sort by published date; pinned to top |
 
 Also verify the shared controls on each block: terms include/exclude, term
 operator, sort, display/limit/offset, include current page, pinned + pin label,
@@ -47,8 +48,8 @@ Against the #1168 matrix:
   sidebar, 50/50, 33/33/33).
 - List blocked from 30% sidebar, 50/50, and 33/33/33.
 - Calendar remains full-width only.
-- Confirm the full-width (`layout_onecol`) product decision noted in
-  `placement-restrictions.md`.
+- Full-width sections allow every listing display (decided Oct 16; see
+  `placement-restrictions.md`).
 
 ## Multi-block isolation (#906 / #1306) — [manual]
 

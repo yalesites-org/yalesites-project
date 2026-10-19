@@ -305,8 +305,14 @@ class ViewsWizardForm extends FormBase {
       'plugin_id' => $plugin_id,
     ])->toString();
 
+    // ys_layouts_form_alter() names the block in the add form's #title
+    // ("Create Posts - Card Grid View"), as every other add-block dialog
+    // shows. The dialog title here is set by hand, so carry that title over
+    // rather than the route's generic one (YaleSites-Internal#1925).
+    $title = $configure_form['#title'] ?? $this->t('Configure block');
+
     $response = new AjaxResponse();
-    $response->addCommand(new OpenDialogCommand('#layout-builder-modal', $this->t('Configure block'), $configure_form, [
+    $response->addCommand(new OpenDialogCommand('#layout-builder-modal', $title, $configure_form, [
       'width' => '80%',
       'height' => 'auto',
       'modal' => TRUE,

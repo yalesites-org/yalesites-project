@@ -8,6 +8,7 @@ use Drupal\Core\DependencyInjection\ContainerInjectionInterface;
 use Drupal\Core\Entity\EntityDisplayRepository;
 use Drupal\Core\Entity\EntityTypeManagerInterface;
 use Drupal\Core\Routing\RouteMatchInterface;
+use Drupal\layout_builder\OverridesSectionStorageInterface;
 use Drupal\node\NodeInterface;
 use Drupal\views\ViewEntityInterface;
 use Drupal\views\ViewExecutableFactory;
@@ -47,12 +48,12 @@ class ViewsBasicManager extends ControllerBase implements ContainerInjectionInte
       'img_alt' => 'Speech bubble icon',
       'view_modes' => [
         'card' => [
-          'label' => 'Post Card Grid',
+          'label' => 'Card Grid',
           'img' => '/profiles/custom/yalesites_profile/modules/custom/ys_views_basic/assets/icons/display-type-card-grid.svg',
           'img_alt' => 'Icon showing 3 generic cards next to each other. Image placement is on the top of each card.',
         ],
         'list_item' => [
-          'label' => 'Post List',
+          'label' => 'List',
           'img' => '/profiles/custom/yalesites_profile/modules/custom/ys_views_basic/assets/icons/display-type-list-view.svg',
           'img_alt' => 'Icon showing 3 generic list items one on top of the other. Image placement is on the left of each list item.',
         ],
@@ -73,12 +74,12 @@ class ViewsBasicManager extends ControllerBase implements ContainerInjectionInte
       'img_alt' => 'Calendar icon',
       'view_modes' => [
         'card' => [
-          'label' => 'Event Card Grid',
+          'label' => 'Card Grid',
           'img' => '/profiles/custom/yalesites_profile/modules/custom/ys_views_basic/assets/icons/display-type-card-grid.svg',
           'img_alt' => 'Icon showing 3 generic cards next to each other. Image placement is on the top of each card.',
         ],
         'list_item' => [
-          'label' => 'Event List',
+          'label' => 'List',
           'img' => '/profiles/custom/yalesites_profile/modules/custom/ys_views_basic/assets/icons/display-type-list-view.svg',
           'img_alt' => 'Icon showing 3 generic list items one on top of the other. Image placement is on the left of each list item.',
         ],
@@ -88,9 +89,11 @@ class ViewsBasicManager extends ControllerBase implements ContainerInjectionInte
           'img_alt' => 'Icon showing 3 generic list items one on top of the other with no images on the items.',
         ],
       ],
+      // Soonest first is listed first so a new listing defaults to it; the
+      // keys are unchanged so every saved listing keeps its sort (#1864).
       'sort_by' => [
-        'field_event_date:DESC' => 'Event Date - newer first',
-        'field_event_date:ASC' => 'Event Date - older first',
+        'field_event_date:ASC' => 'Event Date - soonest first',
+        'field_event_date:DESC' => 'Event Date - latest first',
       ],
     ],
     'page' => [
@@ -99,12 +102,12 @@ class ViewsBasicManager extends ControllerBase implements ContainerInjectionInte
       'img_alt' => 'Blank page icon',
       'view_modes' => [
         'card' => [
-          'label' => 'Page Grid',
+          'label' => 'Card Grid',
           'img' => '/profiles/custom/yalesites_profile/modules/custom/ys_views_basic/assets/icons/display-type-card-grid.svg',
           'img_alt' => 'Icon showing 3 generic cards next to each other. Image placement is on the top of each card.',
         ],
         'list_item' => [
-          'label' => 'Page List',
+          'label' => 'List',
           'img' => '/profiles/custom/yalesites_profile/modules/custom/ys_views_basic/assets/icons/display-type-list-view.svg',
           'img_alt' => 'Icon showing 3 generic list items one on top of the other. Image placement is on the left of each list item.',
         ],
@@ -125,12 +128,12 @@ class ViewsBasicManager extends ControllerBase implements ContainerInjectionInte
       'img_alt' => 'Generic person head icon',
       'view_modes' => [
         'card' => [
-          'label' => 'Profile Grid',
+          'label' => 'Card Grid',
           'img' => '/profiles/custom/yalesites_profile/modules/custom/ys_views_basic/assets/icons/display-type-card-grid.svg',
           'img_alt' => 'Icon showing 3 generic cards next to each other. Image placement is on the top of each card.',
         ],
         'list_item' => [
-          'label' => 'Profile List',
+          'label' => 'List',
           'img' => '/profiles/custom/yalesites_profile/modules/custom/ys_views_basic/assets/icons/display-type-list-view.svg',
           'img_alt' => 'Icon showing 3 generic list items one on top of the other. Image placement is on the left of each list item.',
         ],
@@ -644,17 +647,32 @@ class ViewsBasicManager extends ControllerBase implements ContainerInjectionInte
    *   field-display options so hook_views_pre_render() can stamp the level on
    *   each result entity (mirrors how show_categories flows). Defaults to FALSE
    *   so the AJAX/preview paths, which have no block entity, fall back to H2.
+   * @param int|null $hostNid
+   *   The node the listing is placed on, for requests whose route has no node
+   *   parameter (the views.ajax pager and exposed-filter re-render). The
+   *   current route's node, or Layout Builder's overridden page, wins when
+   *   there is one.
    * @param string|null $listingKey
-   *   The listing key (see ::listingKey()), for the AJAX path, which has no
-   *   block UUID and recovers the key from the incoming view arguments.
-   *   Ignored when $blockUuid is given.
+   *   The listing key (see ::listingKey()), for the AJAX path, which recovers
+   *   the key from the incoming view arguments. Ignored when $blockUuid is
+   *   given.
    *
    * @return void
    *   No return value.
    */
-  public function setupView(&$view, $params, $blockUuid = NULL, $blockHasHeading = FALSE, ?string $listingKey = NULL) {
+  public function setupView(&$view, $params, $blockUuid = NULL, $blockHasHeading = FALSE, ?int $hostNid = NULL, ?string $listingKey = NULL) {
     $listingKey = $blockUuid ? self::listingKey($blockUuid) : $listingKey;
     $paramsDecoded = json_decode($params, TRUE);
+    $routeNode = $this->routeMatch->getParameter('node');
+    // Layout Builder's own AJAX routes (add, update, move block) carry the
+    // page only through the section storage.
+    $sectionStorage = $this->routeMatch->getParameter('section_storage');
+    if (!$routeNode instanceof NodeInterface && $sectionStorage instanceof OverridesSectionStorageInterface) {
+      $routeNode = $sectionStorage->getContextValue('entity');
+    }
+    if ($routeNode instanceof NodeInterface) {
+      $hostNid = (int) $routeNode->id();
+    }
     $pinned_to_top = isset($paramsDecoded['pinned_to_top']) ? (bool) $paramsDecoded['pinned_to_top'] : FALSE;
 
     /* Events need to have aggregation turned on in the view. Therefore, we
@@ -797,6 +815,10 @@ class ViewsBasicManager extends ControllerBase implements ContainerInjectionInte
     // paginated listings on one page do not share the same ?page= query
     // argument (#906). The element is derived deterministically from the block
     // UUID so it is stable across the full-page render and any AJAX pager call.
+    // The AJAX call has no block entity, so the UUID also rides the view
+    // arguments (field_display_options) and comes back in through
+    // ::incomingDisplayContext(); without it the re-render reads ?page= at
+    // element 0 and stays on page 1 (#1921).
     if ($blockUuid && ($paramsDecoded['display'] ?? NULL) === 'pager') {
       $pager = $view->getDisplay()->getOption('pager');
       if (is_array($pager)) {
@@ -883,6 +905,12 @@ class ViewsBasicManager extends ControllerBase implements ContainerInjectionInte
       // card heading level in hook_views_pre_render() (H3 when nested under the
       // block heading, H2 when the cards are the first heading on the page).
       'block_has_heading' => (int) $blockHasHeading,
+      // The host block, carried for the AJAX re-render, which has no block
+      // entity to derive the per-instance pager element from (#1921).
+      'block_uuid' => $blockUuid,
+      // The host node, carried for the AJAX re-render, whose views.ajax route
+      // has no node to leave out of the results (#1921).
+      'host_nid' => $hostNid,
       // Card-size dial (#1648). It rides the shared field_display_options
       // bucket rather than taking a positional arg of its own because it
       // applies to every content type's card grid, and because it is read by
@@ -932,16 +960,12 @@ class ViewsBasicManager extends ControllerBase implements ContainerInjectionInte
      * Includes current node, if specified in settings.
      */
     $includeCurrent = $paramsDecoded['show_current_entity'] ?? 0;
-    if (!$includeCurrent) {
-      $node = $this->routeMatch->getParameter('node');
-      if ($node instanceof NodeInterface) {
-        $currentNid = $node->id();
-        /** @var Drupal\views\Plugin\views\query\Sql $query */
-        $query = $view->getQuery();
-        $baseTableAlias = $query->ensureTable('node_field_data');
-        if ($baseTableAlias) {
-          $query->addWhere(0, "$baseTableAlias.nid", $currentNid, '<>');
-        }
+    if (!$includeCurrent && $hostNid) {
+      /** @var \Drupal\views\Plugin\views\query\Sql $query */
+      $query = $view->getQuery();
+      $baseTableAlias = $query->ensureTable('node_field_data');
+      if ($baseTableAlias) {
+        $query->addWhere(0, "$baseTableAlias.nid", $hostNid, '<>');
       }
     }
 
@@ -1036,6 +1060,35 @@ class ViewsBasicManager extends ControllerBase implements ContainerInjectionInte
         $resultRow['#cache']['contexts'][] = 'url.query_args:page';
       }
     }
+  }
+
+  /**
+   * Recovers the host-block facts an AJAX re-render needs from view arguments.
+   *
+   * The pager and exposed-filter AJAX requests have no block entity, so
+   * setupView() writes what it knows about the block into
+   * field_display_options and this reads it back. The arguments come from the
+   * browser, but the UUID is only ever hashed by ::pagerElementId(), so any
+   * string yields an element in its small fixed range, and the host node ID
+   * only ever removes that one node from a listing.
+   *
+   * @param array $args
+   *   The incoming positional view arguments.
+   *
+   * @return array
+   *   'block_has_heading' (bool), 'block_uuid' (string|null) and 'host_nid'
+   *   (positive int|null).
+   */
+  public static function incomingDisplayContext(array $args): array {
+    $index = self::viewArgumentIndex('field_display_options');
+    $options = isset($args[$index]) && is_string($args[$index]) ? json_decode($args[$index], TRUE) : NULL;
+    $uuid = is_array($options) ? ($options['block_uuid'] ?? NULL) : NULL;
+    $nid = is_array($options) ? ($options['host_nid'] ?? NULL) : NULL;
+    return [
+      'block_has_heading' => is_array($options) && !empty($options['block_has_heading']),
+      'block_uuid' => is_string($uuid) && $uuid !== '' ? $uuid : NULL,
+      'host_nid' => is_int($nid) && $nid > 0 ? $nid : NULL,
+    ];
   }
 
   /**

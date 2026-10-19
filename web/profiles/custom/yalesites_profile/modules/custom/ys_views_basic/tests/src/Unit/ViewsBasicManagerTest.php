@@ -8,8 +8,11 @@ use Drupal\Core\Entity\EntityTypeManagerInterface;
 use Drupal\Core\Form\FormStateInterface;
 use Drupal\Core\Routing\RouteMatchInterface;
 use Drupal\Tests\UnitTestCase;
+use Drupal\layout_builder\OverridesSectionStorageInterface;
+use Drupal\node\NodeInterface;
 use Drupal\taxonomy\TermStorageInterface;
 use Drupal\views\Plugin\views\display\DisplayPluginBase;
+use Drupal\views\Plugin\views\query\Sql;
 use Drupal\views\ViewExecutable;
 use Drupal\views\ViewExecutableFactory;
 use Drupal\ys_views_basic\Service\ExposedTaxonomyFilterOptions;
@@ -226,7 +229,29 @@ class ViewsBasicManagerTest extends UnitTestCase {
     $list = $this->manager->viewModeList('post');
 
     $this->assertSame(['card', 'list_item', 'condensed'], array_keys($list));
-    $this->assertStringContainsString('Post Card Grid', $list['card']);
+    $this->assertStringStartsWith('Card Grid<img', $list['card']);
+  }
+
+  /**
+   * Every content type names its displays the same way (#1171 product call).
+   *
+   * The wizard asks for the content type first, so the display names drop it:
+   * "Card Grid", "List", "Condensed" and "Portrait Grid" everywhere.
+   *
+   * @covers ::viewModeList
+   */
+  public function testViewModeLabelsDropTheContentType() {
+    $expected = [
+      'card' => 'Card Grid',
+      'list_item' => 'List',
+      'condensed' => 'Condensed',
+      'portrait_grid' => 'Portrait Grid',
+    ];
+    foreach (array_keys(ViewsBasicManager::ALLOWED_ENTITIES) as $type) {
+      foreach ($this->manager->viewModeList($type) as $mode => $label) {
+        $this->assertStringStartsWith($expected[$mode] . '<img', $label, "$type $mode");
+      }
+    }
   }
 
   /**
@@ -248,9 +273,12 @@ class ViewsBasicManagerTest extends UnitTestCase {
   public function testSortByListForEvent() {
     $list = $this->manager->sortByList('event');
 
+    // Soonest first is listed first, so a new event listing defaults to it
+    // (the select falls back to its first option); the saved keys are
+    // unchanged, so existing listings keep their sort (#1864).
     $this->assertSame([
-      'field_event_date:DESC' => 'Event Date - newer first',
-      'field_event_date:ASC' => 'Event Date - older first',
+      'field_event_date:ASC' => 'Event Date - soonest first',
+      'field_event_date:DESC' => 'Event Date - latest first',
     ], $list);
   }
 
@@ -287,7 +315,7 @@ class ViewsBasicManagerTest extends UnitTestCase {
     $result = $this->manager->getLabel('post', 'view_modes', 'list_item');
 
     $this->assertIsArray($result);
-    $this->assertSame('Post List', $result['label']);
+    $this->assertSame('List', $result['label']);
   }
 
   /**
@@ -784,24 +812,26 @@ class ViewsBasicManagerTest extends UnitTestCase {
    *   The block params, merged over the minimum setupView() reads.
    * @param array $filters
    *   The display's filters before setup.
-   * @param array|null $query
+   * @param array $setup_args
+   *   Extra arguments for setupView() after the params: block UUID, block
+   *   heading flag, host node ID and listing key.
+   * @param array|null $view_args
+   *   Receives the arguments setupView() handed the view, keyed by name.
+   * @param array|null $request_query
    *   The request query the view sees, or NULL for a view with no request.
-   * @param string|null $blockUuid
-   *   The host block UUID passed to setupView().
-   * @param string|null $listingKey
-   *   The listing key passed to setupView() (the AJAX path).
    *
    * @return array
-   *   Every display option setupView() set, keyed by option name.
+   *   Every display option setupView() set, keyed by option name, plus
+   *   'where': each [field, value, operator] condition added to the query.
    */
-  protected function runSetupView(array $params, array $filters, ?array $query = NULL, ?string $blockUuid = NULL, ?string $listingKey = NULL): array {
+  protected function runSetupView(array $params, array $filters, array $setup_args = [], ?array &$view_args = NULL, ?array $request_query = NULL): array {
     $params += [
       'sort_by' => 'field_publish_date:DESC',
       'display' => 'all',
       'limit' => 10,
       'view_mode' => 'card',
     ];
-    $set = [];
+    $set = ['pager' => ['type' => 'views_basic_full_pager', 'options' => ['id' => 0]]];
     $display = $this->createMock(DisplayPluginBase::class);
     $display->method('getOption')->willReturnCallback(
       function ($name) use (&$set, $filters) {
@@ -816,8 +846,8 @@ class ViewsBasicManagerTest extends UnitTestCase {
     $view = $this->createMock(ViewExecutable::class);
     $view->method('getDisplay')->willReturn($display);
     $view->method('preview')->willReturn(['#rows' => []]);
-    if ($query !== NULL) {
-      $view->method('getRequest')->willReturn(new Request($query));
+    if ($request_query !== NULL) {
+      $view->method('getRequest')->willReturn(new Request($request_query));
     }
     $this->exposedInputCalls = [];
     $view->method('setExposedInput')->willReturnCallback(
@@ -825,15 +855,134 @@ class ViewsBasicManagerTest extends UnitTestCase {
         $this->exposedInputCalls[] = $input;
       }
     );
+    $query = $this->createMock(Sql::class);
+    $query->method('ensureTable')->willReturn('node_field_data');
+    $query->method('addWhere')->willReturnCallback(
+      function ($group, $field, $value, $operator) use (&$set) {
+        $set['where'][] = [$field, $value, $operator];
+      }
+    );
+    $view->method('getQuery')->willReturn($query);
     $this->viewArguments = [];
     $view->method('setArguments')->willReturnCallback(
-      function (array $args) {
+      function (array $args) use (&$view_args) {
+        $view_args = $args;
         $this->viewArguments = array_values($args);
       }
     );
 
-    $this->manager->setupView($view, json_encode($params), $blockUuid, FALSE, $listingKey);
+    $this->manager->setupView($view, json_encode($params), ...$setup_args);
     return $set;
+  }
+
+  /**
+   * A block's pager element survives the AJAX re-render (#1921).
+   *
+   * The full-page render derives the element from the block UUID. The AJAX
+   * pager request has no block entity, so the UUID must ride the view
+   * arguments and come back in through setupView(); otherwise the re-render
+   * reads ?page= at element 0 and always shows page 1.
+   *
+   * @covers ::setupView
+   * @covers ::incomingDisplayContext
+   */
+  public function testSetupViewCarriesBlockUuidThroughViewArguments() {
+    $params = [
+      'filters' => ['types' => ['post']],
+      'display' => 'pager',
+    ];
+    $uuid = '11111111-1111-1111-1111-111111111111';
+
+    // Full-page render: element from the UUID, UUID written into the args.
+    $set = $this->runSetupView($params, [], [$uuid, TRUE], $view_args);
+    $element = $set['pager']['options']['id'];
+    $this->assertNotSame(0, $element);
+
+    // AJAX re-render: no block entity, UUID recovered from the arguments.
+    $context = ViewsBasicManager::incomingDisplayContext(array_values($view_args));
+    $this->assertSame(['block_has_heading' => TRUE, 'block_uuid' => $uuid, 'host_nid' => NULL], $context);
+    $set = $this->runSetupView($params, [], [$context['block_uuid'], $context['block_has_heading']], $ajax_args);
+    $this->assertSame($element, $set['pager']['options']['id']);
+    $this->assertSame($view_args['field_display_options'], $ajax_args['field_display_options']);
+  }
+
+  /**
+   * Missing or malformed arguments yield no block context.
+   *
+   * @covers ::incomingDisplayContext
+   */
+  public function testIncomingDisplayContextToleratesBadArguments() {
+    $index = ViewsBasicManager::viewArgumentIndex('field_display_options');
+    $args = static function ($options) use ($index) {
+      $list = array_fill(0, $index + 1, NULL);
+      $list[$index] = is_string($options) ? $options : json_encode($options);
+      return $list;
+    };
+    $empty = ['block_has_heading' => FALSE, 'block_uuid' => NULL, 'host_nid' => NULL];
+
+    $this->assertSame($empty, ViewsBasicManager::incomingDisplayContext([]));
+    $this->assertSame($empty, ViewsBasicManager::incomingDisplayContext($args('not json')));
+    $this->assertSame($empty, ViewsBasicManager::incomingDisplayContext($args(['block_uuid' => ['x']])));
+    $this->assertSame($empty, ViewsBasicManager::incomingDisplayContext($args(['block_uuid' => ''])));
+    $this->assertSame($empty, ViewsBasicManager::incomingDisplayContext($args(['host_nid' => 'x'])));
+    $this->assertSame($empty, ViewsBasicManager::incomingDisplayContext($args(['host_nid' => 0])));
+    $this->assertSame($empty, ViewsBasicManager::incomingDisplayContext($args(['host_nid' => -5])));
+  }
+
+  /**
+   * The host page stays out of the results on the AJAX re-render (#1921).
+   *
+   * The full-page render leaves out the node the listing sits on unless the
+   * editor turned "include the current page" on. The pager and exposed-filter
+   * AJAX requests run on the views.ajax route, which has no node parameter,
+   * so the host node ID must ride the view arguments; otherwise the first
+   * pager click puts the host page back in and the total goes up by one.
+   *
+   * @covers ::setupView
+   * @covers ::incomingDisplayContext
+   */
+  public function testSetupViewExcludesHostNodeOnAjaxRerender() {
+    $params = [
+      'filters' => ['types' => ['page']],
+      'display' => 'pager',
+    ];
+    $uuid = '11111111-1111-1111-1111-111111111111';
+    $exclude_42 = [['node_field_data.nid', 42, '<>']];
+
+    // Full-page render: the host node comes from the route.
+    $node = $this->createMock(NodeInterface::class);
+    $node->method('id')->willReturn('42');
+    $storage = NULL;
+    $this->routeMatch->method('getParameter')->willReturnCallback(
+      function ($name) use (&$node, &$storage) {
+        return ['node' => $node, 'section_storage' => $storage][$name] ?? NULL;
+      }
+    );
+    $set = $this->runSetupView($params, [], [$uuid, FALSE], $view_args);
+    $this->assertSame($exclude_42, $set['where']);
+
+    // AJAX re-render: no node on the route, host node recovered from the
+    // arguments the full-page render wrote.
+    $node = NULL;
+    $context = ViewsBasicManager::incomingDisplayContext(array_values($view_args));
+    $this->assertSame(42, $context['host_nid']);
+    $ajax_setup_args = [$context['block_uuid'], $context['block_has_heading'], $context['host_nid']];
+    $set = $this->runSetupView($params, [], $ajax_setup_args, $ajax_args);
+    $this->assertSame($exclude_42, $set['where']);
+    $this->assertSame($view_args['field_display_options'], $ajax_args['field_display_options']);
+
+    // Layout Builder AJAX: the page comes from the overrides section storage,
+    // and it wins over whatever the arguments say.
+    $layout_node = $this->createConfiguredMock(NodeInterface::class, ['id' => '7']);
+    $storage = $this->createMock(OverridesSectionStorageInterface::class);
+    $storage->method('getContextValue')->with('entity')->willReturn($layout_node);
+    $set = $this->runSetupView($params, [], [$uuid, FALSE, 42]);
+    $this->assertSame([['node_field_data.nid', 7, '<>']], $set['where']);
+
+    // "Include the current page" on: no exclusion on either path.
+    $params['show_current_entity'] = 1;
+    $set = $this->runSetupView($params, [], [$uuid, FALSE, 42]);
+    $this->assertArrayNotHasKey('where', $set);
   }
 
   /**
@@ -1026,7 +1175,7 @@ class ViewsBasicManagerTest extends UnitTestCase {
   public function testSetupViewIgnoresAnotherListingsFilters() {
     $uuid = '6f1d0c1e-9a3b-4c2d-8e7f-0a1b2c3d4e5f';
     $other = ViewsBasicManager::listingKey('0b9e8d7c-6a5f-4e3d-2c1b-a09f8e7d6c5b');
-    $this->runSetupView($this->listingParams(), [], ['search' => 'x', 'listing' => $other], $uuid);
+    $this->runSetupView($this->listingParams(), [], [$uuid, FALSE], $unused, ['search' => 'x', 'listing' => $other]);
     $this->assertSame([['listing' => $other]], $this->exposedInputCalls, 'The input keeps the URL\'s listing, since pager links are built from it.');
   }
 
@@ -1038,7 +1187,7 @@ class ViewsBasicManagerTest extends UnitTestCase {
   public function testSetupViewKeepsItsOwnFilters() {
     $uuid = '6f1d0c1e-9a3b-4c2d-8e7f-0a1b2c3d4e5f';
     $own = ViewsBasicManager::listingKey($uuid);
-    $this->runSetupView($this->listingParams(), [], ['search' => 'x', 'listing' => $own], $uuid);
+    $this->runSetupView($this->listingParams(), [], [$uuid, FALSE], $unused, ['search' => 'x', 'listing' => $own]);
     $this->assertSame([], $this->exposedInputCalls);
   }
 
@@ -1048,7 +1197,7 @@ class ViewsBasicManagerTest extends UnitTestCase {
    * @covers ::setupView
    */
   public function testSetupViewLeavesLegacyLinksAlone() {
-    $this->runSetupView($this->listingParams(), [], ['search' => 'x'], '6f1d0c1e-9a3b-4c2d-8e7f-0a1b2c3d4e5f');
+    $this->runSetupView($this->listingParams(), [], ['6f1d0c1e-9a3b-4c2d-8e7f-0a1b2c3d4e5f', FALSE], $unused, ['search' => 'x']);
     $this->assertSame([], $this->exposedInputCalls);
   }
 
@@ -1058,7 +1207,7 @@ class ViewsBasicManagerTest extends UnitTestCase {
    * @covers ::setupView
    */
   public function testSetupViewWithoutListingKeyLeavesInputAlone() {
-    $this->runSetupView($this->listingParams(), [], ['search' => 'x', 'listing' => 'abcd1234']);
+    $this->runSetupView($this->listingParams(), [], [NULL, FALSE], $unused, ['search' => 'x', 'listing' => 'abcd1234']);
     $this->assertSame([], $this->exposedInputCalls);
   }
 
@@ -1068,7 +1217,7 @@ class ViewsBasicManagerTest extends UnitTestCase {
    * @covers ::setupView
    */
   public function testSetupViewWithoutRequestLeavesInputAlone() {
-    $this->runSetupView($this->listingParams(), [], NULL, '6f1d0c1e-9a3b-4c2d-8e7f-0a1b2c3d4e5f');
+    $this->runSetupView($this->listingParams(), [], ['6f1d0c1e-9a3b-4c2d-8e7f-0a1b2c3d4e5f', FALSE]);
     $this->assertSame([], $this->exposedInputCalls);
   }
 
@@ -1078,10 +1227,10 @@ class ViewsBasicManagerTest extends UnitTestCase {
    * @covers ::setupView
    */
   public function testSetupViewUsesPassedListingKeyOnAjax() {
-    $this->runSetupView($this->listingParams(), [], ['search' => 'x', 'listing' => 'ffff0000'], NULL, 'abcd1234');
+    $this->runSetupView($this->listingParams(), [], [NULL, FALSE, NULL, 'abcd1234'], $unused, ['search' => 'x', 'listing' => 'ffff0000']);
     $this->assertSame([['listing' => 'ffff0000']], $this->exposedInputCalls, 'The input keeps the URL\'s listing, since pager links are built from it.');
 
-    $this->runSetupView($this->listingParams(), [], ['search' => 'x', 'listing' => 'abcd1234'], NULL, 'abcd1234');
+    $this->runSetupView($this->listingParams(), [], [NULL, FALSE, NULL, 'abcd1234'], $unused, ['search' => 'x', 'listing' => 'abcd1234']);
     $this->assertSame([], $this->exposedInputCalls);
   }
 
@@ -1092,7 +1241,7 @@ class ViewsBasicManagerTest extends UnitTestCase {
    */
   public function testSetupViewBlockUuidWinsOverListingKey() {
     $uuid = '6f1d0c1e-9a3b-4c2d-8e7f-0a1b2c3d4e5f';
-    $this->runSetupView($this->listingParams(), [], [], $uuid, 'abcd1234');
+    $this->runSetupView($this->listingParams(), [], [$uuid, FALSE, NULL, 'abcd1234']);
     $this->assertSame(ViewsBasicManager::listingKey($uuid), ViewsBasicManager::listingKeyFromArgs($this->viewArguments));
   }
 
@@ -1103,7 +1252,7 @@ class ViewsBasicManagerTest extends UnitTestCase {
    */
   public function testSetupViewWritesListingKeyIntoDisplayOptions() {
     $uuid = '6f1d0c1e-9a3b-4c2d-8e7f-0a1b2c3d4e5f';
-    $this->runSetupView($this->listingParams(), [], [], $uuid);
+    $this->runSetupView($this->listingParams(), [], [$uuid, FALSE]);
     $options = json_decode($this->viewArguments[ViewsBasicManager::viewArgumentIndex('field_display_options')], TRUE);
     $this->assertSame(ViewsBasicManager::listingKey($uuid), $options['listing_key']);
 
