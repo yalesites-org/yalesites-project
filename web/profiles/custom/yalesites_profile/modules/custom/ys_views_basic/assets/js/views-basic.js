@@ -12,13 +12,13 @@
 
         // Add event listener to each radio input
         radioInputs.forEach((input) => {
-          input.addEventListener("change", function () {
+          input.addEventListener('change', function () {
             if (this.checked) {
-              this.setAttribute("checked", "checked");
+              this.setAttribute('checked', 'checked');
               // Remove the 'checked' attribute from other radio inputs
               radioInputs.forEach((otherInput) => {
                 if (otherInput !== this) {
-                  otherInput.removeAttribute("checked");
+                  otherInput.removeAttribute('checked');
                 }
               });
             }
@@ -56,14 +56,14 @@
       // (ViewsBasicWidgetBase::buildDisplayControls(), #1481) rather than this
       // inline style toggle, which used to leave the field hidden-but-required
       // whenever "display" was "all".
-      const editLimitWrapperElement = document.querySelector("#edit-limit");
+      const editLimitWrapperElement = document.querySelector('#edit-limit');
       const displayElement = document.querySelector(
-        'select[name="settings[block_form][group_user_selection][options][display]"'
+        'select[name="settings[block_form][group_user_selection][options][display]"',
       );
 
       // If they're ever gone from the form, don't deal with this.
       if (editLimitWrapperElement && displayElement) {
-        const limitLabel = editLimitWrapperElement.querySelector("label");
+        const limitLabel = editLimitWrapperElement.querySelector('label');
 
         const updateLimitElement = () => {
           const { value } = displayElement;
@@ -71,18 +71,18 @@
           // Change the title. "all" hides the field entirely via #states, so
           // it needs no label and falls through to the default.
           switch (value) {
-            case "limit":
-              limitLabel.textContent = "Items";
+            case 'limit':
+              limitLabel.textContent = 'Items';
               break;
-            case "pager":
-              limitLabel.textContent = "Items Per Page";
+            case 'pager':
+              limitLabel.textContent = 'Items Per Page';
               break;
             default:
               break;
           }
         };
 
-        displayElement.addEventListener("change", updateLimitElement);
+        displayElement.addEventListener('change', updateLimitElement);
         updateLimitElement();
       }
 
@@ -91,7 +91,7 @@
         'input[name="settings[block_form][group_user_selection][entity_and_view_mode][entity_types]"], input[name="block_form[group_user_selection][entity_and_view_mode][entity_types]"]';
       const viewModeSelector =
         'input[name="settings[block_form][group_user_selection][entity_and_view_mode][view_mode]"], input[name="block_form[group_user_selection][entity_and_view_mode][view_mode]"]';
-      const eventTimePeriod = document.querySelector("#edit-event-time-period");
+      const eventTimePeriod = document.querySelector('#edit-event-time-period');
 
       const entityTypes = document.querySelectorAll(entityTypesSelector);
       const viewModes = document.querySelectorAll(viewModeSelector);
@@ -99,23 +99,23 @@
       // Function to handle visibility based on conditions
       function updateVisibility() {
         const entityType = Array.from(entityTypes).find(
-          (input) => input.checked
+          (input) => input.checked,
         )?.value;
         const viewMode = Array.from(viewModes).find(
-          (input) => input.checked
+          (input) => input.checked,
         )?.value;
 
         if (eventTimePeriod) {
           eventTimePeriod.style.display =
-            entityType === "event" && viewMode === "calendar" ? "none" : "";
+            entityType === 'event' && viewMode === 'calendar' ? 'none' : '';
         }
       }
 
       entityTypes.forEach((input) =>
-        input.addEventListener("change", updateVisibility)
+        input.addEventListener('change', updateVisibility),
       );
       viewModes.forEach((input) =>
-        input.addEventListener("change", updateVisibility)
+        input.addEventListener('change', updateVisibility),
       );
       updateVisibility();
 
@@ -142,12 +142,12 @@
       // Keyed on the row class rather than on field names, so every disclosing
       // row is covered, including the pinned-items row. (#1299 QA)
       once(
-        "vb-filter-row-dialog-resize",
+        'vb-filter-row-dialog-resize',
         '.vb-filter-row--has-settings input[type="checkbox"]',
-        context
+        context,
       ).forEach((toggle) => {
-        toggle.addEventListener("change", () => {
-          $(window).trigger("resize.dialogResize");
+        toggle.addEventListener('change', () => {
+          $(window).trigger('resize.dialogResize');
         });
       });
     },

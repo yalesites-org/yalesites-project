@@ -3,6 +3,7 @@
 namespace Drupal\Tests\ys_book\Kernel;
 
 use Drupal\Core\Form\FormState;
+use Drupal\Tests\ys_core\Kernel\RendersToDomTrait;
 use Drupal\Tests\ys_core\Kernel\YsKernelTestBase;
 
 /**
@@ -18,6 +19,8 @@ use Drupal\Tests\ys_core\Kernel\YsKernelTestBase;
  * @group yalesites
  */
 class BookTableHeaderScopeTest extends YsKernelTestBase {
+
+  use RendersToDomTrait;
 
   /**
    * {@inheritdoc}
@@ -65,13 +68,7 @@ class BookTableHeaderScopeTest extends YsKernelTestBase {
     );
     $this->assertSame(['Collection', 'Operations'], $labels);
 
-    // renderInIsolation() takes its render array by reference, so the build
-    // has to be a variable rather than a call.
-    $html = (string) $this->container->get('renderer')->renderInIsolation($build);
-
-    $document = new \DOMDocument();
-    $document->loadHTML('<?xml encoding="utf-8" ?>' . $html, LIBXML_NOERROR);
-    $cells = $document->getElementsByTagName('th');
+    $cells = $this->renderAndQuery($build)->query('//th');
 
     // Contrib builds two columns. Asserting the count first stops the loop
     // below from passing vacuously if the table ever stops rendering.
