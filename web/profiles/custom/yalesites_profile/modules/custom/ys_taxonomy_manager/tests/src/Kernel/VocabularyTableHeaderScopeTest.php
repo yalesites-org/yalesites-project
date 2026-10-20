@@ -2,6 +2,7 @@
 
 namespace Drupal\Tests\ys_taxonomy_manager\Kernel;
 
+use Drupal\Tests\ys_core\Kernel\RendersToDomTrait;
 use Drupal\Tests\ys_core\Kernel\YsKernelTestBase;
 use Drupal\taxonomy\Entity\Vocabulary;
 use Drupal\user\Entity\User;
@@ -21,6 +22,8 @@ use Drupal\ys_taxonomy_manager\Controller\YsTaxonomyManagerMainController;
  * @group yalesites
  */
 class VocabularyTableHeaderScopeTest extends YsKernelTestBase {
+
+  use RendersToDomTrait;
 
   /**
    * {@inheritdoc}
@@ -74,12 +77,7 @@ class VocabularyTableHeaderScopeTest extends YsKernelTestBase {
       $entity_field_manager,
       new TaxonomyVocabularyManager($entity_type_manager, $entity_field_manager)
     );
-    $build = $controller->listVocabularies();
-    $html = (string) $this->container->get('renderer')->renderInIsolation($build);
-
-    $document = new \DOMDocument();
-    $document->loadHTML('<?xml encoding="utf-8" ?>' . $html, LIBXML_NOERROR);
-    $cells = $document->getElementsByTagName('th');
+    $cells = $this->renderAndQuery($controller->listVocabularies())->query('//th');
 
     // Two tables, two columns each: anything less means the fixture stopped
     // rendering the tables and the scope assertion below proves nothing.
