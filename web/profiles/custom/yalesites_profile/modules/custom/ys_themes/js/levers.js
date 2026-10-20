@@ -1,6 +1,6 @@
 ((Drupal) => {
   Drupal.behaviors.ysLevers = {
-    attach: function (context, settings) {
+    attach(context, settings) {
       // eslint-disable-line
       once('ysLevers', '.layout-container', context).forEach((element) => {
         // Update root CSS variables
@@ -8,7 +8,7 @@
           const prefix = selector.match(/--([a-z]*[0-9]*)/g);
           document.documentElement.style.setProperty(
             selector,
-            `var(${prefix[0]}-${value})`
+            `var(${prefix[0]}-${value})`,
           );
         }
 
@@ -30,7 +30,7 @@
 
         function initStyleDrawer() {
           const formItems = context.querySelectorAll(
-            'input.ys-themes--setting'
+            'input.ys-themes--setting',
           );
 
           for (let i = 0; i < formItems.length; i++) {
@@ -59,7 +59,7 @@
 
       // Get all radio inputs in the glogal_theme name group
       const radioInputs = document.querySelectorAll(
-        'input[name="global_theme"]'
+        'input[name="global_theme"]',
       );
 
       // Add event listener to each radio input
@@ -105,15 +105,15 @@
       // but adding on to it.
       function handleRadioInputs(radioGroup) {
         // Get references to the radio input elements within the specified group
-        const radioInputs = document.querySelectorAll(radioGroup);
+        const groupInputs = document.querySelectorAll(radioGroup);
 
         // Add event listener to each radio input
-        radioInputs.forEach((input) => {
+        groupInputs.forEach((input) => {
           input.addEventListener('change', function () {
             if (this.checked) {
               this.setAttribute('checked', 'checked');
               // Remove the 'checked' attribute from other radio inputs
-              radioInputs.forEach((otherInput) => {
+              groupInputs.forEach((otherInput) => {
                 if (otherInput !== this) {
                   otherInput.removeAttribute('checked');
                 }

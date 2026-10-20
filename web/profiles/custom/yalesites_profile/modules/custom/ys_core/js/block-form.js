@@ -19,11 +19,11 @@
        */
       function linkTableRowHasUri(row) {
         const uriInputs = row.querySelectorAll(
-          'input[name*="[uri]"], input[name*="[link]"], input.js-linkit-autocomplete, input.linkit-widget-uri'
+          'input[name*="[uri]"], input[name*="[link]"], input.js-linkit-autocomplete, input.linkit-widget-uri',
         );
         for (let i = 0; i < uriInputs.length; i += 1) {
           const v = uriInputs[i].value;
-          if (v && String(v).trim() !== "") {
+          if (v && String(v).trim() !== '') {
             return true;
           }
         }
@@ -56,7 +56,7 @@
           numberOfItems < blockType.min ||
           (blockType.max > 0 && numberOfItems > blockType.max)
         ) {
-          let messageText = "";
+          let messageText = '';
           if (blockType.max > 0) {
             messageText = `Number of ${blockType.type} must be between ${blockType.min} and ${blockType.max}. `;
           } else {
@@ -66,7 +66,7 @@
         }
 
         // An empty string signifies no errors and resets validation for the input.
-        return "";
+        return '';
       }
 
       /*
@@ -80,31 +80,31 @@
       function validateBlockType(blockType) {
         // Get the layout builder add and update forms.
         const blockContentForm = document.querySelector(
-          'form[id^="block-content"]'
+          'form[id^="block-content"]',
         );
         const submitSelector = blockContentForm
-          ? "input[data-drupal-selector=edit-submit]"
-          : "input[data-drupal-selector=edit-actions-submit]";
+          ? 'input[data-drupal-selector=edit-submit]'
+          : 'input[data-drupal-selector=edit-actions-submit]';
         const submitButton = document.querySelector(submitSelector);
 
         if (submitButton) {
           // If the data attribute of minMaxAdded does not exist on
           // submitButton, then add the event listener and add that attribute.
-          if (!submitButton.hasAttribute("minMaxAdded")) {
-            submitButton.setAttribute("minMaxAdded", "true");
+          if (!submitButton.hasAttribute('minMaxAdded')) {
+            submitButton.setAttribute('minMaxAdded', 'true');
             // On click, check for custom errors.
-            submitButton.addEventListener("click", () => {
+            submitButton.addEventListener('click', () => {
               // Since the selector can change as they enter correct data,
               // we must evaluate this inside the click event.
               const inputSelector =
                 blockType.inputSelector.find((selector) => {
                   const input = document.querySelector(selector);
-                  return input && input.type !== "hidden";
+                  return input && input.type !== 'hidden';
                 }) || submitSelector;
 
               const input = document.querySelector(inputSelector);
               const errorMsg = getErrors(blockType);
-              debugMsg("Setting errorMsg to:", input, errorMsg);
+              debugMsg('Setting errorMsg to:', input, errorMsg);
               input.setCustomValidity(errorMsg);
               /*
               This is a hack.  In order for the button to be used as a
@@ -121,8 +121,8 @@
 
               If anyone finds a better way to do this, please fix this.
               */
-              if (input !== submitButton && errorMsg === "") {
-                submitButton.setCustomValidity("");
+              if (input !== submitButton && errorMsg === '') {
+                submitButton.setCustomValidity('');
               }
             });
           }
@@ -133,7 +133,7 @@
       const blockTypes = [
         {
           // Tabs
-          itemSelector: "tr.paragraph-type--tab",
+          itemSelector: 'tr.paragraph-type--tab',
           inputSelector: [
             'input[data-drupal-selector^="edit-field-tabs"]',
             'input[data-drupal-selector^="edit-block-form-field-tabs"]',
@@ -141,7 +141,7 @@
           ],
           min: 2,
           max: 5,
-          type: "tabs",
+          type: 'tabs',
         },
         {
           // Quick Links: `field_links` is a multi-value link field (Linkit), not
@@ -154,29 +154,29 @@
           ],
           min: 3,
           max: 9,
-          type: "links",
+          type: 'links',
         },
         {
           // Media Grid
-          itemSelector: ".paragraph-type--media-grid-item",
+          itemSelector: '.paragraph-type--media-grid-item',
           inputSelector: [
             'input[data-drupal-selector^="edit-field-heading"]',
             'input[data-drupal-selector^="edit-settings-block-form-field-heading"]',
           ],
           min: 2,
           max: 0,
-          type: "media grid items",
+          type: 'media grid items',
         },
         {
           // Gallery
-          itemSelector: ".paragraph-type--gallery-item",
+          itemSelector: '.paragraph-type--gallery-item',
           inputSelector: [
             'input[data-drupal-selector^="edit-field-heading"]',
             'input[data-drupal-selector^="edit-settings-block-form-field-heading"]',
           ],
           min: 2,
           max: 0,
-          type: "gallery items",
+          type: 'gallery items',
         },
       ];
 
@@ -185,7 +185,7 @@
         // Check the form for this block type.
         debugMsg(`Trying to find: ${blockType.itemSelector}`);
         if (document.querySelector(blockType.itemSelector)) {
-          debugMsg("Found the following blockType:", blockType);
+          debugMsg('Found the following blockType:', blockType);
           validateBlockType(blockType);
         }
       });
