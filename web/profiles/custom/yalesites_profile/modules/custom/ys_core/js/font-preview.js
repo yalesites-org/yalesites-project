@@ -3,14 +3,14 @@
   // controls, so the preview stays correct however many of the three
   // controls a user changes.
   const CONTROLS = {
-    heading_font: "data-heading-font",
-    heading_numerals: "data-heading-numerals",
-    body_numerals: "data-body-numerals",
+    heading_font: 'data-heading-font',
+    heading_numerals: 'data-heading-numerals',
+    body_numerals: 'data-body-numerals',
   };
 
   Drupal.behaviors.fontPreview = {
     attach(context, settings) {
-      once("font-preview", ".font-preview-container", context).forEach(
+      once('font-preview', '.font-preview-container', context).forEach(
         function (container) {
           const $container = $(container);
 
@@ -22,11 +22,11 @@
               return;
             }
 
-            $(`select[name="${name}"]`, context).on("change", function () {
+            $(`select[name="${name}"]`, context).on('change', function () {
               $container.attr(attribute, $(this).val());
             });
           });
-        }
+        },
       );
     },
   };
