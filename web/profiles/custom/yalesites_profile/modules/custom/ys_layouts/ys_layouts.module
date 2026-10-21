@@ -341,11 +341,14 @@ function ys_layouts_form_alter(&$form, $form_state, $form_id) {
  * one element's #prefix closed in another's #suffix, which only held while
  * the two rendered adjacently.
  *
- * The form root and the containers do not set #tree, so each field keeps
- * #parents of just its own key: submitted values ("reusable", "info"), input
- * names and the "reusable" #states selector are unchanged. The container takes
- * the place of 'reusable' in the form's array order, which with no #weight is
- * the render order.
+ * ConfigureBlockFormBase sets #tree on the form root, so a plain container
+ * would nest its children's #parents (reusable_toggle[reusable]) and core's
+ * submitForm(), which reads the top-level "reusable" and "info" values, would
+ * silently get NULL. Each field therefore gets an explicit #parents of just its
+ * own key, and the containers are #tree FALSE as well: submitted values, input
+ * names and the "reusable" #states selector are exactly as before. The
+ * container takes the place of 'reusable' in the form's array order, which
+ * with no #weight is the render order.
  *
  * @param array $form
  *   The configure-block form, passed by reference. Must contain 'reusable'.
@@ -353,18 +356,20 @@ function ys_layouts_form_alter(&$form, $form_state, $form_id) {
 function _ys_layouts_wrap_reusable_toggle(array &$form): void {
   $row = [
     '#type' => 'container',
+    '#tree' => FALSE,
     '#attributes' => [
       'class' => ['ys-toggle-row', 'ys-toggle-row--has-settings'],
     ],
     // An empty row would still render its bordered wrapper.
     '#access' => $form['reusable']['#access'] ?? TRUE,
-    'reusable' => $form['reusable'],
+    'reusable' => ['#parents' => ['reusable']] + $form['reusable'],
   ];
   if (isset($form['info'])) {
     $row['body'] = [
       '#type' => 'container',
+      '#tree' => FALSE,
       '#attributes' => ['class' => ['ys-toggle-row__body']],
-      'info' => $form['info'],
+      'info' => ['#parents' => ['info']] + $form['info'],
     ];
   }
   // A group or weight already put on the fields (another module's alter

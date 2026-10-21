@@ -3,11 +3,22 @@
 namespace Drupal\Tests\ys_layouts\Unit;
 
 use Drupal\Component\Render\FormattableMarkup;
+use Drupal\Core\DependencyInjection\ClassResolverInterface;
 use Drupal\Core\DependencyInjection\ContainerBuilder;
+use Drupal\Core\Extension\ModuleHandlerInterface;
+use Drupal\Core\Form\FormBuilder;
+use Drupal\Core\Form\FormCacheInterface;
+use Drupal\Core\Form\FormState;
 use Drupal\Core\Form\FormStateInterface;
+use Drupal\Core\Form\FormSubmitterInterface;
+use Drupal\Core\Form\FormValidatorInterface;
 use Drupal\Core\Render\Element;
+use Drupal\Core\Render\ElementInfoManagerInterface;
 use Drupal\Core\StringTranslation\TranslatableMarkup;
+use Drupal\Core\Theme\ThemeManagerInterface;
 use Drupal\Tests\UnitTestCase;
+use Symfony\Component\HttpFoundation\RequestStack;
+use Symfony\Contracts\EventDispatcher\EventDispatcherInterface;
 
 /**
  * Tests the block create/configure form heading, labels and field order.
@@ -614,8 +625,9 @@ class BlockConfigureFormTest extends UnitTestCase {
    *
    * Replaces a wrapper opened in one field's #prefix and closed in the
    * other's #suffix, which only produced valid markup while the two rendered
-   * adjacently. The fields keep their top-level #parents (nothing sets
-   * #tree), so their submitted values and input names do not change.
+   * adjacently. The fields keep top-level #parents, so their submitted
+   * values and input names do not change (see
+   * testReusableToggleRowKeepsValuesAtFormRoot()).
    */
   public function testReusableToggleRowWrapsBothFields(): void {
     $form = $this->blockForm();
@@ -636,7 +648,9 @@ class BlockConfigureFormTest extends UnitTestCase {
     $row = $form['reusable_toggle'];
     $this->assertSame('container', $row['#type']);
     $this->assertSame(['ys-toggle-row', 'ys-toggle-row--has-settings'], $row['#attributes']['class']);
-    $this->assertArrayNotHasKey('#tree', $row);
+    $this->assertFalse($row['#tree']);
+    $this->assertSame(['reusable'], $row['reusable']['#parents']);
+    $this->assertSame(['info'], $row['body']['info']['#parents']);
     $this->assertArrayNotHasKey('#prefix', $row['reusable']);
     $this->assertSame('container', $row['body']['#type']);
     $this->assertSame(['ys-toggle-row__body'], $row['body']['#attributes']['class']);
@@ -646,6 +660,54 @@ class BlockConfigureFormTest extends UnitTestCase {
       ['disabled' => [':input[name="reusable"]' => ['checked' => FALSE]]],
       $row['body']['info']['#states']
     );
+  }
+
+  /**
+   * Built under a #tree root, the wrapped fields submit at the form root.
+   *
+   * ConfigureBlockFormBase sets #tree on the configure-block form and its
+   * submitForm() reads getValue('reusable') and getValue('info'). Runs the
+   * altered form through FormBuilder::doBuildForm() as a programmed
+   * submission and checks the input names and values it assigns.
+   */
+  public function testReusableToggleRowKeepsValuesAtFormRoot(): void {
+    $form = $this->blockForm();
+    $form['#tree'] = TRUE;
+    $form['reusable'] = ['#type' => 'checkbox', '#title' => 'Reusable', '#access' => TRUE];
+    $form['info'] = ['#type' => 'textfield', '#title' => 'Block description', '#access' => TRUE];
+    $form = $this->alter($form, 'layout_builder_add_block');
+    // Only the toggle row is under test; the rest needs real services.
+    unset($form['settings'], $form['#after_build']);
+    $form['#type'] = 'form';
+    $form['#parents'] = [];
+    $form['#action'] = '/layout_builder/add';
+
+    $element_info = $this->createMock(ElementInfoManagerInterface::class);
+    $element_info->method('getInfo')->willReturnCallback(
+      fn ($type) => in_array($type, ['checkbox', 'textfield'], TRUE) ? ['#input' => TRUE] : []
+    );
+    $form_builder = new FormBuilder(
+      $this->createMock(FormValidatorInterface::class),
+      $this->createMock(FormSubmitterInterface::class),
+      $this->createMock(FormCacheInterface::class),
+      $this->createMock(ModuleHandlerInterface::class),
+      $this->createMock(EventDispatcherInterface::class),
+      new RequestStack(),
+      $this->createMock(ClassResolverInterface::class),
+      $element_info,
+      $this->createMock(ThemeManagerInterface::class),
+    );
+    $form_state = (new FormState())
+      ->setProgrammed()
+      ->setUserInput(['reusable' => 1, 'info' => 'Shared promo']);
+
+    $form_builder->doBuildForm('layout_builder_add_block', $form, $form_state);
+
+    $this->assertSame(1, $form_state->getValue('reusable'));
+    $this->assertSame('Shared promo', $form_state->getValue('info'));
+    $this->assertFalse($form_state->hasValue('reusable_toggle'));
+    $this->assertSame('reusable', $form['reusable_toggle']['reusable']['#name']);
+    $this->assertSame('info', $form['reusable_toggle']['body']['info']['#name']);
   }
 
   /**
