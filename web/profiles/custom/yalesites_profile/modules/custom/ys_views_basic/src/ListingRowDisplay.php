@@ -2,7 +2,6 @@
 
 namespace Drupal\ys_views_basic;
 
-use Drupal\Component\Utility\Xss;
 use Drupal\Core\Security\TrustedCallbackInterface;
 use Drupal\node\NodeInterface;
 
@@ -119,10 +118,15 @@ final class ListingRowDisplay implements TrustedCallbackInterface {
     if (empty($pin['pinned_to_top']) || !is_scalar($pin['pin_label'])) {
       return '';
     }
-    // Editor text, and on the views/ajax path browser text, that the card
-    // templates print raw. Strip every tag; escaping instead would double
-    // escape where it also lands in an aria-label.
-    return Xss::filter((string) $pin['pin_label'], []);
+    // Editor text, and on the views/ajax path browser text, with two sinks
+    // in the card templates: the visible overlay prints it with |raw, and the
+    // card's aria-label concatenates it into an autoescaped attribute. So
+    // strip tags (the |raw sink) but leave entities and ampersands alone:
+    // encoding them (Html::escape(), or Xss::filter(), which turns a bare &
+    // into &amp;) would reach screen readers as a literal "&amp;". Never
+    // decode entities either: an encoded &lt;script&gt; must stay encoded
+    // for the |raw sink.
+    return strip_tags((string) $pin['pin_label']);
   }
 
   /**

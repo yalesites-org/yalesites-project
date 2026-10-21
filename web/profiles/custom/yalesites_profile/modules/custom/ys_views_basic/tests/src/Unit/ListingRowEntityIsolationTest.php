@@ -197,19 +197,19 @@ class ListingRowEntityIsolationTest extends UnitTestCase {
   public function testPinLabelIsStrippedOfTags(): void {
     $args = array_fill(0, count(ViewsBasicManager::VIEW_ARGUMENT_ORDER), '');
     $index = ViewsBasicManager::viewArgumentIndex('pin_settings');
-    $args[$index] = json_encode([
-      'pinned_to_top' => TRUE,
-      'pin_label' => '<img src=x onerror=alert(1)><b>Top</b> & "pick"<script>alert(2)</script>',
-    ]);
-    $label = ListingRowDisplay::pinLabelFromArgs($args);
-    $this->assertStringNotContainsString('<', $label);
-    $this->assertStringContainsString('Top', $label);
-    // Quotes are left alone, unlike Html::escape(); Xss::filter() only
-    // normalizes a bare ampersand to an entity.
-    $this->assertStringContainsString('&amp; "pick"', $label);
+    $label = function (string $pin_label) use ($args, $index): string {
+      $args[$index] = json_encode(['pinned_to_top' => TRUE, 'pin_label' => $pin_label]);
+      return ListingRowDisplay::pinLabelFromArgs($args);
+    };
 
-    $args[$index] = json_encode(['pinned_to_top' => TRUE, 'pin_label' => 'Featured']);
-    $this->assertSame('Featured', ListingRowDisplay::pinLabelFromArgs($args));
+    // Ampersands stay as typed: the label also lands in an autoescaped
+    // aria-label, where "&amp;" would be read out literally.
+    $this->assertSame('A & B', $label('<b>A & B</b>'));
+    $this->assertSame('Pinned', $label('<img src=x onerror=alert(1)>Pinned'));
+    $this->assertSame('alert(1)Top', $label('<script>alert(1)</script>Top'), 'Script tags go; their text is inert.');
+    // Entities are not decoded: the overlay prints the label with |raw.
+    $this->assertSame('&lt;script&gt;', $label('&lt;script&gt;'));
+    $this->assertSame('Featured', $label('Featured'));
   }
 
   /**
