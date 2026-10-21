@@ -14,85 +14,85 @@
   // (true) or hides (false) the part.
   const TOGGLES = [
     {
-      part: ".vb-preview__image",
-      suffix: "[field_options][show_thumbnail]",
+      part: '.vb-preview__image',
+      suffix: '[field_options][show_thumbnail]',
       showWhenChecked: true,
     },
     {
-      part: ".vb-preview__category",
-      suffix: "[field_options][show_categories]",
+      part: '.vb-preview__category',
+      suffix: '[field_options][show_categories]',
       showWhenChecked: true,
     },
     {
-      part: ".vb-preview__tags",
-      suffix: "[field_options][show_tags]",
+      part: '.vb-preview__tags',
+      suffix: '[field_options][show_tags]',
       showWhenChecked: true,
     },
     {
-      part: ".vb-preview__eyebrow",
-      suffix: "[post_field_options][show_eyebrow]",
+      part: '.vb-preview__eyebrow',
+      suffix: '[post_field_options][show_eyebrow]',
       showWhenChecked: true,
     },
     {
-      part: ".vb-preview__calendar",
-      suffix: "[event_field_options][hide_add_to_calendar]",
+      part: '.vb-preview__calendar',
+      suffix: '[event_field_options][hide_add_to_calendar]',
       showWhenChecked: false,
     },
     {
-      part: ".vb-preview__pinned",
-      suffix: "[pinned_to_top]",
+      part: '.vb-preview__pinned',
+      suffix: '[pinned_to_top]',
       showWhenChecked: true,
     },
     // Profile data pass-throughs (#1648).
     {
-      part: ".vb-preview__department",
-      suffix: "[profile_field_options][show_department]",
+      part: '.vb-preview__department',
+      suffix: '[profile_field_options][show_department]',
       showWhenChecked: true,
     },
     {
-      part: ".vb-preview__email",
-      suffix: "[profile_field_options][show_email]",
+      part: '.vb-preview__email',
+      suffix: '[profile_field_options][show_email]',
       showWhenChecked: true,
     },
     {
-      part: ".vb-preview__phone",
-      suffix: "[profile_field_options][show_phone]",
+      part: '.vb-preview__phone',
+      suffix: '[profile_field_options][show_phone]',
       showWhenChecked: true,
     },
     {
-      part: ".vb-preview__pronouns",
-      suffix: "[profile_field_options][show_pronouns]",
+      part: '.vb-preview__pronouns',
+      suffix: '[profile_field_options][show_pronouns]',
       showWhenChecked: true,
     },
     // Resource details (#1723).
     {
-      part: ".vb-preview__teaser",
-      suffix: "[resource_field_options][show_teaser_text]",
+      part: '.vb-preview__teaser',
+      suffix: '[resource_field_options][show_teaser_text]',
       showWhenChecked: true,
     },
     {
-      part: ".vb-preview__publish-date",
-      suffix: "[resource_field_options][show_publish_date]",
+      part: '.vb-preview__publish-date',
+      suffix: '[resource_field_options][show_publish_date]',
       showWhenChecked: true,
     },
     {
-      part: ".vb-preview__authors",
-      suffix: "[resource_field_options][show_authors]",
+      part: '.vb-preview__authors',
+      suffix: '[resource_field_options][show_authors]',
       showWhenChecked: true,
     },
     {
-      part: ".vb-preview__discipline",
-      suffix: "[resource_field_options][show_discipline]",
+      part: '.vb-preview__discipline',
+      suffix: '[resource_field_options][show_discipline]',
       showWhenChecked: true,
     },
     {
-      part: ".vb-preview__journal-name",
-      suffix: "[resource_field_options][show_journal_name]",
+      part: '.vb-preview__journal-name',
+      suffix: '[resource_field_options][show_journal_name]',
       showWhenChecked: true,
     },
     {
-      part: ".vb-preview__journal-issue",
-      suffix: "[resource_field_options][show_journal_issue]",
+      part: '.vb-preview__journal-issue',
+      suffix: '[resource_field_options][show_journal_issue]',
       showWhenChecked: true,
     },
   ];
@@ -125,8 +125,8 @@
 
   Drupal.behaviors.ysViewsBasicPreview = {
     attach(context) {
-      once("vb-preview", ".vb-preview", context).forEach(function (panel) {
-        const form = panel.closest("form");
+      once('vb-preview', '.vb-preview', context).forEach(function (panel) {
+        const form = panel.closest('form');
         if (!form) {
           return;
         }
@@ -134,7 +134,7 @@
         TOGGLES.forEach(function (toggle) {
           const control = findControl(form, toggle.suffix);
           if (control) {
-            control.addEventListener("change", function () {
+            control.addEventListener('change', function () {
               refresh(panel, form);
             });
           }

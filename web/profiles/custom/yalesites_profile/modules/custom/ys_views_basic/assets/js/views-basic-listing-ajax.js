@@ -31,7 +31,7 @@
     function listingAttachExposedFormAjax(...args) {
       if (
         this.$exposed_form.find('input[name="listing"]').length &&
-        new URLSearchParams(window.location.search).has("listing")
+        new URLSearchParams(window.location.search).has('listing')
       ) {
         // Resolved exactly as core's ajaxView constructor does.
         let ajaxPath = drupalSettings.views.ajax_path;
