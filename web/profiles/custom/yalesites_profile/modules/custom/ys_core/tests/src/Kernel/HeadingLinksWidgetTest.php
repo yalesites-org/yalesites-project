@@ -4,10 +4,10 @@ namespace Drupal\Tests\ys_core\Kernel;
 
 use Drupal\block_content\Entity\BlockContent;
 use Drupal\block_content\Entity\BlockContentType;
+use Drupal\Core\Entity\Entity\EntityFormDisplay;
 use Drupal\Core\Form\FormState;
 use Drupal\field\Entity\FieldConfig;
 use Drupal\field\Entity\FieldStorageConfig;
-use Drupal\KernelTests\KernelTestBase;
 use Drupal\paragraphs\Entity\Paragraph;
 use Drupal\paragraphs\Entity\ParagraphsType;
 use Drupal\paragraphs\ParagraphInterface;
@@ -27,7 +27,7 @@ use Drupal\ys_core\Plugin\Field\FieldWidget\HeadingLinksWidget;
  *
  * @group ys_core
  */
-class HeadingLinksWidgetTest extends KernelTestBase {
+class HeadingLinksWidgetTest extends YsKernelTestBase {
 
   /**
    * {@inheritdoc}
@@ -89,6 +89,23 @@ class HeadingLinksWidgetTest extends KernelTestBase {
       'settings' => [
         'title' => 2,
         'link_type' => 17,
+      ],
+    ])->save();
+
+    // The widget takes its link widget from the cta_link form display, as
+    // in config/sync; without one, field_link has no renderer at all.
+    EntityFormDisplay::create([
+      'targetEntityType' => 'paragraph',
+      'bundle' => 'cta_link',
+      'mode' => 'default',
+      'status' => TRUE,
+    ])->setComponent('field_link', [
+      'type' => 'linkit',
+      'settings' => [
+        'placeholder_url' => '',
+        'placeholder_title' => '',
+        'linkit_profile' => 'default',
+        'linkit_auto_link_text' => FALSE,
       ],
     ])->save();
 
@@ -274,6 +291,7 @@ class HeadingLinksWidgetTest extends KernelTestBase {
         'title' => 'New',
         'attributes' => [],
         'existing_paragraph_id' => $rendered['existing_paragraph_id']['#value'],
+        'existing_paragraph_revision_id' => $rendered['existing_paragraph_revision_id']['#value'],
       ],
     ];
     $massaged = $this->widget->massageFormValues($values, $form, $form_state);
@@ -283,17 +301,23 @@ class HeadingLinksWidgetTest extends KernelTestBase {
     $this->assertSame('https://new.example.com', $updated->get('field_link')->uri);
     $this->assertSame('New', $updated->get('field_link')->title);
     $this->assertTrue($updated->needsSave());
+
+    $paragraph_storage = $this->container->get('entity_type.manager')->getStorage('paragraph');
+    $paragraph_storage->resetCache([$original_id]);
+    $this->assertSame('https://old.example.com', $paragraph_storage->load($original_id)->get('field_link')->uri, 'Nothing is written to storage until the host is saved.');
   }
 
   /**
-   * Clearing a previously-filled row deletes its orphaned paragraph.
+   * Clearing a previously-filled row drops the reference, nothing more.
    *
-   * Round-trip case: a row disabled/cleared shouldn't leave a dangling
-   * cta_link paragraph nobody references any more.
+   * The widget's massageFormValues() runs during validation and AJAX
+   * rebuilds, before (or without) the host being saved, so it must not
+   * delete the paragraph the live revision still references.
+   * entity_reference_revisions handles the orphan once the host is saved.
    *
    * @covers ::massageFormValues
    */
-  public function testMassageFormValuesDeletesOrphanedParagraphWhenRowCleared() {
+  public function testMassageFormValuesDropsReferenceWithoutDeletingWhenRowCleared() {
     $paragraph = Paragraph::create(['type' => 'cta_link']);
     $paragraph->set('field_link', ['uri' => 'https://example.com', 'title' => 'Example']);
     $paragraph->save();
@@ -319,6 +343,7 @@ class HeadingLinksWidgetTest extends KernelTestBase {
         'title' => '',
         'attributes' => [],
         'existing_paragraph_id' => $rendered['existing_paragraph_id']['#value'],
+        'existing_paragraph_revision_id' => $rendered['existing_paragraph_revision_id']['#value'],
       ],
     ];
     $massaged = $this->widget->massageFormValues($values, $form, $form_state);
@@ -327,7 +352,7 @@ class HeadingLinksWidgetTest extends KernelTestBase {
 
     $paragraph_storage = $this->container->get('entity_type.manager')->getStorage('paragraph');
     $paragraph_storage->resetCache([$paragraph_id]);
-    $this->assertNull($paragraph_storage->load($paragraph_id), 'The orphaned paragraph was deleted, not left dangling.');
+    $this->assertNotNull($paragraph_storage->load($paragraph_id), 'The paragraph survives value extraction; only the host save may orphan it.');
   }
 
   /**
