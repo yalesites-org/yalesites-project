@@ -93,6 +93,57 @@ class ListingArgumentsTest extends UnitTestCase {
   }
 
   /**
+   * Every sort the widgets offer is accepted, for every content type.
+   *
+   * @covers ::decodeParams
+   * @covers ::isAllowedSort
+   */
+  public function testEveryOfferedSortIsAccepted(): void {
+    $count = 0;
+    foreach (ViewsBasicManager::ALLOWED_ENTITIES as $type => $definition) {
+      foreach (array_keys($definition['sort_by']) as $sort) {
+        $params = ['filters' => ['types' => [$type]], 'sort_by' => $sort];
+        $this->assertSame($params, ViewsBasicManager::decodeParams(json_encode($params)), $sort);
+        $count++;
+      }
+    }
+    $this->assertGreaterThanOrEqual(10, $count);
+    // What the preview formatter writes, and a listing with no sort at all.
+    $unsorted = ['filters' => ['types' => ['post']], 'sort_by' => ''];
+    $this->assertNotNull(ViewsBasicManager::decodeParams(json_encode($unsorted)));
+    $this->assertNotNull(ViewsBasicManager::decodeParams(json_encode(['filters' => ['types' => ['post']]])));
+  }
+
+  /**
+   * A sort that is not offered, such as an injected expression, is refused.
+   *
+   * @covers ::decodeParams
+   * @covers ::isAllowedSort
+   *
+   * @dataProvider refusedSortProvider
+   */
+  public function testUnofferedSortIsRefused(string $sort): void {
+    $params = ['filters' => ['types' => ['post']], 'sort_by' => $sort];
+    $this->assertNull(ViewsBasicManager::decodeParams(json_encode($params)));
+    $this->assertFalse(ViewsBasicManager::isAllowedSort($sort));
+  }
+
+  /**
+   * Data provider for ::testUnofferedSortIsRefused().
+   */
+  public static function refusedSortProvider(): array {
+    return [
+      'blind SQL injection' => [
+        '(SELECT IF(ASCII(SUBSTRING((SELECT pass FROM users_field_data WHERE uid=1),1,1))>64,SLEEP(5),0)):ASC',
+      ],
+      'injected direction' => ['title:ASC, (SELECT SLEEP(5))'],
+      'unknown column' => ['nid:ASC'],
+      'lower case direction' => ['title:asc'],
+      'no direction' => ['title'],
+    ];
+  }
+
+  /**
    * A short argument list from a crafted request has no usable params.
    *
    * @covers ::decodeParams

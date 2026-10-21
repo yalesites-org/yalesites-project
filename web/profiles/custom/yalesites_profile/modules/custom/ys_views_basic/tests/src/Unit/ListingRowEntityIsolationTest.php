@@ -190,6 +190,29 @@ class ListingRowEntityIsolationTest extends UnitTestCase {
   }
 
   /**
+   * The pin label loses every tag, since the card templates print it raw.
+   *
+   * @covers ::pinLabelFromArgs
+   */
+  public function testPinLabelIsStrippedOfTags(): void {
+    $args = array_fill(0, count(ViewsBasicManager::VIEW_ARGUMENT_ORDER), '');
+    $index = ViewsBasicManager::viewArgumentIndex('pin_settings');
+    $args[$index] = json_encode([
+      'pinned_to_top' => TRUE,
+      'pin_label' => '<img src=x onerror=alert(1)><b>Top</b> & "pick"<script>alert(2)</script>',
+    ]);
+    $label = ListingRowDisplay::pinLabelFromArgs($args);
+    $this->assertStringNotContainsString('<', $label);
+    $this->assertStringContainsString('Top', $label);
+    // Quotes are left alone, unlike Html::escape(); Xss::filter() only
+    // normalizes a bare ampersand to an entity.
+    $this->assertStringContainsString('&amp; "pick"', $label);
+
+    $args[$index] = json_encode(['pinned_to_top' => TRUE, 'pin_label' => 'Featured']);
+    $this->assertSame('Featured', ListingRowDisplay::pinLabelFromArgs($args));
+  }
+
+  /**
    * Only sticky nodes are pinned rows.
    *
    * @covers ::isSticky

@@ -2,6 +2,7 @@
 
 namespace Drupal\ys_views_basic;
 
+use Drupal\Component\Utility\Xss;
 use Drupal\Core\Security\TrustedCallbackInterface;
 use Drupal\node\NodeInterface;
 
@@ -107,14 +108,21 @@ final class ListingRowDisplay implements TrustedCallbackInterface {
    *   The view arguments ViewsBasicManager::configureView() wrote.
    *
    * @return string
-   *   The listing's pin label, or '' when the listing does not pin.
+   *   The listing's pin label with all tags stripped, or '' when the listing
+   *   does not pin.
    */
   public static function pinLabelFromArgs(array $args): string {
     $pin = ViewsBasicManager::displayOptionsFromArgs($args, 'pin_settings', [
       'pinned_to_top' => FALSE,
       'pin_label' => NULL,
     ]);
-    return !empty($pin['pinned_to_top']) && is_scalar($pin['pin_label']) ? (string) $pin['pin_label'] : '';
+    if (empty($pin['pinned_to_top']) || !is_scalar($pin['pin_label'])) {
+      return '';
+    }
+    // Editor text, and on the views/ajax path browser text, that the card
+    // templates print raw. Strip every tag; escaping instead would double
+    // escape where it also lands in an aria-label.
+    return Xss::filter((string) $pin['pin_label'], []);
   }
 
   /**

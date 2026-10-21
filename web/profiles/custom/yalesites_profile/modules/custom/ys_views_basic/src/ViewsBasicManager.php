@@ -448,6 +448,30 @@ class ViewsBasicManager extends ControllerBase implements ContainerInjectionInte
   ];
 
   /**
+   * Returns whether a value is a sort some listing content type offers.
+   *
+   * The allowlist is every key of ::ALLOWED_ENTITIES[*]['sort_by'], the only
+   * values the authoring widgets offer (each "field_name:DIRECTION").
+   *
+   * @param mixed $sort
+   *   The stored or submitted sort.
+   *
+   * @return bool
+   *   TRUE when $sort is one of those keys.
+   */
+  public static function isAllowedSort(mixed $sort): bool {
+    if (!is_string($sort)) {
+      return FALSE;
+    }
+    foreach (self::ALLOWED_ENTITIES as $definition) {
+      if (isset($definition['sort_by'][$sort])) {
+        return TRUE;
+      }
+    }
+    return FALSE;
+  }
+
+  /**
    * Decodes stored listing params, or returns NULL when they are unusable.
    *
    * The params reach ::configureView() from block content and, on the
@@ -468,6 +492,13 @@ class ViewsBasicManager extends ControllerBase implements ContainerInjectionInte
     }
     $types = $decoded['filters']['types'] ?? NULL;
     if (!is_array($types) || $types === [] || array_filter($types, 'is_string') !== $types) {
+      return NULL;
+    }
+    // The sort reaches the query as an ORDER BY expression (ViewsBasicSort),
+    // and on the views/ajax path it comes from the browser: only a sort some
+    // content type offers is accepted. Empty is what the preview formatter
+    // writes, and sorts nothing.
+    if (isset($decoded['sort_by']) && $decoded['sort_by'] !== '' && !self::isAllowedSort($decoded['sort_by'])) {
       return NULL;
     }
     // Values copied straight into a view argument, a sort or a label. An

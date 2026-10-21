@@ -26,7 +26,10 @@ class ViewsBasicSort extends SortPluginBase {
     // Split out the field and the sort direction.
     if (isset($this->view->args[ViewsBasicManager::viewArgumentIndex('sort')])) {
       $sortBy = $this->view->args[ViewsBasicManager::viewArgumentIndex('sort')];
-      if (str_contains($sortBy, ':')) {
+      // The value becomes an ORDER BY expression below, and on the views/ajax
+      // path it comes from the browser. Anything that is not a sort a listing
+      // offers is ignored, leaving the view's default order.
+      if (ViewsBasicManager::isAllowedSort($sortBy)) {
         $sortQueryOptions = explode(":", $sortBy);
         if (str_starts_with($sortQueryOptions[0], 'field')) {
           $lookupTable = $query->addTable('node__' . $sortQueryOptions[0]);
