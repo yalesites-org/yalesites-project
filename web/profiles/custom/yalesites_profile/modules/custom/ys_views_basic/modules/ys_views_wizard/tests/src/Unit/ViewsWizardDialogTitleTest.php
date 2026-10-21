@@ -40,6 +40,8 @@ class ViewsWizardDialogTitleTest extends UnitTestCase {
   protected function dialogTitle(array $configure_form): string {
     $options = $this->createMock(ViewsWizardOptions::class);
     $options->method('resolvePluginId')->willReturn('inline_block:post_card');
+    $options->method('getContentTypeOptions')->willReturn(['post' => 'Posts']);
+    $options->method('getViewModeOptions')->willReturn(['card' => 'Card Grid']);
 
     $form_builder = $this->createMock(FormBuilderInterface::class);
     $form_builder->method('getForm')->willReturn($configure_form);

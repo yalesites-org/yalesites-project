@@ -6,6 +6,7 @@ use Drupal\Core\Ajax\AjaxResponse;
 use Drupal\Core\Ajax\InvokeCommand;
 use Drupal\Core\Ajax\OpenDialogCommand;
 use Drupal\Core\Ajax\ReplaceCommand;
+use Drupal\Component\Utility\Html;
 use Drupal\Core\Form\FormBase;
 use Drupal\layout_builder\Form\AddBlockForm;
 use Drupal\Core\Form\FormStateInterface;
@@ -276,10 +277,13 @@ class ViewsWizardForm extends FormBase {
     $section_storage = $form_state->get('section_storage');
     $delta = $form_state->get('delta');
     $region = $form_state->get('region');
-    $plugin_id = $this->options->resolvePluginId(
-      $form_state->getValue('entity_types'),
-      $form_state->getValue('view_mode')
-    );
+    // #ajax callbacks run even when validation failed. Show the form again
+    // with its messages rather than handing a pair ::validateForm() refused
+    // to the add-block route, which throws on a missing plugin ID.
+    $plugin_id = $form_state->getErrors() ? NULL : $this->resolveSubmittedPluginId($form_state);
+    if ($plugin_id === NULL) {
+      return $this->rebuiltFormResponse($form);
+    }
 
     // No seeding, and no ?ys_wizard_seed query parameter. On the views rework
     // branch every (content type, display mode) pair has its own bundle, and
@@ -322,20 +326,76 @@ class ViewsWizardForm extends FormBase {
   }
 
   /**
+   * Returns a response that re-renders the wizard with its status messages.
+   *
+   * @param array $form
+   *   The form array.
+   *
+   * @return \Drupal\Core\Ajax\AjaxResponse
+   *   The AJAX response.
+   */
+  protected function rebuiltFormResponse(array $form): AjaxResponse {
+    // The form's id attribute gets a fresh suffix on every AJAX build, so
+    // target the stable data-drupal-selector instead.
+    $selector = $form['#attributes']['data-drupal-selector'] ?? Html::getId($this->getFormId());
+    $form['status_messages'] = [
+      '#type' => 'status_messages',
+      '#weight' => -100,
+    ];
+    $response = new AjaxResponse();
+    $response->addCommand(new ReplaceCommand('[data-drupal-selector="' . $selector . '"]', $form));
+    return $response;
+  }
+
+  /**
    * {@inheritdoc}
    *
    * The display mode radios carry #validated so the AJAX-swapped options are
    * accepted, which means core does not check the submitted value against the
-   * option list. Check that the pair resolves to a real listing bundle here.
+   * option list. Check the pair against the options this region offers here,
+   * so a stale or crafted pair (portrait_grid with post, say) can neither
+   * reach ::openConfigureForm() nor bypass the per-region placement
+   * restrictions those options apply.
    */
   public function validateForm(array &$form, FormStateInterface $form_state) {
-    $resolved = $this->options->resolvePluginId(
-      $form_state->getValue('entity_types'),
-      $form_state->getValue('view_mode')
-    );
-    if ($resolved === NULL) {
+    // The content type radios submit on change, while the display mode
+    // radios still hold the previous type's choice. Only Continue commits
+    // the pair.
+    if (($form_state->getTriggeringElement()['#name'] ?? NULL) === 'entity_types') {
+      return;
+    }
+    if ($this->resolveSubmittedPluginId($form_state) === NULL) {
       $form_state->setErrorByName('view_mode', $this->t('That combination has no Views block.'));
     }
+  }
+
+  /**
+   * Resolves the submitted pair to a block plugin ID this region can place.
+   *
+   * @param \Drupal\Core\Form\FormStateInterface $form_state
+   *   The form state.
+   *
+   * @return string|null
+   *   The block plugin ID, or NULL when either answer is missing, is not an
+   *   option this region offers, or the pair has no listing bundle.
+   */
+  protected function resolveSubmittedPluginId(FormStateInterface $form_state): ?string {
+    $content_type = $form_state->getValue('entity_types');
+    $view_mode = $form_state->getValue('view_mode');
+    if (!is_string($content_type) || !is_string($view_mode)) {
+      return NULL;
+    }
+    $section_storage = $form_state->get('section_storage');
+    if (!$section_storage instanceof SectionStorageInterface) {
+      return NULL;
+    }
+    $delta = (int) $form_state->get('delta');
+    $region = (string) $form_state->get('region');
+    if (!isset($this->options->getContentTypeOptions($section_storage, $delta, $region)[$content_type])
+      || !isset($this->options->getViewModeOptions($content_type, $section_storage, $delta, $region)[$view_mode])) {
+      return NULL;
+    }
+    return $this->options->resolvePluginId($content_type, $view_mode);
   }
 
   /**
@@ -353,10 +413,7 @@ class ViewsWizardForm extends FormBase {
         'section_storage' => $form_state->get('section_storage')->getStorageId(),
         'delta' => $form_state->get('delta'),
         'region' => $form_state->get('region'),
-        'plugin_id' => $this->options->resolvePluginId(
-          $form_state->getValue('entity_types'),
-          $form_state->getValue('view_mode')
-        ),
+        'plugin_id' => $this->resolveSubmittedPluginId($form_state),
       ]);
       return;
     }

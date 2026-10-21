@@ -8,6 +8,7 @@ use Drupal\Core\Routing\RouteMatchInterface;
 use Drupal\Core\StringTranslation\TranslatableMarkup;
 use Drupal\views\Attribute\ViewsStyle;
 use Drupal\views\Plugin\views\style\StylePluginBase;
+use Drupal\ys_views_basic\ListingRowDisplay;
 use Drupal\ys_views_basic\ViewsBasicManager;
 use Symfony\Component\DependencyInjection\ContainerInterface;
 
@@ -115,8 +116,23 @@ class ViewsBasicDynamicStyle extends StylePluginBase implements ContainerFactory
   public function render() {
     $rows = [];
 
+    // The listing's display flags travel with each row's render array and
+    // are only on the node while that row renders; see ListingRowDisplay.
+    $is_scaffold = in_array($this->view->id(), ViewsBasicManager::SCAFFOLD_VIEWS, TRUE);
+    if ($is_scaffold) {
+      $flags = ListingRowDisplay::flagsFromArgs($this->view->id(), $this->view->args);
+      $pin_label = ListingRowDisplay::pinLabelFromArgs($this->view->args);
+    }
+
     foreach ($this->view->result as $row) {
       $rendered_row = $this->view->rowPlugin->render($row);
+      if ($is_scaffold && is_array($rendered_row)) {
+        $rendered_row = ListingRowDisplay::attach($rendered_row, $flags + [
+          // Only pinned (sticky) rows show the listing's pin label. NULL
+          // keeps any other row's node without one while it renders.
+          'pin_label' => isset($row->_entity) && ListingRowDisplay::isSticky($row->_entity) && $pin_label !== '' ? $pin_label : NULL,
+        ]);
+      }
       // If row has node__field_event_date_delta,
       // inject it into the render array.
       if (isset($row->node__field_event_date_delta)) {
@@ -182,16 +198,7 @@ class ViewsBasicDynamicStyle extends StylePluginBase implements ContainerFactory
       return ViewsBasicManager::CARD_SIZE_DEFAULT;
     }
 
-    $field_display_options = json_decode($this->view->args[ViewsBasicManager::viewArgumentIndex('field_display_options')] ?? '', TRUE);
-    // Anything that is not the object setupView() writes — a stale argument
-    // set, or a JSON scalar — falls back. Tested with is_array() rather than
-    // a truthiness check, which would leave a decoded scalar to be indexed
-    // below and emit an "array offset on value of type int" warning.
-    if (!is_array($field_display_options)) {
-      $field_display_options = [];
-    }
-
-    return ViewsBasicManager::normalizeCardSize($field_display_options['card_size'] ?? NULL);
+    return ViewsBasicManager::normalizeCardSize(ViewsBasicManager::fieldDisplayOptionsFromArgs($this->view->args)['card_size']);
   }
 
 }

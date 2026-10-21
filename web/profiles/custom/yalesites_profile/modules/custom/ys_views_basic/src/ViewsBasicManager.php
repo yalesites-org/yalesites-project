@@ -11,6 +11,7 @@ use Drupal\Core\Routing\RouteMatchInterface;
 use Drupal\layout_builder\OverridesSectionStorageInterface;
 use Drupal\node\NodeInterface;
 use Drupal\views\ViewEntityInterface;
+use Drupal\views\ViewExecutable;
 use Drupal\views\ViewExecutableFactory;
 use Drupal\ys_views_basic\Service\ExposedTaxonomyFilterOptions;
 use Symfony\Component\DependencyInjection\ContainerInterface;
@@ -224,9 +225,9 @@ class ViewsBasicManager extends ControllerBase implements ContainerInjectionInte
   /**
    * The resource-only field display options (#1723).
    *
-   * Stored under resource_field_options and stamped onto each result node by
-   * hook_views_pre_render() under these same names, which is what atomic's
-   * node--resource--*.html.twig templates read.
+   * Stored under resource_field_options and set on each result node while
+   * its row renders (ListingRowDisplay) under these same names, which is what
+   * atomic's node--resource--*.html.twig templates read.
    */
   const RESOURCE_FIELD_OPTIONS = [
     'show_teaser_text',
@@ -281,7 +282,7 @@ class ViewsBasicManager extends ControllerBase implements ContainerInjectionInte
    *
    * The scaffold views declare only two real contextual filters (type, tid),
    * so everything past those is a side channel read back positionally by
-   * hook_views_pre_render(), hook_views_pre_view() and the style plugin.
+   * ListingRowDisplay, hook_views_pre_view() and the style plugin.
    * ::setupView() builds its argument array FROM this list, so what is written
    * cannot drift from what those three read: they resolve every index through
    * ::viewArgumentIndex().
@@ -359,9 +360,147 @@ class ViewsBasicManager extends ControllerBase implements ContainerInjectionInte
    *   The listing key, or NULL when the arguments carry none.
    */
   public static function listingKeyFromArgs(array $args): ?string {
-    $options = json_decode($args[self::viewArgumentIndex('field_display_options')] ?? '', TRUE);
-    $key = is_array($options) ? ($options['listing_key'] ?? NULL) : NULL;
+    $key = self::fieldDisplayOptionsFromArgs($args)['listing_key'];
     return is_string($key) ? $key : NULL;
+  }
+
+  /**
+   * What the field_display_options argument holds when it cannot be read.
+   *
+   * Every flag is off. ::setupView() always writes the full set, so these
+   * only apply to an argument list it did not write: a stale cached one, or
+   * a crafted views/ajax request.
+   */
+  const FIELD_DISPLAY_OPTION_DEFAULTS = [
+    'show_categories' => 0,
+    'show_tags' => 0,
+    'show_thumbnail' => 0,
+    'block_has_heading' => 0,
+    'block_uuid' => NULL,
+    'host_nid' => NULL,
+    'card_size' => self::CARD_SIZE_DEFAULT,
+    'listing_key' => NULL,
+  ];
+
+  /**
+   * Decodes the field_display_options argument of a scaffold view.
+   *
+   * The one place that argument is read back. It may come from the browser
+   * (views/ajax), so anything that is not a JSON object falls back to
+   * ::FIELD_DISPLAY_OPTION_DEFAULTS, and missing keys are filled from it.
+   * Values are not type checked here; each reader checks the ones it uses.
+   *
+   * @param array $args
+   *   The view arguments.
+   *
+   * @return array
+   *   The options, with every key of ::FIELD_DISPLAY_OPTION_DEFAULTS set.
+   */
+  public static function fieldDisplayOptionsFromArgs(array $args): array {
+    return self::displayOptionsFromArgs($args, 'field_display_options', self::FIELD_DISPLAY_OPTION_DEFAULTS);
+  }
+
+  /**
+   * Decodes one JSON-encoded scaffold view argument, filling in defaults.
+   *
+   * @param array $args
+   *   The view arguments.
+   * @param string $name
+   *   An argument name from ::VIEW_ARGUMENT_ORDER.
+   * @param array $defaults
+   *   The value of every expected key when the argument lacks it.
+   *
+   * @return array
+   *   The decoded argument merged over $defaults, or $defaults alone when the
+   *   argument is missing or is not a JSON object.
+   */
+  public static function displayOptionsFromArgs(array $args, string $name, array $defaults): array {
+    $value = $args[self::viewArgumentIndex($name)] ?? NULL;
+    $decoded = is_string($value) ? json_decode($value, TRUE) : NULL;
+    return is_array($decoded) ? $decoded + $defaults : $defaults;
+  }
+
+  /**
+   * Listing params that must be a scalar when present (see ::decodeParams()).
+   */
+  const SCALAR_PARAMS = [
+    'sort_by',
+    'view_mode',
+    'display',
+    'limit',
+    'offset',
+    'card_size',
+    'pin_label',
+    'category_filter_label',
+    'operator',
+    'include_operator',
+    'exclude_operator',
+  ];
+
+  /**
+   * Listing params that must be an array when present (see ::decodeParams()).
+   *
+   * Only the groups something writes into: the other option groups are read
+   * through empty() or behind an is_array() check, which a scalar survives.
+   */
+  const ARRAY_PARAMS = [
+    'exposed_filter_options',
+  ];
+
+  /**
+   * Decodes stored listing params, or returns NULL when they are unusable.
+   *
+   * The params reach ::configureView() from block content and, on the
+   * views/ajax path, from the browser. This checks the shape ::configureView()
+   * relies on without a guard, so a malformed value is refused instead of
+   * ending in a TypeError.
+   *
+   * @param mixed $params
+   *   The JSON-encoded params.
+   *
+   * @return array|null
+   *   The decoded params, or NULL when they cannot configure a listing.
+   */
+  public static function decodeParams(mixed $params): ?array {
+    $decoded = is_string($params) ? json_decode($params, TRUE) : NULL;
+    if (!is_array($decoded) || !is_array($decoded['filters'] ?? NULL)) {
+      return NULL;
+    }
+    $types = $decoded['filters']['types'] ?? NULL;
+    if (!is_array($types) || $types === [] || array_filter($types, 'is_string') !== $types) {
+      return NULL;
+    }
+    // Values copied straight into a view argument, a sort or a label. An
+    // array here reaches array_key_exists() or string functions as a
+    // TypeError.
+    foreach (self::SCALAR_PARAMS as $key) {
+      if (isset($decoded[$key]) && !is_scalar($decoded[$key])) {
+        return NULL;
+      }
+    }
+    if (isset($decoded['filters']['event_time_period']) && !is_scalar($decoded['filters']['event_time_period'])) {
+      return NULL;
+    }
+    // ::normalizeResourceParams() unsets a key inside this group, which is a
+    // fatal error on a string.
+    foreach (self::ARRAY_PARAMS as $key) {
+      if (isset($decoded[$key]) && !is_array($decoded[$key])) {
+        return NULL;
+      }
+    }
+    foreach (['terms_include', 'terms_exclude'] as $key) {
+      $terms = $decoded['filters'][$key] ?? [];
+      if (!is_array($terms)) {
+        return NULL;
+      }
+      // ::getTermId() takes a term id or a {target_id: id} item.
+      foreach ($terms as $term) {
+        if (!is_scalar($term) && !(is_array($term) && is_scalar($term['target_id'] ?? NULL))) {
+          return NULL;
+        }
+      }
+    }
+    return $decoded;
   }
 
   /**
@@ -630,12 +769,89 @@ class ViewsBasicManager extends ControllerBase implements ContainerInjectionInte
   }
 
   /**
-   * Sets up the view with the parameters.
+   * Configures, runs and renders the view with the parameters.
+   *
+   * ::configureView() and then the execute and render step. On return $view
+   * holds the render array, not the executable. Invalid params leave $view
+   * untouched.
+   *
+   * @param \Drupal\views\ViewExecutable $view
+   *   The view object; replaced by its render array.
+   * @param string $params
+   *   The JSON encoded string of parameters.
+   * @param string|null $blockUuid
+   *   See ::configureView().
+   * @param bool $blockHasHeading
+   *   See ::configureView().
+   * @param int|null $hostNid
+   *   See ::configureView().
+   * @param string|null $listingKey
+   *   See ::configureView().
+   *
+   * @return void
+   *   No return value.
+   */
+  public function setupView(&$view, $params, $blockUuid = NULL, $blockHasHeading = FALSE, ?int $hostNid = NULL, ?string $listingKey = NULL) {
+    $display = $this->configureView($view, $params, $blockUuid, $blockHasHeading, $hostNid, $listingKey);
+    if ($display === NULL) {
+      return;
+    }
+
+    // ys_views_basic_views_post_execute() drops the pager of a listing that
+    // does not page, on this path and on the views/ajax one alike.
+    $view->execute();
+
+    $view = $view->preview();
+    // Add cache keys for each display option.
+    // This ensures that if the options for showing categories, tags,
+    // or thumbnails change, the cache will be invalidated,
+    // and the view will be re-rendered with the new options.
+    if ($view['#rows'] && $view['#rows']['#rows']) {
+      foreach ($view['#rows']['#rows'] as &$resultRow) {
+        $resultRow['#cache']['keys'][] = $display['field']['show_categories'];
+        $resultRow['#cache']['keys'][] = $display['field']['show_tags'];
+        $resultRow['#cache']['keys'][] = $display['field']['show_thumbnail'];
+        $resultRow['#cache']['keys'][] = $display['field']['block_has_heading'];
+        $resultRow['#cache']['keys'][] = $display['event']['hide_add_to_calendar'];
+        $resultRow['#cache']['keys'][] = $display['post']['show_eyebrow'];
+        // The profile options are row-scoped, so they belong here. The
+        // card-size dial deliberately is not: it only affects the
+        // collection wrapper the style plugin builds, so keying it per row
+        // would split identical row markup into a 3-up and a 4-up copy and
+        // cover nothing. The wrapper needs no key of its own either: every
+        // result node build gets max-age 0 from ys_views_basic_node_view(),
+        // and the post/event/page/profile scaffold views set `cache: type:
+        // none`. views_basic_scaffold_resources keeps content_resources'
+        // `cache: type: tag`, whose cached output is keyed on the view
+        // arguments, and the card size rides in field_display_options.
+        foreach ($display['profile'] as $profile_option) {
+          $resultRow['#cache']['keys'][] = $profile_option;
+        }
+        foreach ($display['resource'] as $resource_option) {
+          $resultRow['#cache']['keys'][] = $resource_option;
+        }
+        $resultRow['#cache']['keys'][] = $display['pin']['pinned_to_top'];
+        $resultRow['#cache']['keys'][] = $display['pin']['pin_label'];
+
+        $resultRow['#cache']['contexts'][] = 'url.query_args:page';
+      }
+    }
+  }
+
+  /**
+   * Configures the view from the parameters, without running it.
+   *
+   * Sets the display, its filters, sorts and pager, and the view arguments
+   * every views plugin and hook in this module reads back. Nothing here
+   * executes or renders the view, so hook_views_pre_view() can call it on the
+   * views/ajax path and leave the run to the request that is already
+   * rendering the view.
    *
    * @param \Drupal\views\ViewExecutable $view
    *   The view object.
-   * @param string $params
-   *   The JSON encoded string of parameters.
+   * @param mixed $params
+   *   The JSON encoded string of parameters. Anything ::decodeParams()
+   *   refuses leaves the view untouched.
    * @param string|null $blockUuid
    *   The host block content UUID, used to derive a per-instance pager element
    *   so multiple paginated listings on one page paginate independently.
@@ -644,8 +860,8 @@ class ViewsBasicManager extends ControllerBase implements ContainerInjectionInte
    *   empty). When TRUE the component-wrapper renders an H2 above the listing,
    *   so each result card nests one level deeper (H3); when FALSE the cards are
    *   the first heading under the page H1 and render at H2. Carried into the
-   *   field-display options so hook_views_pre_render() can stamp the level on
-   *   each result entity (mirrors how show_categories flows). Defaults to FALSE
+   *   field-display options so ListingRowDisplay can hand the level to each
+   *   result row (mirrors how show_categories flows). Defaults to FALSE
    *   so the AJAX/preview paths, which have no block entity, fall back to H2.
    * @param int|null $hostNid
    *   The node the listing is placed on, for requests whose route has no node
@@ -657,12 +873,17 @@ class ViewsBasicManager extends ControllerBase implements ContainerInjectionInte
    *   the key from the incoming view arguments. Ignored when $blockUuid is
    *   given.
    *
-   * @return void
-   *   No return value.
+   * @return array|null
+   *   The display options written into the view arguments, keyed 'field',
+   *   'event', 'post', 'profile', 'resource' and 'pin'; NULL when the params
+   *   are invalid and the view was left unconfigured.
    */
-  public function setupView(&$view, $params, $blockUuid = NULL, $blockHasHeading = FALSE, ?int $hostNid = NULL, ?string $listingKey = NULL) {
+  public function configureView(ViewExecutable $view, mixed $params, ?string $blockUuid = NULL, bool $blockHasHeading = FALSE, ?int $hostNid = NULL, ?string $listingKey = NULL): ?array {
+    $paramsDecoded = self::decodeParams($params);
+    if ($paramsDecoded === NULL) {
+      return NULL;
+    }
     $listingKey = $blockUuid ? self::listingKey($blockUuid) : $listingKey;
-    $paramsDecoded = json_decode($params, TRUE);
     $routeNode = $this->routeMatch->getParameter('node');
     // Layout Builder's own AJAX routes (add, update, move block) carry the
     // page only through the section storage.
@@ -902,7 +1123,7 @@ class ViewsBasicManager extends ControllerBase implements ContainerInjectionInte
       'show_tags' => (int) !empty($paramsDecoded['field_options']['show_tags']),
       'show_thumbnail' => (int) $no_field_display_options_saved || !empty($paramsDecoded['field_options']['show_thumbnail']),
       // Whether the host block renders its own heading; drives the per-result
-      // card heading level in hook_views_pre_render() (H3 when nested under the
+      // card heading level in ListingRowDisplay (H3 when nested under the
       // block heading, H2 when the cards are the first heading on the page).
       'block_has_heading' => (int) $blockHasHeading,
       // The host block, carried for the AJAX re-render, which has no block
@@ -1018,48 +1239,29 @@ class ViewsBasicManager extends ControllerBase implements ContainerInjectionInte
       }
     }
 
-    $view->execute();
+    return [
+      'field' => $field_display_options,
+      'event' => $event_field_display_options,
+      'post' => $post_field_display_options,
+      'profile' => $profile_field_display_options,
+      'resource' => $resource_field_display_options,
+      'pin' => $pin_options,
+    ];
+  }
 
-    // Unset the pager. Needs to be done after view->execute();
-    if ($paramsDecoded['display'] != "pager") {
-      unset($view->pager);
-    }
-
-    $view = $view->preview();
-    // Add cache keys for each display option.
-    // This ensures that if the options for showing categories, tags,
-    // or thumbnails change, the cache will be invalidated,
-    // and the view will be re-rendered with the new options.
-    if ($view['#rows'] && $view['#rows']['#rows']) {
-      foreach ($view['#rows']['#rows'] as &$resultRow) {
-        $resultRow['#cache']['keys'][] = $field_display_options['show_categories'];
-        $resultRow['#cache']['keys'][] = $field_display_options['show_tags'];
-        $resultRow['#cache']['keys'][] = $field_display_options['show_thumbnail'];
-        $resultRow['#cache']['keys'][] = $field_display_options['block_has_heading'];
-        $resultRow['#cache']['keys'][] = $event_field_display_options['hide_add_to_calendar'];
-        $resultRow['#cache']['keys'][] = $post_field_display_options['show_eyebrow'];
-        // The profile options are row-scoped, so they belong here. The
-        // card-size dial deliberately is not: it only affects the
-        // collection wrapper the style plugin builds, so keying it per row
-        // would split identical row markup into a 3-up and a 4-up copy and
-        // cover nothing. The wrapper needs no key of its own either: every
-        // result node build gets max-age 0 from ys_views_basic_node_view(),
-        // and the post/event/page/profile scaffold views set `cache: type:
-        // none`. views_basic_scaffold_resources keeps content_resources'
-        // `cache: type: tag`, whose cached output is keyed on the view
-        // arguments, and the card size rides in field_display_options.
-        foreach ($profile_field_display_options as $profile_option) {
-          $resultRow['#cache']['keys'][] = $profile_option;
-        }
-        foreach ($resource_field_display_options as $resource_option) {
-          $resultRow['#cache']['keys'][] = $resource_option;
-        }
-        $resultRow['#cache']['keys'][] = $pin_options['pinned_to_top'];
-        $resultRow['#cache']['keys'][] = $pin_options['pin_label'];
-
-        $resultRow['#cache']['contexts'][] = 'url.query_args:page';
-      }
-    }
+  /**
+   * Returns whether stored params make a listing that pages.
+   *
+   * @param array $args
+   *   The view arguments ::configureView() wrote.
+   *
+   * @return bool|null
+   *   TRUE for a paged listing, FALSE for one that is not, NULL when the
+   *   arguments carry no usable params.
+   */
+  public static function usesPagerFromArgs(array $args): ?bool {
+    $params = self::decodeParams($args[self::viewArgumentIndex('original_settings')] ?? NULL);
+    return $params === NULL ? NULL : ($params['display'] ?? NULL) === 'pager';
   }
 
   /**
@@ -1080,12 +1282,11 @@ class ViewsBasicManager extends ControllerBase implements ContainerInjectionInte
    *   (positive int|null).
    */
   public static function incomingDisplayContext(array $args): array {
-    $index = self::viewArgumentIndex('field_display_options');
-    $options = isset($args[$index]) && is_string($args[$index]) ? json_decode($args[$index], TRUE) : NULL;
-    $uuid = is_array($options) ? ($options['block_uuid'] ?? NULL) : NULL;
-    $nid = is_array($options) ? ($options['host_nid'] ?? NULL) : NULL;
+    $options = self::fieldDisplayOptionsFromArgs($args);
+    $uuid = $options['block_uuid'];
+    $nid = $options['host_nid'];
     return [
-      'block_has_heading' => is_array($options) && !empty($options['block_has_heading']),
+      'block_has_heading' => !empty($options['block_has_heading']),
       'block_uuid' => is_string($uuid) && $uuid !== '' ? $uuid : NULL,
       'host_nid' => is_int($nid) && $nid > 0 ? $nid : NULL,
     ];
@@ -1242,14 +1443,18 @@ class ViewsBasicManager extends ControllerBase implements ContainerInjectionInte
    *
    * @return array|int|null
    *   An array of a rendered view or a count of the number of results based
-   *   on the parameters specified, or NULL when the scaffold view is missing.
+   *   on the parameters specified, or NULL when the scaffold view is missing
+   *   or the params are invalid.
    */
   public function getView($type, $params, $blockUuid = NULL, $blockHasHeading = FALSE) {
     // Set up the view and initial decoded parameters. Each call gets its own
     // isolated, cloned view (see initView), so the previous static recursion
     // guards are no longer needed and nested views-basic placements now render
     // instead of being silently skipped (#906 / #1306).
-    $paramsDecoded = json_decode($params, TRUE);
+    $paramsDecoded = self::decodeParams($params);
+    if ($paramsDecoded === NULL) {
+      return NULL;
+    }
     $view = $this->initView($paramsDecoded['filters']['types']);
     if ($view === NULL) {
       return NULL;

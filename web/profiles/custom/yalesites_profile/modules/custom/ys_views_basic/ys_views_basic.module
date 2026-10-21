@@ -256,145 +256,88 @@ function ys_views_basic_views_pre_build($view) {
 /**
  * Implements hook_views_post_execute().
  *
- * Gives each listing its own copy of every result node. Listings on one page
- * share node objects through the entity static cache, and
- * ys_views_basic_views_pre_render() stamps per-block flags onto them that the
- * node templates only read once the whole page renders. Without a copy, the
- * last listing's flags apply to every listing showing the same nodes. This
- * runs before the row plugin builds its render arrays, so they capture the
- * copies.
+ * Drops the pager of a listing that does not page, so none renders. Done here
+ * rather than where the listing is configured because it has to follow
+ * ViewExecutable::execute(), which builds the pager, on both paths: the block
+ * render (ViewsBasicManager::setupView()) and the views/ajax re-render, which
+ * only configures the view in ys_views_basic_views_pre_view() and lets the
+ * controller run it.
+ *
+ * Per-listing display flags for the result rows are not set here or in
+ * hook_views_pre_render(): see ViewsBasicDynamicStyle::render() and
+ * \Drupal\ys_views_basic\ListingRowDisplay.
  */
 function ys_views_basic_views_post_execute(ViewExecutable $view): void {
   if (!in_array($view->id(), ViewsBasicManager::SCAFFOLD_VIEWS, TRUE)) {
     return;
   }
-  foreach ($view->result as $row) {
-    if (isset($row->_entity)) {
-      $row->_entity = clone $row->_entity;
-    }
-  }
-}
-
-/**
- * Implements hook_views_pre_render().
- */
-function ys_views_basic_views_pre_render(ViewExecutable $view): void {
-  $view_id = $view->id();
-  if (in_array($view_id, ViewsBasicManager::SCAFFOLD_VIEWS, TRUE)) {
-    $pin_options = json_decode($view->args[ViewsBasicManager::viewArgumentIndex('pin_settings')]);
-    $pin_label = '';
-    if ($pin_options->pinned_to_top) {
-      $pin_label = $pin_options->pin_label;
-    }
-    $field_display_options = json_decode($view->args[ViewsBasicManager::viewArgumentIndex('field_display_options')]);
-    $event_field_display_options = json_decode($view->args[ViewsBasicManager::viewArgumentIndex('event_field_display_options')]);
-    $post_field_display_options = json_decode($view->args[ViewsBasicManager::viewArgumentIndex('post_field_display_options')]);
-    $profile_field_display_options = json_decode($view->args[ViewsBasicManager::viewArgumentIndex('profile_field_display_options')] ?? '');
-    // Anything that is not the object setupView() writes — an older cached
-    // argument set from before this argument existed, or a JSON scalar — falls
-    // back to an all-off option set. Tested with is_object() rather than a
-    // truthiness check, which would pass a decoded scalar straight through and
-    // fatal on the property reads below.
-    if (!is_object($profile_field_display_options)) {
-      $profile_field_display_options = (object) [
-        'show_department' => 0,
-        'show_email' => 0,
-        'show_phone' => 0,
-        'show_pronouns' => 0,
-      ];
-    }
-    // Resource details (#1723), with the same fallback.
-    $resource_field_display_options = json_decode($view->args[ViewsBasicManager::viewArgumentIndex('resource_field_display_options')] ?? '');
-    if (!is_object($resource_field_display_options)) {
-      $resource_field_display_options = (object) array_fill_keys(ViewsBasicManager::RESOURCE_FIELD_OPTIONS, 0);
-    }
-    // Loop through each row in the view's results and update the node's
-    // properties based on show_categories, show_tags and show_thumbnail
-    // configuration.
-    foreach ($view->result as $row) {
-      $row->_entity->show_categories = $field_display_options->show_categories;
-      $row->_entity->show_tags = $field_display_options->show_tags;
-      $row->_entity->show_thumbnail = $field_display_options->show_thumbnail;
-      $row->_entity->hide_add_to_calendar = $event_field_display_options->hide_add_to_calendar;
-      $row->_entity->show_eyebrow = $post_field_display_options->show_eyebrow;
-      // Profile data pass-throughs (#1648).
-      $row->_entity->show_department = $profile_field_display_options->show_department;
-      $row->_entity->show_email = $profile_field_display_options->show_email;
-      $row->_entity->show_phone = $profile_field_display_options->show_phone;
-      $row->_entity->show_pronouns = $profile_field_display_options->show_pronouns;
-      // Atomic's resource templates read the category flag as show_category
-      // and each resource detail under its own name (#1723).
-      if ($view_id === 'views_basic_scaffold_resources') {
-        // @todo Rename with ys_views_content_resources' removal in the follow-up
-        //   to yalesites-org/YaleSites-Internal#1723, once Atomic reads
-        //   show_categories.
-        $row->_entity->show_category = $field_display_options->show_categories;
-        foreach (ViewsBasicManager::RESOURCE_FIELD_OPTIONS as $resource_option) {
-          $row->_entity->{$resource_option} = $resource_field_display_options->{$resource_option};
-        }
-      }
-      // Context-derived heading level for each result card: H3 when the block
-      // renders its own heading (the cards nest under it), H2 when the cards
-      // are the first heading on the page. The listing node templates read
-      // node.card_heading_level (falling back to their own default for non
-      // listing renders, which never set this property).
-      $row->_entity->card_heading_level = !empty($field_display_options->block_has_heading) ? '3' : '2';
-
-      $sticky = (bool) $row->_entity->get('sticky')->value;
-      if ($sticky) {
-        $row->_entity->pin_label = $pin_label;
-      }
-    }
+  if (ViewsBasicManager::usesPagerFromArgs($view->args) === FALSE) {
+    unset($view->pager);
   }
 }
 
 /**
  * Implements hook_views_pre_view().
+ *
+ * On the views/ajax path (exposed filters, AJAX pager) the browser sends the
+ * view arguments back and core rebuilds the view from them. Configure it from
+ * those arguments here; the controller then runs and renders it once.
+ *
+ * The block render configures and executes the view itself in
+ * ViewsBasicManager::setupView() before ViewExecutable::preview() fires this
+ * hook, so an executed view is left alone.
  */
 function ys_views_basic_views_pre_view(ViewExecutable $view, $display_id, array &$args) {
-  if (!in_array($view->id(), ViewsBasicManager::SCAFFOLD_VIEWS, TRUE)) {
+  if (!in_array($view->id(), ViewsBasicManager::SCAFFOLD_VIEWS, TRUE) || !empty($view->executed)) {
     return;
   }
 
-  // Detect if this is an AJAX request.
-  $is_ajax = \Drupal::request()->isXmlHttpRequest();
-  if (!$is_ajax) {
-    return;
-  }
-
-  // setupView() calls ViewExecutable::preview(), which re-fires
-  // hook_views_pre_view() for this same view object. Without a guard the hook
-  // re-enters setupView() and recurses until PHP exhausts the stack — the
-  // Layout Builder "Add Section" AJAX save hangs as a result. Key the guard on
-  // the view instance (preview() re-fires the hook with the same object) so a
-  // re-entrant call bails while other listing blocks in the same request — each
-  // a distinct view object — still run.
-  static $processing = [];
-  $object_id = spl_object_id($view);
-  if (!empty($processing[$object_id])) {
-    return;
-  }
-  $processing[$object_id] = TRUE;
-  try {
-    $viewsBasicManager = \Drupal::service('ys_views_basic.views_basic_manager');
-    // setupView() rebuilds the field-display options from the stored params,
-    // which do not carry the host block's facts (heading presence, UUID, host
-    // node): those are resolved from the block entity and the page route by
-    // the full-page render. Recover them from the incoming view arguments so
-    // exposed-filter and pager AJAX re-renders keep the same result-card
-    // heading level, read ?page= at the same pager element, and leave out the
-    // same host page as the initial render (#1921).
+  // The stored params ride the arguments by name, never by position from the
+  // end: original_settings is not the last argument, and taking the last one
+  // handed the setup the wrong JSON (#1648). The arguments come from the
+  // browser, so anything ViewsBasicManager::decodeParams() refuses, including
+  // a short argument list, ends the view here instead of reaching the
+  // plugins, which read these arguments by position.
+  $params = $args[ViewsBasicManager::viewArgumentIndex('original_settings')] ?? NULL;
+  $display = NULL;
+  if (ViewsBasicManager::decodeParams($params) !== NULL) {
+    // The stored params do not carry the host block's facts (heading
+    // presence, UUID, host node): the full-page render resolves those from
+    // the block entity and the page route. Recover them from the incoming
+    // arguments so the re-render keeps the same result-card heading level,
+    // reads ?page= at the same pager element, and leaves out the same host
+    // page as the initial render (#1921).
     $context = ViewsBasicManager::incomingDisplayContext($args);
-    // Resolved by name, never with end($args): original_settings is no longer
-    // the last argument, and taking the last one silently handed setupView()
-    // the wrong JSON, leaving every AJAX re-render without its stored display,
-    // sort, view mode and filters (#1648).
-    $settings_arg = ViewsBasicManager::viewArgumentIndex('original_settings');
-    $viewsBasicManager->setupView($view, $args[$settings_arg] ?? end($args), $context['block_uuid'], $context['block_has_heading'], $context['host_nid'], ViewsBasicManager::listingKeyFromArgs($args));
+    $display = \Drupal::service('ys_views_basic.views_basic_manager')->configureView(
+      $view,
+      $params,
+      $context['block_uuid'],
+      $context['block_has_heading'],
+      $context['host_nid'],
+      ViewsBasicManager::listingKeyFromArgs($args),
+    );
   }
-  finally {
-    unset($processing[$object_id]);
+  if ($display === NULL) {
+    _ys_views_basic_fail_view($view);
   }
+}
+
+/**
+ * Stops a view from building, running or rendering.
+ *
+ * ViewExecutable::build() resets build_info, so a failure flagged before the
+ * build would be lost. Marking the view built and executed as well makes
+ * ViewExecutable::render() skip straight to the failure check and return
+ * nothing.
+ *
+ * @param \Drupal\views\ViewExecutable $view
+ *   The view.
+ */
+function _ys_views_basic_fail_view(ViewExecutable $view): void {
+  $view->build_info['fail'] = TRUE;
+  $view->built = TRUE;
+  $view->executed = TRUE;
+  $view->result = [];
 }
 
 /**
