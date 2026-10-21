@@ -23,3 +23,8 @@ services:
     class: Drupal\ys_views_basic\EventSubscriber\PagerScrollSubscriber
     tags:
       - { name: event_subscriber }
+
+  # Shared helpers for the listing block deploy hooks and post-update.
+  ys_views_basic.listing_migrator:
+    class: Drupal\ys_views_basic\Service\ListingMigrator
+    arguments: ['@database', '@entity_type.manager', '@entity_field.manager', '@keyvalue.expirable', '@logger.channel.ys_views_basic']
