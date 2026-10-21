@@ -768,6 +768,7 @@ class ViewsBasicManagerTest extends UnitTestCase {
       ->with('event_category', 0, 1)
       ->willReturn([$this->createTreeItem(4, 'Lectures')]);
 
+    $this->manager->setStringTranslation($this->getStringTranslationStub());
     $parents = $this->manager->getTaxonomyParents('event_category');
 
     $this->assertSame(['' => '-- All Items --', 4 => 'Lectures'], $parents);

@@ -242,21 +242,13 @@ function ys_layouts_form_alter(&$form, $form_state, $form_id) {
       // (ys_views_basic's buildExposedFilterAccordion()) — the same
       // "checkbox turns on, dependent field appears" shape, generalized to
       // every block type via a shared component (assets/css/reusable-
-      // toggle.css) rather than copied. Built with #prefix/#suffix instead of
-      // nesting 'info' inside 'reusable' in the render tree: this hook runs
-      // before ys_views_basic_form_alter() (alphabetical hook order), which
-      // still needs $form['info'] and $form['reusable'] addressable at their
-      // original top-level keys to attach them to the listing-block General
-      // tab via #group — nesting them here would break that.
+      // toggle.css) rather than copied. The row is a real container
+      // (_ys_layouts_wrap_reusable_toggle()) holding both fields, so its
+      // markup is well formed whatever else on the form is weighted or
+      // reordered. ys_views_basic_form_alter() runs after this hook and
+      // groups that container, not the two fields, into the listing-block
+      // General tab.
       //
-      // This relies on 'reusable' rendering immediately before 'info'. No
-      // #weight is set here: ConfigureBlockFormBase::doBuildForm() declares
-      // the two adjacently in that order with no weights, so array order
-      // already holds, and weighting them here would hoist both above
-      // $form['settings'] — the block's own content fields — on every block
-      // type. ys_views_basic_form_alter() sets its own weights for the
-      // listing-block General tab and keeps the same relative order.
-      $form['reusable']['#prefix'] = '<div class="ys-toggle-row ys-toggle-row--has-settings">';
       // Split into its own visually distinct warning (#1481): it's the only
       // irreversible decision on this form and used to trail as plain help
       // text easy to skim past. Styled from this module's own
@@ -273,8 +265,6 @@ function ys_layouts_form_alter(&$form, $form_state, $form_id) {
 
       $form['info']['#title'] = t('Reusable Block title');
       $form['info']['#description'] = t('Add a short, descriptive title to easily find and reuse the Reusable Block. Defaults to Administrative label if no title is provided.');
-      $form['info']['#prefix'] = '<div class="ys-toggle-row__body">';
-      $form['info']['#suffix'] = '</div></div>';
       // Disabled (not hidden) while unchecked, matching the same pattern as
       // category_filter_label/pin_label: the row's CSS collapses the body
       // via :has() off the checkbox, so 'disabled' is what stops a collapsed
@@ -282,6 +272,8 @@ function ys_layouts_form_alter(&$form, $form_state, $form_id) {
       $form['info']['#states'] = [
         'disabled' => [':input[name="reusable"]' => ['checked' => FALSE]],
       ];
+
+      _ys_layouts_wrap_reusable_toggle($form);
 
       $form['#attached']['library'][] = 'ys_layouts/reusable_toggle';
     }
@@ -339,6 +331,62 @@ function ys_layouts_form_alter(&$form, $form_state, $form_id) {
 
     $form['#after_build'][] = 'ys_layouts_lift_block_instructions';
   }
+}
+
+/**
+ * Wraps the reusable checkbox and its title field in a toggle row container.
+ *
+ * The row (reusable-toggle.css) needs one wrapper around both fields and an
+ * inner body around the title field. Real containers replace an open tag in
+ * one element's #prefix closed in another's #suffix, which only held while
+ * the two rendered adjacently.
+ *
+ * The form root and the containers do not set #tree, so each field keeps
+ * #parents of just its own key: submitted values ("reusable", "info"), input
+ * names and the "reusable" #states selector are unchanged. The container takes
+ * the place of 'reusable' in the form's array order, which with no #weight is
+ * the render order.
+ *
+ * @param array $form
+ *   The configure-block form, passed by reference. Must contain 'reusable'.
+ */
+function _ys_layouts_wrap_reusable_toggle(array &$form): void {
+  $row = [
+    '#type' => 'container',
+    '#attributes' => [
+      'class' => ['ys-toggle-row', 'ys-toggle-row--has-settings'],
+    ],
+    // An empty row would still render its bordered wrapper.
+    '#access' => $form['reusable']['#access'] ?? TRUE,
+    'reusable' => $form['reusable'],
+  ];
+  if (isset($form['info'])) {
+    $row['body'] = [
+      '#type' => 'container',
+      '#attributes' => ['class' => ['ys-toggle-row__body']],
+      'info' => $form['info'],
+    ];
+  }
+  // A group or weight already put on the fields (another module's alter
+  // running first) belongs to the row now: a #group left on a field would
+  // pull it back out of the row at render time.
+  foreach (['#group', '#weight'] as $property) {
+    if (isset($row['reusable'][$property])) {
+      $row[$property] = $row['reusable'][$property];
+    }
+    unset($row['reusable'][$property], $row['body']['info'][$property]);
+  }
+
+  $wrapped = [];
+  foreach ($form as $key => $value) {
+    if ($key === 'reusable') {
+      $wrapped['reusable_toggle'] = $row;
+    }
+    elseif ($key !== 'info' || !isset($row['body'])) {
+      $wrapped[$key] = $value;
+    }
+  }
+  $form = $wrapped;
 }
 
 /**

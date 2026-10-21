@@ -4,6 +4,7 @@ namespace Drupal\ys_views_basic\Plugin\views\filter;
 
 use Drupal\Core\Cache\CacheBackendInterface;
 use Drupal\Core\Database\Connection;
+use Drupal\views\Attribute\ViewsFilter;
 use Drupal\views\Plugin\views\display\DisplayPluginBase;
 use Drupal\views\ViewExecutable;
 use Symfony\Component\DependencyInjection\ContainerInterface;
@@ -14,9 +15,8 @@ use Symfony\Component\DependencyInjection\ContainerInterface;
  * Shares PostYearFilter's query; only the year options differ.
  *
  * @ingroup views_filter_handlers
- *
- * @ViewsFilter("resource_year_filter")
  */
+#[ViewsFilter('resource_year_filter')]
 class ResourceYearFilter extends PostYearFilter {
 
   /**

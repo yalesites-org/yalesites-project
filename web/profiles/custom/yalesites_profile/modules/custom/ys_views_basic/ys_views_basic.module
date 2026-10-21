@@ -379,7 +379,8 @@ function ys_views_basic_node_view(array &$build, NodeInterface $node, EntityView
  * group here in the alter — before form processing begins — so their #group
  * is set before their own #process runs, regardless of the order in which the
  * form tree is processed. ys_layouts_form_alter() relabels the reusable/info
- * pair; this hook only groups them, so the two do not conflict.
+ * pair and wraps it in a toggle row container; this hook only groups that
+ * container, so the two do not conflict.
  */
 function ys_views_basic_form_alter(array &$form, FormStateInterface $form_state, string $form_id): void {
   if ($form_id !== 'layout_builder_add_block' && $form_id !== 'layout_builder_update_block') {
@@ -406,12 +407,11 @@ function ys_views_basic_form_alter(array &$form, FormStateInterface $form_state,
 
   // Attach the root-level reusable/admin-title fields (inline-block only) to
   // the General tab. Weights place them below the content fields within it.
-  // 'reusable' before 'info' (#1481): ys_layouts_form_alter() wraps these two
-  // in a toggle/disclosure row (reusable is the header, info the dependent
-  // body, via #prefix/#suffix) and needs them adjacent in that order, so
-  // these weights have to keep that relative order or the row's HTML ends up
-  // malformed.
-  foreach (['reusable' => 20, 'info' => 21] as $key => $weight) {
+  // ys_layouts_form_alter() wraps the pair in a toggle/disclosure row
+  // container (#1481), so the container is what gets grouped; the fields are
+  // grouped one by one only if that wrapper is absent.
+  $reusable_keys = isset($form['reusable_toggle']) ? ['reusable_toggle' => 20] : ['reusable' => 20, 'info' => 21];
+  foreach ($reusable_keys as $key => $weight) {
     if (isset($form[$key])) {
       $form[$key]['#group'] = 'group_listing_general';
       $form[$key]['#weight'] = $weight;
@@ -485,8 +485,8 @@ function _ys_views_basic_listing_form_tabs(array $element, FormStateInterface $f
 
   // "General": the outer block fields. field_heading, field_heading_links and
   // field_padding_options are moved in physically because field wrappers do
-  // not self-register with #group; reusable/info are attached by #group in the
-  // form alter above.
+  // not self-register with #group; the reusable toggle row is attached by
+  // #group in the form alter above.
   $element[$general] = [
     '#type' => 'details',
     '#title' => t('General'),

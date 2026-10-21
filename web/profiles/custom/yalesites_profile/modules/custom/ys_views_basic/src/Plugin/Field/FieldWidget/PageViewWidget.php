@@ -2,7 +2,9 @@
 
 namespace Drupal\ys_views_basic\Plugin\Field\FieldWidget;
 
+use Drupal\Core\Field\Attribute\FieldWidget;
 use Drupal\Core\Field\FieldItemListInterface;
+use Drupal\Core\StringTranslation\TranslatableMarkup;
 use Drupal\ys_views_basic\ViewsBasicManager;
 
 /**
@@ -14,15 +16,12 @@ use Drupal\ys_views_basic\ViewsBasicManager;
  * ViewsBasicWidgetBase. The page category filter resolves to the
  * field_category_target_id_1 view filter in ViewsBasicManager::setupView()
  * (ADR DR-4); that render mapping lives in the manager, not here.
- *
- * @FieldWidget(
- *   id = "page_view_widget",
- *   label = @Translation("Page listing widget"),
- *   field_types = {
- *     "views_basic_params"
- *   }
- * )
  */
+#[FieldWidget(
+  id: 'page_view_widget',
+  label: new TranslatableMarkup('Page listing widget'),
+  field_types: ['views_basic_params'],
+)]
 class PageViewWidget extends ViewsBasicWidgetBase {
 
   /**

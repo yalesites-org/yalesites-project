@@ -215,16 +215,13 @@ class PostViewWidgetTest extends UnitTestCase {
    * @covers ::massageEntitySpecificParams
    */
   public function testMassageEntitySpecificParams() {
-    $form = [
-      'group_user_selection' => [
-        'entity_and_view_mode' => [
-          'post_field_options' => ['#value' => ['show_eyebrow' => 'show_eyebrow']],
-        ],
-      ],
+    // The flattened entity_and_view_mode elements massageFormValues() built.
+    $built = [
+      'post_field_options' => ['#value' => ['show_eyebrow' => 'show_eyebrow']],
     ];
     $param_data = [];
     $form_state = $this->createMock(FormStateInterface::class);
-    $this->invoke($this->widget('post_card'), 'massageEntitySpecificParams', [&$param_data, $form, $form_state]);
+    $this->invoke($this->widget('post_card'), 'massageEntitySpecificParams', [&$param_data, $built, [], $form_state]);
 
     $this->assertSame(['show_eyebrow' => 'show_eyebrow'], $param_data['post_field_options']);
   }

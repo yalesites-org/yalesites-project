@@ -603,9 +603,82 @@ class BlockConfigureFormTest extends UnitTestCase {
 
     $form = $this->alter($form, 'layout_builder_update_block');
 
-    $this->assertSame('Reusable Block', (string) $form['reusable']['#title']);
-    $this->assertSame('Reusable Block title', (string) $form['info']['#title']);
+    $row = $form['reusable_toggle'];
+    $this->assertSame('Reusable Block', (string) $row['reusable']['#title']);
+    $this->assertSame('Reusable Block title', (string) $row['body']['info']['#title']);
     $this->assertSame('Configure Accordion', (string) $form['#title']);
+  }
+
+  /**
+   * The reusable toggle row is a real container around both fields.
+   *
+   * Replaces a wrapper opened in one field's #prefix and closed in the
+   * other's #suffix, which only produced valid markup while the two rendered
+   * adjacently. The fields keep their top-level #parents (nothing sets
+   * #tree), so their submitted values and input names do not change.
+   */
+  public function testReusableToggleRowWrapsBothFields(): void {
+    $form = $this->blockForm();
+    $form['reusable'] = ['#type' => 'checkbox', '#title' => 'Reusable', '#access' => TRUE];
+    $form['info'] = ['#type' => 'textfield', '#title' => 'Block description'];
+    $form['actions'] = ['#type' => 'actions'];
+
+    $form = $this->alter($form, 'layout_builder_add_block');
+
+    $this->assertArrayNotHasKey('reusable', $form);
+    $this->assertArrayNotHasKey('info', $form);
+    $this->assertSame(
+      ['settings', 'reusable_toggle', 'actions'],
+      array_values(array_filter(array_keys($form), fn ($key) => $key[0] !== '#')),
+      'The row takes the place of the two fields, ahead of the actions.'
+    );
+
+    $row = $form['reusable_toggle'];
+    $this->assertSame('container', $row['#type']);
+    $this->assertSame(['ys-toggle-row', 'ys-toggle-row--has-settings'], $row['#attributes']['class']);
+    $this->assertArrayNotHasKey('#tree', $row);
+    $this->assertArrayNotHasKey('#prefix', $row['reusable']);
+    $this->assertSame('container', $row['body']['#type']);
+    $this->assertSame(['ys-toggle-row__body'], $row['body']['#attributes']['class']);
+    $this->assertArrayNotHasKey('#prefix', $row['body']['info']);
+    $this->assertArrayNotHasKey('#suffix', $row['body']['info']);
+    $this->assertSame(
+      ['disabled' => [':input[name="reusable"]' => ['checked' => FALSE]]],
+      $row['body']['info']['#states']
+    );
+  }
+
+  /**
+   * The row follows the checkbox's access, so it never renders empty.
+   */
+  public function testReusableToggleRowFollowsAccess(): void {
+    $form = $this->blockForm();
+    $form['reusable'] = ['#type' => 'checkbox', '#title' => 'Reusable', '#access' => FALSE];
+    $form['info'] = ['#type' => 'textfield', '#title' => 'Block description', '#access' => FALSE];
+
+    $form = $this->alter($form, 'layout_builder_add_block');
+
+    $this->assertFalse($form['reusable_toggle']['#access']);
+  }
+
+  /**
+   * A group already set on the fields moves to the row.
+   *
+   * Keeps the listing-block General tab grouping intact whichever form alter
+   * runs first.
+   */
+  public function testReusableToggleRowInheritsFieldGroup(): void {
+    $form = $this->blockForm();
+    $form['reusable'] = ['#type' => 'checkbox', '#group' => 'group_listing_general', '#weight' => 20];
+    $form['info'] = ['#type' => 'textfield', '#group' => 'group_listing_general', '#weight' => 21];
+
+    $form = $this->alter($form, 'layout_builder_update_block');
+
+    $row = $form['reusable_toggle'];
+    $this->assertSame('group_listing_general', $row['#group']);
+    $this->assertSame(20, $row['#weight']);
+    $this->assertArrayNotHasKey('#group', $row['reusable']);
+    $this->assertArrayNotHasKey('#group', $row['body']['info']);
   }
 
   /**

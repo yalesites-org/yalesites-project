@@ -72,10 +72,10 @@
           // it needs no label and falls through to the default.
           switch (value) {
             case 'limit':
-              limitLabel.textContent = 'Items';
+              limitLabel.textContent = Drupal.t('Items');
               break;
             case 'pager':
-              limitLabel.textContent = 'Items Per Page';
+              limitLabel.textContent = Drupal.t('Items per Page');
               break;
             default:
               break;

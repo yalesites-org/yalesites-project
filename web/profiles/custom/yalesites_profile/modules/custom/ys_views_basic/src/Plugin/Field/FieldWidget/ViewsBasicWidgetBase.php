@@ -13,6 +13,7 @@ use Drupal\Core\Field\WidgetBase;
 use Drupal\Core\Form\FormStateInterface;
 use Drupal\Core\Plugin\ContainerFactoryPluginInterface;
 use Drupal\Core\Render\Element;
+use Drupal\Core\StringTranslation\TranslatableMarkup;
 use Drupal\ys_views_basic\ViewsBasicManager;
 use Symfony\Component\DependencyInjection\ContainerInterface;
 
@@ -175,6 +176,56 @@ abstract class ViewsBasicWidgetBase extends WidgetBase implements ContainerFacto
    *   The field delta.
    */
   abstract protected function buildEntitySpecificOptions(array &$form, FieldItemListInterface $items, int $delta): void;
+
+  /**
+   * Builds a per-type "Result content" checkboxes subsection.
+   *
+   * Shared by the per-type widgets' buildEntitySpecificOptions() (event,
+   * post, profile and resource options). The element joins field_options in
+   * the same "Result content" fieldset (::groupFieldDisplayRow()) but is a
+   * distinct entity-specific subsection under its own visible title, so it
+   * needs the fieldset's between-groups gap rather than the tighter
+   * sibling-option gap the shared checkboxes get (#1481). That styling hook
+   * is a plain #prefix/#suffix wrapper rather than #attributes: on a #type
+   * checkboxes element, #attributes lands on each individual <input>, not a
+   * wrapping element, which detached each checkbox from its own label.
+   *
+   * @param \Drupal\Core\StringTranslation\TranslatableMarkup|string $title
+   *   The subsection's visible title.
+   * @param array $options
+   *   The checkbox options, keyed by stored value.
+   * @param array $default
+   *   The selected option keys.
+   *
+   * @return array
+   *   The checkboxes render element.
+   */
+  protected function buildResultOptionsSubsection($title, array $options, array $default): array {
+    return [
+      '#type' => 'checkboxes',
+      '#prefix' => '<div class="vb-result-content__subsection">',
+      '#suffix' => '</div>',
+      '#options' => $options,
+      '#title' => $title,
+      '#tree' => TRUE,
+      '#default_value' => $default,
+    ];
+  }
+
+  /**
+   * Returns the stored value of an array-valued param, or [] on a new block.
+   *
+   * @param string $key
+   *   The params key, as read by ViewsBasicManager::getDefaultParamValue().
+   * @param string|null $params
+   *   The stored params JSON, or NULL on a new block.
+   *
+   * @return array
+   *   The stored selection.
+   */
+  protected function getStoredOptions(string $key, $params): array {
+    return $params ? (array) $this->viewsBasicManager->getDefaultParamValue($key, $params) : [];
+  }
 
   /**
    * Returns the taxonomy vocabulary used for this widget's category filter.
@@ -453,7 +504,7 @@ abstract class ViewsBasicWidgetBase extends WidgetBase implements ContainerFacto
         'pinned_to_top' => $form_state->getValue($formSelectors['pinned_to_top_array']),
         'pin_label' => $form_state->getValue($formSelectors['pin_label_array']),
       ];
-      $this->massageEntitySpecificParams($paramData, $form, $form_state);
+      $this->massageEntitySpecificParams($paramData, $built, $form, $form_state);
       $value['params'] = json_encode($paramData);
     }
     return $values;
@@ -468,12 +519,17 @@ abstract class ViewsBasicWidgetBase extends WidgetBase implements ContainerFacto
    *
    * @param array $paramData
    *   The params array being assembled, passed by reference.
+   * @param array $built
+   *   The built "Field display & filters" value elements, keyed by element
+   *   key (::flattenBuiltElements()), as massageFormValues() already resolved
+   *   them. The #after_build passes relocate the per-type options, so look
+   *   them up here rather than at a fixed path.
    * @param array $form
    *   The submitted form.
    * @param \Drupal\Core\Form\FormStateInterface $form_state
    *   The form state.
    */
-  protected function massageEntitySpecificParams(array &$paramData, array $form, FormStateInterface $form_state): void {
+  protected function massageEntitySpecificParams(array &$paramData, array $built, array $form, FormStateInterface $form_state): void {
   }
 
   /**
@@ -710,27 +766,32 @@ abstract class ViewsBasicWidgetBase extends WidgetBase implements ContainerFacto
       '#states' => ['disabled' => [$formSelectors['show_category_filter_selector'] => ['checked' => FALSE]]],
     ];
 
+    // No '#validated' on these selects or on sort_by: nothing swaps their
+    // options client-side any more, so the options built here are the full
+    // allowed set and Form API's illegal-choice check applies. A stored
+    // value that is no longer offered (a deleted parent term) falls back to
+    // the empty option rather than being sent back and rejected.
+    $category_parents = $this->viewsBasicManager->getTaxonomyParents($this->getCategoryVocabulary(), (string) $this->t('All categories'));
     $form['group_user_selection']['entity_and_view_mode']['category_included_terms'] = [
       '#type' => 'select',
       // Renamed from "Filter by Category Parent Term" (#1481) — "Parent
       // Term" is taxonomy-internal vocabulary.
       '#title' => $this->t('Limit choices to'),
       '#description' => $this->t("Select a parent term to show content tagged with that term's sub-items. This ignores content tagged as the parent term and any other parent terms in the vocabulary."),
-      '#options' => $this->viewsBasicManager->getTaxonomyParents($this->getCategoryVocabulary(), (string) $this->t('All categories')),
-      '#default_value' => $params ? $this->viewsBasicManager->getDefaultParamValue('category_included_terms', $params) : NULL,
-      '#validated' => 'true',
+      '#options' => $category_parents,
+      '#default_value' => static::offeredDefault($category_parents, $params ? $this->viewsBasicManager->getDefaultParamValue('category_included_terms', $params) : NULL),
       '#prefix' => '<div id="edit-category-included-terms">',
       '#suffix' => '</div>',
       '#states' => ['disabled' => [$formSelectors['show_category_filter_selector'] => ['checked' => FALSE]]],
     ];
 
+    $custom_vocab_parents = $this->viewsBasicManager->getTaxonomyParents('custom_vocab');
     $form['group_user_selection']['entity_and_view_mode']['custom_vocab_included_terms'] = [
       '#type' => 'select',
       '#title' => $this->t('Filter by @vocab Parent Term', ['@vocab' => $custom_vocab_label]),
       '#description' => $this->t("Select a parent term to show content tagged with that term's sub-items. This ignores content tagged as the parent term and any other parent terms in the vocabulary."),
-      '#options' => $this->viewsBasicManager->getTaxonomyParents('custom_vocab'),
-      '#default_value' => $params ? $this->viewsBasicManager->getDefaultParamValue('custom_vocab_included_terms', $params) : NULL,
-      '#validated' => 'true',
+      '#options' => $custom_vocab_parents,
+      '#default_value' => static::offeredDefault($custom_vocab_parents, $params ? $this->viewsBasicManager->getDefaultParamValue('custom_vocab_included_terms', $params) : NULL),
       '#prefix' => '<div id="edit-custom-vocab-included-terms">',
       '#suffix' => '</div>',
       '#states' => ['disabled' => [$formSelectors['show_custom_vocab_filter_selector'] => ['checked' => FALSE]]],
@@ -1247,15 +1308,17 @@ abstract class ViewsBasicWidgetBase extends WidgetBase implements ContainerFacto
    */
   protected function buildSortControl(array &$form, FieldItemListInterface $items, int $delta): void {
     $params = $items[$delta]->params;
+    // The full sort set for this widget's single content type; validated by
+    // Form API (no '#validated'), see ::buildExposedFilterControls().
+    $sort_options = $this->viewsBasicManager->sortByList($this->getContentType());
     $form['group_user_selection']['filter_and_sort']['sort_by'] = [
       '#type' => 'select',
       // Explicit weight (#1481) — see ::groupTermOperatorRows()'s docblock.
       '#weight' => 2,
-      '#options' => $this->viewsBasicManager->sortByList($this->getContentType()),
+      '#options' => $sort_options,
       '#title' => $this->t('Sort by'),
       '#tree' => TRUE,
-      '#default_value' => $params ? $this->viewsBasicManager->getDefaultParamValue('sort_by', $params) : NULL,
-      '#validated' => 'true',
+      '#default_value' => static::offeredDefault($sort_options, $params ? $this->viewsBasicManager->getDefaultParamValue('sort_by', $params) : NULL),
       '#prefix' => '<div id="edit-sort-by">',
       '#suffix' => '</div>',
     ];
@@ -1335,13 +1398,12 @@ abstract class ViewsBasicWidgetBase extends WidgetBase implements ContainerFacto
       '#title' => $displayValue === 'pager' ? $this->t('Items per Page') : $this->t('Items'),
       '#type' => 'number',
       '#default_value' => $params ? $this->viewsBasicManager->getDefaultParamValue('limit', $params) : 10,
-      '#min' => 1,
-      // #required paired with #states 'visible'/'required' (#1481), matching
-      // ::buildPinnedControls()'s pin_label pattern: this field used to carry
-      // '#required' => TRUE unconditionally while views-basic.js hid it with
-      // inline `display: none` whenever "display" was "all" — a required
-      // field a site builder could never see or fill in.
-      '#required' => TRUE,
+      // Required only while "display" is not "all": #states marks it required
+      // in the UI and ::validateLimit() enforces it server-side. No
+      // unconditional #required or #min, which Form API would apply even
+      // while #states hides the field ("display" is "all"), failing the
+      // submit on a field the site builder cannot see.
+      '#element_validate' => [[static::class, 'validateLimit']],
       '#states' => [
         'visible' => [$formSelectors['display_ajax'] => ['!value' => 'all']],
         'required' => [$formSelectors['display_ajax'] => ['!value' => 'all']],
@@ -1391,6 +1453,46 @@ abstract class ViewsBasicWidgetBase extends WidgetBase implements ContainerFacto
       '#type' => 'checkbox',
       '#default_value' => $params ? $this->viewsBasicManager->getDefaultParamValue('show_current_entity', $params) : 0,
     ];
+  }
+
+  /**
+   * Requires a positive whole-number limit unless every item is shown.
+   *
+   * The #element_validate for "limit" (see ::buildDisplayControls()). The
+   * field is hidden by #states while "display" is "all", and then its value
+   * is ignored.
+   *
+   * @param array $element
+   *   The limit element.
+   * @param \Drupal\Core\Form\FormStateInterface $form_state
+   *   The current state of the form.
+   */
+  public static function validateLimit(array &$element, FormStateInterface $form_state): void {
+    $parents = array_slice($element['#parents'], 0, -1);
+    $display = $form_state->getValue(array_merge($parents, ['display']));
+    if ($display === 'all') {
+      return;
+    }
+    if (filter_var($element['#value'] ?? '', FILTER_VALIDATE_INT, ['options' => ['min_range' => 1]]) === FALSE) {
+      $form_state->setError($element, new TranslatableMarkup('@title must be a whole number greater than zero.', [
+        '@title' => $element['#title'] ?? new TranslatableMarkup('Items'),
+      ]));
+    }
+  }
+
+  /**
+   * Returns a stored select value only if the select still offers it.
+   *
+   * @param array $options
+   *   The select's options.
+   * @param mixed $value
+   *   The stored value.
+   *
+   * @return mixed
+   *   The value, or NULL when it is not one of the options.
+   */
+  protected static function offeredDefault(array $options, $value) {
+    return ((is_int($value) || is_string($value)) && array_key_exists($value, $options)) ? $value : NULL;
   }
 
   /**

@@ -2,8 +2,10 @@
 
 namespace Drupal\ys_views_basic\Plugin\Field\FieldWidget;
 
+use Drupal\Core\Field\Attribute\FieldWidget;
 use Drupal\Core\Field\FieldItemListInterface;
 use Drupal\Core\Form\FormStateInterface;
+use Drupal\Core\StringTranslation\TranslatableMarkup;
 use Drupal\ys_views_basic\ViewsBasicManager;
 
 /**
@@ -16,15 +18,12 @@ use Drupal\ys_views_basic\ViewsBasicManager;
  * field_affiliation_target_id filter (resolved by getCategoryVocabulary() on
  * the base and by ViewsBasicManager::setupView()), and the listing can show
  * the profile data pass-throughs (department, email, phone, pronouns).
- *
- * @FieldWidget(
- *   id = "profile_view_widget",
- *   label = @Translation("Profile listing widget"),
- *   field_types = {
- *     "views_basic_params"
- *   }
- * )
  */
+#[FieldWidget(
+  id: 'profile_view_widget',
+  label: new TranslatableMarkup('Profile listing widget'),
+  field_types: ['views_basic_params'],
+)]
 class ProfileViewWidget extends ViewsBasicWidgetBase {
 
   /**
@@ -59,34 +58,22 @@ class ProfileViewWidget extends ViewsBasicWidgetBase {
     if (!in_array($this->getViewMode(), self::PROFILE_FIELD_VIEW_MODES, TRUE)) {
       return;
     }
-    $form['group_user_selection']['entity_and_view_mode']['profile_field_options'] = [
-      '#type' => 'checkboxes',
-      // Styling hook (#1481) — see
-      // EventViewWidget::buildEntitySpecificOptions() for why this needs the
-      // fieldset's between-groups gap rather than the tighter sibling-option
-      // gap, and why #prefix/#suffix rather than #attributes.
-      '#prefix' => '<div class="vb-result-content__subsection">',
-      '#suffix' => '</div>',
-      '#options' => [
+    $form['group_user_selection']['entity_and_view_mode']['profile_field_options'] = $this->buildResultOptionsSubsection(
+      $this->t('People options'),
+      [
         'show_department' => $this->t('Show Department'),
         'show_email' => $this->t('Show Email'),
         'show_phone' => $this->t('Show Phone'),
         'show_pronouns' => $this->t('Show Pronouns'),
       ],
-      '#title' => $this->t('People options'),
-      '#tree' => TRUE,
-      '#default_value' => $items[$delta]->params
-        ? $this->viewsBasicManager->getDefaultParamValue('profile_field_options', $items[$delta]->params)
-        : [],
-    ];
+      $this->getStoredOptions('profile_field_options', $items[$delta]->params),
+    );
   }
 
   /**
    * {@inheritdoc}
    */
-  protected function massageEntitySpecificParams(array &$paramData, array $form, FormStateInterface $form_state): void {
-    // Looked up by key: groupFieldDisplayRow() moves this into the display row.
-    $built = static::flattenBuiltElements($form['group_user_selection']['entity_and_view_mode'] ?? []);
+  protected function massageEntitySpecificParams(array &$paramData, array $built, array $form, FormStateInterface $form_state): void {
     $paramData['profile_field_options'] = $built['profile_field_options']['#value'] ?? [];
   }
 

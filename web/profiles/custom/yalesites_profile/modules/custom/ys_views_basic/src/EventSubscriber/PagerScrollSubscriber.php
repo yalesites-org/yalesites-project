@@ -20,8 +20,9 @@ use Symfony\Component\HttpKernel\KernelEvents;
  * what YaleSites-Internal#1648 asks us to stop doing.
  *
  * The command is added inside the controller with nothing to opt out of it, so
- * it is dropped here on the way out instead. Scoped to the two scaffold views
- * so every other view on the platform keeps core's behaviour.
+ * it is dropped here on the way out instead. Scoped to the scaffold views
+ * (ViewsBasicManager::SCAFFOLD_VIEWS) so every other view on the platform keeps
+ * core's behaviour.
  */
 class PagerScrollSubscriber implements EventSubscriberInterface {
 

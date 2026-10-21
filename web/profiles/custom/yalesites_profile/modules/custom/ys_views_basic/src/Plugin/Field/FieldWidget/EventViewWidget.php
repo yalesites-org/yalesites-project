@@ -2,8 +2,10 @@
 
 namespace Drupal\ys_views_basic\Plugin\Field\FieldWidget;
 
+use Drupal\Core\Field\Attribute\FieldWidget;
 use Drupal\Core\Field\FieldItemListInterface;
 use Drupal\Core\Form\FormStateInterface;
+use Drupal\Core\StringTranslation\TranslatableMarkup;
 use Drupal\ys_views_basic\ViewsBasicManager;
 
 /**
@@ -17,15 +19,12 @@ use Drupal\ys_views_basic\ViewsBasicManager;
  * (future / past / all). Events are queried through the events scaffold view
  * (with distinct de-duplication and a manual date sort) which
  * ViewsBasicManager selects from the stored content type — ADR DR-5.
- *
- * @FieldWidget(
- *   id = "event_view_widget",
- *   label = @Translation("Event listing widget"),
- *   field_types = {
- *     "views_basic_params"
- *   }
- * )
  */
+#[FieldWidget(
+  id: 'event_view_widget',
+  label: new TranslatableMarkup('Event listing widget'),
+  field_types: ['views_basic_params'],
+)]
 class EventViewWidget extends ViewsBasicWidgetBase {
 
   /**
@@ -52,28 +51,11 @@ class EventViewWidget extends ViewsBasicWidgetBase {
   protected function buildEntitySpecificOptions(array &$form, FieldItemListInterface $items, int $delta): void {
     $params = $items[$delta]->params;
 
-    $form['group_user_selection']['entity_and_view_mode']['event_field_options'] = [
-      '#type' => 'checkboxes',
-      // Styling hook (#1481): this joins field_options in the same "Result
-      // content" fieldset (::groupFieldDisplayRow()), but is a distinct
-      // entity-specific subsection under its own visible "Event options"
-      // title, not another sibling option of the shared checkboxes above it
-      // — it needs the fieldset's between-groups gap, not the tighter
-      // sibling-option gap the shared checkboxes get. Plain #prefix/#suffix
-      // rather than #attributes: on a #type checkboxes element, #attributes
-      // lands on each individual <input> (confirmed against the real
-      // rendered markup), not a wrapping element, which put 40px of
-      // margin-top on the checkbox itself — detaching it from its own label
-      // — instead of before the whole subsection.
-      '#prefix' => '<div class="vb-result-content__subsection">',
-      '#suffix' => '</div>',
-      '#options' => [
-        'hide_add_to_calendar' => $this->t('Hide Add to Calendar link'),
-      ],
-      '#title' => $this->t('Event options'),
-      '#tree' => TRUE,
-      '#default_value' => $params ? $this->viewsBasicManager->getDefaultParamValue('event_field_options', $params) : [],
-    ];
+    $form['group_user_selection']['entity_and_view_mode']['event_field_options'] = $this->buildResultOptionsSubsection(
+      $this->t('Event options'),
+      ['hide_add_to_calendar' => $this->t('Hide Add to Calendar link')],
+      $this->getStoredOptions('event_field_options', $params),
+    );
 
     $icon_base = '/profiles/custom/yalesites_profile/modules/custom/ys_views_basic/assets/icons/';
     $form['group_user_selection']['options']['event_time_period'] = [
@@ -97,12 +79,9 @@ class EventViewWidget extends ViewsBasicWidgetBase {
   /**
    * {@inheritdoc}
    */
-  protected function massageEntitySpecificParams(array &$paramData, array $form, FormStateInterface $form_state): void {
-    $selection = $form['group_user_selection'];
-    // Looked up by key: groupFieldDisplayRow() moves this into the display row.
-    $built = static::flattenBuiltElements($selection['entity_and_view_mode'] ?? []);
+  protected function massageEntitySpecificParams(array &$paramData, array $built, array $form, FormStateInterface $form_state): void {
     $paramData['event_field_options'] = $built['event_field_options']['#value'] ?? [];
-    $paramData['filters']['event_time_period'] = $selection['options']['event_time_period']['#value'];
+    $paramData['filters']['event_time_period'] = $form['group_user_selection']['options']['event_time_period']['#value'];
   }
 
 }

@@ -2,6 +2,7 @@
 
 namespace Drupal\ys_views_basic\Plugin\views\filter;
 
+use Drupal\views\Attribute\ViewsFilter;
 use Drupal\views\Plugin\views\filter\Combine;
 
 /**
@@ -19,9 +20,8 @@ use Drupal\views\Plugin\views\filter\Combine;
  * others behave exactly like core's combine filter over the real fields.
  *
  * @ingroup views_filter_handlers
- *
- * @ViewsFilter("ys_views_basic_resource_author_combine")
  */
+#[ViewsFilter('ys_views_basic_resource_author_combine')]
 class ResourceAuthorCombine extends Combine {
 
   /**

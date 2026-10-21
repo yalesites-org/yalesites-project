@@ -257,11 +257,12 @@ class EventViewWidgetTest extends UnitTestCase {
    * @covers ::massageEntitySpecificParams
    */
   public function testMassageEntitySpecificParams() {
+    // The flattened entity_and_view_mode elements massageFormValues() built.
+    $built = [
+      'event_field_options' => ['#value' => ['hide_add_to_calendar' => 'hide_add_to_calendar']],
+    ];
     $form = [
       'group_user_selection' => [
-        'entity_and_view_mode' => [
-          'event_field_options' => ['#value' => ['hide_add_to_calendar' => 'hide_add_to_calendar']],
-        ],
         'options' => [
           'event_time_period' => ['#value' => 'past'],
         ],
@@ -269,7 +270,7 @@ class EventViewWidgetTest extends UnitTestCase {
     ];
     $param_data = ['filters' => ['types' => ['event']]];
     $form_state = $this->createMock(FormStateInterface::class);
-    $this->invoke($this->widget('event_card'), 'massageEntitySpecificParams', [&$param_data, $form, $form_state]);
+    $this->invoke($this->widget('event_card'), 'massageEntitySpecificParams', [&$param_data, $built, $form, $form_state]);
 
     $this->assertSame(['hide_add_to_calendar' => 'hide_add_to_calendar'], $param_data['event_field_options']);
     $this->assertSame('past', $param_data['filters']['event_time_period']);

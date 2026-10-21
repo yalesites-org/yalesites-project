@@ -2070,16 +2070,17 @@ class ViewsBasicManager extends ControllerBase implements ContainerInjectionInte
    *
    * @param string $vid
    *   The machine name of the vocabulary.
-   * @param string $allLabel
+   * @param string|null $allLabel
    *   The label for the "no parent term selected" option (#1481: callers
    *   pass a vocabulary-specific label rather than the generic default).
+   *   Defaults to a translated "-- All Items --".
    *
    * @return array
    *   An array of parent terms where the key is the term ID and
    *   the value is the term name.
    */
-  public function getTaxonomyParents(string $vid, string $allLabel = '-- All Items --'): array {
-    $list = ['' => $allLabel];
+  public function getTaxonomyParents(string $vid, ?string $allLabel = NULL): array {
+    $list = ['' => $allLabel ?? (string) $this->t('-- All Items --')];
     // Load all top-level (parent) terms for the given vocabulary ID.
     $terms = $this->termStorage->loadTree($vid, 0, 1);
 

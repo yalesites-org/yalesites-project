@@ -2,6 +2,7 @@
 
 namespace Drupal\ys_views_basic\Plugin\Field\FieldWidget;
 
+use Drupal\Core\Field\Attribute\FieldWidget;
 use Drupal\Core\Field\FieldItemListInterface;
 use Drupal\Core\Form\FormStateInterface;
 use Drupal\Core\StringTranslation\TranslatableMarkup;
@@ -18,15 +19,12 @@ use Drupal\ys_views_basic\ViewsBasicManager;
  * publish date), five extra exposed filters, and the choice of fields the
  * search runs across. The details are offered only on the designs whose
  * templates render them, which is every design but condensed.
- *
- * @FieldWidget(
- *   id = "resource_view_widget",
- *   label = @Translation("Resource listing widget"),
- *   field_types = {
- *     "views_basic_params"
- *   }
- * )
  */
+#[FieldWidget(
+  id: 'resource_view_widget',
+  label: new TranslatableMarkup('Resource listing widget'),
+  field_types: ['views_basic_params'],
+)]
 class ResourceViewWidget extends ViewsBasicWidgetBase {
 
   /**
@@ -105,19 +103,14 @@ class ResourceViewWidget extends ViewsBasicWidgetBase {
     $params = $items[$delta]->params;
 
     if (in_array($this->getViewMode(), self::RESOURCE_FIELD_VIEW_MODES, TRUE)) {
-      $saved = $params ? $this->viewsBasicManager->getDefaultParamValue('resource_field_options', $params) : [];
+      $saved = $this->getStoredOptions('resource_field_options', $params);
       // A new block shows the teaser text, as the old widget's did.
       if (empty($saved) && $this->isCreateForm($items)) {
         $saved = ['show_teaser_text'];
       }
-      $form['group_user_selection']['entity_and_view_mode']['resource_field_options'] = [
-        '#type' => 'checkboxes',
-        // Styling hook (#1481) — see
-        // EventViewWidget::buildEntitySpecificOptions() for why this needs the
-        // fieldset's between-groups gap and #prefix/#suffix.
-        '#prefix' => '<div class="vb-result-content__subsection">',
-        '#suffix' => '</div>',
-        '#options' => [
+      $form['group_user_selection']['entity_and_view_mode']['resource_field_options'] = $this->buildResultOptionsSubsection(
+        $this->t('Resource options'),
+        [
           'show_teaser_text' => $this->t('Show Teaser Text'),
           'show_discipline' => $this->t('Show Discipline'),
           'show_journal_name' => $this->t('Show Journal/Publication Name'),
@@ -125,10 +118,8 @@ class ResourceViewWidget extends ViewsBasicWidgetBase {
           'show_authors' => $this->t('Show Authors'),
           'show_publish_date' => $this->t('Show Publish Date'),
         ],
-        '#title' => $this->t('Resource options'),
-        '#tree' => TRUE,
-        '#default_value' => $saved,
-      ];
+        $saved,
+      );
     }
 
     $search_fields = $this->viewsBasicManager->getDefaultParamValue('search_fields', $params ?? '');
@@ -188,9 +179,7 @@ class ResourceViewWidget extends ViewsBasicWidgetBase {
   /**
    * {@inheritdoc}
    */
-  protected function massageEntitySpecificParams(array &$paramData, array $form, FormStateInterface $form_state): void {
-    // Looked up by key: the #after_build passes move both elements.
-    $built = static::flattenBuiltElements($form['group_user_selection']['entity_and_view_mode'] ?? []);
+  protected function massageEntitySpecificParams(array &$paramData, array $built, array $form, FormStateInterface $form_state): void {
     $paramData['resource_field_options'] = $built['resource_field_options']['#value'] ?? [];
     $paramData['search_fields'] = $built['search_fields']['#value'] ?? [];
   }

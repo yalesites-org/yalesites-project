@@ -179,21 +179,18 @@ class ProfileViewWidgetTest extends UnitTestCase {
    * @covers ::massageEntitySpecificParams
    */
   public function testMassageEntitySpecificParams() {
-    $form = [
-      'group_user_selection' => [
-        'entity_and_view_mode' => [
-          'profile_field_options' => [
-            '#value' => [
-              'show_department' => 'show_department',
-              'show_email' => 'show_email',
-            ],
-          ],
+    // The flattened entity_and_view_mode elements massageFormValues() built.
+    $built = [
+      'profile_field_options' => [
+        '#value' => [
+          'show_department' => 'show_department',
+          'show_email' => 'show_email',
         ],
       ],
     ];
     $param_data = [];
     $form_state = $this->createMock(FormStateInterface::class);
-    $this->invoke($this->widget('profile_card'), 'massageEntitySpecificParams', [&$param_data, $form, $form_state]);
+    $this->invoke($this->widget('profile_card'), 'massageEntitySpecificParams', [&$param_data, $built, [], $form_state]);
 
     $this->assertSame(
       ['show_department' => 'show_department', 'show_email' => 'show_email'],
@@ -209,7 +206,7 @@ class ProfileViewWidgetTest extends UnitTestCase {
   public function testMassageEntitySpecificParamsDefaultsToEmptyArray() {
     $param_data = [];
     $form_state = $this->createMock(FormStateInterface::class);
-    $this->invoke($this->widget('profile_card'), 'massageEntitySpecificParams', [&$param_data, [], $form_state]);
+    $this->invoke($this->widget('profile_card'), 'massageEntitySpecificParams', [&$param_data, [], [], $form_state]);
 
     $this->assertSame([], $param_data['profile_field_options']);
   }

@@ -316,9 +316,13 @@ class ResourceViewWidgetTest extends UnitTestCase {
         ],
       ],
     ];
+    $widget = $this->widget('resource_card');
+    // massageFormValues() flattens the relocated elements once and passes the
+    // result through, so build it the same way here.
+    $built = $this->invoke($widget, 'flattenBuiltElements', [$form['group_user_selection']['entity_and_view_mode']]);
     $param_data = [];
-    $args = [&$param_data, $form, $this->createMock(FormStateInterface::class)];
-    $this->invoke($this->widget('resource_card'), 'massageEntitySpecificParams', $args);
+    $args = [&$param_data, $built, $form, $this->createMock(FormStateInterface::class)];
+    $this->invoke($widget, 'massageEntitySpecificParams', $args);
 
     $this->assertSame(['show_authors' => 'show_authors'], $param_data['resource_field_options']);
     $this->assertSame(['title' => 'title'], $param_data['search_fields']);
@@ -331,7 +335,7 @@ class ResourceViewWidgetTest extends UnitTestCase {
    */
   public function testMassageEntitySpecificParamsDefaultsToEmptyArrays() {
     $param_data = [];
-    $args = [&$param_data, [], $this->createMock(FormStateInterface::class)];
+    $args = [&$param_data, [], [], $this->createMock(FormStateInterface::class)];
     $this->invoke($this->widget('resource_condensed'), 'massageEntitySpecificParams', $args);
 
     $this->assertSame([], $param_data['resource_field_options']);

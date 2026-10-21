@@ -32,6 +32,7 @@ term_operator:
   js:
     assets/js/views-basic-term-operator.js: {}
   dependencies:
+    - core/drupal
     - core/once
     - core/jquery
 
