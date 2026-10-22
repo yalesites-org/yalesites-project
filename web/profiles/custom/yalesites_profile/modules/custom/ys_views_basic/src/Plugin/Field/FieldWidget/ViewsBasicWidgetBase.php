@@ -841,6 +841,7 @@ abstract class ViewsBasicWidgetBase extends WidgetBase implements ContainerFacto
         '#type' => 'container',
         '#attributes' => ['class' => ['vb-filter-row']],
         '#weight' => $weight++,
+        '#parents' => static::wrapperParents($element['exposed_filter_options'], $filter_key . '__row'),
         $filter_key => $checkbox,
       ];
       unset($element['exposed_filter_options'][$filter_key]);
@@ -859,6 +860,7 @@ abstract class ViewsBasicWidgetBase extends WidgetBase implements ContainerFacto
           '#type' => 'container',
           '#attributes' => ['class' => ['vb-filter-row__body']],
           '#weight' => 1,
+          '#parents' => static::wrapperParents($row, 'settings'),
         ] + $body;
         $row['#attributes']['class'][] = 'vb-filter-row--has-settings';
       }
@@ -917,11 +919,14 @@ abstract class ViewsBasicWidgetBase extends WidgetBase implements ContainerFacto
     }
 
     $row = [];
+    $row_parents = static::wrapperParents($element, 'display_row');
     if ($field_options) {
+      $result_parents = array_merge($row_parents, ['result_content']);
       $row['result_content'] = [
         '#type' => 'fieldset',
         '#title' => t('Result content'),
         '#attributes' => ['class' => ['vb-result-content']],
+        '#parents' => $result_parents,
         // gin_lb ignores #description_display: 'before' on a fieldset
         // (always renders it after the field option groups instead of
         // introducing them), so the intro is a #markup child with a negative
@@ -930,6 +935,7 @@ abstract class ViewsBasicWidgetBase extends WidgetBase implements ContainerFacto
         // tag_filters_intro (#1481).
         'result_content_intro' => [
           '#weight' => -10,
+          '#parents' => array_merge($result_parents, ['result_content_intro']),
           '#markup' => '<p class="vb-fieldset-intro">' . t("Choose which details appear on each result. These settings don't change which content the list pulls in.") . '</p>',
         ],
       ] + $field_options;
@@ -946,6 +952,7 @@ abstract class ViewsBasicWidgetBase extends WidgetBase implements ContainerFacto
       '#type' => 'container',
       '#attributes' => ['class' => ['vb-display-row']],
       '#weight' => -10,
+      '#parents' => $row_parents,
     ] + $row;
 
     return $element;
@@ -997,6 +1004,7 @@ abstract class ViewsBasicWidgetBase extends WidgetBase implements ContainerFacto
         '#type' => 'container',
         '#weight' => $weight,
         '#attributes' => ['class' => ['vb-term-group']],
+        '#parents' => static::wrapperParents($element, $group_key),
       ];
       foreach ([$select_key, $operator_key] as $child_key) {
         if (isset($element[$child_key])) {
@@ -1062,6 +1070,7 @@ abstract class ViewsBasicWidgetBase extends WidgetBase implements ContainerFacto
       // resisted overriding even with !important at higher specificity than
       // rules confirmed working elsewhere in this file.
       '#attributes' => ['class' => ['vb-filter-row', 'vb-filter-row--pinned']],
+      '#parents' => static::wrapperParents($element, 'pinned_to_top_row'),
       'pinned_to_top' => $checkbox,
     ];
     unset($element['pinned_to_top']);
@@ -1072,6 +1081,7 @@ abstract class ViewsBasicWidgetBase extends WidgetBase implements ContainerFacto
         '#type' => 'container',
         '#weight' => 1,
         '#attributes' => ['class' => ['vb-filter-row__body']],
+        '#parents' => static::wrapperParents($row, 'settings'),
         'pin_label' => $pin_label,
       ];
       $row['#attributes']['class'][] = 'vb-filter-row--has-settings';
@@ -1079,6 +1089,28 @@ abstract class ViewsBasicWidgetBase extends WidgetBase implements ContainerFacto
     }
     $element['pinned_to_top_row'] = $row;
     return $element;
+  }
+
+  /**
+   * Returns the #parents for a wrapper an #after_build pass adds.
+   *
+   * FormBuilder assigns #parents while it builds the form, so a wrapper added
+   * afterwards has none. Inline Form Errors
+   * (FormElementHelper::getElementByName()) implodes every child's #parents
+   * when it places an error, and a missing one turned any validation error on
+   * the listing form into a fatal TypeError. A wrapper submits nothing, so the
+   * path only has to be an array; it mirrors where the wrapper sits.
+   *
+   * @param array $parent
+   *   The built element the wrapper is added to.
+   * @param string $key
+   *   The wrapper's key within $parent.
+   *
+   * @return array
+   *   The wrapper's #parents.
+   */
+  protected static function wrapperParents(array $parent, string $key): array {
+    return array_merge($parent['#parents'] ?? [], [$key]);
   }
 
   /**
