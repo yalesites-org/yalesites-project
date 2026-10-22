@@ -16,39 +16,76 @@ type ModalProps = {
   // Accessible name for the dialog (WCAG 4.1.2). Required for every modal so it
   // never announces as a bare "dialog".
   ariaLabel: string;
+  // Return focus to whatever had it at open when this modal closes. Turn off
+  // when the parent restores focus itself, because only the parent can do it
+  // after it releases the page it made inert.
+  restoreFocus?: boolean;
 };
 
-const Modal = ({ show, close, children, header, footer, variant, ariaLabel}: ModalProps) => {
-  const modalRef = useRef<HTMLDivElement>(null);
-  const firstFocusableElement = useRef<HTMLElement | null>(null);
-  const lastFocusableElement = useRef<HTMLElement | null>(null);
-  const firstPlaceholderElement = useRef<HTMLElement | null>(null);
-  const lastPlaceholderElement = useRef<HTMLElement | null>(null);
+// Controls a keyboard user can Tab to, minus the tabOver sentinels.
+const TABBABLE = [
+  'a[href]',
+  'button:not([disabled])',
+  'input:not([disabled])',
+  'select:not([disabled])',
+  'textarea:not([disabled])',
+  '[tabindex]',
+]
+  .map((selector) => `${selector}:not([tabindex="-1"])`)
+  .join(', ');
+
+const getTabbables = (container: HTMLElement): HTMLElement[] =>
+  (Array.from(container.querySelectorAll(TABBABLE)) as HTMLElement[]).filter(
+    (el) => !el.classList.contains('tabOver')
+  );
+
+const Modal = ({ show, close, children, header, footer, variant, ariaLabel, restoreFocus = true }: ModalProps) => {
+  const modalRef = useRef<HTMLElement>(null);
+
+  // Wrap focus at either end of the dialog (WCAG 2.4.3 / 2.1.2). Checked
+  // synchronously, before the browser moves focus, so it cannot race fast key
+  // presses. Listening on the document also catches a Tab pressed while focus
+  // is outside the dialog (on <body>, say) and brings it back in.
+  // The tabOver sentinels only catch focus that slips past the trap (a screen
+  // reader's virtual cursor, say) and send it to the other end.
+  const focusEdge = (last: boolean) => {
+    const tabbables = modalRef.current ? getTabbables(modalRef.current) : [];
+    tabbables[last ? tabbables.length - 1 : 0]?.focus();
+  };
 
   const handleKeyDown = (e: KeyboardEvent) => {
-    if (e.key === 'Tab' && modalRef.current) {
-      setTimeout(() => {
-        const focusedElement = modalRef.current?.querySelector(':focus');
-
-        if (modalRef.current?.getAttribute('modal-is-open') === 'true') {
-          const elements = modalRef.current?.querySelectorAll('button:not([aria-disabled="true"],[disabled="true"]), [href], input, select, textarea, [tabindex]:not([tabindex="-1"]');
-          firstPlaceholderElement.current = elements ? elements[0] as HTMLElement : null;
-          firstFocusableElement.current = elements ? elements[1] as HTMLElement : null;
-          lastPlaceholderElement.current = elements ? elements[elements.length - 1] as HTMLElement : null;
-          lastFocusableElement.current = elements ? elements[elements.length - 2] as HTMLElement : null;
-        }
-
-        const isFocusedElementADiv = focusedElement?.tagName === 'DIV' && focusedElement?.getAttribute('class') === 'tabOver';
-
-        if (e.shiftKey && (focusedElement?.isSameNode(firstPlaceholderElement.current) || isFocusedElementADiv)) {
-          e.preventDefault();
-          lastFocusableElement.current?.focus();
-        } else if (!e.shiftKey && (focusedElement?.isSameNode(lastPlaceholderElement.current) || isFocusedElementADiv)) {
-          e.preventDefault();
-          firstFocusableElement.current?.focus();
-        }
-      }, 1);
+    const modal = modalRef.current;
+    // A modal stacked on top of this one makes it inert; only the top dialog
+    // handles Tab.
+    if (e.key !== 'Tab' || !modal || modal.hasAttribute('inert')) {
+      return;
     }
+    const tabbables = getTabbables(modal);
+    const first = tabbables[0];
+    const last = tabbables[tabbables.length - 1];
+    const active = document.activeElement;
+    const outside = active === modal || !modal.contains(active);
+
+    if (outside || active === (e.shiftKey ? first : last)) {
+      e.preventDefault();
+      (e.shiftKey ? last : first)?.focus();
+    }
+  };
+
+  // A control that becomes disabled or is removed while focused (Send, New
+  // chat, Stop generating) drops focus to <body> with the dialog still open.
+  // Catch that and put focus back on the dialog.
+  const handleFocusOut = (e: FocusEvent) => {
+    if (e.relatedTarget) {
+      return;
+    }
+    queueMicrotask(() => {
+      const modal = modalRef.current;
+      const active = document.activeElement;
+      if (modal?.isConnected && !modal.hasAttribute('inert') && (!active || active === document.body)) {
+        modal.focus();
+      }
+    });
   };
 
   useEffect(() => {
@@ -64,16 +101,20 @@ const Modal = ({ show, close, children, header, footer, variant, ariaLabel}: Mod
     ).filter((el) => el !== modalRef.current && !el.hasAttribute('inert'));
     inertedBelow.forEach((el) => el.setAttribute('inert', ''));
 
-    modalRef.current?.addEventListener('keydown', handleKeyDown);
+    document.addEventListener('keydown', handleKeyDown);
+    modalRef.current?.addEventListener('focusout', handleFocusOut);
 
     // focus the active modal
     modalRef.current?.focus();
 
     return () => {
-      modalRef.current?.removeEventListener('keydown', handleKeyDown);
+      document.removeEventListener('keydown', handleKeyDown);
+      modalRef.current?.removeEventListener('focusout', handleFocusOut);
       // Un-inert before restoring focus so the target is focusable again.
       inertedBelow.forEach((el) => el.removeAttribute('inert'));
-      opener?.focus?.();
+      if (restoreFocus) {
+        opener?.focus?.();
+      }
     };
   }, []);
 
@@ -87,7 +128,7 @@ const Modal = ({ show, close, children, header, footer, variant, ariaLabel}: Mod
         className={`${variant == 'citation' ? styles.modalContainerCitation : styles.modalContainer} ${show ? "show" : ""}`}
         onClick={() => handleClose()}
       >
-        <section className={styles.modal} onClick={(e) => e.stopPropagation()} aria-modal={"true"} role={"dialog"} aria-label={ariaLabel} modal-is-open={"true"} ref={modalRef} tabIndex={0}>
+        <section className={styles.modal} onClick={(e) => e.stopPropagation()} aria-modal={"true"} role={"dialog"} aria-label={ariaLabel} modal-is-open={"true"} ref={modalRef} tabIndex={-1}>
           <motion.div
             className={`${variant == 'citation' ? styles.modalCitation : styles.modalContent}`}
             initial={{ y: 50, opacity: 0, scale: 0.75 }}
@@ -98,7 +139,7 @@ const Modal = ({ show, close, children, header, footer, variant, ariaLabel}: Mod
               <Stack horizontal verticalAlign="center" horizontalAlign="space-between" className={styles.modalHeaderContainer}>
                 {header}
                 <Stack horizontal>
-                  <div tabIndex={0} className="tabOver"></div>
+                  <div tabIndex={0} className="tabOver" onFocus={() => focusEdge(true)}></div>
                   <button className={styles.closeButton} onClick={handleClose} aria-label="Close modal">
                     <svg width="16" height="16" viewBox="0 0 16 16" xmlns="http://www.w3.org/2000/svg" aria-hidden="true" focusable="false">
                       <path d="M15.1719 2.42188L9.54688 8.04688L15.125 13.625C15.5938 14.0469 15.5938 14.75 15.125 15.1719C14.7031 15.6406 14 15.6406 13.5781 15.1719L7.95312 9.59375L2.375 15.1719C1.95312 15.6406 1.25 15.6406 0.828125 15.1719C0.359375 14.75 0.359375 14.0469 0.828125 13.5781L6.40625 8L0.828125 2.42188C0.359375 2 0.359375 1.29688 0.828125 0.828125C1.25 0.40625 1.95312 0.40625 2.42188 0.828125L8 6.45312L13.5781 0.875C14 0.40625 14.7031 0.40625 15.1719 0.875C15.5938 1.29688 15.5938 2 15.1719 2.42188Z" />
@@ -116,7 +157,7 @@ const Modal = ({ show, close, children, header, footer, variant, ariaLabel}: Mod
                 </div>
               )}
             </main>
-            <div tabIndex={0} className="tabOver"></div>
+            <div tabIndex={0} className="tabOver" onFocus={() => focusEdge(false)}></div>
           </motion.div>
         </section>
       </div>

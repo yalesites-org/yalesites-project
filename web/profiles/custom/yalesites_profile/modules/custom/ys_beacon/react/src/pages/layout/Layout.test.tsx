@@ -1,5 +1,5 @@
 import { describe, it, expect, beforeEach, afterEach, vi } from "vitest";
-import { act, render, screen } from "@testing-library/react";
+import { act, render, screen, waitFor } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import Layout from "./Layout";
 import { AppStateProvider } from "../../state/AppProvider";
@@ -136,5 +136,115 @@ describe("Layout launch button is a programmatic hook only (#1944)", () => {
 
     expect(document.body.getAttribute("data-modal-active")).toBe("true");
     expect(await screen.findByRole("dialog")).toBeTruthy();
+  });
+});
+
+// YaleSites-Internal#1945: closing the chat must hand focus back to the Beacon
+// link that opened it (WCAG 2.4.3).
+describe("Layout returns focus to the launching link on close (#1945)", () => {
+  // jsdom does not implement `inert`, so focus() on an element inside an inert
+  // subtree succeeds there while a browser silently ignores it. Emulate the
+  // browser so the test catches a focus call made before the page is restored.
+  // HTMLElement.prototype.focus is an accessor here (user-event wraps it), so
+  // swap the descriptor rather than assigning.
+  const realDescriptor = Object.getOwnPropertyDescriptor(
+    HTMLElement.prototype,
+    "focus"
+  ) as PropertyDescriptor;
+  const realFocus = HTMLElement.prototype.focus;
+  beforeEach(() => {
+    Object.defineProperty(HTMLElement.prototype, "focus", {
+      configurable: true,
+      writable: true,
+      value: function focus(this: HTMLElement, options?: FocusOptions) {
+        if (this.closest("[inert]")) {
+          return;
+        }
+        realFocus.call(this, options);
+      },
+    });
+  });
+  afterEach(() => {
+    Object.defineProperty(HTMLElement.prototype, "focus", realDescriptor);
+  });
+
+  // Launch links live in the host page, outside the widget host, exactly as
+  // the floating button template and editor-placed links do.
+  const addLaunchLink = (text: string) => {
+    const region = document.createElement("div");
+    const link = document.createElement("a");
+    link.href = "#launch-chat";
+    link.textContent = text;
+    region.appendChild(link);
+    document.body.insertBefore(region, document.body.firstChild);
+    return link;
+  };
+
+  // What js/events.js does on Enter or click: the link has focus, then the
+  // hidden launch button is clicked programmatically.
+  const launchFrom = async (link: HTMLElement | null) => {
+    link?.focus();
+    act(() => {
+      document.getElementById("ys-beacon-launch-modal")?.click();
+    });
+    await screen.findByRole("dialog");
+  };
+
+  let floating: HTMLAnchorElement;
+  let inline: HTMLAnchorElement;
+  beforeEach(() => {
+    floating = addLaunchLink("Beacon Chat");
+    inline = addLaunchLink("Ask Beacon");
+  });
+  afterEach(() => {
+    floating.parentElement?.remove();
+    inline.parentElement?.remove();
+  });
+
+  it("returns focus to the launching link when Escape closes the chat", async () => {
+    const user = userEvent.setup();
+    renderLayout();
+    await launchFrom(floating);
+    expect(floating.closest("[inert]")).not.toBeNull();
+
+    await user.keyboard("{Escape}");
+
+    expect(screen.queryByRole("dialog")).toBeNull();
+    await waitFor(() => expect(floating).toHaveFocus());
+  });
+
+  it("returns focus to the launching link when the close button closes the chat", async () => {
+    const user = userEvent.setup();
+    renderLayout();
+    await launchFrom(floating);
+
+    await user.click(screen.getByRole("button", { name: /close modal/i }));
+
+    await waitFor(() => expect(floating).toHaveFocus());
+  });
+
+  it("returns focus to whichever #launch-chat link opened the chat", async () => {
+    const user = userEvent.setup();
+    renderLayout();
+    await launchFrom(inline);
+
+    await user.keyboard("{Escape}");
+
+    await waitFor(() => expect(inline).toHaveFocus());
+  });
+
+  it("focuses a Beacon launch link, not <body>, when the chat was opened by a #launch-chat page load", async () => {
+    const user = userEvent.setup();
+    renderLayout();
+    // A page load with #launch-chat in the URL opens the chat with nothing
+    // focused.
+    (document.activeElement as HTMLElement | null)?.blur();
+    await launchFrom(null);
+
+    await user.keyboard("{Escape}");
+
+    await waitFor(() =>
+      expect(document.activeElement?.getAttribute("href")).toBe("#launch-chat")
+    );
   });
 });
