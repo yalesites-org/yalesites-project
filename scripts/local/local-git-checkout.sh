@@ -20,8 +20,9 @@
 #  5. npm-links tokens -> component-library-twig -> atomic.
 #  6. Builds tokens and component-library-twig.
 #  7. Creates the root atomic, component-library-twig and tokens symlinks.
-#  8. Clears the Drupal cache when atomic changed or dependencies were
-#     refreshed. It never touches the database: run `npm run confim` after.
+#  8. Clears the Drupal cache when atomic changed branches or composer
+#     changed installed packages. It never touches the database: run
+#     `npm run confim` after.
 #
 # Flags:
 #  -b <branch>  branch for all repos
@@ -395,7 +396,7 @@ function _local-git-checkout() {
   # If atomic changes branches, we need to know this so we can know to 
   # clear Drupal's cache toward the end of the script.
   local atomic_changed=false
-  # Set when composer dependencies are refreshed, which also needs a cache clear.
+  # Set when composer changed installed packages, which also needs a cache clear.
   local deps_refreshed=false
 
   # getopts - Parse the options to then use
@@ -515,8 +516,14 @@ function _local-git-checkout() {
   # Composer runs before the atomic switch, which puts atomic back on its
   # branch if composer checked it out at a release tag.
   if [ "$skip_composer" = false ]; then
+    # Compare composer's record of installed packages before and after, so the
+    # cache is only cleared when composer actually changed something.
+    local installed_before
+    installed_before=$(cksum vendor/composer/installed.json 2> /dev/null)
     refresh_composer_dependencies "$atomic_path" "$yale_packages_hold"
-    deps_refreshed=true
+    if [ "$(cksum vendor/composer/installed.json 2> /dev/null)" != "$installed_before" ]; then
+      deps_refreshed=true
+    fi
   fi
 
   # If current branch did change (checked after composer, so a detached or
@@ -559,14 +566,21 @@ function _local-git-checkout() {
   cd ../..
 
   _say "Using the component-library global npm link inside the atomic theme"
-  # Linking runs the component library's install scripts against whatever
-  # node_modules it has, which fail when it just changed branches. The link is
-  # still made, and the clean install below fixes node_modules, so only a
-  # missing link is fatal.
-  if ! npm link @yalesites-org/component-library-twig; then
-    [ -L node_modules/@yalesites-org/component-library-twig ] ||
-      { _error "npm link @yalesites-org/component-library-twig failed in atomic"; exit 1; }
-    _error "Warning: npm link @yalesites-org/component-library-twig reported errors in atomic, but the link is in place; continuing"
+  # Linking runs the component library's patch scripts mid-install, where they
+  # usually fail even though the link is made; the clean install below
+  # re-applies them. So the output goes to a log, and only a missing link is
+  # fatal (the log is printed then).
+  local link_log tmp_dir="${TMPDIR:-/tmp}"
+  link_log=$(mktemp "${tmp_dir%/}/local-git-checkout-npm-link.XXXXXX") ||
+    { _error "Could not create a temp file for the npm link log"; exit 1; }
+  if npm link @yalesites-org/component-library-twig > "$link_log" 2>&1; then
+    rm -f "$link_log"
+  elif [ -L node_modules/@yalesites-org/component-library-twig ]; then
+    _say "npm reported errors from the component library's install scripts (expected; the clean install below re-applies them). Log: $link_log"
+  else
+    cat "$link_log"
+    _error "npm link @yalesites-org/component-library-twig failed in atomic. Log: $link_log"
+    exit 1
   fi
 
   [ "$verbose" = true ] && _say "Moving into the component library"
