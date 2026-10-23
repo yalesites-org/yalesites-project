@@ -70,7 +70,7 @@ All commands are prefixed with `npm run`. For example: `npm run setup`
 
 - `local:theme-link` - Establish npm links to frontend repositories (run once)
 - `local:cl-dev` - Full cross-repository development mode (Storybook + Drupal)
-- `local:git-checkout` - Sync all repositories to default branches
+- `local:git-checkout` - Update composer dependencies, switch all four repositories to a branch (`-- -b <branch>`, default develop/main), fast-forward them, and rebuild tokens and the component library; run `confim` afterward
 
 ### Theme/Component Review
 
