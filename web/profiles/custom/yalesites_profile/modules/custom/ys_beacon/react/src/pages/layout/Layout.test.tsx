@@ -1,5 +1,5 @@
 import { describe, it, expect, beforeEach, afterEach, vi } from "vitest";
-import { render, screen } from "@testing-library/react";
+import { act, render, screen } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import Layout from "./Layout";
 import { AppStateProvider } from "../../state/AppProvider";
@@ -33,6 +33,15 @@ const renderLayout = () =>
     </AppStateProvider>
   );
 
+// The launch button is aria-hidden (YaleSites-Internal#1944), which leaves it no accessible name,
+// so look it up by the id js/events.js uses and check its visible text.
+const getLaunchButton = () => {
+  const button = document.getElementById("ys-beacon-launch-modal");
+  expect(button?.tagName).toBe("BUTTON");
+  expect(button).toHaveTextContent(/try beacon now/i);
+  return button as HTMLElement;
+};
+
 describe("Layout body scroll lock", () => {
   it("does not freeze the body before the modal is opened", () => {
     renderLayout();
@@ -45,7 +54,7 @@ describe("Layout body scroll lock", () => {
     renderLayout();
 
     await userEvent.click(
-      screen.getByRole("button", { name: /try beacon now/i })
+      getLaunchButton()
     );
 
     expect(document.body.getAttribute("data-body-frozen")).toBe("true");
@@ -57,7 +66,7 @@ describe("Layout body scroll lock", () => {
     renderLayout();
 
     await userEvent.click(
-      screen.getByRole("button", { name: /try beacon now/i })
+      getLaunchButton()
     );
     // Layout closes the modal on Escape.
     await userEvent.keyboard("{Escape}");
@@ -81,7 +90,7 @@ describe("Layout background inert while the modal is open (#1441)", () => {
       expect(pageContent.hasAttribute("inert")).toBe(false);
 
       await userEvent.click(
-        screen.getByRole("button", { name: /try beacon now/i })
+        getLaunchButton()
       );
 
       // Background page is inert (removed from the a11y tree + tab order) so the
@@ -100,5 +109,32 @@ describe("Layout background inert while the modal is open (#1441)", () => {
     } finally {
       pageContent.remove();
     }
+  });
+});
+
+describe("Layout launch button is a programmatic hook only (#1944)", () => {
+  it("hides the launch button from assistive technology and the tab order", () => {
+    renderLayout();
+
+    const button = document.getElementById("ys-beacon-launch-modal");
+    expect(button).not.toBeNull();
+    expect(button?.getAttribute("aria-hidden")).toBe("true");
+    expect(button?.getAttribute("tabindex")).toBe("-1");
+    // Not exposed to AT, so a role query without hidden: true finds nothing.
+    expect(
+      screen.queryByRole("button", { name: /try beacon now/i })
+    ).toBeNull();
+  });
+
+  it("still opens the modal when clicked programmatically, as js/events.js does", async () => {
+    renderLayout();
+
+    const button = document.getElementById("ys-beacon-launch-modal");
+    act(() => {
+      button?.click();
+    });
+
+    expect(document.body.getAttribute("data-modal-active")).toBe("true");
+    expect(await screen.findByRole("dialog")).toBeTruthy();
   });
 });
