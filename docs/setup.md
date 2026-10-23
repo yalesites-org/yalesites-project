@@ -158,11 +158,16 @@ npm run build-with-assets                       # Build/Rebuild with replaced as
 npm run build-with-install                      # Rebuild with fresh imports
 ```
 ```bash
-npm run local:git-checkout                      # Sync:
-                                                #   yalesites-project: develop branch
-                                                #   atomic: main branch
-                                                #   component-library: main branch
-                                                #   tokens: main branch
+npm run local:git-checkout -- -b <branch>       # Switch all four repos to <branch>:
+                                                #   updates composer dependencies (skip with -s)
+                                                #   switches yalesites-project, atomic,
+                                                #   component-library-twig, and tokens to <branch>,
+                                                #   falling back to develop (yalesites-project) or
+                                                #   main (the others) where it does not exist;
+                                                #   with no -b, uses those defaults
+                                                #   fast-forwards each repo to its upstream
+                                                #   re-links and rebuilds tokens and the component library
+                                                # Run `npm run confim` afterward to import config
 ```
 ```bash
 npm run local:git-checkout -- -h                # More command help
