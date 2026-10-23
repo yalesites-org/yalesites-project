@@ -4,6 +4,7 @@ namespace Drupal\ys_views_basic\Plugin\views\sort;
 
 use Drupal\views\Attribute\ViewsSort;
 use Drupal\views\Plugin\views\sort\SortPluginBase;
+use Drupal\ys_views_basic\ViewsBasicManager;
 
 /**
  * Sort that receives JSON overrides from a Views Basic field.
@@ -23,9 +24,12 @@ class ViewsBasicSort extends SortPluginBase {
     $query = $this->query;
 
     // Split out the field and the sort direction.
-    if (isset($this->view->args[3])) {
-      $sortBy = $this->view->args[3];
-      if (str_contains($sortBy, ':')) {
+    if (isset($this->view->args[ViewsBasicManager::viewArgumentIndex('sort')])) {
+      $sortBy = $this->view->args[ViewsBasicManager::viewArgumentIndex('sort')];
+      // The value becomes an ORDER BY expression below, and on the views/ajax
+      // path it comes from the browser. Anything that is not a sort a listing
+      // offers is ignored, leaving the view's default order.
+      if (ViewsBasicManager::isAllowedSort($sortBy)) {
         $sortQueryOptions = explode(":", $sortBy);
         if (str_starts_with($sortQueryOptions[0], 'field')) {
           $lookupTable = $query->addTable('node__' . $sortQueryOptions[0]);

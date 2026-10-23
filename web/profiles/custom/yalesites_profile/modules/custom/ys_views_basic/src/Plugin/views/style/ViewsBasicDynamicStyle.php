@@ -8,6 +8,8 @@ use Drupal\Core\Routing\RouteMatchInterface;
 use Drupal\Core\StringTranslation\TranslatableMarkup;
 use Drupal\views\Attribute\ViewsStyle;
 use Drupal\views\Plugin\views\style\StylePluginBase;
+use Drupal\ys_views_basic\ListingRowDisplay;
+use Drupal\ys_views_basic\ViewsBasicManager;
 use Symfony\Component\DependencyInjection\ContainerInterface;
 
 /**
@@ -92,8 +94,9 @@ class ViewsBasicDynamicStyle extends StylePluginBase implements ContainerFactory
     if (!empty($this->view->rowPlugin)) {
 
       // Gets passed view mode from ViewsBasicDefaultFormatter and sets per row.
-      if (isset($this->view->args[4])) {
-        $viewMode = $this->view->args[4];
+      $view_mode_index = ViewsBasicManager::viewArgumentIndex('view');
+      if (isset($this->view->args[$view_mode_index])) {
+        $viewMode = $this->view->args[$view_mode_index];
         $validViewModes = $this->entityDisplay->getViewModeOptions('node');
         if (array_key_exists($viewMode, $validViewModes)) {
           $this->view->rowPlugin->options['view_mode'] = $viewMode;
@@ -113,8 +116,23 @@ class ViewsBasicDynamicStyle extends StylePluginBase implements ContainerFactory
   public function render() {
     $rows = [];
 
+    // The listing's display flags travel with each row's render array and
+    // are only on the node while that row renders; see ListingRowDisplay.
+    $is_scaffold = in_array($this->view->id(), ViewsBasicManager::SCAFFOLD_VIEWS, TRUE);
+    if ($is_scaffold) {
+      $flags = ListingRowDisplay::flagsFromArgs($this->view->id(), $this->view->args);
+      $pin_label = ListingRowDisplay::pinLabelFromArgs($this->view->args);
+    }
+
     foreach ($this->view->result as $row) {
       $rendered_row = $this->view->rowPlugin->render($row);
+      if ($is_scaffold && is_array($rendered_row)) {
+        $rendered_row = ListingRowDisplay::attach($rendered_row, $flags + [
+          // Only pinned (sticky) rows show the listing's pin label. NULL
+          // keeps any other row's node without one while it renders.
+          'pin_label' => isset($row->_entity) && ListingRowDisplay::isSticky($row->_entity) && $pin_label !== '' ? $pin_label : NULL,
+        ]);
+      }
       // If row has node__field_event_date_delta,
       // inject it into the render array.
       if (isset($row->node__field_event_date_delta)) {
@@ -129,12 +147,13 @@ class ViewsBasicDynamicStyle extends StylePluginBase implements ContainerFactory
       'portrait_grid' => 'grid',
       'list_item' => 'list',
       'condensed' => 'condensed',
+      // No bundle offers directory since #1682; old block revisions still do.
       'directory' => 'profile-directory',
     ];
 
     $type = $viewModesMap[$this->view->rowPlugin->options['view_mode']];
 
-    $contentType = $this->view->args[0];
+    $contentType = $this->view->args[ViewsBasicManager::viewArgumentIndex('type')];
     $cardCollectionModifiers = [];
     if ($contentType === 'resource' && $this->view->rowPlugin->options['view_mode'] === 'portrait_grid') {
       $cardCollectionModifiers[] = 'resource-portrait';
@@ -151,7 +170,35 @@ class ViewsBasicDynamicStyle extends StylePluginBase implements ContainerFactory
       '#card_collection_modifiers' => $cardCollectionModifiers,
       '#parentNode' => $parentNode,
       '#contentType' => $contentType,
+      '#card_size' => $this->cardSize(),
     ];
+  }
+
+  /**
+   * Returns the card size for this listing (#1648).
+   *
+   * The dial travels in the shared field_display_options argument because it
+   * describes the collection as a whole rather than an individual result row.
+   * Anything unexpected — another view using this style plugin, a view
+   * rendered outside setupView(), or a stored value the SCSS has no rule for
+   * — falls back to the large (3-up) grid every listing had before the dial
+   * existed.
+   *
+   * The view-id guard matters: this style plugin also serves the
+   * content_resources view, which builds its own, shorter argument list in
+   * ViewsContentResourcesManager — index 8 is pin_settings there, not field
+   * display options — so reading the index blindly would decode a different
+   * argument entirely.
+   *
+   * @return string
+   *   A member of ViewsBasicManager::CARD_SIZE_OPTIONS.
+   */
+  protected function cardSize(): string {
+    if (!in_array($this->view->id(), ViewsBasicManager::SCAFFOLD_VIEWS, TRUE)) {
+      return ViewsBasicManager::CARD_SIZE_DEFAULT;
+    }
+
+    return ViewsBasicManager::normalizeCardSize(ViewsBasicManager::fieldDisplayOptionsFromArgs($this->view->args)['card_size']);
   }
 
 }

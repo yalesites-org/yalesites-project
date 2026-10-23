@@ -422,6 +422,8 @@ class ViewsContentResourcesManager extends ControllerBase implements ContainerIn
     ];
 
     $view->setArguments($view_args);
+    // See ViewsBasicFullPager::query().
+    $view->setOffset((int) $view_args['offset']);
     $view->execute();
 
     // Unset the pager. Needs to be done after view->execute();

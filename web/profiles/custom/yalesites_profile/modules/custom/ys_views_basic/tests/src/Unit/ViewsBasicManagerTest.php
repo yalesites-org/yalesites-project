@@ -8,8 +8,18 @@ use Drupal\Core\Entity\EntityTypeManagerInterface;
 use Drupal\Core\Form\FormStateInterface;
 use Drupal\Core\Routing\RouteMatchInterface;
 use Drupal\Tests\UnitTestCase;
+use Drupal\layout_builder\OverridesSectionStorageInterface;
+use Drupal\node\NodeInterface;
 use Drupal\taxonomy\TermStorageInterface;
+use Drupal\views\Plugin\views\display\DisplayPluginBase;
+use Drupal\views\Plugin\views\query\Sql;
+use Drupal\views\ViewExecutable;
+use Drupal\views\ViewExecutableFactory;
+use Drupal\ys_views_basic\Service\ExposedTaxonomyFilterOptions;
 use Drupal\ys_views_basic\ViewsBasicManager;
+use Symfony\Component\HttpFoundation\Request;
+
+require_once __DIR__ . '/../../../ys_views_basic.module';
 
 /**
  * Unit tests for ViewsBasicManager.
@@ -68,6 +78,34 @@ class ViewsBasicManagerTest extends UnitTestCase {
   protected $cacheTagsInvalidator;
 
   /**
+   * The view executable factory mock.
+   *
+   * @var \Drupal\views\ViewExecutableFactory|\PHPUnit\Framework\MockObject\MockObject
+   */
+  protected $viewExecutableFactory;
+
+  /**
+   * The exposed taxonomy filter options mock.
+   *
+   * @var \Drupal\ys_views_basic\Service\ExposedTaxonomyFilterOptions|\PHPUnit\Framework\MockObject\MockObject
+   */
+  protected $exposedTaxonomyFilterOptions;
+
+  /**
+   * Every input runSetupView()'s view received through setExposedInput().
+   *
+   * @var array
+   */
+  protected $exposedInputCalls = [];
+
+  /**
+   * The arguments runSetupView()'s view received through setArguments().
+   *
+   * @var array
+   */
+  protected $viewArguments = [];
+
+  /**
    * The manager under test.
    *
    * @var \Drupal\ys_views_basic\ViewsBasicManager
@@ -93,12 +131,16 @@ class ViewsBasicManagerTest extends UnitTestCase {
     $this->entityDisplayRepository = $this->createMock(EntityDisplayRepository::class);
     $this->routeMatch = $this->createMock(RouteMatchInterface::class);
     $this->cacheTagsInvalidator = $this->createMock(CacheTagsInvalidatorInterface::class);
+    $this->viewExecutableFactory = $this->createMock(ViewExecutableFactory::class);
+    $this->exposedTaxonomyFilterOptions = $this->createMock(ExposedTaxonomyFilterOptions::class);
 
     $this->manager = new ViewsBasicManager(
       $this->entityTypeManager,
       $this->entityDisplayRepository,
       $this->routeMatch,
-      $this->cacheTagsInvalidator
+      $this->cacheTagsInvalidator,
+      $this->viewExecutableFactory,
+      $this->exposedTaxonomyFilterOptions
     );
   }
 
@@ -157,6 +199,8 @@ class ViewsBasicManagerTest extends UnitTestCase {
         ['entity_display.repository', 1, $this->entityDisplayRepository],
         ['current_route_match', 1, $this->routeMatch],
         ['cache_tags.invalidator', 1, $this->cacheTagsInvalidator],
+        ['views.executable', 1, $this->viewExecutableFactory],
+        ['ys_views_basic.exposed_taxonomy_filter_options', 1, $this->exposedTaxonomyFilterOptions],
       ]);
 
     $manager = ViewsBasicManager::create($container);
@@ -171,7 +215,7 @@ class ViewsBasicManagerTest extends UnitTestCase {
   public function testEntityTypeListReturnsLabelsWithImageMarkup() {
     $list = $this->manager->entityTypeList();
 
-    $this->assertSame(['post', 'event', 'page', 'profile'], array_keys($list));
+    $this->assertSame(['post', 'event', 'page', 'profile', 'resource'], array_keys($list));
     $this->assertStringContainsString('Posts', $list['post']);
     $this->assertStringContainsString('<img src=', $list['post']);
   }
@@ -185,18 +229,40 @@ class ViewsBasicManagerTest extends UnitTestCase {
     $list = $this->manager->viewModeList('post');
 
     $this->assertSame(['card', 'list_item', 'condensed'], array_keys($list));
-    $this->assertStringContainsString('Post Card Grid', $list['card']);
+    $this->assertStringStartsWith('Card Grid<img', $list['card']);
   }
 
   /**
-   * ViewModeList() includes the "directory" mode only for profiles.
+   * Every content type names its displays the same way (#1171 product call).
+   *
+   * The wizard asks for the content type first, so the display names drop it:
+   * "Card Grid", "List", "Condensed" and "Portrait Grid" everywhere.
    *
    * @covers ::viewModeList
    */
-  public function testViewModeListForProfileIncludesDirectory() {
+  public function testViewModeLabelsDropTheContentType() {
+    $expected = [
+      'card' => 'Card Grid',
+      'list_item' => 'List',
+      'condensed' => 'Condensed',
+      'portrait_grid' => 'Portrait Grid',
+    ];
+    foreach (array_keys(ViewsBasicManager::ALLOWED_ENTITIES) as $type) {
+      foreach ($this->manager->viewModeList($type) as $mode => $label) {
+        $this->assertStringStartsWith($expected[$mode] . '<img', $label, "$type $mode");
+      }
+    }
+  }
+
+  /**
+   * ViewModeList() no longer offers the retired "directory" mode (#1682).
+   *
+   * @covers ::viewModeList
+   */
+  public function testViewModeListForProfile() {
     $list = $this->manager->viewModeList('profile');
 
-    $this->assertArrayHasKey('directory', $list);
+    $this->assertSame(['card', 'list_item', 'condensed'], array_keys($list));
   }
 
   /**
@@ -207,9 +273,12 @@ class ViewsBasicManagerTest extends UnitTestCase {
   public function testSortByListForEvent() {
     $list = $this->manager->sortByList('event');
 
+    // Soonest first is listed first, so a new event listing defaults to it
+    // (the select falls back to its first option); the saved keys are
+    // unchanged, so existing listings keep their sort (#1864).
     $this->assertSame([
-      'field_event_date:DESC' => 'Event Date - newer first',
-      'field_event_date:ASC' => 'Event Date - older first',
+      'field_event_date:ASC' => 'Event Date - soonest first',
+      'field_event_date:DESC' => 'Event Date - latest first',
     ], $list);
   }
 
@@ -246,7 +315,7 @@ class ViewsBasicManagerTest extends UnitTestCase {
     $result = $this->manager->getLabel('post', 'view_modes', 'list_item');
 
     $this->assertIsArray($result);
-    $this->assertSame('Post List', $result['label']);
+    $this->assertSame('List', $result['label']);
   }
 
   /**
@@ -400,12 +469,51 @@ class ViewsBasicManagerTest extends UnitTestCase {
   public function testGetDefaultParamValueSimpleArrayOptionsDefaultAndPassThrough() {
     $this->assertSame([], $this->manager->getDefaultParamValue('event_field_options', json_encode([])));
     $this->assertSame([], $this->manager->getDefaultParamValue('post_field_options', json_encode([])));
+    $this->assertSame([], $this->manager->getDefaultParamValue('profile_field_options', json_encode([])));
     $this->assertSame([], $this->manager->getDefaultParamValue('exposed_filter_options', json_encode([])));
 
     $params = json_encode(['event_field_options' => ['hide_add_to_calendar' => 1]]);
     $this->assertSame(
       ['hide_add_to_calendar' => 1],
       $this->manager->getDefaultParamValue('event_field_options', $params)
+    );
+
+    $profile_params = json_encode(['profile_field_options' => ['show_email' => 'show_email']]);
+    $this->assertSame(
+      ['show_email' => 'show_email'],
+      $this->manager->getDefaultParamValue('profile_field_options', $profile_params)
+    );
+  }
+
+  /**
+   * GetDefaultParamValue('card_size', ...) keeps the large grid (#1648).
+   *
+   * Listings saved before the dial existed carry no card_size key and must keep
+   * rendering exactly as they did. A listing saved against the numeric dial the
+   * control briefly used resolves to the size that renders the same grid, so it
+   * reads correctly whether or not the deploy hook has converted it yet.
+   *
+   * @covers ::getDefaultParamValue
+   */
+  public function testGetDefaultParamValueCardSizeDefaultsToLarge() {
+    $this->assertSame('large', $this->manager->getDefaultParamValue('card_size', json_encode([])));
+    $this->assertSame(
+      'small',
+      $this->manager->getDefaultParamValue('card_size', json_encode(['card_size' => 'small']))
+    );
+    // A stray cards_per_row key is not read at all: that shape never shipped
+    // (absent from develop and from this PR's base), so there is no stored
+    // data to honour and no conversion to make. It is simply an absent
+    // card_size, which takes the default.
+    $this->assertSame(
+      'large',
+      $this->manager->getDefaultParamValue('card_size', json_encode(['cards_per_row' => 4]))
+    );
+    // Anything outside the offered set falls back rather than emitting a grid
+    // the SCSS has no rule for.
+    $this->assertSame(
+      'large',
+      $this->manager->getDefaultParamValue('card_size', json_encode(['card_size' => 'enormous']))
     );
   }
 
@@ -425,6 +533,70 @@ class ViewsBasicManagerTest extends UnitTestCase {
 
     $params = json_encode(['category_filter_label' => 'Custom Label']);
     $this->assertSame('Custom Label', $this->manager->getDefaultParamValue('category_filter_label', $params));
+  }
+
+  /**
+   * GetDefaultParamValue() for include/exclude operators falls back per #1316.
+   *
+   * A block saved after the split reads its own key; one saved before it
+   * (only the legacy 'operator' key) falls back to that for both; one with
+   * neither key defaults to "+" (OR).
+   *
+   * @covers ::getDefaultParamValue
+   */
+  public function testGetDefaultParamValueOperatorSplitFallsBackToLegacy() {
+    $split = json_encode(['include_operator' => ',', 'exclude_operator' => '+']);
+    $this->assertSame(',', $this->manager->getDefaultParamValue('include_operator', $split));
+    $this->assertSame('+', $this->manager->getDefaultParamValue('exclude_operator', $split));
+
+    $legacy = json_encode(['operator' => ',']);
+    $this->assertSame(',', $this->manager->getDefaultParamValue('include_operator', $legacy));
+    $this->assertSame(',', $this->manager->getDefaultParamValue('exclude_operator', $legacy));
+
+    $neither = json_encode([]);
+    $this->assertSame('+', $this->manager->getDefaultParamValue('include_operator', $neither));
+    $this->assertSame('+', $this->manager->getDefaultParamValue('exclude_operator', $neither));
+  }
+
+  /**
+   * ResolveTermOperators() resolves each operator independently, per #1316.
+   *
+   * This is the fix for the correctness bug the split addresses: a shared
+   * operator meant choosing "All" made includes stricter and excludes
+   * *looser* at the same time (implode() joining the exclude list with ","
+   * only excludes a node carrying every excluded term, not any one).
+   * Resolving them independently is what setupView() joins each term list
+   * with, so proving this returns the right pair per input is what proves
+   * the two lists can no longer affect each other's behavior.
+   *
+   * @covers ::resolveTermOperators
+   */
+  public function testResolveTermOperatorsAreIndependent() {
+    // Both explicit, and different from each other.
+    $this->assertSame(
+      [',', '+'],
+      $this->manager->resolveTermOperators(['include_operator' => ',', 'exclude_operator' => '+'])
+    );
+    $this->assertSame(
+      ['+', ','],
+      $this->manager->resolveTermOperators(['include_operator' => '+', 'exclude_operator' => ','])
+    );
+
+    // Legacy 'operator' key applies to both (pre-#1316 saved block).
+    $this->assertSame([',', ','], $this->manager->resolveTermOperators(['operator' => ',']));
+
+    // Neither key present defaults both to "+" (OR).
+    $this->assertSame(['+', '+'], $this->manager->resolveTermOperators([]));
+
+    // The new keys win over a legacy key present alongside them.
+    $this->assertSame(
+      [',', '+'],
+      $this->manager->resolveTermOperators([
+        'operator' => '+',
+        'include_operator' => ',',
+        'exclude_operator' => '+',
+      ])
+    );
   }
 
   /**
@@ -548,6 +720,45 @@ class ViewsBasicManagerTest extends UnitTestCase {
   }
 
   /**
+   * GetTagsForVocabularies() groups terms under their vocabulary's label.
+   *
+   * @covers ::getTagsForVocabularies
+   */
+  public function testGetTagsForVocabulariesGroupsByVocabularyLabel() {
+    $this->vocabularyStorage->method('load')->willReturnMap([
+      ['post_category', $this->createVocabularyMock('post_category', 'Post Category')],
+      ['tags', $this->createVocabularyMock('tags', 'Tags')],
+    ]);
+    $this->termStorage->method('loadTree')
+      ->willReturnMap([
+        ['post_category', 0, NULL, FALSE, [$this->createTreeItem(1, 'Announcements')]],
+        ['tags', 0, NULL, FALSE, [$this->createTreeItem(3, 'Zebra'), $this->createTreeItem(2, 'Apple')]],
+      ]);
+
+    $tags = $this->manager->getTagsForVocabularies(['post_category', 'tags']);
+
+    // Groups appear in the order the vocabulary ids were given.
+    $this->assertSame(['Post Category', 'Tags'], array_keys($tags));
+    $this->assertSame([1 => 'Announcements'], $tags['Post Category']);
+    // Terms within a group are alphabetical (asort preserves keys).
+    $this->assertSame([2, 3], array_keys($tags['Tags']));
+    $this->assertSame('Apple', $tags['Tags'][2]);
+  }
+
+  /**
+   * GetTagsForVocabularies() skips a vocabulary id that fails to load.
+   *
+   * @covers ::getTagsForVocabularies
+   */
+  public function testGetTagsForVocabulariesSkipsMissingVocabulary() {
+    $this->vocabularyStorage->method('load')->willReturn(NULL);
+
+    $tags = $this->manager->getTagsForVocabularies(['not_a_real_vocabulary']);
+
+    $this->assertSame([], $tags);
+  }
+
+  /**
    * GetTaxonomyParents() lists top-level terms with an "All Items" option.
    *
    * @covers ::getTaxonomyParents
@@ -557,20 +768,21 @@ class ViewsBasicManagerTest extends UnitTestCase {
       ->with('event_category', 0, 1)
       ->willReturn([$this->createTreeItem(4, 'Lectures')]);
 
+    $this->manager->setStringTranslation($this->getStringTranslationStub());
     $parents = $this->manager->getTaxonomyParents('event_category');
 
     $this->assertSame(['' => '-- All Items --', 4 => 'Lectures'], $parents);
   }
 
   /**
-   * GetChildTermsByParentId() lists descendant term IDs keyed by themselves.
+   * GetChildTermsByParentId() delegates to the exposed filter options service.
    *
    * @covers ::getChildTermsByParentId
    */
   public function testGetChildTermsByParentIdReturnsDescendantIds() {
-    $this->termStorage->method('loadTree')
-      ->with('event_category', 4, NULL)
-      ->willReturn([$this->createTreeItem(5, 'Concerts'), $this->createTreeItem(6, 'Readings')]);
+    $this->exposedTaxonomyFilterOptions->method('getDescendantTermIds')
+      ->with('event_category', 4)
+      ->willReturn([5 => 5, 6 => 6]);
 
     $children = $this->manager->getChildTermsByParentId(4, 'event_category');
 
@@ -589,6 +801,529 @@ class ViewsBasicManagerTest extends UnitTestCase {
 
     $this->assertSame(12, $method->invoke($this->manager, '12'));
     $this->assertSame(12, $method->invoke($this->manager, ['target_id' => '12']));
+    // The cast applies to the whole ternary, so an empty value is 0 rather
+    // than a TypeError from returning an uncast string.
+    $this->assertSame(0, $method->invoke($this->manager, ''));
+  }
+
+  /**
+   * Runs setupView() on a mock view and returns the display options it set.
+   *
+   * @param array $params
+   *   The block params, merged over the minimum setupView() reads.
+   * @param array $filters
+   *   The display's filters before setup.
+   * @param array $setup_args
+   *   Extra arguments for setupView() after the params: block UUID, block
+   *   heading flag, host node ID and listing key.
+   * @param array|null $view_args
+   *   Receives the arguments setupView() handed the view, keyed by name.
+   * @param array|null $request_query
+   *   The request query the view sees, or NULL for a view with no request.
+   *
+   * @return array
+   *   Every display option setupView() set, keyed by option name, plus
+   *   'where': each [field, value, operator] condition added to the query.
+   */
+  protected function runSetupView(array $params, array $filters, array $setup_args = [], ?array &$view_args = NULL, ?array $request_query = NULL): array {
+    $params += [
+      'sort_by' => 'field_publish_date:DESC',
+      'display' => 'all',
+      'limit' => 10,
+      'view_mode' => 'card',
+    ];
+    $set = ['pager' => ['type' => 'views_basic_full_pager', 'options' => ['id' => 0]]];
+    $display = $this->createMock(DisplayPluginBase::class);
+    $display->method('getOption')->willReturnCallback(
+      function ($name) use (&$set, $filters) {
+        return $name === 'filters' ? $filters : ($set[$name] ?? NULL);
+      }
+    );
+    $display->method('setOption')->willReturnCallback(
+      function ($name, $value) use (&$set) {
+        $set[$name] = $value;
+      }
+    );
+    $view = $this->createMock(ViewExecutable::class);
+    $view->method('getDisplay')->willReturn($display);
+    $view->method('preview')->willReturn(['#rows' => []]);
+    if ($request_query !== NULL) {
+      $view->method('getRequest')->willReturn(new Request($request_query));
+    }
+    $this->exposedInputCalls = [];
+    $view->method('setExposedInput')->willReturnCallback(
+      function ($input) {
+        $this->exposedInputCalls[] = $input;
+      }
+    );
+    $query = $this->createMock(Sql::class);
+    $query->method('ensureTable')->willReturn('node_field_data');
+    $query->method('addWhere')->willReturnCallback(
+      function ($group, $field, $value, $operator) use (&$set) {
+        $set['where'][] = [$field, $value, $operator];
+      }
+    );
+    $view->method('getQuery')->willReturn($query);
+    $this->viewArguments = [];
+    $view->method('setArguments')->willReturnCallback(
+      function (array $args) use (&$view_args) {
+        $view_args = $args;
+        $this->viewArguments = array_values($args);
+      }
+    );
+
+    $this->manager->setupView($view, json_encode($params), ...$setup_args);
+    return $set;
+  }
+
+  /**
+   * A block's pager element survives the AJAX re-render (#1921).
+   *
+   * The full-page render derives the element from the block UUID. The AJAX
+   * pager request has no block entity, so the UUID must ride the view
+   * arguments and come back in through setupView(); otherwise the re-render
+   * reads ?page= at element 0 and always shows page 1.
+   *
+   * @covers ::setupView
+   * @covers ::incomingDisplayContext
+   */
+  public function testSetupViewCarriesBlockUuidThroughViewArguments() {
+    $params = [
+      'filters' => ['types' => ['post']],
+      'display' => 'pager',
+    ];
+    $uuid = '11111111-1111-1111-1111-111111111111';
+
+    // Full-page render: element from the UUID, UUID written into the args.
+    $set = $this->runSetupView($params, [], [$uuid, TRUE], $view_args);
+    $element = $set['pager']['options']['id'];
+    $this->assertNotSame(0, $element);
+
+    // AJAX re-render: no block entity, UUID recovered from the arguments.
+    $context = ViewsBasicManager::incomingDisplayContext(array_values($view_args));
+    $this->assertSame(['block_has_heading' => TRUE, 'block_uuid' => $uuid, 'host_nid' => NULL], $context);
+    $set = $this->runSetupView($params, [], [$context['block_uuid'], $context['block_has_heading']], $ajax_args);
+    $this->assertSame($element, $set['pager']['options']['id']);
+    $this->assertSame($view_args['field_display_options'], $ajax_args['field_display_options']);
+  }
+
+  /**
+   * Missing or malformed arguments yield no block context.
+   *
+   * @covers ::incomingDisplayContext
+   */
+  public function testIncomingDisplayContextToleratesBadArguments() {
+    $index = ViewsBasicManager::viewArgumentIndex('field_display_options');
+    $args = static function ($options) use ($index) {
+      $list = array_fill(0, $index + 1, NULL);
+      $list[$index] = is_string($options) ? $options : json_encode($options);
+      return $list;
+    };
+    $empty = ['block_has_heading' => FALSE, 'block_uuid' => NULL, 'host_nid' => NULL];
+
+    $this->assertSame($empty, ViewsBasicManager::incomingDisplayContext([]));
+    $this->assertSame($empty, ViewsBasicManager::incomingDisplayContext($args('not json')));
+    $this->assertSame($empty, ViewsBasicManager::incomingDisplayContext($args(['block_uuid' => ['x']])));
+    $this->assertSame($empty, ViewsBasicManager::incomingDisplayContext($args(['block_uuid' => ''])));
+    $this->assertSame($empty, ViewsBasicManager::incomingDisplayContext($args(['host_nid' => 'x'])));
+    $this->assertSame($empty, ViewsBasicManager::incomingDisplayContext($args(['host_nid' => 0])));
+    $this->assertSame($empty, ViewsBasicManager::incomingDisplayContext($args(['host_nid' => -5])));
+  }
+
+  /**
+   * The host page stays out of the results on the AJAX re-render (#1921).
+   *
+   * The full-page render leaves out the node the listing sits on unless the
+   * editor turned "include the current page" on. The pager and exposed-filter
+   * AJAX requests run on the views.ajax route, which has no node parameter,
+   * so the host node ID must ride the view arguments; otherwise the first
+   * pager click puts the host page back in and the total goes up by one.
+   *
+   * @covers ::setupView
+   * @covers ::incomingDisplayContext
+   */
+  public function testSetupViewExcludesHostNodeOnAjaxRerender() {
+    $params = [
+      'filters' => ['types' => ['page']],
+      'display' => 'pager',
+    ];
+    $uuid = '11111111-1111-1111-1111-111111111111';
+    $exclude_42 = [['node_field_data.nid', 42, '<>']];
+
+    // Full-page render: the host node comes from the route.
+    $node = $this->createMock(NodeInterface::class);
+    $node->method('id')->willReturn('42');
+    $storage = NULL;
+    $this->routeMatch->method('getParameter')->willReturnCallback(
+      function ($name) use (&$node, &$storage) {
+        return ['node' => $node, 'section_storage' => $storage][$name] ?? NULL;
+      }
+    );
+    $set = $this->runSetupView($params, [], [$uuid, FALSE], $view_args);
+    $this->assertSame($exclude_42, $set['where']);
+
+    // AJAX re-render: no node on the route, host node recovered from the
+    // arguments the full-page render wrote.
+    $node = NULL;
+    $context = ViewsBasicManager::incomingDisplayContext(array_values($view_args));
+    $this->assertSame(42, $context['host_nid']);
+    $ajax_setup_args = [$context['block_uuid'], $context['block_has_heading'], $context['host_nid']];
+    $set = $this->runSetupView($params, [], $ajax_setup_args, $ajax_args);
+    $this->assertSame($exclude_42, $set['where']);
+    $this->assertSame($view_args['field_display_options'], $ajax_args['field_display_options']);
+
+    // Layout Builder AJAX: the page comes from the overrides section storage,
+    // and it wins over whatever the arguments say.
+    $layout_node = $this->createConfiguredMock(NodeInterface::class, ['id' => '7']);
+    $storage = $this->createMock(OverridesSectionStorageInterface::class);
+    $storage->method('getContextValue')->with('entity')->willReturn($layout_node);
+    $set = $this->runSetupView($params, [], [$uuid, FALSE, 42]);
+    $this->assertSame([['node_field_data.nid', 7, '<>']], $set['where']);
+
+    // "Include the current page" on: no exclusion on either path.
+    $params['show_current_entity'] = 1;
+    $set = $this->runSetupView($params, [], [$uuid, FALSE, 42]);
+    $this->assertArrayNotHasKey('where', $set);
+  }
+
+  /**
+   * Builds an exposed taxonomy filter as the scaffold views hold it.
+   */
+  protected function taxonomyFilter(string $vid): array {
+    return [
+      'plugin_id' => 'taxonomy_index_tid',
+      'vid' => $vid,
+      'exposed' => TRUE,
+      'expose' => ['reduce' => FALSE],
+    ];
+  }
+
+  /**
+   * Provides each non-resource listing type with its category filter.
+   *
+   * @return array
+   *   Rows of type, category filter name, category vocabulary id.
+   */
+  public static function categoryFilterProvider(): array {
+    return [
+      'post' => ['post', 'field_category_target_id', 'post_category'],
+      'event' => ['event', 'field_category_target_id', 'event_category'],
+      'page' => ['page', 'field_category_target_id_1', 'page_category'],
+      'profile' => ['profile', 'field_affiliation_target_id', 'affiliation'],
+    ];
+  }
+
+  /**
+   * Every listing type stops offering excluded terms in its taxonomy filters.
+   *
+   * The category filter and custom vocabulary also pass their included parent
+   * term; audience passes exclusions only.
+   *
+   * @covers ::setupView
+   *
+   * @dataProvider categoryFilterProvider
+   */
+  public function testSetupViewConstrainsTaxonomyFiltersForEveryListingType(string $type, string $category_filter, string $vid) {
+    $vocabulary = $this->createMock('Drupal\taxonomy\VocabularyInterface');
+    $vocabulary->method('label')->willReturn('Custom');
+    $this->vocabularyStorage->method('load')->with('custom_vocab')->willReturn($vocabulary);
+
+    $calls = [];
+    $this->exposedTaxonomyFilterOptions->method('apply')->willReturnCallback(
+      function ($filters, $name, $excluded, $parent = NULL) use (&$calls) {
+        $calls[$name] = [$excluded, $parent];
+        return TRUE;
+      }
+    );
+
+    $this->runSetupView([
+      'filters' => ['types' => [$type], 'terms_exclude' => ['5', ['target_id' => '7']]],
+      'exposed_filter_options' => [
+        'show_category_filter' => 'show_category_filter',
+        'show_custom_vocab_filter' => 'show_custom_vocab_filter',
+        'show_audience_filter' => 'show_audience_filter',
+      ],
+      'category_included_terms' => 4,
+      'custom_vocab_included_terms' => 9,
+    ], [
+      'status' => ['plugin_id' => 'boolean'],
+      $category_filter => $this->taxonomyFilter($vid),
+      'field_custom_vocab_target_id' => $this->taxonomyFilter('custom_vocab'),
+      'field_audience_target_id' => $this->taxonomyFilter('audience'),
+    ]);
+
+    $this->assertSame([
+      $category_filter => [[5, 7], 4],
+      'field_custom_vocab_target_id' => [[5, 7], 9],
+      'field_audience_target_id' => [[5, 7], NULL],
+    ], $calls);
+  }
+
+  /**
+   * A resource listing runs every exposed taxonomy filter through apply().
+   *
+   * Category and custom vocabulary pass their included parent term; the
+   * other taxonomy filters pass exclusions only; non-taxonomy filters are
+   * never touched.
+   *
+   * @covers ::setupView
+   */
+  public function testSetupViewConstrainsResourceTaxonomyFilters() {
+    $vocabulary = $this->createMock('Drupal\taxonomy\VocabularyInterface');
+    $vocabulary->method('label')->willReturn('Custom');
+    $this->vocabularyStorage->method('load')->with('custom_vocab')->willReturn($vocabulary);
+    $calls = [];
+    $this->exposedTaxonomyFilterOptions->method('apply')->willReturnCallback(
+      function ($filters, $name, $excluded, $parent = NULL) use (&$calls) {
+        $calls[$name] = [$excluded, $parent];
+        return TRUE;
+      }
+    );
+
+    $this->runSetupView([
+      'filters' => ['types' => ['resource'], 'terms_exclude' => ['5', ['target_id' => '7']]],
+      'exposed_filter_options' => [
+        'show_category_filter' => 'show_category_filter',
+        'show_custom_vocab_filter' => 'show_custom_vocab_filter',
+        'show_audience_filter' => 'show_audience_filter',
+        'show_discipline_filter' => 'show_discipline_filter',
+        'show_year_filter' => 'show_year_filter',
+      ],
+      'category_included_terms' => 4,
+      'custom_vocab_included_terms' => 9,
+    ], [
+      'status' => ['plugin_id' => 'boolean'],
+      'field_category_target_id' => $this->taxonomyFilter('resource_category'),
+      'field_custom_vocab_target_id' => $this->taxonomyFilter('custom_vocab'),
+      'field_audience_target_id' => $this->taxonomyFilter('audience'),
+      'field_discipline_target_id' => $this->taxonomyFilter('discipline'),
+      'field_geographic_areas_target_id' => $this->taxonomyFilter('geographic_areas'),
+      'resource_year_filter' => ['plugin_id' => 'resource_year_filter', 'exposed' => TRUE],
+    ]);
+
+    $this->assertSame([
+      'field_category_target_id' => [[5, 7], 4],
+      'field_custom_vocab_target_id' => [[5, 7], 9],
+      'field_audience_target_id' => [[5, 7], NULL],
+      'field_discipline_target_id' => [[5, 7], NULL],
+    ], $calls, 'Geographic areas was not enabled, so it was removed, not constrained.');
+  }
+
+  /**
+   * Minimal params for a post listing, as setupView() reads them.
+   */
+  protected function listingParams(): array {
+    return ['filters' => ['types' => ['post']]];
+  }
+
+  /**
+   * The listing key is 8 hex characters and differs between two blocks.
+   *
+   * @covers ::listingKey
+   */
+  public function testListingKeyIsShortAndDistinct() {
+    $a = '6f1d0c1e-9a3b-4c2d-8e7f-0a1b2c3d4e5f';
+    $b = '0b9e8d7c-6a5f-4e3d-2c1b-a09f8e7d6c5b';
+    $this->assertMatchesRegularExpression('/^[0-9a-f]{8}$/', ViewsBasicManager::listingKey($a));
+    $this->assertNotSame(ViewsBasicManager::listingKey($a), ViewsBasicManager::listingKey($b));
+  }
+
+  /**
+   * Builds a scaffold view argument list holding a field_display_options arg.
+   *
+   * @param string|null $display_options
+   *   The raw field_display_options argument, or NULL to leave it out.
+   */
+  protected function argsWithDisplayOptions(?string $display_options): array {
+    $args = array_fill(0, count(ViewsBasicManager::VIEW_ARGUMENT_ORDER), '');
+    $index = ViewsBasicManager::viewArgumentIndex('field_display_options');
+    if ($display_options === NULL) {
+      return array_slice($args, 0, $index);
+    }
+    $args[$index] = $display_options;
+    return $args;
+  }
+
+  /**
+   * The listing key is read back from the field_display_options argument.
+   *
+   * @covers ::listingKeyFromArgs
+   */
+  public function testListingKeyFromArgs() {
+    $this->assertSame('abcd1234', ViewsBasicManager::listingKeyFromArgs(
+      $this->argsWithDisplayOptions(json_encode(['show_tags' => 0, 'listing_key' => 'abcd1234']))
+    ));
+    $this->assertNull(ViewsBasicManager::listingKeyFromArgs(
+      $this->argsWithDisplayOptions(json_encode(['show_tags' => 0]))
+    ), 'No listing_key in the options.');
+    $this->assertNull(ViewsBasicManager::listingKeyFromArgs(
+      $this->argsWithDisplayOptions(json_encode(['listing_key' => NULL]))
+    ), 'A NULL listing_key, as written for a preview.');
+    $this->assertNull(ViewsBasicManager::listingKeyFromArgs(
+      $this->argsWithDisplayOptions('{not json')
+    ), 'Invalid JSON.');
+    $this->assertNull(ViewsBasicManager::listingKeyFromArgs(
+      $this->argsWithDisplayOptions(NULL)
+    ), 'The argument is absent.');
+    $this->assertNull(ViewsBasicManager::listingKeyFromArgs([]));
+  }
+
+  /**
+   * Another listing's filter values are dropped for this listing.
+   *
+   * @covers ::setupView
+   */
+  public function testSetupViewIgnoresAnotherListingsFilters() {
+    $uuid = '6f1d0c1e-9a3b-4c2d-8e7f-0a1b2c3d4e5f';
+    $other = ViewsBasicManager::listingKey('0b9e8d7c-6a5f-4e3d-2c1b-a09f8e7d6c5b');
+    $this->runSetupView($this->listingParams(), [], [$uuid, FALSE], $unused, ['search' => 'x', 'listing' => $other]);
+    $this->assertSame([['listing' => $other]], $this->exposedInputCalls, 'The input keeps the URL\'s listing, since pager links are built from it.');
+  }
+
+  /**
+   * The listing a URL's filter values came from keeps them.
+   *
+   * @covers ::setupView
+   */
+  public function testSetupViewKeepsItsOwnFilters() {
+    $uuid = '6f1d0c1e-9a3b-4c2d-8e7f-0a1b2c3d4e5f';
+    $own = ViewsBasicManager::listingKey($uuid);
+    $this->runSetupView($this->listingParams(), [], [$uuid, FALSE], $unused, ['search' => 'x', 'listing' => $own]);
+    $this->assertSame([], $this->exposedInputCalls);
+  }
+
+  /**
+   * A link with no listing argument (made before the fix) applies as before.
+   *
+   * @covers ::setupView
+   */
+  public function testSetupViewLeavesLegacyLinksAlone() {
+    $this->runSetupView($this->listingParams(), [], ['6f1d0c1e-9a3b-4c2d-8e7f-0a1b2c3d4e5f', FALSE], $unused, ['search' => 'x']);
+    $this->assertSame([], $this->exposedInputCalls);
+  }
+
+  /**
+   * A view with no block and no listing key (a preview) is left alone.
+   *
+   * @covers ::setupView
+   */
+  public function testSetupViewWithoutListingKeyLeavesInputAlone() {
+    $this->runSetupView($this->listingParams(), [], [NULL, FALSE], $unused, ['search' => 'x', 'listing' => 'abcd1234']);
+    $this->assertSame([], $this->exposedInputCalls);
+  }
+
+  /**
+   * A view with no request is left alone.
+   *
+   * @covers ::setupView
+   */
+  public function testSetupViewWithoutRequestLeavesInputAlone() {
+    $this->runSetupView($this->listingParams(), [], ['6f1d0c1e-9a3b-4c2d-8e7f-0a1b2c3d4e5f', FALSE]);
+    $this->assertSame([], $this->exposedInputCalls);
+  }
+
+  /**
+   * The AJAX path, with a listing key but no block UUID, behaves the same.
+   *
+   * @covers ::setupView
+   */
+  public function testSetupViewUsesPassedListingKeyOnAjax() {
+    $this->runSetupView(
+      $this->listingParams(),
+      [],
+      [NULL, FALSE, NULL, 'abcd1234'],
+      $unused,
+      ['search' => 'x', 'listing' => 'ffff0000'],
+    );
+    $this->assertSame([['listing' => 'ffff0000']], $this->exposedInputCalls, 'The input keeps the URL\'s listing, since pager links are built from it.');
+
+    $this->runSetupView(
+      $this->listingParams(),
+      [],
+      [NULL, FALSE, NULL, 'abcd1234'],
+      $unused,
+      ['search' => 'x', 'listing' => 'abcd1234'],
+    );
+    $this->assertSame([], $this->exposedInputCalls);
+  }
+
+  /**
+   * The block UUID wins over a passed listing key.
+   *
+   * @covers ::setupView
+   */
+  public function testSetupViewBlockUuidWinsOverListingKey() {
+    $uuid = '6f1d0c1e-9a3b-4c2d-8e7f-0a1b2c3d4e5f';
+    $this->runSetupView($this->listingParams(), [], [$uuid, FALSE, NULL, 'abcd1234']);
+    $this->assertSame(ViewsBasicManager::listingKey($uuid), ViewsBasicManager::listingKeyFromArgs($this->viewArguments));
+  }
+
+  /**
+   * The listing key rides the field_display_options view argument.
+   *
+   * @covers ::setupView
+   */
+  public function testSetupViewWritesListingKeyIntoDisplayOptions() {
+    $uuid = '6f1d0c1e-9a3b-4c2d-8e7f-0a1b2c3d4e5f';
+    $this->runSetupView($this->listingParams(), [], [$uuid, FALSE]);
+    $options = json_decode($this->viewArguments[ViewsBasicManager::viewArgumentIndex('field_display_options')], TRUE);
+    $this->assertSame(ViewsBasicManager::listingKey($uuid), $options['listing_key']);
+
+    $this->runSetupView($this->listingParams(), []);
+    $options = json_decode($this->viewArguments[ViewsBasicManager::viewArgumentIndex('field_display_options')], TRUE);
+    $this->assertArrayHasKey('listing_key', $options);
+    $this->assertNull($options['listing_key']);
+  }
+
+  /**
+   * Runs the exposed form alter for a view with the given id and arguments.
+   *
+   * @param string $view_id
+   *   The view id.
+   * @param array $args
+   *   The view's arguments.
+   *
+   * @return array
+   *   The altered form.
+   */
+  protected function alterExposedForm(string $view_id, array $args): array {
+    $view = $this->createMock(ViewExecutable::class);
+    $view->method('id')->willReturn($view_id);
+    $view->filter = [];
+    $view->args = $args;
+    $form_state = $this->createMock(FormStateInterface::class);
+    $form_state->method('get')->with('view')->willReturn($view);
+    $form = [];
+    ys_views_basic_form_views_exposed_form_alter($form, $form_state);
+    return $form;
+  }
+
+  /**
+   * A scaffold listing's exposed form carries its listing key.
+   *
+   * @covers ::listingKeyFromArgs
+   */
+  public function testExposedFormCarriesListingKey() {
+    $args = $this->argsWithDisplayOptions(json_encode(['listing_key' => 'abcd1234']));
+    foreach (ViewsBasicManager::SCAFFOLD_VIEWS as $view_id) {
+      $form = $this->alterExposedForm($view_id, $args);
+      $this->assertSame(['#type' => 'hidden', '#value' => 'abcd1234'], $form['listing'] ?? NULL, $view_id);
+      $this->assertSame(['ys_views_basic/listing_ajax'], $form['#attached']['library'] ?? NULL, $view_id);
+    }
+  }
+
+  /**
+   * No hidden field without a key, or on content_resources.
+   *
+   * @covers ::listingKeyFromArgs
+   */
+  public function testExposedFormWithoutListingKey() {
+    $form = $this->alterExposedForm('views_basic_scaffold', $this->argsWithDisplayOptions(json_encode(['show_tags' => 0])));
+    $this->assertArrayNotHasKey('listing', $form);
+    $this->assertArrayNotHasKey('#attached', $form);
+    $form = $this->alterExposedForm('content_resources', $this->argsWithDisplayOptions(json_encode(['listing_key' => 'abcd1234'])));
+    $this->assertArrayNotHasKey('listing', $form);
+    $this->assertArrayNotHasKey('#attached', $form);
   }
 
   /**

@@ -8,8 +8,12 @@ use Drupal\Core\DependencyInjection\ContainerInjectionInterface;
 use Drupal\Core\Entity\EntityDisplayRepository;
 use Drupal\Core\Entity\EntityTypeManagerInterface;
 use Drupal\Core\Routing\RouteMatchInterface;
+use Drupal\layout_builder\OverridesSectionStorageInterface;
 use Drupal\node\NodeInterface;
-use Drupal\views\Views;
+use Drupal\views\ViewEntityInterface;
+use Drupal\views\ViewExecutable;
+use Drupal\views\ViewExecutableFactory;
+use Drupal\ys_views_basic\Service\ExposedTaxonomyFilterOptions;
 use Symfony\Component\DependencyInjection\ContainerInterface;
 
 /**
@@ -45,12 +49,12 @@ class ViewsBasicManager extends ControllerBase implements ContainerInjectionInte
       'img_alt' => 'Speech bubble icon',
       'view_modes' => [
         'card' => [
-          'label' => 'Post Card Grid',
+          'label' => 'Card Grid',
           'img' => '/profiles/custom/yalesites_profile/modules/custom/ys_views_basic/assets/icons/display-type-card-grid.svg',
           'img_alt' => 'Icon showing 3 generic cards next to each other. Image placement is on the top of each card.',
         ],
         'list_item' => [
-          'label' => 'Post List',
+          'label' => 'List',
           'img' => '/profiles/custom/yalesites_profile/modules/custom/ys_views_basic/assets/icons/display-type-list-view.svg',
           'img_alt' => 'Icon showing 3 generic list items one on top of the other. Image placement is on the left of each list item.',
         ],
@@ -71,12 +75,12 @@ class ViewsBasicManager extends ControllerBase implements ContainerInjectionInte
       'img_alt' => 'Calendar icon',
       'view_modes' => [
         'card' => [
-          'label' => 'Event Card Grid',
+          'label' => 'Card Grid',
           'img' => '/profiles/custom/yalesites_profile/modules/custom/ys_views_basic/assets/icons/display-type-card-grid.svg',
           'img_alt' => 'Icon showing 3 generic cards next to each other. Image placement is on the top of each card.',
         ],
         'list_item' => [
-          'label' => 'Event List',
+          'label' => 'List',
           'img' => '/profiles/custom/yalesites_profile/modules/custom/ys_views_basic/assets/icons/display-type-list-view.svg',
           'img_alt' => 'Icon showing 3 generic list items one on top of the other. Image placement is on the left of each list item.',
         ],
@@ -86,9 +90,11 @@ class ViewsBasicManager extends ControllerBase implements ContainerInjectionInte
           'img_alt' => 'Icon showing 3 generic list items one on top of the other with no images on the items.',
         ],
       ],
+      // Soonest first is listed first so a new listing defaults to it; the
+      // keys are unchanged so every saved listing keeps its sort (#1864).
       'sort_by' => [
-        'field_event_date:DESC' => 'Event Date - newer first',
-        'field_event_date:ASC' => 'Event Date - older first',
+        'field_event_date:ASC' => 'Event Date - soonest first',
+        'field_event_date:DESC' => 'Event Date - latest first',
       ],
     ],
     'page' => [
@@ -97,12 +103,12 @@ class ViewsBasicManager extends ControllerBase implements ContainerInjectionInte
       'img_alt' => 'Blank page icon',
       'view_modes' => [
         'card' => [
-          'label' => 'Page Grid',
+          'label' => 'Card Grid',
           'img' => '/profiles/custom/yalesites_profile/modules/custom/ys_views_basic/assets/icons/display-type-card-grid.svg',
           'img_alt' => 'Icon showing 3 generic cards next to each other. Image placement is on the top of each card.',
         ],
         'list_item' => [
-          'label' => 'Page List',
+          'label' => 'List',
           'img' => '/profiles/custom/yalesites_profile/modules/custom/ys_views_basic/assets/icons/display-type-list-view.svg',
           'img_alt' => 'Icon showing 3 generic list items one on top of the other. Image placement is on the left of each list item.',
         ],
@@ -123,19 +129,14 @@ class ViewsBasicManager extends ControllerBase implements ContainerInjectionInte
       'img_alt' => 'Generic person head icon',
       'view_modes' => [
         'card' => [
-          'label' => 'Profile Grid',
+          'label' => 'Card Grid',
           'img' => '/profiles/custom/yalesites_profile/modules/custom/ys_views_basic/assets/icons/display-type-card-grid.svg',
           'img_alt' => 'Icon showing 3 generic cards next to each other. Image placement is on the top of each card.',
         ],
         'list_item' => [
-          'label' => 'Profile List',
+          'label' => 'List',
           'img' => '/profiles/custom/yalesites_profile/modules/custom/ys_views_basic/assets/icons/display-type-list-view.svg',
           'img_alt' => 'Icon showing 3 generic list items one on top of the other. Image placement is on the left of each list item.',
-        ],
-        'directory' => [
-          'label' => 'Directory Grid',
-          'img' => '/profiles/custom/yalesites_profile/modules/custom/ys_views_basic/assets/icons/display-type-directory.svg',
-          'img_alt' => 'Icon showing 3 cards next to each other with a generic person image on the top of each card.',
         ],
         'condensed' => [
           'label' => 'Condensed',
@@ -146,6 +147,39 @@ class ViewsBasicManager extends ControllerBase implements ContainerInjectionInte
       'sort_by' => [
         'field_last_name:ASC' => 'Last Name - A-Z',
         'field_last_name:DESC' => 'Last Name - Z-A',
+      ],
+    ],
+    // Resources (#1723) keep the design labels and sort options of the
+    // ys_views_content_resources widget they replace.
+    'resource' => [
+      'label' => 'Resources',
+      'img' => '/profiles/custom/yalesites_profile/modules/custom/ys_views_basic/assets/icons/content-type-resource.svg',
+      'img_alt' => 'Document icon',
+      'view_modes' => [
+        'card' => [
+          'label' => 'Card Grid',
+          'img' => '/profiles/custom/yalesites_profile/modules/custom/ys_views_basic/assets/icons/display-type-card-grid.svg',
+          'img_alt' => 'Icon showing 3 generic cards next to each other. Image placement is on the top of each card.',
+        ],
+        'portrait_grid' => [
+          'label' => 'Portrait Grid',
+          'img' => '/profiles/custom/yalesites_profile/modules/custom/ys_views_basic/assets/icons/display-type-portrait-grid.svg',
+          'img_alt' => 'Placeholder icon for portrait grid display mode.',
+        ],
+        'list_item' => [
+          'label' => 'List',
+          'img' => '/profiles/custom/yalesites_profile/modules/custom/ys_views_basic/assets/icons/display-type-list-view.svg',
+          'img_alt' => 'Icon showing 3 generic list items one on top of the other. Image placement is on the left of each list item.',
+        ],
+        'condensed' => [
+          'label' => 'Condensed',
+          'img' => '/profiles/custom/yalesites_profile/modules/custom/ys_views_basic/assets/icons/display-type-condensed.svg',
+          'img_alt' => 'Icon showing 3 generic list items one on top of the other with no images on the items.',
+        ],
+      ],
+      'sort_by' => [
+        'field_publish_date:DESC' => 'Published Date - newer first',
+        'field_publish_date:ASC' => 'Published Date - older first',
       ],
     ],
   ];
@@ -162,6 +196,488 @@ class ViewsBasicManager extends ControllerBase implements ContainerInjectionInte
   const CONTENT_TYPE_EVENT = 'event';
   const CONTENT_TYPE_PAGE = 'page';
   const CONTENT_TYPE_PROFILE = 'profile';
+  const CONTENT_TYPE_RESOURCE = 'resource';
+
+  /**
+   * The resource-only exposed filters, keyed by their exposed-filter option.
+   *
+   * Each maps to the filter id it switches on in the resource scaffold view.
+   * The shared filters (search, category, custom vocabulary, audience) are
+   * handled for every content type in ::setupView().
+   */
+  const RESOURCE_EXPOSED_FILTERS = [
+    'show_year_filter' => 'resource_year_filter',
+    'show_academic_year_filter' => 'field_academic_years_target_id',
+    'show_discipline_filter' => 'field_discipline_target_id',
+    'show_areas_of_study_filter' => 'field_areas_of_study_target_id',
+    'show_geographic_areas_filter' => 'field_geographic_areas_target_id',
+  ];
+
+  /**
+   * The fields a resource search runs across when the block picked none.
+   */
+  const RESOURCE_DEFAULT_SEARCH_FIELDS = [
+    'title' => 'title',
+    'field_teaser_text' => 'field_teaser_text',
+    'field_teaser_title' => 'field_teaser_title',
+  ];
+
+  /**
+   * The resource-only field display options (#1723).
+   *
+   * Stored under resource_field_options and set on each result node while
+   * its row renders (ListingRowDisplay) under these same names, which is what
+   * atomic's node--resource--*.html.twig templates read.
+   */
+  const RESOURCE_FIELD_OPTIONS = [
+    'show_teaser_text',
+    'show_discipline',
+    'show_journal_name',
+    'show_journal_issue',
+    'show_authors',
+    'show_publish_date',
+  ];
+
+  /**
+   * The card sizes a card grid may be set to (#1648).
+   *
+   * A size rather than a column count, because the column count is not ours to
+   * promise: the grid is driven by container queries on the cards wrapper, so
+   * the layout region works out how many cards of the chosen size actually fit.
+   * "large" is the 3/2/1 grid every card listing has always rendered; "small"
+   * is 4/3/2/1. Expressing it this way keeps every stored value valid when an
+   * author moves the block into a narrower region, which a stored column count
+   * could not.
+   */
+  const CARD_SIZE_OPTIONS = ['large', 'small'];
+
+  /**
+   * The card size used when a listing has not chosen one.
+   *
+   * Large, so every listing saved before the dial existed renders unchanged.
+   */
+  const CARD_SIZE_DEFAULT = 'large';
+
+  /**
+   * The views ::setupView() packs arguments for, in ::VIEW_ARGUMENT_ORDER.
+   *
+   * A named argument read is only guaranteed correct for these views. The
+   * style plugin, the pager, the sort and the taxonomy filters are shared
+   * with the content_resources view, which packs a different, shorter list of
+   * its own (ViewsContentResourcesManager::setupView()).
+   *
+   * Resource listings (#1723) get a scaffold view of their own rather than
+   * reusing content_resources: that view stays wired to the old module's
+   * hooks, which read its arguments in the old order, until the old module is
+   * removed.
+   */
+  const SCAFFOLD_VIEWS = [
+    'views_basic_scaffold',
+    'views_basic_scaffold_events',
+    'views_basic_scaffold_resources',
+  ];
+
+  /**
+   * The order of the arguments setupView() passes to the scaffold views.
+   *
+   * The scaffold views declare only two real contextual filters (type, tid),
+   * so everything past those is a side channel read back positionally by
+   * ListingRowDisplay, hook_views_pre_view() and the style plugin.
+   * ::setupView() builds its argument array FROM this list, so what is written
+   * cannot drift from what those three read: they resolve every index through
+   * ::viewArgumentIndex().
+   *
+   * The views plugins in Plugin/views (the sort, the pager, the taxonomy and
+   * time-period filters, and the style plugin's view mode lookup) resolve
+   * their indices through ::viewArgumentIndex() too, but ungated: the
+   * content_resources view drives the same plugins from its own, shorter
+   * argument list (ViewsContentResourcesManager::setupView()), so there a
+   * name resolved here can land on a different argument. The indices match
+   * the bare numbers those plugins read before names existed, so nothing
+   * changed for content_resources, but reordering this list still needs
+   * that view's argument order checked by hand.
+   *
+   * Appending here is safe; reordering or removing an entry is not, and is
+   * what this constant exists to make obvious. (#1648 learned this the hard
+   * way: original_settings used to be last, and one caller recovered it with
+   * end($args) rather than by index, so appending an argument silently fed the
+   * wrong JSON into every pager and exposed-filter AJAX re-render.)
+   */
+  const VIEW_ARGUMENT_ORDER = [
+    'type',
+    'terms_include',
+    'terms_exclude',
+    'sort',
+    'view',
+    'items',
+    'event_time_period',
+    'offset',
+    'field_display_options',
+    'event_field_display_options',
+    'post_field_display_options',
+    'pin_settings',
+    'original_settings',
+    'profile_field_display_options',
+    'resource_field_display_options',
+  ];
+
+  /**
+   * The query argument naming which listing a URL's filter values belong to.
+   *
+   * Every listing block renders one of the shared scaffold views, so their
+   * exposed filters share identifiers (search, field_category_target_id, ...).
+   * Without this, a no-JS submit, a reload or a shared link applies one
+   * listing's ?search= to every listing on the page. The exposed form carries
+   * the listing's key in this argument, and ::setupView() drops the filter
+   * values of any listing whose key does not match (YaleSites-Internal#1926).
+   */
+  const LISTING_QUERY_KEY = 'listing';
+
+  /**
+   * Derives the listing key for a listing block from its UUID.
+   *
+   * A crc32b hash gives 8 hex characters: stable across requests, so a shared
+   * link still names the same listing, and short enough to sit in the URL. A
+   * collision between the few listings on one page is negligible.
+   *
+   * @param string $uuid
+   *   The host block content UUID.
+   *
+   * @return string
+   *   The listing key.
+   */
+  public static function listingKey(string $uuid): string {
+    return hash('crc32b', $uuid);
+  }
+
+  /**
+   * Reads the listing key back from a scaffold view's arguments.
+   *
+   * @param array $args
+   *   The view arguments ::setupView() wrote.
+   *
+   * @return string|null
+   *   The listing key, or NULL when the arguments carry none.
+   */
+  public static function listingKeyFromArgs(array $args): ?string {
+    $key = self::fieldDisplayOptionsFromArgs($args)['listing_key'];
+    return is_string($key) ? $key : NULL;
+  }
+
+  /**
+   * What the field_display_options argument holds when it cannot be read.
+   *
+   * Every flag is off. ::setupView() always writes the full set, so these
+   * only apply to an argument list it did not write: a stale cached one, or
+   * a crafted views/ajax request.
+   */
+  const FIELD_DISPLAY_OPTION_DEFAULTS = [
+    'show_categories' => 0,
+    'show_tags' => 0,
+    'show_thumbnail' => 0,
+    'block_has_heading' => 0,
+    'block_uuid' => NULL,
+    'host_nid' => NULL,
+    'card_size' => self::CARD_SIZE_DEFAULT,
+    'listing_key' => NULL,
+  ];
+
+  /**
+   * Decodes the field_display_options argument of a scaffold view.
+   *
+   * The one place that argument is read back. It may come from the browser
+   * (views/ajax), so anything that is not a JSON object falls back to
+   * ::FIELD_DISPLAY_OPTION_DEFAULTS, and missing keys are filled from it.
+   * Values are not type checked here; each reader checks the ones it uses.
+   *
+   * @param array $args
+   *   The view arguments.
+   *
+   * @return array
+   *   The options, with every key of ::FIELD_DISPLAY_OPTION_DEFAULTS set.
+   */
+  public static function fieldDisplayOptionsFromArgs(array $args): array {
+    return self::displayOptionsFromArgs($args, 'field_display_options', self::FIELD_DISPLAY_OPTION_DEFAULTS);
+  }
+
+  /**
+   * Decodes one JSON-encoded scaffold view argument, filling in defaults.
+   *
+   * @param array $args
+   *   The view arguments.
+   * @param string $name
+   *   An argument name from ::VIEW_ARGUMENT_ORDER.
+   * @param array $defaults
+   *   The value of every expected key when the argument lacks it.
+   *
+   * @return array
+   *   The decoded argument merged over $defaults, or $defaults alone when the
+   *   argument is missing or is not a JSON object.
+   */
+  public static function displayOptionsFromArgs(array $args, string $name, array $defaults): array {
+    $value = $args[self::viewArgumentIndex($name)] ?? NULL;
+    $decoded = is_string($value) ? json_decode($value, TRUE) : NULL;
+    return is_array($decoded) ? $decoded + $defaults : $defaults;
+  }
+
+  /**
+   * Listing params that must be a scalar when present (see ::decodeParams()).
+   */
+  const SCALAR_PARAMS = [
+    'sort_by',
+    'view_mode',
+    'display',
+    'limit',
+    'offset',
+    'card_size',
+    'pin_label',
+    'category_filter_label',
+    'operator',
+    'include_operator',
+    'exclude_operator',
+  ];
+
+  /**
+   * Listing params that must be an array when present (see ::decodeParams()).
+   *
+   * Only the groups something writes into: the other option groups are read
+   * through empty() or behind an is_array() check, which a scalar survives.
+   */
+  const ARRAY_PARAMS = [
+    'exposed_filter_options',
+  ];
+
+  /**
+   * Returns whether a value is a sort some listing content type offers.
+   *
+   * The allowlist is every key of ::ALLOWED_ENTITIES[*]['sort_by'], the only
+   * values the authoring widgets offer (each "field_name:DIRECTION").
+   *
+   * @param mixed $sort
+   *   The stored or submitted sort.
+   *
+   * @return bool
+   *   TRUE when $sort is one of those keys.
+   */
+  public static function isAllowedSort(mixed $sort): bool {
+    if (!is_string($sort)) {
+      return FALSE;
+    }
+    foreach (self::ALLOWED_ENTITIES as $definition) {
+      if (isset($definition['sort_by'][$sort])) {
+        return TRUE;
+      }
+    }
+    return FALSE;
+  }
+
+  /**
+   * Decodes stored listing params, or returns NULL when they are unusable.
+   *
+   * The params reach ::configureView() from block content and, on the
+   * views/ajax path, from the browser. This checks the shape ::configureView()
+   * relies on without a guard, so a malformed value is refused instead of
+   * ending in a TypeError.
+   *
+   * @param mixed $params
+   *   The JSON-encoded params.
+   *
+   * @return array|null
+   *   The decoded params, or NULL when they cannot configure a listing.
+   */
+  public static function decodeParams(mixed $params): ?array {
+    $decoded = is_string($params) ? json_decode($params, TRUE) : NULL;
+    if (!is_array($decoded) || !is_array($decoded['filters'] ?? NULL)) {
+      return NULL;
+    }
+    $types = $decoded['filters']['types'] ?? NULL;
+    if (!is_array($types) || $types === [] || array_filter($types, 'is_string') !== $types) {
+      return NULL;
+    }
+    // The sort reaches the query as an ORDER BY expression (ViewsBasicSort),
+    // and on the views/ajax path it comes from the browser: only a sort some
+    // content type offers is accepted. Empty is what the preview formatter
+    // writes, and sorts nothing.
+    if (isset($decoded['sort_by']) && $decoded['sort_by'] !== '' && !self::isAllowedSort($decoded['sort_by'])) {
+      return NULL;
+    }
+    // Values copied straight into a view argument, a sort or a label. An
+    // array here reaches array_key_exists() or string functions as a
+    // TypeError.
+    foreach (self::SCALAR_PARAMS as $key) {
+      if (isset($decoded[$key]) && !is_scalar($decoded[$key])) {
+        return NULL;
+      }
+    }
+    if (isset($decoded['filters']['event_time_period']) && !is_scalar($decoded['filters']['event_time_period'])) {
+      return NULL;
+    }
+    // ::normalizeResourceParams() unsets a key inside this group, which is a
+    // fatal error on a string.
+    foreach (self::ARRAY_PARAMS as $key) {
+      if (isset($decoded[$key]) && !is_array($decoded[$key])) {
+        return NULL;
+      }
+    }
+    foreach (['terms_include', 'terms_exclude'] as $key) {
+      $terms = $decoded['filters'][$key] ?? [];
+      if (!is_array($terms)) {
+        return NULL;
+      }
+      // ::getTermId() takes a term id or a {target_id: id} item.
+      foreach ($terms as $term) {
+        if (!is_scalar($term) && !(is_array($term) && is_scalar($term['target_id'] ?? NULL))) {
+          return NULL;
+        }
+      }
+    }
+    return $decoded;
+  }
+
+  /**
+   * Returns the positional index of a scaffold view argument.
+   *
+   * @param string $name
+   *   An argument name from ::VIEW_ARGUMENT_ORDER.
+   *
+   * @return int
+   *   Its position in the argument list.
+   *
+   * @throws \InvalidArgumentException
+   *   When the name is not a known argument, so a typo fails loudly rather
+   *   than silently reading argument 0.
+   */
+  public static function viewArgumentIndex(string $name): int {
+    $index = array_search($name, self::VIEW_ARGUMENT_ORDER, TRUE);
+    if ($index === FALSE) {
+      throw new \InvalidArgumentException(sprintf('Unknown Views Basic view argument "%s".', $name));
+    }
+    return $index;
+  }
+
+  /**
+   * Definition of every listing block content bundle.
+   *
+   * The bundle id encodes the (content type, display mode) pair. This single
+   * source of truth (ADR DR-2/DR-4) is read by the per-content-type widgets to
+   * decide which form controls to build (capability flags) and to inject the
+   * view mode into the stored JSON, by this manager to resolve render
+   * mappings, and by the migration (#1169) to map legacy "view" blocks to
+   * their target bundle. It lives on the manager — not a widget — so the
+   * formatter and migration can reach it without depending on a form widget
+   * plugin (ADR DR-4: "do not push them into widget-only constants").
+   *
+   * Keys:
+   * - content_type: the node bundle the listing queries.
+   * - view_mode: the node view mode used to render each result.
+   * - supports_thumbnail: whether the "Show Teaser Image" option applies
+   *   (card and list_item only).
+   * - supports_card_size: whether the "Card size" dial applies (card grid
+   *   only).
+   *
+   * The existing "event_calendar" bundle is intentionally absent: it uses a
+   * different field type (event_calendar_basic_params) and its own widget.
+   */
+  const LISTING_BUNDLES = [
+    'post_card' => [
+      'content_type' => self::CONTENT_TYPE_POST,
+      'view_mode' => 'card',
+      'supports_thumbnail' => TRUE,
+      'supports_card_size' => TRUE,
+    ],
+    'post_list_item' => [
+      'content_type' => self::CONTENT_TYPE_POST,
+      'view_mode' => 'list_item',
+      'supports_thumbnail' => TRUE,
+      'supports_card_size' => FALSE,
+    ],
+    'post_condensed' => [
+      'content_type' => self::CONTENT_TYPE_POST,
+      'view_mode' => 'condensed',
+      'supports_thumbnail' => FALSE,
+      'supports_card_size' => FALSE,
+    ],
+    'event_card' => [
+      'content_type' => self::CONTENT_TYPE_EVENT,
+      'view_mode' => 'card',
+      'supports_thumbnail' => TRUE,
+      'supports_card_size' => TRUE,
+    ],
+    'event_list_item' => [
+      'content_type' => self::CONTENT_TYPE_EVENT,
+      'view_mode' => 'list_item',
+      'supports_thumbnail' => TRUE,
+      'supports_card_size' => FALSE,
+    ],
+    'event_condensed' => [
+      'content_type' => self::CONTENT_TYPE_EVENT,
+      'view_mode' => 'condensed',
+      'supports_thumbnail' => FALSE,
+      'supports_card_size' => FALSE,
+    ],
+    'page_card' => [
+      'content_type' => self::CONTENT_TYPE_PAGE,
+      'view_mode' => 'card',
+      'supports_thumbnail' => TRUE,
+      'supports_card_size' => TRUE,
+    ],
+    'page_list_item' => [
+      'content_type' => self::CONTENT_TYPE_PAGE,
+      'view_mode' => 'list_item',
+      'supports_thumbnail' => TRUE,
+      'supports_card_size' => FALSE,
+    ],
+    'page_condensed' => [
+      'content_type' => self::CONTENT_TYPE_PAGE,
+      'view_mode' => 'condensed',
+      'supports_thumbnail' => FALSE,
+      'supports_card_size' => FALSE,
+    ],
+    'profile_card' => [
+      'content_type' => self::CONTENT_TYPE_PROFILE,
+      'view_mode' => 'card',
+      'supports_thumbnail' => TRUE,
+      'supports_card_size' => TRUE,
+    ],
+    'profile_list_item' => [
+      'content_type' => self::CONTENT_TYPE_PROFILE,
+      'view_mode' => 'list_item',
+      'supports_thumbnail' => TRUE,
+      'supports_card_size' => FALSE,
+    ],
+    'profile_condensed' => [
+      'content_type' => self::CONTENT_TYPE_PROFILE,
+      'view_mode' => 'condensed',
+      'supports_thumbnail' => FALSE,
+      'supports_card_size' => FALSE,
+    ],
+    // Resources (#1723): the teaser image on every design but condensed, and
+    // no card-size dial, matching what the resource_view widget offered.
+    'resource_card' => [
+      'content_type' => self::CONTENT_TYPE_RESOURCE,
+      'view_mode' => 'card',
+      'supports_thumbnail' => TRUE,
+      'supports_card_size' => FALSE,
+    ],
+    'resource_portrait_grid' => [
+      'content_type' => self::CONTENT_TYPE_RESOURCE,
+      'view_mode' => 'portrait_grid',
+      'supports_thumbnail' => TRUE,
+      'supports_card_size' => FALSE,
+    ],
+    'resource_list_item' => [
+      'content_type' => self::CONTENT_TYPE_RESOURCE,
+      'view_mode' => 'list_item',
+      'supports_thumbnail' => TRUE,
+      'supports_card_size' => FALSE,
+    ],
+    'resource_condensed' => [
+      'content_type' => self::CONTENT_TYPE_RESOURCE,
+      'view_mode' => 'condensed',
+      'supports_thumbnail' => FALSE,
+      'supports_card_size' => FALSE,
+    ],
+  ];
 
   /**
    * The entity type manager.
@@ -199,6 +715,20 @@ class ViewsBasicManager extends ControllerBase implements ContainerInjectionInte
   protected $cacheTagsInvalidator;
 
   /**
+   * The view executable factory.
+   *
+   * @var \Drupal\views\ViewExecutableFactory
+   */
+  protected $viewExecutableFactory;
+
+  /**
+   * Constrains exposed taxonomy filter options (parent term, excluded terms).
+   *
+   * @var \Drupal\ys_views_basic\Service\ExposedTaxonomyFilterOptions
+   */
+  protected $exposedTaxonomyFilterOptions;
+
+  /**
    * Constructs a new ViewsBasicManager object.
    */
   public function __construct(
@@ -206,12 +736,16 @@ class ViewsBasicManager extends ControllerBase implements ContainerInjectionInte
     EntityDisplayRepository $entity_display_repository,
     RouteMatchInterface $route_match,
     CacheTagsInvalidatorInterface $cache_tags_invalidator,
+    ViewExecutableFactory $view_executable_factory,
+    ExposedTaxonomyFilterOptions $exposed_taxonomy_filter_options,
   ) {
     $this->entityTypeManager = $entity_type_manager;
     $this->entityDisplayRepository = $entity_display_repository;
     $this->termStorage = $this->entityTypeManager->getStorage('taxonomy_term');
     $this->routeMatch = $route_match;
     $this->cacheTagsInvalidator = $cache_tags_invalidator;
+    $this->viewExecutableFactory = $view_executable_factory;
+    $this->exposedTaxonomyFilterOptions = $exposed_taxonomy_filter_options;
   }
 
   /**
@@ -223,47 +757,174 @@ class ViewsBasicManager extends ControllerBase implements ContainerInjectionInte
       $container->get('entity_display.repository'),
       $container->get('current_route_match'),
       $container->get('cache_tags.invalidator'),
+      $container->get('views.executable'),
+      $container->get('ys_views_basic.exposed_taxonomy_filter_options'),
     );
   }
 
   /**
-   * Initializes the view based on the content type.
+   * Initializes an isolated view executable for the content type.
+   *
+   * Each call builds the executable from a *clone* of the scaffold view config
+   * entity. Views display handlers bind references into the storage entity
+   * (DisplayPluginCollection::initializePlugin takes the display array by
+   * reference, and setOption() writes through it), and the config entity
+   * storage caches a single shared instance. Without cloning, one block's
+   * setupView() mutations would leak into every other block on the page — the
+   * root cause of #906. Cloning gives every block instance its own storage so
+   * sort, limit, filters, pinned, and pagination cannot clobber each other.
+   *
+   * The original cached entity must never be handed to an executable: PHP
+   * clones preserve reference-bound array slots, so every consumer clones
+   * first to keep the cached original pristine (ADR DR-9 / #1306).
    *
    * @param array $types
    *   An array of content types.
    *
-   * @return \Drupal\views\ViewExecutable
-   *   The view object.
+   * @return \Drupal\views\ViewExecutable|null
+   *   The isolated view executable, or NULL when the scaffold view is missing.
    */
   public function initView($types) {
-    if (in_array('event', $types)) {
-      return Views::getView('views_basic_scaffold_events');
-    }
-    else {
-      return Views::getView('views_basic_scaffold');
+    $view_id = match (TRUE) {
+      in_array(self::CONTENT_TYPE_EVENT, $types) => 'views_basic_scaffold_events',
+      in_array(self::CONTENT_TYPE_RESOURCE, $types) => 'views_basic_scaffold_resources',
+      default => 'views_basic_scaffold',
+    };
+
+    $view_entity = $this->entityTypeManager->getStorage('view')->load($view_id);
+    if (!$view_entity instanceof ViewEntityInterface) {
+      return NULL;
     }
 
+    return $this->viewExecutableFactory->get(clone $view_entity);
   }
 
   /**
-   * Sets up the view with the parameters.
+   * Configures, runs and renders the view with the parameters.
+   *
+   * ::configureView() and then the execute and render step. On return $view
+   * holds the render array, not the executable. Invalid params leave $view
+   * untouched.
    *
    * @param \Drupal\views\ViewExecutable $view
-   *   The view object.
+   *   The view object; replaced by its render array.
    * @param string $params
    *   The JSON encoded string of parameters.
+   * @param string|null $blockUuid
+   *   See ::configureView().
+   * @param bool $blockHasHeading
+   *   See ::configureView().
+   * @param int|null $hostNid
+   *   See ::configureView().
+   * @param string|null $listingKey
+   *   See ::configureView().
    *
    * @return void
    *   No return value.
    */
-  public function setupView(&$view, $params) {
-    static $setupRunning;
-    if ($setupRunning) {
+  public function setupView(&$view, $params, $blockUuid = NULL, $blockHasHeading = FALSE, ?int $hostNid = NULL, ?string $listingKey = NULL) {
+    $display = $this->configureView($view, $params, $blockUuid, $blockHasHeading, $hostNid, $listingKey);
+    if ($display === NULL) {
       return;
     }
-    $setupRunning = TRUE;
 
-    $paramsDecoded = json_decode($params, TRUE);
+    // ys_views_basic_views_post_execute() drops the pager of a listing that
+    // does not page, on this path and on the views/ajax one alike.
+    $view->execute();
+
+    $view = $view->preview();
+    // Add cache keys for each display option.
+    // This ensures that if the options for showing categories, tags,
+    // or thumbnails change, the cache will be invalidated,
+    // and the view will be re-rendered with the new options.
+    if ($view['#rows'] && $view['#rows']['#rows']) {
+      foreach ($view['#rows']['#rows'] as &$resultRow) {
+        $resultRow['#cache']['keys'][] = $display['field']['show_categories'];
+        $resultRow['#cache']['keys'][] = $display['field']['show_tags'];
+        $resultRow['#cache']['keys'][] = $display['field']['show_thumbnail'];
+        $resultRow['#cache']['keys'][] = $display['field']['block_has_heading'];
+        $resultRow['#cache']['keys'][] = $display['event']['hide_add_to_calendar'];
+        $resultRow['#cache']['keys'][] = $display['post']['show_eyebrow'];
+        // The profile options are row-scoped, so they belong here. The
+        // card-size dial deliberately is not: it only affects the
+        // collection wrapper the style plugin builds, so keying it per row
+        // would split identical row markup into a 3-up and a 4-up copy and
+        // cover nothing. The wrapper needs no key of its own either: every
+        // result node build gets max-age 0 from ys_views_basic_node_view(),
+        // and the post/event/page/profile scaffold views set `cache: type:
+        // none`. views_basic_scaffold_resources keeps content_resources'
+        // `cache: type: tag`, whose cached output is keyed on the view
+        // arguments, and the card size rides in field_display_options.
+        foreach ($display['profile'] as $profile_option) {
+          $resultRow['#cache']['keys'][] = $profile_option;
+        }
+        foreach ($display['resource'] as $resource_option) {
+          $resultRow['#cache']['keys'][] = $resource_option;
+        }
+        $resultRow['#cache']['keys'][] = $display['pin']['pinned_to_top'];
+        $resultRow['#cache']['keys'][] = $display['pin']['pin_label'];
+
+        $resultRow['#cache']['contexts'][] = 'url.query_args:page';
+      }
+    }
+  }
+
+  /**
+   * Configures the view from the parameters, without running it.
+   *
+   * Sets the display, its filters, sorts and pager, and the view arguments
+   * every views plugin and hook in this module reads back. Nothing here
+   * executes or renders the view, so hook_views_pre_view() can call it on the
+   * views/ajax path and leave the run to the request that is already
+   * rendering the view.
+   *
+   * @param \Drupal\views\ViewExecutable $view
+   *   The view object.
+   * @param mixed $params
+   *   The JSON encoded string of parameters. Anything ::decodeParams()
+   *   refuses leaves the view untouched.
+   * @param string|null $blockUuid
+   *   The host block content UUID, used to derive a per-instance pager element
+   *   so multiple paginated listings on one page paginate independently.
+   * @param bool $blockHasHeading
+   *   Whether the host block renders its own heading (its field_heading is not
+   *   empty). When TRUE the component-wrapper renders an H2 above the listing,
+   *   so each result card nests one level deeper (H3); when FALSE the cards are
+   *   the first heading under the page H1 and render at H2. Carried into the
+   *   field-display options so ListingRowDisplay can hand the level to each
+   *   result row (mirrors how show_categories flows). Defaults to FALSE
+   *   so the AJAX/preview paths, which have no block entity, fall back to H2.
+   * @param int|null $hostNid
+   *   The node the listing is placed on, for requests whose route has no node
+   *   parameter (the views.ajax pager and exposed-filter re-render). The
+   *   current route's node, or Layout Builder's overridden page, wins when
+   *   there is one.
+   * @param string|null $listingKey
+   *   The listing key (see ::listingKey()), for the AJAX path, which recovers
+   *   the key from the incoming view arguments. Ignored when $blockUuid is
+   *   given.
+   *
+   * @return array|null
+   *   The display options written into the view arguments, keyed 'field',
+   *   'event', 'post', 'profile', 'resource' and 'pin'; NULL when the params
+   *   are invalid and the view was left unconfigured.
+   */
+  public function configureView(ViewExecutable $view, mixed $params, ?string $blockUuid = NULL, bool $blockHasHeading = FALSE, ?int $hostNid = NULL, ?string $listingKey = NULL): ?array {
+    $paramsDecoded = self::decodeParams($params);
+    if ($paramsDecoded === NULL) {
+      return NULL;
+    }
+    $listingKey = $blockUuid ? self::listingKey($blockUuid) : $listingKey;
+    $routeNode = $this->routeMatch->getParameter('node');
+    // Layout Builder's own AJAX routes (add, update, move block) carry the
+    // page only through the section storage.
+    $sectionStorage = $this->routeMatch->getParameter('section_storage');
+    if (!$routeNode instanceof NodeInterface && $sectionStorage instanceof OverridesSectionStorageInterface) {
+      $routeNode = $sectionStorage->getContextValue('entity');
+    }
+    if ($routeNode instanceof NodeInterface) {
+      $hostNid = (int) $routeNode->id();
+    }
     $pinned_to_top = isset($paramsDecoded['pinned_to_top']) ? (bool) $paramsDecoded['pinned_to_top'] : FALSE;
 
     /* Events need to have aggregation turned on in the view. Therefore, we
@@ -307,6 +968,7 @@ class ViewsBasicManager extends ControllerBase implements ContainerInjectionInte
       self::CONTENT_TYPE_EVENT => 'field_category_target_id',
       self::CONTENT_TYPE_PAGE => 'field_category_target_id_1',
       self::CONTENT_TYPE_PROFILE => 'field_affiliation_target_id',
+      self::CONTENT_TYPE_RESOURCE => 'field_category_target_id',
     ];
 
     // Determine the category filter name based on the filter type.
@@ -336,20 +998,6 @@ class ViewsBasicManager extends ControllerBase implements ContainerInjectionInte
         unset($filters[$filter]);
       }
 
-      // Check if 'category_included_terms' is provided for the current
-      // filter type.
-      if (!empty($paramsDecoded['category_included_terms'])) {
-        // Determine the vocabulary ID based on the selected filter type.
-        $vid = $filterType == self::CONTENT_TYPE_PROFILE
-          ? 'affiliation'
-          : "{$filterType}_category";
-
-        // Limit the filter to specific terms if provided.
-        $filters[$category_filter_name]['value'] = $this->getChildTermsByParentId($paramsDecoded['category_included_terms'], $vid);
-        $filters[$category_filter_name]['limit'] = TRUE;
-        $filters[$category_filter_name]['expose']['reduce'] = TRUE;
-      }
-
       // Set a custom label for the 'Category' filter if provided.
       if (!empty($paramsDecoded['category_filter_label'])) {
         $filters[$category_filter_name]['expose']['label'] = $paramsDecoded['category_filter_label'];
@@ -368,18 +1016,6 @@ class ViewsBasicManager extends ControllerBase implements ContainerInjectionInte
       // Get the label of the custom vocab.
       $custom_vocab_label = $this->entityTypeManager->getStorage('taxonomy_vocabulary')->load('custom_vocab')->label();
       $filters['field_custom_vocab_target_id']['expose']['label'] = $custom_vocab_label;
-
-      // Check if 'custom_vocab_included_terms' is provided for the current
-      // filter type.
-      if (!empty($paramsDecoded['custom_vocab_included_terms'])) {
-        // Determine the vocabulary ID based on the selected filter type.
-        $vid = 'custom_vocab';
-
-        // Limit the filter to specific terms if provided.
-        $filters['field_custom_vocab_target_id']['value'] = $this->getChildTermsByParentId($paramsDecoded['custom_vocab_included_terms'], $vid);
-        $filters['field_custom_vocab_target_id']['limit'] = TRUE;
-        $filters['field_custom_vocab_target_id']['expose']['reduce'] = TRUE;
-      }
     }
     else {
       // Remove filter if 'show filter' field is not set.
@@ -404,8 +1040,44 @@ class ViewsBasicManager extends ControllerBase implements ContainerInjectionInte
       unset($filters['post_year_filter']);
     }
 
+    if ($filterType === self::CONTENT_TYPE_RESOURCE) {
+      $filters = self::applyResourceFilters($filters, $paramsDecoded);
+    }
+
+    // Never offer a term the editor used to exclude content: a visitor
+    // picking it would always get zero results. Category and custom
+    // vocabulary also stay limited to their included parent's children.
+    $parent_params = ['field_custom_vocab_target_id' => 'custom_vocab_included_terms'];
+    if ($category_filter_name) {
+      $parent_params[$category_filter_name] = 'category_included_terms';
+    }
+    $excluded_terms = array_map([$this, 'getTermId'], $paramsDecoded['filters']['terms_exclude'] ?? []);
+    foreach ($filters as $filter_name => $filter) {
+      if (($filter['plugin_id'] ?? NULL) === 'taxonomy_index_tid' && !empty($filter['exposed'])) {
+        $parent_param = $parent_params[$filter_name] ?? NULL;
+        $parent_tid = $parent_param ? (int) ($paramsDecoded[$parent_param] ?? 0) : NULL;
+        $this->exposedTaxonomyFilterOptions->apply($filters, $filter_name, $excluded_terms, $parent_tid);
+      }
+    }
+
     // Set the modified filters back to the view display options.
     $view->getDisplay()->setOption('filters', $filters);
+
+    // Give each block instance a distinct pager element so that multiple
+    // paginated listings on one page do not share the same ?page= query
+    // argument (#906). The element is derived deterministically from the block
+    // UUID so it is stable across the full-page render and any AJAX pager call.
+    // The AJAX call has no block entity, so the UUID also rides the view
+    // arguments (field_display_options) and comes back in through
+    // ::incomingDisplayContext(); without it the re-render reads ?page= at
+    // element 0 and stays on page 1 (#1921).
+    if ($blockUuid && ($paramsDecoded['display'] ?? NULL) === 'pager') {
+      $pager = $view->getDisplay()->getOption('pager');
+      if (is_array($pager)) {
+        $pager['options']['id'] = $this->pagerElementId($blockUuid);
+        $view->getDisplay()->setOption('pager', $pager);
+      }
+    }
 
     /*
      * Sets the arguments that will get passed to contextual filters as well
@@ -445,8 +1117,7 @@ class ViewsBasicManager extends ControllerBase implements ContainerInjectionInte
       }
     }
 
-    // Set operator: "+" is "OR" and "," is "AND".
-    $operator = $paramsDecoded['operator'] ?? '+';
+    [$includeOperator, $excludeOperator] = $this->resolveTermOperators($paramsDecoded);
 
     // Fix for older setting terms for nodes not saved with the new storage.
     if (isset($termsIncludeArray[0]) && is_array($termsIncludeArray[0])) {
@@ -462,8 +1133,8 @@ class ViewsBasicManager extends ControllerBase implements ContainerInjectionInte
       $termsExcludeArray = $termsExcludeArrayFixed;
     }
     // End fix.
-    $termsInclude = (count($termsIncludeArray) != 0) ? implode($operator, $termsIncludeArray) : 'all';
-    $termsExclude = (count($termsExcludeArray) != 0) ? implode($operator, $termsExcludeArray) : NULL;
+    $termsInclude = (count($termsIncludeArray) != 0) ? implode($includeOperator, $termsIncludeArray) : 'all';
+    $termsExclude = (count($termsExcludeArray) != 0) ? implode($excludeOperator, $termsExcludeArray) : NULL;
 
     if ($paramsDecoded['display'] == 'all') {
       $itemsLimit = 0;
@@ -482,6 +1153,25 @@ class ViewsBasicManager extends ControllerBase implements ContainerInjectionInte
       'show_categories' => (int) !empty($paramsDecoded['field_options']['show_categories']),
       'show_tags' => (int) !empty($paramsDecoded['field_options']['show_tags']),
       'show_thumbnail' => (int) $no_field_display_options_saved || !empty($paramsDecoded['field_options']['show_thumbnail']),
+      // Whether the host block renders its own heading; drives the per-result
+      // card heading level in ListingRowDisplay (H3 when nested under the
+      // block heading, H2 when the cards are the first heading on the page).
+      'block_has_heading' => (int) $blockHasHeading,
+      // The host block, carried for the AJAX re-render, which has no block
+      // entity to derive the per-instance pager element from (#1921).
+      'block_uuid' => $blockUuid,
+      // The host node, carried for the AJAX re-render, whose views.ajax route
+      // has no node to leave out of the results (#1921).
+      'host_nid' => $hostNid,
+      // Card-size dial (#1648). It rides the shared field_display_options
+      // bucket rather than taking a positional arg of its own because it
+      // applies to every content type's card grid, and because it is read by
+      // the style plugin that builds the collection wrapper rather than
+      // per result row.
+      'card_size' => $this->getDefaultParamValue('card_size', $params),
+      // Rides the view arguments so the AJAX re-render of the exposed form
+      // keeps its hidden listing field (YaleSites-Internal#1926).
+      'listing_key' => $listingKey,
     ];
 
     $event_field_display_options = [
@@ -491,6 +1181,17 @@ class ViewsBasicManager extends ControllerBase implements ContainerInjectionInte
     $post_field_display_options = [
       'show_eyebrow' => (int) !empty($paramsDecoded['post_field_options']['show_eyebrow']),
     ];
+
+    // Profile data pass-throughs (#1648): department, email, phone and
+    // pronouns on any profile listing, not just the retired directory card.
+    $profile_field_display_options = [
+      'show_department' => (int) !empty($paramsDecoded['profile_field_options']['show_department']),
+      'show_email' => (int) !empty($paramsDecoded['profile_field_options']['show_email']),
+      'show_phone' => (int) !empty($paramsDecoded['profile_field_options']['show_phone']),
+      'show_pronouns' => (int) !empty($paramsDecoded['profile_field_options']['show_pronouns']),
+    ];
+
+    $resource_field_display_options = self::resourceFieldDisplayOptions($paramsDecoded);
 
     $pin_label = $paramsDecoded['pin_label'] ?? self::DEFAULT_PIN_LABEL;
 
@@ -511,16 +1212,12 @@ class ViewsBasicManager extends ControllerBase implements ContainerInjectionInte
      * Includes current node, if specified in settings.
      */
     $includeCurrent = $paramsDecoded['show_current_entity'] ?? 0;
-    if (!$includeCurrent) {
-      $node = $this->routeMatch->getParameter('node');
-      if ($node instanceof NodeInterface) {
-        $currentNid = $node->id();
-        /** @var Drupal\views\Plugin\views\query\Sql $query */
-        $query = $view->getQuery();
-        $baseTableAlias = $query->ensureTable('node_field_data');
-        if ($baseTableAlias) {
-          $query->addWhere(0, "$baseTableAlias.nid", $currentNid, '<>');
-        }
+    if (!$includeCurrent && $hostNid) {
+      /** @var \Drupal\views\Plugin\views\query\Sql $query */
+      $query = $view->getQuery();
+      $baseTableAlias = $query->ensureTable('node_field_data');
+      if ($baseTableAlias) {
+        $query->addWhere(0, "$baseTableAlias.nid", $hostNid, '<>');
       }
     }
 
@@ -528,7 +1225,7 @@ class ViewsBasicManager extends ControllerBase implements ContainerInjectionInte
      * End include current node.
      */
 
-    $view_args = [
+    $view_arg_values = [
       'type' => $filterType,
       'terms_include' => $termsInclude,
       'terms_exclude' => $termsExclude,
@@ -542,36 +1239,221 @@ class ViewsBasicManager extends ControllerBase implements ContainerInjectionInte
       'post_field_display_options' => json_encode($post_field_display_options),
       'pin_settings' => json_encode($pin_options),
       'original_settings' => $params,
+      'profile_field_display_options' => json_encode($profile_field_display_options),
+      'resource_field_display_options' => json_encode($resource_field_display_options),
     ];
 
-    $view->setArguments($view_args);
-    $view->execute();
-
-    // Unset the pager. Needs to be done after view->execute();
-    if ($paramsDecoded['display'] != "pager") {
-      unset($view->pager);
+    // Ordered by ::VIEW_ARGUMENT_ORDER rather than by the literal above, so
+    // the positions every reader resolves through ::viewArgumentIndex() cannot
+    // drift out of step with how they are written.
+    $view_args = [];
+    foreach (self::VIEW_ARGUMENT_ORDER as $arg_name) {
+      $view_args[$arg_name] = $view_arg_values[$arg_name];
     }
 
-    $view = $view->preview();
-    // Add cache keys for each display option.
-    // This ensures that if the options for showing categories, tags,
-    // or thumbnails change, the cache will be invalidated,
-    // and the view will be re-rendered with the new options.
-    if ($view['#rows'] && $view['#rows']['#rows']) {
-      foreach ($view['#rows']['#rows'] as &$resultRow) {
-        $resultRow['#cache']['keys'][] = $field_display_options['show_categories'];
-        $resultRow['#cache']['keys'][] = $field_display_options['show_tags'];
-        $resultRow['#cache']['keys'][] = $field_display_options['show_thumbnail'];
-        $resultRow['#cache']['keys'][] = $event_field_display_options['hide_add_to_calendar'];
-        $resultRow['#cache']['keys'][] = $post_field_display_options['show_eyebrow'];
-        $resultRow['#cache']['keys'][] = $pin_options['pinned_to_top'];
-        $resultRow['#cache']['keys'][] = $pin_options['pin_label'];
+    $view->setArguments($view_args);
+    // See ViewsBasicFullPager::query().
+    $view->setOffset((int) $view_args['offset']);
 
-        $resultRow['#cache']['contexts'][] = 'url.query_args:page';
+    // Filter values in the URL that another listing submitted are not ours:
+    // run this listing unfiltered. The input is non-empty on purpose, since an
+    // empty array makes Views fall back to the request query. It keeps the
+    // URL's own listing value, not this listing's key, because the pager
+    // builds its links from the exposed input: our key there would point the
+    // other listing's filter at this one on the next page. A URL with no
+    // listing argument (a link made before YaleSites-Internal#1926) applies
+    // to every listing, as it always did.
+    if ($listingKey !== NULL) {
+      $urlListing = $view->getRequest()?->query->all()[self::LISTING_QUERY_KEY] ?? NULL;
+      if ($urlListing !== NULL && $urlListing !== $listingKey) {
+        $view->setExposedInput([self::LISTING_QUERY_KEY => $urlListing]);
       }
     }
 
-    $setupRunning = FALSE;
+    return [
+      'field' => $field_display_options,
+      'event' => $event_field_display_options,
+      'post' => $post_field_display_options,
+      'profile' => $profile_field_display_options,
+      'resource' => $resource_field_display_options,
+      'pin' => $pin_options,
+    ];
+  }
+
+  /**
+   * Returns whether stored params make a listing that pages.
+   *
+   * @param array $args
+   *   The view arguments ::configureView() wrote.
+   *
+   * @return bool|null
+   *   TRUE for a paged listing, FALSE for one that is not, NULL when the
+   *   arguments carry no usable params.
+   */
+  public static function usesPagerFromArgs(array $args): ?bool {
+    $params = self::decodeParams($args[self::viewArgumentIndex('original_settings')] ?? NULL);
+    return $params === NULL ? NULL : ($params['display'] ?? NULL) === 'pager';
+  }
+
+  /**
+   * Recovers the host-block facts an AJAX re-render needs from view arguments.
+   *
+   * The pager and exposed-filter AJAX requests have no block entity, so
+   * setupView() writes what it knows about the block into
+   * field_display_options and this reads it back. The arguments come from the
+   * browser, but the UUID is only ever hashed by ::pagerElementId(), so any
+   * string yields an element in its small fixed range, and the host node ID
+   * only ever removes that one node from a listing.
+   *
+   * @param array $args
+   *   The incoming positional view arguments.
+   *
+   * @return array
+   *   'block_has_heading' (bool), 'block_uuid' (string|null) and 'host_nid'
+   *   (positive int|null).
+   */
+  public static function incomingDisplayContext(array $args): array {
+    $options = self::fieldDisplayOptionsFromArgs($args);
+    $uuid = $options['block_uuid'];
+    $nid = $options['host_nid'];
+    return [
+      'block_has_heading' => !empty($options['block_has_heading']),
+      'block_uuid' => is_string($uuid) && $uuid !== '' ? $uuid : NULL,
+      'host_nid' => is_int($nid) && $nid > 0 ? $nid : NULL,
+    ];
+  }
+
+  /**
+   * Derives a small, stable pager element id from a block UUID.
+   *
+   * The element id indexes the comma-separated ?page= query argument, so it
+   * must be both stable across requests (so an AJAX pager call targets the
+   * same element the full-page render assigned) and small (so the query string
+   * stays compact). crc32 of the block UUID modulo 100 satisfies both; the
+   * collision probability for the handful of paginated blocks realistically
+   * placed on one page is negligible.
+   *
+   * @param string $uuid
+   *   The host block content UUID.
+   *
+   * @return int
+   *   A pager element id in the range 0-99.
+   */
+  protected function pagerElementId(string $uuid): int {
+    return abs(crc32($uuid)) % 100;
+  }
+
+  /**
+   * Applies a resource listing's own exposed filters and search fields.
+   *
+   * The resource-only half of the filter setup ported from
+   * ViewsContentResourcesManager::setupView() (#1723); ::setupView() has
+   * already handled the filters every content type shares.
+   *
+   * @param array $filters
+   *   The scaffold view display's filters.
+   * @param array $paramsDecoded
+   *   The decoded stored params.
+   *
+   * @return array
+   *   The filters, with each resource-only filter the block did not enable
+   *   removed and the search narrowed to the block's chosen fields.
+   */
+  public static function applyResourceFilters(array $filters, array $paramsDecoded): array {
+    $exposed = $paramsDecoded['exposed_filter_options'] ?? [];
+    foreach (self::RESOURCE_EXPOSED_FILTERS as $option => $filter) {
+      if (!isset($exposed[$option])) {
+        unset($filters[$filter]);
+      }
+    }
+
+    // A block saved before search fields existed keeps the view's own set.
+    $search_fields = $paramsDecoded['search_fields'] ?? NULL;
+    if (isset($exposed['show_search_filter']) && !empty($search_fields) && is_array($search_fields)) {
+      $selected = array_filter($search_fields) ?: self::RESOURCE_DEFAULT_SEARCH_FIELDS;
+      $fields = array_combine($selected, $selected);
+      // 'authors' is not a field: it swaps in a combine filter that matches
+      // author names through subqueries, so a resource with several authors
+      // is never multiplied into several rows. Key and exposed identifier stay
+      // the same, so stored blocks and search URLs keep working.
+      if (isset($fields['authors'])) {
+        unset($fields['authors']);
+        $filters['combine']['field'] = 'resource_author_combine';
+        $filters['combine']['plugin_id'] = 'ys_views_basic_resource_author_combine';
+      }
+      $filters['combine']['fields'] = $fields;
+    }
+
+    return $filters;
+  }
+
+  /**
+   * Returns a resource listing's per-result display flags as 0/1 values.
+   *
+   * @param array $paramsDecoded
+   *   The decoded stored params.
+   *
+   * @return array
+   *   One flag per ::RESOURCE_FIELD_OPTIONS name, all 0 when none are stored.
+   */
+  public static function resourceFieldDisplayOptions(array $paramsDecoded): array {
+    $options = is_array($paramsDecoded['resource_field_options'] ?? NULL) ? $paramsDecoded['resource_field_options'] : [];
+    $flags = [];
+    foreach (self::RESOURCE_FIELD_OPTIONS as $option) {
+      $flags[$option] = (int) !empty($options[$option]);
+    }
+    return $flags;
+  }
+
+  /**
+   * Moves a stored resource_view params blob onto this manager's keys (#1723).
+   *
+   * The resource_view widget kept every per-result option in one
+   * field_options bucket and named the category flag show_category. Here the
+   * shared options (thumbnail, category, tags) stay in field_options under
+   * the names every listing uses, and the resource-only ones move to
+   * resource_field_options. The two legacy mappings the old manager applied
+   * on every render are applied once here instead: show_publication expands
+   * to the four fields it covered, and the retired journal-name filter
+   * becomes a search across that field. Every other key is carried over
+   * unchanged, and running this on its own output changes nothing.
+   *
+   * @param array $params
+   *   Decoded params as stored by the resource_view widget.
+   *
+   * @return array
+   *   Params for a resource listing bundle.
+   */
+  public static function normalizeResourceParams(array $params): array {
+    $params['filters']['types'] = [self::CONTENT_TYPE_RESOURCE];
+
+    // Only when options were stored: setupView() shows the teaser image when
+    // field_options is absent altogether, and an empty set would hide it.
+    if (isset($params['field_options']) && is_array($params['field_options'])) {
+      $stored = $params['field_options'] + (is_array($params['resource_field_options'] ?? NULL) ? $params['resource_field_options'] : []);
+      if (isset($stored['show_publication'])) {
+        foreach (['show_journal_name', 'show_journal_issue', 'show_authors', 'show_publish_date'] as $option) {
+          $stored[$option] ??= !empty($stored['show_publication']);
+        }
+      }
+      if (!empty($stored['show_category'])) {
+        $stored['show_categories'] = 'show_categories';
+      }
+      $enabled = array_keys(array_filter($stored));
+      $shared = array_intersect(['show_thumbnail', 'show_categories', 'show_tags'], $enabled);
+      $resource = array_intersect(self::RESOURCE_FIELD_OPTIONS, $enabled);
+      $params['field_options'] = array_combine($shared, $shared);
+      $params['resource_field_options'] = array_combine($resource, $resource);
+    }
+
+    if (!empty($params['exposed_filter_options']['show_journal_publication_name_filter']) && empty($params['search_fields'])) {
+      $params['search_fields'] = self::RESOURCE_DEFAULT_SEARCH_FIELDS + [
+        'field_journal_publication_name' => 'field_journal_publication_name',
+      ];
+    }
+    unset($params['exposed_filter_options']['show_journal_publication_name_filter']);
+
+    return $params;
   }
 
   /**
@@ -583,26 +1465,32 @@ class ViewsBasicManager extends ControllerBase implements ContainerInjectionInte
    *   Type of view output: 'rendered' (used to allow 'count').
    * @param string $params
    *   JSON of the parameter settings.
+   * @param string|null $blockUuid
+   *   The host block content UUID, used to derive a per-instance pager element
+   *   so multiple paginated listings on one page paginate independently.
+   * @param bool $blockHasHeading
+   *   Whether the host block renders its own heading; forwarded to setupView()
+   *   to set the per-result card heading level (see setupView()).
    *
-   * @return array|int
+   * @return array|int|null
    *   An array of a rendered view or a count of the number of results based
-   *   on the parameters specified.
+   *   on the parameters specified, or NULL when the scaffold view is missing
+   *   or the params are invalid.
    */
-  public function getView($type, $params) {
-    // Prevents views recursion.
-    static $running;
-    if ($running) {
+  public function getView($type, $params, $blockUuid = NULL, $blockHasHeading = FALSE) {
+    // Set up the view and initial decoded parameters. Each call gets its own
+    // isolated, cloned view (see initView), so the previous static recursion
+    // guards are no longer needed and nested views-basic placements now render
+    // instead of being silently skipped (#906 / #1306).
+    $paramsDecoded = self::decodeParams($params);
+    if ($paramsDecoded === NULL) {
       return NULL;
     }
-    $running = TRUE;
-
-    // Set up the view and initial decoded parameters.
-    $paramsDecoded = json_decode($params, TRUE);
     $view = $this->initView($paramsDecoded['filters']['types']);
-    $this->setupView($view, $params);
-
-    // End current view run.
-    $running = FALSE;
+    if ($view === NULL) {
+      return NULL;
+    }
+    $this->setupView($view, $params, $blockUuid, $blockHasHeading);
 
     return $view;
   }
@@ -650,6 +1538,247 @@ class ViewsBasicManager extends ControllerBase implements ContainerInjectionInte
   public function sortByList($content_type) {
     $sortByList = self::ALLOWED_ENTITIES[$content_type]['sort_by'];
     return $sortByList;
+  }
+
+  /**
+   * Resolves the listing bundle definition for a block content bundle id.
+   *
+   * @param string $bundle
+   *   The block content bundle id (e.g. "post_card").
+   *
+   * @return array
+   *   The definition row: content_type, view_mode, supports_thumbnail,
+   *   supports_card_size.
+   *
+   * @throws \InvalidArgumentException
+   *   When the bundle is not a known listing bundle. A consumer asked about an
+   *   unknown bundle throws loudly rather than guessing a default (ADR DR-2).
+   */
+  public static function getListingBundleDefinition(string $bundle): array {
+    if (!isset(self::LISTING_BUNDLES[$bundle])) {
+      throw new \InvalidArgumentException(sprintf('Unknown Views Basic listing bundle "%s".', $bundle));
+    }
+    return self::LISTING_BUNDLES[$bundle];
+  }
+
+  /**
+   * Returns the content type a listing bundle queries.
+   *
+   * @param string $bundle
+   *   The block content bundle id.
+   *
+   * @return string
+   *   The content type machine name.
+   */
+  public static function getContentTypeForBundle(string $bundle): string {
+    return self::getListingBundleDefinition($bundle)['content_type'];
+  }
+
+  /**
+   * Returns the node view mode a listing bundle renders results in.
+   *
+   * @param string $bundle
+   *   The block content bundle id.
+   *
+   * @return string
+   *   The view mode machine name.
+   */
+  public static function getViewModeForBundle(string $bundle): string {
+    return self::getListingBundleDefinition($bundle)['view_mode'];
+  }
+
+  /**
+   * Returns whether a listing bundle offers the "Show Teaser Image" option.
+   *
+   * @param string $bundle
+   *   The block content bundle id.
+   *
+   * @return bool
+   *   TRUE when the bundle supports the thumbnail option (card/list_item).
+   */
+  public static function bundleSupportsThumbnail(string $bundle): bool {
+    return self::getListingBundleDefinition($bundle)['supports_thumbnail'];
+  }
+
+  /**
+   * Returns whether a listing bundle offers the "Card size" dial (#1648).
+   *
+   * Only the card grid takes one: list and condensed each lay themselves
+   * out, so the control would be clutter that does
+   * nothing. Declared per bundle rather than inferred from the view mode at
+   * call time, matching supports_thumbnail (ADR DR-2).
+   *
+   * @param string $bundle
+   *   The block content bundle id.
+   *
+   * @return bool
+   *   TRUE when the bundle renders a card grid.
+   */
+  public static function bundleSupportsCardSize(string $bundle): bool {
+    return self::getListingBundleDefinition($bundle)['supports_card_size'];
+  }
+
+  /**
+   * Coerces a stored card-size value to one this module can render (#1648).
+   *
+   * Anything that is not one of ::CARD_SIZE_OPTIONS — absent, a stale string,
+   * a decoded scalar — falls back to the grid every card listing rendered
+   * before the dial existed, rather than emitting a size the SCSS has no rule
+   * for.
+   *
+   * @param mixed $value
+   *   A stored card_size string, or NULL.
+   *
+   * @return string
+   *   A member of ::CARD_SIZE_OPTIONS.
+   */
+  public static function normalizeCardSize(mixed $value): string {
+    if (is_string($value) && in_array($value, self::CARD_SIZE_OPTIONS, TRUE)) {
+      return $value;
+    }
+    return self::CARD_SIZE_DEFAULT;
+  }
+
+  /**
+   * Resolves the target listing bundle for a legacy "view" block (#1169).
+   *
+   * The migration keys on the stored content type and view mode together: the
+   * target bundle id is "{content_type}_{view_mode}" when that pair is a known
+   * listing bundle. The retired profile directory (#1682) maps to profile_card;
+   * its params need ::directoryToCardParams() as well. Returns NULL for
+   * anything that does not map (e.g. the calendar view mode, which
+   * deploy_10000 already converted to event_calendar, or a malformed/empty
+   * param set) so the migration can skip it loudly rather
+   * than guess (ADR DR-9).
+   *
+   * @param string|null $content_type
+   *   The stored content type (filters.types[0]).
+   * @param string|null $view_mode
+   *   The stored view mode.
+   *
+   * @return string|null
+   *   The target bundle id, or NULL when the pair does not map to a listing
+   *   bundle.
+   */
+  public static function migrationTargetBundle(?string $content_type, ?string $view_mode): ?string {
+    if ($content_type === NULL || $view_mode === NULL) {
+      return NULL;
+    }
+    if ($content_type === self::CONTENT_TYPE_PROFILE && $view_mode === 'directory') {
+      return 'profile_card';
+    }
+    $candidate = $content_type . '_' . $view_mode;
+    return isset(self::LISTING_BUNDLES[$candidate]) ? $candidate : NULL;
+  }
+
+  /**
+   * Returns the target bundle and preset params for a predecessor block.
+   *
+   * The predecessor listing blocks (post_list, event_list, directory) embed a
+   * hard-coded Drupal View and carry no
+   * field_view_params. Superseding them means swapping each instance to the
+   * equivalent new bundle and pre-filling field_view_params with params that
+   * reproduce the predecessor View's query (ADR DR-10):
+   * - post_list  -> post_list_item: posts, sticky + publish-date DESC, 10/page.
+   * - event_list -> event_list_item: future events, event-date ASC.
+   * - directory  -> profile_card: profiles, last-name A-Z, small cards with
+   *   department, email and phone (the retired directory look, #1682).
+   *
+   * These presets are best-effort reproductions and must be confirmed on
+   * staging with a before/after render diff (#1171) before the predecessor
+   * bundles and their Views are removed.
+   *
+   * @param string $legacy_bundle
+   *   The predecessor block content bundle id.
+   *
+   * @return array|null
+   *   ['target' => bundle id, 'params' => params array] or NULL if not a
+   *   known predecessor bundle.
+   */
+  public static function predecessorPreset(string $legacy_bundle): ?array {
+    $base = [
+      'field_options' => ['show_thumbnail' => 'show_thumbnail'],
+      'event_field_options' => [],
+      'post_field_options' => [],
+      'exposed_filter_options' => [],
+      'category_filter_label' => NULL,
+      'category_included_terms' => NULL,
+      'custom_vocab_included_terms' => NULL,
+      'operator' => '+',
+      'offset' => 0,
+      'show_current_entity' => 0,
+      'pinned_to_top' => FALSE,
+      'pin_label' => self::DEFAULT_PIN_LABEL,
+    ];
+    $presets = [
+      'post_list' => [
+        'target' => 'post_list_item',
+        'params' => [
+          'view_mode' => 'list_item',
+          'filters' => ['types' => ['post'], 'terms_include' => NULL, 'terms_exclude' => NULL],
+          'sort_by' => 'field_publish_date:DESC',
+          'display' => 'pager',
+          'limit' => 10,
+          'pinned_to_top' => TRUE,
+        ],
+      ],
+      'event_list' => [
+        'target' => 'event_list_item',
+        'params' => [
+          'view_mode' => 'list_item',
+          'filters' => [
+            'types' => ['event'],
+            'terms_include' => NULL,
+            'terms_exclude' => NULL,
+            'event_time_period' => 'future',
+          ],
+          'sort_by' => 'field_event_date:ASC',
+          'display' => 'all',
+          'limit' => 10,
+        ],
+      ],
+      'directory' => [
+        'target' => 'profile_card',
+        'params' => self::directoryToCardParams([
+          'filters' => ['types' => ['profile'], 'terms_include' => NULL, 'terms_exclude' => NULL],
+          'sort_by' => 'field_last_name:ASC',
+          'display' => 'all',
+          'limit' => 10,
+        ]),
+      ],
+    ];
+    if (!isset($presets[$legacy_bundle])) {
+      return NULL;
+    }
+    return [
+      'target' => $presets[$legacy_bundle]['target'],
+      'params' => $presets[$legacy_bundle]['params'] + $base,
+    ];
+  }
+
+  /**
+   * Converts profile directory params to the equivalent card params (#1682).
+   *
+   * The directory design option was retired onto the profile card grid. Small
+   * cards with department, email and phone switched on reproduce its look;
+   * every other stored setting (filters, sort, limit, pins) is kept as is.
+   *
+   * @param array $params
+   *   Decoded field_view_params of a directory listing.
+   *
+   * @return array
+   *   The params for a profile_card listing.
+   */
+  public static function directoryToCardParams(array $params): array {
+    $params['view_mode'] = 'card';
+    $params['card_size'] = 'small';
+    $params['field_options'] = ['show_thumbnail' => 'show_thumbnail'];
+    $params['profile_field_options'] = [
+      'show_department' => 'show_department',
+      'show_email' => 'show_email',
+      'show_phone' => 'show_phone',
+    ];
+    return $params;
   }
 
   /**
@@ -735,6 +1864,13 @@ class ViewsBasicManager extends ControllerBase implements ContainerInjectionInte
         $defaultParam = (empty($paramsDecoded['operator'])) ? '+' : $paramsDecoded['operator'];
         break;
 
+      // Falls back to the legacy shared 'operator' key, then '+', for a
+      // block saved before the include/exclude split (#1316).
+      case 'include_operator':
+      case 'exclude_operator':
+        $defaultParam = $paramsDecoded[$type] ?? ($paramsDecoded['operator'] ?? '+');
+        break;
+
       case 'limit':
         $defaultParam = (empty($paramsDecoded['limit'])) ? 10 : (int) $paramsDecoded['limit'];
         break;
@@ -757,6 +1893,29 @@ class ViewsBasicManager extends ControllerBase implements ContainerInjectionInte
 
       case 'post_field_options':
         $defaultParam = (empty($paramsDecoded['post_field_options'])) ? [] : $paramsDecoded['post_field_options'];
+        break;
+
+      case 'profile_field_options':
+        $defaultParam = (empty($paramsDecoded['profile_field_options'])) ? [] : $paramsDecoded['profile_field_options'];
+        break;
+
+      case 'resource_field_options':
+        $defaultParam = (!empty($paramsDecoded['resource_field_options']) && is_array($paramsDecoded['resource_field_options']))
+          ? $paramsDecoded['resource_field_options']
+          : [];
+        break;
+
+      case 'search_fields':
+        $defaultParam = (!empty($paramsDecoded['search_fields']) && is_array($paramsDecoded['search_fields']))
+          ? $paramsDecoded['search_fields']
+          : self::RESOURCE_DEFAULT_SEARCH_FIELDS;
+        break;
+
+      case 'card_size':
+        // Listings saved before the dial existed carry no key and must keep
+        // their large (3-up) grid. An unrecognised stored value falls back too,
+        // rather than emitting a size the SCSS has no rule for.
+        $defaultParam = self::normalizeCardSize($paramsDecoded['card_size'] ?? NULL);
         break;
 
       case 'exposed_filter_options':
@@ -796,6 +1955,30 @@ class ViewsBasicManager extends ControllerBase implements ContainerInjectionInte
         break;
     }
     return $defaultParam;
+  }
+
+  /**
+   * Resolves the include/exclude term operators from decoded stored params.
+   *
+   * Split independently (#1316): a single shared operator applied to both
+   * lists made "All" stricter for includes but looser for excludes at the
+   * same time — implode() joining the exclude list with "," (AND) only
+   * excludes a node that carries every excluded term, not any one of them.
+   * A block saved before the split carries only the legacy 'operator' key,
+   * which this applies to both lists as before (no migration, per #1316).
+   *
+   * @param array $paramsDecoded
+   *   The decoded stored params.
+   *
+   * @return array
+   *   [$includeOperator, $excludeOperator], each "+" (OR) or "," (AND).
+   */
+  public function resolveTermOperators(array $paramsDecoded): array {
+    $legacyOperator = $paramsDecoded['operator'] ?? '+';
+    return [
+      $paramsDecoded['include_operator'] ?? $legacyOperator,
+      $paramsDecoded['exclude_operator'] ?? $legacyOperator,
+    ];
   }
 
   /**
@@ -878,17 +2061,57 @@ class ViewsBasicManager extends ControllerBase implements ContainerInjectionInte
   }
 
   /**
+   * Returns terms from the given vocabularies, grouped by vocabulary.
+   *
+   * Built for a select's #options as optgroups (#1316): each vocabulary's own
+   * label groups its terms, so a per-content-type widget can scope its tag
+   * selects to the handful of vocabularies relevant to that content type
+   * instead of getAllTags()'s flat, unscoped dump of every vocabulary on the
+   * site. Terms are sorted alphabetically within their group; groups appear
+   * in the order $vocabulary_ids lists them.
+   *
+   * @param string[] $vocabulary_ids
+   *   The vocabulary machine names to include, in display order.
+   *
+   * @return array
+   *   An array keyed by vocabulary label, each value a tid => term name map.
+   */
+  public function getTagsForVocabularies(array $vocabulary_ids): array {
+    $vocabulary_storage = $this->entityTypeManager->getStorage('taxonomy_vocabulary');
+    $grouped = [];
+
+    foreach ($vocabulary_ids as $vid) {
+      $vocabulary = $vocabulary_storage->load($vid);
+      if (!$vocabulary) {
+        continue;
+      }
+      $tagList = [];
+      foreach ($this->termStorage->loadTree($vid) as $term) {
+        $tagList[$term->tid] = $term->name;
+      }
+      asort($tagList);
+      $grouped[$vocabulary->label()] = $tagList;
+    }
+
+    return $grouped;
+  }
+
+  /**
    * Get taxonomy parent terms by vocabulary ID.
    *
    * @param string $vid
    *   The machine name of the vocabulary.
+   * @param string|null $allLabel
+   *   The label for the "no parent term selected" option (#1481: callers
+   *   pass a vocabulary-specific label rather than the generic default).
+   *   Defaults to a translated "-- All Items --".
    *
    * @return array
    *   An array of parent terms where the key is the term ID and
    *   the value is the term name.
    */
-  public function getTaxonomyParents(string $vid): array {
-    $list = ['' => '-- All Items --'];
+  public function getTaxonomyParents(string $vid, ?string $allLabel = NULL): array {
+    $list = ['' => $allLabel ?? (string) $this->t('-- All Items --')];
     // Load all top-level (parent) terms for the given vocabulary ID.
     $terms = $this->termStorage->loadTree($vid, 0, 1);
 
@@ -912,15 +2135,7 @@ class ViewsBasicManager extends ControllerBase implements ContainerInjectionInte
    *   the value is the term ID.
    */
   public function getChildTermsByParentId(int $parentId, string $vid): array {
-    $list = [];
-    // Load all child terms for the given parent term ID and vocabulary ID.
-    $terms = $this->termStorage->loadTree($vid, $parentId, NULL);
-
-    foreach ($terms as $term) {
-      $list[$term->tid] = (int) $term->tid;
-    }
-
-    return $list;
+    return $this->exposedTaxonomyFilterOptions->getDescendantTermIds($vid, $parentId);
   }
 
   /**
@@ -938,7 +2153,7 @@ class ViewsBasicManager extends ControllerBase implements ContainerInjectionInte
    *   The term ID.
    */
   private function getTermId($term) : int {
-    return (int) is_array($term) ? $term['target_id'] : $term;
+    return (int) (is_array($term) ? $term['target_id'] : $term);
   }
 
   /**
@@ -966,6 +2181,7 @@ class ViewsBasicManager extends ControllerBase implements ContainerInjectionInte
           'view_mode_ajax' => ($form) ? $form['block_form']['group_user_selection']['entity_and_view_mode']['view_mode'] : NULL,
           'category_included_terms_ajax' => ($form) ? $form['block_form']['group_user_selection']['entity_and_view_mode']['category_included_terms'] : NULL,
           'show_category_filter_selector' => ':input[name="block_form[group_user_selection][entity_and_view_mode][exposed_filter_options][show_category_filter]"]',
+          'show_search_filter_selector' => ':input[name="block_form[group_user_selection][entity_and_view_mode][exposed_filter_options][show_search_filter]"]',
           'show_audience_filter_selector' => ':input[name="block_form[group_user_selection][entity_and_view_mode][exposed_filter_options][show_audience_filter]"]',
           'show_custom_vocab_filter_selector' => ':input[name="block_form[group_user_selection][entity_and_view_mode][exposed_filter_options][show_custom_vocab_filter]"]',
           'custom_vocab_included_terms_ajax' => ($form) ? $form['block_form']['group_user_selection']['entity_and_view_mode']['custom_vocab_included_terms'] : NULL,
@@ -1045,6 +2261,7 @@ class ViewsBasicManager extends ControllerBase implements ContainerInjectionInte
           'view_mode_ajax' => ($form) ? $form['settings']['block_form']['group_user_selection']['entity_and_view_mode']['view_mode'] : NULL,
           'category_included_terms_ajax' => ($form) ? $form['settings']['block_form']['group_user_selection']['entity_and_view_mode']['category_included_terms'] : NULL,
           'show_category_filter_selector' => ':input[name="settings[block_form][group_user_selection][entity_and_view_mode][exposed_filter_options][show_category_filter]"]',
+          'show_search_filter_selector' => ':input[name="settings[block_form][group_user_selection][entity_and_view_mode][exposed_filter_options][show_search_filter]"]',
           'show_audience_filter_selector' => ':input[name="settings[block_form][group_user_selection][entity_and_view_mode][exposed_filter_options][show_audience_filter]"]',
           'show_custom_vocab_filter_selector' => ':input[name="settings[block_form][group_user_selection][entity_and_view_mode][exposed_filter_options][show_custom_vocab_filter]"]',
           'custom_vocab_included_terms_ajax' => ($form) ? $form['settings']['block_form']['group_user_selection']['entity_and_view_mode']['custom_vocab_included_terms'] : NULL,
@@ -1131,6 +2348,7 @@ class ViewsBasicManager extends ControllerBase implements ContainerInjectionInte
         'view_mode_ajax' => ($form) ? $form['group_user_selection']['entity_and_view_mode']['view_mode'] : NULL,
         'category_included_terms_ajax' => ($form) ? $form['group_user_selection']['entity_and_view_mode']['category_included_terms'] : NULL,
         'show_category_filter_selector' => ':input[name="show_category_filter"]',
+        'show_search_filter_selector' => ':input[name="show_search_filter"]',
         'show_audience_filter_selector' => ':input[name="show_audience_filter"]',
         'show_custom_vocab_filter_selector' => ':input[name="show_custom_vocab_filter"]',
         'custom_vocab_included_terms_ajax' => ($form) ? $form['group_user_selection']['entity_and_view_mode']['custom_vocab_included_terms'] : NULL,
