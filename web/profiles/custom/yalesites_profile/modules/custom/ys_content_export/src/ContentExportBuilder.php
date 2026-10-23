@@ -51,6 +51,27 @@ class ContentExportBuilder {
   ];
 
   /**
+   * The node field each content type's Updated column reads.
+   *
+   * Matches the matching Manage view. Most render the current revision's
+   * creation time; Manage Profiles renders the node's changed time instead.
+   * The two differ when a node is saved without a new revision, so the export
+   * reads whichever one the screen shows. Bundles absent from this map use
+   * revision_timestamp.
+   */
+  const BUNDLE_UPDATED = [
+    'profile' => 'changed',
+  ];
+
+  /**
+   * The date pattern used by the Updated column.
+   *
+   * Sortable in a spreadsheet, unlike the screen's "short" and "medium"
+   * formats, which lead with the month or weekday.
+   */
+  const UPDATED_FORMAT = 'Y-m-d H:i';
+
+  /**
    * Returns the ordered export columns for a content type.
    *
    * @param string $bundle
@@ -72,6 +93,10 @@ class ContentExportBuilder {
     ];
     $columns += self::SHARED_TAXONOMY;
     $columns += self::BUNDLE_TAXONOMY[$bundle] ?? [];
+    // Updated and Last Updated By close every row, after the columns earlier
+    // exports already had, so a spreadsheet built against those keeps working.
+    $columns[self::BUNDLE_UPDATED[$bundle] ?? 'revision_timestamp'] = 'Updated';
+    $columns['revision_uid'] = 'Last Updated By';
     return $columns;
   }
 
@@ -121,6 +146,19 @@ class ContentExportBuilder {
 
       case 'field_publish_date':
         return self::publishDate($node);
+
+      case 'revision_timestamp':
+        return self::updated((int) $node->getRevisionCreationTime(), $date_formatter);
+
+      case 'changed':
+        return self::updated((int) $node->getChangedTime(), $date_formatter);
+
+      case 'revision_uid':
+        // A deleted account leaves the revision pointing at a user that no
+        // longer loads, so there is no user here; the Manage screen shows an
+        // empty cell for it, and so does the export.
+        $user = $node->getRevisionUser();
+        return $user ? (string) $user->getDisplayName() : '';
 
       default:
         // Any remaining column is assumed to be an entity reference, so a new
@@ -260,6 +298,26 @@ class ContentExportBuilder {
       return '';
     }
     return (string) $node->get('field_publish_date')->value;
+  }
+
+  /**
+   * Renders the Updated timestamp as a sortable date and time.
+   *
+   * Rendered in the site's timezone, as the Manage screen is. The 'custom'
+   * format type lets the formatter use the pattern directly; a named type would
+   * make it load a date format config entity on every call.
+   *
+   * @param int $timestamp
+   *   The UNIX timestamp.
+   * @param \Drupal\Core\Datetime\DateFormatterInterface $date_formatter
+   *   The date formatter.
+   *
+   * @return string
+   *   The formatted date and time, or an empty string when the timestamp is
+   *   unset, which the Manage screen also leaves blank.
+   */
+  protected static function updated(int $timestamp, DateFormatterInterface $date_formatter): string {
+    return $timestamp ? $date_formatter->format($timestamp, 'custom', self::UPDATED_FORMAT) : '';
   }
 
   /**
