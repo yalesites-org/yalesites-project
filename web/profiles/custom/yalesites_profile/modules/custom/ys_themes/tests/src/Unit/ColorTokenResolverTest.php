@@ -739,6 +739,40 @@ class ColorTokenResolverTest extends UnitTestCase {
   }
 
   /**
+   * The hidden select leaves the tab order and names the swatch group.
+   *
+   * Keyboard focus belongs on the swatches, so the native select (zero-size
+   * and transparent) is taken out of the tab order and the accessibility
+   * tree, and its title is handed to the template as the radiogroup's name.
+   *
+   * @covers ::processColorPicker
+   */
+  public function testProcessColorPickerHidesSelectFromKeyboardAndPassesGroupLabel(): void {
+    $resolver = $this->createResolver($this->fixturePath, NULL, 'one');
+    $rendered_argument = NULL;
+    $renderer = $this->createMock(RendererInterface::class);
+    $renderer->method('render')->willReturnCallback(function (&$element) use (&$rendered_argument) {
+      $rendered_argument = $element;
+      return '<div></div>';
+    });
+    $this->setRendererOnResolver($resolver, $renderer);
+
+    $element = [
+      '#title' => 'Section Theme',
+      '#default_value' => 'one',
+      '#options' => ['default' => 'Default - No Color', 'one' => 'One'],
+    ];
+    $form_state = $this->createMock(FormStateInterface::class);
+    $complete_form = [];
+
+    $result = $resolver->processColorPicker($element, $form_state, $complete_form, 'layout_section', 'ys_layout_options');
+
+    $this->assertSame('-1', $result['#attributes']['tabindex']);
+    $this->assertSame('true', $result['#attributes']['aria-hidden']);
+    $this->assertSame('Section Theme', (string) $rendered_argument['#group_label']);
+  }
+
+  /**
    * Tests process color picker reorders options for section layout.
    *
    * ProcessColorPicker() reorders palette options and sets #palette_order

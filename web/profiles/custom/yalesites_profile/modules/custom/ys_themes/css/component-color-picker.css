@@ -127,6 +127,14 @@ body.gin--dark-mode .expand-indicator:hover {
   margin-right: 0;
 }
 
+/* Keyboard focus. An outline rather than a box-shadow, so it stays distinct
+   from the selected state's ring. Scoped under .palette-selector to outrank
+   Gin's `.ui-dialog :focus { outline: none }`. */
+.palette-selector .palette-option:focus-visible {
+  outline: 3px solid var(--gin-color-primary, #0073e6);
+  outline-offset: 2px;
+}
+
 /* Selected state styling */
 .palette-option[data-selected="true"] {
   background-color: rgba(0, 0, 0, 0.08);
