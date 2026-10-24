@@ -91,19 +91,6 @@ const Layout = () => {
             </>
         );
     }
-    /**
-     * Close modal on escape key press.
-     */
-    useEffect(() => {
-        const close = (e: { key: string; }) => {
-          if(e.key === 'Escape'){
-            handleCloseModal()
-          }
-        }
-        window.addEventListener('keydown', close)
-      return () => window.removeEventListener('keydown', close)
-    },[])
-
     return (
     <div className={styles.layout}>
       {isModalOpen && (

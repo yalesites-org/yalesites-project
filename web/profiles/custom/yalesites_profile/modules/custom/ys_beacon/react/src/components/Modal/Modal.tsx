@@ -41,6 +41,10 @@ const getTabbables = (container: HTMLElement): HTMLElement[] =>
 
 const Modal = ({ show, close, children, header, footer, variant, ariaLabel, restoreFocus = true }: ModalProps) => {
   const modalRef = useRef<HTMLElement>(null);
+  // The listeners below are bound once at open; read the current close
+  // callback through a ref so they never call a stale one.
+  const closeRef = useRef(close);
+  closeRef.current = close;
 
   // Wrap focus at either end of the dialog (WCAG 2.4.3 / 2.1.2). Checked
   // synchronously, before the browser moves focus, so it cannot race fast key
@@ -56,8 +60,18 @@ const Modal = ({ show, close, children, header, footer, variant, ariaLabel, rest
   const handleKeyDown = (e: KeyboardEvent) => {
     const modal = modalRef.current;
     // A modal stacked on top of this one makes it inert; only the top dialog
-    // handles Tab.
-    if (e.key !== 'Tab' || !modal || modal.hasAttribute('inert')) {
+    // handles Tab and Escape.
+    if (!modal || modal.hasAttribute('inert')) {
+      return;
+    }
+    // Escape closes only the top dialog: the citation overlay, not the chat
+    // beneath it.
+    if (e.key === 'Escape' && !e.isComposing) {
+      e.preventDefault();
+      closeRef.current();
+      return;
+    }
+    if (e.key !== 'Tab') {
       return;
     }
     const tabbables = getTabbables(modal);
@@ -113,7 +127,14 @@ const Modal = ({ show, close, children, header, footer, variant, ariaLabel, rest
       // Un-inert before restoring focus so the target is focusable again.
       inertedBelow.forEach((el) => el.removeAttribute('inert'));
       if (restoreFocus) {
-        opener?.focus?.();
+        // If the opener is gone (re-rendered away) or never took focus (a
+        // browser that does not focus buttons on click), fall back to the
+        // dialog beneath so focus never drops to <body>.
+        const target =
+          opener && opener !== document.body && opener.isConnected
+            ? opener
+            : inertedBelow[inertedBelow.length - 1];
+        target?.focus?.();
       }
     };
   }, []);

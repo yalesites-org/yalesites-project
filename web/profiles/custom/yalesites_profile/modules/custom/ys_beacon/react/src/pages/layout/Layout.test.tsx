@@ -1,8 +1,9 @@
 import { describe, it, expect, beforeEach, afterEach, vi } from "vitest";
-import { act, render, screen, waitFor } from "@testing-library/react";
+import { act, render, screen, waitFor, within } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import Layout from "./Layout";
-import { AppStateProvider } from "../../state/AppProvider";
+import { AppStateContext, AppStateProvider } from "../../state/AppProvider";
+import { Conversation } from "../../api";
 
 const SCROLL_OFFSET = 120;
 
@@ -68,7 +69,7 @@ describe("Layout body scroll lock", () => {
     await userEvent.click(
       getLaunchButton()
     );
-    // Layout closes the modal on Escape.
+    // Escape closes the chat modal.
     await userEvent.keyboard("{Escape}");
 
     expect(document.body.hasAttribute("data-body-frozen")).toBe(false);
@@ -103,7 +104,7 @@ describe("Layout background inert while the modal is open (#1441)", () => {
           ?.hasAttribute("inert")
       ).toBe(false);
 
-      // Layout closes the modal on Escape.
+      // Escape closes the chat modal.
       await userEvent.keyboard("{Escape}");
       expect(pageContent.hasAttribute("inert")).toBe(false);
     } finally {
@@ -246,5 +247,103 @@ describe("Layout returns focus to the launching link on close (#1945)", () => {
     await waitFor(() =>
       expect(document.activeElement?.getAttribute("href")).toBe("#launch-chat")
     );
+  });
+
+  // A [tool, assistant] turn whose answer cites one source, so the chat shows
+  // both a "Citation 1" reference button and an inline superscript citation.
+  const conversationWithCitation = (): Conversation => ({
+    id: "conversation-1",
+    title: "Office hours",
+    messages: [
+      {
+        id: "message-tool",
+        role: "tool",
+        content: JSON.stringify({
+          citations: [
+            {
+              content: "Office hours are 9am to 5pm.",
+              id: "1",
+              title: "Example Source",
+              filepath: null,
+              url: "https://example.com",
+              metadata: null,
+              chunk_id: null,
+              reindex_id: null,
+            },
+          ],
+          intent: "",
+        }),
+        date: "2026-01-01T00:00:00Z",
+      },
+      {
+        id: "message-assistant",
+        role: "assistant",
+        content: "Office hours are listed in the handbook. [doc1]",
+        date: "2026-01-01T00:00:00Z",
+      },
+    ],
+    date: "2026-01-01T00:00:00Z",
+  });
+
+  const renderLayoutWithCitation = () =>
+    render(
+      <AppStateContext.Provider
+        value={{ state: { currentChat: conversationWithCitation() }, dispatch: vi.fn() }}
+      >
+        <Layout />
+      </AppStateContext.Provider>
+    );
+
+  // Open the chat, then open the citation overlay the way a keyboard user
+  // would: focus the citation button and activate it.
+  const openCitationFrom = async (
+    user: ReturnType<typeof userEvent.setup>,
+    name: string | RegExp
+  ) => {
+    await launchFrom(floating);
+    const chat = screen.getByRole("dialog", { name: "Beacon chat" });
+    const citationButton = within(chat).getByRole("button", { name });
+    citationButton.focus();
+    await user.keyboard("{Enter}");
+    await screen.findByRole("dialog", { name: "Citation 1" });
+    return chat;
+  };
+
+  describe.each([
+    ["the citation reference button", "Citation 1"],
+    ["the inline superscript citation", /view citation 1/i],
+  ])("with the citation overlay opened from %s", (_label, name) => {
+    it("returns focus to that citation button when the overlay's close button closes it", async () => {
+      const user = userEvent.setup();
+      renderLayoutWithCitation();
+      const chat = await openCitationFrom(user, name);
+
+      await user.click(
+        within(screen.getByRole("dialog", { name: "Citation 1" })).getByRole(
+          "button",
+          { name: /close modal/i }
+        )
+      );
+
+      expect(screen.queryByRole("dialog", { name: "Citation 1" })).toBeNull();
+      await waitFor(() =>
+        expect(within(chat).getByRole("button", { name })).toHaveFocus()
+      );
+    });
+
+    it("closes only the citation overlay on Escape and returns focus to that citation button", async () => {
+      const user = userEvent.setup();
+      renderLayoutWithCitation();
+      const chat = await openCitationFrom(user, name);
+
+      await user.keyboard("{Escape}");
+
+      expect(screen.queryByRole("dialog", { name: "Citation 1" })).toBeNull();
+      expect(screen.getByRole("dialog", { name: "Beacon chat" })).toBe(chat);
+      expect(floating).not.toHaveFocus();
+      await waitFor(() =>
+        expect(within(chat).getByRole("button", { name })).toHaveFocus()
+      );
+    });
   });
 });

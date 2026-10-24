@@ -120,6 +120,30 @@ describe("Modal focus management", () => {
     expect(firstSection?.hasAttribute("inert")).toBe(false);
     first.unmount();
   });
+
+  it("focuses the dialog beneath, not <body>, when the stacked modal's opener is gone on close", () => {
+    const first = render(
+      <Modal show close={vi.fn()} header={<span>Chat</span>} footer={null} variant="" ariaLabel="Beacon chat">
+        <button type="button">Citation 1</button>
+      </Modal>
+    );
+    const firstSection = screen.getByRole("dialog", { name: "Beacon chat" });
+    const opener = screen.getByRole("button", { name: "Citation 1" });
+    opener.focus();
+
+    const second = render(
+      <Modal show close={vi.fn()} header={<span>Citations</span>} footer={null} variant="citation" ariaLabel="Citations">
+        <p>Citation body</p>
+      </Modal>
+    );
+    // The opener re-renders away while the overlay is open.
+    opener.remove();
+
+    second.unmount();
+
+    expect(firstSection).toHaveFocus();
+    first.unmount();
+  });
 });
 
 // YaleSites-Internal#1945: Tab and Shift+Tab must cycle only through the
