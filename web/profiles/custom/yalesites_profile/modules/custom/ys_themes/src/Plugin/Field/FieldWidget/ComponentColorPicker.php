@@ -194,7 +194,7 @@ class ComponentColorPicker extends OptionsSelectWidget implements ContainerFacto
     $color_info = [];
     foreach ($safe_palette_options as $option_key => $option_label) {
       $background_color_var = $color_styles[$option_key][0] ?? NULL;
-      $color_info[$option_key] = $this->colorTokenResolver->buildColorInfo($option_key, $background_color_var);
+      $color_info[$option_key] = $this->colorTokenResolver->buildColorInfo($option_key, $background_color_var, $option_label);
     }
 
     // Render the palette UI.
