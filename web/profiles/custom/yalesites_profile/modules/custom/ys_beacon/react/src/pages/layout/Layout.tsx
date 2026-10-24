@@ -94,11 +94,19 @@ const Layout = () => {
           <Chat />
         </Modal>
       )}
+      {/*
+        Programmatic launch hook only: js/events.js calls .click() on this
+        button when a visitor follows a #launch-chat link. Visitors never reach
+        it directly, so it is hidden from assistive technology and removed from
+        the tab order (YaleSites-Internal#1944: axe "region" rule).
+      */}
       <button
         type="button"
         id="ys-beacon-launch-modal"
         onClick={handleOpenModal}
         className="visually-hidden"
+        aria-hidden="true"
+        tabIndex={-1}
       >
         Try Beacon Now
       </button>
