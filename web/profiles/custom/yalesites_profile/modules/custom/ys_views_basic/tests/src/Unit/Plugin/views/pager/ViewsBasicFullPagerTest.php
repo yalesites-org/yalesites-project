@@ -2,8 +2,12 @@
 
 namespace Drupal\Tests\ys_views_basic\Unit\Plugin\views\pager;
 
+use Drupal\Core\Pager\Pager;
+use Drupal\Core\Pager\PagerManagerInterface;
+use Drupal\Core\Pager\PagerParametersInterface;
 use Drupal\Tests\UnitTestCase;
 use Drupal\ys_views_basic\Plugin\views\pager\ViewsBasicFullPager;
+use Drupal\ys_views_basic\ViewsBasicManager;
 
 /**
  * Unit tests for the ViewsBasicFullPager views pager plugin.
@@ -29,11 +33,15 @@ class ViewsBasicFullPagerTest extends UnitTestCase {
    *   The pager's options (e.g. offset, total_pages).
    * @param int $currentPage
    *   The pager's current_page value.
+   * @param \Drupal\Core\Pager\PagerManagerInterface|null $pagerManager
+   *   The pager manager, or NULL for a plain mock.
+   * @param \Drupal\Core\Pager\PagerParametersInterface|null $pagerParameters
+   *   The pager parameters service, or NULL for a plain mock.
    *
    * @return array
    *   [0] => the plugin, [1] => the mock view query.
    */
-  protected function createPager(array $args, array $options = [], int $currentPage = 0): array {
+  protected function createPager(array $args, array $options = [], int $currentPage = 0, ?PagerManagerInterface $pagerManager = NULL, ?PagerParametersInterface $pagerParameters = NULL): array {
     $query = $this->getMockBuilder('Drupal\views\Plugin\views\query\Sql')
       ->disableOriginalConstructor()
       ->onlyMethods(['setLimit', 'setOffset'])
@@ -43,8 +51,8 @@ class ViewsBasicFullPagerTest extends UnitTestCase {
       [],
       'views_basic_full_pager',
       [],
-      $this->createMock('Drupal\Core\Pager\PagerManagerInterface'),
-      $this->createMock('Drupal\Core\Pager\PagerParametersInterface')
+      $pagerManager ?? $this->createMock(PagerManagerInterface::class),
+      $pagerParameters ?? $this->createMock(PagerParametersInterface::class)
     );
     $pager->view = (object) ['args' => $args, 'query' => $query];
     $pager->options = $options + ['items_per_page' => 10, 'offset' => 0];
@@ -159,6 +167,125 @@ class ViewsBasicFullPagerTest extends UnitTestCase {
     $method->setAccessible(TRUE);
 
     $this->assertFalse($method->invoke($pager));
+  }
+
+  /**
+   * Builds scaffold view arguments whose stored params use a display mode.
+   *
+   * @param string $display
+   *   The listing's display setting: "pager", "limit" or "all".
+   *
+   * @return array
+   *   The view arguments.
+   */
+  protected function listingArgs(string $display): array {
+    $args = array_fill(0, count(ViewsBasicManager::VIEW_ARGUMENT_ORDER), '');
+    $args[ViewsBasicManager::viewArgumentIndex('items')] = '2';
+    $args[ViewsBasicManager::viewArgumentIndex('original_settings')] = json_encode([
+      'filters' => ['types' => ['post']],
+      'sort_by' => 'field_publish_date:DESC',
+      'display' => $display,
+      'limit' => 2,
+    ]);
+    return $args;
+  }
+
+  /**
+   * A listing that does not page leaves the global pager element alone.
+   *
+   * Every listing runs on pager element 0 unless it pages. If a non-paged
+   * listing registered its totals there, a paged listing sharing element 0
+   * would render that listing's page count instead of its own: the extra,
+   * empty pages reported in yalesites-org/YaleSites-Internal#1612.
+   *
+   * @covers ::updatePageInfo
+   * @dataProvider nonPagedDisplayProvider
+   */
+  public function testNonPagedListingDoesNotRegisterGlobalPager(string $display): void {
+    $pagerManager = $this->createMock(PagerManagerInterface::class);
+    $pagerManager->expects($this->never())->method('createPager');
+    [$pager] = $this->createPager($this->listingArgs($display), ['items_per_page' => 2, 'id' => 0], 0, $pagerManager);
+    $pager->total_items = 19;
+
+    $pager->updatePageInfo();
+  }
+
+  /**
+   * A paged listing still registers its pager with its own totals.
+   *
+   * @covers ::updatePageInfo
+   */
+  public function testPagedListingRegistersGlobalPager(): void {
+    $pagerManager = $this->createMock(PagerManagerInterface::class);
+    $pagerManager->expects($this->once())
+      ->method('createPager')
+      ->with(16, 6, 0)
+      ->willReturn(new Pager(16, 6, 0));
+    [$pager] = $this->createPager($this->listingArgs('pager'), ['items_per_page' => 6, 'id' => 0], 0, $pagerManager);
+    $pager->total_items = 16;
+
+    $pager->updatePageInfo();
+  }
+
+  /**
+   * A listing that does not page always shows its first items.
+   *
+   * It must not read ?page for element 0, which belongs to another listing
+   * when a paged one sits on that element.
+   *
+   * @covers ::setCurrentPage
+   * @dataProvider nonPagedDisplayProvider
+   */
+  public function testNonPagedListingIgnoresPageQueryArgument(string $display): void {
+    $pagerParameters = $this->createMock(PagerParametersInterface::class);
+    $pagerParameters->method('findPage')->willReturn(2);
+    [$pager] = $this->createPager($this->listingArgs($display), ['id' => 0], 0, NULL, $pagerParameters);
+
+    $pager->setCurrentPage();
+
+    $this->assertSame(0, $pager->getCurrentPage());
+  }
+
+  /**
+   * A paged listing reads its current page from the query string.
+   *
+   * @covers ::setCurrentPage
+   */
+  public function testPagedListingReadsPageQueryArgument(): void {
+    $pagerParameters = $this->createMock(PagerParametersInterface::class);
+    $pagerParameters->method('findPage')->willReturn(2);
+    [$pager] = $this->createPager($this->listingArgs('pager'), ['id' => 0], 0, NULL, $pagerParameters);
+
+    $pager->setCurrentPage();
+
+    $this->assertSame(2, $pager->getCurrentPage());
+  }
+
+  /**
+   * Without usable stored params, the pager keeps core's behavior.
+   *
+   * Content Resources listings put other values at these argument positions.
+   *
+   * @covers ::setCurrentPage
+   */
+  public function testListingWithoutStoredParamsReadsPageQueryArgument(): void {
+    $pagerParameters = $this->createMock(PagerParametersInterface::class);
+    $pagerParameters->method('findPage')->willReturn(2);
+    [$pager] = $this->createPager(['resource', 'all'], ['id' => 0], 0, NULL, $pagerParameters);
+
+    $pager->setCurrentPage();
+
+    $this->assertSame(2, $pager->getCurrentPage());
+  }
+
+  /**
+   * Display settings for listings that do not page.
+   */
+  public static function nonPagedDisplayProvider(): array {
+    return [
+      'limit' => ['limit'],
+      'all' => ['all'],
+    ];
   }
 
 }
