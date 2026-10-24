@@ -664,17 +664,22 @@ class ColorTokenResolver {
    *   The option key.
    * @param string|null $background_color_var
    *   The background color CSS variable.
+   * @param string|\Stringable|null $option_label
+   *   The option's label. The 'default' option has no palette color to name,
+   *   so its swatch shows this label instead -- e.g. "Default - No Color" --
+   *   because editors read the swatch, not the hidden select behind it.
    *
    * @return array
    *   Color info array with css_var, hex, token_name, and token_ref.
    */
-  public function buildColorInfo($option_key, $background_color_var) {
+  public function buildColorInfo($option_key, $background_color_var, $option_label = NULL) {
     // Handle default option explicitly.
     if ($option_key === 'default') {
+      $label = (string) ($option_label ?? '');
       return [
         'css_var' => '#ffffff',
         'hex' => '#ffffff',
-        'token_name' => 'Default',
+        'token_name' => $label !== '' ? $label : 'Default',
         'token_ref' => $background_color_var ?: 'default',
       ];
     }
@@ -772,7 +777,7 @@ class ColorTokenResolver {
     $color_info = [];
     foreach ($palette_options as $option_key => $option_label) {
       $background_color_var = $color_styles[$option_key][0] ?? NULL;
-      $color_info[$option_key] = $this->buildColorInfo($option_key, $background_color_var);
+      $color_info[$option_key] = $this->buildColorInfo($option_key, $background_color_var, $option_label);
     }
 
     $palette_render = [

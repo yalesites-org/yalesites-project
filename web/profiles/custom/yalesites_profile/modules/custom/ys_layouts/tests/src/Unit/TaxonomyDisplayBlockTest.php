@@ -92,7 +92,7 @@ class TaxonomyDisplayBlockTest extends UnitTestCase {
    */
   public function testDefaultConfiguration(): void {
     $this->assertSame(
-      ['vocabularies' => [], 'theme_selection' => 'default'],
+      ['vocabularies' => [], 'theme_selection' => 'one'],
       $this->block->defaultConfiguration()
     );
   }
