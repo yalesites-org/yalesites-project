@@ -188,7 +188,8 @@
         "Make the table formatter's header describe the table it heads - scope, row headers, matching column count - WCAG 1.3.1 (YaleSites-Internal#1706)": "patches/contrib/office_hours/office_hours-table-header-scope-and-shape.patch"
       },
       "drupal/paragraphs": {
-        "hide remove button https://www.drupal.org/project/paragraphs/issues/2919186": "patches/contrib/paragraphs/2919186-1.patch"
+        "hide remove button https://www.drupal.org/project/paragraphs/issues/2919186": "patches/contrib/paragraphs/2919186-1.patch",
+        "Guard the #rows loop so a rowless gin_lb table logs no warnings; port of MR 286 to 8.x-1.21; remove once a paragraphs release includes it (YaleSites-Internal#1951) https://www.drupal.org/project/paragraphs/issues/3574118": "patches/contrib/paragraphs/3574118-mr-286-8.x-1.21.patch"
       },
       "drupal/quick_node_clone": {
         "Fix cloning of inline blocks and paragraphs: https://www.drupal.org/project/quick_node_clone/issues/3100117": "patches/contrib/quick_node_clone/3100117-mr-32.diff",
