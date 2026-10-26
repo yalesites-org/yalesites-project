@@ -10,8 +10,8 @@
 #     or untracked files.
 #  2. Switches yalesites-project to its branch.
 #  3. Runs `composer update` via the local dev tool (lando or ddev) so contrib
-#     modules added or removed by the
-#     branch are picked up (skip with -s). The gitignored
+#     modules added or removed by the branch are picked up (skip with -s).
+#     The gitignored
 #     atomic/_yale-packages directory is held outside atomic while composer
 #     runs, because composer may check atomic out at a release tag.
 #  4. Switches atomic, tokens and component-library-twig to their branches.
