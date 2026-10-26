@@ -769,9 +769,13 @@ class ColorTokenResolver {
       $element['#options'] = $palette_options;
     }
 
-    // Hide the select element visually.
+    // Hide the select element visually and from keyboard and screen reader
+    // users: the swatches are the control, and the select only carries the
+    // submitted value.
     $element['#attributes']['class'][] = 'palette-select-hidden';
     $element['#attributes']['style'] = 'position: absolute; opacity: 0; pointer-events: none; width: 0; height: 0; overflow: hidden;';
+    $element['#attributes']['tabindex'] = '-1';
+    $element['#attributes']['aria-hidden'] = 'true';
 
     // Build color information for each palette option.
     $color_info = [];
@@ -782,6 +786,7 @@ class ColorTokenResolver {
 
     $palette_render = [
       '#theme' => 'component_color_picker',
+      '#group_label' => $element['#title'] ?? NULL,
       '#palette_options' => $palette_options,
       '#palette_order' => $palette_order,
       '#global_theme' => $global_theme,
