@@ -127,9 +127,36 @@ $env_options = [
 $env_key = isset($env_options[$env]) ? $env : 'multidev';
 $config['environment_indicator.indicator'] = $env_options[$env_key];
 if ($env_key === 'lando') {
-  $git_head = file(DRUPAL_ROOT . '/../.git/HEAD');
-  $ref = explode('/', $git_head[0]);
-  $branch_parts = array_slice($ref, 2);
-  $branch_name = implode('/', $branch_parts);
-  $config['environment_indicator.indicator']['name'] .= " - $branch_name";
+  // Show the checked-out branch. In a git worktree .git is a file holding
+  // "gitdir: <path>", and that path is usually absolute on the host, so it
+  // does not exist inside the container. Also look for its ".git/..." tail in
+  // each folder above the checkout. See
+  // yalesites-org/YaleSites-Internal#1962.
+  $ys_repo_root = dirname(DRUPAL_ROOT);
+  $ys_git_path = $ys_repo_root . '/.git';
+  $ys_git_head_file = NULL;
+  if (is_dir($ys_git_path)) {
+    $ys_git_head_file = $ys_git_path . '/HEAD';
+  }
+  elseif (is_file($ys_git_path) && is_readable($ys_git_path) && preg_match('/^gitdir:\s*(.+)$/m', (string) file_get_contents($ys_git_path), $ys_git_match)) {
+    $ys_git_dir = trim($ys_git_match[1]);
+    $ys_git_candidates = [str_starts_with($ys_git_dir, '/') ? $ys_git_dir : $ys_repo_root . '/' . $ys_git_dir];
+    $ys_git_tail_pos = strrpos($ys_git_dir, '/.git/');
+    if ($ys_git_tail_pos !== FALSE) {
+      $ys_git_tail = substr($ys_git_dir, $ys_git_tail_pos);
+      for ($ys_dir = dirname($ys_repo_root); $ys_dir !== dirname($ys_dir); $ys_dir = dirname($ys_dir)) {
+        $ys_git_candidates[] = $ys_dir . $ys_git_tail;
+      }
+    }
+    foreach ($ys_git_candidates as $ys_git_candidate) {
+      if (is_file($ys_git_candidate . '/HEAD')) {
+        $ys_git_head_file = $ys_git_candidate . '/HEAD';
+        break;
+      }
+    }
+  }
+  $ys_git_head = $ys_git_head_file && is_readable($ys_git_head_file) ? trim((string) file_get_contents($ys_git_head_file)) : '';
+  if (str_starts_with($ys_git_head, 'ref: refs/heads/')) {
+    $config['environment_indicator.indicator']['name'] .= ' - ' . substr($ys_git_head, strlen('ref: refs/heads/'));
+  }
 }
