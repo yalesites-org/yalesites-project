@@ -165,10 +165,10 @@ divider:
     default: left
   field_style_width:
     values:
-      100%: 100
-      75%: 75
-      50%: 50
-      25%: 25
+      100%: 100%
+      75%: 75%
+      50%: 50%
+      25%: 25%
     default: 100%
   field_style_thickness:
     values:
@@ -344,10 +344,10 @@ office_hours:
   field_style_color:
     values:
       default: 'Default - No Color'
-      one: 'One'
-      two: 'Two'
-      three: 'Three'
-      four: 'Four'
-      five: 'Five'
-      six: 'Six'
+      one: One
+      two: Two
+      three: Three
+      four: Four
+      five: Five
+      six: Six
     default: default
