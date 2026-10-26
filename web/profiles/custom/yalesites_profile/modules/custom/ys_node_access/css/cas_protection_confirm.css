@@ -1,0 +1,32 @@
+/**
+ * @file
+ * Styles for the bulk CAS protection confirmation page.
+ *
+ * The text keeps Gin's ordinary text colour, so its contrast is the same as
+ * everywhere else in the admin; the tint and border only set the warning apart.
+ */
+
+.cas-protection-warning {
+  background: var(--gin-bg-warning-light);
+  border-left: 4px solid var(--gin-color-warning);
+  border-radius: var(--gin-border-s);
+  color: var(--gin-color-text);
+  margin-bottom: var(--gin-spacing-l);
+  padding: var(--gin-spacing-m) var(--gin-spacing-l);
+}
+
+.cas-protection-warning h2 {
+  font-size: var(--gin-font-size-xl);
+  margin: 0 0 var(--gin-spacing-s);
+}
+
+.cas-protection-warning p {
+  line-height: 1.5;
+  margin: var(--gin-spacing-s) 0 0;
+}
+
+@media (forced-colors: active) {
+  .cas-protection-warning {
+    border: 2px solid CanvasText;
+  }
+}

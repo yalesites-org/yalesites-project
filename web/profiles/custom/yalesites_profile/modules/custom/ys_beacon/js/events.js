@@ -25,6 +25,9 @@ document.addEventListener('DOMContentLoaded', function onReady() {
     link.classList.add('ys-beacon-chatbot');
     link.addEventListener('click', function onLaunchClick(event) {
       event.preventDefault();
+      // Safari does not focus a link on mouse click. Focus it so the chat
+      // records it as the opener and returns focus here on close.
+      link.focus();
       triggerChatLaunch();
     });
   });

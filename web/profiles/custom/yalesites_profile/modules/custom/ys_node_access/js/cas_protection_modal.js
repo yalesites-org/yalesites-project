@@ -13,34 +13,34 @@
  * - Returns focus to original checkbox after modal closes
  */
 
-(function ($, Drupal) {
+(function ($, Drupal, drupalSettings) {
+  /**
+   * Returns the warning copy: its title, paragraphs, policy link and the
+   * confirm button's label.
+   *
+   * The copy is defined once, in \Drupal\ys_node_access\CasProtectionWarning,
+   * because the bulk "CAS protect" action on the Manage Content views shows
+   * the same warning on a server-rendered page. ys_node_access_form_alter()
+   * passes it here through drupalSettings. CHANGE THE WORDING THERE, not here.
+   *
+   * @return {object}
+   *   The copy, as CasProtectionWarning::toJsSettings() returns it.
+   */
+  function warningCopy() {
+    return drupalSettings.ysNodeAccess.casProtectionWarning;
+  }
+
   /**
    * Configuration object for easy customization of modal content and behavior.
    *
-   * CUSTOMIZE THIS SECTION to change modal text, titles, and settings.
+   * CUSTOMIZE THIS SECTION to change modal titles and settings; the warning
+   * copy itself comes from warningCopy().
    * Note: This modal only appears when ENABLING CAS protection, not when disabling.
    */
   const modalConfig = {
     // Modal content and titles
     content: {
-      title: Drupal.t('⚠️ Warning: YaleSites is NOT secure for sensitive data'),
-
-      // Body content array - supports unlimited paragraphs and different content types
-      // String items become paragraphs, objects can be links or other content types
-      bodyContent: [
-        Drupal.t(
-          'Never upload personal information, student records, research data, or confidential documents to YaleSites. All content is stored on the public internet.',
-        ),
-        Drupal.t(
-          'CAS protection only limits who can view content - it does not make this platform secure for sensitive data.',
-        ),
-        {
-          type: 'link',
-          text: Drupal.t("Learn more about Yale's Data Classification Policy"),
-          url: 'https://your.yale.edu/policies-procedures/policies/1604-data-classification-policy#1604.1',
-        },
-      ],
-      confirmationText: Drupal.t(''),
+      confirmationText: '',
       successMessage: Drupal.t(
         'CAS protection has been enabled for this page.',
       ),
@@ -64,7 +64,7 @@
         class: 'button button--secondary',
       },
       confirm: {
-        text: Drupal.t('I understand - Enable CAS Protection'),
+        // The label comes from warningCopy().
         class: 'button button--primary',
       },
     },
@@ -311,7 +311,7 @@
 
     return [
       {
-        text: config.buttons.confirm.text,
+        text: warningCopy().confirmLabel,
         class: config.buttons.confirm.class,
         click() {
           Drupal.casProtectionModal.confirm();
@@ -363,22 +363,44 @@
   };
 
   /**
+   * Returns the body content as a flexible content array.
+   *
+   * String items become paragraphs, objects can be links or other content types.
+   *
+   * @return {Array}
+   *   The body content items, in display order.
+   */
+  Drupal.casProtectionModal.getBodyContent = function () {
+    const copy = warningCopy();
+
+    return [
+      ...copy.paragraphs,
+      {
+        type: 'link',
+        text: copy.policyLink.text,
+        url: copy.policyLink.url,
+      },
+    ];
+  };
+
+  /**
    * Generates body content HTML from the flexible content array.
    *
    * @return {string}
    *   The body content HTML.
    */
   Drupal.casProtectionModal.generateBodyContent = function () {
-    const config = modalConfig;
     let bodyHtml = '';
 
-    config.content.bodyContent.forEach(function (item) {
+    this.getBodyContent().forEach(function (item) {
       if (typeof item === 'string') {
         // Regular paragraph
-        bodyHtml += `<p>${item}</p>`;
+        bodyHtml += `<p>${Drupal.checkPlain(item)}</p>`;
       } else if (item.type === 'link') {
         // Link paragraph
-        bodyHtml += `<p><a href="${item.url}" target="_blank" rel="noopener">${item.text}</a></p>`;
+        const url = Drupal.checkPlain(item.url);
+        const text = Drupal.checkPlain(item.text);
+        bodyHtml += `<p><a href="${url}" target="_blank" rel="noopener">${text}</a></p>`;
       }
       // Future: could easily add support for other content types like lists, warnings, etc.
     });
@@ -396,10 +418,11 @@
   Drupal.casProtectionModal.generateModalContent = function () {
     const config = modalConfig;
     const bodyContent = this.generateBodyContent();
+    const title = Drupal.checkPlain(warningCopy().title);
 
     return [
       `<div class="${config.classes.modalContent}" aria-labelledby="${config.accessibility.titleId}" aria-describedby="${config.accessibility.descriptionId}">`,
-      `<h2 id="${config.accessibility.titleId}" class="${config.classes.modalTitle}">${config.content.title}</h2>`,
+      `<h2 id="${config.accessibility.titleId}" class="${config.classes.modalTitle}">${title}</h2>`,
       bodyContent,
       `<p id="${config.accessibility.descriptionId}">`,
       config.content.confirmationText,
@@ -671,4 +694,4 @@
       }, 100);
     }
   });
-})(jQuery, Drupal);
+})(jQuery, Drupal, drupalSettings);
