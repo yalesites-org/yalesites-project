@@ -46,6 +46,48 @@ class ViewsBasicFullPager extends Full {
   }
 
   /**
+   * {@inheritdoc}
+   *
+   * A listing that does not page always starts at its first item. Its pager
+   * element is 0, and ?page for element 0 can belong to a paged listing on
+   * the same page.
+   */
+  public function setCurrentPage($number = NULL) {
+    if ($this->isNonPagedListing()) {
+      $this->current_page = 0;
+      return;
+    }
+    parent::setCurrentPage($number);
+  }
+
+  /**
+   * {@inheritdoc}
+   *
+   * A listing that does not page registers no pager. The pager manager keeps
+   * one pager per element and the pager template reads it at render time, so
+   * a non-paged listing on element 0 would replace the totals of a paged
+   * listing on that element and give it extra, empty pages
+   * (yalesites-org/YaleSites-Internal#1612).
+   */
+  public function updatePageInfo() {
+    if ($this->isNonPagedListing()) {
+      return;
+    }
+    parent::updatePageInfo();
+  }
+
+  /**
+   * Checks if the view is a Views Basic listing that does not page.
+   *
+   * @return bool
+   *   TRUE when the stored params say the listing does not page. FALSE when
+   *   it pages or the arguments carry no usable params (Content Resources).
+   */
+  protected function isNonPagedListing(): bool {
+    return ViewsBasicManager::usesPagerFromArgs($this->view->args ?? []) === FALSE;
+  }
+
+  /**
    * Checks if the current page is past the last page.
    *
    * @return bool
