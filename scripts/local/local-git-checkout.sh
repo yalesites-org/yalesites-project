@@ -628,7 +628,10 @@ function _local-git-checkout() {
   cd _yale-packages/component-library-twig || { _error "Could not find component-library-twig repo. Are you in the right directory?"; exit 1; }
 
   _say "Creating a global npm link for the component library"
-  npm link || { _error "npm link failed in the component-library-twig repo"; exit 1; }
+  # The component library's install scripts patch its dependencies, which a
+  # fresh clone does not have yet. Skip them here; the clean install below
+  # installs the dependencies and runs them.
+  npm link --ignore-scripts || { _error "npm link failed in the component-library-twig repo"; exit 1; }
 
   [ "$verbose" = true ] && _say "Moving back to atomic"
   cd ../..
