@@ -33,9 +33,10 @@ class ProfileViewWidget extends ViewsBasicWidgetBase {
    * which is what honours the show_department/email/phone/pronouns flags.
    * Listed rather than tested against at each call site so the set is stated
    * once and asserted directly by the tests. Condensed renders none of these
-   * fields, so it is left out.
+   * fields, so it is left out. The same set decides what the shown search
+   * scope searches (#706), so it is stated on the manager.
    */
-  const PROFILE_FIELD_VIEW_MODES = ['card', 'list_item'];
+  const PROFILE_FIELD_VIEW_MODES = ViewsBasicManager::PROFILE_DETAIL_VIEW_MODES;
 
   /**
    * {@inheritdoc}

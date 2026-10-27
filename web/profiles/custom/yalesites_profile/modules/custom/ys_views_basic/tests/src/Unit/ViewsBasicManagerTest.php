@@ -821,19 +821,21 @@ class ViewsBasicManagerTest extends UnitTestCase {
    *   Receives the arguments setupView() handed the view, keyed by name.
    * @param array|null $request_query
    *   The request query the view sees, or NULL for a view with no request.
+   * @param array $options
+   *   Display options (other than filters) the display has before setup.
    *
    * @return array
    *   Every display option setupView() set, keyed by option name, plus
    *   'where': each [field, value, operator] condition added to the query.
    */
-  protected function runSetupView(array $params, array $filters, array $setup_args = [], ?array &$view_args = NULL, ?array $request_query = NULL): array {
+  protected function runSetupView(array $params, array $filters, array $setup_args = [], ?array &$view_args = NULL, ?array $request_query = NULL, array $options = []): array {
     $params += [
       'sort_by' => 'field_publish_date:DESC',
       'display' => 'all',
       'limit' => 10,
       'view_mode' => 'card',
     ];
-    $set = ['pager' => ['type' => 'views_basic_full_pager', 'options' => ['id' => 0]]];
+    $set = $options + ['pager' => ['type' => 'views_basic_full_pager', 'options' => ['id' => 0]]];
     $display = $this->createMock(DisplayPluginBase::class);
     $display->method('getOption')->willReturnCallback(
       function ($name) use (&$set, $filters) {
@@ -1502,6 +1504,160 @@ class ViewsBasicManagerTest extends UnitTestCase {
     $this->assertSame('profile', $selectors['entity_types']);
     $this->assertSame(':input[name="entity_types"]', $selectors['entity_types_ajax']);
     $this->assertSame(['terms_include'], $selectors['massage_terms_include_array']);
+  }
+
+  /**
+   * A block saved before the search scope existed searches what is shown.
+   *
+   * @covers ::getDefaultParamValue
+   */
+  public function testGetDefaultParamValueSearchScope() {
+    $this->assertSame('shown', $this->manager->getDefaultParamValue('search_scope', json_encode([])));
+    $this->assertSame('shown', $this->manager->getDefaultParamValue('search_scope', json_encode(['search_scope' => 'shown'])));
+    $this->assertSame('all', $this->manager->getDefaultParamValue('search_scope', json_encode(['search_scope' => 'all'])));
+    $this->assertSame('shown', $this->manager->getDefaultParamValue('search_scope', json_encode(['search_scope' => 'bogus'])));
+  }
+
+  /**
+   * The search runs across the scope's fields, each added to the display.
+   *
+   * The combine filter only matches fields the display has a handler for, so
+   * every searched field the scaffold view lacks is added as an excluded field
+   * (#706).
+   *
+   * @covers ::setupView
+   */
+  public function testSetupViewSearchScopeSetsCombineFields() {
+    $filters = ['combine' => ['id' => 'combine', 'fields' => ['title' => 'title']]];
+    $search = ['show_search_filter' => 'show_search_filter'];
+
+    $set = $this->runSetupView([
+      'filters' => ['types' => ['profile']],
+      'sort_by' => 'field_last_name:ASC',
+      'exposed_filter_options' => $search,
+      'profile_field_options' => ['show_department' => 'show_department'],
+    ], $filters);
+    $expected = [
+      'title',
+      'field_teaser_title',
+      'field_teaser_text',
+      'field_position',
+      'field_subtitle',
+      'field_department',
+    ];
+    $this->assertSame(array_combine($expected, $expected), $set['filters']['combine']['fields']);
+    $this->assertSame($expected, array_keys($set['fields']));
+    $this->assertSame([
+      'id' => 'field_department',
+      'table' => 'node__field_department',
+      'field' => 'field_department',
+      'relationship' => 'none',
+      'group_type' => 'group',
+      'entity_type' => 'node',
+      'entity_field' => 'field_department',
+      'plugin_id' => 'field',
+      'label' => '',
+      'exclude' => TRUE,
+    ], $set['fields']['field_department']);
+
+    $set = $this->runSetupView([
+      'filters' => ['types' => ['profile']],
+      'sort_by' => 'field_last_name:ASC',
+      'exposed_filter_options' => $search,
+      'search_scope' => 'all',
+    ], $filters);
+    $this->assertContains('field_email', $set['filters']['combine']['fields']);
+    $this->assertArrayHasKey('field_email', $set['fields']);
+
+    // The listing's validated view mode decides what is shown: a condensed
+    // card renders only the title and position, whatever flags it carries.
+    $set = $this->runSetupView([
+      'filters' => ['types' => ['profile']],
+      'sort_by' => 'field_last_name:ASC',
+      'view_mode' => 'condensed',
+      'exposed_filter_options' => $search,
+      'profile_field_options' => ['show_department' => 'show_department'],
+    ], $filters);
+    $condensed = ['title', 'field_teaser_title', 'field_teaser_text', 'field_position'];
+    $this->assertSame(array_combine($condensed, $condensed), $set['filters']['combine']['fields']);
+  }
+
+  /**
+   * Fields the display already has are left as they are.
+   *
+   * @covers ::setupView
+   */
+  public function testSetupViewSearchScopeKeepsExistingFields() {
+    $title = ['id' => 'title', 'table' => 'node_field_data', 'field' => 'title', 'exclude' => FALSE];
+    $filters = ['combine' => ['id' => 'combine', 'fields' => ['title' => 'title']]];
+    $set = $this->runSetupView([
+      'filters' => ['types' => ['page']],
+      'sort_by' => 'title:ASC',
+      'exposed_filter_options' => ['show_search_filter' => 'show_search_filter'],
+    ], $filters, [], $unused, NULL, ['fields' => ['title' => $title]]);
+    $this->assertSame($title, $set['fields']['title']);
+    $this->assertTrue($set['fields']['field_teaser_text']['exclude']);
+  }
+
+  /**
+   * Without search, and on resources, the scope changes nothing.
+   *
+   * @covers ::setupView
+   */
+  public function testSetupViewSearchScopeLeavesOtherListingsAlone() {
+    $filters = ['combine' => ['id' => 'combine', 'fields' => ['title' => 'title']]];
+
+    $set = $this->runSetupView([
+      'filters' => ['types' => ['profile']],
+      'sort_by' => 'field_last_name:ASC',
+      'search_scope' => 'all',
+    ], $filters);
+    $this->assertArrayNotHasKey('combine', $set['filters']);
+    $this->assertArrayNotHasKey('fields', $set);
+
+    $set = $this->runSetupView([
+      'filters' => ['types' => ['resource']],
+      'exposed_filter_options' => ['show_search_filter' => 'show_search_filter'],
+      'search_scope' => 'all',
+    ], $filters);
+    $this->assertSame(['title' => 'title'], $set['filters']['combine']['fields']);
+    $this->assertArrayNotHasKey('fields', $set);
+  }
+
+  /**
+   * Each form flavour gets selectors for the scope and the display toggles.
+   *
+   * @covers ::getFormSelectors
+   */
+  public function testGetFormSelectorsForSearchScope() {
+    $prefixes = [
+      'reusable' => 'block_form',
+      'regular' => 'settings[block_form]',
+    ];
+    foreach ($prefixes as $flavour => $prefix) {
+      $block = $this->createMock('Drupal\block_content\BlockContentInterface');
+      $block->method('isReusable')->willReturn($flavour === 'reusable');
+      $formState = $this->createMock(FormStateInterface::class);
+      $formState->method('isRebuilding')->willReturn(FALSE);
+      $formState->method('getCompleteForm')->willReturn([
+        '#form_id' => 'layout_builder_add_block',
+        'block_form' => ['#block' => $block],
+      ]);
+      $selectors = $this->manager->getFormSelectors($formState, NULL, 'profile');
+      $group = $prefix . '[group_user_selection][entity_and_view_mode]';
+      $this->assertSame(':input[name="' . $group . '[search_scope]"]', $selectors['search_scope_selector'], $flavour);
+      $this->assertSame(':input[name="' . $group . '[profile_field_options][show_department]"]', $selectors['profile_field_options_show_department_selector'], $flavour);
+      $this->assertSame(':input[name="' . $group . '[profile_field_options][show_pronouns]"]', $selectors['profile_field_options_show_pronouns_selector'], $flavour);
+      $this->assertSame(':input[name="' . $group . '[profile_field_options][show_email]"]', $selectors['profile_field_options_show_email_selector'], $flavour);
+      $this->assertSame(':input[name="' . $group . '[post_field_options][show_eyebrow]"]', $selectors['post_field_options_show_eyebrow_selector'], $flavour);
+    }
+
+    $formState = $this->createMock(FormStateInterface::class);
+    $formState->method('getCompleteForm')->willReturn([]);
+    $selectors = $this->manager->getFormSelectors($formState, NULL, 'profile');
+    $this->assertSame(':input[name="search_scope"]', $selectors['search_scope_selector']);
+    $this->assertSame(':input[name="profile_field_options[show_department]"]', $selectors['profile_field_options_show_department_selector']);
+    $this->assertSame(':input[name="profile_field_options[show_email]"]', $selectors['profile_field_options_show_email_selector']);
   }
 
 }

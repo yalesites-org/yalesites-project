@@ -2,6 +2,7 @@
 
 namespace Drupal\ys_views_basic\Plugin\Field\FieldWidget;
 
+use Drupal\Component\Serialization\Json;
 use Drupal\Core\Ajax\AjaxResponse;
 use Drupal\Core\Ajax\InvokeCommand;
 use Drupal\Core\Ajax\ReplaceCommand;
@@ -59,10 +60,12 @@ abstract class ViewsBasicWidgetBase extends WidgetBase implements ContainerFacto
    * Keyed by the filter's checkbox key, listing the sibling elements built by
    * ::buildExposedFilterControls() that configure that filter.
    * ::buildExposedFilterAccordion() uses this to pair them into one row. A
-   * filter absent from this map (search, audience, year) has no settings, so it
-   * renders as a header-only row.
+   * filter absent from this map (audience, year) has no settings, so it
+   * renders as a header-only row. The search settings are built by
+   * ::buildSearchScopeControls() (#706).
    */
   protected const EXPOSED_FILTER_SETTINGS = [
+    'show_search_filter' => ['search_scope', 'search_scope_warning', 'search_fields_included'],
     'show_category_filter' => ['category_filter_label', 'category_included_terms'],
     'show_custom_vocab_filter' => ['custom_vocab_included_terms'],
   ];
@@ -370,6 +373,7 @@ abstract class ViewsBasicWidgetBase extends WidgetBase implements ContainerFacto
       $this->buildPreviewPanel($form);
     }
     $this->buildExposedFilterControls($form, $items, $delta, $formSelectors);
+    $this->buildSearchScopeControls($form, $items, $delta, $formSelectors);
     $this->buildTermIncludeExclude($form, $items, $delta);
     $this->buildSortControl($form, $items, $delta);
     $this->buildPinnedControls($form, $items, $delta, $formSelectors);
@@ -521,6 +525,7 @@ abstract class ViewsBasicWidgetBase extends WidgetBase implements ContainerFacto
         'show_current_entity' => $selection['options']['show_current_entity']['#value'],
         'pinned_to_top' => $form_state->getValue($formSelectors['pinned_to_top_array']),
         'pin_label' => $form_state->getValue($formSelectors['pin_label_array']),
+        'search_scope' => static::submittedSearchScope($built),
       ];
       $paramData += $selection['carried_params']['#value'] ?? [];
       $this->massageEntitySpecificParams($paramData, $built, $form, $form_state);
@@ -582,7 +587,9 @@ abstract class ViewsBasicWidgetBase extends WidgetBase implements ContainerFacto
    */
   protected function getExposedFilterDescriptions(): array {
     return [
-      'show_search_filter' => $this->t('Matches titles only, not body text, tags, or categories.'),
+      // The fields searched depend on the content type and the search scope,
+      // so the help points at the list that names them (#706).
+      'show_search_filter' => $this->t('Matches the fields listed under Included in search. Tags and categories are not searched.'),
     ];
   }
 
@@ -815,6 +822,186 @@ abstract class ViewsBasicWidgetBase extends WidgetBase implements ContainerFacto
       '#suffix' => '</div>',
       '#states' => ['disabled' => [$formSelectors['show_custom_vocab_filter_selector'] => ['checked' => FALSE]]],
     ];
+  }
+
+  /**
+   * Builds the keyword search scope settings (#706).
+   *
+   * The scope radios choose whether the search runs across the fields the
+   * result card renders or every searchable text field of the content type
+   * (ViewsBasicManager::searchFieldsFor()). They are offered only where the
+   * two differ, and the warning about hidden matches only while the wider
+   * scope is picked. The "Included in search" list names the searched fields
+   * and follows the form without AJAX: every field either scope can search is
+   * listed, and the conditional ones carry #states tied to the display
+   * option that shows them and to the scope. All three sit in the search
+   * filter's row (::EXPOSED_FILTER_SETTINGS).
+   *
+   * Resources keep their own search-field picker, and the legacy widgets
+   * build their own forms, so neither gets these.
+   *
+   * @param array $form
+   *   The form array, passed by reference.
+   * @param \Drupal\Core\Field\FieldItemListInterface $items
+   *   The field items.
+   * @param int $delta
+   *   The field delta.
+   * @param array $formSelectors
+   *   The resolved form selectors for #states.
+   */
+  protected function buildSearchScopeControls(array &$form, FieldItemListInterface $items, int $delta, array $formSelectors): void {
+    $type = $this->getContentType();
+    if (!in_array($type, ViewsBasicManager::SEARCH_SCOPE_TYPES, TRUE)) {
+      return;
+    }
+    $group = &$form['group_user_selection']['entity_and_view_mode'];
+    $offers_scope = ViewsBasicManager::offersSearchScope($type);
+    $scope_selector = $formSelectors['search_scope_selector'] ?? '';
+    $all_scope = [$scope_selector => ['value' => ViewsBasicManager::SEARCH_SCOPE_ALL]];
+
+    if ($offers_scope) {
+      $params = $items[$delta]->params;
+      $group['search_scope'] = [
+        '#type' => 'radios',
+        // Styling hook that gives these back the native radio circle, which
+        // views-basic-form-tabs.css hides for the icon-card radios in the tab
+        // panes. A #prefix/#suffix wrapper because #attributes on a #type
+        // radios lands on each <input> (see ::buildResultOptionsSubsection()).
+        '#prefix' => '<div class="vb-search-scope">',
+        '#suffix' => '</div>',
+        '#title' => $this->t('Which content fields are included in keyword search?'),
+        '#options' => [
+          ViewsBasicManager::SEARCH_SCOPE_SHOWN => $this->t('Fields shown in results'),
+          ViewsBasicManager::SEARCH_SCOPE_ALL => $this->t('All searchable fields'),
+        ],
+        '#description' => $this->t("Fields shown in results searches the fields currently displayed in the View. All searchable fields also searches relevant content fields that aren't displayed."),
+        '#default_value' => ViewsBasicManager::normalizeSearchScope(
+          $params ? $this->viewsBasicManager->getDefaultParamValue('search_scope', $params) : NULL
+        ),
+        // Disabled rather than hidden while search is off, like the other
+        // filters' settings; see ::buildExposedFilterControls().
+        '#states' => [
+          'disabled' => [($formSelectors['show_search_filter_selector'] ?? '') => ['checked' => FALSE]],
+        ],
+      ];
+      $group['search_scope_warning'] = [
+        '#type' => 'container',
+        '#attributes' => [
+          'class' => ['messages', 'messages--warning'],
+          'role' => 'status',
+        ],
+        // Both conditions, so the warning goes away with search itself.
+        '#states' => [
+          'visible' => $all_scope + [
+            ($formSelectors['show_search_filter_selector'] ?? '') => ['checked' => TRUE],
+          ],
+        ],
+        'heading' => [
+          '#type' => 'html_tag',
+          '#tag' => 'h4',
+          '#attributes' => ['class' => ['messages__title']],
+          '#value' => $this->t('Search hidden content'),
+        ],
+        'text' => [
+          '#type' => 'html_tag',
+          '#tag' => 'p',
+          '#value' => $this->t("Searching hidden content may return results that don't show the matching text. This is an advanced option for cases where those results are still relevant. We recommend keeping it off unless your use case needs it."),
+        ],
+      ];
+    }
+
+    $view_mode = $this->getViewMode();
+    $candidates = array_unique(array_merge(
+      ViewsBasicManager::SEARCH_FIELDS_ALWAYS,
+      array_keys(ViewsBasicManager::SEARCH_FIELDS_SHOWN[$type] ?? []),
+      $offers_scope ? ViewsBasicManager::SEARCH_FIELDS_ALL[$type] ?? [] : [],
+    ));
+    $labels = $this->searchFieldLabels();
+    $list_items = [];
+    foreach ($candidates as $field) {
+      $item = ['#markup' => $labels[$field] ?? $field];
+      // The same rule ViewsBasicManager::searchFieldsFor() applies to this
+      // listing's design.
+      $shown = ViewsBasicManager::shownSearchCondition($type, $field, $view_mode);
+      if ($shown === TRUE) {
+        $list_items[$field] = $item;
+        continue;
+      }
+      $conditions = [];
+      if (is_array($shown)) {
+        [$options_key, $option] = $shown;
+        // Only a display option the form offers can be watched.
+        if (isset($group[$options_key]['#options'][$option])) {
+          $conditions[] = [$formSelectors[$options_key . '_' . $option . '_selector'] ?? '' => ['checked' => TRUE]];
+        }
+      }
+      if ($offers_scope) {
+        $conditions[] = $all_scope;
+      }
+      if (!$conditions) {
+        continue;
+      }
+      // Set by hand because #states is processed only on elements that render
+      // their own attributes, which a list item's #markup does not. The states
+      // library toggles the closest form wrapper, so the item has to be one
+      // or it would hide the whole search settings body.
+      $item['#wrapper_attributes'] = [
+        'class' => ['js-form-wrapper'],
+        'data-drupal-states' => Json::encode([
+          'visible' => count($conditions) === 1 ? reset($conditions) : [$conditions[0], 'or', $conditions[1]],
+        ]),
+      ];
+      $list_items[$field] = $item;
+    }
+    $group['search_fields_included'] = [
+      '#theme' => 'item_list',
+      '#title' => $this->t('Included in search'),
+      '#items' => $list_items,
+      '#attached' => ['library' => ['core/drupal.states']],
+    ];
+  }
+
+  /**
+   * Returns the editor-facing labels of the searchable fields (#706).
+   *
+   * @return \Drupal\Core\StringTranslation\TranslatableMarkup[]
+   *   Labels keyed by field name.
+   */
+  protected function searchFieldLabels(): array {
+    return [
+      'title' => $this->t('Title'),
+      'field_teaser_title' => $this->t('Teaser Title'),
+      'field_teaser_text' => $this->t('Teaser Text'),
+      'field_position' => $this->t('Position'),
+      'field_subtitle' => $this->t('Subtitle'),
+      'field_department' => $this->t('Department'),
+      'field_pronouns' => $this->t('Pronouns'),
+      'field_email' => $this->t('Email'),
+      'field_teaser_lead_in' => $this->t('Teaser Lead-in'),
+      'field_author' => $this->t('Author'),
+      'field_event_description' => $this->t('Description'),
+      'field_event_room' => $this->t('Room'),
+      'field_event_location_details' => $this->t('Location Details'),
+    ];
+  }
+
+  /**
+   * Returns the search scope to store from the built form (#706).
+   *
+   * Disabled radios (search switched off) submit nothing, so the scope falls
+   * back to the stored default rather than resetting. With no radios at all,
+   * as on a page listing, the shown scope is stored, which is also what a
+   * block saved before the scope existed re-saves as.
+   *
+   * @param array $built
+   *   The built value elements, keyed by element key.
+   *
+   * @return string
+   *   The scope to store.
+   */
+  protected static function submittedSearchScope(array $built): string {
+    $radios = $built['search_scope'] ?? [];
+    return ViewsBasicManager::normalizeSearchScope($radios['#value'] ?? $radios['#default_value'] ?? NULL);
   }
 
   /**

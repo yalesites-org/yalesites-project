@@ -226,6 +226,46 @@
 }
 
 /*
+ * The search scope radios (#706) are plain Gin radios, not icon cards, so
+ * they undo what the tab panes do to radios: the hidden native input (the
+ * input.form-radio rule above), the wrapping row of cards (the
+ * .form-boolean-group rule just above) and the column layout views-basic.css
+ * gives each .form-type--radio. The values are the ones Gin and Claro give
+ * every other radio and checkbox here (Gin .form-boolean: 21px, 1px border;
+ * Claro .form-type--boolean: the label inset by
+ * --input--label-spacing with the control pulled back into it), so the
+ * circle, checked state and focus ring all come from Gin unchanged.
+ */
+.layout-builder-configure-block .horizontal-tabs-panes .vb-search-scope .form-boolean-group {
+  display: block;
+}
+
+.layout-builder-configure-block .horizontal-tabs-panes .vb-search-scope .form-type--radio {
+  display: block;
+  margin: 0 0 0.5rem;
+  margin-inline-start: var(--input--label-spacing);
+}
+
+.layout-builder-configure-block .horizontal-tabs-panes .vb-search-scope .form-type--radio label.option {
+  display: inline;
+}
+
+.layout-builder-configure-block .horizontal-tabs-panes .grouped-items .vb-search-scope input.form-radio {
+  /* Width and style only: the color, which Gin changes on hover and when
+   * checked, stays Gin's. */
+  border-style: solid;
+  border-width: 1px;
+  clip: auto;
+  height: 21px;
+  margin: 0;
+  margin-inline-start: calc(var(--input--label-spacing) * -1);
+  overflow: visible;
+  padding: 0;
+  position: relative;
+  width: 21px;
+}
+
+/*
  * Restore the dark color-scheme on form controls so the browser paints its
  * native widgets (the number-input stepper arrows, most visibly) for a dark
  * background.

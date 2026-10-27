@@ -223,6 +223,99 @@ class ViewsBasicManager extends ControllerBase implements ContainerInjectionInte
   ];
 
   /**
+   * Keyword search scope: search the fields the result card renders (#706).
+   *
+   * The default, and what every listing saved before the scope existed has.
+   */
+  const SEARCH_SCOPE_SHOWN = 'shown';
+
+  /**
+   * Keyword search scope: search every searchable text field of the type.
+   */
+  const SEARCH_SCOPE_ALL = 'all';
+
+  /**
+   * The content types whose search runs across ::searchFieldsFor() (#706).
+   *
+   * Resources are left out: they keep their own search-field picker
+   * (::applyResourceFilters()).
+   */
+  const SEARCH_SCOPE_TYPES = [
+    self::CONTENT_TYPE_POST,
+    self::CONTENT_TYPE_EVENT,
+    self::CONTENT_TYPE_PAGE,
+    self::CONTENT_TYPE_PROFILE,
+  ];
+
+  /**
+   * The fields every keyword search runs across, in either scope (#706).
+   *
+   * The set the scaffold views' combine filter has always searched.
+   */
+  const SEARCH_FIELDS_ALWAYS = ['title', 'field_teaser_title', 'field_teaser_text'];
+
+  /**
+   * Profile view modes whose cards render the subtitle and People fields.
+   *
+   * Card and list item embed the shared profile reference card, which renders
+   * the subtitle and honours the show_department/email/phone/pronouns flags.
+   * The condensed card renders only the title and position, and ignores any
+   * flags a block kept from an earlier design.
+   */
+  const PROFILE_DETAIL_VIEW_MODES = ['card', 'list_item'];
+
+  /**
+   * The extra fields the shown scope searches, per content type (#706).
+   *
+   * Each is a text field the result card renders. An empty condition means
+   * every card renders it. 'view_modes' limits it to the designs that render
+   * it, and 'option' (a [params key, option] pair) to listings whose display
+   * option shows it, so the search never matches text the card hides.
+   */
+  const SEARCH_FIELDS_SHOWN = [
+    self::CONTENT_TYPE_PROFILE => [
+      'field_position' => [],
+      'field_subtitle' => ['view_modes' => self::PROFILE_DETAIL_VIEW_MODES],
+      'field_department' => [
+        'view_modes' => self::PROFILE_DETAIL_VIEW_MODES,
+        'option' => ['profile_field_options', 'show_department'],
+      ],
+      'field_pronouns' => [
+        'view_modes' => self::PROFILE_DETAIL_VIEW_MODES,
+        'option' => ['profile_field_options', 'show_pronouns'],
+      ],
+      'field_email' => [
+        'view_modes' => self::PROFILE_DETAIL_VIEW_MODES,
+        'option' => ['profile_field_options', 'show_email'],
+      ],
+    ],
+    self::CONTENT_TYPE_POST => [
+      'field_teaser_lead_in' => ['option' => ['post_field_options', 'show_eyebrow']],
+    ],
+  ];
+
+  /**
+   * The extra fields the all scope searches, per content type (#706).
+   *
+   * Every searchable text field of the type, whatever the card renders.
+   */
+  const SEARCH_FIELDS_ALL = [
+    self::CONTENT_TYPE_PROFILE => [
+      'field_position',
+      'field_subtitle',
+      'field_department',
+      'field_pronouns',
+      'field_email',
+    ],
+    self::CONTENT_TYPE_POST => ['field_teaser_lead_in', 'field_author'],
+    self::CONTENT_TYPE_EVENT => [
+      'field_event_description',
+      'field_event_room',
+      'field_event_location_details',
+    ],
+  ];
+
+  /**
    * The resource-only field display options (#1723).
    *
    * Stored under resource_field_options and set on each result node while
@@ -1068,6 +1161,9 @@ class ViewsBasicManager extends ControllerBase implements ContainerInjectionInte
     if ($filterType === self::CONTENT_TYPE_RESOURCE) {
       $filters = self::applyResourceFilters($filters, $paramsDecoded);
     }
+    elseif (isset($filters['combine']) && in_array($filterType, self::SEARCH_SCOPE_TYPES, TRUE)) {
+      $filters['combine']['fields'] = $this->applySearchScope($view, $filterType, $viewMode, $paramsDecoded);
+    }
 
     // Never offer a term the editor used to exclude content: a visitor
     // picking it would always get zero results. Category and custom
@@ -1420,6 +1516,143 @@ class ViewsBasicManager extends ControllerBase implements ContainerInjectionInte
     }
 
     return $filters;
+  }
+
+  /**
+   * Returns a stored search scope, or the shown scope if it is not one.
+   *
+   * @param mixed $scope
+   *   The stored or submitted scope.
+   *
+   * @return string
+   *   ::SEARCH_SCOPE_SHOWN or ::SEARCH_SCOPE_ALL.
+   */
+  public static function normalizeSearchScope(mixed $scope): string {
+    return $scope === self::SEARCH_SCOPE_ALL ? self::SEARCH_SCOPE_ALL : self::SEARCH_SCOPE_SHOWN;
+  }
+
+  /**
+   * Returns the fields a listing's keyword search runs across (#706).
+   *
+   * @param string $type
+   *   The listing's content type.
+   * @param string $scope
+   *   The search scope; anything but ::SEARCH_SCOPE_ALL searches what is
+   *   shown.
+   * @param string $viewMode
+   *   The listing's validated view mode, which decides what the card shows.
+   * @param array $paramsDecoded
+   *   The decoded stored params, read for the per-type display options.
+   *
+   * @return string[]
+   *   Field names, the ::SEARCH_FIELDS_ALWAYS set first.
+   */
+  public static function searchFieldsFor(string $type, string $scope, string $viewMode, array $paramsDecoded): array {
+    if (self::normalizeSearchScope($scope) === self::SEARCH_SCOPE_ALL) {
+      return array_merge(self::SEARCH_FIELDS_ALWAYS, self::SEARCH_FIELDS_ALL[$type] ?? []);
+    }
+    $fields = self::SEARCH_FIELDS_ALWAYS;
+    foreach (array_keys(self::SEARCH_FIELDS_SHOWN[$type] ?? []) as $field) {
+      $shown = self::shownSearchCondition($type, $field, $viewMode);
+      if ($shown === TRUE || (is_array($shown) && !empty($paramsDecoded[$shown[0]][$shown[1]]))) {
+        $fields[] = $field;
+      }
+    }
+    return $fields;
+  }
+
+  /**
+   * Returns when a listing's card shows a searchable field (#706).
+   *
+   * @param string $type
+   *   The listing's content type.
+   * @param string $field
+   *   The field name.
+   * @param string $viewMode
+   *   The listing's view mode.
+   *
+   * @return array|bool
+   *   TRUE when the card always shows the field, FALSE when it never does,
+   *   or the [params key, option] pair of the display option that shows it.
+   */
+  public static function shownSearchCondition(string $type, string $field, string $viewMode): array|bool {
+    if (in_array($field, self::SEARCH_FIELDS_ALWAYS, TRUE)) {
+      return TRUE;
+    }
+    $condition = self::SEARCH_FIELDS_SHOWN[$type][$field] ?? NULL;
+    if ($condition === NULL || (isset($condition['view_modes']) && !in_array($viewMode, $condition['view_modes'], TRUE))) {
+      return FALSE;
+    }
+    return $condition['option'] ?? TRUE;
+  }
+
+  /**
+   * Whether the two search scopes search different fields for a type (#706).
+   *
+   * A field the all scope adds differs between the scopes unless every card
+   * of the type always shows it. A field behind a display option or limited
+   * to some designs can differ, so profiles offer the choice even though
+   * their widest card shows every field. Pages search the same fields either
+   * way, and resources have their own search-field picker, so neither offers
+   * it.
+   *
+   * @param string $type
+   *   The listing's content type.
+   *
+   * @return bool
+   *   TRUE when the all scope can search a field the shown scope does not.
+   */
+  public static function offersSearchScope(string $type): bool {
+    if (!in_array($type, self::SEARCH_SCOPE_TYPES, TRUE)) {
+      return FALSE;
+    }
+    foreach (self::SEARCH_FIELDS_ALL[$type] ?? [] as $field) {
+      if ((self::SEARCH_FIELDS_SHOWN[$type][$field] ?? NULL) !== []) {
+        return TRUE;
+      }
+    }
+    return FALSE;
+  }
+
+  /**
+   * Puts every field the listing's search scope covers on the view display.
+   *
+   * Core's combine filter only matches fields the display has a handler for,
+   * and the scaffold views carry only the ::SEARCH_FIELDS_ALWAYS set. Each
+   * missing field is added as an excluded field, so it joins the query for
+   * the search without rendering anything (#706).
+   *
+   * @param \Drupal\views\ViewExecutable $view
+   *   The scaffold view, its display already set.
+   * @param string $type
+   *   The listing's content type.
+   * @param string $viewMode
+   *   The listing's validated view mode.
+   * @param array $paramsDecoded
+   *   The decoded stored params.
+   *
+   * @return array
+   *   The combine filter's fields option, keyed by field name.
+   */
+  protected function applySearchScope(ViewExecutable $view, string $type, string $viewMode, array $paramsDecoded): array {
+    $search_fields = self::searchFieldsFor($type, self::normalizeSearchScope($paramsDecoded['search_scope'] ?? NULL), $viewMode, $paramsDecoded);
+    $display_fields = $view->getDisplay()->getOption('fields') ?: [];
+    foreach ($search_fields as $field) {
+      $display_fields[$field] ??= [
+        'id' => $field,
+        'table' => 'node__' . $field,
+        'field' => $field,
+        'relationship' => 'none',
+        'group_type' => 'group',
+        'entity_type' => 'node',
+        'entity_field' => $field,
+        'plugin_id' => 'field',
+        'label' => '',
+        'exclude' => TRUE,
+      ];
+    }
+    $view->getDisplay()->setOption('fields', $display_fields);
+    return array_combine($search_fields, $search_fields);
   }
 
   /**
@@ -2085,6 +2318,12 @@ class ViewsBasicManager extends ControllerBase implements ContainerInjectionInte
           : self::RESOURCE_DEFAULT_SEARCH_FIELDS;
         break;
 
+      case 'search_scope':
+        // Listings saved before the scope existed search what is shown
+        // (#706).
+        $defaultParam = self::normalizeSearchScope($paramsDecoded['search_scope'] ?? NULL);
+        break;
+
       case 'card_size':
         // Listings saved before the dial existed carry no key and must keep
         // their large (3-up) grid. An unrecognised stored value falls back too,
@@ -2360,6 +2599,11 @@ class ViewsBasicManager extends ControllerBase implements ContainerInjectionInte
           'show_search_filter_selector' => ':input[name="block_form[group_user_selection][entity_and_view_mode][exposed_filter_options][show_search_filter]"]',
           'show_audience_filter_selector' => ':input[name="block_form[group_user_selection][entity_and_view_mode][exposed_filter_options][show_audience_filter]"]',
           'show_custom_vocab_filter_selector' => ':input[name="block_form[group_user_selection][entity_and_view_mode][exposed_filter_options][show_custom_vocab_filter]"]',
+          'search_scope_selector' => ':input[name="block_form[group_user_selection][entity_and_view_mode][search_scope]"]',
+          'profile_field_options_show_department_selector' => ':input[name="block_form[group_user_selection][entity_and_view_mode][profile_field_options][show_department]"]',
+          'profile_field_options_show_pronouns_selector' => ':input[name="block_form[group_user_selection][entity_and_view_mode][profile_field_options][show_pronouns]"]',
+          'profile_field_options_show_email_selector' => ':input[name="block_form[group_user_selection][entity_and_view_mode][profile_field_options][show_email]"]',
+          'post_field_options_show_eyebrow_selector' => ':input[name="block_form[group_user_selection][entity_and_view_mode][post_field_options][show_eyebrow]"]',
           'custom_vocab_included_terms_ajax' => ($form) ? $form['block_form']['group_user_selection']['entity_and_view_mode']['custom_vocab_included_terms'] : NULL,
           'massage_terms_include_array' => [
             'block_form',
@@ -2440,6 +2684,11 @@ class ViewsBasicManager extends ControllerBase implements ContainerInjectionInte
           'show_search_filter_selector' => ':input[name="settings[block_form][group_user_selection][entity_and_view_mode][exposed_filter_options][show_search_filter]"]',
           'show_audience_filter_selector' => ':input[name="settings[block_form][group_user_selection][entity_and_view_mode][exposed_filter_options][show_audience_filter]"]',
           'show_custom_vocab_filter_selector' => ':input[name="settings[block_form][group_user_selection][entity_and_view_mode][exposed_filter_options][show_custom_vocab_filter]"]',
+          'search_scope_selector' => ':input[name="settings[block_form][group_user_selection][entity_and_view_mode][search_scope]"]',
+          'profile_field_options_show_department_selector' => ':input[name="settings[block_form][group_user_selection][entity_and_view_mode][profile_field_options][show_department]"]',
+          'profile_field_options_show_pronouns_selector' => ':input[name="settings[block_form][group_user_selection][entity_and_view_mode][profile_field_options][show_pronouns]"]',
+          'profile_field_options_show_email_selector' => ':input[name="settings[block_form][group_user_selection][entity_and_view_mode][profile_field_options][show_email]"]',
+          'post_field_options_show_eyebrow_selector' => ':input[name="settings[block_form][group_user_selection][entity_and_view_mode][post_field_options][show_eyebrow]"]',
           'custom_vocab_included_terms_ajax' => ($form) ? $form['settings']['block_form']['group_user_selection']['entity_and_view_mode']['custom_vocab_included_terms'] : NULL,
           'massage_terms_include_array' => [
             'settings',
@@ -2527,6 +2776,11 @@ class ViewsBasicManager extends ControllerBase implements ContainerInjectionInte
         'show_search_filter_selector' => ':input[name="show_search_filter"]',
         'show_audience_filter_selector' => ':input[name="show_audience_filter"]',
         'show_custom_vocab_filter_selector' => ':input[name="show_custom_vocab_filter"]',
+        'search_scope_selector' => ':input[name="search_scope"]',
+        'profile_field_options_show_department_selector' => ':input[name="profile_field_options[show_department]"]',
+        'profile_field_options_show_pronouns_selector' => ':input[name="profile_field_options[show_pronouns]"]',
+        'profile_field_options_show_email_selector' => ':input[name="profile_field_options[show_email]"]',
+        'post_field_options_show_eyebrow_selector' => ':input[name="post_field_options[show_eyebrow]"]',
         'custom_vocab_included_terms_ajax' => ($form) ? $form['group_user_selection']['entity_and_view_mode']['custom_vocab_included_terms'] : NULL,
         'massage_terms_include_array' => ['terms_include'],
         'massage_terms_exclude_array' => ['terms_exclude'],
