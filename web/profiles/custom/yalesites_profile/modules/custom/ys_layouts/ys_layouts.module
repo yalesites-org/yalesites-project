@@ -513,6 +513,22 @@ function ys_layouts_library_info_alter(array &$libraries, $extension) {
 }
 
 /**
+ * Implements hook_preprocess_HOOK() for text_format_wrapper__gin_lb.
+ *
+ * Styles a rich-text field's help text like every other field's in the Layout
+ * Builder sidebar. Gin_lb's template prints these attributes on the
+ * description div, but they carry the text field's own classes and no
+ * description class, so the help text rendered as full-size body text. The
+ * classes match what gin_lb's form-element template gives other descriptions;
+ * the library closes the gap above the help text.
+ */
+function ys_layouts_preprocess_text_format_wrapper__gin_lb(array &$variables) {
+  $variables['attributes']['class'][] = 'description';
+  $variables['attributes']['class'][] = 'form-item__description';
+  $variables['#attached']['library'][] = 'ys_layouts/gin_lb_text_format';
+}
+
+/**
  * To aids in styling per section, set layout_section if using layout builder.
  *
  * For now this is only used with the link grid component:

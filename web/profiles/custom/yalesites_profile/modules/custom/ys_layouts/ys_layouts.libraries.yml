@@ -19,6 +19,14 @@ gin_lb_color_scheme:
     theme:
       css/gin-lb-color-scheme.css: {}
 
+# Help-text spacing for rich-text fields in gin_lb forms. Attached by
+# ys_layouts_preprocess_text_format_wrapper__gin_lb().
+gin_lb_text_format:
+  version: VERSION
+  css:
+    theme:
+      css/gin-lb-text-format.css: {}
+
 # Icon + spacing for the "Clone" action on the section toolbar. Attached by
 # SectionCloneLinkBuilder when it adds the link.
 clone_section:
