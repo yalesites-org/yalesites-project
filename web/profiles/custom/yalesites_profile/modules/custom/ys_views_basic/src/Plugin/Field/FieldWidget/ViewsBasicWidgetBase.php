@@ -957,6 +957,12 @@ abstract class ViewsBasicWidgetBase extends WidgetBase implements ContainerFacto
       '#theme' => 'item_list',
       '#title' => $this->t('Included in search'),
       '#items' => $list_items,
+      // Hook for views-basic.css, which styles the list's h3 title as a form
+      // label: in the Layout Builder dialogs it otherwise picks up the front
+      // end theme's heading styles. A wrapper, because the admin themes'
+      // item list template does not render #wrapper_attributes.
+      '#prefix' => '<div class="vb-search-fields-included">',
+      '#suffix' => '</div>',
       '#attached' => ['library' => ['core/drupal.states']],
     ];
   }

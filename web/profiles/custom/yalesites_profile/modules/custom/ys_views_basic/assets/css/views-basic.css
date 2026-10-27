@@ -947,3 +947,114 @@ input.views-basic--view-mode:focus-visible + label.option {
 .vb-filter-row--pinned {
   margin-top: var(--vb-space-group, 2.5rem);
 }
+
+/*
+ * Search scope radios (#706): plain Gin radios, not icon cards.
+ *
+ * They sit inside the same .grouped-items details as the icon-radio cards, so
+ * every card rule matches them: the hidden native input, the wrapping row,
+ * the column wrapper and the bordered, fixed-size label. These rules undo
+ * that. The values are the ones Gin and Claro give every other radio here
+ * (Gin .form-boolean: 21px, 1px border; Claro .form-type--boolean: the label
+ * inset by --input--label-spacing with the control pulled back into it), and
+ * the circle, checked ring and border color come from Gin/gin_lb unchanged.
+ *
+ * Why it lives here and not in views-basic-form-tabs.css: the form renders
+ * in three contexts that share none of the usual ancestors. The full-page
+ * update route has Claro's .form-type--radio / label.option inside the tab
+ * panes; the Layout Builder add and configure dialogs have the same tab
+ * panes but gin_lb's renamed .glb-form-type--radio / label.glb-option; the
+ * reusable block form (/block/add/...) has Claro's names, no tab panes and
+ * no .layout-builder-configure-block, and does not load the tabs stylesheet
+ * at all. The one ancestor all three share is the
+ * .grouped-items.views-basic--entity-view-mode details, so every selector
+ * starts there and names both class spellings. An earlier version keyed on
+ * .layout-builder-configure-block .horizontal-tabs-panes and the Claro names
+ * only, which is why the dialogs and the reusable form still drew cards.
+ *
+ * The !important declarations are the ones the card rules fight for with
+ * !important or an ID: the label's display (already !important), its
+ * width/height (135px, or 125x150px in the add-block modal, keyed on
+ * #drupal-off-canvas-wrapper / #layout-builder-modal), its color (--wool
+ * !important, and the checked-card color), the card focus outline (one
+ * :focus-visible more than this selector), the row's display, and the
+ * per-item margin that .grouped-items gives every form item.
+ */
+.views-basic--entity-view-mode.grouped-items
+  .vb-search-scope
+  .form-boolean-group {
+  display: block !important;
+}
+
+.views-basic--entity-view-mode.grouped-items .vb-search-scope .form-type--radio,
+.views-basic--entity-view-mode.grouped-items
+  .vb-search-scope
+  .glb-form-type--radio {
+  display: block;
+  margin-block: 0 0.5rem !important;
+  margin-inline-start: var(--input--label-spacing, 1.6875rem);
+}
+
+.views-basic--entity-view-mode.grouped-items
+  .vb-search-scope
+  .form-type--radio
+  label.option,
+.views-basic--entity-view-mode.grouped-items
+  .vb-search-scope
+  .glb-form-type--radio
+  label.glb-option {
+  aspect-ratio: auto;
+  border: 0;
+  color: var(--gin-color-text) !important;
+  display: inline !important;
+  height: auto !important;
+  margin: 0;
+  outline: 0 !important;
+  padding: 0;
+  width: auto !important;
+}
+
+.views-basic--entity-view-mode.grouped-items
+  .vb-search-scope
+  .form-boolean-group
+  input.form-radio {
+  /* The card rules' border: 0 shorthand also resets the color, so it is set
+   * back to Gin's form element border here (gin_lb's !important color still
+   * wins in the dialogs). appearance: none because gin_lb only sets it on
+   * checkboxes; without it the dialogs draw the native radio, which ignores
+   * gin_lb's circle border and checked ring. */
+  appearance: none;
+  border-color: var(--gin-border-color-form-element);
+  border-style: solid;
+  border-width: 1px;
+  clip: auto;
+  height: 21px;
+  margin: 0;
+  margin-inline-start: calc(var(--input--label-spacing, 1.6875rem) * -1);
+  overflow: visible;
+  padding: 0;
+  position: relative;
+  width: 21px;
+}
+
+.views-basic--entity-view-mode.grouped-items
+  .vb-search-scope
+  .form-boolean-group
+  input.form-radio:disabled {
+  border-color: var(--gin-color-disabled-border);
+}
+
+/*
+ * The "Included in search" list title (#706) reads as a form label. Inside
+ * the Layout Builder dialogs the front end theme styles every h3 as a large
+ * serif heading, so the title is reset to the label's look here.
+ */
+.views-basic--entity-view-mode .vb-search-fields-included h3 {
+  color: var(--gin-color-text) !important;
+  font-family: inherit !important;
+  font-size: var(--gin-font-size-s, 0.875rem) !important;
+  font-weight: var(--gin-font-weight-semibold, 600) !important;
+  letter-spacing: normal !important;
+  line-height: 1.5 !important;
+  margin: 1rem 0 0.25rem !important;
+}
