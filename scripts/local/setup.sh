@@ -32,6 +32,12 @@ fi
 # Start local development containers.
 ys_local_start
 
+# Lando's Pantheon recipe runs composer install on first start; DDEV does not,
+# so install packages here before build-with-install needs drush.
+if [[ ! -f "vendor/bin/drush" ]]; then
+  ys_local_composer install
+fi
+
 # Generate local secrets file.
 terminus plugin:install pantheon-systems/terminus-secrets-manager-plugin
 terminus secret:site:local-generate yalesites-platform --filepath=./secrets.json
