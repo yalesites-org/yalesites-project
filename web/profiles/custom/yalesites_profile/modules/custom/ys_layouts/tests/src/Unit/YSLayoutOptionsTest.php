@@ -79,7 +79,7 @@ class YSLayoutOptionsTest extends UnitTestCase {
     $this->assertSame('select', $form['theme']['#type']);
     $this->assertSame('two', $form['theme']['#default_value']);
 
-    // Sections offer six colors plus "Default - no color", matching every
+    // Sections offer six colors plus "Default - No Color", matching every
     // block component picker (#1518). Pin the list an editor actually sees --
     // see ColorTokenResolver::getColorStylesForEntity() for everywhere else
     // this list must stay in sync.
