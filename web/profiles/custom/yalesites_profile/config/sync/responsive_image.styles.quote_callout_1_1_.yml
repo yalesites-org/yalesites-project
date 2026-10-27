@@ -1,0 +1,27 @@
+uuid: 1c387cdc-31f8-4048-83d4-aa8a115a22c7
+langcode: en
+status: true
+dependencies:
+  config:
+    - image.style.1_1_1200
+    - image.style.1_1_300_
+    - image.style.1_1_500
+    - image.style.1_1_600
+    - image.style.1_1_900
+id: quote_callout_1_1_
+label: 'Quote Callout (1:1)'
+image_style_mappings:
+  -
+    image_mapping_type: sizes
+    image_mapping:
+      sizes: '(min-width: 992px) 250px, 60vw'
+      sizes_image_styles:
+        - '1_1_1200'
+        - '1_1_300_'
+        - '1_1_500'
+        - '1_1_600'
+        - '1_1_900'
+    breakpoint_id: responsive_image.viewport_sizing
+    multiplier: 1x
+breakpoint_group: responsive_image
+fallback_image_style: '1_1_500'
