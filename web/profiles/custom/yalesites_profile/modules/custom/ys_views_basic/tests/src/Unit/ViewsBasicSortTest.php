@@ -57,7 +57,7 @@ class ViewsBasicSortTest extends UnitTestCase {
         [$field, $direction] = explode(':', $sort);
         $calls = $this->orderBy($sort);
         $this->assertCount(3, $calls, $sort);
-        $expected = str_starts_with($field, 'field') ? "node__$field.{$field}_value" : $field;
+        $expected = str_starts_with($field, 'field') ? "node__$field.{$field}_value" : "node_field_data.$field";
         $this->assertSame([$expected, $direction], $calls[1], $sort);
       }
     }

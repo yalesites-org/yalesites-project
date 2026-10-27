@@ -10,6 +10,15 @@ detach_reusable_block:
     theme:
       css/detach-reusable-block.css: {}
 
+# color-scheme for every gin_lb form control. Nothing attaches this directly:
+# ys_layouts_library_info_alter() adds it as a dependency of gin_lb/gin_lb, so
+# it loads wherever gin_lb's stylesheet does.
+gin_lb_color_scheme:
+  version: VERSION
+  css:
+    theme:
+      css/gin-lb-color-scheme.css: {}
+
 # Icon + spacing for the "Clone" action on the section toolbar. Attached by
 # SectionCloneLinkBuilder when it adds the link.
 clone_section:

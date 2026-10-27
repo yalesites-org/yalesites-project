@@ -26,8 +26,9 @@ require_once __DIR__ . '/../../../ys_views_basic.module';
  *
  * Characterizes the current behavior of the service that builds Views Basic
  * option lists, default values, and form selectors from the field's stored
- * JSON parameters. Query/view construction (setupView(), getView(),
- * initView()) is not covered here -- see the module's test log for why.
+ * JSON parameters. View construction (setupView(), getView()) is covered in
+ * ViewsBasicManagerSetupViewTest; initView() is not unit tested because it
+ * loads views through the Views static service.
  *
  * @coversDefaultClass \Drupal\ys_views_basic\ViewsBasicManager
  * @group ys_views_basic

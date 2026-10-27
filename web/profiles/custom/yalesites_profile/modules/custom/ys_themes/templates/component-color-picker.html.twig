@@ -3,7 +3,13 @@
  * @file
  * Template for Component Color Picker widget palette UI.
  *
+ * The swatches are an ARIA radio group: one tab stop (the selected swatch,
+ * or the first when nothing is selected), arrow keys to move, and Enter or
+ * Space to select. component-color-picker.js keeps aria-checked and tabindex
+ * in step with the selection.
+ *
  * Available variables:
+ * - group_label: The accessible name of the swatch group (the field title).
  * - palette_options: Array of palette options with keys and labels.
  * - global_theme: The current global theme value (e.g., 'one', 'two', etc.).
  * - selected_value: The currently selected palette value.
@@ -17,14 +23,18 @@
  */
 #}
 <div class="palette-selector" data-palette-selector>
-  <div class="palette-visual-container" data-palette-container>
+  {% set option_keys = palette_options|keys %}
+  {% set tab_stop = selected_value in option_keys ? selected_value : option_keys|first %}
+  <div class="palette-visual-container" data-palette-container role="radiogroup"{% if group_label %} aria-label="{{ group_label }}"{% endif %}>
     <button type="button" class="expand-indicator" data-expand-button aria-label="{{ 'Show all palettes'|t }}">
       <svg width="12" height="12" viewBox="0 0 12 12" fill="none" xmlns="http://www.w3.org/2000/svg">
         <path d="M3 4.5L6 7.5L9 4.5" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
       </svg>
     </button>
     {% for key, label in palette_options %}
-      <div class="palette-option" data-palette="{{ key }}" data-selected="{{ (selected_value == key) ? 'true' : 'false' }}">
+      {% set is_selected = selected_value == key %}
+      {% set swatch_name = (color_info[key].token_name ?? '') ?: label %}
+      <div class="palette-option" data-palette="{{ key }}" data-selected="{{ is_selected ? 'true' : 'false' }}" role="radio" aria-checked="{{ is_selected ? 'true' : 'false' }}" aria-label="{{ swatch_name }}" tabindex="{{ key == tab_stop ? '0' : '-1' }}">
         <div class="palette-color-wrapper">
           {% if color_info is defined and color_info[key] is defined %}
             {% set color = color_info[key] %}
