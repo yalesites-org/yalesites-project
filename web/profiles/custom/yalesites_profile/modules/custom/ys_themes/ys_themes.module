@@ -303,6 +303,7 @@ function ys_themes_theme($existing, $type, $theme, $path) {
   $items = [
     'component_color_picker' => [
       'variables' => [
+        'group_label' => NULL,
         'palette_options' => [],
         'global_theme' => 'one',
         'selected_value' => NULL,

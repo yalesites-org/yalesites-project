@@ -1,0 +1,12 @@
+uuid: 69e43533-8db9-49bc-b0f7-82e68e013d69
+langcode: en
+status: true
+dependencies:
+  module:
+    - node
+    - ys_node_access
+id: node_cas_unprotect_action
+label: 'Remove CAS protection'
+type: node
+plugin: ys_node_access_cas_unprotect
+configuration: {  }

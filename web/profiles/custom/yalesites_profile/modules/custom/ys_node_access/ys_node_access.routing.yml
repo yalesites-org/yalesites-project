@@ -1,0 +1,19 @@
+# Both routes are reached from the CAS protect / Remove CAS protection bulk
+# actions on the Manage views, which redirect here after recording the
+# selection. The permission only keeps the routes to people who can use those
+# views; every item is access-checked again before it is changed.
+ys_node_access.cas_protect_confirm:
+  path: '/admin/content/cas-protection/protect'
+  defaults:
+    _form: '\Drupal\ys_node_access\Form\CasProtectConfirmForm'
+  requirements:
+    _permission: 'access content overview'
+
+ys_node_access.cas_unprotect:
+  path: '/admin/content/cas-protection/remove'
+  defaults:
+    _controller: '\Drupal\ys_node_access\Controller\CasUnprotectController::start'
+  # No _csrf_token: see CasUnprotectController for why it is not needed, and
+  # why it cannot work on a route the bulk form redirects to.
+  requirements:
+    _permission: 'access content overview'

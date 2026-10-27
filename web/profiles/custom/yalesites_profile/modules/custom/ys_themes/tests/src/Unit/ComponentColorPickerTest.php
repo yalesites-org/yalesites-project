@@ -249,4 +249,31 @@ class ComponentColorPickerTest extends UnitTestCase {
     $this->assertSame(['default' => 'Default - No Color', 'one' => 'One'], $this->buildColorInfoLabels);
   }
 
+  /**
+   * The field title is handed to the template as the swatch group's name.
+   *
+   * @covers ::processColorPicker
+   */
+  public function testProcessColorPickerPassesTitleAsGroupLabel(): void {
+    $rendered = NULL;
+    $this->renderer->method('render')->willReturnCallback(function (&$element) use (&$rendered) {
+      $rendered = $element;
+      return '<div></div>';
+    });
+
+    $element = [
+      '#title' => 'Component Theme',
+      '#palette_options' => ['one' => 'One'],
+      '#global_theme' => 'one',
+      '#selected_value' => 'one',
+      '#color_styles' => [],
+    ];
+    $form_state = $this->createMock(FormStateInterface::class);
+    $complete_form = [];
+
+    $this->widget->processColorPicker($element, $form_state, $complete_form);
+
+    $this->assertSame('Component Theme', (string) $rendered['#group_label']);
+  }
+
 }
