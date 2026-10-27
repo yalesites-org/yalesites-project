@@ -48,6 +48,21 @@ function current_branch_for_path() {
   git -C "$git_path" rev-parse --abbrev-ref HEAD
 }
 
+# branch_label
+#
+# This function will print the current branch for a given path, or
+# "detached at <commit>" when HEAD is detached.
+#
+# params:
+#  git_path: the path to the repo
+#
+function branch_label() {
+  local git_path="${1-$(pwd)}"
+
+  git -C "$git_path" symbolic-ref --quiet --short HEAD ||
+    echo "detached at $(git -C "$git_path" rev-parse --short HEAD)"
+}
+
 # branch_exists
 #
 # This function will return 1 if a branch exists, 0 if it does not.
@@ -110,8 +125,57 @@ function git_checkout() {
   local git_path="${1-$(pwd)}"
   local target_branch=${2:-main}
   local origin=${3:-origin}
+  local worktree_path
+
+  # Git refuses to check out a branch that another worktree has checked out,
+  # so check out that branch's commit detached instead.
+  worktree_path=$(branch_worktree_path "$git_path" "$target_branch")
+  if [ -n "$worktree_path" ]; then
+    _say "$target_branch is checked out in the worktree at $worktree_path; checking out its latest commit detached instead"
+    git -C "$git_path" checkout --detach "$target_branch"
+    return
+  fi
 
   git -C "$git_path" checkout "$target_branch" || git -C "$git_path" checkout --track "$origin/$target_branch"
+}
+
+# branch_worktree_path
+#
+# This function will print the path of the worktree that has a branch checked
+# out, or nothing if no worktree does.
+#
+# params:
+#  git_path: the path to the repo
+#  branch: the branch to look for
+#
+function branch_worktree_path() {
+  local git_path="$1"
+  local branch="$2"
+
+  git -C "$git_path" worktree list --porcelain |
+    awk -v ref="refs/heads/$branch" '/^worktree /{path=substr($0, 10)} $0 == "branch " ref {print path; exit}'
+}
+
+# is_on_branch
+#
+# This function will return 0 if a repo is on a branch, or is detached at the
+# commit of a branch that another worktree holds (see git_checkout), and 1
+# otherwise.
+#
+# params:
+#  git_path: the path to the repo
+#  branch: the branch to check for
+#
+function is_on_branch() {
+  local git_path="$1"
+  local branch="$2"
+  local current_branch
+
+  current_branch=$(current_branch_for_path "$git_path")
+  [ "$current_branch" = "$branch" ] && return 0
+  [ "$current_branch" = "HEAD" ] &&
+    [ -n "$(branch_worktree_path "$git_path" "$branch")" ] &&
+    [ "$(git -C "$git_path" rev-parse HEAD)" = "$(git -C "$git_path" rev-parse --quiet --verify "refs/heads/$branch")" ]
 }
 
 # ensure_origin_remote
@@ -204,7 +268,7 @@ function clone_or_switch_branch() {
   current_branch=$(current_branch_for_path "$git_path")
 
   # If current branch is not the target branch
-  if [ "$current_branch" != "$target_branch" ]; then
+  if ! is_on_branch "$git_path" "$target_branch"; then
     git -C "$git_path" fetch --all
     # If there are no uncommitted changes, prepare to switch to the target branch
     if git -C "$git_path" diff --quiet --exit-code && git -C "$git_path" diff --cached --quiet; then
@@ -215,16 +279,14 @@ function clone_or_switch_branch() {
       git_checkout "$git_path" "$target_branch" "$origin"
 
       # Verify that the checkout was successful
-      current_branch=$(current_branch_for_path "$git_path")
-      if [ "$current_branch" != "$target_branch" ]; then
+      if ! is_on_branch "$git_path" "$target_branch"; then
         # If not successful, try the backup branch
         _error "Failed to switch to $target_branch branch of $name repo"
         _say "Attempting to switch to $backup_branch branch of $name repo"
         git_checkout "$git_path" "$backup_branch" "$origin"
 
         # check if that was successful
-        current_branch=$(current_branch_for_path "$git_path")
-        if [ "$current_branch" != "$backup_branch" ]; then
+        if ! is_on_branch "$git_path" "$backup_branch"; then
           # If not successful, fail
           _error "Failed to switch to $backup_branch branch of $name repo"
           exit 1
@@ -446,6 +508,12 @@ function _local-git-checkout() {
     esac
   done
 
+  # `npm run` puts yalesites-project's node_modules/.bin first on PATH, where
+  # semantic-release installs its own older npm. That npm reads the overrides
+  # in the other repos' lockfiles differently and makes `npm ci` fail, so drop
+  # node_modules/.bin from PATH and use the developer's npm.
+  PATH=$(echo "$PATH" | tr ':' '\n' | grep -v '/node_modules/\.bin$' | paste -sd ':' -)
+
   # Check for utilities directory
   local utils_path="./scripts/local/util"
   [ -e "$utils_path" ] || { echo -e "[$0] Utilities not found.  You must run this from the yalesites root directory: "; exit 1; }
@@ -528,7 +596,7 @@ function _local-git-checkout() {
 
   # If current branch did change (checked after composer, so a detached or
   # missing atomic counts as changed)
-  if [ "$(current_branch_for_path "$atomic_path" 2> /dev/null)" != "$atomic_branch" ]; then
+  if ! is_on_branch "$atomic_path" "$atomic_branch" 2> /dev/null; then
     atomic_changed=true
   fi
 
@@ -560,7 +628,10 @@ function _local-git-checkout() {
   cd _yale-packages/component-library-twig || { _error "Could not find component-library-twig repo. Are you in the right directory?"; exit 1; }
 
   _say "Creating a global npm link for the component library"
-  npm link || { _error "npm link failed in the component-library-twig repo"; exit 1; }
+  # The component library's install scripts patch its dependencies, which a
+  # fresh clone does not have yet. Skip them here; the clean install below
+  # installs the dependencies and runs them.
+  npm link --ignore-scripts || { _error "npm link failed in the component-library-twig repo"; exit 1; }
 
   [ "$verbose" = true ] && _say "Moving back to atomic"
   cd ../..
@@ -631,10 +702,10 @@ function _local-git-checkout() {
   _say "All done!"
   _say "********************"
   _say "Current branches"
-  _say "YaleSites:         $(current_branch_for_path "$yalesites_path")"
-  _say "Atomic:            $(current_branch_for_path "$atomic_path")"
-  _say "Component Library: $(current_branch_for_path "$cl_path")"
-  _say "Tokens:            $(current_branch_for_path "$tokens_path")"
+  _say "YaleSites:         $(branch_label "$yalesites_path")"
+  _say "Atomic:            $(branch_label "$atomic_path")"
+  _say "Component Library: $(branch_label "$cl_path")"
+  _say "Tokens:            $(branch_label "$tokens_path")"
   _say "********************"
   _say "Run \`npm run confim\` to import the configuration for this branch."
 }

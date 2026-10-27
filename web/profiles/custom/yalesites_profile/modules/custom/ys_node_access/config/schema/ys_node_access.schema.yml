@@ -1,0 +1,7 @@
+action.configuration.ys_node_access_cas_protect:
+  type: action_configuration_default
+  label: 'CAS protect configuration'
+
+action.configuration.ys_node_access_cas_unprotect:
+  type: action_configuration_default
+  label: 'Remove CAS protection configuration'
