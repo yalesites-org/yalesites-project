@@ -95,9 +95,10 @@ This project supports development with Lando using the Pantheon recipe. This pro
 
 This project supports development with **DDEV** as well as Lando. The committed `.ddev` configuration provides a local environment suitable for Drupal work with **PHP, MariaDB, Redis** (via the [ddev-redis](https://github.com/ddev/ddev-redis) add-on), and **Nginx**.
 
-1. [Install the latest DDEV release](https://docs.ddev.com/en/stable/users/install/ddev-installation/) (for example: `brew install ddev/ddev/ddev`), or upgrade an existing install (`brew upgrade ddev`).
+1. [Install DDEV](https://docs.ddev.com/en/stable/users/install/ddev-installation/). DDEV must be kept up to date: use the latest release, and upgrade an existing install before working on this project.
 2. Ensure Docker Desktop (or your supported Docker engine) is running.
 3. Increase Docker resources the same way as for [Lando](#lando): at least **3GB memory** and **3 CPUs** where possible.
+4. Add your Terminus machine token to the global DDEV config (see [Pantheon pulls under DDEV](#pantheon-pulls-under-ddev)). Without it, `npm run db:get` and `npm run files:get` fail.
 
 The local scripts **default to Lando**. To use DDEV for a shell session when running setup or other `npm run` local scripts:
 
@@ -117,6 +118,8 @@ ddev config global --web-environment-add="TERMINUS_MACHINE_TOKEN=<your-token>"
 ```
 
 Without it the pull stops with `Please make sure you have set TERMINUS_MACHINE_TOKEN in ~/.ddev/global_config.yaml`.
+
+Current DDEV reads its global config only from `~/.ddev/`. If you set the token with an older DDEV, it may be in `~/.config/ddev/` instead, which is no longer read; run the command above again to add it to the current config.
 
 The site and environment come from **`PANTHEON_SITE`** and **`PANTHEON_ENVIRONMENT`** in the committed `.ddev/config.yaml`. To point at a different site or environment without editing that file, create **`.ddev/config.local.yaml`** (ignored by the `.ddev/.gitignore` DDEV generates on first start; do not commit it):
 
