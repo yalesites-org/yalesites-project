@@ -1060,6 +1060,11 @@ class ViewsBasicManager extends ControllerBase implements ContainerInjectionInte
       unset($filters['post_year_filter']);
     }
 
+    // The Localist event type filter is event-only (#1967).
+    if (empty($paramsDecoded['exposed_filter_options']['show_event_type_filter']) || $filterType !== self::CONTENT_TYPE_EVENT) {
+      unset($filters['field_localist_event_type_target_id']);
+    }
+
     if ($filterType === self::CONTENT_TYPE_RESOURCE) {
       $filters = self::applyResourceFilters($filters, $paramsDecoded);
     }
@@ -1072,11 +1077,21 @@ class ViewsBasicManager extends ControllerBase implements ContainerInjectionInte
       $parent_params[$category_filter_name] = 'category_included_terms';
     }
     $excluded_terms = array_map([$this, 'getTermId'], $paramsDecoded['filters']['terms_exclude'] ?? []);
+    // Listings migrated from the predecessor blocks list only the terms used
+    // on content the listing can show, and drop a filter with none, as those
+    // blocks' Views did (BEF "show only used" + "hide when empty", #1967).
+    $used_in = empty($paramsDecoded['used_terms_only']) ? NULL : [
+      'types' => $paramsDecoded['filters']['types'],
+      'event_time_period' => $paramsDecoded['filters']['event_time_period'] ?? NULL,
+    ];
     foreach ($filters as $filter_name => $filter) {
       if (($filter['plugin_id'] ?? NULL) === 'taxonomy_index_tid' && !empty($filter['exposed'])) {
         $parent_param = $parent_params[$filter_name] ?? NULL;
         $parent_tid = $parent_param ? (int) ($paramsDecoded[$parent_param] ?? 0) : NULL;
-        $this->exposedTaxonomyFilterOptions->apply($filters, $filter_name, $excluded_terms, $parent_tid);
+        $constrained = $this->exposedTaxonomyFilterOptions->apply($filters, $filter_name, $excluded_terms, $parent_tid, $used_in);
+        if ($used_in && $constrained && empty($filters[$filter_name]['value'])) {
+          unset($filters[$filter_name]);
+        }
       }
     }
 
@@ -1704,10 +1719,21 @@ class ViewsBasicManager extends ControllerBase implements ContainerInjectionInte
    * field_view_params. Superseding them means swapping each instance to the
    * equivalent new bundle and pre-filling field_view_params with params that
    * reproduce the predecessor View's query (ADR DR-10):
-   * - post_list  -> post_list_item: posts, sticky + publish-date DESC, 10/page.
-   * - event_list -> event_list_item: future events, event-date ASC.
+   * - post_list  -> post_list_item: posts, sticky + publish-date DESC, 10/page,
+   *   with the "Post Category" filter.
+   * - event_list -> event_list_item: future events, event-date ASC, with the
+   *   "Event Type" (Localist event type) and "Event Category" filters.
    * - directory  -> profile_card: profiles, last-name A-Z, small cards with
-   *   department, email and phone (the retired directory look, #1682).
+   *   department, email and phone (the retired directory look, #1682), with
+   *   the "Affiliation" filter.
+   *
+   * Each keeps the exposed filter visitors had on the predecessor block, under
+   * the same label, and sets used_terms_only: the predecessor Views listed
+   * only terms used on the content they showed and hid a filter with none
+   * (BEF "show only used" + "hide when empty"), so the migrated filters do
+   * too (YaleSites-Internal#1967). That is why a Calendar List shows Event
+   * Category only where upcoming events use one. Blocks 10002 migrated
+   * before these filters were added get them from deploy_10004.
    *
    * These presets are best-effort reproductions and must be confirmed on
    * staging with a before/after render diff (#1171) before the predecessor
@@ -1745,6 +1771,8 @@ class ViewsBasicManager extends ControllerBase implements ContainerInjectionInte
           'display' => 'pager',
           'limit' => 10,
           'pinned_to_top' => TRUE,
+          'exposed_filter_options' => ['show_category_filter' => 'show_category_filter'],
+          'category_filter_label' => 'Post Category',
         ],
       ],
       'event_list' => [
@@ -1760,6 +1788,11 @@ class ViewsBasicManager extends ControllerBase implements ContainerInjectionInte
           'sort_by' => 'field_event_date:ASC',
           'display' => 'all',
           'limit' => 10,
+          'exposed_filter_options' => [
+            'show_category_filter' => 'show_category_filter',
+            'show_event_type_filter' => 'show_event_type_filter',
+          ],
+          'category_filter_label' => 'Event Category',
         ],
       ],
       'directory' => [
@@ -1769,6 +1802,8 @@ class ViewsBasicManager extends ControllerBase implements ContainerInjectionInte
           'sort_by' => 'field_last_name:ASC',
           'display' => 'all',
           'limit' => 10,
+          'exposed_filter_options' => ['show_category_filter' => 'show_category_filter'],
+          'category_filter_label' => 'Affiliation',
         ]),
       ],
     ];
@@ -1777,8 +1812,30 @@ class ViewsBasicManager extends ControllerBase implements ContainerInjectionInte
     }
     return [
       'target' => $presets[$legacy_bundle]['target'],
-      'params' => $presets[$legacy_bundle]['params'] + $base,
+      'params' => $presets[$legacy_bundle]['params'] + ['used_terms_only' => TRUE] + $base,
     ];
+  }
+
+  /**
+   * Returns the params the first deploy_10002 wrote for a predecessor block.
+   *
+   * That version migrated the blocks without their exposed filter: the
+   * current preset with no filters, no filter label and no used_terms_only.
+   * deploy_10004 matches blocks still holding these params (#1967).
+   *
+   * @param string $legacy_bundle
+   *   The predecessor block content bundle id.
+   *
+   * @return array|null
+   *   The filterless params, or NULL if not a known predecessor bundle.
+   */
+  public static function filterlessPredecessorParams(string $legacy_bundle): ?array {
+    $params = self::predecessorPreset($legacy_bundle)['params'] ?? NULL;
+    if ($params === NULL) {
+      return NULL;
+    }
+    unset($params['used_terms_only']);
+    return ['exposed_filter_options' => [], 'category_filter_label' => NULL] + $params;
   }
 
   /**
