@@ -438,3 +438,60 @@ function ys_views_basic_deploy_10003(&$sandbox) {
     '@rv' => $remaining,
   ]);
 }
+
+/**
+ * Turns on the predecessor filters for blocks 10002 already migrated (#1967).
+ *
+ * The first version of deploy_10002 converted Post Feed, Calendar List and
+ * Directory blocks without the exposed filter visitors used on them. A block
+ * whose params still equal that filterless preset gets the current preset
+ * (ViewsBasicManager::predecessorPreset()), which adds the filter, its live
+ * label, and the "only terms in use" option. A block an editor has changed
+ * since is left alone. Idempotent: a second run finds no filterless preset.
+ * On a site where 10002 runs with the current preset, this finds nothing.
+ */
+function ys_views_basic_deploy_10004(&$sandbox) {
+  $block_storage = \Drupal::entityTypeManager()->getStorage('block_content');
+
+  if (!isset($sandbox['ids'])) {
+    // Target bundle => predecessor bundle.
+    $sandbox['legacy'] = [];
+    foreach (['post_list', 'event_list', 'directory'] as $legacy) {
+      $sandbox['legacy'][ViewsBasicManager::predecessorPreset($legacy)['target']] = $legacy;
+    }
+    $sandbox['ids'] = array_values($block_storage->getQuery()
+      ->condition('type', array_keys($sandbox['legacy']), 'IN')
+      ->accessCheck(FALSE)
+      ->execute());
+    $sandbox['total'] = count($sandbox['ids']);
+    $sandbox['updated'] = 0;
+  }
+
+  $chunk = array_splice($sandbox['ids'], 0, ListingMigrator::BATCH_SIZE);
+  foreach ($block_storage->loadMultiple($chunk) as $block) {
+    $legacy = $sandbox['legacy'][$block->bundle()];
+    $field = $block->get('field_view_params');
+    $params = $field->isEmpty() ? NULL : json_decode($field->first()->getValue()['params'] ?? '', TRUE);
+    // Loose comparison: the same keys and values in any order.
+    if ($params != ViewsBasicManager::filterlessPredecessorParams($legacy)) {
+      continue;
+    }
+    $block->set('field_view_params', ['params' => json_encode(ViewsBasicManager::predecessorPreset($legacy)['params'])]);
+    $block->save();
+    $sandbox['updated']++;
+  }
+  if ($chunk) {
+    $block_storage->resetCache($chunk);
+  }
+
+  if ($sandbox['ids']) {
+    $sandbox['#finished'] = ($sandbox['total'] - count($sandbox['ids'])) / $sandbox['total'];
+    return NULL;
+  }
+  if ($sandbox['updated']) {
+    \Drupal::service('cache.render')->invalidateAll();
+  }
+  $sandbox['#finished'] = 1;
+  \Drupal::logger('ys_views_basic')->notice('Predecessor filters: turned on the exposed filter for @n migrated blocks.', ['@n' => $sandbox['updated']]);
+  return t('Predecessor filters: turned on the exposed filter for @n migrated blocks.', ['@n' => $sandbox['updated']]);
+}

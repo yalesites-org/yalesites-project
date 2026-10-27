@@ -1060,6 +1060,89 @@ class ViewsBasicManagerTest extends UnitTestCase {
   }
 
   /**
+   * The event type filter shows only on an event listing that turns it on.
+   *
+   * @covers ::setupView
+   */
+  public function testSetupViewEventTypeFilterOnlyWhenShownOnEvents() {
+    $filters = ['field_localist_event_type_target_id' => $this->taxonomyFilter('localist_event_type')];
+    $shown = ['show_event_type_filter' => 'show_event_type_filter'];
+
+    $set = $this->runSetupView(['filters' => ['types' => ['event']], 'exposed_filter_options' => $shown], $filters);
+    $this->assertArrayHasKey('field_localist_event_type_target_id', $set['filters']);
+
+    $set = $this->runSetupView(['filters' => ['types' => ['event']]], $filters);
+    $this->assertArrayNotHasKey('field_localist_event_type_target_id', $set['filters']);
+
+    $set = $this->runSetupView(['filters' => ['types' => ['post']], 'exposed_filter_options' => $shown], $filters);
+    $this->assertArrayNotHasKey('field_localist_event_type_target_id', $set['filters'], 'Event type is event-only.');
+  }
+
+  /**
+   * The used_terms_only param limits taxonomy filters to the listing's type.
+   *
+   * @covers ::setupView
+   */
+  public function testSetupViewPassesContentTypeWhenUsedTermsOnly() {
+    $calls = [];
+    $this->exposedTaxonomyFilterOptions->method('apply')->willReturnCallback(
+      function ($filters, $name, $excluded, $parent = NULL, $used_in = NULL) use (&$calls) {
+        $calls[$name] = $used_in;
+        return TRUE;
+      }
+    );
+    $params = [
+      'filters' => ['types' => ['profile']],
+      'exposed_filter_options' => ['show_category_filter' => 'show_category_filter'],
+    ];
+    $filters = ['field_affiliation_target_id' => $this->taxonomyFilter('affiliation')];
+
+    $this->runSetupView($params + ['used_terms_only' => TRUE], $filters);
+    $this->assertSame(['field_affiliation_target_id' => ['types' => ['profile'], 'event_time_period' => NULL]], $calls);
+
+    $calls = [];
+    $this->runSetupView($params, $filters);
+    $this->assertSame(['field_affiliation_target_id' => NULL], $calls);
+
+    // An event listing scopes the lookup to its time period.
+    $calls = [];
+    $this->runSetupView([
+      'filters' => ['types' => ['event'], 'event_time_period' => 'future'],
+      'exposed_filter_options' => ['show_event_type_filter' => 'show_event_type_filter'],
+      'used_terms_only' => TRUE,
+    ], ['field_localist_event_type_target_id' => $this->taxonomyFilter('localist_event_type')]);
+    $this->assertSame(['field_localist_event_type_target_id' => ['types' => ['event'], 'event_time_period' => 'future']], $calls);
+  }
+
+  /**
+   * A migrated listing drops a filter with no terms in use (#1967).
+   *
+   * The predecessor Views hid such a filter (BEF "hide when empty"); other
+   * listings keep showing the "No options available" message instead.
+   *
+   * @covers ::setupView
+   */
+  public function testSetupViewDropsEmptyFilterWhenUsedTermsOnly() {
+    $this->exposedTaxonomyFilterOptions->method('apply')->willReturnCallback(
+      function (&$filters, $name) {
+        $filters[$name]['value'] = [];
+        return TRUE;
+      }
+    );
+    $params = [
+      'filters' => ['types' => ['profile']],
+      'exposed_filter_options' => ['show_category_filter' => 'show_category_filter'],
+    ];
+    $filters = ['field_affiliation_target_id' => $this->taxonomyFilter('affiliation')];
+
+    $set = $this->runSetupView($params + ['used_terms_only' => TRUE], $filters);
+    $this->assertArrayNotHasKey('field_affiliation_target_id', $set['filters']);
+
+    $set = $this->runSetupView($params, $filters);
+    $this->assertArrayHasKey('field_affiliation_target_id', $set['filters']);
+  }
+
+  /**
    * A resource listing runs every exposed taxonomy filter through apply().
    *
    * Category and custom vocabulary pass their included parent term; the

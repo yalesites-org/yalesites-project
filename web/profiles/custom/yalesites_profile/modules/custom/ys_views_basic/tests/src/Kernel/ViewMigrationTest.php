@@ -11,6 +11,7 @@ use Drupal\layout_builder\Section;
 use Drupal\layout_builder\SectionComponent;
 use Drupal\node\Entity\NodeType;
 use Drupal\ys_views_basic\Service\ListingMigrator;
+use Drupal\ys_views_basic\ViewsBasicManager;
 
 /**
  * Tests the listing block migrations (#1169, #1170, #1682).
@@ -93,7 +94,7 @@ class ViewMigrationTest extends KernelTestBase {
       'type' => 'views_basic_params',
     ])->save();
 
-    foreach (['view', 'post_card', 'post_list_item', 'profile_card', 'profile_directory'] as $bundle) {
+    foreach (['view', 'post_card', 'post_list_item', 'event_list_item', 'profile_card', 'profile_directory'] as $bundle) {
       BlockContentType::create(['id' => $bundle, 'label' => $bundle])->save();
       FieldConfig::create([
         'field_name' => 'field_view_params',
@@ -108,6 +109,7 @@ class ViewMigrationTest extends KernelTestBase {
     // swap to post_list_item.
     BlockContentType::create(['id' => 'post_list', 'label' => 'Post Feed'])->save();
     BlockContentType::create(['id' => 'directory', 'label' => 'Directory'])->save();
+    BlockContentType::create(['id' => 'event_list', 'label' => 'Calendar List'])->save();
 
     // A node layout field, so the placement rewrite has tables to walk.
     NodeType::create(['type' => 'page', 'name' => 'Page'])->save();
@@ -292,6 +294,74 @@ class ViewMigrationTest extends KernelTestBase {
     $this->assertSame(['post'], $params['filters']['types']);
     $this->assertSame('field_publish_date:DESC', $params['sort_by']);
     $this->assertTrue($params['pinned_to_top'], 'Post feed pins sticky items.');
+  }
+
+  /**
+   * Each predecessor block keeps the filter visitors had on it (#1967).
+   */
+  public function testPredecessorMigrationTurnsOnTheLiveFilter() {
+    $expected = [
+      'post_list' => ['post_list_item', ['show_category_filter' => 'show_category_filter'], 'Post Category'],
+      'event_list' => [
+        'event_list_item',
+        ['show_category_filter' => 'show_category_filter', 'show_event_type_filter' => 'show_event_type_filter'],
+        'Event Category',
+      ],
+      'directory' => ['profile_card', ['show_category_filter' => 'show_category_filter'], 'Affiliation'],
+    ];
+    $ids = [];
+    foreach (array_keys($expected) as $legacy) {
+      $block = BlockContent::create(['type' => $legacy, 'info' => $legacy]);
+      $block->save();
+      $ids[$legacy] = $block->id();
+    }
+
+    $this->runHook('ys_views_basic_deploy_10002');
+    $this->blockStorage->resetCache();
+
+    foreach ($expected as $legacy => [$target, $filters, $label]) {
+      $this->assertSame($target, $this->blockStorage->load($ids[$legacy])->bundle());
+      $params = $this->storedParams($ids[$legacy]);
+      $this->assertSame($filters, $params['exposed_filter_options'], "$legacy keeps its exposed filter.");
+      $this->assertSame($label, $params['category_filter_label'], "$legacy keeps its filter label.");
+      $this->assertTrue($params['used_terms_only'], "$legacy lists only terms in use, as live did.");
+    }
+  }
+
+  /**
+   * Blocks 10002 already migrated without the filter get it (#1967).
+   *
+   * Only blocks whose params still equal the old filterless preset change;
+   * a block an editor has since changed is left alone. A second run is a
+   * no-op.
+   */
+  public function testAlreadyMigratedPredecessorsGetTheirFilter() {
+    $old = ViewsBasicManager::filterlessPredecessorParams('post_list');
+    $this->assertSame([], $old['exposed_filter_options']);
+    $this->assertArrayNotHasKey('used_terms_only', $old);
+
+    $untouched = BlockContent::create([
+      'type' => 'post_list_item',
+      'info' => 'migrated by the old 10002',
+      'field_view_params' => ['params' => json_encode($old)],
+    ]);
+    $untouched->save();
+    $edited = BlockContent::create([
+      'type' => 'post_list_item',
+      'info' => 'changed by an editor since',
+      'field_view_params' => ['params' => json_encode(['limit' => 5] + $old)],
+    ]);
+    $edited->save();
+
+    $this->runHook('ys_views_basic_deploy_10004');
+    $this->blockStorage->resetCache();
+
+    $this->assertEquals(ViewsBasicManager::predecessorPreset('post_list')['params'], $this->storedParams($untouched->id()));
+    $this->assertSame(['limit' => 5] + $old, $this->storedParams($edited->id()));
+
+    $this->runHook('ys_views_basic_deploy_10004');
+    $this->blockStorage->resetCache();
+    $this->assertEquals(ViewsBasicManager::predecessorPreset('post_list')['params'], $this->storedParams($untouched->id()));
   }
 
   /**
@@ -661,6 +731,7 @@ class ViewMigrationTest extends KernelTestBase {
       'ys_views_basic_deploy_10001',
       'ys_views_basic_deploy_10002',
       'ys_views_basic_deploy_10003',
+      'ys_views_basic_deploy_10004',
       'ys_views_basic_post_update_retire_profile_directory',
     ] as $hook) {
       $this->runHook($hook);

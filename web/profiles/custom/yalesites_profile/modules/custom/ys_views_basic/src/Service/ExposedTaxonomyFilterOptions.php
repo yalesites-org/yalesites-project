@@ -2,6 +2,7 @@
 
 namespace Drupal\ys_views_basic\Service;
 
+use Drupal\Core\Database\Connection;
 use Drupal\Core\Entity\EntityTypeManagerInterface;
 use Drupal\taxonomy\TermStorageInterface;
 use Psr\Log\LoggerInterface;
@@ -17,6 +18,11 @@ use Psr\Log\LoggerInterface;
  * - Excluded terms: any term the editor used to exclude content is removed.
  *   A visitor picking such a term would always get zero results, so it must
  *   never be an option.
+ * - Terms in use: only terms tagged on content the listing can show, by
+ *   node type, publish date and event time period. Listings migrated from
+ *   the predecessor Post Feed, Calendar List and Directory blocks ask for
+ *   this, because those Views only listed terms in use
+ *   (YaleSites-Internal#1967).
  *
  * The vocabulary is read from the filter's own `vid` setting, so no
  * filter-to-vocabulary map is needed; excluded term ids from any vocabulary
@@ -48,16 +54,26 @@ class ExposedTaxonomyFilterOptions {
   protected LoggerInterface $logger;
 
   /**
+   * The database connection, for the taxonomy_index lookup.
+   *
+   * @var \Drupal\Core\Database\Connection
+   */
+  protected Connection $database;
+
+  /**
    * Constructs the service.
    *
    * @param \Drupal\Core\Entity\EntityTypeManagerInterface $entity_type_manager
    *   The entity type manager.
    * @param \Psr\Log\LoggerInterface $logger
    *   The logger channel.
+   * @param \Drupal\Core\Database\Connection $database
+   *   The database connection.
    */
-  public function __construct(EntityTypeManagerInterface $entity_type_manager, LoggerInterface $logger) {
+  public function __construct(EntityTypeManagerInterface $entity_type_manager, LoggerInterface $logger, Connection $database) {
     $this->termStorage = $entity_type_manager->getStorage('taxonomy_term');
     $this->logger = $logger;
+    $this->database = $database;
   }
 
   /**
@@ -72,13 +88,17 @@ class ExposedTaxonomyFilterOptions {
    *   are ignored.
    * @param int|null $parent_tid
    *   Optional parent term id; when set, only its descendants are offered.
+   * @param array|null $used_in
+   *   Optional content scope; when set, only terms tagged on content in it
+   *   are offered. Keys: 'types' (node types) and 'event_time_period'
+   *   (future, past or all). See ::usedTermIds().
    *
    * @return bool
    *   TRUE when the filter was constrained, FALSE when it was left untouched
    *   (missing filter, no vocabulary on it, or nothing to constrain). A filter
    *   without a vocabulary is logged as a warning.
    */
-  public function apply(array &$filters, string $filter_name, array $excluded_tids, ?int $parent_tid = NULL): bool {
+  public function apply(array &$filters, string $filter_name, array $excluded_tids, ?int $parent_tid = NULL, ?array $used_in = NULL): bool {
     if (!isset($filters[$filter_name])) {
       return FALSE;
     }
@@ -87,7 +107,7 @@ class ExposedTaxonomyFilterOptions {
     $parent_tid = $parent_tid ?: NULL;
 
     // Nothing constrains the filter: leave the full vocabulary available.
-    if ($parent_tid === NULL && !$excluded_tids) {
+    if ($parent_tid === NULL && !$excluded_tids && $used_in === NULL) {
       return FALSE;
     }
 
@@ -105,12 +125,15 @@ class ExposedTaxonomyFilterOptions {
       static fn ($term) => $term->bundle() === $vid,
     )) : [];
 
-    if ($parent_tid === NULL && !$excluded_tids) {
+    if ($parent_tid === NULL && !$excluded_tids && $used_in === NULL) {
       return FALSE;
     }
 
     $available = $this->getDescendantTermIds($vid, $parent_tid ?? 0);
     $available = static::reduceTermsForExposure($available, $excluded_tids);
+    if ($used_in !== NULL) {
+      $available = $this->usedTermIds($available, $used_in['types'] ?? [], $used_in['event_time_period'] ?? NULL);
+    }
 
     $filters[$filter_name]['value'] = $available;
     $filters[$filter_name]['limit'] = TRUE;
@@ -172,6 +195,48 @@ class ExposedTaxonomyFilterOptions {
         'title' => $message,
       ],
     ];
+  }
+
+  /**
+   * Keeps only the given terms tagged on content a listing can show.
+   *
+   * Reads taxonomy_index, which core keeps for published content only. Like
+   * the listing query, a post listing skips posts dated in the future
+   * (PostPublishDate) and an event listing honours its time period
+   * (EventTimePeriod), so a term used only on past events is not offered by
+   * an upcoming-events listing, as on the predecessor Views.
+   *
+   * @param int[] $tids
+   *   Candidate term ids, keyed by term id.
+   * @param string[] $node_types
+   *   The listing's node types (bundles).
+   * @param string|null $event_time_period
+   *   The event time period: 'future', 'past', or anything else for all.
+   *
+   * @return int[]
+   *   The candidates in use, keyed by term id.
+   */
+  public function usedTermIds(array $tids, array $node_types, ?string $event_time_period = NULL): array {
+    if (!$tids || !$node_types) {
+      return [];
+    }
+    $query = $this->database->select('taxonomy_index', 'ti');
+    $query->innerJoin('node_field_data', 'n', '[n].[nid] = [ti].[nid]');
+    $query->condition('n.type', $node_types, 'IN')
+      ->condition('ti.tid', array_keys($tids), 'IN')
+      ->distinct();
+    if ($node_types === ['post']) {
+      $query->leftJoin('node__field_publish_date', 'pd', '[pd].[entity_id] = [n].[nid]');
+      $query->condition('pd.field_publish_date_value', date('Y-m-d'), '<=');
+    }
+    $operator = ['future' => '>=', 'past' => '<'][$event_time_period] ?? NULL;
+    if ($operator && in_array('event', $node_types, TRUE)) {
+      $query->innerJoin('node__field_event_date', 'ed', '[ed].[entity_id] = [n].[nid]');
+      $query->condition('ed.field_event_date_end_value', time(), $operator);
+    }
+    $query->addField('ti', 'tid');
+    $used = array_map('intval', $query->execute()->fetchCol());
+    return array_intersect_key($tids, array_flip($used));
   }
 
   /**
