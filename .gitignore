@@ -108,6 +108,14 @@
 /web/sites/*/settings.ddev.php
 /web/sites/*/settings.ddev.redis.php
 
+# Composer scaffold files. Scaffold normally hides these with its own
+# web/sites/default/.gitignore, but DDEV replaces that file with a generated
+# one, so list them here too.
+/web/sites/default/default.services.pantheon.preproduction.yml
+/web/sites/default/default.services.yml
+/web/sites/default/default.settings.php
+/web/sites/default/settings.pantheon.php
+
 # PHPUnit result cache (written next to the working directory on each run).
 .phpunit.result.cache
 
