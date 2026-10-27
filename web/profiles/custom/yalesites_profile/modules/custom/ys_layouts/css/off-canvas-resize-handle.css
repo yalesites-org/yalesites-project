@@ -1,0 +1,51 @@
+/**
+ * @file
+ * A visible, easier-to-grab resize edge for the Layout Builder side panel.
+ *
+ * jQuery UI already makes core's off-canvas dialog resizable from its left
+ * edge, but Gin's dialog stylesheet makes that `.ui-resizable-w` handle
+ * transparent, so editors cannot tell the panel can be widened
+ * (YaleSites-Internal#1812). This draws the approved handle: a strip with a
+ * centred grip in Gin's accent colour, which carries the 3:1 non-text
+ * contrast. Gin's variables already switch for dark mode.
+ *
+ * The dialog clips horizontal overflow, so the strip sits inside it and the
+ * dialog gets matching padding. Core always uses a west handle
+ * (OpenOffCanvasDialogCommand sets `resizable: 'w'`), so the properties are
+ * physical, not logical. This is not in ys_admin_theme because none of its
+ * stylesheets load on the Layout Builder surface.
+ *
+ * The `#drupal-off-canvas-wrapper` ID out-specifies Gin's
+ * `.ui-widget.ui-dialog.ui-dialog-off-canvas .ui-resizable-w` without
+ * !important.
+ */
+#drupal-off-canvas-wrapper {
+  padding-left: 12px;
+}
+
+#drupal-off-canvas-wrapper .ui-resizable-w {
+  left: 0;
+  width: 12px;
+  cursor: ew-resize;
+  border-left: 1px solid var(--gin-border-color-form-element);
+  background-color: var(--gin-bg-layer2);
+}
+
+/* The grip. */
+#drupal-off-canvas-wrapper .ui-resizable-w::before {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 4px;
+  height: 48px;
+  content: '';
+  transform: translate(-50%, -50%);
+  border-radius: 2px;
+  background-color: var(--gin-color-primary);
+}
+
+#drupal-off-canvas-wrapper .ui-resizable-w:hover,
+#drupal-off-canvas-wrapper.ui-resizable-resizing .ui-resizable-w {
+  border-left-color: var(--gin-color-primary);
+  background-color: var(--gin-color-primary-light);
+}
