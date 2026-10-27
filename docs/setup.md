@@ -95,7 +95,7 @@ This project supports development with Lando using the Pantheon recipe. This pro
 
 This project supports development with **DDEV** as well as Lando. The committed `.ddev` configuration provides a local environment suitable for Drupal work with **PHP, MariaDB, Redis** (via the [ddev-redis](https://github.com/ddev/ddev-redis) add-on), and **Nginx**.
 
-1. [Install DDEV](https://docs.ddev.com/en/stable/users/install/ddev-installation/) (for example: `brew install ddev/ddev/ddev`).
+1. [Install the latest DDEV release](https://docs.ddev.com/en/stable/users/install/ddev-installation/) (for example: `brew install ddev/ddev/ddev`), or upgrade an existing install (`brew upgrade ddev`).
 2. Ensure Docker Desktop (or your supported Docker engine) is running.
 3. Increase Docker resources the same way as for [Lando](#lando): at least **3GB memory** and **3 CPUs** where possible.
 
