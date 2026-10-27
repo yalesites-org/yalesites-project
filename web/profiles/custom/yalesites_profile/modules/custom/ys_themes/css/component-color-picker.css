@@ -432,7 +432,8 @@ body.gin--dark-mode .palette-option[data-selected="true"] .palette-circle {
   right: 0;
   left: 0;
   box-sizing: border-box;
-  max-height: 18rem;
+  /* Tall enough for all seven section colors (about 316px) with no list scroll. */
+  max-height: 24rem;
   margin: 0;
   padding: 0.25rem;
   overflow-x: hidden;
