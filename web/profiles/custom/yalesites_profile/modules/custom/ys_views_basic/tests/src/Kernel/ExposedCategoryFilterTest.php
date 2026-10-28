@@ -86,4 +86,24 @@ class ExposedCategoryFilterTest extends KernelTestBase {
     $this->assertTrue((bool) $filter['expose']['multiple'], "$view_id category filter is multi-value.");
   }
 
+  /**
+   * The events scaffold offers a Localist event type filter (#1967).
+   *
+   * Migrated Calendar List blocks turn it on, so it must be exposed, labelled
+   * as on the predecessor View, and multi-value like the category filter.
+   */
+  public function testEventsScaffoldExposesEventType(): void {
+    $filters = $this->loadScaffoldView('views_basic_scaffold_events')->get('display')['default']['display_options']['filters'];
+
+    $this->assertArrayHasKey('field_localist_event_type_target_id', $filters);
+    $filter = $filters['field_localist_event_type_target_id'];
+    $this->assertSame('taxonomy_index_tid', $filter['plugin_id']);
+    $this->assertSame('node__field_localist_event_type', $filter['table']);
+    $this->assertSame('localist_event_type', $filter['vid']);
+    $this->assertTrue((bool) $filter['exposed']);
+    $this->assertSame('Event Type', $filter['expose']['label']);
+    $this->assertSame('field_localist_event_type_target_id', $filter['expose']['identifier']);
+    $this->assertTrue((bool) $filter['expose']['multiple']);
+  }
+
 }

@@ -78,6 +78,18 @@ class EventViewWidget extends ViewsBasicWidgetBase {
 
   /**
    * {@inheritdoc}
+   *
+   * Events add the Localist "Event Type" filter, which the predecessor
+   * Calendar List block offered (#1967).
+   */
+  protected function getExposedFilterOptions(): array {
+    $options = parent::getExposedFilterOptions();
+    $options['show_event_type_filter'] = $this->t('Show Event Type');
+    return $options;
+  }
+
+  /**
+   * {@inheritdoc}
    */
   protected function massageEntitySpecificParams(array &$paramData, array $built, array $form, FormStateInterface $form_state): void {
     $paramData['event_field_options'] = $built['event_field_options']['#value'] ?? [];
