@@ -243,27 +243,18 @@
   let dropdownCount = 0;
 
   /**
-   * Scrolls a list just enough to show one of its options.
+   * Scrolls just enough to show an option, in whichever ancestor scrolls.
    *
-   * Only the list scrolls: scrollIntoView() on the option would also scroll
-   * the settings panel around it.
+   * That may be the list or the settings panel around it. The option's
+   * scroll-margin covers the list padding its active outline is drawn in.
+   * The widget never overflows its container sideways, so 'nearest' never
+   * scrolls the panel horizontally.
    *
-   * @param {HTMLElement} list
-   *   The scrolling list (the options' offsetParent).
    * @param {HTMLElement} option
    *   The option to show.
    */
-  function keepOptionInView(list, option) {
-    // Keep the list's padding in view too: the active option's outline is
-    // drawn in it.
-    const padding = parseFloat(getComputedStyle(list).paddingTop) || 0;
-    const top = option.offsetTop - padding;
-    const bottom = option.offsetTop + option.offsetHeight + padding;
-    if (top < list.scrollTop) {
-      list.scrollTo(0, top);
-    } else if (bottom > list.scrollTop + list.clientHeight) {
-      list.scrollTo(0, bottom - list.clientHeight);
-    }
+  function keepOptionInView(option) {
+    option.scrollIntoView({ block: 'nearest', inline: 'nearest' });
   }
 
   /**
@@ -310,7 +301,7 @@
       );
       if (activeOption) {
         trigger.setAttribute('aria-activedescendant', activeOption.id);
-        keepOptionInView(list, activeOption);
+        keepOptionInView(activeOption);
       } else {
         trigger.removeAttribute('aria-activedescendant');
       }
@@ -353,9 +344,8 @@
       if (!isOpen()) {
         trigger.setAttribute('aria-expanded', 'true');
         document.addEventListener('pointerdown', onOutsidePointer);
-        // Bring the open list into view vertically. The widget never overflows
-        // its container sideways, so 'nearest' never scrolls the panel
-        // horizontally.
+        // Show as much of the open list as fits; setActive() below then makes
+        // sure the active option itself is in view.
         list.scrollIntoView({ block: 'nearest', inline: 'nearest' });
       }
       setActive(
