@@ -8,6 +8,11 @@ namespace Drupal\ys_migrate\Service;
 class ProfileImportService extends CsvImportServiceBase {
 
   /**
+   * {@inheritdoc}
+   */
+  const BUNDLE = 'profile';
+
+  /**
    * Prepares profile data from CSV row.
    *
    * @param array $row

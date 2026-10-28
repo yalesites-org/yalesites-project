@@ -8,6 +8,48 @@ This README details the process for Drupal migrations at Yale, specifically the 
 
 The Profile CSV Import tool includes a "Download CSV Template" link that redirects users to an external CSV template file. The external URL is hardcoded in the controller and can be updated by developers as needed.
 
+## Post CSV Import
+
+Site owners can bulk-create posts from a spreadsheet at **Content > Manage
+Posts > CSV Import** (`/admin/content/manage-posts/csv-import`, permission
+`create post content`). The form lists every recognised column with a note and
+links to a sample CSV. Like the Resource importer it offers a preview that saves
+nothing, skips duplicates (matched on Title **and** Publish Date, since a series
+such as a weekly update reuses its title), runs the real import as a batch, and
+creates every post as a **draft**.
+
+How the columns land on a post (`PostImportService`):
+
+- **Title** and **Publish Date** are required. An empty Title rejects the file;
+  every other problem fails only its own row and is listed in the preview and
+  the import summary.
+- **Body** has no field to go in: a post's content is built in Layout Builder.
+  The importer copies the post bundle's default layout (keeping the locked
+  "Title and Metadata" section, as Layout Builder does when an editor first
+  edits a layout) and adds one inline **Text** block holding the Body to the
+  "Content Section". The block is handed to the node unsaved
+  (`block_serialized`), so saving the post saves it and records its inline block
+  usage. Plain text is turned into paragraphs. The Text block's `basic_html`
+  format allows no `<img>`, `<iframe>`, `<video>` or embedded media, so a Body
+  containing them (or D7 `[[{"type":"media"...}]]` / `[[nid:123]]` tokens, which
+  are removed) is imported without them and listed in the summary as needing
+  images added by hand.
+- **Category**, **Tags**, **Audience**, **Custom Vocab** only accept terms that
+  already exist. Unlike the profile and resource importers, a misspelt term
+  fails its row (`TaxonomyResolverService::findTerm()`) rather than being
+  created.
+- **Teaser Media ID** takes the ID of an image already in the media library. The
+  importer never uploads files; site owners can upload images first or add them
+  after import.
+- **URL Alias** sets the path alias and switches Pathauto off for that post; it
+  must not already be in use. Leave it empty for Pathauto's usual alias.
+- **Author**, **Teaser Title**, **Teaser Text** (capped at the form display's
+  limit), **External Source** and **CAS Login Required** map to their fields.
+
+`ys_content_export` writes **Publish Date**, **Category** and **CAS Protected**
+headers that this importer reads, so a Manage Posts export can be filled in and
+imported; its URL and Published columns are reported as ignored.
+
 ## General Migration Setup
 
 Each migration within Yale is organized into specific migration groups. These groups manage the migration of data and content from old Drupal instances to new ones, focusing on maintaining data integrity and meeting the unique requirements of each site. This document outlines the migrations for the Office of New Haven Affairs (ONHA), but the framework and methods described are applicable to other Yale sites.
@@ -100,7 +142,7 @@ drush migrate:import --tag=whc_node --execute-dependencies
 
 ## Running tests
 
-This module has PHPUnit tests under `tests/src/Unit/` for the CSV importer (`CsvValidatorService`, `TaxonomyResolverService`, `ProfileImportService`, `ProfileCsvImportForm`). Run them from the project root on the local Lando environment, passing the module's `tests` path so PHPUnit only discovers this module's tests (not Drupal core/contrib):
+This module has PHPUnit tests under `tests/src/Unit/` for the CSV importers (`CsvValidatorService`, `TaxonomyResolverService`, `CsvImportBatch`, and the profile, resource and post import services, forms and sample controllers). Run them from the project root on the local Lando environment, passing the module's `tests` path so PHPUnit only discovers this module's tests (not Drupal core/contrib):
 
 ```bash
 lando ssh -c "env SIMPLETEST_DB=mysql://pantheon:pantheon@database/pantheon \
