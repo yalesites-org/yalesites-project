@@ -14,7 +14,7 @@ use Drupal\views\Views;
 use Drupal\ys_views_basic\ViewsBasicManager;
 
 /**
- * Tests that events sharing a start date list in node ID order.
+ * Tests that events sharing a start date list by title, then node ID.
  *
  * Runs the sorts an events listing gets (ViewsBasicManager::eventSorts())
  * against real event nodes (yalesites-org/YaleSites-Internal#1969).
@@ -69,11 +69,28 @@ class EventListingTieBreakTest extends ViewsKernelTestBase {
   private const TIED = 30;
 
   /**
-   * Node IDs of the events, keyed by title.
+   * Node IDs of the events sharing a start date, in creation order.
    *
    * @var int[]
    */
-  private array $nids = [];
+  private array $tiedNids = [];
+
+  /**
+   * Titles of every event, keyed by node ID.
+   *
+   * @var string[]
+   */
+  private array $titles = [];
+
+  /**
+   * Node ID of the event starting before the tied events.
+   */
+  private int $earlier;
+
+  /**
+   * Node ID of the event starting after the tied events.
+   */
+  private int $later;
 
   /**
    * {@inheritdoc}
@@ -107,27 +124,48 @@ class EventListingTieBreakTest extends ViewsKernelTestBase {
     // event is created first so it has the lowest node ID: the date, not the
     // node ID, must decide between different start dates.
     $tied = strtotime('2005-03-07 10:00:00 UTC');
-    $this->createEvent('Later', $tied + 86400);
+    $this->later = $this->createEvent('Later', $tied + 86400);
     foreach ($this->tiedTitles() as $title) {
-      $this->createEvent($title, $tied);
+      $this->tiedNids[] = $this->createEvent($title, $tied);
     }
-    $this->createEvent('Earlier', $tied - 86400);
+    $this->earlier = $this->createEvent('Earlier', $tied - 86400);
   }
 
   /**
    * Titles of the events sharing a start date, in creation order.
    *
+   * Runs Z to A, so title order is the reverse of node ID order, and each
+   * title is used twice, so the node ID has to break the tie between a pair.
+   *
    * @return string[]
    *   The titles.
    */
   private function tiedTitles(): array {
-    return array_map(fn($i) => sprintf('Tied %02d', $i), range(1, self::TIED));
+    return array_map(
+      fn($i) => sprintf('Tied %02d', intdiv(self::TIED - 1 - $i, 2)),
+      range(0, self::TIED - 1),
+    );
+  }
+
+  /**
+   * Node IDs of the tied events, title A to Z, then node ID ascending.
+   *
+   * @return int[]
+   *   The node IDs in the order a listing should show them.
+   */
+  private function tiedInTitleThenNidOrder(): array {
+    $nids = $this->tiedNids;
+    usort($nids, fn($a, $b) => [$this->titles[$a], $a] <=> [$this->titles[$b], $b]);
+    return $nids;
   }
 
   /**
    * Creates a published event starting at the given timestamp.
+   *
+   * @return int
+   *   The new node ID.
    */
-  private function createEvent(string $title, int $start): void {
+  private function createEvent(string $title, int $start): int {
     $node = Node::create([
       'type' => 'event',
       'title' => $title,
@@ -140,11 +178,13 @@ class EventListingTieBreakTest extends ViewsKernelTestBase {
       ],
     ]);
     $node->save();
-    $this->nids[$title] = (int) $node->id();
+    $nid = (int) $node->id();
+    $this->titles[$nid] = $title;
+    return $nid;
   }
 
   /**
-   * Runs the fixture view with the event sorts; returns the titles in order.
+   * Runs the fixture view with the event sorts; returns the node IDs in order.
    *
    * @param string $direction
    *   The event date direction, ASC or DESC.
@@ -153,40 +193,41 @@ class EventListingTieBreakTest extends ViewsKernelTestBase {
    * @param int $offset
    *   Items to skip.
    *
-   * @return string[]
-   *   The event titles in the order the view returned them.
+   * @return int[]
+   *   The event node IDs in the order the view returned them.
    */
-  private function listedTitles(string $direction, int $limit = 0, int $offset = 0): array {
+  private function listedNids(string $direction, int $limit = 0, int $offset = 0): array {
     $view = Views::getView('ys_views_basic_test_event_sort');
     $view->setDisplay('default');
     $view->getDisplay()->setOption('sorts', ViewsBasicManager::eventSorts($direction, FALSE));
     $view->setItemsPerPage($limit);
     $view->setOffset($offset);
     $this->executeView($view);
-    $byNid = array_flip($this->nids);
-    $titles = [];
+    $nids = [];
     foreach ($view->result as $row) {
-      $titles[] = $byNid[(int) $row->nid];
+      $nids[] = (int) $row->nid;
     }
     $view->destroy();
-    return $titles;
+    return $nids;
   }
 
   /**
-   * Soonest first: tied events list in node ID order.
+   * Soonest first: tied events list by title, then node ID.
    */
-  public function testSoonestFirstBreaksTiesByNodeId(): void {
-    $expected = ['Earlier', ...$this->tiedTitles(), 'Later'];
-    $this->assertSame($expected, $this->listedTitles('ASC'));
+  public function testSoonestFirstBreaksTiesByTitleThenNodeId(): void {
+    $expected = [$this->earlier, ...$this->tiedInTitleThenNidOrder(), $this->later];
+    $this->assertSame($expected, $this->listedNids('ASC'));
     // The same listing loaded again gives the same order.
-    $this->assertSame($expected, $this->listedTitles('ASC'));
+    $this->assertSame($expected, $this->listedNids('ASC'));
   }
 
   /**
-   * Latest first: dates reverse, tied events still list in node ID order.
+   * Latest first: dates reverse, tied events still list title A to Z.
    */
-  public function testLatestFirstBreaksTiesByNodeId(): void {
-    $this->assertSame(['Later', ...$this->tiedTitles(), 'Earlier'], $this->listedTitles('DESC'));
+  public function testLatestFirstBreaksTiesByTitleThenNodeId(): void {
+    $expected = [$this->later, ...$this->tiedInTitleThenNidOrder(), $this->earlier];
+    $this->assertSame($expected, $this->listedNids('DESC'));
+    $this->assertSame($expected, $this->listedNids('DESC'));
   }
 
   /**
@@ -196,9 +237,9 @@ class EventListingTieBreakTest extends ViewsKernelTestBase {
     foreach (['ASC', 'DESC'] as $direction) {
       $paged = [];
       for ($offset = 0; $offset < self::TIED + 2; $offset += 4) {
-        $paged = array_merge($paged, $this->listedTitles($direction, 4, $offset));
+        $paged = array_merge($paged, $this->listedNids($direction, 4, $offset));
       }
-      $this->assertSame($this->listedTitles($direction), $paged, $direction);
+      $this->assertSame($this->listedNids($direction), $paged, $direction);
     }
   }
 

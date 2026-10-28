@@ -8,9 +8,10 @@ use Drupal\ys_views_basic\ViewsBasicManager;
 /**
  * Tests the sorts an events listing is given.
  *
- * Events sharing a start date must come back in a fixed order (node ID
- * ascending), or the order changes between loads and a pager can repeat or
- * skip an event (yalesites-org/YaleSites-Internal#1969).
+ * Events sharing a start date list by title A to Z, then node ID ascending,
+ * in both date directions. Without a fixed order the listing changes between
+ * loads and a pager can repeat or skip an event
+ * (yalesites-org/YaleSites-Internal#1969).
  *
  * @coversDefaultClass \Drupal\ys_views_basic\ViewsBasicManager
  *
@@ -31,6 +32,18 @@ class EventListingSortsTest extends UnitTestCase {
   }
 
   /**
+   * The title tie-break that follows the event date.
+   */
+  protected function titleTieBreak(): array {
+    return [
+      'id' => 'title',
+      'table' => 'node_field_data',
+      'field' => 'title',
+      'order' => 'ASC',
+    ];
+  }
+
+  /**
    * The node ID tie-break that ends every event sort.
    */
   protected function nidTieBreak(): array {
@@ -43,14 +56,14 @@ class EventListingSortsTest extends UnitTestCase {
   }
 
   /**
-   * Both event sort directions end with node ID ascending.
+   * Both event sort directions end with title, then node ID, ascending.
    *
    * @covers ::eventSorts
    */
-  public function testEventSortsEndWithNidAscending(): void {
+  public function testEventSortsEndWithTitleThenNidAscending(): void {
     foreach (['ASC', 'DESC'] as $direction) {
       $this->assertSame(
-        [$this->dateSort($direction), $this->nidTieBreak()],
+        [$this->dateSort($direction), $this->titleTieBreak(), $this->nidTieBreak()],
         ViewsBasicManager::eventSorts($direction, FALSE),
         $direction,
       );
@@ -58,7 +71,7 @@ class EventListingSortsTest extends UnitTestCase {
   }
 
   /**
-   * Pinned events still come first, and the tie-break stays last.
+   * Pinned events still come first, and the tie-breaks stay last.
    *
    * @covers ::eventSorts
    */
@@ -70,7 +83,7 @@ class EventListingSortsTest extends UnitTestCase {
       'order' => 'desc',
     ];
     $this->assertSame(
-      [$sticky, $this->dateSort('ASC'), $this->nidTieBreak()],
+      [$sticky, $this->dateSort('ASC'), $this->titleTieBreak(), $this->nidTieBreak()],
       ViewsBasicManager::eventSorts('ASC', TRUE),
     );
   }

@@ -1917,8 +1917,15 @@ class ViewsBasicManager extends ControllerBase implements ContainerInjectionInte
     ];
     // Events sharing a start date otherwise come back in whatever order the
     // database picks, which can change between loads and makes a pager
-    // repeat or skip events. Node ID ascending fixes the order and matches
-    // what sites showed before the views rework (#1969).
+    // repeat or skip events (#1969). Ties list by title A to Z, then node ID
+    // ascending so the order is fixed. Both stay ascending in either date
+    // direction.
+    $sorts[] = [
+      'id' => 'title',
+      'table' => 'node_field_data',
+      'field' => 'title',
+      'order' => 'ASC',
+    ];
     $sorts[] = [
       'id' => 'nid',
       'table' => 'node_field_data',
