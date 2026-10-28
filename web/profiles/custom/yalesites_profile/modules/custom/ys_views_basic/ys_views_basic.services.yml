@@ -8,10 +8,11 @@ services:
     class: Drupal\ys_views_basic\ViewsBasicManager
     arguments: ['@entity_type.manager', '@entity_display.repository', '@current_route_match', '@cache_tags.invalidator', '@views.executable', '@ys_views_basic.exposed_taxonomy_filter_options']
 
-  # Constrains exposed taxonomy filter options (parent term, excluded terms).
+  # Constrains exposed taxonomy filter options (parent term, excluded terms,
+  # terms in use).
   ys_views_basic.exposed_taxonomy_filter_options:
     class: Drupal\ys_views_basic\Service\ExposedTaxonomyFilterOptions
-    arguments: ['@entity_type.manager', '@logger.channel.ys_views_basic']
+    arguments: ['@entity_type.manager', '@logger.channel.ys_views_basic', '@database']
 
   ys_views_basic.events_calendar:
     class: Drupal\ys_views_basic\Service\EventsCalendar

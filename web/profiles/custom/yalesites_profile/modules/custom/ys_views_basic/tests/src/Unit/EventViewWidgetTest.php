@@ -98,6 +98,8 @@ class EventViewWidgetTest extends UnitTestCase {
     $this->assertArrayNotHasKey('show_year_filter', $options, 'The year filter is post-only.');
     $this->assertArrayHasKey('show_category_filter', $options);
     $this->assertArrayHasKey('show_audience_filter', $options);
+    // Event listings can offer the Localist event type filter (#1967).
+    $this->assertSame('Show Event Type', (string) $options['show_event_type_filter']);
   }
 
   /**

@@ -2,6 +2,7 @@
 
 namespace Drupal\Tests\ys_views_basic\Unit;
 
+use Drupal\Core\Database\Connection;
 use Drupal\Core\Entity\EntityTypeManagerInterface;
 use Drupal\Tests\UnitTestCase;
 use Drupal\taxonomy\TermInterface;
@@ -53,7 +54,59 @@ class ExposedTaxonomyFilterOptionsTest extends UnitTestCase {
 
     $this->logger = $this->createMock(LoggerInterface::class);
 
-    $this->service = new ExposedTaxonomyFilterOptions($entityTypeManager, $this->logger);
+    $this->service = new ExposedTaxonomyFilterOptions($entityTypeManager, $this->logger, $this->createMock(Connection::class));
+  }
+
+  /**
+   * Builds the service with usedTermIds() keeping only the given term ids.
+   *
+   * The query itself runs against a real database in the kernel test
+   * UsedTermsFilterTest.
+   */
+  protected function serviceWithUsedTerms(array $used): ExposedTaxonomyFilterOptions {
+    $entityTypeManager = $this->createMock(EntityTypeManagerInterface::class);
+    $entityTypeManager->method('getStorage')->willReturn($this->termStorage);
+    $service = $this->getMockBuilder(ExposedTaxonomyFilterOptions::class)
+      ->setConstructorArgs([$entityTypeManager, $this->logger, $this->createMock(Connection::class)])
+      ->onlyMethods(['usedTermIds'])
+      ->getMock();
+    $service->method('usedTermIds')->willReturnCallback(
+      static fn (array $tids) => array_intersect_key($tids, array_flip($used)),
+    );
+    return $service;
+  }
+
+  /**
+   * Only terms used by the listing's content type are offered (#1967).
+   *
+   * @covers ::apply
+   */
+  public function testUsedTermsOnlyLimitsToTermsInUse() {
+    $this->stubTerms([3 => 'post_category']);
+    $this->stubTree('post_category', 0, [1, 2, 3, 4]);
+    $filters = $this->filtersWith('field_category_target_id', 'post_category');
+
+    $service = $this->serviceWithUsedTerms([2, 3]);
+    $this->assertTrue($service->apply($filters, 'field_category_target_id', [3], NULL, ['types' => ['post']]));
+
+    // 1 and 4 are unused; 3 is used but excluded.
+    $this->assertSame([2 => 2], $filters['field_category_target_id']['value']);
+    $this->assertTrue($filters['field_category_target_id']['limit']);
+    $this->assertTrue($filters['field_category_target_id']['expose']['reduce']);
+  }
+
+  /**
+   * With nothing in use the filter offers no options rather than all of them.
+   *
+   * @covers ::apply
+   */
+  public function testUsedTermsOnlyWithNothingInUseOffersNothing() {
+    $this->stubTree('affiliation', 0, [1, 2]);
+    $filters = $this->filtersWith('field_affiliation_target_id', 'affiliation');
+
+    $this->assertTrue($this->serviceWithUsedTerms([])->apply($filters, 'field_affiliation_target_id', [], NULL, ['types' => ['profile']]));
+
+    $this->assertSame([], $filters['field_affiliation_target_id']['value']);
   }
 
   /**
