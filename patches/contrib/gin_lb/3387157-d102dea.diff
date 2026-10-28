@@ -1,0 +1,13 @@
+diff --git a/src/HookHandler/Preprocess.php b/src/HookHandler/Preprocess.php
+index d0d42acbb1e618a2ba9d39c4564e8e3f5979ac22..20c3f9efaee412e6615aa756bed506bbca37a8a9 100644
+--- a/src/HookHandler/Preprocess.php
++++ b/src/HookHandler/Preprocess.php
+@@ -116,7 +116,7 @@ class Preprocess implements ContainerInjectionInterface {
+           '#type' => 'html_tag',
+           '#tag' => 'h4',
+           '#value' => $variables['element']['#title'],
+-          '#attributes' => $header_attributes,
++          '#attributes' => new Attribute($header_attributes),
+         ];
+ 
+         if ($variables['disabled']) {

@@ -77,11 +77,42 @@ function ys_themes_deploy_10302() {
  * re-saved until an editor picks one. These defaults render the same as NULL.
  */
 function ys_themes_deploy_10303(&$sandbox) {
-  $defaults = [
+  $updated = _ys_themes_backfill_dials($sandbox, [
     'divider' => ['field_style_thickness', '1'],
     'callout' => ['field_style_variation', 'cta'],
     'cta_banner' => ['field_button_style_consistency', 'filled_outline'],
-  ];
+  ]);
+
+  return t('Set default dial values on @count block(s).', ['@count' => $updated]);
+}
+
+/**
+ * Sets the new Image Size dial to Large on existing Wrapped Image blocks.
+ *
+ * The field is required, so an existing block with no value cannot be
+ * re-saved until an editor picks one. Large renders the same as NULL, so no
+ * block changes how it looks (YaleSites-Internal#1954).
+ */
+function ys_themes_deploy_10304(&$sandbox) {
+  $updated = _ys_themes_backfill_dials($sandbox, [
+    'wrapped_image' => ['field_style_width', 'large'],
+  ]);
+
+  return t('Set Image Size to Large on @count Wrapped Image block(s).', ['@count' => $updated]);
+}
+
+/**
+ * Batch-fills an empty dial on the latest revision of existing blocks.
+ *
+ * @param array $sandbox
+ *   The deploy hook sandbox; '#finished' is set on it.
+ * @param array $defaults
+ *   Bundle => [field name, value] to set where the field is empty.
+ *
+ * @return int
+ *   The number of blocks updated so far.
+ */
+function _ys_themes_backfill_dials(array &$sandbox, array $defaults): int {
   /** @var \Drupal\Core\Entity\Sql\SqlContentEntityStorage $block_storage */
   $block_storage = \Drupal::entityTypeManager()->getStorage('block_content');
 
@@ -113,5 +144,5 @@ function ys_themes_deploy_10303(&$sandbox) {
     ? 1 - count($sandbox['ids']) / $sandbox['total']
     : 1;
 
-  return t('Set default dial values on @count block(s).', ['@count' => $sandbox['updated']]);
+  return $sandbox['updated'];
 }
