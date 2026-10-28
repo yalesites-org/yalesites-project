@@ -529,6 +529,27 @@ function ys_layouts_preprocess_text_format_wrapper__gin_lb(array &$variables) {
 }
 
 /**
+ * Implements hook_theme_suggestions_HOOK_alter() for text_format_wrapper.
+ *
+ * Gin_lb gives a variables-only theme hook like this one its __gin_lb
+ * template only on a fixed list of routes, and Configure block
+ * (layout_builder.update_block) is not on it. So a rich-text field's help text
+ * was styled when adding a block but not when editing one. This extends the
+ * suggestion to every route gin_lb treats as a Layout Builder route.
+ */
+function ys_layouts_theme_suggestions_text_format_wrapper_alter(array &$suggestions, array $variables) {
+  if (!\Drupal::moduleHandler()->moduleExists('gin_lb')) {
+    return;
+  }
+  $context_validator = \Drupal::service('gin_lb.context_validator');
+  if ($context_validator->isValidTheme()
+    && $context_validator->isLayoutBuilderRoute()
+    && !in_array('text_format_wrapper__gin_lb', $suggestions, TRUE)) {
+    $suggestions[] = 'text_format_wrapper__gin_lb';
+  }
+}
+
+/**
  * To aids in styling per section, set layout_section if using layout builder.
  *
  * For now this is only used with the link grid component:

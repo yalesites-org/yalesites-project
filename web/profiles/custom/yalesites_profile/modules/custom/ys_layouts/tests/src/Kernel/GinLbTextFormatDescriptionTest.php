@@ -2,7 +2,10 @@
 
 namespace Drupal\Tests\ys_layouts\Kernel;
 
+use Drupal\Core\Routing\RouteObjectInterface;
 use Drupal\Tests\ys_core\Kernel\YsKernelTestBase;
+use Symfony\Component\HttpFoundation\Request;
+use Symfony\Component\Routing\Route;
 
 /**
  * Tests that a rich-text field's help text is styled as help text in gin_lb.
@@ -66,6 +69,73 @@ class GinLbTextFormatDescriptionTest extends YsKernelTestBase {
     preg_match('/<div[^>]*id="edit-field-transcription-0--description"[^>]*>/', $html, $match);
     $this->assertStringContainsString('glb-form-item__description', $match[0]);
     $this->assertMatchesRegularExpression('/class="[^"]*\bdescription\b/', $match[0]);
+  }
+
+  /**
+   * Configure block renders the gin_lb wrapper, so the help text is styled.
+   *
+   * Gin_lb adds its suggestions to variables-only theme hooks such as
+   * text_format_wrapper only on a short list of routes, and Configure block
+   * (layout_builder.update_block) is not on it. There the help text fell back
+   * to core's template and kept the field's classes.
+   *
+   * @dataProvider layoutBuilderRouteProvider
+   */
+  public function testLayoutBuilderRouteUsesGinLbWrapper(string $route_name): void {
+    $this->setRoute($route_name);
+
+    $html = $this->renderWrapper();
+
+    preg_match('/<div[^>]*id="edit-field-transcription-0--description"[^>]*>/', $html, $match);
+    $this->assertNotEmpty($match, 'The help text keeps the id the editor points aria-describedby at.');
+    $this->assertStringContainsString('glb-form-item__description', $match[0]);
+    $this->assertSame(1, substr_count($html, 'js-text-format-wrapper'), 'The wrapper renders once.');
+  }
+
+  /**
+   * Layout Builder sidebar routes that render rich-text fields.
+   */
+  public static function layoutBuilderRouteProvider(): array {
+    return [
+      'configure block' => ['layout_builder.update_block'],
+      'add block' => ['layout_builder.add_block'],
+    ];
+  }
+
+  /**
+   * Outside Layout Builder the rich-text wrapper keeps core's template.
+   */
+  public function testOtherRouteKeepsCoreWrapper(): void {
+    $this->setRoute('entity.node.edit_form');
+
+    $this->assertStringNotContainsString('glb-form-item', $this->renderWrapper());
+  }
+
+  /**
+   * Renders a rich-text wrapper the way the text_format element does.
+   */
+  protected function renderWrapper(): string {
+    $help_text = 'Paste the full text of the audio here.';
+    $build = [
+      '#theme' => 'text_format_wrapper',
+      '#children' => '<textarea></textarea>',
+      '#description' => $help_text,
+      '#attributes' => [
+        'class' => ['js-text-full', 'text-full'],
+        'aria-describedby' => 'edit-field-transcription-0--description',
+      ],
+    ];
+    return (string) $this->container->get('renderer')->renderInIsolation($build);
+  }
+
+  /**
+   * Makes the given route the current route.
+   */
+  protected function setRoute(string $route_name): void {
+    $request = Request::create('/');
+    $request->attributes->set(RouteObjectInterface::ROUTE_NAME, $route_name);
+    $request->attributes->set(RouteObjectInterface::ROUTE_OBJECT, new Route('/'));
+    $this->container->get('request_stack')->push($request);
   }
 
 }
