@@ -432,11 +432,17 @@ class ViewsContentResourcesManager extends ControllerBase implements ContainerIn
     }
 
     $view = $view->preview();
+    // preview() returns NULL or FALSE when there is nothing to render; see
+    // ViewsBasicManager::setupView(). No early return: the re-entry flag
+    // below must still be cleared.
+    if (!is_array($view)) {
+      $view = [];
+    }
     // Add cache keys for each display option.
     // This ensures that if the options for showing categories, tags,
     // or thumbnails change, the cache will be invalidated,
     // and the view will be re-rendered with the new options.
-    if ($view['#rows'] && $view['#rows']['#rows']) {
+    if (!empty($view['#rows']['#rows'])) {
       foreach ($view['#rows']['#rows'] as &$resultRow) {
         $resultRow['#cache']['keys'][] = $pin_options['pinned_to_top'];
         $resultRow['#cache']['keys'][] = $pin_options['pin_label'];
