@@ -44,6 +44,7 @@ install:
   - filter
   - image
   - inline_form_errors
+  - klaro
   - link
   - media
   - media_library

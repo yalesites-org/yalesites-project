@@ -1,0 +1,28 @@
+uuid: 2dc1cb1b-f734-4cf7-b359-93072944ee00
+langcode: en
+status: true
+dependencies: {  }
+id: addtoany
+label: AddToAny
+description: 'AddToAny provides the share buttons at the top of pages.'
+default: false
+purposes:
+  - social_sharing
+cookies: {  }
+required: false
+opt_out: false
+only_once: false
+contextual_consent_only: null
+contextual_consent_text: null
+info_url: 'https://www.addtoany.com/'
+privacy_policy_url: 'https://www.addtoany.com/privacy'
+javascripts:
+  - static.addtoany.com
+callback_code: ''
+on_init: ''
+on_accept: ''
+on_decline: ''
+wrapper_identifier: {  }
+attachments:
+  - addtoany
+weight: 0

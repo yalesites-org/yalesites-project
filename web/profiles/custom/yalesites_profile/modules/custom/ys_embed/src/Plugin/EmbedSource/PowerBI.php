@@ -20,6 +20,13 @@ class PowerBI extends EmbedSourceBase implements EmbedSourceInterface {
 
   /**
    * {@inheritdoc}
+   *
+   * Power BI is a Microsoft service.
+   */
+  protected static $klaroService = 'powerbi';
+
+  /**
+   * {@inheritdoc}
    */
   protected static $pattern = '/^https:\/\/app.powerbi.com\/(?<type>view|reportEmbed)(?<form_params>\?.+)/';
 

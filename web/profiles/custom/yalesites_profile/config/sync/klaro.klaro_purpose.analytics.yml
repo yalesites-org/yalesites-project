@@ -1,0 +1,10 @@
+uuid: 5401f838-f39a-4d79-a673-7a8f5ccb2ad2
+langcode: en
+status: true
+dependencies: {  }
+_core:
+  default_config_hash: DaAAmHlWMVahC2MmhRKQN8Lun9hBPT6LR6PCjkCEikI
+id: analytics
+label: Analytics
+description: 'Google Analytics and Google Tag Manager count visits and show which pages people use, so we can improve the site. They set cookies such as _ga and _gid.'
+weight: 1

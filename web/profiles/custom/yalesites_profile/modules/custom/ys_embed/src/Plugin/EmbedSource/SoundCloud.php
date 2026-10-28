@@ -20,6 +20,13 @@ class SoundCloud extends EmbedSourceBase implements EmbedSourceInterface {
 
   /**
    * {@inheritdoc}
+   *
+   * SoundCloud is a third-party audio platform.
+   */
+  protected static $klaroService = 'soundcloud';
+
+  /**
+   * {@inheritdoc}
    */
   protected static $pattern = '/^<iframe.+src=\"https:\/\/w\.soundcloud\.com\S+(?<track_or_playlist>tracks|playlists)\/(?:soundcloud%253A(?:tracks|playlists)%253A)?(?<track_id>\d+).+><\/iframe>/';
 
