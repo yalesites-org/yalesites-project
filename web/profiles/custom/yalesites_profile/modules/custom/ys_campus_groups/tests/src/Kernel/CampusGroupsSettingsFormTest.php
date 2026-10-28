@@ -89,7 +89,12 @@ class CampusGroupsSettingsFormTest extends YsKernelTestBase {
     $this->config('ys_campus_groups.settings')->set('enable_campus_groups_sync', TRUE)->save();
     $form = $this->buildFormObject()->buildForm([], new FormState());
     $this->assertArrayHasKey('sync_now_button', $form);
-    $this->assertStringContainsString('/admin/yalesites/campus_groups/sync', $form['sync_now_button']['#markup']);
+    // Rendered through the router so the link carries the CSRF token the sync
+    // route requires.
+    $this->assertSame('link', $form['sync_now_button']['#type']);
+    $this->assertSame('ys_campus_groups.run_migrations', $form['sync_now_button']['#url']->getRouteName());
+    $html = (string) $this->container->get('renderer')->renderInIsolation($form['sync_now_button']);
+    $this->assertMatchesRegularExpression('#href="[^"]*/admin/yalesites/campus_groups/sync\?token=[^"]+"#', $html);
   }
 
   /**
