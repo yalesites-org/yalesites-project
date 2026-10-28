@@ -351,17 +351,43 @@
 
       const select =
         target instanceof Element ? target.closest('select') : null;
-      const source = select || document;
-      const types = select ? ['change', 'focusout'] : ['click', 'keydown'];
-      const release = () => {
-        types.forEach((type) =>
-          source.removeEventListener(type, release, true),
+      let listeners = [];
+      const listen = (source, type, handler) => {
+        source.addEventListener(type, handler, true);
+        listeners.push([source, type, handler]);
+      };
+      const stopListening = () => {
+        listeners.forEach(([source, type, handler]) =>
+          source.removeEventListener(type, handler, true),
         );
+        listeners = [];
+      };
+      const release = () => {
+        stopListening();
         releaseLayout = null;
         // After the event's own handlers have run.
         setTimeout(() => list.classList.remove('is-closing'));
       };
-      types.forEach((type) => source.addEventListener(type, release, true));
+      const releaseOnClick = () => {
+        stopListening();
+        listen(document, 'click', release);
+        listen(document, 'keydown', release);
+      };
+
+      if (select) {
+        // A select left without a change was left by a press on another
+        // control, or by Tab. A press must land first: wait for its click.
+        let pressedElsewhere = false;
+        listen(document, 'pointerdown', (e) => {
+          pressedElsewhere = e.target !== select;
+        });
+        listen(select, 'change', release);
+        listen(select, 'focusout', () =>
+          pressedElsewhere ? releaseOnClick() : release(),
+        );
+      } else {
+        releaseOnClick();
+      }
       releaseLayout = release;
     }
 
