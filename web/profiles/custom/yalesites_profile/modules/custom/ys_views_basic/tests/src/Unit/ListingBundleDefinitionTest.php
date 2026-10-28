@@ -173,6 +173,21 @@ class ListingBundleDefinitionTest extends UnitTestCase {
     $this->assertSame(self::DIRECTORY_PROFILE_FIELDS, $directory['params']['profile_field_options']);
     $this->assertSame('field_last_name:ASC', $directory['params']['sort_by']);
 
+    // Each preset turns on the filter visitors had on the predecessor block,
+    // under the same label, listing only terms in use (#1967).
+    $this->assertSame(['show_category_filter' => 'show_category_filter'], $post['params']['exposed_filter_options']);
+    $this->assertSame('Post Category', $post['params']['category_filter_label']);
+    $this->assertSame([
+      'show_category_filter' => 'show_category_filter',
+      'show_event_type_filter' => 'show_event_type_filter',
+    ], $event['params']['exposed_filter_options']);
+    $this->assertSame('Event Category', $event['params']['category_filter_label']);
+    $this->assertSame(['show_category_filter' => 'show_category_filter'], $directory['params']['exposed_filter_options']);
+    $this->assertSame('Affiliation', $directory['params']['category_filter_label']);
+    foreach ([$post, $event, $directory] as $preset) {
+      $this->assertTrue($preset['params']['used_terms_only']);
+    }
+
     // Every preset carries the common defaults so setupView never warns.
     $this->assertArrayHasKey('operator', $post['params']);
     $this->assertArrayHasKey('field_options', $post['params']);

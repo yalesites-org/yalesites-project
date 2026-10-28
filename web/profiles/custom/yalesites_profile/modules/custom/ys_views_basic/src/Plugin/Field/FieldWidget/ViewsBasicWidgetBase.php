@@ -43,6 +43,17 @@ use Symfony\Component\DependencyInjection\ContainerInterface;
 abstract class ViewsBasicWidgetBase extends WidgetBase implements ContainerFactoryPluginInterface {
 
   /**
+   * Stored params with no form control, carried through a re-save.
+   *
+   * The ::massageFormValues() method rebuilds the params from the form, so a
+   * param no control edits would be dropped the first time an editor saves
+   * the block. The used_terms_only param is set on listings migrated from
+   * the predecessor blocks (#1967); dropping it would quietly widen their
+   * filter options.
+   */
+  protected const CARRIED_PARAMS = ['used_terms_only'];
+
+  /**
    * Settings that belong in each exposed filter's accordion body.
    *
    * Keyed by the filter's checkbox key, listing the sibling elements built by
@@ -365,6 +376,13 @@ abstract class ViewsBasicWidgetBase extends WidgetBase implements ContainerFacto
     $this->buildDisplayControls($form, $items, $delta, $formSelectors);
     $this->buildHiddenParamsField($element, $items, $delta);
 
+    // Params no control edits survive a re-save (::CARRIED_PARAMS).
+    $stored = $items[$delta]->params ? ViewsBasicManager::decodeParams($items[$delta]->params) : NULL;
+    $form['group_user_selection']['carried_params'] = [
+      '#type' => 'value',
+      '#value' => array_intersect_key($stored ?? [], array_flip(static::CARRIED_PARAMS)),
+    ];
+
     $form['#attached']['library'][] = 'ys_views_basic/ys_views_basic';
     $form['#attached']['library'][] = 'ys_views_basic/term_operator';
     if ($is_create_form) {
@@ -504,6 +522,7 @@ abstract class ViewsBasicWidgetBase extends WidgetBase implements ContainerFacto
         'pinned_to_top' => $form_state->getValue($formSelectors['pinned_to_top_array']),
         'pin_label' => $form_state->getValue($formSelectors['pin_label_array']),
       ];
+      $paramData += $selection['carried_params']['#value'] ?? [];
       $this->massageEntitySpecificParams($paramData, $built, $form, $form_state);
       $value['params'] = json_encode($paramData);
     }
