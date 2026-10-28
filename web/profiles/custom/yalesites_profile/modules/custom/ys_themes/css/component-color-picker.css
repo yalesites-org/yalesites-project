@@ -446,6 +446,12 @@ body.gin--dark-mode .palette-option[data-selected="true"] .palette-circle {
   display: block;
 }
 
+/* Closed by a press below it: keeps its space until that click has landed. */
+.palette-dropdown-list.is-closing {
+  display: block;
+  visibility: hidden;
+}
+
 .palette-dropdown-option {
   box-sizing: border-box;
   /* Matches the list padding, so scrolling an option into view, in the list

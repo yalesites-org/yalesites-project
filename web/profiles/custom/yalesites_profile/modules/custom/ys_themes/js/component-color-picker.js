@@ -334,13 +334,47 @@
       }
     }
 
+    // Undoes closeKeepingLayout(), if one is pending.
+    let releaseLayout = null;
+
+    // Closes the list after a press outside it without moving what is under
+    // the pointer. The list is in flow, so collapsing it on pointerdown would
+    // shift the controls below it before the click lands. It keeps its space,
+    // hidden, until the press has done its job: the click for most targets,
+    // the change or blur for a native select, whose popup opens on mousedown.
+    function closeKeepingLayout(target) {
+      if (releaseLayout) {
+        releaseLayout();
+      }
+      list.classList.add('is-closing');
+      close();
+
+      const select =
+        target instanceof Element ? target.closest('select') : null;
+      const source = select || document;
+      const types = select ? ['change', 'focusout'] : ['click', 'keydown'];
+      const release = () => {
+        types.forEach((type) =>
+          source.removeEventListener(type, release, true),
+        );
+        releaseLayout = null;
+        // After the event's own handlers have run.
+        setTimeout(() => list.classList.remove('is-closing'));
+      };
+      types.forEach((type) => source.addEventListener(type, release, true));
+      releaseLayout = release;
+    }
+
     function onOutsidePointer(e) {
       if (!selector.contains(e.target)) {
-        close();
+        closeKeepingLayout(e.target);
       }
     }
 
     function open(option) {
+      if (releaseLayout) {
+        releaseLayout();
+      }
       if (!isOpen()) {
         trigger.setAttribute('aria-expanded', 'true');
         document.addEventListener('pointerdown', onOutsidePointer);
@@ -393,7 +427,9 @@
       }
     });
 
-    // Tab, or any other way focus leaves, closes the list.
+    // Tab, or any other way focus leaves, closes the list. A pointer press
+    // outside has already closed it, keeping the layout, by the time focus
+    // moves, so this close() is then a no-op.
     trigger.addEventListener('focusout', (e) => {
       if (!selector.contains(e.relatedTarget)) {
         close();
