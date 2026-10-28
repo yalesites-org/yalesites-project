@@ -330,6 +330,43 @@ class ColorTokenResolverTest extends UnitTestCase {
   }
 
   /**
+   * The 'default' swatch is labelled with the option's own label when given.
+   *
+   * Editors read the swatch label, not the hidden select, so the agreed
+   * "Default - No Color" wording has to reach the swatch (YaleSites-Internal
+   * #1777).
+   *
+   * @covers ::buildColorInfo
+   */
+  public function testBuildColorInfoForDefaultOptionUsesOptionLabel(): void {
+    $resolver = $this->createResolver($this->fixturePath);
+    $info = $resolver->buildColorInfo('default', 'some-var', 'Default - No Color');
+    $this->assertSame('Default - No Color', $info['token_name']);
+    $this->assertSame('#ffffff', $info['hex']);
+  }
+
+  /**
+   * An empty option label falls back to the generic 'Default' swatch name.
+   *
+   * @covers ::buildColorInfo
+   */
+  public function testBuildColorInfoForDefaultOptionFallsBackWhenLabelEmpty(): void {
+    $resolver = $this->createResolver($this->fixturePath);
+    $this->assertSame('Default', $resolver->buildColorInfo('default', NULL, '')['token_name']);
+  }
+
+  /**
+   * A non-default option keeps its palette color name, whatever its label.
+   *
+   * @covers ::buildColorInfo
+   */
+  public function testBuildColorInfoIgnoresLabelForPaletteOptions(): void {
+    $resolver = $this->createResolver($this->fixturePath);
+    $info = $resolver->buildColorInfo('one', 'var(--global-themes-one-colors-slot-one)', 'One');
+    $this->assertSame('Blue Yale', $info['token_name']);
+  }
+
+  /**
    * Tests build color info returns empty for missing background color.
    *
    * BuildColorInfo() returns an all-empty structure when no background color
@@ -702,6 +739,40 @@ class ColorTokenResolverTest extends UnitTestCase {
   }
 
   /**
+   * The hidden select leaves the tab order and names the swatch group.
+   *
+   * Keyboard focus belongs on the swatches, so the native select (zero-size
+   * and transparent) is taken out of the tab order and the accessibility
+   * tree, and its title is handed to the template as the radiogroup's name.
+   *
+   * @covers ::processColorPicker
+   */
+  public function testProcessColorPickerHidesSelectFromKeyboardAndPassesGroupLabel(): void {
+    $resolver = $this->createResolver($this->fixturePath, NULL, 'one');
+    $rendered_argument = NULL;
+    $renderer = $this->createMock(RendererInterface::class);
+    $renderer->method('render')->willReturnCallback(function (&$element) use (&$rendered_argument) {
+      $rendered_argument = $element;
+      return '<div></div>';
+    });
+    $this->setRendererOnResolver($resolver, $renderer);
+
+    $element = [
+      '#title' => 'Section Theme',
+      '#default_value' => 'one',
+      '#options' => ['default' => 'Default - No Color', 'one' => 'One'],
+    ];
+    $form_state = $this->createMock(FormStateInterface::class);
+    $complete_form = [];
+
+    $result = $resolver->processColorPicker($element, $form_state, $complete_form, 'layout_section', 'ys_layout_options');
+
+    $this->assertSame('-1', $result['#attributes']['tabindex']);
+    $this->assertSame('true', $result['#attributes']['aria-hidden']);
+    $this->assertSame('Section Theme', (string) $rendered_argument['#group_label']);
+  }
+
+  /**
    * Tests process color picker reorders options for section layout.
    *
    * ProcessColorPicker() reorders palette options and sets #palette_order
@@ -736,6 +807,35 @@ class ColorTokenResolverTest extends UnitTestCase {
     $result = $resolver->processColorPicker($element, $form_state, $complete_form, 'layout_section', 'ys_layout_options');
 
     $this->assertSame(['default', 'one', 'two', 'three', 'four', 'five', 'six'], array_keys($result['#options']));
+  }
+
+  /**
+   * Tests the section picker labels the default swatch with its option label.
+   *
+   * @covers ::processColorPicker
+   */
+  public function testProcessColorPickerLabelsDefaultSwatchWithOptionLabel(): void {
+    $resolver = $this->createResolver($this->fixturePath, NULL, 'one');
+    $rendered_argument = NULL;
+    $renderer = $this->createMock(RendererInterface::class);
+    $renderer->method('render')->willReturnCallback(function (&$element) use (&$rendered_argument) {
+      $rendered_argument = $element;
+      return '<div></div>';
+    });
+    $this->setRendererOnResolver($resolver, $renderer);
+
+    $element = [
+      '#default_value' => 'one',
+      '#options' => ['default' => 'Default - No Color', 'one' => 'One'],
+    ];
+    $form_state = $this->createMock(FormStateInterface::class);
+    $complete_form = [];
+
+    $resolver->processColorPicker($element, $form_state, $complete_form, 'layout_section', 'ys_layout_options');
+
+    $this->assertSame('Default - No Color', $rendered_argument['#color_info']['default']['token_name']);
+    // The stored option key is unchanged.
+    $this->assertSame(['default', 'one'], array_keys($rendered_argument['#palette_options']));
   }
 
   /**
