@@ -10,6 +10,8 @@ use Drupal\Tests\UnitTestCase;
 use Drupal\taxonomy\TermStorageInterface;
 use Drupal\views\Plugin\views\display\DisplayPluginBase;
 use Drupal\views\ViewExecutable;
+use Drupal\views\ViewExecutableFactory;
+use Drupal\ys_views_basic\Service\ExposedTaxonomyFilterOptions;
 use Drupal\ys_views_basic\ViewsBasicManager;
 
 /**
@@ -64,6 +66,8 @@ class ViewsBasicManagerSetupViewTest extends UnitTestCase {
       $this->createMock(EntityDisplayRepository::class),
       $this->createMock(RouteMatchInterface::class),
       $this->createMock(CacheTagsInvalidatorInterface::class),
+      $this->createMock(ViewExecutableFactory::class),
+      $this->createMock(ExposedTaxonomyFilterOptions::class),
     );
   }
 
@@ -171,6 +175,8 @@ class ViewsBasicManagerSetupViewTest extends UnitTestCase {
 
     $this->assertSame('ASC', $this->displayOptions['sorts'][0]['order']);
     $this->assertSame('field_event_date:ASC', $this->viewArgs['sort']);
+    // The display gets the event sorts, node ID tie-break included (#1969).
+    $this->assertSame(ViewsBasicManager::eventSorts('ASC', FALSE), $this->displayOptions['sorts']);
   }
 
   /**

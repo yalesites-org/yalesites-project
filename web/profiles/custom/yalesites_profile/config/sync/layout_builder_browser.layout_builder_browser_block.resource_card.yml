@@ -1,0 +1,11 @@
+uuid: d07629d5-bf44-4c56-9ab8-69ca4081737c
+langcode: en
+status: true
+dependencies: {  }
+id: resource_card
+block_id: 'inline_block:resource_card'
+category: resource_listings
+label: 'Resources - Card Grid View'
+image_path: ''
+image_alt: ''
+weight: 0
