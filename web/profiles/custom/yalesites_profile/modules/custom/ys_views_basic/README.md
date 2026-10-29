@@ -112,6 +112,15 @@ stays right. Only the `contains`, `word` and `allwords` operators search
 authors; the resource view uses `contains`. With Authors off, the view's own
 combine filter runs unchanged.
 
+### Category names in post and event search
+
+Post and event listings with search on also match category term names, in
+either search scope. `ViewsBasicManager::configureView()` swaps their combine
+filter for `CategoryCombine` (`ys_views_basic_category_combine`), the same way
+as the Authors option above: same key and identifier, and an `EXISTS` subquery
+on `field_category` so a post in several categories is still one row. Only
+published terms match. Tags and affiliation are not searched.
+
 ### Exposed taxonomy filter options
 
 `ExposedTaxonomyFilterOptions` (service

@@ -240,6 +240,16 @@ function ys_views_basic_views_data_alter(array &$data) {
     ],
   ];
 
+  // The post and event search swapped in to also match category names; see
+  // ViewsBasicManager::configureView() (#706).
+  $data['views']['category_combine'] = [
+    'title' => t('Search with category names'),
+    'filter' => [
+      'help' => t('Combine filter that also matches category term names.'),
+      'id' => 'ys_views_basic_category_combine',
+    ],
+  ];
+
 }
 
 /**

@@ -40,11 +40,12 @@ class ResourceViewWidget extends ViewsBasicWidgetBase {
    * {@inheritdoc}
    *
    * The search-field picker configures the search filter, so it goes in that
-   * filter's row.
+   * filter's row, in place of the shared search scope settings, which
+   * resources do not get (#706).
    */
-  protected const EXPOSED_FILTER_SETTINGS = parent::EXPOSED_FILTER_SETTINGS + [
+  protected const EXPOSED_FILTER_SETTINGS = [
     'show_search_filter' => ['search_fields'],
-  ];
+  ] + parent::EXPOSED_FILTER_SETTINGS;
 
   /**
    * {@inheritdoc}
