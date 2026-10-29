@@ -21,7 +21,7 @@ class PowerBI extends EmbedSourceBase implements EmbedSourceInterface {
   /**
    * {@inheritdoc}
    */
-  protected static $pattern = '/^https:\/\/app.powerbi.com\/(?<type>view|reportEmbed)(?<form_params>\?.+)/';
+  protected static $pattern = '/^https:\/\/app\.powerbi\.com\/(?<type>view|reportEmbed)(?<form_params>\?.+)/';
 
   /**
    * {@inheritdoc}

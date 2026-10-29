@@ -147,12 +147,17 @@ class ViewsContentResourcesManager extends ControllerBase implements ContainerIn
       return;
     }
     $setupRunning = TRUE;
-    $paramsDecoded = empty($params) ? [] : json_decode($params, TRUE);
+    // On AJAX requests the parameters come from the request, so anything
+    // that is not a known value falls back to a safe default.
+    $paramsDecoded = is_string($params) ? json_decode($params, TRUE) : NULL;
+    if (!is_array($paramsDecoded)) {
+      $paramsDecoded = [];
+    }
     $pinned_to_top = isset($paramsDecoded['pinned_to_top']) ? (bool) $paramsDecoded['pinned_to_top'] : FALSE;
 
     $view->setDisplay('block_1');
 
-    $filterType = empty($params) ? 'resource' : implode('+', $paramsDecoded['filters']['types']);
+    $filterType = self::getValidatedFilterType($paramsDecoded['filters']['types'] ?? NULL);
 
     // Retrieve the current filter options from the view's display settings.
     $filters = $view->getDisplay()->getOption('filters');
@@ -307,21 +312,25 @@ class ViewsContentResourcesManager extends ControllerBase implements ContainerIn
     $termsExcludeArray = [];
 
     // Get terms to include.
-    if (isset($paramsDecoded['filters']['terms_include'])) {
+    if (is_array($paramsDecoded['filters']['terms_include'] ?? NULL)) {
       foreach ($paramsDecoded['filters']['terms_include'] as $term) {
-        $termsIncludeArray[] = $this->getTermId($term);
+        if (self::isValidTermValue($term)) {
+          $termsIncludeArray[] = $this->getTermId($term);
+        }
       }
     }
 
     // Get terms to exclude.
-    if (isset($paramsDecoded['filters']['terms_exclude'])) {
+    if (is_array($paramsDecoded['filters']['terms_exclude'] ?? NULL)) {
       foreach ($paramsDecoded['filters']['terms_exclude'] as $term) {
-        $termsExcludeArray[] = $this->getTermId($term);
+        if (self::isValidTermValue($term)) {
+          $termsExcludeArray[] = $this->getTermId($term);
+        }
       }
     }
 
     // Set operator: "+" is "OR" and "," is "AND".
-    $operator = $paramsDecoded['operator'] ?? '+';
+    $operator = in_array($paramsDecoded['operator'] ?? NULL, ['+', ','], TRUE) ? $paramsDecoded['operator'] : '+';
 
     // Fix for older setting terms for nodes not saved with the new storage.
     if (isset($termsIncludeArray[0]) && is_array($termsIncludeArray[0])) {
@@ -365,11 +374,11 @@ class ViewsContentResourcesManager extends ControllerBase implements ContainerIn
       'show_tags' => (int) !empty($paramsDecoded['field_options']['show_tags']),
     ];
 
-    if ($paramsDecoded['display'] == 'all') {
+    if (($paramsDecoded['display'] ?? NULL) == 'all') {
       $itemsLimit = 0;
     }
     else {
-      $itemsLimit = $paramsDecoded['limit'];
+      $itemsLimit = isset($paramsDecoded['limit']) ? max(0, (int) $paramsDecoded['limit']) : NULL;
     }
 
     $pin_label = $paramsDecoded['pin_label'] ?? self::DEFAULT_PIN_LABEL;
@@ -412,10 +421,10 @@ class ViewsContentResourcesManager extends ControllerBase implements ContainerIn
       'type' => 'resource',
       'terms_include' => $termsInclude,
       'terms_exclude' => $termsExclude,
-      'sort' => $paramsDecoded['sort_by'],
-      'view' => $paramsDecoded['view_mode'],
+      'sort' => $this->getValidatedSort($paramsDecoded['sort_by'] ?? NULL),
+      'view' => self::getValidatedViewMode($paramsDecoded['view_mode'] ?? NULL),
       'items' => $itemsLimit,
-      'offset' => $paramsDecoded['offset'] ?? 0,
+      'offset' => max(0, (int) ($paramsDecoded['offset'] ?? 0)),
       'field_display_options' => json_encode($field_display_options),
       'pin_settings' => json_encode($pin_options),
       'original_settings' => $params,
@@ -425,7 +434,7 @@ class ViewsContentResourcesManager extends ControllerBase implements ContainerIn
     $view->execute();
 
     // Unset the pager. Needs to be done after view->execute();
-    if ($paramsDecoded['display'] != "pager") {
+    if (($paramsDecoded['display'] ?? NULL) != "pager") {
       unset($view->pager);
     }
 
@@ -503,6 +512,59 @@ class ViewsContentResourcesManager extends ControllerBase implements ContainerIn
       'field_publish_date:DESC' => 'Published Date - newer first',
       'field_publish_date:ASC' => 'Published Date - older first',
     ];
+  }
+
+  /**
+   * Returns the content type filter string from the stored types.
+   *
+   * @param mixed $types
+   *   The content type machine names read from the stored parameters.
+   *
+   * @return string
+   *   The string types joined with "+", or "resource" when the input is not
+   *   an array or holds no string.
+   */
+  public static function getValidatedFilterType($types): string {
+    if (!is_array($types)) {
+      return 'resource';
+    }
+    $types = array_filter($types, 'is_string');
+    return $types ? implode('+', $types) : 'resource';
+  }
+
+  /**
+   * Returns the sort to use.
+   *
+   * @param mixed $sortBy
+   *   The requested sort, in the format "field_name:DIRECTION".
+   *
+   * @return string
+   *   The requested sort when it is listed in sortByList(), otherwise the
+   *   first listed sort.
+   */
+  public function getValidatedSort($sortBy): string {
+    $sorts = $this->sortByList();
+    if (is_string($sortBy) && isset($sorts[$sortBy])) {
+      return $sortBy;
+    }
+    return array_key_first($sorts);
+  }
+
+  /**
+   * Returns the view mode to use.
+   *
+   * @param mixed $viewMode
+   *   The requested view mode machine name.
+   *
+   * @return string
+   *   The requested view mode when it is listed in ALLOWED_VIEW_MODES,
+   *   otherwise the first listed view mode.
+   */
+  public static function getValidatedViewMode($viewMode): string {
+    if (is_string($viewMode) && isset(self::ALLOWED_VIEW_MODES[$viewMode])) {
+      return $viewMode;
+    }
+    return array_key_first(self::ALLOWED_VIEW_MODES);
   }
 
   /**
@@ -788,7 +850,23 @@ class ViewsContentResourcesManager extends ControllerBase implements ContainerIn
    *   The term ID.
    */
   private function getTermId($term) : int {
-    return (int) is_array($term) ? $term['target_id'] : $term;
+    return (int) (is_array($term) ? ($term['target_id'] ?? 0) : $term);
+  }
+
+  /**
+   * Checks that a stored term value can be read as a term ID.
+   *
+   * @param mixed $term
+   *   A term ID, or an array with a "target_id" key (older storage).
+   *
+   * @return bool
+   *   TRUE for a numeric ID or an array with a numeric "target_id".
+   */
+  private static function isValidTermValue($term) : bool {
+    if (is_array($term)) {
+      $term = $term['target_id'] ?? NULL;
+    }
+    return (is_int($term) || is_string($term)) && is_numeric($term);
   }
 
   /**

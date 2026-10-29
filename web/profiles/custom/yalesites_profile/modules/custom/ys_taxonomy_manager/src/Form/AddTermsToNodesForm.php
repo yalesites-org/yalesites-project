@@ -129,6 +129,34 @@ class AddTermsToNodesForm extends FormBase {
       return $form;
     }
 
+    $nodes = $this->nodeStorage->loadMultiple($nids);
+
+    $options = [];
+    foreach ($nodes as $node) {
+      // Only offer nodes the current user can change.
+      if (!$node->access('update', $this->currentUser())) {
+        continue;
+      }
+      // Find which of the relevant fields this node has.
+      foreach ($relevantFields as $fieldName) {
+        if ($node->hasField($fieldName)) {
+          // Store node ID and field name in the key.
+          $options[$node->id() . '-' . $fieldName] = $node->label() . ' (' . $fieldName . ')';
+          break;
+        }
+      }
+    }
+
+    // If none of the nodes can be edited by the current user, show a message
+    // and return.
+    if (empty($options)) {
+      $form['message'] = [
+        '#type' => 'markup',
+        '#markup' => $this->t('<br>No content you can edit has fields that reference the selected vocabulary.'),
+      ];
+      return $form;
+    }
+
     // Load tree.
     $tree = $this->termStorage->loadTree($taxonomy_vocabulary->id());
     $result = [];
@@ -149,20 +177,6 @@ class AddTermsToNodesForm extends FormBase {
       '#required' => TRUE,
       '#default_value' => $selected_terms ?: [],
     ];
-
-    $nodes = $this->nodeStorage->loadMultiple($nids);
-
-    $options = [];
-    foreach ($nodes as $node) {
-      // Find which of the relevant fields this node has.
-      foreach ($relevantFields as $fieldName) {
-        if ($node->hasField($fieldName)) {
-          // Store node ID and field name in the key.
-          $options[$node->id() . '-' . $fieldName] = $node->label() . ' (' . $fieldName . ')';
-          break;
-        }
-      }
-    }
 
     $form['nodes'] = [
       '#type' => 'select',
@@ -204,7 +218,7 @@ class AddTermsToNodesForm extends FormBase {
       $term_names[] = $term->label();
     }
 
-    // Track node names.
+    // Track names of the nodes that were updated.
     $node_names = [];
 
     foreach ($selected_nodes as $combined_key) {
@@ -212,6 +226,23 @@ class AddTermsToNodesForm extends FormBase {
       [$node_id, $fieldName] = explode('-', $combined_key);
 
       $node = $this->nodeStorage->load($node_id);
+      if (!$node) {
+        $this->messenger()->addWarning($this->t('Node %id could not be found and was skipped.', [
+          '%id' => $node_id,
+        ]));
+        continue;
+      }
+
+      // The node list only offers editable nodes, but form values can be
+      // forged, so check update access again before saving.
+      if (!$node->access('update', $this->currentUser())) {
+        // Only name the node if the user may see it.
+        $this->messenger()->addWarning($this->t('You do not have permission to edit %node, so it was skipped.', [
+          '%node' => $node->access('view', $this->currentUser()) ? $node->label() : $this->t('node @id', ['@id' => $node_id]),
+        ]));
+        continue;
+      }
+
       $node_names[] = $node->label();
 
       // Get current field values.
@@ -228,10 +259,12 @@ class AddTermsToNodesForm extends FormBase {
       $node->save();
     }
 
-    $this->messenger()->addStatus($this->t('The terms %terms were added to nodes %nodes', [
-      '%terms' => implode(', ', $term_names),
-      '%nodes' => implode(', ', $node_names),
-    ]));
+    if ($node_names) {
+      $this->messenger()->addStatus($this->t('The terms %terms were added to nodes %nodes', [
+        '%terms' => implode(', ', $term_names),
+        '%nodes' => implode(', ', $node_names),
+      ]));
+    }
 
     $form_state->setRedirect(
       'taxonomy_manager.admin_vocabulary',
