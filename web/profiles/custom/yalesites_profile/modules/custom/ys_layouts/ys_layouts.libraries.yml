@@ -19,6 +19,13 @@ gin_lb_color_scheme:
     theme:
       css/gin-lb-color-scheme.css: {}
 
+# Visible resize edge for the Layout Builder side panel; loaded like the one above.
+off_canvas_resize_handle:
+  version: VERSION
+  css:
+    theme:
+      css/off-canvas-resize-handle.css: {}
+
 # Help-text spacing for rich-text fields in gin_lb forms. Attached by
 # ys_layouts_preprocess_text_format_wrapper__gin_lb().
 gin_lb_text_format:
