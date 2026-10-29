@@ -303,6 +303,9 @@ function ys_themes_theme($existing, $type, $theme, $path) {
   $items = [
     'component_color_picker' => [
       'variables' => [
+        // 'swatches' (a row of swatches) or 'dropdown' (a select-only
+        // combobox, used for section themes).
+        'display' => 'swatches',
         'group_label' => NULL,
         'palette_options' => [],
         'global_theme' => 'one',
