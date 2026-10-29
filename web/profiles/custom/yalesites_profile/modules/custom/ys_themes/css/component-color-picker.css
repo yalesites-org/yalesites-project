@@ -329,3 +329,184 @@ body.gin--dark-mode .palette-option[data-selected="true"] .palette-circle {
   }
 }
 
+/*
+ * Dropdown display (section themes): a select-only combobox and its listbox.
+ * Fits the container width so it never pushes the settings panel sideways.
+ * Colors come from Gin, which handles light and dark mode.
+ */
+.palette-selector--dropdown {
+  display: block;
+  position: relative;
+  width: 100%;
+  min-width: 0;
+  max-width: 100%;
+}
+
+.palette-dropdown-button {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  box-sizing: border-box;
+  width: 100%;
+  min-width: 0;
+  min-height: 3rem;
+  padding: 0.5rem 0.75rem;
+  border: 1px solid var(--gin-border-color-form-element, #8e929c);
+  border-radius: var(--gin-border-m, 0.5rem);
+  background-color: var(--gin-bg-input, #fff);
+  color: var(--gin-color-text, #222330);
+  cursor: pointer;
+}
+
+.palette-dropdown-button:hover {
+  border-color: var(--gin-color-text, #222330);
+}
+
+/* Scoped to outrank Gin's `.ui-dialog *:focus` reset. Drawn inside the
+   button, which is as wide as the panel, so no edge of the ring is clipped. */
+.palette-selector--dropdown .palette-dropdown-button:focus-visible {
+  outline: 3px solid var(--gin-color-focus, #0073e6);
+  outline-offset: -1px;
+}
+
+.palette-dropdown-value,
+.palette-dropdown-option {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  flex: 1 1 auto;
+  min-width: 0;
+}
+
+.palette-dropdown-swatch {
+  flex: 0 0 auto;
+  box-sizing: border-box;
+  width: 1.75rem;
+  height: 1.75rem;
+  border: 1px solid var(--gin-border-color, rgba(0, 0, 0, 0.2));
+  border-radius: 0.375rem;
+}
+
+.palette-dropdown-text {
+  display: flex;
+  align-items: baseline;
+  gap: 0.5rem;
+  min-width: 0;
+  overflow: hidden;
+}
+
+.palette-dropdown-name {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.palette-dropdown-hex {
+  flex: 0 0 auto;
+  font-family: monospace;
+  white-space: nowrap;
+  color: var(--gin-color-text-light, #545560);
+}
+
+/* Inside the Layout Builder dialog in dark mode, --gin-color-text-light is
+   remapped to a dark gray that cannot be read on the dark list. Same treatment
+   as .palette-hex-code above. */
+.gin--dark-mode .palette-dropdown-hex {
+  color: rgba(255, 255, 255, 0.85);
+}
+
+/* Chevron, drawn in CSS: svg does not survive the admin XSS filter. */
+.palette-dropdown-chevron {
+  flex: 0 0 auto;
+  width: 0.5rem;
+  height: 0.5rem;
+  margin: 0 0.25rem 0 auto;
+  border-right: 2px solid currentColor;
+  border-bottom: 2px solid currentColor;
+  transform: translateY(-25%) rotate(45deg);
+}
+
+.palette-dropdown-button[aria-expanded="true"] .palette-dropdown-chevron {
+  transform: translateY(25%) rotate(-135deg);
+}
+
+/* In normal flow, not absolutely positioned: the open list pushes the rest of
+   the form down, so the settings panel's own vertical scroll reaches every
+   option. Positioned, it was clipped by the panel's `overflow: auto`. */
+.palette-dropdown-list {
+  display: none;
+  box-sizing: border-box;
+  /* Tall enough for all seven section colors (about 316px) with no list scroll. */
+  max-height: 24rem;
+  margin: 0.25rem 0 0;
+  padding: 0.25rem;
+  overflow-x: hidden;
+  overflow-y: auto;
+  border: 1px solid var(--gin-border-color-form-element, #8e929c);
+  border-radius: var(--gin-border-m, 0.5rem);
+  background-color: var(--gin-bg-input, #fff);
+  box-shadow: var(--gin-shadow-l2, 0 4px 12px rgba(0, 0, 0, 0.2));
+}
+
+.palette-dropdown-button[aria-expanded="true"] + .palette-dropdown-list {
+  display: block;
+}
+
+/* Closed by a press below it: keeps its space until that click has landed. */
+.palette-dropdown-list.is-closing {
+  display: block;
+  visibility: hidden;
+}
+
+.palette-dropdown-option {
+  box-sizing: border-box;
+  /* Matches the list padding, so scrolling an option into view, in the list
+     or in the panel around it, also shows its active outline. */
+  scroll-margin: 0.25rem 0;
+  padding: 0.5rem 0.75rem;
+  border-radius: 0.375rem;
+  color: var(--gin-color-text, #222330);
+  cursor: pointer;
+}
+
+.palette-dropdown-option:hover,
+.palette-dropdown-option.is-active {
+  background-color: var(--gin-bg-item-hover, rgba(0, 115, 230, 0.1));
+}
+
+/* The keyboard-active option. Drawn in the list's padding, so it contrasts
+   with the list background whether or not the option is selected. */
+.palette-dropdown-option.is-active {
+  outline: 2px solid var(--gin-color-text, #222330);
+  outline-offset: 0;
+}
+
+/* Selected: a light tint of the primary color, an accent bar, bold text, and
+   a check mark, so the state does not rely on color alone. The text keeps the
+   normal text color, which reads on the tint in light and dark mode. (Gin's
+   dialog styles force the option's own color to --gin-color-text anyway.) */
+.palette-dropdown-option[aria-selected="true"] {
+  background-color: var(--gin-color-primary-light, rgba(0, 115, 230, 0.15));
+  box-shadow: inset 3px 0 0 var(--gin-color-primary, #0073e6);
+  font-weight: 600;
+}
+
+.palette-dropdown-option[aria-selected="true"] .palette-dropdown-hex {
+  color: inherit;
+}
+
+.palette-dropdown-check {
+  flex: 0 0 auto;
+  width: 0.375rem;
+  height: 0.75rem;
+  margin: 0 0.25rem 0.25rem auto;
+  border-right: 2px solid currentColor;
+  border-bottom: 2px solid currentColor;
+  transform: rotate(45deg);
+  visibility: hidden;
+}
+
+.palette-dropdown-option[aria-selected="true"] .palette-dropdown-check {
+  visibility: visible;
+}

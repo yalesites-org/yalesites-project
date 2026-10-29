@@ -6,6 +6,7 @@ use Drupal\Core\Config\ConfigFactoryInterface;
 use Drupal\Core\Entity\EntityTypeManagerInterface;
 use Drupal\Core\Form\ConfigFormBase;
 use Drupal\Core\Form\FormStateInterface;
+use Drupal\Core\Url;
 use Drupal\ys_core\PlatformAdminCheckerInterface;
 use Drupal\ys_localist\LocalistManager;
 use Symfony\Component\DependencyInjection\ContainerInterface;
@@ -103,9 +104,12 @@ class LocalistSettings extends ConfigFormBase {
       $config->get('localist_group') &&
       $groupsImported
       ) {
+      // A route-built link, so core adds the route's CSRF token.
       $form['sync_now_button'] = [
-        '#type' => 'markup',
-        '#markup' => '<a class="button" href="/admin/yalesites/localist/sync">Sync now</a>',
+        '#type' => 'link',
+        '#title' => $this->t('Sync now'),
+        '#url' => Url::fromRoute('ys_localist.run_migrations'),
+        '#attributes' => ['class' => ['button']],
       ];
     }
 
@@ -145,10 +149,17 @@ class LocalistSettings extends ConfigFormBase {
     }
     elseif ($config->get('enable_localist_sync') && !$groupsImported) {
       $form['no_group_sync_message'] = [
-        '#type' => 'markup',
-        '#markup' => '
-          <p>Groups have not yet created. A selected group is required before synchronizing events.</p>
-          <a class="button" href="/admin/yalesites/localist/sync-groups">Create Groups</a>',
+        'message' => [
+          '#type' => 'html_tag',
+          '#tag' => 'p',
+          '#value' => $this->t('Groups have not yet created. A selected group is required before synchronizing events.'),
+        ],
+        'create_groups' => [
+          '#type' => 'link',
+          '#title' => $this->t('Create Groups'),
+          '#url' => Url::fromRoute('ys_localist.sync_groups'),
+          '#attributes' => ['class' => ['button']],
+        ],
       ];
     }
 

@@ -3,13 +3,24 @@
  * @file
  * Template for Component Color Picker widget palette UI.
  *
- * The swatches are an ARIA radio group: one tab stop (the selected swatch,
- * or the first when nothing is selected), arrow keys to move, and Enter or
- * Space to select. component-color-picker.js keeps aria-checked and tabindex
- * in step with the selection.
+ * Two displays share the same data:
+ * - swatches (default): an ARIA radio group of swatches. One tab stop (the
+ *   selected swatch, or the first when nothing is selected), arrow keys to
+ *   move, and Enter or Space to select.
+ * - dropdown: an ARIA select-only combobox. The combobox shows the selected
+ *   option and opens a listbox of every option; focus stays on the combobox
+ *   and aria-activedescendant points at the active option.
+ * component-color-picker.js keeps the ARIA state in step with the selection,
+ * and gives the dropdown its element ids.
+ *
+ * This markup reaches the browser through Xss::filterAdmin(), which strips
+ * button and svg elements and style attributes, so the controls are divs and
+ * spans, the icons are drawn in CSS, and colors are applied by the JS from
+ * data-hex.
  *
  * Available variables:
- * - group_label: The accessible name of the swatch group (the field title).
+ * - display: 'swatches' or 'dropdown'.
+ * - group_label: The accessible name of the picker (the field title).
  * - palette_options: Array of palette options with keys and labels.
  * - global_theme: The current global theme value (e.g., 'one', 'two', etc.).
  * - selected_value: The currently selected palette value.
@@ -22,9 +33,41 @@
  * @ingroup themeable
  */
 #}
+{% macro dropdown_content(color, name) %}
+  <span class="palette-dropdown-swatch" aria-hidden="true"{% if color.css_var %} data-color="{{ color.css_var }}"{% endif %}{% if color.hex %} data-hex="{{ color.hex }}"{% endif %}></span>
+  <span class="palette-dropdown-text">
+    <span class="palette-dropdown-name">{{ name }}</span>
+    <span class="palette-dropdown-hex">{{ color.hex ?: '—' }}</span>
+  </span>
+{% endmacro %}
+{% import _self as picker %}
+{% set option_keys = palette_options|keys %}
+{% set tab_stop = selected_value in option_keys ? selected_value : option_keys|first %}
+{% if display == 'dropdown' %}
+  {% set current_color = color_info[tab_stop] ?? {} %}
+  <div class="palette-selector palette-selector--dropdown" data-palette-selector data-palette-display="dropdown">
+    <div class="palette-dropdown-button" data-palette-trigger role="combobox" tabindex="0" aria-haspopup="listbox" aria-expanded="false"{% if group_label %} aria-label="{{ group_label }}"{% endif %}>
+      <span class="palette-dropdown-value" data-palette-value>
+        {% if palette_options is not empty %}
+          {{ picker.dropdown_content(current_color, (current_color.token_name ?? '') ?: palette_options[tab_stop]) }}
+        {% endif %}
+      </span>
+      <span class="palette-dropdown-chevron" aria-hidden="true"></span>
+    </div>
+    <div class="palette-dropdown-list" data-palette-container role="listbox"{% if group_label %} aria-label="{{ group_label }}"{% endif %}>
+      {% for key, label in palette_options %}
+        {% set is_selected = selected_value == key %}
+        {% set color = color_info[key] ?? {} %}
+        {% set swatch_name = (color.token_name ?? '') ?: label %}
+        <div class="palette-dropdown-option" data-palette="{{ key }}" data-selected="{{ is_selected ? 'true' : 'false' }}" role="option" aria-selected="{{ is_selected ? 'true' : 'false' }}" aria-label="{{ swatch_name }}{% if color.hex ?? '' %} {{ color.hex }}{% endif %}">
+          {{ picker.dropdown_content(color, swatch_name) }}
+          <span class="palette-dropdown-check" aria-hidden="true"></span>
+        </div>
+      {% endfor %}
+    </div>
+  </div>
+{% else %}
 <div class="palette-selector" data-palette-selector>
-  {% set option_keys = palette_options|keys %}
-  {% set tab_stop = selected_value in option_keys ? selected_value : option_keys|first %}
   <div class="palette-visual-container" data-palette-container role="radiogroup"{% if group_label %} aria-label="{{ group_label }}"{% endif %}>
     <button type="button" class="expand-indicator" data-expand-button aria-label="{{ 'Show all palettes'|t }}">
       <svg width="12" height="12" viewBox="0 0 12 12" fill="none" xmlns="http://www.w3.org/2000/svg">
@@ -63,3 +106,4 @@
     {% endfor %}
   </div>
 </div>
+{% endif %}

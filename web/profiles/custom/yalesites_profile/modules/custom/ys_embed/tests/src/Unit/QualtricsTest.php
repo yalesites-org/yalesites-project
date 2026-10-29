@@ -95,4 +95,12 @@ class QualtricsTest extends UnitTestCase {
     $this->assertSame('form', $build['#displayAttributes']['embedType']);
   }
 
+  /**
+   * @covers ::isValid
+   */
+  public function testIsValidRejectsLookAlikeHost(): void {
+    $this->assertFalse(Qualtrics::isValid('https://yalesurveyxca1.qualtrics.com/jfe/form/SV_abc'));
+    $this->assertFalse(Qualtrics::isValid('https://yalesurvey.ca1xqualtrics.com/jfe/form/SV_abc'));
+  }
+
 }

@@ -6,10 +6,13 @@ dependencies:
     - block_content.type.audio
     - field.field.block_content.audio.field_audio_label
     - field.field.block_content.audio.field_media
+    - field.field.block_content.audio.field_transcription
   module:
+    - allowed_formats
     - hide_revision_field
     - media_library
     - media_library_edit
+    - text
 id: block_content.audio.default
 targetEntityType: block_content
 bundle: audio
@@ -32,9 +35,20 @@ content:
     third_party_settings:
       media_library_edit:
         show_edit: true
+  field_transcription:
+    type: text_textarea
+    weight: 2
+    region: content
+    settings:
+      rows: 15
+      placeholder: ''
+    third_party_settings:
+      allowed_formats:
+        hide_help: '1'
+        hide_guidelines: '1'
   info:
     type: string_textfield
-    weight: 2
+    weight: 3
     region: content
     settings:
       size: 60
@@ -42,7 +56,7 @@ content:
     third_party_settings: {  }
   revision_log:
     type: hide_revision_field_log_widget
-    weight: 3
+    weight: 4
     region: content
     settings:
       rows: 5

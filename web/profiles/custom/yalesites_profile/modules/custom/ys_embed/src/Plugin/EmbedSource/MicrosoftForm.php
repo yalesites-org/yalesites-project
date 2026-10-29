@@ -90,6 +90,9 @@ class MicrosoftForm extends EmbedSourceBase implements EmbedSourceInterface {
   /**
    * Sanitizes office.com form parameters.
    *
+   * The result is a plain query string, not HTML. Twig autoescapes the URL
+   * where it is printed, so encoding it here would double-encode "&".
+   *
    * @param string $params
    *   The query string parameters.
    *
@@ -97,10 +100,8 @@ class MicrosoftForm extends EmbedSourceBase implements EmbedSourceInterface {
    *   The sanitized parameters.
    */
   protected function sanitizeOfficeParams(string $params): string {
-    // Minimal sanitization: prevent quote injection and XSS,
-    // preserve Microsoft params.
+    // Strip quotes and cap the length; escaping happens at output.
     $sanitized = str_replace('"', '', $params);
-    $sanitized = htmlspecialchars($sanitized, ENT_QUOTES, 'UTF-8');
     return substr($sanitized, 0, 2000);
   }
 
