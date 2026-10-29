@@ -23,11 +23,15 @@ class ViewsBasicSort extends SortPluginBase {
     /** @var \Drupal\views\Plugin\views\query\Sql $query */
     $query = $this->query;
 
-    if (!isset($this->view->args[3])) {
+    $sortIndex = ViewsBasicManager::viewArgumentIndex('sort');
+    if (!isset($this->view->args[$sortIndex])) {
       return;
     }
 
-    $sort = $this->parseSortArgument($this->view->args[3]);
+    // The value becomes an ORDER BY expression below, and on the views/ajax
+    // path it comes from the browser. Anything that is not a sort a listing
+    // offers is ignored, leaving the view's default order.
+    $sort = $this->parseSortArgument($this->view->args[$sortIndex]);
     if ($sort === NULL) {
       return;
     }
