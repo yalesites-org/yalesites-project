@@ -898,7 +898,8 @@ class ViewsBasicManager extends ControllerBase implements ContainerInjectionInte
    * ::configureView() and then the execute and render step. On return $view
    * holds the render array, not the executable. When ::configureView() refuses
    * the params (malformed, or no known content type) the view is marked
-   * failed and $view becomes an empty render array.
+   * failed and $view becomes an empty render array. So does a view whose
+   * preview renders nothing (for example an argument that fails validation).
    *
    * @param \Drupal\views\ViewExecutable $view
    *   The view object; replaced by its render array.
@@ -936,11 +937,18 @@ class ViewsBasicManager extends ControllerBase implements ContainerInjectionInte
     $view->execute();
 
     $view = $view->preview();
+    // preview() returns NULL when the build failed or access was denied, and
+    // FALSE when the display could not be set. Either way there is nothing
+    // to render, so hand back an empty render array.
+    if (!is_array($view)) {
+      $view = [];
+      return;
+    }
     // Add cache keys for each display option.
     // This ensures that if the options for showing categories, tags,
     // or thumbnails change, the cache will be invalidated,
     // and the view will be re-rendered with the new options.
-    if ($view['#rows'] && $view['#rows']['#rows']) {
+    if (!empty($view['#rows']['#rows'])) {
       foreach ($view['#rows']['#rows'] as &$resultRow) {
         $resultRow['#cache']['keys'][] = $display['field']['show_categories'];
         $resultRow['#cache']['keys'][] = $display['field']['show_tags'];
