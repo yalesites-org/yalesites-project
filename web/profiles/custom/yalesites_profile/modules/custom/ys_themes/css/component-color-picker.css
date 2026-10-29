@@ -409,6 +409,13 @@ body.gin--dark-mode .palette-option[data-selected="true"] .palette-circle {
   color: var(--gin-color-text-light, #545560);
 }
 
+/* Inside the Layout Builder dialog in dark mode, --gin-color-text-light is
+   remapped to a dark gray that cannot be read on the dark list. Same treatment
+   as .palette-hex-code above. */
+.gin--dark-mode .palette-dropdown-hex {
+  color: rgba(255, 255, 255, 0.85);
+}
+
 /* Chevron, drawn in CSS: svg does not survive the admin XSS filter. */
 .palette-dropdown-chevron {
   flex: 0 0 auto;
@@ -475,11 +482,13 @@ body.gin--dark-mode .palette-option[data-selected="true"] .palette-circle {
   outline-offset: 0;
 }
 
-/* Selected: strong background, bold text, and a check mark, so the state
-   does not rely on color alone. */
+/* Selected: a light tint of the primary color, an accent bar, bold text, and
+   a check mark, so the state does not rely on color alone. The text keeps the
+   normal text color, which reads on the tint in light and dark mode. (Gin's
+   dialog styles force the option's own color to --gin-color-text anyway.) */
 .palette-dropdown-option[aria-selected="true"] {
-  background-color: var(--gin-color-primary, #0073e6);
-  color: var(--gin-color-button-text, #fff);
+  background-color: var(--gin-color-primary-light, rgba(0, 115, 230, 0.15));
+  box-shadow: inset 3px 0 0 var(--gin-color-primary, #0073e6);
   font-weight: 600;
 }
 
