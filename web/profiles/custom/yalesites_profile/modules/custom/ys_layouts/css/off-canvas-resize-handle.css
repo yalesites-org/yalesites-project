@@ -10,7 +10,11 @@
  * contrast. Gin's variables already switch for dark mode.
  *
  * The dialog clips horizontal overflow, so the strip sits inside it and the
- * dialog gets matching padding. Core always uses a west handle
+ * dialog's two in-flow children (title bar and content) step 12px in from it.
+ * The gap is a margin on the children, not padding on the dialog: gin_lb
+ * saves the panel width on resize with jQuery's `.width()`, which leaves out
+ * the dialog's padding, so dialog padding made the panel reopen 12px
+ * narrower after every resize. Core always uses a west handle
  * (OpenOffCanvasDialogCommand sets `resizable: 'w'`), so the properties are
  * physical, not logical. This is not in ys_admin_theme because none of its
  * stylesheets load on the Layout Builder surface.
@@ -19,8 +23,12 @@
  * `.ui-widget.ui-dialog.ui-dialog-off-canvas .ui-resizable-w` without
  * !important.
  */
-#drupal-off-canvas-wrapper {
-  padding-left: 12px;
+#drupal-off-canvas-wrapper > .ui-dialog-titlebar,
+#drupal-off-canvas-wrapper > .ui-dialog-content {
+  /* gin_lb sets the content to `width: 100% !important`; max-width still
+     caps it, so the margin does not push it past the clipped right edge. */
+  max-width: calc(100% - 12px);
+  margin-left: 12px;
 }
 
 #drupal-off-canvas-wrapper .ui-resizable-w {
