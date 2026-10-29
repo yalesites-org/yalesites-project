@@ -955,33 +955,10 @@ class ViewsBasicManager extends ControllerBase implements ContainerInjectionInte
     }
     $pinned_to_top = isset($paramsDecoded['pinned_to_top']) ? (bool) $paramsDecoded['pinned_to_top'] : FALSE;
 
-    /* Events need to have aggregation turned on in the view. Therefore, we
-     * retrieve a special event scaffold view and apply sorting here instead of
-     * the custom sort plugin.
-     */
-
+    // Events use their own scaffold view, and their sorts are set here instead
+    // of by the custom sort plugin.
     if (in_array('event', $types)) {
-      $sortArray = [];
-      $sortDirection = explode(":", $sortBy);
-
-      if ($pinned_to_top) {
-        $sortArray[] = [
-          'id' => 'sticky',
-          'table' => "node_field_data",
-          'field' => 'sticky',
-          'order' => 'desc',
-        ];
-      }
-
-      $sortArray[] =
-      [
-        'id' => 'field_event_date_value',
-        'table' => "node__field_event_date",
-        'field' => 'field_event_date_value',
-        'order' => $sortDirection[1],
-      ];
-
-      $view->getDisplay()->setOption('sorts', $sortArray);
+      $view->getDisplay()->setOption('sorts', self::eventSorts(explode(':', $sortBy)[1], $pinned_to_top));
     }
 
     $view->setDisplay('block_1');
@@ -1917,6 +1894,53 @@ class ViewsBasicManager extends ControllerBase implements ContainerInjectionInte
       }
     }
     return array_key_first(self::ALLOWED_ENTITIES[$types[0]]['sort_by']);
+  }
+
+  /**
+   * Returns the sorts for an events listing, in the order they apply.
+   *
+   * @param string $direction
+   *   The event date direction, ASC or DESC.
+   * @param bool $pinnedToTop
+   *   Whether pinned (sticky) events come first.
+   *
+   * @return array
+   *   Views sort handler definitions for the display's "sorts" option.
+   */
+  public static function eventSorts(string $direction, bool $pinnedToTop): array {
+    $sorts = [];
+    if ($pinnedToTop) {
+      $sorts[] = [
+        'id' => 'sticky',
+        'table' => 'node_field_data',
+        'field' => 'sticky',
+        'order' => 'desc',
+      ];
+    }
+    $sorts[] = [
+      'id' => 'field_event_date_value',
+      'table' => 'node__field_event_date',
+      'field' => 'field_event_date_value',
+      'order' => $direction,
+    ];
+    // Events sharing a start date otherwise come back in whatever order the
+    // database picks, which can change between loads and makes a pager
+    // repeat or skip events (#1969). Ties list by title A to Z, then node ID
+    // ascending so the order is fixed. Both stay ascending in either date
+    // direction.
+    $sorts[] = [
+      'id' => 'title',
+      'table' => 'node_field_data',
+      'field' => 'title',
+      'order' => 'ASC',
+    ];
+    $sorts[] = [
+      'id' => 'nid',
+      'table' => 'node_field_data',
+      'field' => 'nid',
+      'order' => 'ASC',
+    ];
+    return $sorts;
   }
 
   /**
