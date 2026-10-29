@@ -30,11 +30,13 @@ class ComponentColorPickerTemplateTest extends YsKernelTestBase {
    *
    * @param string $selected_value
    *   The selected palette key.
+   * @param string|null $display
+   *   The display variant, or NULL to use the theme hook's default.
    *
    * @return \DOMXPath
    *   An XPath over the rendered, filtered markup.
    */
-  protected function renderPicker(string $selected_value): \DOMXPath {
+  protected function renderPicker(string $selected_value, ?string $display = NULL): \DOMXPath {
     $build = [
       '#theme' => 'component_color_picker',
       '#group_label' => 'Section Theme',
@@ -66,6 +68,9 @@ class ComponentColorPickerTemplateTest extends YsKernelTestBase {
         ],
       ],
     ];
+    if ($display !== NULL) {
+      $build['#display'] = $display;
+    }
     $html = Xss::filterAdmin((string) $this->container->get('renderer')->renderInIsolation($build));
 
     $dom = new \DOMDocument();
@@ -110,6 +115,71 @@ class ComponentColorPickerTemplateTest extends YsKernelTestBase {
     $tab_stops = $xpath->query('//*[@role="radio"][@tabindex="0"]');
     $this->assertSame(1, $tab_stops->length);
     $this->assertSame('default', $tab_stops->item(0)->getAttribute('data-palette'));
+  }
+
+  /**
+   * The dropdown is a named select-only combobox that controls a listbox.
+   */
+  public function testDropdownIsNamedSelectOnlyCombobox(): void {
+    $xpath = $this->renderPicker('one', 'dropdown');
+
+    $this->assertSame(0, $xpath->query('//*[@role="radiogroup"]')->length, 'The dropdown has no swatch radio group.');
+
+    $comboboxes = $xpath->query('//*[@role="combobox"]');
+    $this->assertSame(1, $comboboxes->length);
+    $combobox = $comboboxes->item(0);
+    $this->assertSame('div', $combobox->nodeName, 'A button element would be stripped by the admin XSS filter.');
+    $this->assertSame('Section Theme', $combobox->getAttribute('aria-label'));
+    $this->assertSame('listbox', $combobox->getAttribute('aria-haspopup'));
+    $this->assertSame('false', $combobox->getAttribute('aria-expanded'));
+    $this->assertSame('0', $combobox->getAttribute('tabindex'), 'The combobox is the tab stop.');
+
+    // The combobox shows the selected option's swatch, name and hex.
+    $this->assertSame('Blue Yale', trim($xpath->query('.//*[contains(@class, "palette-dropdown-name")]', $combobox)->item(0)->textContent));
+    $this->assertSame('#00366b', trim($xpath->query('.//*[contains(@class, "palette-dropdown-hex")]', $combobox)->item(0)->textContent));
+    $this->assertSame('#00366b', $xpath->query('.//*[contains(@class, "palette-dropdown-swatch")]', $combobox)->item(0)->getAttribute('data-hex'));
+  }
+
+  /**
+   * Every option is in the listbox, named, with the selected one marked.
+   */
+  public function testDropdownOptionsAreNamedAndSelected(): void {
+    $xpath = $this->renderPicker('one', 'dropdown');
+
+    $listbox = $xpath->query('//*[@role="listbox"]');
+    $this->assertSame(1, $listbox->length);
+    $this->assertSame('Section Theme', $listbox->item(0)->getAttribute('aria-label'));
+
+    $state = [];
+    foreach ($xpath->query('//*[@role="listbox"]/*[@role="option"]') as $option) {
+      $state[$option->getAttribute('data-palette')] = [
+        $option->getAttribute('aria-label'),
+        $option->getAttribute('aria-selected'),
+        // Options are reached through aria-activedescendant, never by Tab.
+        $option->hasAttribute('tabindex'),
+      ];
+    }
+    $this->assertSame([
+      'default' => ['Default - No Color #ffffff', 'false', FALSE],
+      'one' => ['Blue Yale #00366b', 'true', FALSE],
+      'two' => ['Two', 'false', FALSE],
+    ], $state, 'Options are named "Name #hex", and only the selected one is aria-selected.');
+
+    // An option with no resolved color still renders, with an em dash hex.
+    $two = $xpath->query('//*[@role="option"][@data-palette="two"]')->item(0);
+    $this->assertSame('Two', trim($xpath->query('.//*[contains(@class, "palette-dropdown-name")]', $two)->item(0)->textContent));
+    $this->assertSame('—', trim($xpath->query('.//*[contains(@class, "palette-dropdown-hex")]', $two)->item(0)->textContent));
+  }
+
+  /**
+   * With nothing selected, the combobox shows the first option.
+   */
+  public function testDropdownShowsFirstOptionWhenNothingSelected(): void {
+    $xpath = $this->renderPicker('', 'dropdown');
+
+    $name = $xpath->query('//*[@role="combobox"]//*[contains(@class, "palette-dropdown-name")]');
+    $this->assertSame('Default - No Color', trim($name->item(0)->textContent));
+    $this->assertSame(0, $xpath->query('//*[@role="option"][@aria-selected="true"]')->length);
   }
 
 }
