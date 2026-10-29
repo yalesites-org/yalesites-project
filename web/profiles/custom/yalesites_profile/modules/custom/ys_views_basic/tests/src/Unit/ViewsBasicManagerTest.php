@@ -1625,6 +1625,54 @@ class ViewsBasicManagerTest extends UnitTestCase {
   }
 
   /**
+   * Post and event searches also match category term names, in either scope.
+   *
+   * The category filter is swapped in rather than the term name joined onto
+   * the display, so a post with several categories stays one row. The display
+   * fields and the combine filter's own fields are what the scope decides.
+   *
+   * @covers ::setupView
+   */
+  public function testSetupViewSearchMatchesCategoriesOnPostsAndEvents() {
+    $filters = [
+      'combine' => [
+        'id' => 'combine',
+        'field' => 'combine',
+        'plugin_id' => 'combine',
+        'fields' => ['title' => 'title'],
+      ],
+    ];
+    $search = ['show_search_filter' => 'show_search_filter'];
+
+    foreach (['post', 'event'] as $type) {
+      foreach (['shown', 'all'] as $scope) {
+        $set = $this->runSetupView([
+          'filters' => ['types' => [$type]],
+          'exposed_filter_options' => $search,
+          'search_scope' => $scope,
+        ], $filters);
+        $combine = $set['filters']['combine'];
+        $this->assertSame('ys_views_basic_category_combine', $combine['plugin_id'], "$type $scope");
+        $this->assertSame('category_combine', $combine['field'], "$type $scope");
+        $this->assertSame('combine', $combine['id'], 'The exposed filter keeps its key.');
+        $this->assertArrayNotHasKey('field_category', $combine['fields'], 'Category is not a display field.');
+        $this->assertArrayNotHasKey('field_category', $set['fields']);
+        $this->assertArrayNotHasKey('field_tags', $combine['fields']);
+      }
+    }
+
+    foreach (['page', 'profile'] as $type) {
+      $set = $this->runSetupView([
+        'filters' => ['types' => [$type]],
+        'sort_by' => 'title:ASC',
+        'exposed_filter_options' => $search,
+        'search_scope' => 'all',
+      ], $filters);
+      $this->assertSame('combine', $set['filters']['combine']['plugin_id'], "$type keeps core's combine filter.");
+    }
+  }
+
+  /**
    * Each form flavour gets selectors for the scope and the display toggles.
    *
    * @covers ::getFormSelectors

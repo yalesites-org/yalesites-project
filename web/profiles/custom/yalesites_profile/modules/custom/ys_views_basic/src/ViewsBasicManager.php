@@ -255,6 +255,14 @@ class ViewsBasicManager extends ControllerBase implements ContainerInjectionInte
   const SEARCH_FIELDS_ALWAYS = ['title', 'field_teaser_title', 'field_teaser_text'];
 
   /**
+   * The content types whose keyword search matches category names (#706).
+   *
+   * Searched in either scope, through the category combine filter
+   * (::applySearchScope()). Tags and affiliation are never searched.
+   */
+  const SEARCH_CATEGORY_TYPES = [self::CONTENT_TYPE_POST, self::CONTENT_TYPE_EVENT];
+
+  /**
    * Profile view modes whose cards render the subtitle and People fields.
    *
    * Card and list item embed the shared profile reference card, which renders
@@ -1171,6 +1179,14 @@ class ViewsBasicManager extends ControllerBase implements ContainerInjectionInte
     }
     elseif (isset($filters['combine']) && in_array($filterType, self::SEARCH_SCOPE_TYPES, TRUE)) {
       $filters['combine']['fields'] = $this->applySearchScope($view, $filterType, $viewMode, $paramsDecoded);
+      // Category names are matched through a subquery rather than a join, so
+      // a post in several categories is never multiplied into several rows.
+      // Key and exposed identifier stay the same, so stored blocks and search
+      // URLs keep working.
+      if (self::searchesCategories($filterType)) {
+        $filters['combine']['field'] = 'category_combine';
+        $filters['combine']['plugin_id'] = 'ys_views_basic_category_combine';
+      }
     }
 
     // Never offer a term the editor used to exclude content: a visitor
@@ -1592,6 +1608,19 @@ class ViewsBasicManager extends ControllerBase implements ContainerInjectionInte
       return FALSE;
     }
     return $condition['option'] ?? TRUE;
+  }
+
+  /**
+   * Whether a listing's keyword search matches category names (#706).
+   *
+   * @param string $type
+   *   The listing's content type.
+   *
+   * @return bool
+   *   TRUE for the types in ::SEARCH_CATEGORY_TYPES, in either scope.
+   */
+  public static function searchesCategories(string $type): bool {
+    return in_array($type, self::SEARCH_CATEGORY_TYPES, TRUE);
   }
 
   /**

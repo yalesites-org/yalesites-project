@@ -8,6 +8,7 @@ use Drupal\Core\Field\FieldDefinitionInterface;
 use Drupal\Core\Field\FieldItemListInterface;
 use Drupal\Core\Form\FormStateInterface;
 use Drupal\Tests\UnitTestCase;
+use Drupal\ys_views_basic\Plugin\Field\FieldWidget\EventViewWidget;
 use Drupal\ys_views_basic\Plugin\Field\FieldWidget\PageViewWidget;
 use Drupal\ys_views_basic\Plugin\Field\FieldWidget\PostViewWidget;
 use Drupal\ys_views_basic\Plugin\Field\FieldWidget\ProfileViewWidget;
@@ -397,18 +398,54 @@ class SearchScopeTest extends UnitTestCase {
   /**
    * The post lead-in is listed when shown or with the all scope.
    *
+   * Category is searched in either scope, so it is always listed.
+   *
    * @covers \Drupal\ys_views_basic\Plugin\Field\FieldWidget\ViewsBasicWidgetBase::buildSearchScopeControls
    */
   public function testPostListsLeadInAndAuthor() {
     $group = $this->build($this->widget(PostViewWidget::class, 'post_card'));
     $this->assertArrayHasKey('search_scope', $group);
     $items = $this->listItems($group);
-    $this->assertSame(['Title', 'Teaser Title', 'Teaser Text', 'Teaser Lead-in', 'Author'], array_column($items, 'label'));
+    $this->assertSame(['Title', 'Teaser Title', 'Teaser Text', 'Category', 'Teaser Lead-in', 'Author'], array_column($items, 'label'));
+    $this->assertNull($items['field_category']['states'], 'Category is listed in either scope.');
     $this->assertSame(
       self::SELECTORS['post_field_options_show_eyebrow_selector'],
       array_key_first($items['field_teaser_lead_in']['states']['visible'][0])
     );
     $this->assertSame(['visible' => [self::SELECTORS['search_scope_selector'] => ['value' => 'all']]], $items['field_author']['states']);
+  }
+
+  /**
+   * Events list their category in either scope, and the rest for all.
+   *
+   * @covers \Drupal\ys_views_basic\Plugin\Field\FieldWidget\ViewsBasicWidgetBase::buildSearchScopeControls
+   */
+  public function testEventListsCategory() {
+    $group = $this->build($this->widget(EventViewWidget::class, 'event_card'));
+    $this->assertArrayHasKey('search_scope', $group);
+    $items = $this->listItems($group);
+    $this->assertSame(
+      ['Title', 'Teaser Title', 'Teaser Text', 'Category', 'Description', 'Room', 'Location Details'],
+      array_column($items, 'label')
+    );
+    $this->assertNull($items['field_category']['states'], 'Category is listed in either scope.');
+    $this->assertSame(['visible' => [self::SELECTORS['search_scope_selector'] => ['value' => 'all']]], $items['field_event_room']['states']);
+  }
+
+  /**
+   * Only posts and events search their category term names.
+   *
+   * Tags and affiliation are never searched, and pages and profiles keep
+   * their category out of the search.
+   *
+   * @covers ::searchesCategories
+   */
+  public function testSearchesCategories() {
+    $this->assertTrue(ViewsBasicManager::searchesCategories('post'));
+    $this->assertTrue(ViewsBasicManager::searchesCategories('event'));
+    $this->assertFalse(ViewsBasicManager::searchesCategories('page'));
+    $this->assertFalse(ViewsBasicManager::searchesCategories('profile'));
+    $this->assertFalse(ViewsBasicManager::searchesCategories('resource'));
   }
 
   /**
@@ -484,11 +521,18 @@ class SearchScopeTest extends UnitTestCase {
    * @covers \Drupal\ys_views_basic\Plugin\Field\FieldWidget\ViewsBasicWidgetBase::getExposedFilterDescriptions
    */
   public function testSearchHelpPointsAtTheFieldList() {
-    $descriptions = $this->invoke($this->widget(ProfileViewWidget::class, 'profile_card'), 'getExposedFilterDescriptions');
-    $this->assertSame(
-      'Matches the fields listed under Included in search. Tags and categories are not searched.',
-      (string) $descriptions['show_search_filter']
-    );
+    $help = fn(string $class, string $bundle) => (string) $this->invoke($this->widget($class, $bundle), 'getExposedFilterDescriptions')['show_search_filter'];
+
+    $this->assertSame('Searches content fields and category names. Tags are not searched.', $help(PostViewWidget::class, 'post_card'));
+    $this->assertSame('Searches content fields and category names. Tags are not searched.', $help(EventViewWidget::class, 'event_card'));
+    $this->assertSame('Searches content fields. Tags and categories are not searched.', $help(PageViewWidget::class, 'page_card'));
+    $this->assertSame('Searches content fields. Tags and affiliations are not searched.', $help(ProfileViewWidget::class, 'profile_card'));
+    // The help sits on the Show search checkbox, which shows while search is
+    // off and the "Included in search" list is collapsed, so it must not
+    // point at that list.
+    foreach ([PostViewWidget::class, PageViewWidget::class, ProfileViewWidget::class] as $class) {
+      $this->assertStringNotContainsString('Included in search', $help($class, 'x_card'));
+    }
   }
 
   /**

@@ -1058,3 +1058,21 @@ input.views-basic--view-mode:focus-visible + label.option {
   line-height: 1.5 !important;
   margin: 1rem 0 0.25rem !important;
 }
+
+/*
+ * The "All searchable fields" warning (#706) keeps Gin's warning colors
+ * (light warning text on the dark warning background) in every context. In
+ * the Layout Builder dialogs the front end theme colors every p and h4 dark,
+ * which on Gin's dark warning background measured 1.5:1. Gin's warning-light
+ * on bg-warning is about 7:1. The background is set too, so the pair holds
+ * even where the messages styles do not reach.
+ */
+.views-basic--entity-view-mode .vb-search-scope-warning,
+.views-basic--entity-view-mode .vb-search-scope-warning h4,
+.views-basic--entity-view-mode .vb-search-scope-warning p {
+  color: var(--gin-color-warning-light, #efcf64) !important;
+}
+
+.views-basic--entity-view-mode .vb-search-scope-warning {
+  background-color: var(--gin-bg-warning, #483e1e) !important;
+}

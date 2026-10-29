@@ -586,11 +586,15 @@ abstract class ViewsBasicWidgetBase extends WidgetBase implements ContainerFacto
    *   Help text keyed by exposed-filter machine name.
    */
   protected function getExposedFilterDescriptions(): array {
-    return [
-      // The fields searched depend on the content type and the search scope,
-      // so the help points at the list that names them (#706).
-      'show_search_filter' => $this->t('Matches the fields listed under Included in search. Tags and categories are not searched.'),
-    ];
+    // The help sits on the Show search checkbox, which shows while search is
+    // off and its "Included in search" list is collapsed, so it names what is
+    // and is not searched rather than pointing at that list (#706).
+    $help = match ($this->getContentType()) {
+      ViewsBasicManager::CONTENT_TYPE_POST, ViewsBasicManager::CONTENT_TYPE_EVENT => $this->t('Searches content fields and category names. Tags are not searched.'),
+      ViewsBasicManager::CONTENT_TYPE_PROFILE => $this->t('Searches content fields. Tags and affiliations are not searched.'),
+      default => $this->t('Searches content fields. Tags and categories are not searched.'),
+    };
+    return ['show_search_filter' => $help];
   }
 
   /**
@@ -887,7 +891,9 @@ abstract class ViewsBasicWidgetBase extends WidgetBase implements ContainerFacto
       $group['search_scope_warning'] = [
         '#type' => 'container',
         '#attributes' => [
-          'class' => ['messages', 'messages--warning'],
+          // vb-search-scope-warning: views-basic.css sets the text colors,
+          // which the dialogs' front end theme otherwise overrides.
+          'class' => ['messages', 'messages--warning', 'vb-search-scope-warning'],
           'role' => 'status',
         ],
         // Both conditions, so the warning goes away with search itself.
@@ -913,6 +919,8 @@ abstract class ViewsBasicWidgetBase extends WidgetBase implements ContainerFacto
     $view_mode = $this->getViewMode();
     $candidates = array_unique(array_merge(
       ViewsBasicManager::SEARCH_FIELDS_ALWAYS,
+      // Category names are searched in either scope, so always listed.
+      ViewsBasicManager::searchesCategories($type) ? ['field_category'] : [],
       array_keys(ViewsBasicManager::SEARCH_FIELDS_SHOWN[$type] ?? []),
       $offers_scope ? ViewsBasicManager::SEARCH_FIELDS_ALL[$type] ?? [] : [],
     ));
@@ -922,7 +930,7 @@ abstract class ViewsBasicWidgetBase extends WidgetBase implements ContainerFacto
       $item = ['#markup' => $labels[$field] ?? $field];
       // The same rule ViewsBasicManager::searchFieldsFor() applies to this
       // listing's design.
-      $shown = ViewsBasicManager::shownSearchCondition($type, $field, $view_mode);
+      $shown = $field === 'field_category' ? TRUE : ViewsBasicManager::shownSearchCondition($type, $field, $view_mode);
       if ($shown === TRUE) {
         $list_items[$field] = $item;
         continue;
@@ -978,6 +986,7 @@ abstract class ViewsBasicWidgetBase extends WidgetBase implements ContainerFacto
       'title' => $this->t('Title'),
       'field_teaser_title' => $this->t('Teaser Title'),
       'field_teaser_text' => $this->t('Teaser Text'),
+      'field_category' => $this->t('Category'),
       'field_position' => $this->t('Position'),
       'field_subtitle' => $this->t('Subtitle'),
       'field_department' => $this->t('Department'),
