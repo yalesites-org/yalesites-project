@@ -100,7 +100,7 @@ class TaxonomyDisplayBlock extends BlockBase implements ContextAwarePluginInterf
   public function defaultConfiguration(): array {
     return [
       'vocabularies' => [],
-      'theme_selection' => 'default',
+      'theme_selection' => 'one',
     ];
   }
 
@@ -142,19 +142,36 @@ class TaxonomyDisplayBlock extends BlockBase implements ContextAwarePluginInterf
       }
 
       if (!empty($vocabulary_fields)) {
+        $vocabulary_fields_title = $this->t('Select vocabularies to display');
         $form['vocabulary_fields'] = [
           '#type' => 'checkboxes',
-          '#title' => $this->t('Select vocabularies to display'),
+          '#title' => $vocabulary_fields_title,
           '#options' => $vocabulary_fields,
           '#default_value' => $this->configuration['vocabulary_fields'] ?? [],
           '#description' => $this->t('Choose which vocabularies should be displayed in this block.'),
           '#required' => TRUE,
+          // Layout Builder Browser strips #ajax from this form's submit, so a
+          // server-side "required" error reloads the form as a standalone page
+          // and the editor leaves the dialog. A checkbox group cannot carry
+          // HTML5 required either, so this check blocks the submit while no
+          // vocabulary is checked and shows Drupal's inline error under the
+          // field instead. #required stays as the no-JS fallback.
+          '#attributes' => [
+            'class' => ['js-ys-required-checkboxes'],
+            'data-ys-required-message' => $this->t('@name field is required.', [
+              '@name' => $vocabulary_fields_title,
+            ]),
+          ],
+          '#attached' => [
+            'library' => ['ys_layouts/required_checkboxes'],
+          ],
         ];
 
         $form['theme_selection'] = [
           '#type' => 'select',
           '#title' => $this->t('Theme'),
           '#options' => [
+            'default' => $this->t('Default - No Color'),
             'one' => $this->t('One'),
             'two' => $this->t('Two'),
             'three' => $this->t('Three'),
@@ -172,7 +189,7 @@ class TaxonomyDisplayBlock extends BlockBase implements ContextAwarePluginInterf
       else {
         $form['no_vocabulary_fields'] = [
           '#type' => 'markup',
-          '#markup' => $this->t('No taxonomy fields found on this content type.'),
+          '#markup' => $this->t('This content type has no tags or categories.'),
         ];
       }
 

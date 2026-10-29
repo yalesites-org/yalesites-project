@@ -4,8 +4,6 @@
  */
 
 (function (Drupal, once) {
-  'use strict';
-
   /**
    * Finds the select element for the color picker.
    *
@@ -20,10 +18,12 @@
       return null;
     }
     const selects = Array.from(wrapper.querySelectorAll('select'));
-    return selects.find(sel => sel.name && sel.name.length > 0) ||
-           selects.find(sel => sel.classList.contains('palette-select-hidden')) ||
-           selects[0] ||
-           null;
+    return (
+      selects.find((sel) => sel.name && sel.name.length > 0) ||
+      selects.find((sel) => sel.classList.contains('palette-select-hidden')) ||
+      selects[0] ||
+      null
+    );
   }
 
   /**
@@ -37,8 +37,7 @@
       const hexValue = circle.getAttribute('data-hex');
       if (hexValue) {
         circle.style.setProperty('background-color', hexValue);
-      }
-      else {
+      } else {
         const colorValue = circle.getAttribute('data-color');
         if (colorValue && !colorValue.startsWith('var(')) {
           circle.style.setProperty('background-color', colorValue);
@@ -57,10 +56,12 @@
    */
   function dispatchEvent(element, eventType) {
     if (element) {
-      element.dispatchEvent(new Event(eventType, {
-        bubbles: true,
-        cancelable: true,
-      }));
+      element.dispatchEvent(
+        new Event(eventType, {
+          bubbles: true,
+          cancelable: true,
+        }),
+      );
     }
   }
 
@@ -87,7 +88,7 @@
     dispatchEvent(form, 'formUpdated');
 
     const fieldWrapper = selectElement.closest(
-      '.field--widget-component-color-picker, .js-form-item, .form-item'
+      '.field--widget-component-color-picker, .js-form-item, .form-item',
     );
     if (fieldWrapper) {
       dispatchEvent(fieldWrapper, 'change');
@@ -108,10 +109,41 @@
       Array.from(selectElement.options).forEach((option) => {
         option.selected = option.value === paletteValue;
       });
-    }
-    else {
+    } else {
       selectElement.value = paletteValue;
     }
+  }
+
+  /**
+   * Makes one palette option the group's only tab stop.
+   *
+   * @param {NodeList} options
+   *   The palette options.
+   * @param {HTMLElement} target
+   *   The option that takes the tab stop.
+   */
+  function setTabStop(options, target) {
+    options.forEach((opt) =>
+      opt.setAttribute('tabindex', opt === target ? '0' : '-1'),
+    );
+  }
+
+  /**
+   * Marks one palette option as selected, and gives it the tab stop.
+   *
+   * @param {NodeList} options
+   *   The palette options.
+   * @param {HTMLElement|undefined} selectedOption
+   *   The option to mark selected, or undefined to leave none selected.
+   */
+  function markSelected(options, selectedOption) {
+    options.forEach((opt) => {
+      const isSelected = opt === selectedOption ? 'true' : 'false';
+      opt.setAttribute('data-selected', isSelected);
+      opt.setAttribute('aria-checked', isSelected);
+    });
+    // With nothing selected the group still needs one tab stop.
+    setTabStop(options, selectedOption || options[0]);
   }
 
   /**
@@ -124,11 +156,16 @@
    */
   function initializeSelectedState(options, selectElement) {
     const currentValue = selectElement.value;
-    if (currentValue) {
-      options.forEach((opt) => {
-        opt.setAttribute('data-selected', opt.getAttribute('data-palette') === currentValue ? 'true' : 'false');
-      });
+    // An empty value (e.g. a multiple select) keeps the server-rendered state.
+    if (!currentValue) {
+      return;
     }
+    markSelected(
+      options,
+      Array.from(options).find(
+        (opt) => opt.getAttribute('data-palette') === currentValue,
+      ),
+    );
   }
 
   /**
@@ -147,20 +184,23 @@
     applyCircleColors(selector);
     selector.classList.add('expanded');
 
-    // Handle palette option clicks.
-    container.addEventListener('click', (e) => {
-      const clickedOption = e.target.closest('.palette-option');
-      if (!clickedOption || clickedOption.getAttribute('data-selected') === 'true') {
+    // Selects an option, by mouse or keyboard, and pushes the value to the
+    // hidden select so the form saves it.
+    const selectOption = (option) => {
+      if (!option || option.getAttribute('data-selected') === 'true') {
         return;
       }
 
-      const paletteValue = clickedOption.getAttribute('data-palette');
-      if (!Array.from(selectElement.options).some((option) => option.value === paletteValue)) {
+      const paletteValue = option.getAttribute('data-palette');
+      if (
+        !Array.from(selectElement.options).some(
+          (opt) => opt.value === paletteValue,
+        )
+      ) {
         return;
       }
 
-      options.forEach((opt) => opt.setAttribute('data-selected', 'false'));
-      clickedOption.setAttribute('data-selected', 'true');
+      markSelected(options, option);
 
       updateSelectValue(selectElement, paletteValue);
       dispatchEvent(selectElement, 'input');
@@ -173,6 +213,72 @@
           handleLayoutBuilderForm(form, selectElement, paletteValue);
         }
       }
+    };
+
+    container.addEventListener('click', (e) => {
+      selectOption(e.target.closest('.palette-option'));
+    });
+
+    // The visible label points at the hidden select; send its clicks to the
+    // swatch that holds the tab stop instead.
+    if (selectElement.id && wrapper) {
+      const label = wrapper.querySelector(`label[for="${selectElement.id}"]`);
+      if (label) {
+        label.addEventListener('click', (e) => {
+          e.preventDefault();
+          const tabStop = container.querySelector(
+            '.palette-option[tabindex="0"]',
+          );
+          if (tabStop) {
+            tabStop.focus();
+          }
+        });
+      }
+    }
+
+    // Arrow keys move between swatches; Enter or Space selects one.
+    container.addEventListener('keydown', (e) => {
+      const current = e.target.closest('.palette-option');
+      if (!current) {
+        return;
+      }
+      const list = Array.from(options);
+      const index = list.indexOf(current);
+      let next = null;
+
+      switch (e.key) {
+        case 'ArrowRight':
+        case 'ArrowDown':
+          next = list[(index + 1) % list.length];
+          break;
+
+        case 'ArrowLeft':
+        case 'ArrowUp':
+          next = list[(index - 1 + list.length) % list.length];
+          break;
+
+        case 'Home':
+          [next] = list;
+          break;
+
+        case 'End':
+          next = list[list.length - 1];
+          break;
+
+        case 'Enter':
+        case ' ':
+          // Enter would otherwise submit the dialog form.
+          e.preventDefault();
+          selectOption(current);
+          return;
+
+        default:
+          return;
+      }
+
+      e.preventDefault();
+      setTabStop(options, next);
+      next.focus();
     });
 
     initializeSelectedState(options, selectElement);
@@ -183,12 +289,14 @@
    */
   if (typeof Drupal !== 'undefined' && Drupal.behaviors) {
     Drupal.behaviors.componentColorPicker = {
-      attach: function (context, settings) {
-        const selectors = once('component-color-picker', '[data-palette-selector]', context);
+      attach(context, settings) {
+        const selectors = once(
+          'component-color-picker',
+          '[data-palette-selector]',
+          context,
+        );
         selectors.forEach(initComponentColorPicker);
       },
     };
   }
-
 })(Drupal, once);
-

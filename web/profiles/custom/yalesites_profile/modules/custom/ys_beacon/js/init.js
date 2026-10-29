@@ -6,20 +6,20 @@
    *
    * @see ys_beacon_page_attachments_alter().
    */
-  const chatWidget = document.createElement("div");
-  chatWidget.setAttribute("id", "ys-beacon-chat-widget");
+  const chatWidget = document.createElement('div');
+  chatWidget.setAttribute('id', 'ys-beacon-chat-widget');
   chatWidget.setAttribute(
-    "data-conversation-url",
-    drupalSettings.ys_beacon.conversation_url || ""
+    'data-conversation-url',
+    drupalSettings.ys_beacon.conversation_url || '',
   );
   chatWidget.setAttribute(
-    "data-initial-questions",
-    drupalSettings.ys_beacon.initial_questions || ""
+    'data-initial-questions',
+    drupalSettings.ys_beacon.initial_questions || '',
   );
   chatWidget.setAttribute(
-    "data-disclaimer",
-    drupalSettings.ys_beacon.disclaimer || ""
+    'data-disclaimer',
+    drupalSettings.ys_beacon.disclaimer || '',
   );
-  chatWidget.setAttribute("data-footer", drupalSettings.ys_beacon.footer || "");
+  chatWidget.setAttribute('data-footer', drupalSettings.ys_beacon.footer || '');
   document.body.appendChild(chatWidget);
 })();

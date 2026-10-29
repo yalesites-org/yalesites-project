@@ -9,6 +9,7 @@ use Drupal\Core\Entity\EntityDisplayRepository;
 use Drupal\Core\Entity\EntityTypeManagerInterface;
 use Drupal\Core\Routing\RouteMatchInterface;
 use Drupal\node\NodeInterface;
+use Drupal\views\ViewExecutable;
 use Drupal\views\Views;
 use Symfony\Component\DependencyInjection\ContainerInterface;
 
@@ -261,9 +262,31 @@ class ViewsBasicManager extends ControllerBase implements ContainerInjectionInte
     if ($setupRunning) {
       return;
     }
-    $setupRunning = TRUE;
 
     $paramsDecoded = json_decode($params, TRUE);
+    if (!is_array($paramsDecoded)) {
+      $paramsDecoded = [];
+    }
+
+    // Only content types, sorts, and view modes listed in ALLOWED_ENTITIES
+    // are used. With no known content type there is nothing to show, so the
+    // view is marked as failed (renders nothing) and an empty render array is
+    // returned to the caller.
+    $types = self::getValidatedTypes($paramsDecoded['filters']['types'] ?? NULL);
+    if (!$types) {
+      if ($view instanceof ViewExecutable) {
+        $view->build_info['fail'] = TRUE;
+        $view->built = TRUE;
+        $view->executed = TRUE;
+      }
+      $view = [];
+      return;
+    }
+    $sortBy = self::getValidatedSort($types, $paramsDecoded['sort_by'] ?? NULL);
+    $viewMode = self::getValidatedViewMode($types, $paramsDecoded['view_mode'] ?? NULL);
+
+    $setupRunning = TRUE;
+
     $pinned_to_top = isset($paramsDecoded['pinned_to_top']) ? (bool) $paramsDecoded['pinned_to_top'] : FALSE;
 
     /* Events need to have aggregation turned on in the view. Therefore, we
@@ -271,9 +294,9 @@ class ViewsBasicManager extends ControllerBase implements ContainerInjectionInte
      * the custom sort plugin.
      */
 
-    if (in_array('event', $paramsDecoded['filters']['types'])) {
+    if (in_array('event', $types)) {
       $sortArray = [];
-      $sortDirection = explode(":", $paramsDecoded['sort_by']);
+      $sortDirection = explode(":", $sortBy);
 
       if ($pinned_to_top) {
         $sortArray[] = [
@@ -296,7 +319,7 @@ class ViewsBasicManager extends ControllerBase implements ContainerInjectionInte
     }
 
     $view->setDisplay('block_1');
-    $filterType = implode('+', $paramsDecoded['filters']['types']);
+    $filterType = implode('+', $types);
 
     // Retrieve the current filter options from the view's display settings.
     $filters = $view->getDisplay()->getOption('filters');
@@ -345,7 +368,7 @@ class ViewsBasicManager extends ControllerBase implements ContainerInjectionInte
           : "{$filterType}_category";
 
         // Limit the filter to specific terms if provided.
-        $filters[$category_filter_name]['value'] = $this->getChildTermsByParentId($paramsDecoded['category_included_terms'], $vid);
+        $filters[$category_filter_name]['value'] = $this->getChildTermsByParentId((int) $paramsDecoded['category_included_terms'], $vid);
         $filters[$category_filter_name]['limit'] = TRUE;
         $filters[$category_filter_name]['expose']['reduce'] = TRUE;
       }
@@ -376,7 +399,7 @@ class ViewsBasicManager extends ControllerBase implements ContainerInjectionInte
         $vid = 'custom_vocab';
 
         // Limit the filter to specific terms if provided.
-        $filters['field_custom_vocab_target_id']['value'] = $this->getChildTermsByParentId($paramsDecoded['custom_vocab_included_terms'], $vid);
+        $filters['field_custom_vocab_target_id']['value'] = $this->getChildTermsByParentId((int) $paramsDecoded['custom_vocab_included_terms'], $vid);
         $filters['field_custom_vocab_target_id']['limit'] = TRUE;
         $filters['field_custom_vocab_target_id']['expose']['reduce'] = TRUE;
       }
@@ -446,7 +469,7 @@ class ViewsBasicManager extends ControllerBase implements ContainerInjectionInte
     }
 
     // Set operator: "+" is "OR" and "," is "AND".
-    $operator = $paramsDecoded['operator'] ?? '+';
+    $operator = in_array($paramsDecoded['operator'] ?? NULL, ['+', ','], TRUE) ? $paramsDecoded['operator'] : '+';
 
     // Fix for older setting terms for nodes not saved with the new storage.
     if (isset($termsIncludeArray[0]) && is_array($termsIncludeArray[0])) {
@@ -465,11 +488,11 @@ class ViewsBasicManager extends ControllerBase implements ContainerInjectionInte
     $termsInclude = (count($termsIncludeArray) != 0) ? implode($operator, $termsIncludeArray) : 'all';
     $termsExclude = (count($termsExcludeArray) != 0) ? implode($operator, $termsExcludeArray) : NULL;
 
-    if ($paramsDecoded['display'] == 'all') {
+    if (($paramsDecoded['display'] ?? NULL) == 'all') {
       $itemsLimit = 0;
     }
     else {
-      $itemsLimit = $paramsDecoded['limit'];
+      $itemsLimit = isset($paramsDecoded['limit']) ? max(0, (int) $paramsDecoded['limit']) : NULL;
     }
 
     $eventTimePeriod = $paramsDecoded['filters']['event_time_period'] ?? NULL;
@@ -532,11 +555,11 @@ class ViewsBasicManager extends ControllerBase implements ContainerInjectionInte
       'type' => $filterType,
       'terms_include' => $termsInclude,
       'terms_exclude' => $termsExclude,
-      'sort' => $paramsDecoded['sort_by'],
-      'view' => $paramsDecoded['view_mode'],
+      'sort' => $sortBy,
+      'view' => $viewMode,
       'items' => $itemsLimit,
       'event_time_period' => str_contains($filterType, 'event') ? $eventTimePeriod : NULL,
-      'offset' => $paramsDecoded['offset'] ?? 0,
+      'offset' => max(0, (int) ($paramsDecoded['offset'] ?? 0)),
       'field_display_options' => json_encode($field_display_options),
       'event_field_display_options' => json_encode($event_field_display_options),
       'post_field_display_options' => json_encode($post_field_display_options),
@@ -548,7 +571,7 @@ class ViewsBasicManager extends ControllerBase implements ContainerInjectionInte
     $view->execute();
 
     // Unset the pager. Needs to be done after view->execute();
-    if ($paramsDecoded['display'] != "pager") {
+    if (($paramsDecoded['display'] ?? NULL) != "pager") {
       unset($view->pager);
     }
 
@@ -594,11 +617,18 @@ class ViewsBasicManager extends ControllerBase implements ContainerInjectionInte
     if ($running) {
       return NULL;
     }
-    $running = TRUE;
 
-    // Set up the view and initial decoded parameters.
-    $paramsDecoded = json_decode($params, TRUE);
-    $view = $this->initView($paramsDecoded['filters']['types']);
+    // Set up the view and initial decoded parameters. With no known content
+    // type there is nothing to show; return the same empty render array that
+    // setupView() gives in that case.
+    $paramsDecoded = json_decode((string) $params, TRUE);
+    $types = self::getValidatedTypes($paramsDecoded['filters']['types'] ?? NULL);
+    if (!$types) {
+      return [];
+    }
+
+    $running = TRUE;
+    $view = $this->initView($types);
     $this->setupView($view, $params);
 
     // End current view run.
@@ -650,6 +680,98 @@ class ViewsBasicManager extends ControllerBase implements ContainerInjectionInte
   public function sortByList($content_type) {
     $sortByList = self::ALLOWED_ENTITIES[$content_type]['sort_by'];
     return $sortByList;
+  }
+
+  /**
+   * Restricts a list of content types to those in ALLOWED_ENTITIES.
+   *
+   * @param mixed $types
+   *   The content type machine names read from the stored parameters.
+   *
+   * @return string[]
+   *   The known content types, in their original order. Empty when the input
+   *   is not an array or contains no known type.
+   */
+  public static function getValidatedTypes($types): array {
+    if (!is_array($types)) {
+      return [];
+    }
+    $validTypes = array_filter($types, function ($type) {
+      return is_string($type) && isset(self::ALLOWED_ENTITIES[$type]);
+    });
+    return array_values($validTypes);
+  }
+
+  /**
+   * Returns the sort to use for the given content types.
+   *
+   * @param array $types
+   *   The content type machine names. Unknown types are ignored.
+   * @param mixed $sortBy
+   *   The requested sort, in the format "field_name:DIRECTION".
+   *
+   * @return string
+   *   The requested sort when it is listed in the sort_by options of one of
+   *   the content types, otherwise the first sort_by option of the first
+   *   known content type. An empty string when no content type is known.
+   */
+  public static function getValidatedSort(array $types, $sortBy): string {
+    $types = self::getValidatedTypes($types);
+    if (!$types) {
+      return '';
+    }
+    if (is_string($sortBy)) {
+      foreach ($types as $type) {
+        if (isset(self::ALLOWED_ENTITIES[$type]['sort_by'][$sortBy])) {
+          return $sortBy;
+        }
+      }
+    }
+    return array_key_first(self::ALLOWED_ENTITIES[$types[0]]['sort_by']);
+  }
+
+  /**
+   * Returns the view mode to use for the given content types.
+   *
+   * @param array $types
+   *   The content type machine names. Unknown types are ignored.
+   * @param mixed $viewMode
+   *   The requested view mode machine name.
+   *
+   * @return string
+   *   The requested view mode when it is listed for one of the content types,
+   *   otherwise the first view mode of the first known content type. An empty
+   *   string when no content type is known.
+   */
+  public static function getValidatedViewMode(array $types, $viewMode): string {
+    $types = self::getValidatedTypes($types);
+    if (!$types) {
+      return '';
+    }
+    if (is_string($viewMode)) {
+      foreach ($types as $type) {
+        if (isset(self::ALLOWED_ENTITIES[$type]['view_modes'][$viewMode])) {
+          return $viewMode;
+        }
+      }
+    }
+    return array_key_first(self::ALLOWED_ENTITIES[$types[0]]['view_modes']);
+  }
+
+  /**
+   * Returns every field name that appears in a sort_by option.
+   *
+   * @return string[]
+   *   Unique field names, such as "title" or "field_publish_date".
+   */
+  public static function getAllowedSortFields(): array {
+    $fields = [];
+    foreach (self::ALLOWED_ENTITIES as $entity) {
+      foreach (array_keys($entity['sort_by']) as $sortKey) {
+        $fields[strstr($sortKey, ':', TRUE)] = TRUE;
+      }
+    }
+    return array_keys($fields);
   }
 
   /**

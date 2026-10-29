@@ -115,6 +115,11 @@ wrapped_image:
       floated: Inline
       offset: Offset
     default: offset
+  field_style_width:
+    values:
+      large: Large
+      small: Small
+    default: large
 wrapped_text_callout:
   field_style_position:
     values:
@@ -165,10 +170,10 @@ divider:
     default: left
   field_style_width:
     values:
-      100%: 100
-      75%: 75
-      50%: 50
-      25%: 25
+      100%: 100%
+      75%: 75%
+      50%: 50%
+      25%: 25%
     default: 100%
   field_style_thickness:
     values:

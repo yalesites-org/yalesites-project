@@ -499,6 +499,20 @@ function ys_layouts_element_info_alter(array &$info) {
 }
 
 /**
+ * Implements hook_library_info_alter().
+ *
+ * Loads the color-scheme fix for gin_lb's form controls wherever gin_lb's own
+ * stylesheet loads; see css/gin-lb-color-scheme.css for why gin_lb needs it.
+ */
+function ys_layouts_library_info_alter(array &$libraries, $extension) {
+  // The isset() matters if a gin_lb release renames the library: without it
+  // this would recreate 'gin_lb' as a stub holding only this dependency.
+  if ($extension === 'gin_lb' && isset($libraries['gin_lb'])) {
+    $libraries['gin_lb']['dependencies'][] = 'ys_layouts/gin_lb_color_scheme';
+  }
+}
+
+/**
  * To aids in styling per section, set layout_section if using layout builder.
  *
  * For now this is only used with the link grid component:
