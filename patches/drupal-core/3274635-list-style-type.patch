@@ -1,5 +1,6 @@
---- a/core/modules/ckeditor5/ckeditor5.ckeditor5.yml
-+++ b/core/modules/ckeditor5/ckeditor5.ckeditor5.yml
+diff -ruN a/core/modules/ckeditor5/ckeditor5.ckeditor5.yml b/core/modules/ckeditor5/ckeditor5.ckeditor5.yml
+--- a/core/modules/ckeditor5/ckeditor5.ckeditor5.yml	2026-10-29 09:36:31
++++ b/core/modules/ckeditor5/ckeditor5.ckeditor5.yml	2026-10-29 09:36:31
 @@ -394,11 +394,8 @@
      plugins:
        - list.List
@@ -23,18 +24,18 @@
  
  ckeditor5_horizontalLine:
    ckeditor5:
---- a/core/modules/ckeditor5/ckeditor5.module
-+++ b/core/modules/ckeditor5/ckeditor5.module
-@@ -696,7 +696,32 @@
-         ->diff($ol_reversed)
+diff -ruN a/core/modules/ckeditor5/ckeditor5.module b/core/modules/ckeditor5/ckeditor5.module
+--- a/core/modules/ckeditor5/ckeditor5.module	2026-10-29 09:36:31
++++ b/core/modules/ckeditor5/ckeditor5.module	2026-10-29 09:36:31
+@@ -697,6 +697,31 @@
          ->toCKEditor5ElementsArray();
      }
-+
+ 
 +    // @see ckeditor5_post_update_list_type()
 +    if (array_key_exists('ckeditor5_list', $settings['plugins']) && array_key_exists('ckeditor5_sourceEditing', $settings['plugins'])) {
 +      $source_edited = HTMLRestrictions::fromString(implode(' ', $settings['plugins']['ckeditor5_sourceEditing']['allowed_tags']));
 +      $format_restrictions = HTMLRestrictions::fromTextFormat($editor->getFilterFormat());
- 
++
 +      // If neither <ol type> nor <ul type> is allowed through Source Editing
 +      // (the only way it could possibly be supported until now), and it is
 +      // not an unrestricted text format (such as "Full HTML"), then set the
@@ -58,8 +59,9 @@
      $editor->setSettings($settings);
    }
  }
---- a/core/modules/ckeditor5/ckeditor5.post_update.php
-+++ b/core/modules/ckeditor5/ckeditor5.post_update.php
+diff -ruN a/core/modules/ckeditor5/ckeditor5.post_update.php b/core/modules/ckeditor5/ckeditor5.post_update.php
+--- a/core/modules/ckeditor5/ckeditor5.post_update.php	2026-10-29 09:36:31
++++ b/core/modules/ckeditor5/ckeditor5.post_update.php	2026-10-29 09:36:31
 @@ -142,3 +142,21 @@
        && array_key_exists('ckeditor5_sourceEditing', $settings['plugins']);
    });
@@ -82,8 +84,9 @@
 +      && array_key_exists('ckeditor5_sourceEditing', $settings['plugins']);
 +  });
 +}
---- a/core/modules/ckeditor5/config/schema/ckeditor5.schema.yml
-+++ b/core/modules/ckeditor5/config/schema/ckeditor5.schema.yml
+diff -ruN a/core/modules/ckeditor5/config/schema/ckeditor5.schema.yml b/core/modules/ckeditor5/config/schema/ckeditor5.schema.yml
+--- a/core/modules/ckeditor5/config/schema/ckeditor5.schema.yml	2026-10-29 09:36:31
++++ b/core/modules/ckeditor5/config/schema/ckeditor5.schema.yml	2026-10-29 09:36:31
 @@ -150,6 +150,11 @@
            label: 'Allow start index'
            constraints:
@@ -96,8 +99,9 @@
      multiBlock:
        type: boolean
        label: 'Allow blocks to be created in list items'
---- a/core/modules/ckeditor5/js/ckeditor5.js
-+++ b/core/modules/ckeditor5/js/ckeditor5.js
+diff -ruN a/core/modules/ckeditor5/js/ckeditor5.js b/core/modules/ckeditor5/js/ckeditor5.js
+--- a/core/modules/ckeditor5/js/ckeditor5.js	2026-10-29 09:36:31
++++ b/core/modules/ckeditor5/js/ckeditor5.js	2026-10-29 09:36:31
 @@ -265,32 +265,42 @@
      if (!rule.selectorText) {
        return;
@@ -225,10 +229,13 @@
              offCanvasCss(element);
            }
          })
-@@ -625,6 +660,112 @@
-     },
-   };
+@@ -622,6 +657,133 @@
  
+       // Store the save callback to be executed when this dialog is closed.
+       Drupal.ckeditor5.saveCallback = saveCallback;
++    },
++  };
++
 +  Drupal.behaviors.editorStyleFix = {
 +    attach(context) {
 +      // CKEditor's DLL injects <style data-cke> tags that override native
@@ -331,15 +338,34 @@
 +            });
 +          });
 +        }).observe(document.head, { childList: true });
-+      }
-+    },
-+  };
 +
-   // Redirect on hash change when the original hash has an associated CKEditor 5.
-   function redirectTextareaFragmentToCKEditor5Instance() {
-     const hash = window.location.hash.substring(1);
---- a/core/modules/ckeditor5/src/Plugin/CKEditor4To5Upgrade/Core.php
-+++ b/core/modules/ckeditor5/src/Plugin/CKEditor4To5Upgrade/Core.php
++        // Dialog-independent safety net: rather than rely on detecting
++        // every possible dialog wrapper a CKEditor5 instance might be
++        // rendered inside (off-canvas tray, core's generic AJAX modal,
++        // layout_builder_browser's own "Add block" modal, ...), apply the
++        // explicit-ancestor-type cascade unconditionally so it works
++        // regardless of which (if any) dialog triggered the editor.
++        const explicitAncestorCascadeCss = [
++          `.ck-content ol[type='1'] ol:not([type]) {list-style-type: lower-alpha}`,
++          `.ck-content ol[type='1'] ol:not([type]) ol:not([type]) {list-style-type: lower-roman}`,
++          `.ck-content ol[type='a'] ol:not([type]) {list-style-type: lower-roman}`,
++          `.ck-content ul[type='disc'] ul:not([type]) {list-style-type: circle}`,
++          `.ck-content ul[type='disc'] ul:not([type]) ul:not([type]) {list-style-type: square}`,
++        ].join('\n');
++        const explicitAncestorCascadeStyle = document.createElement('style');
++        explicitAncestorCascadeStyle.textContent = explicitAncestorCascadeCss;
++        explicitAncestorCascadeStyle.setAttribute(
++          'id',
++          'ckeditor5-explicit-ancestor-list-cascade',
++        );
++        document.head.appendChild(explicitAncestorCascadeStyle);
++      }
+     },
+   };
+ 
+diff -ruN a/core/modules/ckeditor5/src/Plugin/CKEditor4To5Upgrade/Core.php b/core/modules/ckeditor5/src/Plugin/CKEditor4To5Upgrade/Core.php
+--- a/core/modules/ckeditor5/src/Plugin/CKEditor4To5Upgrade/Core.php	2026-10-29 09:36:31
++++ b/core/modules/ckeditor5/src/Plugin/CKEditor4To5Upgrade/Core.php	2026-10-29 09:36:31
 @@ -274,14 +274,16 @@
        case 'ckeditor5_list':
          $restrictions = $text_format->getHtmlRestrictions();
@@ -360,8 +386,9 @@
          return $configuration;
  
        case 'media_media':
---- a/core/modules/ckeditor5/src/Plugin/CKEditor5Plugin/ListPlugin.php
-+++ b/core/modules/ckeditor5/src/Plugin/CKEditor5Plugin/ListPlugin.php
+diff -ruN a/core/modules/ckeditor5/src/Plugin/CKEditor5Plugin/ListPlugin.php b/core/modules/ckeditor5/src/Plugin/CKEditor5Plugin/ListPlugin.php
+--- a/core/modules/ckeditor5/src/Plugin/CKEditor5Plugin/ListPlugin.php	2026-10-29 09:36:31
++++ b/core/modules/ckeditor5/src/Plugin/CKEditor5Plugin/ListPlugin.php	2026-10-29 09:36:31
 @@ -26,7 +26,11 @@
     */
    public function defaultConfiguration() {
