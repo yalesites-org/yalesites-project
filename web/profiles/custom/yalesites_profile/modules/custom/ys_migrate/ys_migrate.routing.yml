@@ -20,3 +20,18 @@ ys_migrate.resource_csv_sample:
     _controller: '\Drupal\ys_migrate\Controller\ResourceCsvSampleController::download'
   requirements:
     _permission: 'create resource content'
+
+ys_migrate.post_csv_import:
+  path: '/admin/content/manage-posts/csv-import'
+  defaults:
+    _form: '\Drupal\ys_migrate\Form\PostCsvImportForm'
+    _title: 'Post CSV Import'
+  requirements:
+    _permission: 'create post content'
+
+ys_migrate.post_csv_sample:
+  path: '/admin/content/manage-posts/csv-import/sample.csv'
+  defaults:
+    _controller: '\Drupal\ys_migrate\Controller\PostCsvSampleController::download'
+  requirements:
+    _permission: 'create post content'

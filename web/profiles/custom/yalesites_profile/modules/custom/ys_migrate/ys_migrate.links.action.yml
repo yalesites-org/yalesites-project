@@ -11,3 +11,10 @@ ys_migrate.csv_import_resources:
   title: 'CSV Import'
   appears_on:
     - view.manage_resources.page_1
+
+# Adds an action link to the manage posts interface.
+ys_migrate.csv_import_posts:
+  route_name: ys_migrate.post_csv_import
+  title: 'CSV Import'
+  appears_on:
+    - view.manage_posts.page_1

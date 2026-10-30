@@ -43,9 +43,12 @@ class ContentExportBuilder {
    *
    * Keyed by bundle, then by field machine name, with the column header as the
    * value. Headers match the wording editors already see on the matching Manage
-   * screen. Bundles absent from this map export no date column.
+   * screen, or for posts, which have no date column there, the field's own
+   * label (also the header the Post CSV importer reads). Bundles absent from
+   * this map export no date column.
    */
   const BUNDLE_DATE = [
+    'post' => ['field_publish_date' => 'Publish Date'],
     'event' => ['field_event_date' => 'Dates'],
     'resource' => ['field_publish_date' => 'Resource Publication Date'],
   ];
@@ -242,18 +245,19 @@ class ContentExportBuilder {
   }
 
   /**
-   * Returns a resource's publication date.
+   * Returns a post's or resource's publish date.
    *
    * The field is date-only, stored as Y-m-d, which is already the format the
-   * Manage Resources column renders. The stored value is emitted verbatim so
-   * there is no timestamp round-trip whose only possible effect would be
-   * shifting the date by a day across a timezone boundary.
+   * Manage Resources column renders and the Post CSV importer reads. The
+   * stored value is emitted verbatim so there is no timestamp round-trip whose
+   * only possible effect would be shifting the date by a day across a timezone
+   * boundary.
    *
    * @param \Drupal\node\NodeInterface $node
-   *   The resource node.
+   *   The post or resource node.
    *
    * @return string
-   *   The publication date, or an empty string when unset.
+   *   The publish date, or an empty string when unset.
    */
   protected static function publishDate(NodeInterface $node): string {
     if (!$node->hasField('field_publish_date')) {
