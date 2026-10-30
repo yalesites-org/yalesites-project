@@ -770,8 +770,8 @@ class ColorTokenResolver {
     }
 
     // Hide the select element visually and from keyboard and screen reader
-    // users: the swatches are the control, and the select only carries the
-    // submitted value.
+    // users: the swatches (or the section dropdown) are the control, and the
+    // select only carries the submitted value.
     $element['#attributes']['class'][] = 'palette-select-hidden';
     $element['#attributes']['style'] = 'position: absolute; opacity: 0; pointer-events: none; width: 0; height: 0; overflow: hidden;';
     $element['#attributes']['tabindex'] = '-1';
@@ -786,6 +786,9 @@ class ColorTokenResolver {
 
     $palette_render = [
       '#theme' => 'component_color_picker',
+      // Section themes fit a 450px settings panel as a dropdown; block-level
+      // pickers keep the swatch row.
+      '#display' => $is_section_layout ? 'dropdown' : 'swatches',
       '#group_label' => $element['#title'] ?? NULL,
       '#palette_options' => $palette_options,
       '#palette_order' => $palette_order,

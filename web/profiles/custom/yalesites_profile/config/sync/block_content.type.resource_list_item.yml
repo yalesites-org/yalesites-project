@@ -1,0 +1,8 @@
+uuid: 7bbbae74-0219-4a3a-ae57-682bd53e2546
+langcode: en
+status: true
+dependencies: {  }
+id: resource_list_item
+label: 'Resources - List View'
+revision: true
+description: 'Resources - List listing block.'

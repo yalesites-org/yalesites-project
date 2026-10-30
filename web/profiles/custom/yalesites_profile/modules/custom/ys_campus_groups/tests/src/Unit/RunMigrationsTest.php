@@ -5,9 +5,11 @@ namespace Drupal\Tests\ys_campus_groups\Unit;
 use Drupal\Core\Messenger\Messenger;
 use Drupal\Core\Messenger\MessengerInterface;
 use Drupal\Core\PageCache\ResponsePolicy\KillSwitch;
+use Drupal\Core\Routing\UrlGeneratorInterface;
 use Drupal\Tests\UnitTestCase;
 use Drupal\ys_campus_groups\CampusGroupsManager;
 use Drupal\ys_campus_groups\Controller\RunMigrations;
+use Symfony\Component\DependencyInjection\ContainerBuilder;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\RequestStack;
 use Symfony\Component\HttpFoundation\Session\Flash\FlashBag;
@@ -39,11 +41,13 @@ class RunMigrationsTest extends UnitTestCase {
    *   The messenger the controller and the (mocked) manager share.
    * @param bool $enabled
    *   Whether Campus Groups syncing is enabled in config.
+   * @param string $referer
+   *   The HTTP_REFERER the sync request arrives with.
    *
    * @return \Drupal\ys_campus_groups\Controller\RunMigrations
    *   The controller instance.
    */
-  private function buildController(MessengerInterface $messenger, bool $enabled): RunMigrations {
+  private function buildController(MessengerInterface $messenger, bool $enabled, string $referer = 'http://localhost/admin/yalesites/campus_groups'): RunMigrations {
     $config_factory = $this->getConfigFactoryStub([
       'ys_campus_groups.settings' => ['enable_campus_groups_sync' => $enabled],
     ]);
@@ -58,9 +62,10 @@ class RunMigrationsTest extends UnitTestCase {
       }
     );
 
-    // A referer keeps getRedirectUrl() off the (container-backed) route path.
+    // A same-site referer keeps getRedirectUrl() off the (container-backed)
+    // front page route. Request::create() puts the request on localhost.
     $request = Request::create('/admin/yalesites/campus_groups/sync');
-    $request->server->set('HTTP_REFERER', 'https://example.com/admin/yalesites/campus_groups');
+    $request->server->set('HTTP_REFERER', $referer);
     $request_stack = new RequestStack();
     $request_stack->push($request);
 
@@ -107,6 +112,41 @@ class RunMigrationsTest extends UnitTestCase {
 
     $status = $this->messages($messenger, MessengerInterface::TYPE_STATUS);
     $this->assertContains('Synchronized 8 events.', $status);
+  }
+
+  /**
+   * A same-site referer is where the admin lands after the sync.
+   *
+   * @covers ::runAllMigrations
+   */
+  public function testSameSiteRefererIsFollowed(): void {
+    $messenger = new Messenger(new FlashBag(), new KillSwitch());
+
+    $response = $this->buildController($messenger, FALSE)->runAllMigrations();
+
+    $this->assertSame('http://localhost/admin/yalesites/campus_groups', $response->getTargetUrl());
+  }
+
+  /**
+   * An off-site Referer redirects to the front page.
+   *
+   * The ys_core SameSiteRedirectTest covers every off-site case; this
+   * only checks the controller uses it.
+   *
+   * @covers ::runAllMigrations
+   */
+  public function testOffSiteRefererRedirectsToFrontPage(): void {
+    $referer = 'https://evil.example.com/admin/yalesites/campus_groups';
+    $url_generator = $this->createMock(UrlGeneratorInterface::class);
+    $url_generator->method('generateFromRoute')->with('<front>')->willReturn('/');
+    $container = new ContainerBuilder();
+    $container->set('url_generator', $url_generator);
+    \Drupal::setContainer($container);
+
+    $messenger = new Messenger(new FlashBag(), new KillSwitch());
+    $response = $this->buildController($messenger, FALSE, $referer)->runAllMigrations();
+
+    $this->assertSame('/', $response->getTargetUrl());
   }
 
 }

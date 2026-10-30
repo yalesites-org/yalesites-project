@@ -1,0 +1,20 @@
+/**
+ * @file
+ * Sits a rich-text field's help text right under its editor in gin_lb forms.
+ *
+ * Gin_lb renders the help text after the editor's own form item, which keeps
+ * its 24px bottom margin, so the help text floated well below the field it
+ * describes. Every other field's help text sits directly under its input.
+ * Attached by ys_layouts_preprocess_text_format_wrapper__gin_lb().
+ *
+ * Only when the field allows a single text format: the format is then a hidden
+ * input between the editor and the help text. With a visible format selector
+ * there, the editor keeps its margin.
+ *
+ * gin_lb sets that margin with !important (.glb-form-item), so this has to as
+ * well.
+ */
+.js-text-format-wrapper
+  > .glb-form-item:has(+ input[type='hidden'] + .glb-form-item__description) {
+  margin-bottom: 0 !important;
+}
