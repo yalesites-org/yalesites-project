@@ -124,13 +124,6 @@
         }
     },
     "config": {
-        "policy": {
-            "advisories": {
-                "ignore-id": [
-                    "SA-CONTRIB-2025-060"
-                ]
-            }
-        },
         "preferred-install": "dist",
         "sort-packages": true,
         "platform": {

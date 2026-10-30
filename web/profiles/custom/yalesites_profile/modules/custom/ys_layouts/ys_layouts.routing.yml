@@ -43,6 +43,13 @@ ys_layouts.clone_block:
     _controller: '\Drupal\ys_layouts\Controller\CloneBlockController::build'
   requirements:
     _layout_builder_access: 'view'
+    # Changes data on GET, so a token blocks cross-site triggering.
+    _csrf_token: 'TRUE'
+    # A cloned block is added to the same section, so the section's content and
+    # region locks that refuse a section clone refuse a block clone too.
+    _ys_layouts_clone_section: 'TRUE'
+    # Keeps a non-numeric delta a 404 rather than a TypeError in the controller.
+    delta: '\d+'
   options:
     _admin_route: TRUE
     parameters:
@@ -79,6 +86,8 @@ ys_layouts.clone_section:
     _controller: '\Drupal\ys_layouts\Controller\CloneSectionController::build'
   requirements:
     _layout_builder_access: 'view'
+    # Changes data on GET, so a token blocks cross-site triggering.
+    _csrf_token: 'TRUE'
     _ys_layouts_clone_section: 'TRUE'
     # Keeps a non-numeric delta a 404 rather than a TypeError in the controller.
     delta: '\d+'

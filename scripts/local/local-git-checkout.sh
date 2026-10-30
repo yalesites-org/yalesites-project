@@ -9,8 +9,9 @@
 #  1. Refuses to run if any repo has uncommitted (staged or unstaged) changes
 #     or untracked files.
 #  2. Switches yalesites-project to its branch.
-#  3. Runs `lando composer update` so contrib modules added or removed by the
-#     branch are picked up (skip with -s). The gitignored
+#  3. Runs `composer update` via the local dev tool (lando or ddev) so contrib
+#     modules added or removed by the branch are picked up (skip with -s).
+#     The gitignored
 #     atomic/_yale-packages directory is held outside atomic while composer
 #     runs, because composer may check atomic out at a release tag.
 #  4. Switches atomic, tokens and component-library-twig to their branches.
@@ -356,8 +357,9 @@ function restore_yale_packages() {
 
 # refresh_composer_dependencies
 #
-# This function will run `lando composer update` so contrib modules added or
-# removed by the yalesites-project branch are picked up.
+# This function will run `composer update` via the selected local dev tool
+# (lando or ddev) so contrib modules added or removed by the yalesites-project
+# branch are picked up.
 # When the pinned atomic version changes, composer checks atomic out at the
 # release tag in place, so _yale-packages is held outside atomic while it runs.
 # The caller restores it with restore_yale_packages after atomic is switched.
@@ -380,9 +382,9 @@ function refresh_composer_dependencies() {
   fi
 
   _say "Updating composer dependencies (skip with -s)"
-  if ! lando composer update; then
+  if ! ys_local_composer update; then
     restore_yale_packages "$atomic_path" "$hold_path"
-    _error "lando composer update failed"
+    _error "composer update failed"
     exit 1
   fi
 
@@ -521,6 +523,7 @@ function _local-git-checkout() {
   # source say.sh so we can use the _say and _error functions
   [ -e "$utils_path/say.sh" ] || { echo -e "[$0] Say utility not found.  You must run this from the yalesites root directory: "; exit 1; }
   source ./scripts/local/util/say.sh
+  source ./scripts/local/local-dev-tool.sh
 
   # enable debugging or verbose mode if requested
   [ "$debug" = true ] && _say "Debug mode enabled" && set -x
@@ -695,7 +698,7 @@ function _local-git-checkout() {
 
   if [ "$atomic_changed" = true ] || [ "$deps_refreshed" = true ]; then
     _say "Atomic or composer dependencies changed, so we need to clear Drupal cache; this could take a while"
-    lando drush cr || _error "Warning: lando drush cr failed; run it by hand"
+    ys_local_drush cr || _error "Warning: drush cr failed; run it by hand"
   fi
 
   _say "********************"

@@ -234,10 +234,48 @@ function ys_layouts_form_alter(&$form, $form_state, $form_id) {
   if ($form_id == 'layout_builder_update_block' || $form_id == 'layout_builder_add_block') {
     if (isset($form['reusable'])) {
       $form['reusable']['#title'] = t('Reusable Block');
-      $form['reusable']['#description'] = t("Create reusable content with Reusable Blocks. Changes made to a Reusable Block's content are reflected anywhere the Block is used. This setting cannot be changed after saving.");
+      $form['reusable']['#description'] = t("Create reusable content with Reusable Blocks. Changes made to a Reusable Block's content are reflected anywhere the Block is used.");
+
+      // "Make block reusable" + its dependent "Reusable Block title" field
+      // (#1481) get the same toggle/disclosure row treatment as "Show
+      // Category" and the other exposed filters on the listing-block form
+      // (ys_views_basic's buildExposedFilterAccordion()) — the same
+      // "checkbox turns on, dependent field appears" shape, generalized to
+      // every block type via a shared component (assets/css/reusable-
+      // toggle.css) rather than copied. The row is a real container
+      // (_ys_layouts_wrap_reusable_toggle()) holding both fields, so its
+      // markup is well formed whatever else on the form is weighted or
+      // reordered. ys_views_basic_form_alter() runs after this hook and
+      // groups that container, not the two fields, into the listing-block
+      // General tab.
+      //
+      // Split into its own visually distinct warning (#1481): it's the only
+      // irreversible decision on this form and used to trail as plain help
+      // text easy to skim past. Styled from this module's own
+      // reusable-toggle.css rather than borrowing core's "messages
+      // messages--warning", whose rendering here depends on which route built
+      // the form: in the off-canvas modal (the normal editor path) gin_lb
+      // namespaces messages to .glb-messages* (gin_lb/src/classes.json) and
+      // raw #prefix/#suffix markup never passes through the glb_classes()
+      // renamer, so the bare classes resolve to nothing — transparent
+      // background, plain body text. On the full-page /layout_builder/add
+      // route Gin's admin CSS is present and styles them as a dark box
+      // instead. Owning the styling keeps it identical on both.
+      $form['reusable']['#suffix'] = '<div role="note" class="ys-toggle-row__warning">' . t('This setting cannot be changed after saving.') . '</div>';
 
       $form['info']['#title'] = t('Reusable Block title');
       $form['info']['#description'] = t('Add a short, descriptive title to easily find and reuse the Reusable Block. Defaults to Administrative label if no title is provided.');
+      // Disabled (not hidden) while unchecked, matching the same pattern as
+      // category_filter_label/pin_label: the row's CSS collapses the body
+      // via :has() off the checkbox, so 'disabled' is what stops a collapsed
+      // row from still submitting a value.
+      $form['info']['#states'] = [
+        'disabled' => [':input[name="reusable"]' => ['checked' => FALSE]],
+      ];
+
+      _ys_layouts_wrap_reusable_toggle($form);
+
+      $form['#attached']['library'][] = 'ys_layouts/reusable_toggle';
     }
 
     // Name the block in the heading; both surfaces otherwise open as the route
@@ -293,6 +331,67 @@ function ys_layouts_form_alter(&$form, $form_state, $form_id) {
 
     $form['#after_build'][] = 'ys_layouts_lift_block_instructions';
   }
+}
+
+/**
+ * Wraps the reusable checkbox and its title field in a toggle row container.
+ *
+ * The row (reusable-toggle.css) needs one wrapper around both fields and an
+ * inner body around the title field. Real containers replace an open tag in
+ * one element's #prefix closed in another's #suffix, which only held while
+ * the two rendered adjacently.
+ *
+ * ConfigureBlockFormBase sets #tree on the form root, so a plain container
+ * would nest its children's #parents (reusable_toggle[reusable]) and core's
+ * submitForm(), which reads the top-level "reusable" and "info" values, would
+ * silently get NULL. Each field therefore gets an explicit #parents of just its
+ * own key, and the containers are #tree FALSE as well: submitted values, input
+ * names and the "reusable" #states selector are exactly as before. The
+ * container takes the place of 'reusable' in the form's array order, which
+ * with no #weight is the render order.
+ *
+ * @param array $form
+ *   The configure-block form, passed by reference. Must contain 'reusable'.
+ */
+function _ys_layouts_wrap_reusable_toggle(array &$form): void {
+  $row = [
+    '#type' => 'container',
+    '#tree' => FALSE,
+    '#attributes' => [
+      'class' => ['ys-toggle-row', 'ys-toggle-row--has-settings'],
+    ],
+    // An empty row would still render its bordered wrapper.
+    '#access' => $form['reusable']['#access'] ?? TRUE,
+    'reusable' => ['#parents' => ['reusable']] + $form['reusable'],
+  ];
+  if (isset($form['info'])) {
+    $row['body'] = [
+      '#type' => 'container',
+      '#tree' => FALSE,
+      '#attributes' => ['class' => ['ys-toggle-row__body']],
+      'info' => ['#parents' => ['info']] + $form['info'],
+    ];
+  }
+  // A group or weight already put on the fields (another module's alter
+  // running first) belongs to the row now: a #group left on a field would
+  // pull it back out of the row at render time.
+  foreach (['#group', '#weight'] as $property) {
+    if (isset($row['reusable'][$property])) {
+      $row[$property] = $row['reusable'][$property];
+    }
+    unset($row['reusable'][$property], $row['body']['info'][$property]);
+  }
+
+  $wrapped = [];
+  foreach ($form as $key => $value) {
+    if ($key === 'reusable') {
+      $wrapped['reusable_toggle'] = $row;
+    }
+    elseif ($key !== 'info' || !isset($row['body'])) {
+      $wrapped[$key] = $value;
+    }
+  }
+  $form = $wrapped;
 }
 
 /**
@@ -501,14 +600,53 @@ function ys_layouts_element_info_alter(array &$info) {
 /**
  * Implements hook_library_info_alter().
  *
- * Loads the color-scheme fix for gin_lb's form controls wherever gin_lb's own
- * stylesheet loads; see css/gin-lb-color-scheme.css for why gin_lb needs it.
+ * Loads the color-scheme fix for gin_lb's form controls and the visible
+ * off-canvas resize edge wherever gin_lb's own stylesheet loads; see
+ * css/gin-lb-color-scheme.css and css/off-canvas-resize-handle.css for why.
  */
 function ys_layouts_library_info_alter(array &$libraries, $extension) {
   // The isset() matters if a gin_lb release renames the library: without it
   // this would recreate 'gin_lb' as a stub holding only this dependency.
   if ($extension === 'gin_lb' && isset($libraries['gin_lb'])) {
     $libraries['gin_lb']['dependencies'][] = 'ys_layouts/gin_lb_color_scheme';
+    $libraries['gin_lb']['dependencies'][] = 'ys_layouts/off_canvas_resize_handle';
+  }
+}
+
+/**
+ * Implements hook_preprocess_HOOK() for text_format_wrapper__gin_lb.
+ *
+ * Styles a rich-text field's help text like every other field's in the Layout
+ * Builder sidebar. Gin_lb's template prints these attributes on the
+ * description div, but they carry the text field's own classes and no
+ * description class, so the help text rendered as full-size body text. The
+ * classes match what gin_lb's form-element template gives other descriptions;
+ * the library closes the gap above the help text.
+ */
+function ys_layouts_preprocess_text_format_wrapper__gin_lb(array &$variables) {
+  $variables['attributes']['class'][] = 'description';
+  $variables['attributes']['class'][] = 'form-item__description';
+  $variables['#attached']['library'][] = 'ys_layouts/gin_lb_text_format';
+}
+
+/**
+ * Implements hook_theme_suggestions_HOOK_alter() for text_format_wrapper.
+ *
+ * Gin_lb gives a variables-only theme hook like this one its __gin_lb
+ * template only on a fixed list of routes, and Configure block
+ * (layout_builder.update_block) is not on it. So a rich-text field's help text
+ * was styled when adding a block but not when editing one. This extends the
+ * suggestion to every route gin_lb treats as a Layout Builder route.
+ */
+function ys_layouts_theme_suggestions_text_format_wrapper_alter(array &$suggestions, array $variables) {
+  if (!\Drupal::moduleHandler()->moduleExists('gin_lb')) {
+    return;
+  }
+  $context_validator = \Drupal::service('gin_lb.context_validator');
+  if ($context_validator->isValidTheme()
+    && $context_validator->isLayoutBuilderRoute()
+    && !in_array('text_format_wrapper__gin_lb', $suggestions, TRUE)) {
+    $suggestions[] = 'text_format_wrapper__gin_lb';
   }
 }
 
