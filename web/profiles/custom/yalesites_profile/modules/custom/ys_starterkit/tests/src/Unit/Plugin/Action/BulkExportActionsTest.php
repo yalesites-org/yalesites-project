@@ -22,10 +22,10 @@ use Drupal\ys_starterkit\Plugin\Action\TaxonomyBulkExport;
  * configuration and access-checking behavior is exercised here via the
  * ys_starterkit class that is actually instantiated in production.
  *
- * ContentBulkExport::executeMultiple() is not covered: it builds a status
- * message via Link::createFromRoute(), which requires the routing/URL
- * generation services (a Kernel-level dependency) rather than the container
- * these unit tests otherwise avoid.
+ * ContentBulkExport::executeMultiple() is not covered: it streams the
+ * generated zip file straight to the client via StreamedResponse::send(),
+ * which reads and deletes a real file entity and writes to the output buffer
+ * rather than returning a value these unit tests could assert on.
  *
  * @group yalesites
  * @group ys_starterkit
