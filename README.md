@@ -5,7 +5,7 @@ YaleSites Project is a **Pantheon custom upstream for Drupal 10** that serves as
 This is a sophisticated multi-repository system that includes:
 
 - **Pantheon custom upstream for Drupal 10** - Core platform infrastructure
-- **Local development environment and tooling** - Lando-based development setup
+- **Local development environment and tooling** - Lando or DDEV development setup (see [setup](/docs/setup.md))
 - **Code quality, testing, and build tools** - Comprehensive linting and testing suite
 - **Continuous integration and delivery support** - Automated builds and deployments
 
@@ -33,9 +33,9 @@ npm run setup
 ## Prerequisites
 
 - **PHP Version**: 8.3
-- **Node.js**: >=8.0, <11.0 (managed via NVM)
+- **Node.js**: 20.x, the version pinned in `.nvmrc` (managed via NVM)
 - **Docker**: 3GB+ memory, 3+ CPUs recommended
-- **Lando**: Latest release
+- **Lando** or **DDEV**: Latest release. Lando is the default; set `export YALESITES_LOCAL_DOCKER_TOOL=ddev` to use DDEV with the `npm run` local scripts. See [setup](/docs/setup.md).
 - **Composer**: Version 2.x
 - **GitHub Personal Access Token**: Required for `@yalesites-org` packages (scope: `write:packages`)
 - **Pantheon Terminus**: Machine token for platform integration
@@ -93,7 +93,7 @@ All commands are prefixed with `npm run`. For example: `npm run setup`
 - `prettier` - Check code formatting (does not auto-fix)
 - `test` - Run complete test suite (prettier + all linting)
 
-### Alternative Commands (via Lando)
+### Alternative Commands (via Lando or DDEV)
 
 ```bash
 lando composer code-sniff    # PHP linting
@@ -103,6 +103,18 @@ lando drush [command]       # Drush commands
 lando xdebug-on            # Enable Xdebug
 lando xdebug-off           # Disable Xdebug
 ```
+
+The same commands work under DDEV by swapping the prefix:
+
+```bash
+ddev composer code-sniff     # PHP linting
+ddev composer code-fix       # Auto-fix PHP code style
+ddev phpunit <path>          # Run PHPUnit tests for a module or test path
+ddev drush [command]         # Drush commands
+ddev xdebug on               # Enable Xdebug (ddev xdebug off to disable)
+```
+
+See [docs/setup.md](/docs/setup.md) for the full DDEV section, including Pantheon pulls and Redis.
 
 ## Architecture Notes
 
