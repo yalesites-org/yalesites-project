@@ -229,7 +229,7 @@ diff -ruN a/core/modules/ckeditor5/js/ckeditor5.js b/core/modules/ckeditor5/js/c
              offCanvasCss(element);
            }
          })
-@@ -622,6 +657,145 @@
+@@ -622,6 +657,148 @@
  
        // Store the save callback to be executed when this dialog is closed.
        Drupal.ckeditor5.saveCallback = saveCallback;
@@ -346,23 +346,26 @@ diff -ruN a/core/modules/ckeditor5/js/ckeditor5.js b/core/modules/ckeditor5/js/c
 +        // explicit-ancestor-type cascade unconditionally so it works
 +        // regardless of which (if any) dialog triggered the editor.
 +        const explicitAncestorCascadeCss = [
-+          // Each starting type below is one step into the decimal ->
-+          // lower-alpha -> lower-roman (or disc -> circle -> square) cycle,
-+          // so its own 2-levels-deep/3-levels-deep rules continue from
-+          // wherever it starts, wrapping back to the beginning of the cycle
-+          // once all three steps have been used.
++          // Each starting type below is at or past some step into the
++          // decimal -> lower-alpha -> lower-roman (or disc -> circle ->
++          // square) sequence. A start at the beginning of the sequence
++          // (1/disc) continues advancing through it for 2/3 levels deep.
++          // A start already at or past the sequence's last step (a/i,
++          // circle/square) has no canonical next step to advance to, so it
++          // holds at that terminal style for every level below it instead
++          // of wrapping back to the start.
 +          `.ck-content ol[type='1'] ol:not([type]) {list-style-type: lower-alpha}`,
 +          `.ck-content ol[type='1'] ol:not([type]) ol:not([type]) {list-style-type: lower-roman}`,
 +          `.ck-content ol[type='a'] ol:not([type]) {list-style-type: lower-roman}`,
-+          `.ck-content ol[type='a'] ol:not([type]) ol:not([type]) {list-style-type: decimal}`,
-+          `.ck-content ol[type='i'] ol:not([type]) {list-style-type: decimal}`,
-+          `.ck-content ol[type='i'] ol:not([type]) ol:not([type]) {list-style-type: lower-alpha}`,
++          `.ck-content ol[type='a'] ol:not([type]) ol:not([type]) {list-style-type: lower-roman}`,
++          `.ck-content ol[type='i'] ol:not([type]) {list-style-type: lower-roman}`,
++          `.ck-content ol[type='i'] ol:not([type]) ol:not([type]) {list-style-type: lower-roman}`,
 +          `.ck-content ul[type='disc'] ul:not([type]) {list-style-type: circle}`,
 +          `.ck-content ul[type='disc'] ul:not([type]) ul:not([type]) {list-style-type: square}`,
 +          `.ck-content ul[type='circle'] ul:not([type]) {list-style-type: square}`,
-+          `.ck-content ul[type='circle'] ul:not([type]) ul:not([type]) {list-style-type: disc}`,
-+          `.ck-content ul[type='square'] ul:not([type]) {list-style-type: disc}`,
-+          `.ck-content ul[type='square'] ul:not([type]) ul:not([type]) {list-style-type: circle}`,
++          `.ck-content ul[type='circle'] ul:not([type]) ul:not([type]) {list-style-type: square}`,
++          `.ck-content ul[type='square'] ul:not([type]) {list-style-type: square}`,
++          `.ck-content ul[type='square'] ul:not([type]) ul:not([type]) {list-style-type: square}`,
 +        ].join('\n');
 +        const explicitAncestorCascadeStyle = document.createElement('style');
 +        explicitAncestorCascadeStyle.textContent = explicitAncestorCascadeCss;
