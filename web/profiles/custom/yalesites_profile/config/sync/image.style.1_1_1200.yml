@@ -1,0 +1,17 @@
+uuid: e60a0794-8b6d-4988-ba5b-49a70991f290
+langcode: en
+status: true
+dependencies:
+  module:
+    - focal_point
+name: '1_1_1200'
+label: '1:1 (1200)'
+effects:
+  3aacf8e8-96f3-481d-9301-d441c2046783:
+    uuid: 3aacf8e8-96f3-481d-9301-d441c2046783
+    id: focal_point_scale_and_crop
+    weight: -10
+    data:
+      width: 1200
+      height: 1200
+      crop_type: focal_point
