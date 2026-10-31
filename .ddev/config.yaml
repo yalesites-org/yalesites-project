@@ -16,8 +16,8 @@ nodejs_version: "20"
 use_dns_when_possible: true
 composer_version: "2"
 web_environment:
-    - PANTHEON_SITE=yalesites-platform
-    - PANTHEON_ENVIRONMENT=dev
+    - DDEV_PANTHEON_SITE=yalesites-platform
+    - DDEV_PANTHEON_ENVIRONMENT=dev
     - COMPOSER_PROCESS_TIMEOUT=1800
     - CUSTOMER_SECRETS_FAKE_FILE=/var/www/html/secrets.json
 corepack_enable: false
