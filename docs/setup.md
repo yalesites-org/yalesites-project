@@ -121,12 +121,12 @@ Without it the pull stops with `Please make sure you have set TERMINUS_MACHINE_T
 
 Current DDEV reads its global config only from `~/.ddev/`. If you set the token with an older DDEV, it may be in `~/.config/ddev/` instead, which is no longer read; run the command above again to add it to the current config.
 
-The site and environment come from **`PANTHEON_SITE`** and **`PANTHEON_ENVIRONMENT`** in the committed `.ddev/config.yaml`. To point at a different site or environment without editing that file, create **`.ddev/config.local.yaml`** (ignored by the `.ddev/.gitignore` DDEV generates on first start; do not commit it):
+The site and environment come from **`DDEV_PANTHEON_SITE`** and **`DDEV_PANTHEON_ENVIRONMENT`** in the committed `.ddev/config.yaml`. To point at a different site or environment without editing that file, create **`.ddev/config.local.yaml`** (ignored by the `.ddev/.gitignore` DDEV generates on first start; do not commit it):
 
 ```yaml
 web_environment:
-  - PANTHEON_SITE=my-site-name
-  - PANTHEON_ENVIRONMENT=dev
+  - DDEV_PANTHEON_SITE=my-site-name
+  - DDEV_PANTHEON_ENVIRONMENT=dev
 ```
 
 DDEV merges every `.ddev/config.*.yaml` file into the project configuration, so only create one when you actually want it applied.
