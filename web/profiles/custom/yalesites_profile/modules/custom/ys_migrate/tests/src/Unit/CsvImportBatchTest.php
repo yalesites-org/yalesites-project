@@ -6,6 +6,7 @@ use Drupal\Core\Messenger\MessengerInterface;
 use Drupal\Core\StringTranslation\TranslatableMarkup;
 use Drupal\Tests\UnitTestCase;
 use Drupal\ys_migrate\Batch\CsvImportBatch;
+use Drupal\ys_migrate\Service\CsvImportServiceInterface;
 use Symfony\Component\DependencyInjection\ContainerBuilder;
 
 /**
@@ -120,7 +121,7 @@ class CsvImportBatchTest extends UnitTestCase {
    * @covers ::processChunk
    */
   public function testProcessChunkAccumulatesAcrossCalls() {
-    $importService = $this->getMockBuilder(\stdClass::class)->addMethods(['processImport'])->getMock();
+    $importService = $this->createMock(CsvImportServiceInterface::class);
     $importService->method('processImport')->willReturnOnConsecutiveCalls(
       ['created' => 2, 'skipped' => 1, 'errors' => ['Row 2: boom']],
       ['created' => 3, 'skipped' => 0, 'errors' => []],
@@ -144,12 +145,53 @@ class CsvImportBatchTest extends UnitTestCase {
   }
 
   /**
+   * ProcessChunk() rejects a service that does not implement the contract.
+   *
+   * The service id is resolved from serialized batch options in a later
+   * request, so nothing at the call site guarantees the type. Failing here
+   * names the offending service instead of raising a fatal "call to undefined
+   * method" from inside an editor's import.
+   *
+   * @covers ::processChunk
+   */
+  public function testProcessChunkRejectsServiceWithoutTheContract() {
+    \Drupal::getContainer()->set('ys_migrate.not_an_importer', new \stdClass());
+
+    $this->expectException(\InvalidArgumentException::class);
+    $this->expectExceptionMessage('ys_migrate.not_an_importer');
+
+    $context = [];
+    CsvImportBatch::processChunk($this->options('ys_migrate.not_an_importer'), ['row1'], $context);
+  }
+
+  /**
+   * ProcessChunk() accepts any service implementing the contract.
+   *
+   * @covers ::processChunk
+   */
+  public function testProcessChunkAcceptsAnyServiceImplementingTheContract() {
+    $importService = $this->createMock(CsvImportServiceInterface::class);
+    $importService->method('processImport')->willReturn([
+      'created' => 1,
+      'skipped' => 0,
+      'errors' => [],
+    ]);
+
+    \Drupal::getContainer()->set('ys_migrate.contract_importer', $importService);
+
+    $context = [];
+    CsvImportBatch::processChunk($this->options('ys_migrate.contract_importer'), ['row1'], $context);
+
+    $this->assertSame(1, $context['results']['created']);
+  }
+
+  /**
    * ProcessChunk() collects 'needs_media' when the service returns it.
    *
    * @covers ::processChunk
    */
   public function testProcessChunkCollectsNeedsMedia() {
-    $importService = $this->getMockBuilder(\stdClass::class)->addMethods(['processImport'])->getMock();
+    $importService = $this->createMock(CsvImportServiceInterface::class);
     $importService->method('processImport')->willReturnOnConsecutiveCalls(
       ['created' => 1, 'skipped' => 0, 'errors' => [], 'needs_media' => ['Resource A']],
       ['created' => 1, 'skipped' => 0, 'errors' => [], 'needs_media' => ['Resource B']],

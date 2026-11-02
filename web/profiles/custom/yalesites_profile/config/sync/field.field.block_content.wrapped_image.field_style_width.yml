@@ -1,0 +1,21 @@
+uuid: 754edadf-97bb-4a73-a906-9c7ea6d03e58
+langcode: en
+status: true
+dependencies:
+  config:
+    - block_content.type.wrapped_image
+    - field.storage.block_content.field_style_width
+  module:
+    - options
+id: block_content.wrapped_image.field_style_width
+field_name: field_style_width
+entity_type: block_content
+bundle: wrapped_image
+label: 'Image Size'
+description: 'Large is the size Wrapped Image has always used. Use Small for headshots, book covers and other narrow photos. On phones, both sizes fill the screen width.'
+required: true
+translatable: true
+default_value: {  }
+default_value_callback: ys_themes_default_value_function
+settings: {  }
+field_type: list_string

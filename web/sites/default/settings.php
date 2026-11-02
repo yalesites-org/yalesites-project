@@ -31,6 +31,22 @@ $config['config_split.config_split.local_config']['status'] = FALSE;
 $config['config_split.config_split.production_config']['status'] = TRUE;
 
 /**
+ * Platform-wide defaults for every outbound HTTP request.
+ *
+ * Core's \Drupal\Core\Http\ClientFactory merges this over its own defaults, so
+ * these apply to every caller of the `http_client` service - core, contrib and
+ * custom - without each one having to remember. `connect_timeout` is the one
+ * that matters: core leaves it unset entirely, so a host that drops packets
+ * rather than refusing the connection was bounded only by the request timeout.
+ * See yalesites-org/YaleSites-Internal#1701 and docs/development.md.
+ *
+ * Set before the local/site-specific includes below so either can override it.
+ */
+// Core's current default, pinned explicitly so both bounds read as a pair.
+$settings['http_client_config']['timeout'] = 30;
+$settings['http_client_config']['connect_timeout'] = 10;
+
+/**
  * If there is a local settings file, then include it.
  */
 $local_settings = __DIR__ . "/settings.local.php";
@@ -69,7 +85,11 @@ if (!empty($_ENV['PANTHEON_ENVIRONMENT']) && !empty($_ENV['CACHE_HOST'])) {
 /**
  * Environment Indicator.
  */
-$env = $_ENV['PANTHEON_ENVIRONMENT'] ?? 'lando';
+// DDEV sets PANTHEON_ENVIRONMENT (for `ddev pull pantheon`), but the site is
+// still local. 'lando' is the local-environment key in $env_options below.
+$env = getenv('IS_DDEV_PROJECT') === 'true'
+  ? 'lando'
+  : ($_ENV['PANTHEON_ENVIRONMENT'] ?? 'lando');
 
 // Get version from profile info file.
 $profile_info_file = DRUPAL_ROOT . '/profiles/custom/yalesites_profile/yalesites_profile.info.yml';
@@ -116,4 +136,15 @@ if ($env_key === 'lando') {
   $branch_parts = array_slice($ref, 2);
   $branch_name = implode('/', $branch_parts);
   $config['environment_indicator.indicator']['name'] .= " - $branch_name";
+}
+
+// Automatically generated include for settings managed by ddev.
+$ddev_settings = __DIR__ . '/settings.ddev.php';
+if (getenv('IS_DDEV_PROJECT') == 'true' && is_readable($ddev_settings)) {
+  require $ddev_settings;
+}
+
+// Include settings required for Redis cache.
+if (getenv('IS_DDEV_PROJECT') == 'true' && file_exists(__DIR__ . '/settings.ddev.redis.php')) {
+  include __DIR__ . '/settings.ddev.redis.php';
 }

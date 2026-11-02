@@ -176,3 +176,20 @@ function ys_admin_theme_hide_archive_button(array $form, FormStateInterface $for
 
   return $form;
 }
+
+/**
+ * Implements hook_preprocess_HOOK() for form_element.
+ *
+ * Gin moves every description on a content form behind a "?" toggle. An
+ * element flagged with #ys_description_inline keeps its description visible
+ * below the field instead.
+ *
+ * @see \Drupal\gin\GinDescriptionToggle::preprocess()
+ */
+function ys_admin_theme_preprocess_form_element(&$variables) {
+  if (empty($variables['element']['#ys_description_inline']) || empty($variables['description_toggle'])) {
+    return;
+  }
+  $variables['description_display'] = $variables['description_display_toggle'] ?? 'after';
+  $variables['description_toggle'] = FALSE;
+}

@@ -74,6 +74,20 @@ class CsvValidatorService {
   ];
 
   /**
+   * Prefix of the trailing summary row a content export appends.
+   *
+   * This and EXPORT_PLACEHOLDER_PREFIX mirror the strings that
+   * ys_content_export's ContentExportController::writeCsv() writes. They are
+   * duplicated because that module may not be enabled.
+   */
+  const EXPORT_SUMMARY_PREFIX = 'Export complete:';
+
+  /**
+   * Prefix of the placeholder row for a node that failed to export.
+   */
+  const EXPORT_PLACEHOLDER_PREFIX = 'Export failed for node ';
+
+  /**
    * Validates the CSV file structure and content for a profile import.
    *
    * @param string $file_path
@@ -202,6 +216,21 @@ class CsvValidatorService {
 
       // Skip empty rows.
       if (empty(array_filter($row))) {
+        continue;
+      }
+
+      // Skip the one-cell summary row a content export appends, so an exported
+      // file can be imported back.
+      if (str_starts_with($row[0], self::EXPORT_SUMMARY_PREFIX) && count(array_filter($row)) === 1) {
+        continue;
+      }
+
+      // A placeholder stands in for content that failed to export; importing
+      // it would create a junk item.
+      if (str_starts_with($row[0], self::EXPORT_PLACEHOLDER_PREFIX)) {
+        $errors[] = $this->t('Row @row: this row is a placeholder for content that failed to export. Remove it or export again.', [
+          '@row' => $row_number,
+        ]);
         continue;
       }
 

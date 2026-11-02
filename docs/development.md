@@ -50,6 +50,55 @@ cd web/profiles/custom/yalesites_profile/modules/custom
 # Custom modules are added directly to the profile repo.
 ```
 
+## Declaring a plugin
+
+**Write new plugins with a PHP attribute, not a docblock annotation.** Drupal deprecated
+annotation-based plugin discovery in 11.2, requires an attribute class in 12.0, and removes
+annotations entirely in 13.0.
+
+```php
+use Drupal\Core\Block\Attribute\Block;
+use Drupal\Core\StringTranslation\TranslatableMarkup;
+
+/**
+ * Provides a block to render an active alert.
+ */
+#[Block(
+  id: 'alert_block',
+  admin_label: new TranslatableMarkup('Alert block'),
+)]
+class AlertBlock extends BlockBase {
+```
+
+The docblock keeps the human-readable summary and any other tags (`@ingroup`, `@code`
+examples); only the plugin declaration moves out of it and onto the class.
+
+Translatable values become `new TranslatableMarkup(...)` rather than `@Translation(...)`, a
+`deriver` becomes `SomeDeriver::class`, and `{...}` becomes a PHP array. Every attribute class
+documents its own named parameters — read the constructor rather than guessing which keys it
+accepts, because an attribute silently accepts no key its constructor does not declare.
+
+A plugin type only supports attributes when core or the owning contrib module ships an attribute
+class **and** its plugin manager registers it (argument 5 of `DefaultPluginManager::__construct()`).
+A few types used here have no attribute class available and must stay on their annotation:
+
+| Annotation | Owner | Why |
+|---|---|---|
+| `@EmbedSource` | `ys_embed` (**ours**) | No attribute class, and `EmbedSourceManager` registers an annotation only. Unlike the rows below this is not an upstream blocker, just work we have not done: writing an `#[EmbedSource]` attribute and switching our own manager would settle it. |
+| `@MigrateSource` | core `migrate` | `MigrateSourcePluginManager::getDiscovery()` hardcodes annotation-only discovery whatever the constructor was passed, and core ships no `MigrateSource` attribute to carry the annotation's fields. |
+| `@MetatagTag`, `@MetatagGroup` | contrib `metatag` | No `src/Attribute/`. |
+| `@SingleContentSyncFieldProcessor` | contrib `single_content_sync` | No `src/Attribute/`. |
+| `@DataParser` | contrib `migrate_plus` | No `src/Attribute/`. |
+
+Re-check that list when a contrib dependency is bumped — an upstream attribute migration moves a
+row out of it.
+
+`#[FieldType]` types its `category` parameter as a plain `string`, so passing
+`new TranslatableMarkup(...)` throws a `TypeError` where the annotation merely triggered a
+deprecation. Omit it: `FieldTypePluginManager::processDefinition()` has replaced a translatable
+category with the fallback category since Drupal 10.2, so a field type that dropped one loses
+nothing. (`#[Block]` is the opposite case - its `category` is a `?TranslatableMarkup`.)
+
 ## Installing a contrib module or theme
 
 Contributed projects extend the functionality of Drupal to add new features or alter existing functionality. Projects are added to the installation profile and pushed out to all sites on the platform. When developing locally, adding a project to the profile will not automatically rebuild the composer installed dependencies in the parent project. The following process may be followed when installing a contributed project in a local development environment.
@@ -102,6 +151,47 @@ A well-structured data model ensures efficiency, maintainability, and scalabilit
 - **Avoid Single-Purpose Fields or Entities**: When adding fields or entities, strive to make them versatile enough to fulfill multiple purposes across YaleSites. For example, while a dedicated 'Speaker' field might seem useful for an event content type, evaluate whether this feature could be addressed using a content-spotlight block. Add new fields only when they contribute to sorting, filtering, or theming content in specific ways.
 - **Build with Blocks**: Embrace the power of the layout builder by utilizing blocks to define new components. YaleSites relies on blocks for editorial controls and mapping content to the component library. This includes both custom blocks (content entities) and programmatically defined blocks (plugins).
 - **Use Paragraphs for Nested Content**: Paragraphs remain a valuable tool, particularly when dealing with components that contain an indeterminate number of children, such as accordion items, tab items, or gallery items. The Paragraphs module provides intuitive widgets that offer an effective editorial interface for managing reference content within these complex components.
+
+## Making outbound HTTP requests
+
+Every outbound request must be bounded in **two** ways: `timeout` caps the whole response, and `connect_timeout` caps establishing the connection. Only bounding `timeout` is not enough — a host that silently drops packets instead of refusing the connection holds the request open for the full request timeout, which is how a third-party outage becomes a slow page on every YaleSites site.
+
+Drupal core sets `timeout` to 30 seconds and **leaves `connect_timeout` unset entirely**. The platform therefore sets both centrally, in `web/sites/default/settings.php`:
+
+```php
+$settings['http_client_config']['timeout'] = 30;
+$settings['http_client_config']['connect_timeout'] = 10;
+```
+
+Core's `\Drupal\Core\Http\ClientFactory` merges that over its own defaults, so **you get it for free** — a new call site needs no timeout options at all:
+
+```php
+$response = $this->httpClient->get($url);
+```
+
+Override it per call site only when that call genuinely needs different numbers, and when you do, name them as class constants rather than inlining a magic number — Guzzle merges per-request options over the client defaults, so your value wins:
+
+```php
+public const REQUEST_TIMEOUT = 15;
+public const CONNECT_TIMEOUT = 5;
+
+// ...
+$response = $this->httpClient->request('GET', $url, [
+  'timeout' => self::REQUEST_TIMEOUT,
+  'connect_timeout' => self::CONNECT_TIMEOUT,
+]);
+```
+
+Document *why* the call site deviates in the constant's docblock — that is the part a reader cannot reconstruct. A service that already names its timeouts with a different prefix (`API_TIMEOUT`) should stay internally consistent rather than half-renaming.
+
+Rules of thumb for choosing:
+
+- **Request path** (anything rendering a page or responding to a form): bound aggressively, and prefer degrading gracefully over blocking the response.
+- **Cron or batch path**: the platform default is usually right. Wrap the call in `try`/`catch` so one bad response does not abort the run.
+- **Migrate process plugin**: remember it runs once per row, so a stall multiplies. Do not tighten the *request* timeout so far that a legitimately slow response fails the row and loses data — the connect bound is the safe one to tighten.
+- Always assert the options in a unit test, so the bound cannot be dropped silently. The clearest example is `ys_beacon/modules/ys_ai_tester_legacy/tests/src/Unit/LegacyConversationClientTest.php`, which captures the options and asserts both constants; `ys_beacon/tests/src/Unit/BeaconIndexManagerTest.php` and `ys_localist/tests/src/Unit/LocalistManagerTest.php` do the same via a by-reference capture.
+
+Note on rollout: these defaults live in `web/sites/default/settings.php`, which reaches existing sites through a **Pantheon upstream update** (a git merge into each site repo), not through the `yalesites_profile` semantic-release bump that carries module code. A released profile version does not by itself mean the default is live everywhere.
 
 ## Adding a 'dial' for theming a component
 

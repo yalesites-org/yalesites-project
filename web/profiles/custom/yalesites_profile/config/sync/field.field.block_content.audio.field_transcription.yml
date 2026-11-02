@@ -1,0 +1,24 @@
+uuid: 1b074f5e-4c6f-429e-a0b2-926d33a9efb6
+langcode: en
+status: true
+dependencies:
+  config:
+    - block_content.type.audio
+    - field.storage.block_content.field_transcription
+    - filter.format.restricted_html
+  module:
+    - text
+id: block_content.audio.field_transcription
+field_name: field_transcription
+entity_type: block_content
+bundle: audio
+label: Transcription
+description: 'Paste the full text of the audio here so people who cannot hear it can still get its content. Include everything that is said, who is speaking, and any meaningful sounds, such as music or laughter. The transcription appears below the audio player.'
+required: false
+translatable: true
+default_value: {  }
+default_value_callback: ''
+settings:
+  allowed_formats:
+    - restricted_html
+field_type: text_long

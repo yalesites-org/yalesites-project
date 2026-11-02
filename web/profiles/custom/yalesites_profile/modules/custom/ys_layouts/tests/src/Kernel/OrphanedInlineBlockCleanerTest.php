@@ -14,7 +14,7 @@ use Drupal\layout_builder\SectionComponent;
 use Drupal\node\Entity\Node;
 use Drupal\node\Entity\NodeType;
 use Drupal\node\NodeInterface;
-use Drupal\ys_layouts\Service\OrphanedInlineBlockCleanerInterface;
+use Drupal\ys_layouts\Service\OrphanedInlineBlockCleaner;
 
 /**
  * Tests detection and deletion of orphaned Layout Builder inline blocks.
@@ -54,6 +54,12 @@ class OrphanedInlineBlockCleanerTest extends YsKernelTestBase {
     'quick_node_clone',
     // Stands in for a non-revisionable layout-bearing entity type.
     'entity_test',
+    // enableLayoutBuilder() below instantiates the default layout_onecol
+    // section, which ys_layouts_layout_alter() points at YSLayoutOneColumn
+    // (extends YSLayoutOptions) -- that class resolves
+    // ys_themes.color_token_resolver from the container.
+    'formdazzle',
+    'ys_themes',
     'ys_layouts',
   ];
 
@@ -86,7 +92,7 @@ class OrphanedInlineBlockCleanerTest extends YsKernelTestBase {
   /**
    * Gets the service under test.
    */
-  protected function cleaner(): OrphanedInlineBlockCleanerInterface {
+  protected function cleaner(): OrphanedInlineBlockCleaner {
     return $this->container->get('ys_layouts.orphaned_inline_block_cleaner');
   }
 

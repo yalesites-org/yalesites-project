@@ -2,24 +2,25 @@
 
 namespace Drupal\ys_core\Plugin\Block;
 
+use Drupal\Core\Block\Attribute\Block;
 use Drupal\Core\Block\BlockBase;
 use Drupal\Core\Config\ConfigFactoryInterface;
 use Drupal\Core\Entity\EntityTypeManager;
 use Drupal\Core\Messenger\Messenger;
 use Drupal\Core\Plugin\ContainerFactoryPluginInterface;
+use Drupal\Core\StringTranslation\TranslatableMarkup;
 use Drupal\Core\Url;
 use Drupal\ys_core\SocialLinksManager;
 use Symfony\Component\DependencyInjection\ContainerInterface;
 
 /**
  * Adds a footer block with logos, text, links, and social from footer settings.
- *
- * @Block(
- *   id = "ys_footer_block",
- *   admin_label = @Translation("YaleSites Footer Block"),
- *   category = @Translation("YaleSites Core"),
- * )
  */
+#[Block(
+  id: 'ys_footer_block',
+  admin_label: new TranslatableMarkup('YaleSites Footer Block'),
+  category: new TranslatableMarkup('YaleSites Core'),
+)]
 class YaleSitesFooterBlock extends BlockBase implements ContainerFactoryPluginInterface {
 
   /**

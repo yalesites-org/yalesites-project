@@ -69,3 +69,162 @@ function ys_themes_deploy_10302() {
     }
   }
 }
+
+/**
+ * Backfills the wave 1 dials on existing divider, callout, cta_banner blocks.
+ *
+ * The fields are required, so an existing block with no value cannot be
+ * re-saved until an editor picks one. These defaults render the same as NULL.
+ */
+function ys_themes_deploy_10303(&$sandbox) {
+  $updated = _ys_themes_backfill_dials($sandbox, [
+    'divider' => ['field_style_thickness', '1'],
+    'callout' => ['field_style_variation', 'cta'],
+    'cta_banner' => ['field_button_style_consistency', 'filled_outline'],
+  ]);
+
+  return t('Set default dial values on @count block(s).', ['@count' => $updated]);
+}
+
+/**
+ * Sets the new Image Size dial to Large on existing Wrapped Image blocks.
+ *
+ * The field is required, so an existing block with no value cannot be
+ * re-saved until an editor picks one. Large renders the same as NULL, so no
+ * block changes how it looks (YaleSites-Internal#1954).
+ */
+function ys_themes_deploy_10304(&$sandbox) {
+  $updated = _ys_themes_backfill_dials($sandbox, [
+    'wrapped_image' => ['field_style_width', 'large'],
+  ]);
+
+  return t('Set Image Size to Large on @count Wrapped Image block(s).', ['@count' => $updated]);
+}
+
+/**
+ * Batch-fills an empty dial on the latest revision of existing blocks.
+ *
+ * @param array $sandbox
+ *   The deploy hook sandbox; '#finished' is set on it.
+ * @param array $defaults
+ *   Bundle => [field name, value] to set where the field is empty.
+ *
+ * @return int
+ *   The number of blocks updated so far.
+ */
+function _ys_themes_backfill_dials(array &$sandbox, array $defaults): int {
+  /** @var \Drupal\Core\Entity\Sql\SqlContentEntityStorage $block_storage */
+  $block_storage = \Drupal::entityTypeManager()->getStorage('block_content');
+
+  if (!isset($sandbox['ids'])) {
+    $sandbox['ids'] = array_values($block_storage->getQuery()
+      ->accessCheck(FALSE)
+      ->condition('type', array_keys($defaults), 'IN')
+      ->execute());
+    $sandbox['total'] = count($sandbox['ids']);
+    $sandbox['updated'] = 0;
+  }
+
+  foreach (array_splice($sandbox['ids'], 0, 50) as $id) {
+    $latest_revision_id = $block_storage->getLatestRevisionId($id);
+    $block = $latest_revision_id
+      ? $block_storage->loadRevision($latest_revision_id)
+      : $block_storage->createRevision($block_storage->load($id));
+
+    /** @var \Drupal\block_content\Entity\BlockContent $block */
+    [$field, $value] = $defaults[$block->bundle()];
+    if ($block->hasField($field) && $block->get($field)->isEmpty()) {
+      $block->set($field, $value);
+      $block->save();
+      $sandbox['updated']++;
+    }
+  }
+
+  $sandbox['#finished'] = $sandbox['total']
+    ? 1 - count($sandbox['ids']) / $sandbox['total']
+    : 1;
+
+  return $sandbox['updated'];
+}
+
+/**
+ * Sets field_style_video_playback to 'loop' on existing banner blocks.
+ *
+ * Image Banner and Grand Hero background videos always looped before this
+ * field existed. Drupal applies a field's default only when an entity is
+ * created, so without this pass the required dial would sit empty on every
+ * existing banner and stop editors from saving until they picked a value.
+ *
+ * Runs after config import so the field is guaranteed to exist; an update hook
+ * would fire before the field config lands and quietly match nothing.
+ *
+ * Every revision is visited, not just the latest: Layout Builder renders the
+ * block revision a node revision pins, so a page with an unsaved draft pins
+ * one block revision on the draft and an older one on the published revision.
+ * Batched via the Sandbox API, as in ys_core_deploy_10007(), because banner
+ * counts scale with pages.
+ */
+function ys_themes_deploy_10305(&$sandbox) {
+  $block_storage = \Drupal::entityTypeManager()->getStorage('block_content');
+  $bundles = ['grand_hero', 'image_banner'];
+
+  if (!isset($sandbox['processed'])) {
+    $sandbox['processed'] = 0;
+    $sandbox['backfilled'] = 0;
+    $sandbox['total'] = $block_storage->getQuery()
+      ->accessCheck(FALSE)
+      ->allRevisions()
+      ->condition('type', $bundles, 'IN')
+      ->count()
+      ->execute();
+
+    if ($sandbox['total'] == 0) {
+      $sandbox['#finished'] = 1;
+      return t('No Image Banner or Grand Hero blocks found.');
+    }
+  }
+
+  // Paged over every revision rather than filtered to the empty ones, so the
+  // result set doesn't shrink underneath the offset as values are filled in.
+  // An allRevisions() query returns revision_id => entity_id.
+  $result = $block_storage->getQuery()
+    ->accessCheck(FALSE)
+    ->allRevisions()
+    ->condition('type', $bundles, 'IN')
+    ->sort('revision_id')
+    ->range($sandbox['processed'], 50)
+    ->execute();
+
+  foreach (array_keys($result) as $revision_id) {
+    $sandbox['processed']++;
+
+    $block = $block_storage->loadRevision($revision_id);
+    if (!$block || !$block->get('field_style_video_playback')->isEmpty()) {
+      continue;
+    }
+
+    // The behavior these banners had before the field existed — a constant
+    // rather than a read of the dial's current default, so a later change to
+    // that default cannot rewrite what existing banners do.
+    $block->set('field_style_video_playback', 'loop');
+    // Saving a loaded revision updates it in place rather than creating a new
+    // one, so the revision id a layout pins to stays valid.
+    $block->save();
+    $sandbox['backfilled']++;
+  }
+
+  // An empty page means the count shrank under us; stop rather than spin.
+  $sandbox['#finished'] = (empty($result) || $sandbox['processed'] >= $sandbox['total'])
+    ? 1
+    : $sandbox['processed'] / $sandbox['total'];
+
+  if ($sandbox['#finished'] < 1) {
+    return NULL;
+  }
+
+  if ($sandbox['backfilled'] === 0) {
+    return t('No banner blocks needed a video playback backfill.');
+  }
+
+  return t('Set video playback to loop on @count banner block revision(s).', ['@count' => $sandbox['backfilled']]);
+}
