@@ -164,7 +164,7 @@ function _ys_themes_backfill_dials(array &$sandbox, array $defaults): int {
  * Batched via the Sandbox API, as in ys_core_deploy_10007(), because banner
  * counts scale with pages.
  */
-function ys_themes_deploy_10304(&$sandbox) {
+function ys_themes_deploy_10305(&$sandbox) {
   $block_storage = \Drupal::entityTypeManager()->getStorage('block_content');
   $bundles = ['grand_hero', 'image_banner'];
 
