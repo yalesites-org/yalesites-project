@@ -12,6 +12,9 @@ ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/../.." && pwd)"
 MODULES_DIR="$ROOT/web/profiles/custom/yalesites_profile/modules/custom"
 cd "$ROOT" || exit 1
 
+# Deprecation notices from contrib code are reported but must not fail the build.
+export SYMFONY_DEPRECATIONS_HELPER="${SYMFONY_DEPRECATIONS_HELPER:-weak}"
+
 failed=()
 for dir in "$MODULES_DIR"/*/tests/src/Unit; do
   [ -d "$dir" ] || continue
