@@ -2,7 +2,7 @@
 
 namespace Drupal\Tests\ys_layouts\Kernel;
 
-use Drupal\KernelTests\KernelTestBase;
+use Drupal\Tests\ys_core\Kernel\YsKernelTestBase;
 use Drupal\Tests\layout_builder\Traits\EnableLayoutBuilderTrait;
 use Drupal\layout_builder\Entity\LayoutBuilderEntityViewDisplay;
 use Drupal\layout_builder\Section;
@@ -29,7 +29,7 @@ use Drupal\node\Entity\NodeType;
  * @group yalesites
  * @group ys_layouts
  */
-class SeventyThirtyDividerMigrationTest extends KernelTestBase {
+class SeventyThirtyDividerMigrationTest extends YsKernelTestBase {
 
   use EnableLayoutBuilderTrait;
 
