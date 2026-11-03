@@ -640,14 +640,14 @@ function _local-git-checkout() {
   cd ../..
 
   _say "Using the component-library global npm link inside the atomic theme"
-  # Linking runs the component library's patch scripts mid-install, where they
-  # usually fail even though the link is made; the clean install below
-  # re-applies them. So the output goes to a log, and only a missing link is
-  # fatal (the log is printed then).
+  # Skip the component library's install scripts: they patch node_modules that
+  # does not exist yet, and newer npm rolls the whole link back when they fail.
+  # The clean install below runs them. The output goes to a log, and only a
+  # missing link is fatal (the log is printed then).
   local link_log tmp_dir="${TMPDIR:-/tmp}"
   link_log=$(mktemp "${tmp_dir%/}/local-git-checkout-npm-link.XXXXXX") ||
     { _error "Could not create a temp file for the npm link log"; exit 1; }
-  if npm link @yalesites-org/component-library-twig > "$link_log" 2>&1; then
+  if npm link --ignore-scripts @yalesites-org/component-library-twig > "$link_log" 2>&1; then
     rm -f "$link_log"
   elif [ -L node_modules/@yalesites-org/component-library-twig ]; then
     _say "npm reported errors from the component library's install scripts (expected; the clean install below re-applies them). Log: $link_log"

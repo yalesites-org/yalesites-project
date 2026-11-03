@@ -1,0 +1,11 @@
+uuid: 18fa0326-70aa-4cf3-814e-0b0a99116f5f
+langcode: en
+status: true
+dependencies:
+  module:
+    - media
+id: media.directory_card_1_1_
+label: 'Directory (1:1)'
+description: ''
+targetEntityType: media
+cache: true

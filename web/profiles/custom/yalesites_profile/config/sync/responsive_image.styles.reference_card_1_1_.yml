@@ -1,0 +1,27 @@
+uuid: 2447bf8d-65d7-4456-a1fc-774f187a337e
+langcode: en
+status: true
+dependencies:
+  config:
+    - image.style.1_1_1200
+    - image.style.1_1_300_
+    - image.style.1_1_500
+    - image.style.1_1_600
+    - image.style.1_1_900
+id: reference_card_1_1_
+label: 'Reference Card (1:1)'
+image_style_mappings:
+  -
+    image_mapping_type: sizes
+    image_mapping:
+      sizes: '(min-width: 1472px) 802px, (min-width: 1200px) 57vw, 100vw'
+      sizes_image_styles:
+        - '1_1_1200'
+        - '1_1_300_'
+        - '1_1_500'
+        - '1_1_600'
+        - '1_1_900'
+    breakpoint_id: responsive_image.viewport_sizing
+    multiplier: 1x
+breakpoint_group: responsive_image
+fallback_image_style: '1_1_500'
