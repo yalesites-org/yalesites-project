@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 #
 # Run the PHPUnit Unit suite for every custom module, one PHPUnit process per
-# module. Drupal tests share container state when run in one large process, and
+# module (including nested submodules). Drupal tests share container state when run in one large process, and
 # PHPUnit honors only the first path argument, so each module gets its own run.
 # Needs no database or environment variables. Works the same in Lando, DDEV and
 # GitHub Actions.
@@ -16,7 +16,7 @@ cd "$ROOT" || exit 1
 export SYMFONY_DEPRECATIONS_HELPER="${SYMFONY_DEPRECATIONS_HELPER:-weak}"
 
 failed=()
-for dir in "$MODULES_DIR"/*/tests/src/Unit; do
+for dir in "$MODULES_DIR"/*/tests/src/Unit "$MODULES_DIR"/*/modules/*/tests/src/Unit; do
   [ -d "$dir" ] || continue
   module="$(basename "$(dirname "$(dirname "$(dirname "$dir")")")")"
   echo "== $module"
