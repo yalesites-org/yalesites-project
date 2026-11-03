@@ -2,7 +2,7 @@
 
 namespace Drupal\Tests\ys_layouts\Kernel;
 
-use Drupal\KernelTests\KernelTestBase;
+use Drupal\Tests\ys_core\Kernel\YsKernelTestBase;
 
 /**
  * Tests that gin_lb's stylesheet pulls in the visible resize handle.
@@ -13,7 +13,7 @@ use Drupal\KernelTests\KernelTestBase;
  * @group yalesites
  * @group ys_layouts
  */
-class OffCanvasResizeHandleTest extends KernelTestBase {
+class OffCanvasResizeHandleTest extends YsKernelTestBase {
 
   /**
    * {@inheritdoc}

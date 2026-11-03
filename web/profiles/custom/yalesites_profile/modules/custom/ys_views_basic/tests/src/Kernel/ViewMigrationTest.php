@@ -6,7 +6,7 @@ use Drupal\block_content\Entity\BlockContent;
 use Drupal\block_content\Entity\BlockContentType;
 use Drupal\field\Entity\FieldConfig;
 use Drupal\field\Entity\FieldStorageConfig;
-use Drupal\KernelTests\KernelTestBase;
+use Drupal\Tests\ys_core\Kernel\YsKernelTestBase;
 use Drupal\layout_builder\Section;
 use Drupal\layout_builder\SectionComponent;
 use Drupal\node\Entity\NodeType;
@@ -24,7 +24,7 @@ use Drupal\ys_views_basic\ViewsBasicManager;
  *
  * @group yalesites
  */
-class ViewMigrationTest extends KernelTestBase {
+class ViewMigrationTest extends YsKernelTestBase {
 
   /**
    * {@inheritdoc}
