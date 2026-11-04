@@ -127,9 +127,19 @@ function _ys_themes_backfill_dials(array &$sandbox, array $defaults): int {
 
   foreach (array_splice($sandbox['ids'], 0, 50) as $id) {
     $latest_revision_id = $block_storage->getLatestRevisionId($id);
-    $block = $latest_revision_id
-      ? $block_storage->loadRevision($latest_revision_id)
-      : $block_storage->createRevision($block_storage->load($id));
+    if ($latest_revision_id) {
+      $block = $block_storage->loadRevision($latest_revision_id);
+    }
+    else {
+      $existing = $block_storage->load($id);
+      $block = $existing ? $block_storage->createRevision($existing) : NULL;
+    }
+
+    // A block deleted after the id list was built must not stop the deploy.
+    if (!$block) {
+      \Drupal::logger('ys_themes')->notice('Skipped block @id: it no longer exists.', ['@id' => $id]);
+      continue;
+    }
 
     /** @var \Drupal\block_content\Entity\BlockContent $block */
     [$field, $value] = $defaults[$block->bundle()];

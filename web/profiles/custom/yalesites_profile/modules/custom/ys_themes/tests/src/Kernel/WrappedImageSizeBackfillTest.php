@@ -28,6 +28,7 @@ class WrappedImageSizeBackfillTest extends YsKernelTestBase {
     'user',
     'field',
     'options',
+    'block',
     'block_content',
   ];
 
@@ -120,6 +121,28 @@ class WrappedImageSizeBackfillTest extends YsKernelTestBase {
     $sandbox = [];
     ys_themes_deploy_10304($sandbox);
     $this->assertEquals(1, $sandbox['#finished']);
+  }
+
+  /**
+   * A block deleted mid-run is skipped; the rest still get backfilled (#2119).
+   */
+  public function testSkipsBlockDeletedMidRun(): void {
+    $kept = $this->createBlock('wrapped_image');
+    $deleted = $this->createBlock('wrapped_image');
+
+    // Batch one has queued both ids; the block is deleted before it runs.
+    $sandbox = [
+      'ids' => [$deleted, $kept],
+      'total' => 2,
+      'updated' => 0,
+    ];
+    BlockContent::load($deleted)->delete();
+
+    ys_themes_deploy_10304($sandbox);
+
+    $this->assertEquals(1, $sandbox['#finished']);
+    $this->assertSame(1, $sandbox['updated']);
+    $this->assertSame('large', $this->reload($kept)->get('field_style_width')->value);
   }
 
   /**
