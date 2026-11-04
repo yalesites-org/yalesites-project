@@ -595,15 +595,14 @@ class CsvValidatorServiceTest extends UnitTestCase {
   /**
    * Post header aliases fold onto their canonical names.
    *
-   * "CAS Protected" is the header ys_content_export writes; "Featured Image
-   * ID" is how the import was first described.
+   * "CAS Protected" is the header ys_content_export writes.
    *
    * @covers ::validatePostCsvStructure
    */
   public function testValidatePostCsvStructureFoldsHeaderAliases() {
     $path = $this->createCsvFile(
-      "Title,Publish Date,Custom Vocabulary,CAS Protected,Featured Image ID\n" .
-      "Aliased,2026-03-04,Vocab A,Yes,123\n"
+      "Title,Publish Date,Custom Vocabulary,CAS Protected\n" .
+      "Aliased,2026-03-04,Vocab A,Yes\n"
     );
 
     $result = $this->csvValidator->validatePostCsvStructure($path);
@@ -611,8 +610,24 @@ class CsvValidatorServiceTest extends UnitTestCase {
     $this->assertTrue($result['valid']);
     $this->assertSame('Vocab A', $result['data'][0]['custom vocab']);
     $this->assertSame('Yes', $result['data'][0]['cas login required']);
-    $this->assertSame('123', $result['data'][0]['teaser media id']);
     $this->assertSame([], $this->csvValidator->getUnknownPostColumns($result['headers']));
+  }
+
+  /**
+   * A teaser image column is named as ignored: the import brings in no images.
+   *
+   * @covers ::getUnknownPostColumns
+   */
+  public function testGetUnknownPostColumnsIncludesTeaserImage() {
+    $path = $this->createCsvFile(
+      "Title,Publish Date,Teaser Media ID,Featured Image ID\n" .
+      "With Image,2026-03-04,123,123\n"
+    );
+
+    $result = $this->csvValidator->validatePostCsvStructure($path);
+
+    $this->assertTrue($result['valid']);
+    $this->assertSame(['Teaser Media ID', 'Featured Image ID'], $this->csvValidator->getUnknownPostColumns($result['headers']));
   }
 
   /**
@@ -652,7 +667,6 @@ class CsvValidatorServiceTest extends UnitTestCase {
       'Custom Vocab',
       'Teaser Title',
       'Teaser Text',
-      'Teaser Media ID',
       'External Source',
       'CAS Login Required',
       'URL Alias',

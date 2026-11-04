@@ -238,7 +238,6 @@ class PostCsvImportFormTest extends UnitTestCase {
           'category' => ['News'],
           'body' => '<p>Words.</p>',
           'body_has_media' => TRUE,
-          'teaser_media' => 123,
         ],
       ],
       'duplicates' => ['Already Here'],
@@ -264,7 +263,7 @@ class PostCsvImportFormTest extends UnitTestCase {
     $this->assertStringContainsString('Already Here', implode(' ', $warnings));
     $this->assertSame('Posts to be created', (string) $table['#caption']);
     $this->assertSame(
-      ['Had Image', '2026-03-04', 'News', 'Yes', 123, 'Yes'],
+      ['Had Image', '2026-03-04', 'News', 'Yes', 'Yes'],
       array_map(fn ($cell) => is_object($cell) ? (string) $cell : $cell, $table['#rows'][0])
     );
   }

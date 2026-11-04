@@ -56,13 +56,6 @@ class PostImportService extends CsvImportServiceBase {
   ];
 
   /**
-   * The only media type the Teaser Media field accepts.
-   *
-   * Mirrors target_bundles in field.field.node.post.field_teaser_media.
-   */
-  const TEASER_MEDIA_TYPE = 'image';
-
-  /**
    * The Text block field the Body is stored in.
    */
   const TEXT_BLOCK_FIELD = 'block_content.text.field_text';
@@ -165,7 +158,6 @@ class PostImportService extends CsvImportServiceBase {
       'custom_vocab' => $this->parseTerms($row['custom vocab'] ?? '', 'custom_vocab', 'Custom Vocab'),
       'teaser_title' => trim($row['teaser title'] ?? ''),
       'teaser_text' => $this->parseTeaserText($row['teaser text'] ?? ''),
-      'teaser_media' => $this->parseTeaserMedia($row['teaser media id'] ?? ''),
       'external_source' => $this->parseExternalSource($row['external source'] ?? ''),
       'login_required' => $this->parseBoolean($row['cas login required'] ?? '', 'CAS Login Required'),
       'url_alias' => $this->parseUrlAlias($row['url alias'] ?? ''),
@@ -245,9 +237,6 @@ class PostImportService extends CsvImportServiceBase {
         'value' => $data['teaser_text'],
         'format' => $this->textFormat('field_teaser_text'),
       ];
-    }
-    if ($data['teaser_media'] !== NULL) {
-      $values['field_teaser_media'] = ['target_id' => $data['teaser_media']];
     }
     if ($data['external_source'] !== '') {
       $values['field_external_source'] = ['uri' => $data['external_source']];
@@ -515,48 +504,6 @@ class PostImportService extends CsvImportServiceBase {
     }
 
     return $ids;
-  }
-
-  /**
-   * Parses a Teaser Media ID cell, checking it names an image.
-   *
-   * @param string $value
-   *   The raw cell value.
-   *
-   * @return int|null
-   *   The media id, or NULL when the cell is empty.
-   *
-   * @throws \InvalidArgumentException
-   *   If the value is not a number, matches no media item, or is not an image.
-   */
-  protected function parseTeaserMedia($value) {
-    $value = trim($value);
-    if ($value === '') {
-      return NULL;
-    }
-
-    if (!ctype_digit($value)) {
-      throw new \InvalidArgumentException(sprintf(
-        'Teaser Media ID "%s" is not a media ID. Use the number in the image\'s edit address, such as 123 in /media/123/edit.',
-        $value
-      ));
-    }
-
-    $media = $this->entityTypeManager->getStorage('media')->load($value);
-    if (!$media) {
-      throw new \InvalidArgumentException(sprintf(
-        'Teaser Media ID %s does not match anything in the media library.',
-        $value
-      ));
-    }
-    if ($media->bundle() !== self::TEASER_MEDIA_TYPE) {
-      throw new \InvalidArgumentException(sprintf(
-        'Teaser Media ID %s is not an image. Teaser Media only accepts images.',
-        $value
-      ));
-    }
-
-    return (int) $value;
   }
 
   /**

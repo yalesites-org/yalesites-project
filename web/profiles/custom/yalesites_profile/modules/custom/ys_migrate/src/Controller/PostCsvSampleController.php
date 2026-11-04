@@ -24,10 +24,9 @@ class PostCsvSampleController extends CsvSampleControllerBase {
   /**
    * {@inheritdoc}
    *
-   * Values are illustrative only. The taxonomy names and the Teaser Media ID
-   * must match terms and an image that exist on the site doing the import,
-   * so the row as written may well be rejected there; that rejection is the
-   * check working.
+   * Values are illustrative only. The taxonomy names must match terms that
+   * exist on the site doing the import, so the row as written may well be
+   * rejected there; that rejection is the check working.
    *
    * External Source is the one column left empty: a post with one redirects
    * visitors to that address, so its Body would never be seen.
@@ -44,7 +43,6 @@ class PostCsvSampleController extends CsvSampleControllerBase {
       'custom vocab' => 'Sustainability',
       'teaser title' => 'Climate Study Published',
       'teaser text' => 'Ten years of local climate data, and what they show.',
-      'teaser media id' => '123',
       'external source' => '',
       'cas login required' => 'No',
       'url alias' => '/news/climate-study',

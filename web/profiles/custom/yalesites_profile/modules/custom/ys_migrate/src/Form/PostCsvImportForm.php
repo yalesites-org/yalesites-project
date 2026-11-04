@@ -139,7 +139,7 @@ class PostCsvImportForm extends FormBase {
     $form['reference_notice'] = [
       '#type' => 'html_tag',
       '#tag' => 'p',
-      '#value' => $this->t('Category, Tags, Audience and Custom Vocab only accept terms that already exist on this site. For Teaser Media, upload the image to the media library first and enter its ID, or leave the column empty and add the image to the post after the import.'),
+      '#value' => $this->t('Category, Tags, Audience and Custom Vocab only accept terms that already exist on this site. Teaser images are not imported; add them to each post after the import.'),
     ];
 
     $form['columns'] = $this->columnReferenceTable($this->csvValidator->getExpectedPostColumns(), $this->columnNotes());
@@ -297,7 +297,6 @@ class PostCsvImportForm extends FormBase {
       'custom vocab' => $this->t('Comma-separated. Terms must already exist. "Custom Vocabulary" also works as a header.'),
       'teaser title' => $this->t('Plain text.'),
       'teaser text' => $this->t("Plain text. Character count is capped by the Teaser Text field's own limit."),
-      'teaser media id' => $this->t('The ID of an image already in the media library: the number in its edit address, such as 123 in /media/123/edit.'),
       'external source' => $this->t('Full http:// or https:// URL. Visitors are sent there instead of to the post, so leave it empty for posts with a Body.'),
       'cas login required' => $this->t('Yes or No. "CAS Protected" also works as a header.'),
       'url alias' => $this->t('A path such as /news/my-post. Leave empty to have one made from the publish date and title.'),
@@ -367,7 +366,6 @@ class PostCsvImportForm extends FormBase {
         $post['publish_date'],
         $post['category'] ? implode(', ', $post['category']) : '-',
         $post['body'] !== '' ? $this->t('Yes') : $this->t('No'),
-        $post['teaser_media'] ?? '-',
         $post['body_has_media'] ? $this->t('Yes') : $this->t('No'),
       ];
     }
@@ -375,7 +373,7 @@ class PostCsvImportForm extends FormBase {
     if (count($posts) > self::PREVIEW_LIMIT) {
       $rows[] = [
         $this->t('...and @count more', ['@count' => count($posts) - self::PREVIEW_LIMIT]),
-        '', '', '', '', '',
+        '', '', '', '',
       ];
     }
 
@@ -387,7 +385,6 @@ class PostCsvImportForm extends FormBase {
         ['data' => $this->t('Publish Date'), 'scope' => 'col'],
         ['data' => $this->t('Category'), 'scope' => 'col'],
         ['data' => $this->t('Body'), 'scope' => 'col'],
-        ['data' => $this->t('Teaser Media ID'), 'scope' => 'col'],
         ['data' => $this->t('Needs images'), 'scope' => 'col'],
       ],
       '#rows' => $rows,

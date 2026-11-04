@@ -16,7 +16,6 @@ use Drupal\field\FieldConfigInterface;
 use Drupal\layout_builder\Entity\LayoutEntityDisplayInterface;
 use Drupal\layout_builder\Section;
 use Drupal\layout_builder\SectionComponent;
-use Drupal\media\MediaInterface;
 use Drupal\node\NodeInterface;
 use Drupal\taxonomy\TermInterface;
 use Drupal\ys_migrate\Service\CsvValidatorService;
@@ -107,7 +106,7 @@ class PostImportServiceTest extends UnitTestCase {
         return $value === '' ? [] : array_map('trim', array_filter(explode(',', $value)));
       });
 
-    foreach (['node', 'media', 'path_alias', 'block_content', 'entity_view_display'] as $entity_type) {
+    foreach (['node', 'path_alias', 'block_content', 'entity_view_display'] as $entity_type) {
       $this->storages[$entity_type] = $this->createMock(EntityStorageInterface::class);
     }
     $this->configStorage = $this->createMock(EntityStorageInterface::class);
@@ -175,16 +174,6 @@ class PostImportServiceTest extends UnitTestCase {
   }
 
   /**
-   * Makes media storage hold one media item of the given type.
-   */
-  protected function mediaItem(int $id, string $type): void {
-    $media = $this->createMock(MediaInterface::class);
-    $media->method('bundle')->willReturn($type);
-    $this->storages['media']->method('load')
-      ->willReturnCallback(fn ($requested) => (string) $requested === (string) $id ? $media : NULL);
-  }
-
-  /**
    * Gives the post bundle the default layout config ships with.
    *
    * Mirrors core.entity_view_display.node.post.default.yml: a locked "Title
@@ -240,7 +229,6 @@ class PostImportServiceTest extends UnitTestCase {
       'audience' => ['Faculty' => 14],
       'custom_vocab' => ['Sustainability' => 15],
     ]);
-    $this->mediaItem(123, 'image');
 
     $result = $this->postImport->preparePostData([
       'title' => '  Climate Study  ',
@@ -253,7 +241,6 @@ class PostImportServiceTest extends UnitTestCase {
       'custom vocab' => 'Sustainability',
       'teaser title' => ' Study ',
       'teaser text' => ' Short teaser. ',
-      'teaser media id' => ' 123 ',
       'external source' => ' https://example.com/study ',
       'cas login required' => 'Yes',
       'url alias' => 'news/climate-study',
@@ -270,7 +257,6 @@ class PostImportServiceTest extends UnitTestCase {
     $this->assertSame(['Sustainability'], $result['custom_vocab']);
     $this->assertSame('Study', $result['teaser_title']);
     $this->assertSame('Short teaser.', $result['teaser_text']);
-    $this->assertSame(123, $result['teaser_media']);
     $this->assertSame('https://example.com/study', $result['external_source']);
     $this->assertTrue($result['login_required']);
     // The leading slash is added, as the node form's own widget requires one.
@@ -299,7 +285,6 @@ class PostImportServiceTest extends UnitTestCase {
       'custom vocab' => 'custom_vocab',
       'teaser title' => 'teaser_title',
       'teaser text' => 'teaser_text',
-      'teaser media id' => 'teaser_media',
       'external source' => 'external_source',
       'cas login required' => 'login_required',
       'url alias' => 'url_alias',
@@ -338,7 +323,6 @@ class PostImportServiceTest extends UnitTestCase {
     $this->assertFalse($result['body_has_media']);
     $this->assertSame([], $result['category']);
     $this->assertSame([], $result['tags']);
-    $this->assertNull($result['teaser_media']);
     $this->assertSame('', $result['external_source']);
     $this->assertFalse($result['login_required']);
     $this->assertSame('', $result['url_alias']);
@@ -405,37 +389,6 @@ class PostImportServiceTest extends UnitTestCase {
       'publish date' => '2026-03-04',
       'category' => 'News',
     ]);
-  }
-
-  /**
-   * Teaser Media ID must name an image in the media library.
-   *
-   * @covers ::preparePostData
-   *
-   * @dataProvider badTeaserMediaProvider
-   */
-  public function testPreparePostDataRejectsBadTeaserMedia(string $value, string $message) {
-    $this->mediaItem(7, 'document');
-
-    $this->expectException(\InvalidArgumentException::class);
-    $this->expectExceptionMessage($message);
-
-    $this->postImport->preparePostData([
-      'title' => 'Bad Media',
-      'publish date' => '2026-03-04',
-      'teaser media id' => $value,
-    ]);
-  }
-
-  /**
-   * Teaser Media ID cells the importer must reject, and why.
-   */
-  public static function badTeaserMediaProvider(): array {
-    return [
-      'not a number' => ['photo.jpg', 'Teaser Media ID "photo.jpg" is not a media ID.'],
-      'no such media' => ['999', 'Teaser Media ID 999 does not match anything in the media library.'],
-      'not an image' => ['7', 'Teaser Media ID 7 is not an image.'],
-    ];
   }
 
   /**
@@ -648,7 +601,6 @@ class PostImportServiceTest extends UnitTestCase {
       'custom_vocab' => ['Sustainability'],
       'teaser_title' => 'Study',
       'teaser_text' => 'Short teaser.',
-      'teaser_media' => 123,
       'external_source' => 'https://example.com/study',
       'login_required' => TRUE,
       'url_alias' => '/news/climate-study',
@@ -663,7 +615,8 @@ class PostImportServiceTest extends UnitTestCase {
     $this->assertSame([13], $captured['field_audience']);
     $this->assertSame([14], $captured['field_custom_vocab']);
     $this->assertSame('Study', $captured['field_teaser_title']);
-    $this->assertSame(['target_id' => 123], $captured['field_teaser_media']);
+    // The import brings in no images; editors add a teaser image afterwards.
+    $this->assertArrayNotHasKey('field_teaser_media', $captured);
     $this->assertSame(['uri' => 'https://example.com/study'], $captured['field_external_source']);
     $this->assertSame(1, $captured['field_login_required']);
     $this->assertSame(42, $captured['uid']);
@@ -699,7 +652,6 @@ class PostImportServiceTest extends UnitTestCase {
     $this->assertArrayNotHasKey('field_author', $captured);
     $this->assertArrayNotHasKey('field_teaser_title', $captured);
     $this->assertArrayNotHasKey('field_teaser_text', $captured);
-    $this->assertArrayNotHasKey('field_teaser_media', $captured);
     $this->assertArrayNotHasKey('field_external_source', $captured);
     $this->assertArrayNotHasKey('path', $captured);
     // With no Body the post keeps the bundle's default layout, exactly as a
@@ -1006,7 +958,6 @@ class PostImportServiceTest extends UnitTestCase {
       'custom_vocab' => [],
       'teaser_title' => '',
       'teaser_text' => '',
-      'teaser_media' => NULL,
       'external_source' => '',
       'login_required' => FALSE,
       'url_alias' => '',

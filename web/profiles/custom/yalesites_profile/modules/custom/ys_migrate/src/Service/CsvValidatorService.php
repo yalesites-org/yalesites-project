@@ -76,10 +76,10 @@ class CsvValidatorService {
   /**
    * Expected CSV columns for post import.
    *
-   * Body becomes a Text block in the post's layout. Teaser Media takes the ID
-   * of an image already in the media library, since a file cannot travel in a
-   * CSV cell. Publish Date and Category match the headers ys_content_export
-   * writes, so an exported file can be filled in and imported.
+   * Body becomes a Text block in the post's layout. Teaser Media is absent
+   * because this import brings in no images; editors add them after import.
+   * Publish Date and Category match the headers ys_content_export writes, so
+   * an exported file can be filled in and imported.
    */
   const EXPECTED_POST_COLUMNS = [
     'title' => 'Title',
@@ -92,7 +92,6 @@ class CsvValidatorService {
     'custom vocab' => 'Custom Vocab',
     'teaser title' => 'Teaser Title',
     'teaser text' => 'Teaser Text',
-    'teaser media id' => 'Teaser Media ID',
     'external source' => 'External Source',
     'cas login required' => 'CAS Login Required',
     'url alias' => 'URL Alias',
@@ -103,12 +102,11 @@ class CsvValidatorService {
    *
    * Values are the canonical normalised header each alias maps to. "CAS
    * Protected" is the header ys_content_export writes for "CAS Login
-   * Required"; "Featured Image ID" is how the import was first described.
+   * Required".
    */
   const POST_COLUMN_ALIASES = [
     'custom vocabulary' => 'custom vocab',
     'cas protected' => 'cas login required',
-    'featured image id' => 'teaser media id',
   ];
 
   /**

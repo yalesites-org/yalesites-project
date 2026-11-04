@@ -38,9 +38,8 @@ How the columns land on a post (`PostImportService`):
   already exist. Unlike the profile and resource importers, a misspelt term
   fails its row (`TaxonomyResolverService::findTerm()`) rather than being
   created.
-- **Teaser Media ID** takes the ID of an image already in the media library. The
-  importer never uploads files; site owners can upload images first or add them
-  after import.
+- There is no teaser image column: the importer brings in no images, so editors
+  add them to each post after import.
 - **URL Alias** sets the path alias and switches Pathauto off for that post; it
   must not already be in use. Leave it empty for Pathauto's usual alias.
 - **Author**, **Teaser Title**, **Teaser Text** (capped at the form display's
