@@ -19,6 +19,10 @@ includes one row per item with these columns:
 - **Tags**, **Audience**, **Custom Vocab** (on every type)
 - The type's category column — **Category** (Pages, Posts), **Event Category**,
   **Resource Category** — or **Affiliation** (Profiles)
+- Events only: **Start** and **End** after Dates, and **Description**,
+  **Location Details**, **Event Experience**, **Event Website**, **Event
+  Website Text**, **Ticket Cost**, **Ticket Registration URL** and **Stream
+  URL** at the end — the columns, and headers, the Event CSV import reads
 
 Taxonomy cells list every applied term, separated by ", " (matching the on-screen
 columns).
@@ -34,6 +38,13 @@ item with no date exports an empty cell.
 
 Note that a cell holding many dates cannot be sorted as a date in a spreadsheet;
 that trade-off was accepted in favour of showing every occurrence.
+
+**Start** and **End** give the event's _first_ occurrence as `YYYY-MM-DD HH:MM`
+in the site's timezone, or the date alone for an all-day occurrence, which the
+Event CSV import reads back as all day. A recurring series exports its first
+date only there; the Dates cell still lists them all. Links to pages on the
+same site are written as the path (`/events/register`) rather than the
+`internal:` or `entity:` form Drupal stores.
 
 The export reflects the same items you see in the Manage view — including
 any filters or search you have applied — and both published and unpublished items,

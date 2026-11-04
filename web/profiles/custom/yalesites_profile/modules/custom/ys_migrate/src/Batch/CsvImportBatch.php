@@ -6,7 +6,7 @@ use Drupal\Core\StringTranslation\TranslatableMarkup;
 use Drupal\ys_migrate\Service\CsvImportServiceInterface;
 
 /**
- * Batch API glue shared by the profile, resource and post CSV importers.
+ * Batch API glue shared by the profile, resource, post and event CSV importers.
  *
  * A CSV of any real size timed out in a single request before this existed.
  * Drupal stores batch operations as serialized callback strings and may
@@ -249,14 +249,17 @@ class CsvImportBatch {
     }
 
     if (!empty($results['needs_images'])) {
+      $args = [
+        '@count' => count($results['needs_images']),
+        '@titles' => implode(', ', $results['needs_images']),
+      ];
+      // Each importer stores its rich text somewhere different, so each says
+      // where the editor has to go to put the images back.
       $messages[] = [
         'addWarning',
-        new TranslatableMarkup(
-          '@count imported post(s) had images, video or embeds in the Body that could not be imported. Open each one in Layout Builder and add them: @titles', [
-            '@count' => count($results['needs_images']),
-            '@titles' => implode(', ', $results['needs_images']),
-          ]
-        ),
+        $label === 'event'
+          ? new TranslatableMarkup('@count imported event(s) had images, video or embeds in the Description that could not be imported. Edit each one and add them: @titles', $args)
+          : new TranslatableMarkup('@count imported post(s) had images, video or embeds in the Body that could not be imported. Open each one in Layout Builder and add them: @titles', $args),
       ];
     }
 

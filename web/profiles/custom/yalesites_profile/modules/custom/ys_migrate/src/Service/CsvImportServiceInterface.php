@@ -49,9 +49,9 @@ interface CsvImportServiceInterface {
    *   - 'duplicates': array, labels of the rows that would be skipped.
    *   - 'total': int, the number of rows examined.
    *   The rows that would be created come back under a per-implementation key
-   *   ('valid_profiles', 'valid_resources', 'valid_posts'), because each
-   *   confirmation form renders its own content type and holds the concrete
-   *   service to do it.
+   *   ('valid_profiles', 'valid_resources', 'valid_posts', 'valid_events'),
+   *   because each confirmation form renders its own content type and holds
+   *   the concrete service to do it.
    */
   public function previewImport(array $data, $skip_duplicates);
 

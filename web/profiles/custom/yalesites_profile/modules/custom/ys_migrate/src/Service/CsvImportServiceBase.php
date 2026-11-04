@@ -2,6 +2,7 @@
 
 namespace Drupal\ys_migrate\Service;
 
+use Drupal\Component\Utility\Html;
 use Drupal\Core\Entity\EntityTypeManagerInterface;
 use Drupal\Core\Logger\LoggerChannelFactoryInterface;
 use Drupal\Core\Session\AccountInterface;
@@ -12,8 +13,11 @@ use Drupal\Core\StringTranslation\StringTranslationTrait;
  *
  * Holds what the importers genuinely have in common: the same four injected
  * dependencies, the row-scoped error message they all produce, and the cell
- * parsers the resource and post importers share (dates, yes/no values, URLs,
- * Teaser Text, and the text format each long-text field stores).
+ * parsers more than one importer uses. The resource, post and event importers
+ * share dates, yes/no values, URLs, Teaser Text and the text format each
+ * long-text field stores. The post and event importers also share rich text
+ * (Body, Description), taxonomy columns that only accept existing terms, and
+ * URL Alias.
  *
  * The per-row loops in processImport() and previewImport() stay in the
  * implementations: they read as parallel but differ in what identifies a
@@ -29,6 +33,34 @@ abstract class CsvImportServiceBase implements CsvImportServiceInterface {
    * Names the field and form display config the shared cell parsers read.
    */
   const BUNDLE = '';
+
+  /**
+   * Vocabulary behind each taxonomy column, keyed by prepared-data key.
+   *
+   * Read by parseTerms() and termIds().
+   */
+  const VOCABULARIES = [];
+
+  /**
+   * Example path quoted in URL Alias error messages.
+   */
+  const URL_ALIAS_EXAMPLE = '/about/my-page';
+
+  /**
+   * Matches rich text markup the basic_html format cannot show.
+   *
+   * None of these elements is allowed by basic_html, the format of both the
+   * post Text block and the event Description, so they would be stripped when
+   * the page renders. D7 Media WYSIWYG tokens ([[{"type":"media",...}]]) and
+   * Node Embed tokens ([[nid:123]]) are matched too, since each stood in for
+   * an image or an embedded page.
+   */
+  const MEDIA_PATTERN = '/<(img|picture|iframe|video|audio|object|embed|svg|drupal-media|drupal-entity)\b|\[\[(\{.*?\}|nid:\d+)\]\]/is';
+
+  /**
+   * Matches the D7 inline tokens, which would otherwise render as plain text.
+   */
+  const D7_TOKEN_PATTERN = '/\[\[(\{.*?\}|nid:\d+)\]\]/s';
 
   /**
    * Date formats accepted in a date column.
@@ -310,6 +342,24 @@ abstract class CsvImportServiceBase implements CsvImportServiceInterface {
    *   If the value is not an absolute http or https URL.
    */
   protected function parseExternalSource($value) {
+    return $this->parseUrl($value, 'External Source');
+  }
+
+  /**
+   * Parses a web address cell into a link-field URI.
+   *
+   * @param string $value
+   *   The raw cell value.
+   * @param string $column
+   *   The column label, for the error message.
+   *
+   * @return string
+   *   The validated URL, or an empty string when the cell is empty.
+   *
+   * @throws \InvalidArgumentException
+   *   If the value is not an absolute http or https URL.
+   */
+  protected function parseUrl($value, $column) {
     $value = trim($value);
     if ($value === '') {
       return '';
@@ -320,12 +370,197 @@ abstract class CsvImportServiceBase implements CsvImportServiceInterface {
     $scheme = strtolower((string) parse_url($value, PHP_URL_SCHEME));
     if (!filter_var($value, FILTER_VALIDATE_URL) || !in_array($scheme, ['http', 'https'], TRUE)) {
       throw new \InvalidArgumentException(sprintf(
-        'External Source "%s" is not a valid http or https URL.',
+        '%s "%s" is not a valid http or https URL.',
+        $column,
         $value
       ));
     }
 
     return $value;
+  }
+
+  /**
+   * Parses a rich text cell into markup for a basic_html field.
+   *
+   * D7 inline tokens are removed because they would render as literal text.
+   * Everything else is kept as written: the field's own format filters what
+   * it cannot show when the page renders.
+   *
+   * @param string $value
+   *   The raw cell value: HTML, or plain text with blank lines between
+   *   paragraphs.
+   *
+   * @return array
+   *   'html': the markup to store, or an empty string. 'has_media': whether
+   *   the cell held images, video, embeds or D7 media tokens.
+   */
+  protected function parseRichText($value) {
+    $value = trim($value);
+    if ($value === '') {
+      return ['html' => '', 'has_media' => FALSE];
+    }
+
+    $html = trim(preg_replace(self::D7_TOKEN_PATTERN, '', $value));
+
+    // A spreadsheet cell is often plain text, which would otherwise run its
+    // paragraphs together into one.
+    if ($html !== '' && $html === strip_tags($html)) {
+      $html = $this->plainTextToHtml($html);
+    }
+
+    return [
+      'html' => $html,
+      'has_media' => (bool) preg_match(self::MEDIA_PATTERN, $value),
+    ];
+  }
+
+  /**
+   * Converts plain text into paragraphs, keeping single line breaks.
+   *
+   * @param string $text
+   *   Plain text with blank lines between paragraphs.
+   *
+   * @return string
+   *   The text as escaped HTML paragraphs.
+   */
+  protected function plainTextToHtml($text) {
+    $paragraphs = array_filter(array_map('trim', preg_split('/\R\s*\R/', $text)), 'strlen');
+
+    return implode("\n", array_map(
+      static fn ($paragraph) => '<p>' . nl2br(Html::escape($paragraph), FALSE) . '</p>',
+      $paragraphs
+    ));
+  }
+
+  /**
+   * Parses a taxonomy cell, checking every term already exists.
+   *
+   * @param string $value
+   *   The raw comma-separated cell value.
+   * @param string $key
+   *   The prepared-data key, which names the vocabulary in VOCABULARIES.
+   * @param string $column
+   *   The column label, for the error message.
+   *
+   * @return string[]
+   *   The term names.
+   *
+   * @throws \InvalidArgumentException
+   *   If any name does not match a term in the vocabulary.
+   */
+  protected function parseTerms($value, $key, $column) {
+    $names = $this->taxonomyResolver->parseCommaSeparatedValues($value);
+    $this->termIds($names, $key, $column);
+    return $names;
+  }
+
+  /**
+   * Resolves term names to the ids of existing terms.
+   *
+   * @param string[] $names
+   *   The term names.
+   * @param string $key
+   *   The prepared-data key, which names the vocabulary in VOCABULARIES.
+   * @param string $column
+   *   The column label, for the error message.
+   *
+   * @return array
+   *   The term ids, in the order given.
+   *
+   * @throws \InvalidArgumentException
+   *   If any name does not match a term in the vocabulary.
+   */
+  protected function termIds(array $names, $key, $column) {
+    $ids = [];
+    $missing = [];
+
+    foreach ($names as $name) {
+      $term = $this->taxonomyResolver->findTerm($name, static::VOCABULARIES[$key]);
+      if ($term) {
+        $ids[] = $term->id();
+      }
+      else {
+        $missing[] = '"' . $name . '"';
+      }
+    }
+
+    if ($missing) {
+      throw new \InvalidArgumentException(sprintf(
+        '%s has no existing term named %s. Add the term to the site first, or correct the spelling.',
+        $column,
+        implode(', ', $missing)
+      ));
+    }
+
+    return $ids;
+  }
+
+  /**
+   * Parses a URL Alias cell into a path alias.
+   *
+   * Whether the alias is free is checked separately, by assertAliasAvailable(),
+   * so a duplicate row is reported as a duplicate rather than as a clash.
+   *
+   * @param string $value
+   *   The raw cell value, with or without its leading slash.
+   *
+   * @return string
+   *   The alias with a leading slash, or an empty string when the cell is
+   *   empty.
+   *
+   * @throws \InvalidArgumentException
+   *   If the value is a full URL or contains characters a path cannot hold.
+   */
+  protected function parseUrlAlias($value) {
+    $value = trim($value);
+    if ($value === '') {
+      return '';
+    }
+
+    if (parse_url($value, PHP_URL_SCHEME) || str_starts_with($value, '//')) {
+      throw new \InvalidArgumentException(sprintf(
+        'URL Alias "%s" must be a path such as %s, not a full web address.',
+        $value,
+        static::URL_ALIAS_EXAMPLE
+      ));
+    }
+    if (preg_match('/[\s?#]/', $value)) {
+      throw new \InvalidArgumentException(sprintf(
+        'URL Alias "%s" cannot contain spaces, "?" or "#". Use a path such as %s.',
+        $value,
+        static::URL_ALIAS_EXAMPLE
+      ));
+    }
+
+    return '/' . ltrim($value, '/');
+  }
+
+  /**
+   * Checks no existing page already uses a URL alias.
+   *
+   * @param string $alias
+   *   The alias, or an empty string when the row has none.
+   *
+   * @throws \InvalidArgumentException
+   *   If the alias is already in use.
+   */
+  protected function assertAliasAvailable($alias) {
+    if ($alias === '') {
+      return;
+    }
+
+    $ids = $this->entityTypeManager->getStorage('path_alias')->getQuery()
+      ->condition('alias', $alias)
+      ->range(0, 1)
+      ->accessCheck(FALSE)
+      ->execute();
+
+    if (!empty($ids)) {
+      throw new \InvalidArgumentException(sprintf(
+        'URL Alias "%s" is already in use on this site.',
+        $alias
+      ));
+    }
   }
 
   /**

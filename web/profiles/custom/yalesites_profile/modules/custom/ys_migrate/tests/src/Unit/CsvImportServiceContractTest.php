@@ -4,6 +4,7 @@ namespace Drupal\Tests\ys_migrate\Unit;
 
 use Drupal\Tests\UnitTestCase;
 use Drupal\ys_migrate\Service\CsvImportServiceInterface;
+use Drupal\ys_migrate\Service\EventImportService;
 use Drupal\ys_migrate\Service\PostImportService;
 use Drupal\ys_migrate\Service\ProfileImportService;
 use Drupal\ys_migrate\Service\ResourceImportService;
@@ -50,6 +51,7 @@ class CsvImportServiceContractTest extends UnitTestCase {
       'profile' => [ProfileImportService::class],
       'resource' => [ResourceImportService::class],
       'post' => [PostImportService::class],
+      'event' => [EventImportService::class],
     ];
   }
 

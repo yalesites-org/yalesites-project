@@ -39,18 +39,45 @@ class ContentExportBuilder {
   ];
 
   /**
-   * The date column specific to each content type.
+   * The date columns specific to each content type.
    *
-   * Keyed by bundle, then by field machine name, with the column header as the
-   * value. Headers match the wording editors already see on the matching Manage
-   * screen, or for posts, which have no date column there, the field's own
-   * label (also the header the Post CSV importer reads). Bundles absent from
-   * this map export no date column.
+   * Keyed by bundle, then by field machine name (or the event_start/event_end
+   * pseudo keys), with the column header as the value. Headers match the
+   * wording editors already see on the matching Manage screen, or for posts,
+   * which have no date column there, the field's own label (also the header
+   * the Post CSV importer reads). Events add Start and End, the headers the
+   * Event CSV importer reads, since the readable Dates cell cannot be read
+   * back in. Bundles absent from this map export no date column.
    */
   const BUNDLE_DATE = [
     'post' => ['field_publish_date' => 'Publish Date'],
-    'event' => ['field_event_date' => 'Dates'],
+    'event' => [
+      'field_event_date' => 'Dates',
+      'event_start' => 'Start',
+      'event_end' => 'End',
+    ],
     'resource' => ['field_publish_date' => 'Resource Publication Date'],
+  ];
+
+  /**
+   * Further content columns specific to each content type.
+   *
+   * Keyed by bundle, then by field machine name (or the event_website_text
+   * pseudo key), with the column header as the value. Events carry the
+   * fields the Event CSV importer reads, under its own headers, so an export
+   * can be backed up, or edited and imported into another site.
+   */
+  const BUNDLE_CONTENT = [
+    'event' => [
+      'field_event_description' => 'Description',
+      'field_event_location_details' => 'Location Details',
+      'field_localist_event_experience' => 'Event Experience',
+      'field_event_cta' => 'Event Website',
+      'event_website_text' => 'Event Website Text',
+      'field_ticket_cost' => 'Ticket Cost',
+      'field_ticket_registration_url' => 'Ticket Registration URL',
+      'field_stream_url' => 'Stream URL',
+    ],
   ];
 
   /**
@@ -61,7 +88,8 @@ class ContentExportBuilder {
    *
    * @return array
    *   Ordered map of column key (a node field name, or one of the pseudo keys
-   *   title/url/published/cas_protected) to its header label.
+   *   title/url/published/cas_protected/event_start/event_end/
+   *   event_website_text) to its header label.
    */
   public static function getColumns(string $bundle): array {
     // The date column sits immediately after Title so the file reads in roughly
@@ -75,6 +103,7 @@ class ContentExportBuilder {
     ];
     $columns += self::SHARED_TAXONOMY;
     $columns += self::BUNDLE_TAXONOMY[$bundle] ?? [];
+    $columns += self::BUNDLE_CONTENT[$bundle] ?? [];
     return $columns;
   }
 
@@ -122,8 +151,25 @@ class ContentExportBuilder {
       case 'field_event_date':
         return self::eventDates($node, $date_formatter);
 
+      case 'event_start':
+      case 'event_end':
+        return self::eventBoundary($node, $key, $date_formatter);
+
       case 'field_publish_date':
         return self::publishDate($node);
+
+      case 'field_event_description':
+      case 'field_event_location_details':
+      case 'field_ticket_cost':
+        return $node->hasField($key) ? (string) $node->get($key)->value : '';
+
+      case 'field_event_cta':
+      case 'field_ticket_registration_url':
+      case 'field_stream_url':
+        return $node->hasField($key) ? self::linkAddress((string) $node->get($key)->uri) : '';
+
+      case 'event_website_text':
+        return $node->hasField('field_event_cta') ? (string) $node->get('field_event_cta')->title : '';
 
       default:
         // Any remaining column is assumed to be an entity reference, so a new
@@ -156,8 +202,55 @@ class ContentExportBuilder {
    *   no dates.
    */
   protected static function eventDates(NodeInterface $node, DateFormatterInterface $date_formatter): string {
-    if (!$node->hasField('field_event_date')) {
+    $rendered = [];
+    foreach (self::eventInstances($node) as [$start, $end]) {
+      $rendered[] = self::eventInstance($start, $end, $date_formatter);
+    }
+    return implode(', ', $rendered);
+  }
+
+  /**
+   * Returns the start or end of an event's first occurrence.
+   *
+   * Written in the format the Event CSV importer reads: Y-m-d H:i, or the
+   * date alone for an all-day occurrence, which the importer reads back as
+   * all day. Only the first occurrence is written because the importer
+   * creates one date per event; the Dates column still lists them all.
+   *
+   * @param \Drupal\node\NodeInterface $node
+   *   The event node.
+   * @param string $key
+   *   The pseudo column key, event_start or event_end.
+   * @param \Drupal\Core\Datetime\DateFormatterInterface $date_formatter
+   *   The date formatter.
+   *
+   * @return string
+   *   The formatted start or end, or an empty string when the event has no
+   *   dates.
+   */
+  protected static function eventBoundary(NodeInterface $node, string $key, DateFormatterInterface $date_formatter): string {
+    $instances = self::eventInstances($node);
+    if (!$instances) {
       return '';
+    }
+
+    [$start, $end] = $instances[0];
+    $format = self::isAllDay($start, $end, $date_formatter) ? 'Y-m-d' : 'Y-m-d H:i';
+    return $date_formatter->format($key === 'event_start' ? $start : $end, 'custom', $format);
+  }
+
+  /**
+   * Lists an event's occurrences as [start, end] timestamps, oldest first.
+   *
+   * @param \Drupal\node\NodeInterface $node
+   *   The event node.
+   *
+   * @return array
+   *   The occurrences, or an empty array when the event has no dates.
+   */
+  protected static function eventInstances(NodeInterface $node): array {
+    if (!$node->hasField('field_event_date')) {
+      return [];
     }
 
     $instances = [];
@@ -172,11 +265,30 @@ class ContentExportBuilder {
     }
     usort($instances, fn(array $a, array $b) => $a <=> $b);
 
-    $rendered = [];
-    foreach ($instances as [$start, $end]) {
-      $rendered[] = self::eventInstance($start, $end, $date_formatter);
+    return $instances;
+  }
+
+  /**
+   * Writes a link field's stored URI as the address an editor would type.
+   *
+   * Paths on this site are stored with an internal: or entity: scheme that
+   * nobody types; they are written back as the path itself, which is also
+   * what the Event CSV importer accepts.
+   *
+   * @param string $uri
+   *   The stored URI, or an empty string.
+   *
+   * @return string
+   *   The address.
+   */
+  protected static function linkAddress(string $uri): string {
+    if (str_starts_with($uri, 'internal:')) {
+      return substr($uri, strlen('internal:'));
     }
-    return implode(', ', $rendered);
+    if (str_starts_with($uri, 'entity:')) {
+      return '/' . substr($uri, strlen('entity:'));
+    }
+    return $uri;
   }
 
   /**

@@ -358,6 +358,33 @@ class CsvImportBatchTest extends UnitTestCase {
   }
 
   /**
+   * BuildMessages() sends editors to the Description for event images.
+   *
+   * Events keep their rich text in a field, not in Layout Builder, so the post
+   * wording would send the editor to the wrong place.
+   *
+   * @covers ::buildMessages
+   */
+  public function testBuildMessagesReportsEventsNeedingImages() {
+    $messages = CsvImportBatch::buildMessages([
+      'entity_label' => 'event',
+      'created' => 1,
+      'skipped' => 0,
+      'errors' => [],
+      'needs_media' => [],
+      'needs_images' => ['Event A'],
+    ]);
+
+    $needsImages = array_values(array_filter($messages, fn($m) => str_contains((string) $m[1], 'had images')));
+    $this->assertCount(1, $needsImages);
+    $this->assertSame('addWarning', $needsImages[0][0]);
+    $this->assertSame(
+      '1 imported event(s) had images, video or embeds in the Description that could not be imported. Edit each one and add them: Event A',
+      (string) $needsImages[0][1]
+    );
+  }
+
+  /**
    * BuildMessages() forwards each error as its own addError entry, verbatim.
    *
    * @covers ::buildMessages
