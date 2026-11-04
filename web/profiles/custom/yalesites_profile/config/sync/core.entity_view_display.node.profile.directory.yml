@@ -95,7 +95,7 @@ content:
     type: entity_reference_entity_view
     label: hidden
     settings:
-      view_mode: profile_directory_card_1_1_
+      view_mode: directory_card_1_1_
       link: false
     third_party_settings: {  }
     weight: 6
@@ -119,7 +119,7 @@ content:
     type: entity_reference_entity_view
     label: hidden
     settings:
-      view_mode: profile_directory_card_1_1_
+      view_mode: directory_card_1_1_
       link: false
     third_party_settings: {  }
     weight: 7

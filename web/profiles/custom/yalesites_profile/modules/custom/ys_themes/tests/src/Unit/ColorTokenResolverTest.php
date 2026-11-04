@@ -773,6 +773,48 @@ class ColorTokenResolverTest extends UnitTestCase {
   }
 
   /**
+   * Section themes render as a dropdown; every other picker keeps swatches.
+   *
+   * The block-level pickers (no mapping, or the callout mapping that the
+   * Taxonomy Display block uses for its own theme) must keep the swatch row.
+   *
+   * @covers ::processColorPicker
+   * @dataProvider providerPickerDisplay
+   */
+  public function testProcessColorPickerChoosesDisplayBySection(?string $entity_type, ?string $bundle, string $expected): void {
+    $resolver = $this->createResolver($this->fixturePath, NULL, 'one');
+    $rendered_argument = NULL;
+    $renderer = $this->createMock(RendererInterface::class);
+    $renderer->method('render')->willReturnCallback(function (&$element) use (&$rendered_argument) {
+      $rendered_argument = $element;
+      return '<div></div>';
+    });
+    $this->setRendererOnResolver($resolver, $renderer);
+
+    $element = [
+      '#default_value' => 'one',
+      '#options' => ['default' => 'Default - No Color', 'one' => 'One'],
+    ];
+    $form_state = $this->createMock(FormStateInterface::class);
+    $complete_form = [];
+
+    $resolver->processColorPicker($element, $form_state, $complete_form, $entity_type, $bundle);
+
+    $this->assertSame($expected, $rendered_argument['#display']);
+  }
+
+  /**
+   * Data provider for testProcessColorPickerChoosesDisplayBySection().
+   */
+  public static function providerPickerDisplay(): array {
+    return [
+      'section theme' => ['layout_section', 'ys_layout_options', 'dropdown'],
+      'block theme, callout mapping' => ['block_content', 'callout', 'swatches'],
+      'no mapping' => [NULL, NULL, 'swatches'],
+    ];
+  }
+
+  /**
    * Tests process color picker reorders options for section layout.
    *
    * ProcessColorPicker() reorders palette options and sets #palette_order
