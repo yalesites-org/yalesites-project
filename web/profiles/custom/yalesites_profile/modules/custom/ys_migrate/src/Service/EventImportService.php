@@ -4,6 +4,7 @@ namespace Drupal\ys_migrate\Service;
 
 use Drupal\Core\Config\ConfigFactoryInterface;
 use Drupal\Core\Entity\EntityTypeManagerInterface;
+use Drupal\Core\Language\LanguageInterface;
 use Drupal\Core\Logger\LoggerChannelFactoryInterface;
 use Drupal\Core\Session\AccountInterface;
 
@@ -162,6 +163,7 @@ class EventImportService extends CsvImportServiceBase {
   public function prepareEventData(array $row) {
     $dates = $this->parseEventDates($row);
     $description = $this->parseRichText($row['description'] ?? '');
+    $description['html'] = $this->filterDescription($description['html']);
     $website = $this->parseEventWebsite($row['event website'] ?? '', $row['event website text'] ?? '');
 
     return [
@@ -692,6 +694,44 @@ class EventImportService extends CsvImportServiceBase {
     }
 
     return $names;
+  }
+
+  /**
+   * Removes the markup the Description's text format would not display.
+   *
+   * A post's Body renders through its text format, which drops an <img> or
+   * embed. The event page prints the stored Description as it is, with no
+   * format or filter, so anything left in it shows: an old site's image path
+   * becomes a broken image. Running the format's own HTML filter here stores
+   * only what the format allows, and the empty paragraphs that held an image
+   * or a D7 token are removed so they do not show as blank lines.
+   *
+   * @param string $html
+   *   The Description markup from parseRichText().
+   *
+   * @return string
+   *   The filtered markup. Unchanged if the format cannot be loaded or does
+   *   not limit HTML.
+   */
+  protected function filterDescription($html) {
+    if ($html === '') {
+      return '';
+    }
+
+    $format = $this->entityTypeManager->getStorage('filter_format')
+      ->load($this->textFormat('field_event_description'));
+    if (!$format || !$format->filters()->has('filter_html')) {
+      return $html;
+    }
+
+    $filter = $format->filters()->get('filter_html');
+    if (!$filter->status) {
+      return $html;
+    }
+
+    $html = $filter->process($html, LanguageInterface::LANGCODE_NOT_SPECIFIED)->getProcessedText();
+
+    return trim(preg_replace('/<p>(?:\s|&nbsp;|\x{00A0})*<\/p>/iu', '', $html));
   }
 
   /**

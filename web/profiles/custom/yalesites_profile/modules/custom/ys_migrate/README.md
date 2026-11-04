@@ -75,6 +75,9 @@ How the columns land on an event (`EventImportService`):
 - **Description** goes in `field_event_description` (`basic_html`), handled
   like a post's Body: D7 tokens removed, plain text made into paragraphs, and
   events whose Description held images, video or embeds listed in the summary.
+  Unlike a post's Body, it is also stored through `basic_html`'s HTML filter,
+  which drops those images and embeds, because the event page prints the
+  stored Description without running its text format.
 - **Location Details** is the one location field editors fill in, so a location
   name and address both go there, on separate lines (`restricted_html` turns the
   line breaks into HTML). Yale Location and Room belong to Localist and are not

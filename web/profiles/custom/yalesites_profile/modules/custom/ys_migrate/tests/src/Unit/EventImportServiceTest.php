@@ -9,6 +9,9 @@ use Drupal\Core\Logger\LoggerChannelFactoryInterface;
 use Drupal\Core\Logger\LoggerChannelInterface;
 use Drupal\Core\Session\AccountInterface;
 use Drupal\Tests\UnitTestCase;
+use Drupal\filter\FilterFormatInterface;
+use Drupal\filter\FilterPluginCollection;
+use Drupal\filter\Plugin\Filter\FilterHtml;
 use Drupal\node\NodeInterface;
 use Drupal\taxonomy\TermInterface;
 use Drupal\ys_migrate\Service\CsvValidatorService;
@@ -672,6 +675,42 @@ class EventImportServiceTest extends UnitTestCase {
     ]);
 
     $this->assertSame('<p>Before</p><p>After</p>', $result['description']);
+    $this->assertTrue($result['description_has_media']);
+  }
+
+  /**
+   * The Description keeps only what its text format allows.
+   *
+   * The event page prints the stored Description unfiltered, so an <img> left
+   * in it would show as a broken image.
+   *
+   * @covers ::prepareEventData
+   * @covers ::filterDescription
+   */
+  public function testPrepareEventDataFiltersDescriptionThroughItsFormat() {
+    $filter = new FilterHtml([
+      'status' => TRUE,
+      'settings' => [
+        'allowed_html' => '<a href> <p> <h2> <ul> <li> <br>',
+        'filter_html_help' => 0,
+        'filter_html_nofollow' => 0,
+      ],
+    ], 'filter_html', ['provider' => 'filter']);
+    $filters = $this->createMock(FilterPluginCollection::class);
+    $filters->method('has')->with('filter_html')->willReturn(TRUE);
+    $filters->method('get')->with('filter_html')->willReturn($filter);
+    $format = $this->createMock(FilterFormatInterface::class);
+    $format->method('filters')->willReturn($filters);
+    $this->storages['filter_format'] = $this->createMock(EntityStorageInterface::class);
+    $this->storages['filter_format']->method('load')->with('basic_html')->willReturn($format);
+
+    $result = $this->eventImport->prepareEventData([
+      'title' => 'Pictured',
+      'start' => '2026-03-04 14:00',
+      'description' => '<p>Before</p><p><img src="/sites/default/files/old.jpg" alt="Old"></p><p>[[{"type":"media","fid":"12"}]]</p><h2 style="color:red">Agenda</h2><ul><li><a href="/talks">Talks</a></li></ul><iframe src="https://example.com"></iframe><p>After</p>',
+    ]);
+
+    $this->assertSame('<p>Before</p><h2>Agenda</h2><ul><li><a href="/talks">Talks</a></li></ul><p>After</p>', $result['description']);
     $this->assertTrue($result['description_has_media']);
   }
 
