@@ -9,6 +9,7 @@ use Drupal\Core\Entity\FieldableEntityInterface;
 use Drupal\Core\Field\FieldStorageDefinitionInterface;
 use Drupal\Core\Cache\Cache;
 use Drupal\Core\Form\FormStateInterface;
+use Drupal\Core\Messenger\MessengerInterface;
 use Drupal\Core\Render\Element;
 use Drupal\Core\Routing\RouteMatchInterface;
 use Drupal\Core\Routing\RouteObjectInterface;
@@ -393,6 +394,35 @@ function ys_core_form_redirect_redirect_form_alter(&$form, FormStateInterface $f
         To add a redirect from an aliased path, the "from" page must be published. <br>
         To create a redirect from an unpublished page, use the node path, eg. /node/123.
       ');
+  }
+
+  // The Redirect module queues its "valid path" warning while the entity is
+  // built, so swap it after the form's own validate and submit handlers.
+  $form['#validate'][] = 'ys_core_redirect_source_warning_replace';
+  $form['actions']['submit']['#submit'][] = 'ys_core_redirect_source_warning_replace';
+}
+
+/**
+ * Replaces the Redirect module's warning that links to the URL alias form.
+ *
+ * Editors cannot open the "create URL aliases" page the warning links to, so
+ * the message tells them to edit the alias in the page's own settings instead.
+ *
+ * @see https://github.com/yalesites-org/YaleSites-Internal/issues/1414
+ */
+function ys_core_redirect_source_warning_replace(array &$form, FormStateInterface $form_state): void {
+  $messenger = \Drupal::messenger();
+  $warnings = $messenger->messagesByType(MessengerInterface::TYPE_WARNING);
+  $contrib = array_filter($warnings, fn($warning) => str_contains((string) $warning, 'appears to be a valid path'));
+  if (!$contrib) {
+    return;
+  }
+
+  $messenger->deleteByType(MessengerInterface::TYPE_WARNING);
+  foreach ($warnings as $key => $warning) {
+    $messenger->addWarning(isset($contrib[$key])
+      ? t("This path already belongs to a page on your site. To change its address, edit the URL alias in that page's settings.")
+      : $warning);
   }
 }
 
