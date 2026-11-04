@@ -113,4 +113,26 @@ class JWPlayerTest extends UnitTestCase {
     $this->assertSame('https://content.jwplatform.com/players/2sVMfwDJ-XjbdEvEx.html', $build['#embedSource']['#context']['url']);
   }
 
+  /**
+   * Data provider for testIsValidRejectsLookAlikeHost().
+   *
+   * @return array
+   *   Iframe sources on hosts that only look like JW Player.
+   */
+  public static function lookAlikeHostProvider(): array {
+    return [
+      'cdnxjwplayer' => ['https://cdnxjwplayer.com/players/abc.html'],
+      'contentxjwplatform' => ['https://contentxjwplatform.com/players/abc.html'],
+      'jwplayerxcom' => ['https://cdn.jwplayerxcom/players/abc.html'],
+    ];
+  }
+
+  /**
+   * @covers ::isValid
+   * @dataProvider lookAlikeHostProvider
+   */
+  public function testIsValidRejectsLookAlikeHost(string $src): void {
+    $this->assertFalse(JWPlayer::isValid('<iframe src="' . $src . '"></iframe>'));
+  }
+
 }

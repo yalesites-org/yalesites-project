@@ -19,6 +19,21 @@ gin_lb_color_scheme:
     theme:
       css/gin-lb-color-scheme.css: {}
 
+# Visible resize edge for the Layout Builder side panel; loaded like the one above.
+off_canvas_resize_handle:
+  version: VERSION
+  css:
+    theme:
+      css/off-canvas-resize-handle.css: {}
+
+# Help-text spacing for rich-text fields in gin_lb forms. Attached by
+# ys_layouts_preprocess_text_format_wrapper__gin_lb().
+gin_lb_text_format:
+  version: VERSION
+  css:
+    theme:
+      css/gin-lb-text-format.css: {}
+
 # Icon + spacing for the "Clone" action on the section toolbar. Attached by
 # SectionCloneLinkBuilder when it adds the link.
 clone_section:
@@ -47,6 +62,11 @@ ys_layout_three_column_33_33_33:
   css:
     theme:
       layouts/three_column_33_33_33/three-column_33_33_33.css: {}
+reusable_toggle:
+  version: VERSION
+  css:
+    theme:
+      assets/css/reusable-toggle.css: {}
 ys_layout_onecol:
   version: VERSION
   css:

@@ -1,3 +1,5 @@
 #!/bin/bash
 
-lando drush config-export -y
+source ./scripts/local/local-dev-tool.sh
+
+ys_local_drush config-export -y

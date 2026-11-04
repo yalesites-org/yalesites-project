@@ -1,0 +1,11 @@
+uuid: bd484f7a-0b3e-4966-8940-5727e4392d2e
+langcode: en
+status: true
+dependencies:
+  module:
+    - media
+id: media.quote_callout_1_1_
+label: 'Quote Callout (1:1)'
+description: ''
+targetEntityType: media
+cache: true

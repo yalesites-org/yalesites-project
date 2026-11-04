@@ -38,7 +38,17 @@ class Bluesky extends EmbedSourceBase implements EmbedSourceInterface {
   /**
    * {@inheritdoc}
    */
-  protected static $template = "{{ blockquote|raw }}\r\n<script async{% if klaro_service %} type=\"text/plain\" data-type=\"application/javascript\" data-src=\"{{ script }}\" data-name=\"{{ klaro_service }}\"{% else %} src=\"{{ script }}\"{% endif %} charset=\"utf-8\"></script>\r\n";
+  protected static $template = "{{ blockquote }}\r\n<script async{% if klaro_service %} type=\"text/plain\" data-type=\"application/javascript\" data-src=\"{{ script }}\" data-name=\"{{ klaro_service }}\"{% else %} src=\"{{ script }}\"{% endif %} charset=\"utf-8\"></script>\r\n";
+
+  /**
+   * {@inheritdoc}
+   */
+  protected static $markupParam = 'blockquote';
+
+  /**
+   * {@inheritdoc}
+   */
+  protected static $allowedTags = ['blockquote', 'p', 'a', 'br'];
 
   /**
    * {@inheritdoc}

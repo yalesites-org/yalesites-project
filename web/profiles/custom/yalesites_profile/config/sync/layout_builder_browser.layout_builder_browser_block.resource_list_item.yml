@@ -1,0 +1,11 @@
+uuid: 52fb02a3-5c0f-4063-ae61-706547513c87
+langcode: en
+status: true
+dependencies: {  }
+id: resource_list_item
+block_id: 'inline_block:resource_list_item'
+category: resource_listings
+label: 'Resources - List View'
+image_path: ''
+image_alt: ''
+weight: 2

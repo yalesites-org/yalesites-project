@@ -7,3 +7,9 @@ allowed_entity_types:
   node: {  }
   taxonomy_term: {  }
 site_uuid_check: true
+import_directory_schema: temporary
+export_directory_schema: temporary
+embedded_entities_export_mode: stub
+menu_link_export_mode: stub
+trusted_file_hosts: {  }
+allowed_file_extensions: 'jpg jpeg png gif webp avif ico txt csv pdf doc docx xls xlsx ppt pptx odt ods odp mp3 mp4 wav ogg webm zip gz tar tgz aac ics rtf'

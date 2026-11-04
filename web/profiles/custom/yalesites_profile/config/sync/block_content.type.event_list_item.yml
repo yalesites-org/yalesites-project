@@ -1,0 +1,8 @@
+uuid: 29df37e5-5a0a-40db-9fa7-ddd1a52fa6ef
+langcode: en
+status: true
+dependencies: {  }
+id: event_list_item
+label: 'Events - List View'
+revision: true
+description: 'Events - List listing block.'

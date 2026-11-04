@@ -5,7 +5,44 @@ ys_views_basic:
   js:
     assets/js/views-basic.js: {}
   dependencies:
+    - core/drupal
     - core/once
+    - core/jquery
+
+ys_views_basic_preview:
+  css:
+    theme:
+      assets/css/views-basic-preview.css: {}
+  js:
+    assets/js/views-basic-preview.js: {}
+  dependencies:
+    - core/drupal
+    - core/once
+    - ys_core/font_preview
+
+listing_form_tabs:
+  css:
+    theme:
+      assets/css/views-basic-form-tabs.css: {}
+
+term_operator:
+  css:
+    theme:
+      assets/css/views-basic-term-operator.css: {}
+  js:
+    assets/js/views-basic-term-operator.js: {}
+  dependencies:
+    - core/drupal
+    - core/once
+    - core/jquery
+
+listing_ajax:
+  js:
+    assets/js/views-basic-listing-ajax.js: {}
+  dependencies:
+    - core/drupal
+    - core/drupalSettings
+    - views/views.ajax
 
 event_calendar_live_filter:
   js:

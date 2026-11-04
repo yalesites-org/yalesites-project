@@ -1,0 +1,17 @@
+uuid: 9b946f13-70cd-4a7b-b749-ca2e223d10a2
+langcode: en
+status: true
+dependencies:
+  module:
+    - focal_point
+name: '1_1_900'
+label: '1:1 (900)'
+effects:
+  7a570dc5-abce-4ba2-9ff9-8fc33da82947:
+    uuid: 7a570dc5-abce-4ba2-9ff9-8fc33da82947
+    id: focal_point_scale_and_crop
+    weight: -10
+    data:
+      width: 900
+      height: 900
+      crop_type: focal_point

@@ -1,4 +1,8 @@
-((Drupal) => {
+((Drupal, once, $) => {
+  // Drupal.behaviors.X = {} is the required registration pattern for a
+  // Drupal behavior; there is no alternative API that avoids assigning onto
+  // the Drupal parameter.
+  // eslint-disable-next-line no-param-reassign
   Drupal.behaviors.ysViewsBasic = {
     attach(context) {
       // Function to handle radio input checked behavior based on radio element selection.
@@ -35,6 +39,10 @@
         'input[name="term_operator"]',
         'input[name="settings[block_form][group_user_selection][entity_specific][event_time_period]"]',
         'input[name="block_form[group_user_selection][entity_specific][event_time_period]"]',
+        // event_view_widget now renders Event Time Period under the Display
+        // options group; the legacy widgets keep the entity_specific path above.
+        'input[name="settings[block_form][group_user_selection][options][event_time_period]"]',
+        'input[name="block_form[group_user_selection][options][event_time_period]"]',
         'input[name="event_time_period"]',
       ];
 
@@ -43,7 +51,11 @@
         handleRadioInputs(group);
       });
 
-      // Handle limit display
+      // Handle the "limit" field's title (Items / Items per Page). Visibility
+      // and the required state are handled by Drupal's own #states now
+      // (ViewsBasicWidgetBase::buildDisplayControls(), #1481) rather than this
+      // inline style toggle, which used to leave the field hidden-but-required
+      // whenever "display" was "all".
       const editLimitWrapperElement = document.querySelector('#edit-limit');
       const displayElement = document.querySelector(
         'select[name="settings[block_form][group_user_selection][options][display]"',
@@ -56,19 +68,14 @@
         const updateLimitElement = () => {
           const { value } = displayElement;
 
-          // First evaluate whether to hide/show the limit
-          const newLimitDisplayValue = value === 'all' ? 'display: none' : '';
-          editLimitWrapperElement.setAttribute('style', newLimitDisplayValue);
-
-          // Change the title
+          // Change the title. "all" hides the field entirely via #states, so
+          // it needs no label and falls through to the default.
           switch (value) {
-            case 'all':
-              break;
             case 'limit':
-              limitLabel.textContent = 'Items';
+              limitLabel.textContent = Drupal.t('Items');
               break;
             case 'pager':
-              limitLabel.textContent = 'Items Per Page';
+              limitLabel.textContent = Drupal.t('Items per Page');
               break;
             default:
               break;
@@ -111,6 +118,38 @@
         input.addEventListener('change', updateVisibility),
       );
       updateVisibility();
+
+      // Each exposed-filter row discloses its settings body with a pure-CSS
+      // :has() rule (views-basic.css), so revealing it grows the form without
+      // firing anything the surrounding dialog can react to.
+      //
+      // Adding a block goes through layout_builder_browser, which opens the
+      // form in a jQuery UI modal (#layout-builder-modal) sized and positioned
+      // once, when it opens. Growing its content therefore pushes the dialog
+      // past the bottom of the viewport, and that overflow is unreachable
+      // because the modal locks body scroll. Core's dialog.position.js binds
+      // the recompute to the `resize.dialogResize` window namespace and
+      // triggers it itself on open, so re-triggering that is what makes the
+      // dialog re-measure and re-centre.
+      //
+      // Configuring an existing block uses the off-canvas renderer instead,
+      // which is unaffected: its panel height is derived from the viewport
+      // rather than from content, so it scrolls internally and can never be
+      // pushed below the fold. It is created with autoResize: FALSE, so
+      // nothing is bound to this namespace there and the trigger is a harmless
+      // no-op.
+      //
+      // Keyed on the row class rather than on field names, so every disclosing
+      // row is covered, including the pinned-items row. (#1299 QA)
+      once(
+        'vb-filter-row-dialog-resize',
+        '.vb-filter-row--has-settings input[type="checkbox"]',
+        context,
+      ).forEach((toggle) => {
+        toggle.addEventListener('change', () => {
+          $(window).trigger('resize.dialogResize');
+        });
+      });
     },
   };
-})(Drupal);
+})(Drupal, once, jQuery);

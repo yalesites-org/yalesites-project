@@ -90,10 +90,39 @@ class MicrosoftFormTest extends UnitTestCase {
    */
   public function testGetUrlBuildsPagesResponsePageUrl(): void {
     $params = $this->plugin->getParams(self::PAGES_EMBED);
+    $url = $this->plugin->getUrl($params);
     $this->assertSame(
-      'https://forms.office.com/Pages/ResponsePage.aspx?id=u76M3Tkh-E20EU4-h6vrXJ-OMhrDFtBEifIUjjt2g_xURUVBU1IyUVlTVFFFNjJQQzJXM1pNMVozVi4u&amp;embed=true',
-      $this->plugin->getUrl($params)
+      'https://forms.office.com/Pages/ResponsePage.aspx?id=u76M3Tkh-E20EU4-h6vrXJ-OMhrDFtBEifIUjjt2g_xURUVBU1IyUVlTVFFFNjJQQzJXM1pNMVozVi4u&embed=true',
+      $url
     );
+    $this->assertStringContainsString('&embed=true', $url);
+    $this->assertStringNotContainsString('&amp;', $url);
+  }
+
+  /**
+   * The plugin's own example yields a plain URL; Twig escapes it at output.
+   *
+   * @covers ::getUrl
+   */
+  public function testGetUrlForExampleIsNotHtmlEncoded(): void {
+    $params = $this->plugin->getParams(MicrosoftForm::getExample());
+    $url = $this->plugin->getUrl($params);
+    $this->assertStringContainsString('&embed=true', $url);
+    $this->assertStringNotContainsString('&amp;', $url);
+  }
+
+  /**
+   * An /r/ form with two query params keeps a literal ampersand.
+   *
+   * @covers ::getUrl
+   */
+  public function testGetUrlKeepsLiteralAmpersandInRformatParams(): void {
+    $embed = '<iframe width="640px" height="480px" src="https://forms.cloud.microsoft/r/abc123XYZ?embed=true&lang=en" frameborder="0"></iframe>';
+    $params = $this->plugin->getParams($embed);
+    $this->assertSame('?embed=true&lang=en', $params['r_params']);
+    $url = $this->plugin->getUrl($params);
+    $this->assertSame('https://forms.cloud.microsoft/r/abc123XYZ?embed=true&lang=en', $url);
+    $this->assertStringNotContainsString('&amp;', $url);
   }
 
   /**
@@ -120,7 +149,9 @@ class MicrosoftFormTest extends UnitTestCase {
   }
 
   /**
-   * Sanitization strips quotes and encodes markup in page/r query params.
+   * Sanitization strips quotes from page query params.
+   *
+   * The URL is not HTML-encoded here; Twig autoescapes it at output.
    *
    * @covers ::getUrl
    */
@@ -130,9 +161,37 @@ class MicrosoftFormTest extends UnitTestCase {
       'page_params' => '?id=abc"><script>alert(1)</script>',
     ];
     $this->assertSame(
-      'https://forms.office.com/Pages/ResponsePage.aspx?id=abc&gt;&lt;script&gt;alert(1)&lt;/script&gt;',
+      'https://forms.office.com/Pages/ResponsePage.aspx?id=abc><script>alert(1)</script>',
       $this->plugin->getUrl($params)
     );
+  }
+
+  /**
+   * Sanitization strips quotes from /r/ query params.
+   *
+   * @covers ::getUrl
+   */
+  public function testGetUrlStripsQuotesFromRformatParams(): void {
+    $params = [
+      'domain' => 'cloud.microsoft',
+      'form_id' => 'abc123',
+      'r_params' => '?embed=true"&lang=en',
+    ];
+    $this->assertSame('https://forms.cloud.microsoft/r/abc123?embed=true&lang=en', $this->plugin->getUrl($params));
+  }
+
+  /**
+   * Query params are capped at 2000 characters.
+   *
+   * @covers ::getUrl
+   */
+  public function testGetUrlCapsPageParamsLength(): void {
+    $params = [
+      'domain' => 'office.com',
+      'page_params' => '?id=' . str_repeat('a', 3000),
+    ];
+    $prefix = 'https://forms.office.com/Pages/ResponsePage.aspx';
+    $this->assertSame(strlen($prefix) + 2000, strlen($this->plugin->getUrl($params)));
   }
 
   /**

@@ -1,0 +1,8 @@
+uuid: 89236193-7eb4-4d7d-bb70-7bc38edc2e06
+langcode: en
+status: true
+dependencies: {  }
+id: resource_portrait_grid
+label: 'Resources - Portrait Grid View'
+revision: true
+description: 'Resources - Portrait Grid listing block.'
