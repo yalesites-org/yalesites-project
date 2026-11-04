@@ -1181,6 +1181,7 @@ class ViewsBasicManager extends ControllerBase implements ContainerInjectionInte
       'types' => $paramsDecoded['filters']['types'],
       'event_time_period' => $paramsDecoded['filters']['event_time_period'] ?? NULL,
     ];
+    $allowed_by_identifier = [];
     foreach ($filters as $filter_name => $filter) {
       if (($filter['plugin_id'] ?? NULL) === 'taxonomy_index_tid' && !empty($filter['exposed'])) {
         $parent_param = $parent_params[$filter_name] ?? NULL;
@@ -1188,6 +1189,9 @@ class ViewsBasicManager extends ControllerBase implements ContainerInjectionInte
         $constrained = $this->exposedTaxonomyFilterOptions->apply($filters, $filter_name, $excluded_terms, $parent_tid, $used_in);
         if ($used_in && $constrained && empty($filters[$filter_name]['value'])) {
           unset($filters[$filter_name]);
+        }
+        elseif ($constrained && !empty($filters[$filter_name]['expose']['identifier'])) {
+          $allowed_by_identifier[$filters[$filter_name]['expose']['identifier']] = array_keys($filters[$filter_name]['value']);
         }
       }
     }
@@ -1395,10 +1399,24 @@ class ViewsBasicManager extends ControllerBase implements ContainerInjectionInte
     // other listing's filter at this one on the next page. A URL with no
     // listing argument (a link made before YaleSites-Internal#1926) applies
     // to every listing, as it always did.
+    $otherListing = FALSE;
     if ($listingKey !== NULL) {
       $urlListing = $view->getRequest()?->query->all()[self::LISTING_QUERY_KEY] ?? NULL;
       if ($urlListing !== NULL && $urlListing !== $listingKey) {
         $view->setExposedInput([self::LISTING_QUERY_KEY => $urlListing]);
+        $otherListing = TRUE;
+      }
+    }
+
+    // A link saved before a term was excluded still carries that term. Views
+    // would reject it as an illegal choice and show visitors an error, so
+    // drop the terms this listing no longer offers and run as if never
+    // picked (YaleSites-Internal#2102).
+    if (!$otherListing && $allowed_by_identifier) {
+      $query = $view->getRequest()?->query->all() ?? [];
+      $clean = self::dropUnavailableTerms($query, $allowed_by_identifier);
+      if ($clean !== $query) {
+        $view->setExposedInput($clean);
       }
     }
 
@@ -1410,6 +1428,34 @@ class ViewsBasicManager extends ControllerBase implements ContainerInjectionInte
       'resource' => $resource_field_display_options,
       'pin' => $pin_options,
     ];
+  }
+
+  /**
+   * Removes term ids a listing does not offer from exposed filter input.
+   *
+   * @param array $query
+   *   The request query.
+   * @param array $allowed_by_identifier
+   *   Offered term ids, keyed by exposed filter identifier.
+   *
+   * @return array
+   *   The query with other values dropped. An emptied filter keeps its key
+   *   with an empty array, so the input stays non-empty and Views does not
+   *   fall back to the raw request.
+   */
+  public static function dropUnavailableTerms(array $query, array $allowed_by_identifier): array {
+    foreach ($allowed_by_identifier as $identifier => $allowed) {
+      if (!array_key_exists($identifier, $query)) {
+        continue;
+      }
+      $allowed = array_map('strval', $allowed);
+      $values = (array) $query[$identifier];
+      $query[$identifier] = array_values(array_filter(
+        $values,
+        static fn ($value) => is_scalar($value) && ($value === 'All' || in_array((string) $value, $allowed, TRUE)),
+      ));
+    }
+    return $query;
   }
 
   /**
