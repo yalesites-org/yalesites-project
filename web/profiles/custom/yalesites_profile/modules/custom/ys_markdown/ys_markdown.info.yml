@@ -1,0 +1,11 @@
+name: YaleSites Markdown
+type: module
+description: 'Serves a public Markdown version of each eligible page at its URL plus .md, plus a dynamic llms.txt and the AI crawler rules for robots.txt.'
+package: YaleSites
+core_version_requirement: ^10 || ^11
+dependencies:
+  - drupal:node
+  - drupal:path_alias
+  - ys_core:ys_core
+  - ys_beacon:ys_beacon
+  - robotstxt:robotstxt

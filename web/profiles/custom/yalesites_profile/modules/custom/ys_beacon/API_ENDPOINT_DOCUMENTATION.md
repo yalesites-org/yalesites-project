@@ -90,13 +90,13 @@ only if all of the following hold:
 2. It is **viewable by an anonymous visitor** — anything behind CAS or restricted by node
    access is excluded.
 3. It has **not been opted out** of AI indexing via the `ai_disable_indexing` metatag
-   ("Disable indexing for AI feeds" on the content edit form).
+   ("Exclude from AI feeds and markdown" on the content edit form).
 
 ### Media is excluded by default
 
 Nodes are included unless an editor opts them out. **Media works the opposite way: a media
-item is excluded unless an editor explicitly opts it in** by unchecking "Disable indexing
-for AI feeds" on that media item.
+item is excluded unless an editor explicitly opts it in** by unchecking "Exclude from AI
+feeds and markdown" on that media item.
 
 In practice this means `?type=media` returns an **empty feed on a typical site**, and it
 does so while still reporting a large `total_records`:

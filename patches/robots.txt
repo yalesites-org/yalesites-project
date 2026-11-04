@@ -1,2 +1,0 @@
-# Disallow ?page= params
-Disallow: /*?page=
