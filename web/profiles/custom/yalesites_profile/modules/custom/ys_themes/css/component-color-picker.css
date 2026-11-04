@@ -363,9 +363,11 @@ body.gin--dark-mode .palette-option[data-selected="true"] .palette-circle {
 }
 
 /* Scoped to outrank Gin's `.ui-dialog *:focus` reset. Drawn inside the
-   button, which is as wide as the panel, so no edge of the ring is clipped. */
+   button, which is as wide as the panel, so no edge of the ring is clipped.
+   Uses the primary color, as the swatch options do: Gin's focus color is a
+   translucent black on Layout Builder pages and fails 3:1 contrast. */
 .palette-selector--dropdown .palette-dropdown-button:focus-visible {
-  outline: 3px solid var(--gin-color-focus, #0073e6);
+  outline: 3px solid var(--gin-color-primary, #0073e6);
   outline-offset: -1px;
 }
 
@@ -389,8 +391,9 @@ body.gin--dark-mode .palette-option[data-selected="true"] .palette-circle {
 
 .palette-dropdown-text {
   display: flex;
+  flex-wrap: wrap;
   align-items: baseline;
-  gap: 0.5rem;
+  gap: 0 0.5rem;
   min-width: 0;
   overflow: hidden;
 }
