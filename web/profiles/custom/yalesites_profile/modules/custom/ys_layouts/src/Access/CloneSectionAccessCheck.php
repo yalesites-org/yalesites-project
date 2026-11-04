@@ -7,7 +7,6 @@ use Drupal\Core\Access\AccessResultInterface;
 use Drupal\Core\Routing\Access\AccessInterface;
 use Drupal\Core\Routing\RouteMatchInterface;
 use Drupal\Core\Session\AccountInterface;
-use Drupal\layout_builder\DefaultsSectionStorageInterface;
 use Drupal\layout_builder\OverridesSectionStorageInterface;
 use Drupal\layout_builder\Section;
 use Drupal\layout_builder\SectionStorageInterface;
@@ -92,8 +91,9 @@ use Drupal\layout_builder\TempStoreIdentifierInterface;
  * and shift it down. That is load-bearing, so it is asserted — see
  * CloneSectionAccessCheckTest::testLockedSectionsAreFencedAgainstBeingShifted().
  *
- * The bypass permissions are the same escape hatches layout_builder_lock itself
- * honours.
+ * Unlike layout_builder_lock itself, the lock bypass permissions do not apply:
+ * a locked section cannot be cloned by anyone, because a cloned Title and
+ * Metadata or Banner section gives the page a second h1.
  *
  * With layout_builder_lock uninstalled there are no lock settings to read, so
  * this check allows everything and needs no module_handler guard.
@@ -196,16 +196,9 @@ class CloneSectionAccessCheck implements AccessInterface {
    *   cannot bypass.
    */
   public function accessForDelta(SectionStorageInterface $section_storage, AccountInterface $account, int $delta): AccessResultInterface {
-    // Mirror layout_builder_lock's escape hatches: lock settings are managed on
-    // the default layout and bypassed on overrides.
-    $permission = $section_storage instanceof DefaultsSectionStorageInterface
-      ? 'manage lock settings on sections'
-      : 'bypass lock settings on layout overrides';
-
-    if ($account->hasPermission($permission)) {
-      return AccessResult::allowed()->addCacheContexts(['user.permissions']);
-    }
-
+    // No lock-bypass escape hatch here, unlike layout_builder_lock itself: a
+    // cloned locked section (Title and Metadata, Banner) puts a second h1 on
+    // the page, so no account may clone one, user 1 and bypass roles included.
     try {
       $section = $section_storage->getSection($delta);
     }

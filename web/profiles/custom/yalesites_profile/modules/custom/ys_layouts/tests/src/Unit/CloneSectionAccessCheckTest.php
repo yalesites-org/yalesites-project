@@ -263,41 +263,26 @@ class CloneSectionAccessCheckTest extends UnitTestCase {
   }
 
   /**
-   * The overrides bypass permission allows cloning a locked section.
+   * Lock bypass permissions do not allow cloning a locked section.
    *
    * @covers ::access
    */
-  public function testBypassPermissionAllowsCloningLockedSection(): void {
-    $result = (new CloneSectionAccessCheck())->access(
-      $this->storageWithLock([LayoutBuilderLock::LOCKED_BLOCK_ADD => LayoutBuilderLock::LOCKED_BLOCK_ADD]),
+  public function testBypassPermissionsDoNotAllowCloningLockedSection(): void {
+    $lock = [LayoutBuilderLock::LOCKED_BLOCK_ADD => LayoutBuilderLock::LOCKED_BLOCK_ADD];
+
+    $override = (new CloneSectionAccessCheck())->access(
+      $this->storageWithLock($lock),
       $this->account('bypass lock settings on layout overrides'),
       $this->routeMatch()
     );
+    $this->assertTrue($override->isForbidden(), 'The overrides bypass permission does not allow cloning a locked section.');
 
-    $this->assertTrue($result->isAllowed(), 'A user who may bypass lock settings can clone a locked section.');
-  }
-
-  /**
-   * On the default layout, the manage-locks permission is what applies.
-   *
-   * @covers ::access
-   */
-  public function testManageLocksPermissionAppliesToTheDefaultLayout(): void {
-    $lock = [LayoutBuilderLock::LOCKED_BLOCK_ADD => LayoutBuilderLock::LOCKED_BLOCK_ADD];
-
-    $allowed = (new CloneSectionAccessCheck())->access(
+    $default = (new CloneSectionAccessCheck())->access(
       $this->storageWithLock($lock, DefaultsSectionStorageInterface::class),
       $this->account('manage lock settings on sections'),
       $this->routeMatch()
     );
-    $this->assertTrue($allowed->isAllowed(), 'A user who manages lock settings can clone a locked default section.');
-
-    $forbidden = (new CloneSectionAccessCheck())->access(
-      $this->storageWithLock($lock, DefaultsSectionStorageInterface::class),
-      $this->account('bypass lock settings on layout overrides'),
-      $this->routeMatch()
-    );
-    $this->assertTrue($forbidden->isForbidden(), 'The overrides bypass permission does not apply to the default layout.');
+    $this->assertTrue($default->isForbidden(), 'The manage-locks permission does not allow cloning a locked default section.');
   }
 
   /**
