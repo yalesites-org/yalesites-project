@@ -2101,7 +2101,7 @@ class ViewsBasicManager extends ControllerBase implements ContainerInjectionInte
             'event_time_period' => 'future',
           ],
           'sort_by' => 'field_event_date:ASC',
-          'display' => 'all',
+          'display' => 'pager',
           'limit' => 10,
           'exposed_filter_options' => [
             'show_category_filter' => 'show_category_filter',
@@ -2115,7 +2115,7 @@ class ViewsBasicManager extends ControllerBase implements ContainerInjectionInte
         'params' => self::directoryToCardParams([
           'filters' => ['types' => ['profile'], 'terms_include' => NULL, 'terms_exclude' => NULL],
           'sort_by' => 'field_last_name:ASC',
-          'display' => 'all',
+          'display' => 'pager',
           'limit' => 10,
           'exposed_filter_options' => ['show_category_filter' => 'show_category_filter'],
           'category_filter_label' => 'Affiliation',
