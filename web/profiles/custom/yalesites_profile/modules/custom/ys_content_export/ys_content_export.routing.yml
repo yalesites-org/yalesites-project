@@ -49,4 +49,4 @@ ys_content_export.export_people:
     _controller: 'Drupal\ys_content_export\Controller\PeopleExportController::export'
     _title: 'Export people to CSV'
   requirements:
-    _permission: 'administer users'
+    _permission: 'export people to csv'
