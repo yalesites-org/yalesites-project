@@ -1193,6 +1193,21 @@ class ViewsBasicManager extends ControllerBase implements ContainerInjectionInte
         elseif ($constrained && !empty($filters[$filter_name]['expose']['identifier'])) {
           $allowed_by_identifier[$filters[$filter_name]['expose']['identifier']] = array_keys($filters[$filter_name]['value']);
         }
+        elseif (!$constrained && !empty($filters[$filter_name]['expose']['identifier'])) {
+          // A filter that offers its whole vocabulary still rejects a term id
+          // that no longer exists, and "All" is a valid pick here.
+          $identifier = $filters[$filter_name]['expose']['identifier'];
+          $requested = array_filter((array) ($view->getRequest()?->query->all()[$identifier] ?? []), 'is_scalar');
+          $requested = array_filter($requested, 'ctype_digit');
+          $existing = [];
+          if ($requested) {
+            $existing = $this->termStorage->getQuery()
+              ->accessCheck(FALSE)
+              ->condition('tid', array_values($requested), 'IN')
+              ->execute();
+          }
+          $allowed_by_identifier[$identifier] = array_merge(['All'], array_values($existing));
+        }
       }
     }
 
@@ -1436,7 +1451,8 @@ class ViewsBasicManager extends ControllerBase implements ContainerInjectionInte
    * @param array $query
    *   The request query.
    * @param array $allowed_by_identifier
-   *   Offered term ids, keyed by exposed filter identifier.
+   *   Offered values, keyed by exposed filter identifier. "All" is kept only
+   *   when listed, since a filter that excludes terms has no All option.
    *
    * @return array
    *   The query with other values dropped. An emptied filter keeps its key
@@ -1452,7 +1468,7 @@ class ViewsBasicManager extends ControllerBase implements ContainerInjectionInte
       $values = (array) $query[$identifier];
       $query[$identifier] = array_values(array_filter(
         $values,
-        static fn ($value) => is_scalar($value) && ($value === 'All' || in_array((string) $value, $allowed, TRUE)),
+        static fn ($value) => is_scalar($value) && in_array((string) $value, $allowed, TRUE),
       ));
     }
     return $query;

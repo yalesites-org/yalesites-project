@@ -36,13 +36,25 @@ class DropUnavailableTermsTest extends UnitTestCase {
   }
 
   /**
-   * Scalar values, "All" and unrelated keys are handled.
+   * The All value is dropped unless the filter lists it as valid (#2102).
+   *
+   * @covers ::dropUnavailableTerms
+   */
+  public function testAllIsDroppedUnlessAllowed(): void {
+    $result = ViewsBasicManager::dropUnavailableTerms(['a' => 'All'], ['a' => [1]]);
+    $this->assertSame(['a' => []], $result);
+    $query = ['a' => ['All', '1', '99999']];
+    $result = ViewsBasicManager::dropUnavailableTerms($query, ['a' => ['All', 1]]);
+    $this->assertSame(['a' => ['All', '1']], $result);
+  }
+
+  /**
+   * Scalar values and unrelated keys are handled.
    *
    * @covers ::dropUnavailableTerms
    */
   public function testScalarAllAndUnrelatedKeys(): void {
     $allowed = ['a' => [1]];
-    $this->assertSame(['a' => ['All']], ViewsBasicManager::dropUnavailableTerms(['a' => 'All'], $allowed));
     $this->assertSame(['a' => []], ViewsBasicManager::dropUnavailableTerms(['a' => '9'], $allowed));
     $this->assertSame(['b' => ['9']], ViewsBasicManager::dropUnavailableTerms(['b' => ['9']], $allowed));
   }
