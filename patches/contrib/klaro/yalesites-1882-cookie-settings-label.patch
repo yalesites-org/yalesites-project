@@ -1,0 +1,31 @@
+--- a/js/klaro.drupal.js
++++ b/js/klaro.drupal.js
+@@ -81,7 +81,7 @@
+       let learn_more_link = document.querySelector('a.cm-link.cn-learn-more');
+       if (learn_more_link) {
+         // Add title to learn more link.
+-        let label_open_consent_dialog = Drupal.t("Open consent dialog", {},{context: 'klaro'});
++        let label_open_consent_dialog = Drupal.t("Cookie Settings", {},{context: 'klaro'});
+         learn_more_link.setAttribute('title', label_open_consent_dialog);
+         // Add the "button" role to the learn more link.
+         learn_more_link.setAttribute('role', 'button');
+@@ -154,8 +154,8 @@
+ 
+       // Add link to consent manager for contextual consents.
+       var elements = once('klaro-consent-link', '[data-type="placeholder"] div.context-notice');
+-      var title = Drupal.t("Open the Consent Management Dialog", {}, {context: 'klaro'});
+-      var linktext = Drupal.t("Manage privacy settings", {}, {context: 'klaro'});
++      var title = Drupal.t("Cookie Settings", {}, {context: 'klaro'});
++      var linktext = Drupal.t("Cookie Settings", {}, {context: 'klaro'});
+       Array.prototype.forEach.call(elements, function (el) {
+         el.insertAdjacentHTML('beforeend', `<p class="cm-dialog-link"><a href="#" title="${title}" rel="open-consent-manager">${linktext}</a></p>`);
+       });
+@@ -364,7 +364,7 @@
+       var elements = once('klaroLink', '[rel*="open-consent-manager"], [href*="#klaro"], .open-consent-manager', context);
+       Array.prototype.forEach.call(elements, function(element) {
+         element.addEventListener('click', function (event) {
+-          klaro.show(Drupal.behaviors.klaro.config);
++          klaro.show(Drupal.behaviors.klaro.config, true);
+           event.preventDefault();
+           return false;
+         });

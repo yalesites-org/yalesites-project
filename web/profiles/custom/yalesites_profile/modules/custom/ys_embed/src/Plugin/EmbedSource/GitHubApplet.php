@@ -20,6 +20,18 @@ class GitHubApplet extends EmbedSourceBase implements EmbedSourceInterface {
 
   /**
    * {@inheritdoc}
+   *
+   * Applets are published from Yale's own GitHub Pages org
+   * (yalesites-org.github.io); the code is Yale's even though GitHub serves it,
+   * and they are out of scope for the consent MVP, so they are not gated.
+   * Gating one later means setting a service ID here, but note the template
+   * loads a stylesheet as well as a script and only the script would be
+   * covered by the shape used elsewhere in this module.
+   */
+  protected static $klaroService = NULL;
+
+  /**
+   * {@inheritdoc}
    */
   protected static $pattern = '/^https:\/\/yalesites-org\.github\.io\/(?<repo_name>[\w-]+)\/(?<app_directory>[^?]*?)\/?(?:\?.*)?$/';
 
