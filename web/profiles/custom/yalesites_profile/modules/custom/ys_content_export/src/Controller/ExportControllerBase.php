@@ -236,13 +236,6 @@ abstract class ExportControllerBase extends ControllerBase {
         '@ids' => implode(', ', $skipped),
       ]);
     }
-    if ($failed) {
-      $logger->warning('Export finished with @failed of @total @type rows failed.', [
-        '@failed' => $failed,
-        '@total' => count($ids),
-        '@type' => $entity_type_id,
-      ]);
-    }
     if (static::SUMMARY_ROW) {
       ContentExportBuilder::writeRow($handle, [sprintf('Export complete: %d of %d rows exported (%d failed, %d skipped)', $exported, count($ids), $failed, count($skipped))]);
     }
