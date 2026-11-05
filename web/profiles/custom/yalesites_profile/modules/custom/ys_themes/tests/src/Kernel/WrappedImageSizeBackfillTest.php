@@ -114,6 +114,32 @@ class WrappedImageSizeBackfillTest extends YsKernelTestBase {
   }
 
   /**
+   * The backfill keeps each block's original "Updated" time (#2116).
+   */
+  public function testBackfillKeepsChangedTime(): void {
+    $id = $this->createBlock('wrapped_image');
+    $old = 1600000000;
+    $database = \Drupal::database();
+    $database->update('block_content_field_data')->fields(['changed' => $old])->condition('id', $id)->execute();
+    $database->update('block_content_field_revision')->fields(['changed' => $old])->condition('id', $id)->execute();
+    \Drupal::entityTypeManager()->getStorage('block_content')->resetCache([$id]);
+
+    $sandbox = [];
+    do {
+      ys_themes_deploy_10304($sandbox);
+    } while ($sandbox['#finished'] < 1);
+
+    $block = $this->reload($id);
+    $this->assertSame('large', $block->get('field_style_width')->value);
+    $this->assertSame($old, (int) $block->getChangedTime());
+    $revision_changed = $database->select('block_content_field_revision', 'r')
+      ->fields('r', ['changed'])
+      ->condition('revision_id', $block->getRevisionId())
+      ->execute()->fetchField();
+    $this->assertSame($old, (int) $revision_changed);
+  }
+
+  /**
    * The hook finishes in one pass when there are no Wrapped Image blocks.
    */
   public function testNoBlocks(): void {

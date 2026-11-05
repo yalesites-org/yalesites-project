@@ -102,6 +102,39 @@ function ys_themes_deploy_10304(&$sandbox) {
 }
 
 /**
+ * Saves a block revision without moving its "Updated" time.
+ *
+ * ChangedItem::preSave() stamps the request time whenever another field
+ * changed, so the stored value is written back to the block tables afterward.
+ * A deploy backfill is not an editor edit (YaleSites-Internal#2116).
+ *
+ * @param \Drupal\block_content\BlockContentInterface $block
+ *   A loaded block revision with its new field values set.
+ */
+function _ys_themes_save_keeping_changed($block): void {
+  $changed = [];
+  foreach ($block->getTranslationLanguages() as $langcode => $language) {
+    $changed[$langcode] = $block->getTranslation($langcode)->getChangedTime();
+  }
+  $block->save();
+
+  $database = \Drupal::database();
+  $tables = ['block_content_field_revision' => ['revision_id', $block->getRevisionId()]];
+  if ($block->isDefaultRevision()) {
+    $tables['block_content_field_data'] = ['id', $block->id()];
+  }
+  foreach ($changed as $langcode => $time) {
+    foreach ($tables as $table => [$column, $id]) {
+      $database->update($table)
+        ->fields(['changed' => $time])
+        ->condition($column, $id)
+        ->condition('langcode', $langcode)
+        ->execute();
+    }
+  }
+}
+
+/**
  * Batch-fills an empty dial on the latest revision of existing blocks.
  *
  * @param array $sandbox
@@ -135,7 +168,7 @@ function _ys_themes_backfill_dials(array &$sandbox, array $defaults): int {
     [$field, $value] = $defaults[$block->bundle()];
     if ($block->hasField($field) && $block->get($field)->isEmpty()) {
       $block->set($field, $value);
-      $block->save();
+      _ys_themes_save_keeping_changed($block);
       $sandbox['updated']++;
     }
   }
@@ -209,7 +242,7 @@ function ys_themes_deploy_10305(&$sandbox) {
     $block->set('field_style_video_playback', 'loop');
     // Saving a loaded revision updates it in place rather than creating a new
     // one, so the revision id a layout pins to stays valid.
-    $block->save();
+    _ys_themes_save_keeping_changed($block);
     $sandbox['backfilled']++;
   }
 
