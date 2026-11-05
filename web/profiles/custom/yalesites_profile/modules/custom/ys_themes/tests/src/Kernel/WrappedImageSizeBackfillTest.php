@@ -143,6 +143,15 @@ class WrappedImageSizeBackfillTest extends YsKernelTestBase {
     $newer->set('field_style_width', 'small');
     $newer->save();
 
+    // Age both revisions so a re-stamp to "now" is visible.
+    $database = \Drupal::database();
+    $database->update('block_content_field_revision')
+      ->fields(['changed' => 1000000000])
+      ->execute();
+    $database->update('block_content_field_data')
+      ->fields(['changed' => 1000000000])
+      ->execute();
+
     $sandbox = [];
     do {
       ys_themes_deploy_10306($sandbox);
@@ -150,6 +159,9 @@ class WrappedImageSizeBackfillTest extends YsKernelTestBase {
 
     $storage = \Drupal::entityTypeManager()->getStorage('block_content');
     $storage->resetCache();
+    // "Last updated" is kept on the backfilled revision and the default one.
+    $this->assertSame(1000000000, (int) $storage->loadRevision($old_revision_id)->getChangedTime());
+    $this->assertSame(1000000000, (int) $storage->load($block->id())->getChangedTime());
     $this->assertSame('large', $storage->loadRevision($old_revision_id)->get('field_style_width')->value);
     $this->assertSame('small', $storage->loadRevision($newer->getRevisionId())->get('field_style_width')->value);
   }
