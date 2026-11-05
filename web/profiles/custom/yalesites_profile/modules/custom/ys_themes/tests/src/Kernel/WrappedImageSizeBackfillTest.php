@@ -76,6 +76,23 @@ class WrappedImageSizeBackfillTest extends YsKernelTestBase {
       'label' => 'Divider Thickness',
     ])->save();
 
+    // Listing blocks carry the required Padding Options dial.
+    FieldStorageConfig::create([
+      'field_name' => 'field_padding_options',
+      'entity_type' => 'block_content',
+      'type' => 'list_string',
+      'settings' => ['allowed_values' => ['default' => 'Default', 'no_top' => 'No top']],
+    ])->save();
+    foreach (['view', 'resource_view'] as $bundle) {
+      BlockContentType::create(['id' => $bundle, 'label' => $bundle])->save();
+      FieldConfig::create([
+        'field_name' => 'field_padding_options',
+        'entity_type' => 'block_content',
+        'bundle' => $bundle,
+        'label' => 'Padding Options',
+      ])->save();
+    }
+
     require_once dirname(__DIR__, 3) . '/ys_themes.deploy.php';
   }
 
@@ -135,6 +152,35 @@ class WrappedImageSizeBackfillTest extends YsKernelTestBase {
     $storage->resetCache();
     $this->assertSame('large', $storage->loadRevision($old_revision_id)->get('field_style_width')->value);
     $this->assertSame('small', $storage->loadRevision($newer->getRevisionId())->get('field_style_width')->value);
+  }
+
+  /**
+   * Older listing revisions get Padding Options; chosen values stay (#2117).
+   */
+  public function testBackfillsListingPaddingOnOlderRevisions(): void {
+    $storage = \Drupal::entityTypeManager()->getStorage('block_content');
+    $old_ids = [];
+    $newer_ids = [];
+    foreach (['view', 'resource_view'] as $bundle) {
+      $block = BlockContent::create(['type' => $bundle, 'info' => $bundle]);
+      $block->save();
+      $old_ids[$bundle] = (int) $block->getRevisionId();
+      $newer = $storage->createRevision($block);
+      $newer->set('field_padding_options', 'no_top');
+      $newer->save();
+      $newer_ids[$bundle] = (int) $newer->getRevisionId();
+    }
+
+    $sandbox = [];
+    do {
+      ys_themes_deploy_10306($sandbox);
+    } while ($sandbox['#finished'] < 1);
+
+    $storage->resetCache();
+    foreach (['view', 'resource_view'] as $bundle) {
+      $this->assertSame('default', $storage->loadRevision($old_ids[$bundle])->get('field_padding_options')->value);
+      $this->assertSame('no_top', $storage->loadRevision($newer_ids[$bundle])->get('field_padding_options')->value);
+    }
   }
 
   /**

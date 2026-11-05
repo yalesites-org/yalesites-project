@@ -230,14 +230,14 @@ function ys_themes_deploy_10305(&$sandbox) {
 }
 
 /**
- * Fills the wave 1 and Image Size dials on every revision of existing blocks.
+ * Fills the wave 1, Image Size and listing Padding dials on all revisions.
  *
  * The deploy hooks 10303 and 10304 only touched each block's latest revision.
  * After an editor reverts a page, Layout Builder pins an older block revision
  * with these required dials empty, and Update fails with "Image Size field is
- * required" or "Divider Thickness field is required"
- * (YaleSites-Internal#2117). The same defaults are used, so nothing changes
- * how a block renders.
+ * required", "Divider Thickness field is required" or "Padding Options field
+ * is required" (YaleSites-Internal#2117). The same defaults are used, so
+ * nothing changes how a block renders.
  */
 function ys_themes_deploy_10306(&$sandbox) {
   $block_storage = \Drupal::entityTypeManager()->getStorage('block_content');
@@ -246,6 +246,9 @@ function ys_themes_deploy_10306(&$sandbox) {
     'callout' => ['field_style_variation', 'cta'],
     'cta_banner' => ['field_button_style_consistency', 'filled_outline'],
     'wrapped_image' => ['field_style_width', 'large'],
+    // Listing blocks: Padding Options is required and defaults to 'default'.
+    'view' => ['field_padding_options', 'default'],
+    'resource_view' => ['field_padding_options', 'default'],
   ];
 
   if (!isset($sandbox['processed'])) {
