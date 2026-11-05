@@ -114,6 +114,30 @@ class WrappedImageSizeBackfillTest extends YsKernelTestBase {
   }
 
   /**
+   * Older revisions, as pinned after a page Revert, are backfilled too (#2117).
+   */
+  public function testBackfillsOlderRevisions(): void {
+    $block = BlockContent::create(['type' => 'wrapped_image', 'info' => 'old']);
+    $block->save();
+    $old_revision_id = (int) $block->getRevisionId();
+
+    $newer = \Drupal::entityTypeManager()->getStorage('block_content')
+      ->createRevision($block);
+    $newer->set('field_style_width', 'small');
+    $newer->save();
+
+    $sandbox = [];
+    do {
+      ys_themes_deploy_10306($sandbox);
+    } while ($sandbox['#finished'] < 1);
+
+    $storage = \Drupal::entityTypeManager()->getStorage('block_content');
+    $storage->resetCache();
+    $this->assertSame('large', $storage->loadRevision($old_revision_id)->get('field_style_width')->value);
+    $this->assertSame('small', $storage->loadRevision($newer->getRevisionId())->get('field_style_width')->value);
+  }
+
+  /**
    * The hook finishes in one pass when there are no Wrapped Image blocks.
    */
   public function testNoBlocks(): void {
