@@ -297,11 +297,15 @@ function ys_themes_deploy_10306(&$sandbox) {
     if (!$block->hasField($field) || !$block->get($field)->isEmpty()) {
       continue;
     }
+    $changed = $block->getChangedTime();
     $block->set($field, $value);
     // Saving a loaded revision updates it in place, so the revision id a
-    // layout pins to stays valid and "last updated" is kept.
+    // layout pins to stays valid.
     $block->setSyncing(TRUE);
     $block->save();
+    // Syncing does not stop ChangedItem::preSave() from stamping the deploy
+    // time, so write the original "last updated" value back.
+    _ys_themes_restore_block_changed_time($block, $changed);
     $sandbox['backfilled']++;
   }
 
@@ -314,4 +318,28 @@ function ys_themes_deploy_10306(&$sandbox) {
   }
 
   return t('Set dial defaults on @count block revision(s).', ['@count' => $sandbox['backfilled']]);
+}
+
+/**
+ * Writes a block revision's original "last updated" time back after a save.
+ *
+ * @param \Drupal\block_content\BlockContentInterface $block
+ *   The block revision that was just saved.
+ * @param int $changed
+ *   The changed time it had before the save.
+ */
+function _ys_themes_restore_block_changed_time($block, int $changed): void {
+  $database = \Drupal::database();
+  $database->update('block_content_field_revision')
+    ->fields(['changed' => $changed])
+    ->condition('revision_id', $block->getRevisionId())
+    ->condition('langcode', $block->language()->getId())
+    ->execute();
+  if ($block->isDefaultRevision()) {
+    $database->update('block_content_field_data')
+      ->fields(['changed' => $changed])
+      ->condition('id', $block->id())
+      ->condition('langcode', $block->language()->getId())
+      ->execute();
+  }
 }
