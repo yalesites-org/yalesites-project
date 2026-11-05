@@ -35,6 +35,14 @@ abstract class ExportControllerBase extends ControllerBase {
   const CHUNK_SIZE = 50;
 
   /**
+   * Whether the file ends with an "Export complete" summary row.
+   *
+   * On for content exports. A subclass whose rows are records a spreadsheet
+   * may sort or import, such as People, turns it off.
+   */
+  const SUMMARY_ROW = TRUE;
+
+  /**
    * The admin views' page display id.
    *
    * Every list this module exports from is a single-page view.
@@ -148,7 +156,7 @@ abstract class ExportControllerBase extends ControllerBase {
   }
 
   /**
-   * Writes the BOM, header, data rows, and trailing summary row to a handle.
+   * Writes the BOM, header, data rows, and optional summary row to a handle.
    *
    * A row that fails to build is replaced by a placeholder and logged, so one
    * bad entity cannot end the download. Entities the current user cannot view,
@@ -228,7 +236,16 @@ abstract class ExportControllerBase extends ControllerBase {
         '@ids' => implode(', ', $skipped),
       ]);
     }
-    ContentExportBuilder::writeRow($handle, [sprintf('Export complete: %d of %d rows exported (%d failed, %d skipped)', $exported, count($ids), $failed, count($skipped))]);
+    if ($failed) {
+      $logger->warning('Export finished with @failed of @total @type rows failed.', [
+        '@failed' => $failed,
+        '@total' => count($ids),
+        '@type' => $entity_type_id,
+      ]);
+    }
+    if (static::SUMMARY_ROW) {
+      ContentExportBuilder::writeRow($handle, [sprintf('Export complete: %d of %d rows exported (%d failed, %d skipped)', $exported, count($ids), $failed, count($skipped))]);
+    }
   }
 
   /**
