@@ -391,24 +391,22 @@ body.gin--dark-mode .palette-option[data-selected="true"] .palette-circle {
 
 .palette-dropdown-text {
   display: flex;
-  flex-wrap: wrap;
-  align-items: baseline;
-  gap: 0 0.5rem;
-  min-width: 0;
-  overflow: hidden;
+  flex: 1 1 auto;
+  flex-direction: column;
+  gap: 0;
+  /* A usable floor, so the swatch and chevron cannot squeeze the text to 0. */
+  min-width: 3rem;
 }
 
 .palette-dropdown-name {
   min-width: 0;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
+  overflow-wrap: anywhere;
 }
 
 .palette-dropdown-hex {
-  flex: 0 0 auto;
+  min-width: 0;
   font-family: monospace;
-  white-space: nowrap;
+  overflow-wrap: anywhere;
   color: var(--gin-color-text-light, #545560);
 }
 
