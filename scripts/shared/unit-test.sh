@@ -16,14 +16,22 @@ cd "$ROOT" || exit 1
 export SYMFONY_DEPRECATIONS_HELPER="${SYMFONY_DEPRECATIONS_HELPER:-weak}"
 
 failed=()
+ran=0
 for dir in "$MODULES_DIR"/*/tests/src/Unit "$MODULES_DIR"/*/modules/*/tests/src/Unit; do
   [ -d "$dir" ] || continue
   module="$(basename "$(dirname "$(dirname "$(dirname "$dir")")")")"
   echo "== $module"
+  ran=$((ran + 1))
   if ! "$ROOT/vendor/bin/phpunit" -c "$ROOT/phpunit.xml" --no-coverage "$dir"; then
     failed+=("$module")
   fi
 done
+
+# A run that finds no test folders would otherwise pass with nothing run.
+if [ "$ran" -eq 0 ]; then
+  echo "No Unit test folders found under $MODULES_DIR" >&2
+  exit 1
+fi
 
 if [ "${#failed[@]}" -gt 0 ]; then
   echo "Unit tests failed in: ${failed[*]}" >&2
