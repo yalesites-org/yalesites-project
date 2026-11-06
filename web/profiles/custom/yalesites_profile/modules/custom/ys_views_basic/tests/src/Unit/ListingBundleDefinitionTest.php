@@ -165,6 +165,9 @@ class ListingBundleDefinitionTest extends UnitTestCase {
     $this->assertSame('event_list_item', $event['target']);
     $this->assertSame('future', $event['params']['filters']['event_time_period']);
     $this->assertSame('field_event_date:ASC', $event['params']['sort_by']);
+    // Master paged these at 10; the migrated blocks must not list everything.
+    $this->assertSame('pager', $event['params']['display']);
+    $this->assertSame(10, $event['params']['limit']);
 
     $directory = ViewsBasicManager::predecessorPreset('directory');
     $this->assertSame('profile_card', $directory['target']);
@@ -172,6 +175,8 @@ class ListingBundleDefinitionTest extends UnitTestCase {
     $this->assertSame('small', $directory['params']['card_size']);
     $this->assertSame(self::DIRECTORY_PROFILE_FIELDS, $directory['params']['profile_field_options']);
     $this->assertSame('field_last_name:ASC', $directory['params']['sort_by']);
+    $this->assertSame('pager', $directory['params']['display']);
+    $this->assertSame(10, $directory['params']['limit']);
 
     // Each preset turns on the filter visitors had on the predecessor block,
     // under the same label, listing only terms in use (#1967).
