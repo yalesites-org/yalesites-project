@@ -1195,18 +1195,24 @@ class ViewsBasicManager extends ControllerBase implements ContainerInjectionInte
         }
         elseif (!$constrained && !empty($filters[$filter_name]['expose']['identifier'])) {
           // A filter that offers its whole vocabulary still rejects a term id
-          // that no longer exists, and "All" is a valid pick here.
+          // that no longer exists or belongs to another vocabulary. It has no
+          // All option either, so All is dropped like any other bad value.
           $identifier = $filters[$filter_name]['expose']['identifier'];
           $requested = array_filter((array) ($view->getRequest()?->query->all()[$identifier] ?? []), 'is_scalar');
           $requested = array_filter($requested, 'ctype_digit');
           $existing = [];
           if ($requested) {
-            $existing = $this->termStorage->getQuery()
+            $term_query = $this->termStorage->getQuery()
               ->accessCheck(FALSE)
-              ->condition('tid', array_values($requested), 'IN')
-              ->execute();
+              ->condition('tid', array_values($requested), 'IN');
+            // Post, event and resource listings share one field name with
+            // different vocabularies, so a term must belong to this filter's.
+            if (!empty($filters[$filter_name]['vid'])) {
+              $term_query->condition('vid', $filters[$filter_name]['vid']);
+            }
+            $existing = $term_query->execute();
           }
-          $allowed_by_identifier[$identifier] = array_merge(['All'], array_values($existing));
+          $allowed_by_identifier[$identifier] = array_values($existing);
         }
       }
     }
@@ -1452,7 +1458,7 @@ class ViewsBasicManager extends ControllerBase implements ContainerInjectionInte
    *   The request query.
    * @param array $allowed_by_identifier
    *   Offered values, keyed by exposed filter identifier. "All" is kept only
-   *   when listed, since a filter that excludes terms has no All option.
+   *   when listed, since exposed taxonomy filters have no All option.
    *
    * @return array
    *   The query with other values dropped. An emptied filter keeps its key
