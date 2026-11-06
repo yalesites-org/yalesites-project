@@ -160,8 +160,9 @@ abstract class ExportControllerBase extends ControllerBase {
    *
    * A row that fails to build is replaced by a placeholder and logged, so one
    * bad entity cannot end the download. Entities the current user cannot view,
-   * or that fail to load, are skipped. The summary row is written last, so a
-   * stream that dies for any other reason visibly lacks it.
+   * or that fail to load, are skipped. When SUMMARY_ROW is TRUE the summary row
+   * is written last, so a stream that dies for any other reason visibly lacks
+   * it.
    *
    * @param resource $handle
    *   The open output stream.
