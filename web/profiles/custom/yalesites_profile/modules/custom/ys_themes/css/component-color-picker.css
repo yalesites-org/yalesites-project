@@ -394,8 +394,10 @@ body.gin--dark-mode .palette-option[data-selected="true"] .palette-circle {
   flex: 1 1 auto;
   flex-direction: column;
   gap: 0;
-  /* A usable floor, so the swatch and chevron cannot squeeze the text to 0. */
-  min-width: 3rem;
+  /* No floor: a fixed minimum overflowed a 150px panel and pushed the chevron
+     and check mark out of view. The text wraps by character instead
+     (overflow-wrap: anywhere on name and hex), so it always fits. */
+  min-width: 0;
 }
 
 .palette-dropdown-name {
