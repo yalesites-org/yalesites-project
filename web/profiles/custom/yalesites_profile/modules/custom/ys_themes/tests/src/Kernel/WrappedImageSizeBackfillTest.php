@@ -28,6 +28,7 @@ class WrappedImageSizeBackfillTest extends YsKernelTestBase {
     'user',
     'field',
     'options',
+    'block',
     'block_content',
   ];
 
@@ -140,12 +141,70 @@ class WrappedImageSizeBackfillTest extends YsKernelTestBase {
   }
 
   /**
+   * Older revisions, as pinned after a page Revert, are backfilled too (#2117).
+   */
+  public function testBackfillsOlderRevisions(): void {
+    $block = BlockContent::create(['type' => 'wrapped_image', 'info' => 'old']);
+    $block->save();
+    $old_revision_id = (int) $block->getRevisionId();
+
+    $newer = \Drupal::entityTypeManager()->getStorage('block_content')
+      ->createRevision($block);
+    $newer->set('field_style_width', 'small');
+    $newer->save();
+
+    // Age both revisions so a re-stamp to "now" is visible.
+    $database = \Drupal::database();
+    $database->update('block_content_field_revision')
+      ->fields(['changed' => 1000000000])
+      ->execute();
+    $database->update('block_content_field_data')
+      ->fields(['changed' => 1000000000])
+      ->execute();
+
+    $sandbox = [];
+    do {
+      ys_themes_deploy_10306($sandbox);
+    } while ($sandbox['#finished'] < 1);
+
+    $storage = \Drupal::entityTypeManager()->getStorage('block_content');
+    $storage->resetCache();
+    // "Last updated" is kept on the backfilled revision and the default one.
+    $this->assertSame(1000000000, (int) $storage->loadRevision($old_revision_id)->getChangedTime());
+    $this->assertSame(1000000000, (int) $storage->load($block->id())->getChangedTime());
+    $this->assertSame('large', $storage->loadRevision($old_revision_id)->get('field_style_width')->value);
+    $this->assertSame('small', $storage->loadRevision($newer->getRevisionId())->get('field_style_width')->value);
+  }
+
+  /**
    * The hook finishes in one pass when there are no Wrapped Image blocks.
    */
   public function testNoBlocks(): void {
     $sandbox = [];
     ys_themes_deploy_10304($sandbox);
     $this->assertEquals(1, $sandbox['#finished']);
+  }
+
+  /**
+   * A block deleted mid-run is skipped; the rest still get backfilled (#2119).
+   */
+  public function testSkipsBlockDeletedMidRun(): void {
+    $kept = $this->createBlock('wrapped_image');
+    $deleted = $this->createBlock('wrapped_image');
+
+    // Batch one has queued both ids; the block is deleted before it runs.
+    $sandbox = [
+      'ids' => [$deleted, $kept],
+      'total' => 2,
+      'updated' => 0,
+    ];
+    BlockContent::load($deleted)->delete();
+
+    ys_themes_deploy_10304($sandbox);
+
+    $this->assertEquals(1, $sandbox['#finished']);
+    $this->assertSame(1, $sandbox['updated']);
+    $this->assertSame('large', $this->reload($kept)->get('field_style_width')->value);
   }
 
   /**
