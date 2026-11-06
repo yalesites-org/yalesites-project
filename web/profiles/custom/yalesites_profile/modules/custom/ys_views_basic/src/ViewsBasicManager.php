@@ -2641,6 +2641,39 @@ class ViewsBasicManager extends ControllerBase implements ContainerInjectionInte
   }
 
   /**
+   * Adds stored terms that a grouped option list does not already offer.
+   *
+   * A listing can hold terms from vocabularies a form's scoped option list
+   * omits (#2101). Select elements drop stored values that are not options,
+   * so re-saving the form silently deleted them. Each missing term is added
+   * under its own vocabulary's label so editors can see and keep it.
+   *
+   * @param array $options
+   *   Grouped options as returned by ::getTagsForVocabularies().
+   * @param array $term_ids
+   *   Stored term IDs to keep selectable.
+   *
+   * @return array
+   *   The options with any missing stored terms added.
+   */
+  public function addStoredTermOptions(array $options, array $term_ids): array {
+    $offered = [];
+    foreach ($options as $group) {
+      $offered += is_array($group) ? $group : [];
+    }
+    $missing = array_diff(array_filter($term_ids), array_keys($offered));
+    if (!$missing) {
+      return $options;
+    }
+    foreach ($this->termStorage->loadMultiple($missing) as $term) {
+      $vocabulary = $this->entityTypeManager->getStorage('taxonomy_vocabulary')->load($term->bundle());
+      $label = $vocabulary ? $vocabulary->label() : $term->bundle();
+      $options[$label][$term->id()] = $term->label();
+    }
+    return $options;
+  }
+
+  /**
    * Get taxonomy parent terms by vocabulary ID.
    *
    * @param string $vid
