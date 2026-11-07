@@ -1,0 +1,4 @@
+export people to csv:
+  title: 'Export people to CSV'
+  description: 'Download the People list, including account names, status, roles and dates, as a CSV file.'
+  restrict access: true

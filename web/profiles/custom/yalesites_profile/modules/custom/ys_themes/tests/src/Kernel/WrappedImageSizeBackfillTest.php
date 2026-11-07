@@ -28,6 +28,7 @@ class WrappedImageSizeBackfillTest extends YsKernelTestBase {
     'user',
     'field',
     'options',
+    'block',
     'block_content',
   ];
 
@@ -131,6 +132,32 @@ class WrappedImageSizeBackfillTest extends YsKernelTestBase {
   }
 
   /**
+   * The backfill keeps each block's original "Updated" time (#2116).
+   */
+  public function testBackfillKeepsChangedTime(): void {
+    $id = $this->createBlock('wrapped_image');
+    $old = 1600000000;
+    $database = \Drupal::database();
+    $database->update('block_content_field_data')->fields(['changed' => $old])->condition('id', $id)->execute();
+    $database->update('block_content_field_revision')->fields(['changed' => $old])->condition('id', $id)->execute();
+    \Drupal::entityTypeManager()->getStorage('block_content')->resetCache([$id]);
+
+    $sandbox = [];
+    do {
+      ys_themes_deploy_10304($sandbox);
+    } while ($sandbox['#finished'] < 1);
+
+    $block = $this->reload($id);
+    $this->assertSame('large', $block->get('field_style_width')->value);
+    $this->assertSame($old, (int) $block->getChangedTime());
+    $revision_changed = $database->select('block_content_field_revision', 'r')
+      ->fields('r', ['changed'])
+      ->condition('revision_id', $block->getRevisionId())
+      ->execute()->fetchField();
+    $this->assertSame($old, (int) $revision_changed);
+  }
+
+  /**
    * Older revisions, as pinned after a page Revert, are backfilled too (#2117).
    */
   public function testBackfillsOlderRevisions(): void {
@@ -202,6 +229,28 @@ class WrappedImageSizeBackfillTest extends YsKernelTestBase {
     $sandbox = [];
     ys_themes_deploy_10304($sandbox);
     $this->assertEquals(1, $sandbox['#finished']);
+  }
+
+  /**
+   * A block deleted mid-run is skipped; the rest still get backfilled (#2119).
+   */
+  public function testSkipsBlockDeletedMidRun(): void {
+    $kept = $this->createBlock('wrapped_image');
+    $deleted = $this->createBlock('wrapped_image');
+
+    // Batch one has queued both ids; the block is deleted before it runs.
+    $sandbox = [
+      'ids' => [$deleted, $kept],
+      'total' => 2,
+      'updated' => 0,
+    ];
+    BlockContent::load($deleted)->delete();
+
+    ys_themes_deploy_10304($sandbox);
+
+    $this->assertEquals(1, $sandbox['#finished']);
+    $this->assertSame(1, $sandbox['updated']);
+    $this->assertSame('large', $this->reload($kept)->get('field_style_width')->value);
   }
 
   /**

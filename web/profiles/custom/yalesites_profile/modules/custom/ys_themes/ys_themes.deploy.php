@@ -102,6 +102,39 @@ function ys_themes_deploy_10304(&$sandbox) {
 }
 
 /**
+ * Saves a block revision without moving its "Updated" time.
+ *
+ * ChangedItem::preSave() stamps the request time whenever another field
+ * changed, so the stored value is written back to the block tables afterward.
+ * A deploy backfill is not an editor edit (YaleSites-Internal#2116).
+ *
+ * @param \Drupal\block_content\BlockContentInterface $block
+ *   A loaded block revision with its new field values set.
+ */
+function _ys_themes_save_keeping_changed($block): void {
+  $changed = [];
+  foreach ($block->getTranslationLanguages() as $langcode => $language) {
+    $changed[$langcode] = $block->getTranslation($langcode)->getChangedTime();
+  }
+  $block->save();
+
+  $database = \Drupal::database();
+  $tables = ['block_content_field_revision' => ['revision_id', $block->getRevisionId()]];
+  if ($block->isDefaultRevision()) {
+    $tables['block_content_field_data'] = ['id', $block->id()];
+  }
+  foreach ($changed as $langcode => $time) {
+    foreach ($tables as $table => [$column, $id]) {
+      $database->update($table)
+        ->fields(['changed' => $time])
+        ->condition($column, $id)
+        ->condition('langcode', $langcode)
+        ->execute();
+    }
+  }
+}
+
+/**
  * Batch-fills an empty dial on the latest revision of existing blocks.
  *
  * @param array $sandbox
@@ -127,15 +160,25 @@ function _ys_themes_backfill_dials(array &$sandbox, array $defaults): int {
 
   foreach (array_splice($sandbox['ids'], 0, 50) as $id) {
     $latest_revision_id = $block_storage->getLatestRevisionId($id);
-    $block = $latest_revision_id
-      ? $block_storage->loadRevision($latest_revision_id)
-      : $block_storage->createRevision($block_storage->load($id));
+    if ($latest_revision_id) {
+      $block = $block_storage->loadRevision($latest_revision_id);
+    }
+    else {
+      $existing = $block_storage->load($id);
+      $block = $existing ? $block_storage->createRevision($existing) : NULL;
+    }
+
+    // A block deleted after the id list was built must not stop the deploy.
+    if (!$block) {
+      \Drupal::logger('ys_themes')->notice('Skipped block @id: it no longer exists.', ['@id' => $id]);
+      continue;
+    }
 
     /** @var \Drupal\block_content\Entity\BlockContent $block */
     [$field, $value] = $defaults[$block->bundle()];
     if ($block->hasField($field) && $block->get($field)->isEmpty()) {
       $block->set($field, $value);
-      $block->save();
+      _ys_themes_save_keeping_changed($block);
       $sandbox['updated']++;
     }
   }
@@ -209,7 +252,7 @@ function ys_themes_deploy_10305(&$sandbox) {
     $block->set('field_style_video_playback', 'loop');
     // Saving a loaded revision updates it in place rather than creating a new
     // one, so the revision id a layout pins to stays valid.
-    $block->save();
+    _ys_themes_save_keeping_changed($block);
     $sandbox['backfilled']++;
   }
 
@@ -290,15 +333,11 @@ function ys_themes_deploy_10306(&$sandbox) {
     if (!$block->hasField($field) || !$block->get($field)->isEmpty()) {
       continue;
     }
-    $changed = $block->getChangedTime();
     $block->set($field, $value);
     // Saving a loaded revision updates it in place, so the revision id a
     // layout pins to stays valid.
     $block->setSyncing(TRUE);
-    $block->save();
-    // Syncing does not stop ChangedItem::preSave() from stamping the deploy
-    // time, so write the original "last updated" value back.
-    _ys_themes_restore_block_changed_time($block, $changed);
+    _ys_themes_save_keeping_changed($block);
     $sandbox['backfilled']++;
   }
 
@@ -311,28 +350,4 @@ function ys_themes_deploy_10306(&$sandbox) {
   }
 
   return t('Set dial defaults on @count block revision(s).', ['@count' => $sandbox['backfilled']]);
-}
-
-/**
- * Writes a block revision's original "last updated" time back after a save.
- *
- * @param \Drupal\block_content\BlockContentInterface $block
- *   The block revision that was just saved.
- * @param int $changed
- *   The changed time it had before the save.
- */
-function _ys_themes_restore_block_changed_time($block, int $changed): void {
-  $database = \Drupal::database();
-  $database->update('block_content_field_revision')
-    ->fields(['changed' => $changed])
-    ->condition('revision_id', $block->getRevisionId())
-    ->condition('langcode', $block->language()->getId())
-    ->execute();
-  if ($block->isDefaultRevision()) {
-    $database->update('block_content_field_data')
-      ->fields(['changed' => $changed])
-      ->condition('id', $block->id())
-      ->condition('langcode', $block->language()->getId())
-      ->execute();
-  }
 }
