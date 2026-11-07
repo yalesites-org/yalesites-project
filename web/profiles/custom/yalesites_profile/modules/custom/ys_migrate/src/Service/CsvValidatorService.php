@@ -74,6 +74,97 @@ class CsvValidatorService {
   ];
 
   /**
+   * Expected CSV columns for post import.
+   *
+   * Body becomes a Text block in the post's layout. Teaser Media is absent
+   * because this import brings in no images; editors add them after import.
+   * Publish Date and Category match the headers ys_content_export writes, so
+   * an exported file can be filled in and imported.
+   */
+  const EXPECTED_POST_COLUMNS = [
+    'title' => 'Title',
+    'publish date' => 'Publish Date',
+    'author' => 'Author',
+    'body' => 'Body',
+    'category' => 'Category',
+    'tags' => 'Tags',
+    'audience' => 'Audience',
+    'custom vocab' => 'Custom Vocab',
+    'teaser title' => 'Teaser Title',
+    'teaser text' => 'Teaser Text',
+    'external source' => 'External Source',
+    'cas login required' => 'CAS Login Required',
+    'url alias' => 'URL Alias',
+  ];
+
+  /**
+   * Accepted alternative spellings for post columns.
+   *
+   * Values are the canonical normalised header each alias maps to. "CAS
+   * Protected" is the header ys_content_export writes for "CAS Login
+   * Required".
+   */
+  const POST_COLUMN_ALIASES = [
+    'custom vocabulary' => 'custom vocab',
+    'cas protected' => 'cas login required',
+  ];
+
+  /**
+   * Expected CSV columns for event import.
+   *
+   * One row is one event with one date; repeat rules are added in the event
+   * form after import. Location name and address both go in Location Details,
+   * the one location field editors fill in. Teaser Media is absent because
+   * this import brings in no images, and the Localist-owned fields (Yale
+   * Location, Room, Event Type, Groups and the Localist ids) are absent
+   * because only the Localist sync may set them. Start, End, Event Category
+   * and the event-specific columns match the headers ys_content_export
+   * writes, so an exported file can be filled in and imported.
+   */
+  const EXPECTED_EVENT_COLUMNS = [
+    'title' => 'Title',
+    'start' => 'Start',
+    'end' => 'End',
+    'all day' => 'All Day',
+    'description' => 'Description',
+    'location details' => 'Location Details',
+    'event experience' => 'Event Experience',
+    'event website' => 'Event Website',
+    'event website text' => 'Event Website Text',
+    'ticket cost' => 'Ticket Cost',
+    'ticket registration url' => 'Ticket Registration URL',
+    'stream url' => 'Stream URL',
+    'event category' => 'Event Category',
+    'tags' => 'Tags',
+    'audience' => 'Audience',
+    'custom vocab' => 'Custom Vocab',
+    'teaser title' => 'Teaser Title',
+    'teaser text' => 'Teaser Text',
+    'cas login required' => 'CAS Login Required',
+    'url alias' => 'URL Alias',
+    'event id' => 'Event ID',
+  ];
+
+  /**
+   * Accepted alternative spellings for event columns.
+   *
+   * Values are the canonical normalised header each alias maps to. The date
+   * aliases are the ticket's wording; "CAS Protected" is the header
+   * ys_content_export writes for "CAS Login Required".
+   */
+  const EVENT_COLUMN_ALIASES = [
+    'start date' => 'start',
+    'start date/time' => 'start',
+    'end date' => 'end',
+    'end date/time' => 'end',
+    'location' => 'location details',
+    'registration url' => 'ticket registration url',
+    'category' => 'event category',
+    'custom vocabulary' => 'custom vocab',
+    'cas protected' => 'cas login required',
+  ];
+
+  /**
    * Prefix of the trailing summary row a content export appends.
    *
    * This and EXPORT_PLACEHOLDER_PREFIX mirror the strings that
@@ -130,12 +221,92 @@ class CsvValidatorService {
       $file_path,
       'title',
       $this->t('The CSV file must contain a "Title" column.'),
-      [$this, 'validateResourceRow'],
+      [$this, 'validateTitledRow'],
       self::RESOURCE_COLUMN_ALIASES
     );
 
     if ($result['valid']) {
       $result['message'] = $this->t('CSV file is valid. Found @count resources.', ['@count' => count($result['data'])]);
+    }
+
+    return $result;
+  }
+
+  /**
+   * Validates the CSV file structure and content for a post import.
+   *
+   * Only structure, the required headers and the required Title are checked
+   * here. Cell-level problems, an empty Publish Date included, are reported
+   * per row by PostImportService, so one gap does not reject the whole file
+   * and the editor sees the problem in the preview.
+   *
+   * @param string $file_path
+   *   The path to the CSV file.
+   *
+   * @return array
+   *   Validation result with 'valid', 'message', 'data', and 'headers' keys.
+   */
+  public function validatePostCsvStructure($file_path) {
+    $result = $this->parseCsv(
+      $file_path,
+      'title',
+      $this->t('The CSV file must contain a "Title" column.'),
+      [$this, 'validateTitledRow'],
+      self::POST_COLUMN_ALIASES
+    );
+
+    // Without the column every row would fail the same way, so say it once.
+    if ($result['valid'] && !isset($result['headers']['publish date'])) {
+      return [
+        'valid' => FALSE,
+        'message' => $this->t('The CSV file must contain a "Publish Date" column.'),
+        'data' => [],
+        'headers' => [],
+      ];
+    }
+
+    if ($result['valid']) {
+      $result['message'] = $this->t('CSV file is valid. Found @count posts.', ['@count' => count($result['data'])]);
+    }
+
+    return $result;
+  }
+
+  /**
+   * Validates the CSV file structure and content for an event import.
+   *
+   * Only structure, the required headers and the required Title are checked
+   * here. Cell-level problems, an empty or unreadable Start included, are
+   * reported per row by EventImportService, so one gap does not reject the
+   * whole file and the editor sees the problem in the preview.
+   *
+   * @param string $file_path
+   *   The path to the CSV file.
+   *
+   * @return array
+   *   Validation result with 'valid', 'message', 'data', and 'headers' keys.
+   */
+  public function validateEventCsvStructure($file_path) {
+    $result = $this->parseCsv(
+      $file_path,
+      'title',
+      $this->t('The CSV file must contain a "Title" column.'),
+      [$this, 'validateTitledRow'],
+      self::EVENT_COLUMN_ALIASES
+    );
+
+    // Without the column every row would fail the same way, so say it once.
+    if ($result['valid'] && !isset($result['headers']['start'])) {
+      return [
+        'valid' => FALSE,
+        'message' => $this->t('The CSV file must contain a "Start" column.'),
+        'data' => [],
+        'headers' => [],
+      ];
+    }
+
+    if ($result['valid']) {
+      $result['message'] = $this->t('CSV file is valid. Found @count events.', ['@count' => count($result['data'])]);
     }
 
     return $result;
@@ -332,7 +503,9 @@ class CsvValidatorService {
   }
 
   /**
-   * Validates a single row of resource CSV data.
+   * Validates a single row of resource, post or event CSV data.
+   *
+   * Those importers check everything but the Title per row themselves.
    *
    * @param array $row_data
    *   The row data with normalized keys.
@@ -342,7 +515,7 @@ class CsvValidatorService {
    * @return array
    *   Array of validation errors.
    */
-  protected function validateResourceRow(array $row_data, $row_number) {
+  protected function validateTitledRow(array $row_data, $row_number) {
     $errors = [];
 
     if (empty(trim($row_data['title'] ?? ''))) {
@@ -370,6 +543,58 @@ class CsvValidatorService {
    */
   public function getExpectedResourceColumns() {
     return self::EXPECTED_RESOURCE_COLUMNS;
+  }
+
+  /**
+   * Gets the expected columns for post import.
+   *
+   * @return array
+   *   Array of expected columns, keyed by normalised header.
+   */
+  public function getExpectedPostColumns() {
+    return self::EXPECTED_POST_COLUMNS;
+  }
+
+  /**
+   * Lists post CSV headers the importer does not understand.
+   *
+   * @param array $headers
+   *   The header mapping returned by validatePostCsvStructure(), keyed by
+   *   normalised header.
+   *
+   * @return array
+   *   The original spellings of the headers that will be ignored.
+   *
+   * @see getUnknownResourceColumns()
+   */
+  public function getUnknownPostColumns(array $headers) {
+    return array_values(array_diff_key($headers, self::EXPECTED_POST_COLUMNS));
+  }
+
+  /**
+   * Gets the expected columns for event import.
+   *
+   * @return array
+   *   Array of expected columns, keyed by normalised header.
+   */
+  public function getExpectedEventColumns() {
+    return self::EXPECTED_EVENT_COLUMNS;
+  }
+
+  /**
+   * Lists event CSV headers the importer does not understand.
+   *
+   * @param array $headers
+   *   The header mapping returned by validateEventCsvStructure(), keyed by
+   *   normalised header.
+   *
+   * @return array
+   *   The original spellings of the headers that will be ignored.
+   *
+   * @see getUnknownResourceColumns()
+   */
+  public function getUnknownEventColumns(array $headers) {
+    return array_values(array_diff_key($headers, self::EXPECTED_EVENT_COLUMNS));
   }
 
   /**

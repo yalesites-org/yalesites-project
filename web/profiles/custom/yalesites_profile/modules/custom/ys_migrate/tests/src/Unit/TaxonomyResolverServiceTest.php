@@ -279,4 +279,62 @@ class TaxonomyResolverServiceTest extends UnitTestCase {
     $this->assertSame(['0', 'Alpha'], $result);
   }
 
+  /**
+   * FindTerm() returns an existing term and never creates one.
+   *
+   * @covers ::findTerm
+   */
+  public function testFindTermReturnsExistingTerm() {
+    $term = $this->createMock(TermInterface::class);
+    $this->termStorage->method('getQuery')->willReturn($this->mockQuery([5 => '5']));
+    $this->termStorage->method('load')->with('5')->willReturn($term);
+    $this->termStorage->expects($this->never())->method('create');
+
+    $this->assertSame($term, $this->taxonomyResolver->findTerm('News', 'post_category'));
+  }
+
+  /**
+   * FindTerm() returns NULL for an unknown name rather than creating it.
+   *
+   * @covers ::findTerm
+   */
+  public function testFindTermReturnsNullForUnknownName() {
+    $this->termStorage->method('getQuery')->willReturn($this->mockQuery([]));
+    $this->termStorage->expects($this->never())->method('load');
+    $this->termStorage->expects($this->never())->method('create');
+
+    $this->assertNull($this->taxonomyResolver->findTerm('Reserch', 'tags'));
+  }
+
+  /**
+   * A miss is not cached, so a term created afterwards is still found.
+   *
+   * @covers ::findTerm
+   * @covers ::findOrCreateTerm
+   */
+  public function testFindTermDoesNotCacheMisses() {
+    $term = $this->createMock(TermInterface::class);
+    $this->termStorage->expects($this->exactly(2))->method('getQuery')
+      ->willReturnOnConsecutiveCalls($this->mockQuery([]), $this->mockQuery([5 => '5']));
+    $this->termStorage->method('load')->with('5')->willReturn($term);
+
+    $this->assertNull($this->taxonomyResolver->findTerm('Later', 'tags'));
+    $this->assertSame($term, $this->taxonomyResolver->findTerm('Later', 'tags'));
+  }
+
+  /**
+   * A term created by findOrCreateTerm() is then found without a query.
+   *
+   * @covers ::findTerm
+   * @covers ::findOrCreateTerm
+   */
+  public function testFindTermSharesTheRequestCacheWithFindOrCreateTerm() {
+    $term = $this->createMock(TermInterface::class);
+    $this->termStorage->expects($this->once())->method('getQuery')->willReturn($this->mockQuery([]));
+    $this->termStorage->method('create')->willReturn($term);
+
+    $this->assertSame($term, $this->taxonomyResolver->findOrCreateTerm('Fresh', 'tags'));
+    $this->assertSame($term, $this->taxonomyResolver->findTerm('Fresh', 'tags'));
+  }
+
 }
