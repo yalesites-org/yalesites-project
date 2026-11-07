@@ -329,6 +329,79 @@ class ViewMigrationTest extends YsKernelTestBase {
   }
 
   /**
+   * Older revisions of a migrated predecessor block keep their listing (#2118).
+   *
+   * Layout Builder renders an inline block by revision id, and an editor can
+   * Revert a page to a pre-deploy version. That revision must carry the preset
+   * params, or the Calendar List renders as its heading alone.
+   */
+  public function testPredecessorMigrationFillsOlderRevisions() {
+    $block = BlockContent::create(['type' => 'event_list', 'info' => 'Calendar List']);
+    $block->save();
+    $first_revision = $block->getRevisionId();
+    $block->setNewRevision(TRUE);
+    $block->set('info', 'Calendar List, edited');
+    $block->save();
+    $this->assertNotEquals($first_revision, $block->getRevisionId());
+    $changed = $this->blockStorage->load($block->id())->getChangedTime();
+
+    $this->runHook('ys_views_basic_deploy_10002');
+    $this->blockStorage->resetCache();
+
+    $expected = ViewsBasicManager::predecessorPreset('event_list')['params'];
+    $old = $this->blockStorage->loadRevision($first_revision);
+    $this->assertSame('event_list_item', $old->bundle());
+    $this->assertFalse($old->get('field_view_params')->isEmpty(), 'The pre-deploy revision has params.');
+    $this->assertEquals($expected, json_decode($old->get('field_view_params')->first()->getValue()['params'], TRUE));
+    $this->assertEquals($expected, $this->storedParams($block->id()));
+    $this->assertSame($changed, $this->blockStorage->load($block->id())->getChangedTime(), 'The changed date is kept.');
+  }
+
+  /**
+   * Deploy 10005 repairs blocks an earlier 10002 left with bare revisions.
+   */
+  public function testOlderRevisionsOfAlreadyMigratedBlocksGetParams() {
+    $block = BlockContent::create(['type' => 'event_list', 'info' => 'Calendar List']);
+    $block->save();
+    $first_revision = $block->getRevisionId();
+    $block->setNewRevision(TRUE);
+    $block->save();
+    $second_revision = $block->getRevisionId();
+    $this->runHook('ys_views_basic_deploy_10002');
+
+    // Put the site back in the state the first 10002 left: the old revision
+    // has no params row, and a later one holds an editor's own settings.
+    $db = $this->container->get('database');
+    $db->delete('block_content_revision__field_view_params')
+      ->condition('revision_id', $first_revision)
+      ->execute();
+    $custom = ['view_mode' => 'card', 'limit' => 3];
+    $db->update('block_content_revision__field_view_params')
+      ->fields(['field_view_params_params' => serialize(json_encode($custom))])
+      ->condition('revision_id', $second_revision)
+      ->execute();
+    $this->blockStorage->resetCache();
+    $this->assertTrue($this->blockStorage->loadRevision($first_revision)->get('field_view_params')->isEmpty());
+
+    $this->runHook('ys_views_basic_deploy_10005');
+    $this->blockStorage->resetCache();
+
+    $this->assertEquals(
+      ViewsBasicManager::predecessorPreset('event_list')['params'],
+      json_decode($this->blockStorage->loadRevision($first_revision)->get('field_view_params')->first()->getValue()['params'], TRUE)
+    );
+    $this->assertEquals(
+      $custom,
+      json_decode($this->blockStorage->loadRevision($second_revision)->get('field_view_params')->first()->getValue()['params'], TRUE),
+      'A revision with its own params is left alone.'
+    );
+
+    // Idempotent: a second run changes nothing.
+    $message = $this->runHook('ys_views_basic_deploy_10005');
+    $this->assertStringContainsString('filled params on 0 older', $message);
+  }
+
+  /**
    * Blocks 10002 already migrated without the filter get it (#1967).
    *
    * Only blocks whose params still equal the old filterless preset change;

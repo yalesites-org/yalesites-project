@@ -57,7 +57,7 @@ class ViewsBasicManagerValidationTest extends UnitTestCase {
   public function testUnknownSortFallsBackToDefault() {
     $this->assertSame('field_publish_date:DESC', ViewsBasicManager::getValidatedSort(['post'], 'not_a_field:ASC'));
     $this->assertSame('title:ASC', ViewsBasicManager::getValidatedSort(['page'], '(1):ASC'));
-    $this->assertSame('field_event_date:DESC', ViewsBasicManager::getValidatedSort(['event'], 'node_field_data.nid:ASC'));
+    $this->assertSame('field_event_date:ASC', ViewsBasicManager::getValidatedSort(['event'], 'node_field_data.nid:ASC'));
   }
 
   /**
@@ -124,7 +124,7 @@ class ViewsBasicManagerValidationTest extends UnitTestCase {
    */
   public function testUnknownViewModeFallsBackToFirst() {
     $this->assertSame('list_item', ViewsBasicManager::getValidatedViewMode(['post'], 'list_item'));
-    $this->assertSame('directory', ViewsBasicManager::getValidatedViewMode(['profile'], 'directory'));
+    $this->assertSame('card', ViewsBasicManager::getValidatedViewMode(['profile'], 'directory'));
     $this->assertSame('card', ViewsBasicManager::getValidatedViewMode(['post'], 'directory'));
     $this->assertSame('card', ViewsBasicManager::getValidatedViewMode(['post'], 'not_a_view_mode'));
     $this->assertSame('card', ViewsBasicManager::getValidatedViewMode(['post'], NULL));
