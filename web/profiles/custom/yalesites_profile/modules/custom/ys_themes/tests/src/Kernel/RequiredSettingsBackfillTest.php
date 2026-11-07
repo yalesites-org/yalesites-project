@@ -72,6 +72,21 @@ class RequiredSettingsBackfillTest extends YsKernelTestBase {
       ])->save();
     }
 
+    // Required content (like a Callout's text) is never a setting to fill.
+    FieldStorageConfig::create([
+      'field_name' => 'field_content',
+      'entity_type' => 'block_content',
+      'type' => 'string',
+    ])->save();
+    FieldConfig::create([
+      'field_name' => 'field_content',
+      'entity_type' => 'block_content',
+      'bundle' => 'text',
+      'label' => 'field_content',
+      'required' => TRUE,
+      'default_value' => [['value' => 'default text']],
+    ])->save();
+
     require_once dirname(__DIR__, 3) . '/ys_themes.deploy.php';
   }
 
@@ -84,6 +99,7 @@ class RequiredSettingsBackfillTest extends YsKernelTestBase {
     $block->set('field_padding_options', NULL);
     $block->set('field_style_variation', NULL);
     $block->set('field_optional', NULL);
+    $block->set('field_content', NULL);
     $block->save();
     $old_revision_id = (int) $block->getRevisionId();
 
@@ -109,6 +125,8 @@ class RequiredSettingsBackfillTest extends YsKernelTestBase {
     // Optional settings and required ones with no default stay empty.
     $this->assertTrue($old->get('field_optional')->isEmpty());
     $this->assertTrue($old->get('field_no_default')->isEmpty());
+    // Required content is left alone even when it has a default.
+    $this->assertTrue($old->get('field_content')->isEmpty());
     // The revision id and "last updated" date survive.
     $this->assertSame(1000000000, (int) $old->getChangedTime());
     $this->assertSame(1000000000, (int) $storage->load($block->id())->getChangedTime());
