@@ -340,6 +340,8 @@ body.gin--dark-mode .palette-option[data-selected="true"] .palette-circle {
   width: 100%;
   min-width: 0;
   max-width: 100%;
+  /* Lets the narrow-panel rules below key off the panel width, not the window. */
+  container-type: inline-size;
 }
 
 .palette-dropdown-button {
@@ -512,4 +514,28 @@ body.gin--dark-mode .palette-option[data-selected="true"] .palette-circle {
 
 .palette-dropdown-option[aria-selected="true"] .palette-dropdown-check {
   visibility: visible;
+}
+
+/* Very narrow settings panel: hide the hex code and tighten the row, so each
+   color name keeps room to read instead of wrapping one character per line. */
+@container (max-width: 200px) {
+  .palette-dropdown-hex {
+    display: none;
+  }
+
+  .palette-dropdown-button,
+  .palette-dropdown-value,
+  .palette-dropdown-option {
+    gap: 0.375rem;
+  }
+
+  .palette-dropdown-button,
+  .palette-dropdown-option {
+    padding-inline: 0.375rem;
+  }
+
+  .palette-dropdown-swatch {
+    width: 1.25rem;
+    height: 1.25rem;
+  }
 }
