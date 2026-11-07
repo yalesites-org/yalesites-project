@@ -76,6 +76,23 @@ class WrappedImageSizeBackfillTest extends YsKernelTestBase {
       'label' => 'Divider Thickness',
     ])->save();
 
+    // Listing blocks carry the required Padding Options dial.
+    FieldStorageConfig::create([
+      'field_name' => 'field_padding_options',
+      'entity_type' => 'block_content',
+      'type' => 'list_string',
+      'settings' => ['allowed_values' => ['default' => 'Default', 'no_top' => 'No top']],
+    ])->save();
+    foreach (['view', 'resource_view'] as $bundle) {
+      BlockContentType::create(['id' => $bundle, 'label' => $bundle])->save();
+      FieldConfig::create([
+        'field_name' => 'field_padding_options',
+        'entity_type' => 'block_content',
+        'bundle' => $bundle,
+        'label' => 'Padding Options',
+      ])->save();
+    }
+
     require_once dirname(__DIR__, 3) . '/ys_themes.deploy.php';
   }
 
@@ -111,6 +128,71 @@ class WrappedImageSizeBackfillTest extends YsKernelTestBase {
     } while ($sandbox['#finished'] < 1);
 
     $this->assertSame('1', $this->reload((int) $divider->id())->get('field_style_thickness')->value);
+  }
+
+  /**
+   * Older revisions, as pinned after a page Revert, are backfilled too (#2117).
+   */
+  public function testBackfillsOlderRevisions(): void {
+    $block = BlockContent::create(['type' => 'wrapped_image', 'info' => 'old']);
+    $block->save();
+    $old_revision_id = (int) $block->getRevisionId();
+
+    $newer = \Drupal::entityTypeManager()->getStorage('block_content')
+      ->createRevision($block);
+    $newer->set('field_style_width', 'small');
+    $newer->save();
+
+    // Age both revisions so a re-stamp to "now" is visible.
+    $database = \Drupal::database();
+    $database->update('block_content_field_revision')
+      ->fields(['changed' => 1000000000])
+      ->execute();
+    $database->update('block_content_field_data')
+      ->fields(['changed' => 1000000000])
+      ->execute();
+
+    $sandbox = [];
+    do {
+      ys_themes_deploy_10306($sandbox);
+    } while ($sandbox['#finished'] < 1);
+
+    $storage = \Drupal::entityTypeManager()->getStorage('block_content');
+    $storage->resetCache();
+    // "Last updated" is kept on the backfilled revision and the default one.
+    $this->assertSame(1000000000, (int) $storage->loadRevision($old_revision_id)->getChangedTime());
+    $this->assertSame(1000000000, (int) $storage->load($block->id())->getChangedTime());
+    $this->assertSame('large', $storage->loadRevision($old_revision_id)->get('field_style_width')->value);
+    $this->assertSame('small', $storage->loadRevision($newer->getRevisionId())->get('field_style_width')->value);
+  }
+
+  /**
+   * Older listing revisions get Padding Options; chosen values stay (#2117).
+   */
+  public function testBackfillsListingPaddingOnOlderRevisions(): void {
+    $storage = \Drupal::entityTypeManager()->getStorage('block_content');
+    $old_ids = [];
+    $newer_ids = [];
+    foreach (['view', 'resource_view'] as $bundle) {
+      $block = BlockContent::create(['type' => $bundle, 'info' => $bundle]);
+      $block->save();
+      $old_ids[$bundle] = (int) $block->getRevisionId();
+      $newer = $storage->createRevision($block);
+      $newer->set('field_padding_options', 'no_top');
+      $newer->save();
+      $newer_ids[$bundle] = (int) $newer->getRevisionId();
+    }
+
+    $sandbox = [];
+    do {
+      ys_themes_deploy_10306($sandbox);
+    } while ($sandbox['#finished'] < 1);
+
+    $storage->resetCache();
+    foreach (['view', 'resource_view'] as $bundle) {
+      $this->assertSame('default', $storage->loadRevision($old_ids[$bundle])->get('field_padding_options')->value);
+      $this->assertSame('no_top', $storage->loadRevision($newer_ids[$bundle])->get('field_padding_options')->value);
+    }
   }
 
   /**

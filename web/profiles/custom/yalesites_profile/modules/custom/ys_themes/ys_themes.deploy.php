@@ -228,3 +228,111 @@ function ys_themes_deploy_10305(&$sandbox) {
 
   return t('Set video playback to loop on @count banner block revision(s).', ['@count' => $sandbox['backfilled']]);
 }
+
+/**
+ * Fills the wave 1, Image Size and listing Padding dials on all revisions.
+ *
+ * The deploy hooks 10303 and 10304 only touched each block's latest revision.
+ * After an editor reverts a page, Layout Builder pins an older block revision
+ * with these required dials empty, and Update fails with "Image Size field is
+ * required", "Divider Thickness field is required" or "Padding Options field
+ * is required" (YaleSites-Internal#2117). The same defaults are used, so
+ * nothing changes how a block renders.
+ */
+function ys_themes_deploy_10306(&$sandbox) {
+  $block_storage = \Drupal::entityTypeManager()->getStorage('block_content');
+  $defaults = [
+    'divider' => ['field_style_thickness', '1'],
+    'callout' => ['field_style_variation', 'cta'],
+    'cta_banner' => ['field_button_style_consistency', 'filled_outline'],
+    'wrapped_image' => ['field_style_width', 'large'],
+    // Listing blocks: Padding Options is required and defaults to 'default'.
+    'view' => ['field_padding_options', 'default'],
+    'resource_view' => ['field_padding_options', 'default'],
+  ];
+
+  if (!isset($sandbox['processed'])) {
+    $sandbox['processed'] = 0;
+    $sandbox['backfilled'] = 0;
+    $sandbox['total'] = $block_storage->getQuery()
+      ->accessCheck(FALSE)
+      ->allRevisions()
+      ->condition('type', array_keys($defaults), 'IN')
+      ->count()
+      ->execute();
+
+    if ($sandbox['total'] == 0) {
+      $sandbox['#finished'] = 1;
+      return t('No blocks found that need dial defaults.');
+    }
+  }
+
+  // Paged over every revision rather than filtered to the empty ones, so the
+  // result set does not shrink underneath the offset as values are filled in.
+  // An allRevisions() query returns revision_id => entity_id.
+  $result = $block_storage->getQuery()
+    ->accessCheck(FALSE)
+    ->allRevisions()
+    ->condition('type', array_keys($defaults), 'IN')
+    ->sort('revision_id')
+    ->range($sandbox['processed'], 50)
+    ->execute();
+
+  foreach (array_keys($result) as $revision_id) {
+    $sandbox['processed']++;
+
+    /** @var \Drupal\block_content\Entity\BlockContent|null $block */
+    $block = $block_storage->loadRevision($revision_id);
+    if (!$block) {
+      continue;
+    }
+    [$field, $value] = $defaults[$block->bundle()];
+    if (!$block->hasField($field) || !$block->get($field)->isEmpty()) {
+      continue;
+    }
+    $changed = $block->getChangedTime();
+    $block->set($field, $value);
+    // Saving a loaded revision updates it in place, so the revision id a
+    // layout pins to stays valid.
+    $block->setSyncing(TRUE);
+    $block->save();
+    // Syncing does not stop ChangedItem::preSave() from stamping the deploy
+    // time, so write the original "last updated" value back.
+    _ys_themes_restore_block_changed_time($block, $changed);
+    $sandbox['backfilled']++;
+  }
+
+  $sandbox['#finished'] = (empty($result) || $sandbox['processed'] >= $sandbox['total'])
+    ? 1
+    : $sandbox['processed'] / $sandbox['total'];
+
+  if ($sandbox['#finished'] < 1) {
+    return NULL;
+  }
+
+  return t('Set dial defaults on @count block revision(s).', ['@count' => $sandbox['backfilled']]);
+}
+
+/**
+ * Writes a block revision's original "last updated" time back after a save.
+ *
+ * @param \Drupal\block_content\BlockContentInterface $block
+ *   The block revision that was just saved.
+ * @param int $changed
+ *   The changed time it had before the save.
+ */
+function _ys_themes_restore_block_changed_time($block, int $changed): void {
+  $database = \Drupal::database();
+  $database->update('block_content_field_revision')
+    ->fields(['changed' => $changed])
+    ->condition('revision_id', $block->getRevisionId())
+    ->condition('langcode', $block->language()->getId())
+    ->execute();
+  if ($block->isDefaultRevision()) {
+    $database->update('block_content_field_data')
+      ->fields(['changed' => $changed])
+      ->condition('id', $block->id())
+      ->condition('langcode', $block->language()->getId())
+      ->execute();
+  }
+}
