@@ -402,6 +402,56 @@ class ViewMigrationTest extends YsKernelTestBase {
   }
 
   /**
+   * Blocks stored with display "all" go back on a pager (#2172).
+   *
+   * An old Calendar List and Directory block is repaired, the filterless
+   * variant is repaired by deploy_10004, an edited block is untouched, and a
+   * second run changes nothing.
+   */
+  public function testDisplayAllBlocksGetTheirPager() {
+    $make = function (string $bundle, array $params) {
+      $block = BlockContent::create([
+        'type' => $bundle,
+        'info' => 'stored ' . $bundle,
+        'field_view_params' => ['params' => json_encode($params)],
+      ]);
+      $block->save();
+      return $block->id();
+    };
+    $event_old = ViewsBasicManager::displayAllPredecessorParams('event_list');
+    $directory_old = ViewsBasicManager::displayAllPredecessorParams('directory');
+    $this->assertSame('all', $event_old['display']);
+    $this->assertNull(ViewsBasicManager::displayAllPredecessorParams('post_list'));
+
+    $event = $make('event_list_item', $event_old);
+    $directory = $make('profile_card', $directory_old);
+    $filterless = $make('event_list_item', ViewsBasicManager::displayAllPredecessorParams('event_list', TRUE));
+    $edited_limit = $make('event_list_item', ['limit' => 25] + $event_old);
+    $edited_display = $make('profile_card', ['display' => 'limit'] + $directory_old);
+
+    $this->runHook('ys_views_basic_deploy_10004');
+    $this->runHook('ys_views_basic_deploy_10006');
+    $this->blockStorage->resetCache();
+
+    $event_new = ViewsBasicManager::predecessorPreset('event_list')['params'];
+    $this->assertEquals($event_new, $this->storedParams($event));
+    $this->assertEquals($event_new, $this->storedParams($filterless));
+    $this->assertEquals(ViewsBasicManager::predecessorPreset('directory')['params'], $this->storedParams($directory));
+    $this->assertSame('pager', $this->storedParams($event)['display']);
+    $this->assertSame(10, $this->storedParams($event)['limit']);
+    $this->assertEquals(['limit' => 25] + $event_old, $this->storedParams($edited_limit));
+    $this->assertEquals(['display' => 'limit'] + $directory_old, $this->storedParams($edited_display));
+
+    // Idempotent: a second run changes nothing.
+    $this->runHook('ys_views_basic_deploy_10004');
+    $message = $this->runHook('ys_views_basic_deploy_10006');
+    $this->blockStorage->resetCache();
+    $this->assertStringContainsString('put 0 migrated', $message);
+    $this->assertEquals($event_new, $this->storedParams($event));
+    $this->assertEquals(['limit' => 25] + $event_old, $this->storedParams($edited_limit));
+  }
+
+  /**
    * Blocks 10002 already migrated without the filter get it (#1967).
    *
    * Only blocks whose params still equal the old filterless preset change;
