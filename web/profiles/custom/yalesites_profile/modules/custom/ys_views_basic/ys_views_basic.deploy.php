@@ -563,8 +563,9 @@ function ys_views_basic_deploy_10005(&$sandbox) {
  *
  * Before #1705 the predecessor presets set display to "all", so blocks that
  * deploy_10002 had already migrated list every event or profile with no
- * pager. A block whose params still equal that old preset gets the current one
- * (pager, 10 per page). A block an editor has changed since is left alone.
+ * pager. A block stored with display "all" and limit 10 is put on the pager
+ * and keeps its other settings. A block with a different display or limit is
+ * left alone.
  * deploy_10004 repairs the filterless variant. Idempotent: a second run finds
  * no block with the old params. Batched like deploy_10004.
  */
@@ -590,11 +591,14 @@ function ys_views_basic_deploy_10006(&$sandbox) {
     $legacy = $sandbox['legacy'][$block->bundle()];
     $field = $block->get('field_view_params');
     $params = $field->isEmpty() ? NULL : json_decode($field->first()->getValue()['params'] ?? '', TRUE);
-    // Loose comparison: the same keys and values in any order.
-    if ($params != ViewsBasicManager::displayAllPredecessorParams($legacy)) {
+    // Match on display "all" with limit 10 only, so a block an editor saved
+    // again (which adds and drops other keys) is still repaired. Every other
+    // setting is kept.
+    if (!is_array($params) || ($params['display'] ?? NULL) !== 'all' || (int) ($params['limit'] ?? 0) !== 10) {
       continue;
     }
-    $block->set('field_view_params', ['params' => json_encode(ViewsBasicManager::predecessorPreset($legacy)['params'])]);
+    $params['display'] = 'pager';
+    $block->set('field_view_params', ['params' => json_encode($params)]);
     $block->save();
     $sandbox['updated']++;
   }

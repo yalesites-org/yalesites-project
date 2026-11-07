@@ -426,6 +426,11 @@ class ViewMigrationTest extends YsKernelTestBase {
     $event = $make('event_list_item', $event_old);
     $directory = $make('profile_card', $directory_old);
     $filterless = $make('event_list_item', ViewsBasicManager::displayAllPredecessorParams('event_list', TRUE));
+    // A block saved again through the form: extra keys added, operator dropped.
+    $resaved_params = $event_old;
+    unset($resaved_params['operator']);
+    $resaved_params += ['search_scope' => 'all', 'card_size' => 'medium', 'category_filter_label' => 'My label'];
+    $resaved = $make('event_list_item', $resaved_params);
     $edited_limit = $make('event_list_item', ['limit' => 25] + $event_old);
     $edited_display = $make('profile_card', ['display' => 'limit'] + $directory_old);
 
@@ -437,6 +442,7 @@ class ViewMigrationTest extends YsKernelTestBase {
     $this->assertEquals($event_new, $this->storedParams($event));
     $this->assertEquals($event_new, $this->storedParams($filterless));
     $this->assertEquals(ViewsBasicManager::predecessorPreset('directory')['params'], $this->storedParams($directory));
+    $this->assertEquals(['display' => 'pager'] + $resaved_params, $this->storedParams($resaved));
     $this->assertSame('pager', $this->storedParams($event)['display']);
     $this->assertSame(10, $this->storedParams($event)['limit']);
     $this->assertEquals(['limit' => 25] + $event_old, $this->storedParams($edited_limit));
