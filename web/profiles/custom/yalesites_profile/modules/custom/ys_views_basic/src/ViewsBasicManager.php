@@ -1181,6 +1181,7 @@ class ViewsBasicManager extends ControllerBase implements ContainerInjectionInte
       'types' => $paramsDecoded['filters']['types'],
       'event_time_period' => $paramsDecoded['filters']['event_time_period'] ?? NULL,
     ];
+    $allowed_by_identifier = [];
     foreach ($filters as $filter_name => $filter) {
       if (($filter['plugin_id'] ?? NULL) === 'taxonomy_index_tid' && !empty($filter['exposed'])) {
         $parent_param = $parent_params[$filter_name] ?? NULL;
@@ -1188,6 +1189,30 @@ class ViewsBasicManager extends ControllerBase implements ContainerInjectionInte
         $constrained = $this->exposedTaxonomyFilterOptions->apply($filters, $filter_name, $excluded_terms, $parent_tid, $used_in);
         if ($used_in && $constrained && empty($filters[$filter_name]['value'])) {
           unset($filters[$filter_name]);
+        }
+        elseif ($constrained && !empty($filters[$filter_name]['expose']['identifier'])) {
+          $allowed_by_identifier[$filters[$filter_name]['expose']['identifier']] = array_keys($filters[$filter_name]['value']);
+        }
+        elseif (!$constrained && !empty($filters[$filter_name]['expose']['identifier'])) {
+          // A filter that offers its whole vocabulary still rejects a term id
+          // that no longer exists or belongs to another vocabulary. It has no
+          // All option either, so All is dropped like any other bad value.
+          $identifier = $filters[$filter_name]['expose']['identifier'];
+          $requested = array_filter((array) ($view->getRequest()?->query->all()[$identifier] ?? []), 'is_scalar');
+          $requested = array_filter($requested, 'ctype_digit');
+          $existing = [];
+          if ($requested) {
+            $term_query = $this->termStorage->getQuery()
+              ->accessCheck(FALSE)
+              ->condition('tid', array_values($requested), 'IN');
+            // Post, event and resource listings share one field name with
+            // different vocabularies, so a term must belong to this filter's.
+            if (!empty($filters[$filter_name]['vid'])) {
+              $term_query->condition('vid', $filters[$filter_name]['vid']);
+            }
+            $existing = $term_query->execute();
+          }
+          $allowed_by_identifier[$identifier] = array_values($existing);
         }
       }
     }
@@ -1395,10 +1420,24 @@ class ViewsBasicManager extends ControllerBase implements ContainerInjectionInte
     // other listing's filter at this one on the next page. A URL with no
     // listing argument (a link made before YaleSites-Internal#1926) applies
     // to every listing, as it always did.
+    $otherListing = FALSE;
     if ($listingKey !== NULL) {
       $urlListing = $view->getRequest()?->query->all()[self::LISTING_QUERY_KEY] ?? NULL;
       if ($urlListing !== NULL && $urlListing !== $listingKey) {
         $view->setExposedInput([self::LISTING_QUERY_KEY => $urlListing]);
+        $otherListing = TRUE;
+      }
+    }
+
+    // A link saved before a term was excluded still carries that term. Views
+    // would reject it as an illegal choice and show visitors an error, so
+    // drop the terms this listing no longer offers and run as if never
+    // picked (YaleSites-Internal#2102).
+    if (!$otherListing && $allowed_by_identifier) {
+      $query = $view->getRequest()?->query->all() ?? [];
+      $clean = self::dropUnavailableTerms($query, $allowed_by_identifier);
+      if ($clean !== $query) {
+        $view->setExposedInput($clean);
       }
     }
 
@@ -1410,6 +1449,35 @@ class ViewsBasicManager extends ControllerBase implements ContainerInjectionInte
       'resource' => $resource_field_display_options,
       'pin' => $pin_options,
     ];
+  }
+
+  /**
+   * Removes term ids a listing does not offer from exposed filter input.
+   *
+   * @param array $query
+   *   The request query.
+   * @param array $allowed_by_identifier
+   *   Offered values, keyed by exposed filter identifier. "All" is kept only
+   *   when listed, since exposed taxonomy filters have no All option.
+   *
+   * @return array
+   *   The query with other values dropped. An emptied filter keeps its key
+   *   with an empty array, so the input stays non-empty and Views does not
+   *   fall back to the raw request.
+   */
+  public static function dropUnavailableTerms(array $query, array $allowed_by_identifier): array {
+    foreach ($allowed_by_identifier as $identifier => $allowed) {
+      if (!array_key_exists($identifier, $query)) {
+        continue;
+      }
+      $allowed = array_map('strval', $allowed);
+      $values = (array) $query[$identifier];
+      $query[$identifier] = array_values(array_filter(
+        $values,
+        static fn ($value) => is_scalar($value) && in_array((string) $value, $allowed, TRUE),
+      ));
+    }
+    return $query;
   }
 
   /**
@@ -2033,7 +2101,7 @@ class ViewsBasicManager extends ControllerBase implements ContainerInjectionInte
             'event_time_period' => 'future',
           ],
           'sort_by' => 'field_event_date:ASC',
-          'display' => 'all',
+          'display' => 'pager',
           'limit' => 10,
           'exposed_filter_options' => [
             'show_category_filter' => 'show_category_filter',
@@ -2047,7 +2115,7 @@ class ViewsBasicManager extends ControllerBase implements ContainerInjectionInte
         'params' => self::directoryToCardParams([
           'filters' => ['types' => ['profile'], 'terms_include' => NULL, 'terms_exclude' => NULL],
           'sort_by' => 'field_last_name:ASC',
-          'display' => 'all',
+          'display' => 'pager',
           'limit' => 10,
           'exposed_filter_options' => ['show_category_filter' => 'show_category_filter'],
           'category_filter_label' => 'Affiliation',
@@ -2570,6 +2638,39 @@ class ViewsBasicManager extends ControllerBase implements ContainerInjectionInte
     }
 
     return $grouped;
+  }
+
+  /**
+   * Adds stored terms that a grouped option list does not already offer.
+   *
+   * A listing can hold terms from vocabularies a form's scoped option list
+   * omits (#2101). Select elements drop stored values that are not options,
+   * so re-saving the form silently deleted them. Each missing term is added
+   * under its own vocabulary's label so editors can see and keep it.
+   *
+   * @param array $options
+   *   Grouped options as returned by ::getTagsForVocabularies().
+   * @param array $term_ids
+   *   Stored term IDs to keep selectable.
+   *
+   * @return array
+   *   The options with any missing stored terms added.
+   */
+  public function addStoredTermOptions(array $options, array $term_ids): array {
+    $offered = [];
+    foreach ($options as $group) {
+      $offered += is_array($group) ? $group : [];
+    }
+    $missing = array_diff(array_filter($term_ids), array_keys($offered));
+    if (!$missing) {
+      return $options;
+    }
+    foreach ($this->termStorage->loadMultiple($missing) as $term) {
+      $vocabulary = $this->entityTypeManager->getStorage('taxonomy_vocabulary')->load($term->bundle());
+      $label = $vocabulary ? $vocabulary->label() : $term->bundle();
+      $options[$label][$term->id()] = $term->label();
+    }
+    return $options;
   }
 
   /**

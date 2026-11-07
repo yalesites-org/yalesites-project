@@ -1415,6 +1415,12 @@ abstract class ViewsBasicWidgetBase extends WidgetBase implements ContainerFacto
     $params = $items[$delta]->params;
     $tags = $this->viewsBasicManager->getTagsForVocabularies($this->getTagVocabularies());
 
+    $include_terms = $params ? $this->viewsBasicManager->getDefaultParamValue('terms_include', $params) : [];
+    $exclude_terms = $params ? $this->viewsBasicManager->getDefaultParamValue('terms_exclude', $params) : [];
+    // Keep stored terms from other vocabularies selectable (#2101), or the
+    // select drops them when the editor clicks Update.
+    $tags = $this->viewsBasicManager->addStoredTermOptions($tags, array_merge((array) $include_terms, (array) $exclude_terms));
+
     $form['group_user_selection']['filter_and_sort']['tag_filters_intro'] = [
       '#type' => 'container',
       // Explicit weight (#1481): ::groupTermOperatorRows() reshuffles this
@@ -1432,7 +1438,6 @@ abstract class ViewsBasicWidgetBase extends WidgetBase implements ContainerFacto
       ],
     ];
 
-    $include_terms = $params ? $this->viewsBasicManager->getDefaultParamValue('terms_include', $params) : [];
     $form['group_user_selection']['filter_and_sort']['terms_include'] = [
       '#title' => $this->t('Only show content tagged'),
       '#type' => 'select',
@@ -1449,7 +1454,6 @@ abstract class ViewsBasicWidgetBase extends WidgetBase implements ContainerFacto
       empty($include_terms),
     );
 
-    $exclude_terms = $params ? $this->viewsBasicManager->getDefaultParamValue('terms_exclude', $params) : [];
     $form['group_user_selection']['filter_and_sort']['terms_exclude'] = [
       '#title' => $this->t('Hide content tagged'),
       '#type' => 'select',
