@@ -104,6 +104,14 @@
           ?.click();
       }
     });
+    // A field in Gin's meta sidebar stays off-screen while the sidebar is
+    // closed. Gin's own method opens it and keeps its toggle state in sync.
+    if (
+      el.closest('#gin_sidebar') &&
+      document.body.dataset.metaSidebar !== 'open'
+    ) {
+      Drupal.ginSidebar?.showSidebar();
+    }
     let details = el.closest('details:not([open])');
     while (details) {
       details.open = true;
