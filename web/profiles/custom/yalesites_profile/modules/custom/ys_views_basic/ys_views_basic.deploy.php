@@ -292,6 +292,9 @@ function ys_views_basic_deploy_10002(&$sandbox) {
       // A bundle swap leaves prior field-table rows stamped with the old
       // bundle; patch every block_content field table for this entity.
       $migrator->patchBlockFieldBundles($block_id, $preset['target']);
+      // Older revisions get the same params, so a Revert to one still lists
+      // its content (#2118).
+      $migrator->fillMissingRevisionParams($block_id, $preset['target'], $preset['params']);
       $sandbox['counts'][$legacy]++;
       $sandbox['migrated']++;
     }
@@ -494,4 +497,57 @@ function ys_views_basic_deploy_10004(&$sandbox) {
   $sandbox['#finished'] = 1;
   \Drupal::logger('ys_views_basic')->notice('Predecessor filters: turned on the exposed filter for @n migrated blocks.', ['@n' => $sandbox['updated']]);
   return t('Predecessor filters: turned on the exposed filter for @n migrated blocks.', ['@n' => $sandbox['updated']]);
+}
+
+/**
+ * Fills params on older revisions of migrated listing blocks (#2118).
+ *
+ * The 10002 deploy filled field_view_params on the current revision of each
+ * Post Feed, Calendar List and Directory block only. A page reverted to an
+ * older version brought back a block with no params, and visitors saw the
+ * heading and nothing else. This writes the predecessor preset into every
+ * revision of those blocks that has no params row. A revision that already
+ * has params is left alone. Direct row writes keep each block's changed date.
+ * Idempotent: a second run finds no revision without params. Batched like
+ * deploy_10004.
+ */
+function ys_views_basic_deploy_10005(&$sandbox) {
+  /** @var \Drupal\ys_views_basic\Service\ListingMigrator $migrator */
+  $migrator = \Drupal::service('ys_views_basic.listing_migrator');
+  $block_storage = \Drupal::entityTypeManager()->getStorage('block_content');
+
+  if (!isset($sandbox['ids'])) {
+    // Target bundle => its preset params.
+    $sandbox['presets'] = [];
+    foreach (['post_list', 'event_list', 'directory'] as $legacy) {
+      $preset = ViewsBasicManager::predecessorPreset($legacy);
+      $sandbox['presets'][$preset['target']] = $preset['params'];
+    }
+    $sandbox['ids'] = array_values($block_storage->getQuery()
+      ->condition('type', array_keys($sandbox['presets']), 'IN')
+      ->accessCheck(FALSE)
+      ->execute());
+    $sandbox['total'] = count($sandbox['ids']);
+    $sandbox['filled'] = 0;
+  }
+
+  $chunk = array_splice($sandbox['ids'], 0, ListingMigrator::BATCH_SIZE);
+  foreach ($block_storage->loadMultiple($chunk) as $block) {
+    $bundle = $block->bundle();
+    $sandbox['filled'] += $migrator->fillMissingRevisionParams($block->id(), $bundle, $sandbox['presets'][$bundle]);
+  }
+  if ($chunk) {
+    $block_storage->resetCache($chunk);
+  }
+
+  if ($sandbox['ids']) {
+    $sandbox['#finished'] = ($sandbox['total'] - count($sandbox['ids'])) / $sandbox['total'];
+    return NULL;
+  }
+  if ($sandbox['filled']) {
+    \Drupal::service('cache.render')->invalidateAll();
+  }
+  $sandbox['#finished'] = 1;
+  \Drupal::logger('ys_views_basic')->notice('Predecessor revisions: filled params on @n older revisions.', ['@n' => $sandbox['filled']]);
+  return t('Predecessor revisions: filled params on @n older revisions.', ['@n' => $sandbox['filled']]);
 }

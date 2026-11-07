@@ -6,7 +6,7 @@ use Drupal\Core\DependencyInjection\ContainerBuilder;
 use Drupal\Core\Entity\EntityTypeManagerInterface;
 use Drupal\Tests\UnitTestCase;
 use Drupal\ys_views_basic\Form\EventCalendarFilterForm;
-use Drupal\ys_views_basic\Service\EventsCalendarInterface;
+use Drupal\ys_views_basic\Service\EventsCalendar;
 use Drupal\ys_views_basic\ViewsBasicManager;
 
 /**
@@ -41,7 +41,7 @@ class EventCalendarFilterFormTest extends UnitTestCase {
     $this->form = new EventCalendarFilterForm(
       $this->manager,
       $this->createMock(EntityTypeManagerInterface::class),
-      $this->createMock(EventsCalendarInterface::class)
+      $this->createMock(EventsCalendar::class)
     );
   }
 
