@@ -12,13 +12,9 @@ namespace Drupal\ys_migrate\Service;
 class ResourceImportService extends CsvImportServiceBase {
 
   /**
-   * Date formats accepted in the Resource Publication Date column.
-   *
-   * Deliberately an explicit list rather than strtotime(): "03/04/2026" means
-   * different days to different readers, and a silently wrong publication date
-   * is worse than a rejected row.
+   * {@inheritdoc}
    */
-  const DATE_INPUT_FORMATS = ['Y-m-d', 'm/d/Y', 'n/j/Y', 'Y-n-j'];
+  const BUNDLE = 'resource';
 
   /**
    * The field storage holding the allowed Date Format values.
@@ -39,17 +35,9 @@ class ResourceImportService extends CsvImportServiceBase {
   ];
 
   /**
-   * Fallback text format per long-text field.
+   * {@inheritdoc}
    *
-   * Long-text fields need an explicit format, or Drupal falls back to the
-   * plain-text fallback filter and escapes the editor's markup. The format
-   * must also be one the field itself allows: each of these fields restricts
-   * allowed_formats to a single format, and storing anything else leaves the
-   * widget disabled on the node form ("you do not have sufficient permissions
-   * to edit it"), because no YaleSites role holds "administer filters".
-   *
-   * The live values are read from each field's own config; these are only the
-   * documented fallbacks, used when the field cannot be loaded.
+   * Each of these fields restricts allowed_formats to a single format.
    */
   const TEXT_FORMAT_FALLBACKS = [
     'field_content_description' => 'restricted_html',
@@ -59,11 +47,6 @@ class ResourceImportService extends CsvImportServiceBase {
   ];
 
   /**
-   * Maximum Teaser Text length when the form display does not declare one.
-   */
-  const TEASER_TEXT_MAX_LENGTH = 150;
-
-  /**
    * Moderation state imported resources are created in.
    *
    * Matches the editorial workflow's own default_moderation_state.
@@ -71,35 +54,11 @@ class ResourceImportService extends CsvImportServiceBase {
   const MODERATION_STATE = 'draft';
 
   /**
-   * Cell values accepted as TRUE in a boolean column.
-   */
-  const TRUE_VALUES = ['yes', 'true', '1', 'on'];
-
-  /**
-   * Cell values accepted as FALSE in a boolean column.
-   */
-  const FALSE_VALUES = ['no', 'false', '0', 'off', ''];
-
-  /**
    * Allowed Date Format values, resolved once per import run.
    *
    * @var array|null
    */
   protected $dateFormatOptions;
-
-  /**
-   * Text formats per long-text field, resolved once per import run.
-   *
-   * @var string[]
-   */
-  protected $textFormats = [];
-
-  /**
-   * The Teaser Text character limit, resolved once per import run.
-   *
-   * @var int|null
-   */
-  protected $teaserTextMaxLength;
 
   /**
    * Prepares resource data from a CSV row.
@@ -128,7 +87,7 @@ class ResourceImportService extends CsvImportServiceBase {
       // CsvValidatorService::RESOURCE_COLUMN_ALIASES before we see the row.
       'custom_vocab' => $this->taxonomyResolver->parseCommaSeparatedValues($row['custom vocab'] ?? ''),
       'tags' => $this->taxonomyResolver->parseCommaSeparatedValues($row['tags'] ?? ''),
-      'publish_date' => $this->parseDate($row['resource publication date'] ?? ''),
+      'publish_date' => $this->parseDate($row['resource publication date'] ?? '', 'Resource Publication Date'),
       'date_format' => $this->parseDateFormat($row['date format'] ?? ''),
       'teaser_title' => trim($row['teaser title'] ?? ''),
       'teaser_text' => $this->parseTeaserText($row['teaser text'] ?? ''),
@@ -339,39 +298,6 @@ class ResourceImportService extends CsvImportServiceBase {
   }
 
   /**
-   * Parses a publication date cell into the field's storage format.
-   *
-   * @param string $value
-   *   The raw cell value.
-   *
-   * @return string|null
-   *   The date as Y-m-d, or NULL when the cell is empty.
-   *
-   * @throws \InvalidArgumentException
-   *   If the value is not one of the accepted formats or is not a real date.
-   */
-  protected function parseDate($value) {
-    $value = trim($value);
-    if ($value === '') {
-      return NULL;
-    }
-
-    foreach (self::DATE_INPUT_FORMATS as $format) {
-      $date = \DateTime::createFromFormat($format, $value);
-      // Re-formatting catches values PHP rolls over, such as 2026-02-31
-      // becoming 2026-03-03.
-      if ($date && $date->format($format) === $value) {
-        return $date->format('Y-m-d');
-      }
-    }
-
-    throw new \InvalidArgumentException(sprintf(
-      'Resource Publication Date "%s" is not a valid date. Use YYYY-MM-DD or MM/DD/YYYY.',
-      $value
-    ));
-  }
-
-  /**
    * Parses a Date Format cell into the stored list value.
    *
    * @param string $value
@@ -405,69 +331,6 @@ class ResourceImportService extends CsvImportServiceBase {
   }
 
   /**
-   * Resolves the text format to store for a long-text field.
-   *
-   * @param string $field_name
-   *   The field machine name.
-   *
-   * @return string
-   *   The first format the field allows, or the documented fallback.
-   */
-  protected function textFormat($field_name) {
-    if (isset($this->textFormats[$field_name])) {
-      return $this->textFormats[$field_name];
-    }
-
-    $allowed = [];
-
-    try {
-      $field = $this->entityTypeManager->getStorage('field_config')
-        ->load('node.resource.' . $field_name);
-      $allowed = $field ? (array) $field->getSetting('allowed_formats') : [];
-    }
-    catch (\Exception $e) {
-      // Fall through to the documented fallback below.
-    }
-
-    $this->textFormats[$field_name] = $allowed
-      ? reset($allowed)
-      : self::TEXT_FORMAT_FALLBACKS[$field_name];
-
-    return $this->textFormats[$field_name];
-  }
-
-  /**
-   * Reads the Teaser Text character limit from the resource form display.
-   *
-   * The limit is enforced only in JavaScript on the node form, so nothing
-   * stops an import writing past it unless it is checked here.
-   *
-   * @return int
-   *   The maximum length, or the documented fallback.
-   */
-  protected function teaserTextMaxLength() {
-    if ($this->teaserTextMaxLength !== NULL) {
-      return $this->teaserTextMaxLength;
-    }
-
-    $limit = 0;
-
-    try {
-      $display = $this->entityTypeManager->getStorage('entity_form_display')
-        ->load('node.resource.default');
-      $component = $display ? $display->getComponent('field_teaser_text') : [];
-      $limit = (int) ($component['third_party_settings']['maxlength']['maxlength_js'] ?? 0);
-    }
-    catch (\Exception $e) {
-      // Fall through to the documented fallback below.
-    }
-
-    $this->teaserTextMaxLength = $limit ?: self::TEASER_TEXT_MAX_LENGTH;
-
-    return $this->teaserTextMaxLength;
-  }
-
-  /**
    * Reads the allowed Date Format values from the field's own storage config.
    *
    * @return array
@@ -496,96 +359,6 @@ class ResourceImportService extends CsvImportServiceBase {
     $this->dateFormatOptions = $options ?: self::DATE_FORMAT_OPTIONS;
 
     return $this->dateFormatOptions;
-  }
-
-  /**
-   * Checks a Teaser Text cell against the platform's own length limit.
-   *
-   * @param string $value
-   *   The raw cell value.
-   *
-   * @return string
-   *   The trimmed teaser text.
-   *
-   * @throws \InvalidArgumentException
-   *   If the text is longer than the node form allows.
-   */
-  protected function parseTeaserText($value) {
-    $value = trim($value);
-    $limit = $this->teaserTextMaxLength();
-
-    if (mb_strlen($value) > $limit) {
-      throw new \InvalidArgumentException(sprintf(
-        'Teaser Text is %d characters; the limit is %d.',
-        mb_strlen($value),
-        $limit
-      ));
-    }
-
-    return $value;
-  }
-
-  /**
-   * Parses an External Source cell into a link-field URI.
-   *
-   * @param string $value
-   *   The raw cell value.
-   *
-   * @return string
-   *   The validated URL, or an empty string when the cell is empty.
-   *
-   * @throws \InvalidArgumentException
-   *   If the value is not an absolute http or https URL.
-   */
-  protected function parseExternalSource($value) {
-    $value = trim($value);
-    if ($value === '') {
-      return '';
-    }
-
-    // The scheme check is what rejects javascript: and data: URLs; those pass
-    // FILTER_VALIDATE_URL, which only checks the general URL shape.
-    $scheme = strtolower((string) parse_url($value, PHP_URL_SCHEME));
-    if (!filter_var($value, FILTER_VALIDATE_URL) || !in_array($scheme, ['http', 'https'], TRUE)) {
-      throw new \InvalidArgumentException(sprintf(
-        'External Source "%s" is not a valid http or https URL.',
-        $value
-      ));
-    }
-
-    return $value;
-  }
-
-  /**
-   * Parses a yes/no cell into a boolean.
-   *
-   * @param string $value
-   *   The raw cell value. An empty cell is FALSE.
-   * @param string $column
-   *   The column label, for the error message.
-   *
-   * @return bool
-   *   The parsed value.
-   *
-   * @throws \InvalidArgumentException
-   *   If the value is not a recognised spelling. Unrecognised values are
-   *   rejected rather than quietly treated as FALSE.
-   */
-  protected function parseBoolean($value, $column) {
-    $value = strtolower(trim($value));
-
-    if (in_array($value, self::TRUE_VALUES, TRUE)) {
-      return TRUE;
-    }
-    if (in_array($value, self::FALSE_VALUES, TRUE)) {
-      return FALSE;
-    }
-
-    throw new \InvalidArgumentException(sprintf(
-      '%s "%s" is not a yes/no value. Use Yes or No.',
-      $column,
-      $value
-    ));
   }
 
 }

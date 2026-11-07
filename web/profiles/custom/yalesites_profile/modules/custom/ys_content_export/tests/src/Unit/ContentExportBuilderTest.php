@@ -130,14 +130,12 @@ class ContentExportBuilderTest extends UnitTestCase {
       $this->assertArrayHasKey('field_custom_vocab', $columns);
     }
 
-    // Only events and resources carry a date column.
+    // Only posts, events and resources carry a date column.
     $this->assertArrayNotHasKey('field_event_date', $page);
     $this->assertArrayNotHasKey('field_publish_date', $page);
-    foreach (['post', 'profile'] as $bundle) {
-      $columns = ContentExportBuilder::getColumns($bundle);
-      $this->assertArrayNotHasKey('field_event_date', $columns);
-      $this->assertArrayNotHasKey('field_publish_date', $columns);
-    }
+    $profile = ContentExportBuilder::getColumns('profile');
+    $this->assertArrayNotHasKey('field_event_date', $profile);
+    $this->assertArrayNotHasKey('field_publish_date', $profile);
   }
 
   /**
@@ -170,6 +168,8 @@ class ContentExportBuilderTest extends UnitTestCase {
    */
   public static function dateColumnProvider(): array {
     return [
+      // The header the Post CSV importer reads, so an export can go back in.
+      'posts' => ['post', 'field_publish_date', 'Publish Date'],
       'events' => ['event', 'field_event_date', 'Dates'],
       'resources' => ['resource', 'field_publish_date', 'Resource Publication Date'],
     ];
