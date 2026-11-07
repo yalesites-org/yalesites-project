@@ -24,8 +24,8 @@
  * `hidden` from then on, which Gin's input display rules would otherwise
  * override. Must match CLOSED_MARKER in js/office-hours-widget.js.
  */
-.field--type-office-hours input[value="__ys_office_hours_closed__"],
-.field--type-office-hours input[data-drupal-selector$="-comment"][hidden] {
+.field--type-office-hours input[value='__ys_office_hours_closed__'],
+.field--type-office-hours input[data-drupal-selector$='-comment'][hidden] {
   display: none;
 }
 
@@ -67,7 +67,7 @@
     width: 4.5rem;
   }
 
-  .field--type-office-hours input[data-drupal-selector$="-comment"] {
+  .field--type-office-hours input[data-drupal-selector$='-comment'] {
     min-width: 8rem;
   }
 }
@@ -119,14 +119,14 @@
 
   /* An exception's date needs more room than a day name; it has no Closed. */
   .field--type-office-hours
-    table:has(input[type="date"])
+    table:has(input[type='date'])
     :is(thead tr, tr.office-hours-slot)
     > :first-child {
     grid-column: span 3;
   }
 
   /* The date, times and comment fill the columns they span. */
-  .field--type-office-hours tr.office-hours-slot input:not([type="checkbox"]) {
+  .field--type-office-hours tr.office-hours-slot input:not([type='checkbox']) {
     width: 100%;
   }
 
@@ -162,7 +162,7 @@
 }
 
 .field--type-office-hours .ys-office-hours-actions__toggle::after {
-  content: "\22ef";
+  content: '\22ef';
   font-size: 1.25rem;
   line-height: 1;
 }
