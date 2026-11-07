@@ -1,0 +1,487 @@
+diff -ruN a/core/modules/ckeditor5/ckeditor5.ckeditor5.yml b/core/modules/ckeditor5/ckeditor5.ckeditor5.yml
+--- a/core/modules/ckeditor5/ckeditor5.ckeditor5.yml	2026-10-29 09:36:31
++++ b/core/modules/ckeditor5/ckeditor5.ckeditor5.yml	2026-10-29 09:36:31
+@@ -394,11 +394,8 @@
+     plugins:
+       - list.List
+       - list.ListProperties
+-    config:
+-      list:
+-        properties:
+-          # @todo Make this configurable in https://www.drupal.org/project/drupal/issues/3274635
+-          styles: false
++    # @see \Drupal\ckeditor5\Plugin\CKEditor5Plugin\ListPlugin::getDynamicPluginConfig()
++    config: {}
+   drupal:
+     label: List
+     library: core/ckeditor5.list
+@@ -414,6 +411,8 @@
+       - <ol>
+       - <ol reversed start>
+       - <li>
++      - <ol type>
++      - <ul type>
+ 
+ ckeditor5_horizontalLine:
+   ckeditor5:
+diff -ruN a/core/modules/ckeditor5/ckeditor5.module b/core/modules/ckeditor5/ckeditor5.module
+--- a/core/modules/ckeditor5/ckeditor5.module	2026-10-29 09:36:31
++++ b/core/modules/ckeditor5/ckeditor5.module	2026-10-29 09:36:31
+@@ -697,6 +697,31 @@
+         ->toCKEditor5ElementsArray();
+     }
+ 
++    // @see ckeditor5_post_update_list_type()
++    if (array_key_exists('ckeditor5_list', $settings['plugins']) && array_key_exists('ckeditor5_sourceEditing', $settings['plugins'])) {
++      $source_edited = HTMLRestrictions::fromString(implode(' ', $settings['plugins']['ckeditor5_sourceEditing']['allowed_tags']));
++      $format_restrictions = HTMLRestrictions::fromTextFormat($editor->getFilterFormat());
++
++      // If neither <ol type> nor <ul type> is allowed through Source Editing
++      // (the only way it could possibly be supported until now), and it is
++      // not an unrestricted text format (such as "Full HTML"), then set the
++      // new "styles" setting for the List plugin to false.
++      $ol_type = HTMLRestrictions::fromString('<ol type>');
++      $ul_type = HTMLRestrictions::fromString('<ul type>');
++      if (!array_key_exists('styles', $settings['plugins']['ckeditor5_list']['properties'])) {
++        $settings['plugins']['ckeditor5_list']['properties']['styles'] =
++          $ol_type->diff($source_edited)->allowsNothing() ||
++          $ul_type->diff($source_edited)->allowsNothing() ||
++          $format_restrictions->isUnrestricted();
++      }
++
++      // Update the Source Editing configuration too.
++      $settings['plugins']['ckeditor5_sourceEditing']['allowed_tags'] = $source_edited
++        ->diff($ol_type)
++        ->diff($ul_type)
++        ->toCKEditor5ElementsArray();
++    }
++
+     $editor->setSettings($settings);
+   }
+ }
+diff -ruN a/core/modules/ckeditor5/ckeditor5.post_update.php b/core/modules/ckeditor5/ckeditor5.post_update.php
+--- a/core/modules/ckeditor5/ckeditor5.post_update.php	2026-10-29 09:36:31
++++ b/core/modules/ckeditor5/ckeditor5.post_update.php	2026-10-29 09:36:31
+@@ -142,3 +142,21 @@
+       && array_key_exists('ckeditor5_sourceEditing', $settings['plugins']);
+   });
+ }
++
++/**
++ * Updates Text Editors using CKEditor 5 to native List "type" functionality.
++ */
++function ckeditor5_post_update_list_type(&$sandbox = []) {
++  $config_entity_updater = \Drupal::classResolver(ConfigEntityUpdater::class);
++  $config_entity_updater->update($sandbox, 'editor', function (Editor $editor): bool {
++    // Only try to update editors using CKEditor 5.
++    if ($editor->getEditor() !== 'ckeditor5') {
++      return FALSE;
++    }
++    $settings = $editor->getSettings();
++
++    // @see ckeditor5_editor_presave()
++    return array_key_exists('ckeditor5_list', $settings['plugins'])
++      && array_key_exists('ckeditor5_sourceEditing', $settings['plugins']);
++  });
++}
+diff -ruN a/core/modules/ckeditor5/config/schema/ckeditor5.schema.yml b/core/modules/ckeditor5/config/schema/ckeditor5.schema.yml
+--- a/core/modules/ckeditor5/config/schema/ckeditor5.schema.yml	2026-10-29 09:36:31
++++ b/core/modules/ckeditor5/config/schema/ckeditor5.schema.yml	2026-10-29 09:36:31
+@@ -150,6 +150,11 @@
+           label: 'Allow start index'
+           constraints:
+             NotNull: []
++        styles:
++          type: boolean
++          label: 'Allow list style type'
++          constraints:
++            NotNull: []
+     multiBlock:
+       type: boolean
+       label: 'Allow blocks to be created in list items'
+diff -ruN a/core/modules/ckeditor5/js/ckeditor5.js b/core/modules/ckeditor5/js/ckeditor5.js
+--- a/core/modules/ckeditor5/js/ckeditor5.js	2026-10-29 09:36:31
++++ b/core/modules/ckeditor5/js/ckeditor5.js	2026-10-29 09:36:31
+@@ -265,32 +265,42 @@
+     if (!rule.selectorText) {
+       return;
+     }
+-    const offCanvasId = '#drupal-off-canvas';
++    // Drupal core's Layout Builder renders "Configure block" in the
++    // #drupal-off-canvas tray, but a block-browser UI like
++    // layout_builder_browser's "Add block" renders in the generic
++    // #drupal-modal wrapper core/misc/dialog/dialog.ajax.js creates for any
++    // non-off-canvas AJAX dialog. Both need the same style-fencing applied,
++    // or only one of the two entry points into editing the same CKEditor5
++    // field gets correctly scoped styles.
++    const dialogIds = ['#drupal-off-canvas', '#drupal-modal'];
+     const CKEditorClass = '.ck';
+     const styleFence = '[data-drupal-ck-style-fence]';
++    const matchedDialogId = (selector) =>
++      dialogIds.find((id) => selector.includes(id));
+     if (
+-      rule.selectorText.includes(offCanvasId) ||
++      dialogIds.some((id) => rule.selectorText.includes(id)) ||
+       rule.selectorText.includes(CKEditorClass)
+     ) {
+       rule.selectorText = rule.selectorText
+         .split(/,/g)
+         .map((selector) => {
+-          // Only change rules that include #drupal-off-canvas in the selector.
+-          if (selector.includes(offCanvasId)) {
++          // Only change rules that include a dialog ID in the selector.
++          const dialogId = matchedDialogId(selector);
++          if (dialogId) {
+             return `${selector.trim()}:not(${styleFence} *)`;
+           }
+           // Duplicate CKEditor 5 styles with higher specificity for proper
+-          // display in off canvas elements.
++          // display in off canvas/modal elements.
+           if (selector.includes(CKEditorClass)) {
+-            // Return both rules to avoid replacing the existing rules.
++            // Return the original rule plus one dialog-prefixed duplicate
++            // per dialog type, to avoid replacing the existing rules.
+             return [
+               selector.trim(),
+-              selector
+-                .trim()
+-                .replace(
+-                  CKEditorClass,
+-                  `${offCanvasId} ${styleFence} ${CKEditorClass}`,
+-                ),
++              ...dialogIds.map((id) =>
++                selector
++                  .trim()
++                  .replace(CKEditorClass, `${id} ${styleFence} ${CKEditorClass}`),
++              ),
+             ];
+           }
+           return selector;
+@@ -301,7 +311,7 @@
+   }
+ 
+   /**
+-   * Adds CSS to ensure proper styling of CKEditor 5 inside off-canvas dialogs.
++   * Adds CSS to ensure proper styling of CKEditor 5 inside fenced dialogs.
+    *
+    * @param {HTMLElement} element
+    *   The element the editor is attached to.
+@@ -315,19 +325,38 @@
+     // Only proceed if the styles haven't been added yet.
+     if (once('ckeditor5-off-canvas-reset', 'body').length) {
+       // For all rules on the page, add the donut scope for
+-      // rules containing the #drupal-off-canvas selector.
++      // rules containing a dialog wrapper selector.
+       [...document.styleSheets].forEach(processRules);
+ 
+-      const prefix = `#drupal-off-canvas-wrapper [${fenceName}]`;
++      // Generate the added rules below for both dialog wrapper types,
++      // rather than only whichever one happened to trigger this one-time
++      // setup, so the first editor to attach (in either an off-canvas tray
++      // or a modal) correctly sets up both for the rest of the page load.
++      const prefixes = [
++        `#drupal-off-canvas-wrapper [${fenceName}]`,
++        `#drupal-modal [${fenceName}]`,
++      ];
+       // Additional styles that need to be explicity added in addition to the
+       // prefixed versions of existing css in `existingCss`.
+-      const addedCss = [
++      const addedCss = prefixes.flatMap((prefix) => [
+         `${prefix} .ck.ck-content * {display:revert;background:revert;color:initial;padding:revert;}`,
+         `${prefix} .ck.ck-content li {display:list-item}`,
+-        `${prefix} .ck.ck-content ol li {list-style-type: decimal}`,
+-      ];
++        // A plain `ol:not([type]) li` descendant selector can't tell "one
++        // level down" from "two levels down" apart, so on its own it would
++        // force every untyped nested list back to decimal, even under an
++        // explicitly-typed ancestor list. The depth- and ancestor-specific
++        // rules below each have one more selector segment than the one
++        // before, so they correctly win by specificity for deeper/more
++        // specific cases without needing source-order to do any work.
++        `${prefix} .ck.ck-content ol:not([type]) li {list-style-type: decimal}`,
++        `${prefix} .ck.ck-content ol:not([type]) ol:not([type]) li {list-style-type: lower-alpha}`,
++        `${prefix} .ck.ck-content ol:not([type]) ol:not([type]) ol:not([type]) li {list-style-type: lower-roman}`,
++        `${prefix} .ck.ck-content ol[type='1'] ol:not([type]) li {list-style-type: lower-alpha}`,
++        `${prefix} .ck.ck-content ol[type='1'] ol:not([type]) ol:not([type]) li {list-style-type: lower-roman}`,
++        `${prefix} .ck.ck-content ol[type='a'] ol:not([type]) li {list-style-type: lower-roman}`,
++      ]);
+ 
+-      const prefixedCss = [...addedCss].join('\n');
++      const prefixedCss = addedCss.join('\n');
+ 
+       // Create a new style tag with the prefixed styles added above.
+       const offCanvasCssStyle = document.createElement('style');
+@@ -452,9 +481,15 @@
+             }
+           });
+ 
+-          const isOffCanvas = element.closest('#drupal-off-canvas');
++          // Layout Builder's "Configure block" opens in the off-canvas
++          // tray; a block-browser UI's "Add block" (e.g.
++          // layout_builder_browser) opens in the generic Drupal modal
++          // wrapper instead. Both need the same style-fencing fix.
++          const isFencedDialog = element.closest(
++            '#drupal-off-canvas, #drupal-modal',
++          );
+ 
+-          if (isOffCanvas) {
++          if (isFencedDialog) {
+             offCanvasCss(element);
+           }
+         })
+@@ -622,6 +657,148 @@
+ 
+       // Store the save callback to be executed when this dialog is closed.
+       Drupal.ckeditor5.saveCallback = saveCallback;
++    },
++  };
++
++  Drupal.behaviors.editorStyleFix = {
++    attach(context) {
++      // CKEditor's DLL injects <style data-cke> tags that override native
++      // list "type" attribute styling in the editing area. The following
++      // finds the style(s) causing the problem and removes them.
++      // @todo remove this entire behavior when this issue is fixed
++      //  https://github.com/ckeditor/ckeditor5/issues/14613
++      //
++      // CKEditor creates its editor instance (and injects these style tags)
++      // asynchronously, well after Drupal's synchronous attachBehaviors()
++      // pass runs, so a one-time DOM query at attach-time misses them. Use a
++      // MutationObserver instead, set up once per page, so this keeps
++      // working regardless of when (or how many times) CKEditor5 finishes
++      // initializing an editor instance.
++      function fixListStyleOverride(sheet) {
++        // Defensively wrapped: a stylesheet's cssRules can throw a
++        // SecurityError for a cross-origin sheet. An uncaught exception
++        // here would be an uncaught exception in a Drupal behavior,
++        // aborting attachment of every behavior queued after this one.
++        let rules;
++        try {
++          rules = [...sheet.cssRules];
++        } catch (e) {
++          return;
++        }
++        rules.forEach((rule) => {
++          if (!rule?.selectorText) {
++            return;
++          }
++          // Operate on each comma-separated selector independently: the
++          // off-canvas style-fencing logic elsewhere in this file combines
++          // a rule's original selector and an #drupal-off-canvas-prefixed
++          // duplicate of it into a single comma-separated selectorText, and
++          // a check or replacement anchored to the *whole* string (e.g.
++          // `!selectorText.includes('type')`, or a `$`-anchored regex)
++          // would only ever see/fix one half of that list.
++          const segments = rule.selectorText.split(',').map((s) => s.trim());
++          let changed = false;
++          const fixed = segments.map((selector) => {
++            if (
++              (selector.includes(' ol') || selector.includes(' ul')) &&
++              !selector.includes('type')
++            ) {
++              changed = true;
++              // Scope the rule to untyped lists only (append :not([type])
++              // to the list element the rule actually styles, i.e. the
++              // last token), rather than deleting the declaration
++              // outright. These rules implement CKEditor's own
++              // nesting-depth cascade (decimal -> lower-latin ->
++              // lower-roman), which is worth keeping for untyped
++              // sub-items; the only bug is that it unconditionally
++              // overrides a list that has an explicit `type` attribute,
++              // e.g. from the List Style dropdown.
++              return selector.replace(/\b(ol|ul)$/, '$1:not([type])');
++            }
++            return selector;
++          });
++          if (changed) {
++            try {
++              rule.selectorText = fixed.join(', ');
++            } catch (e) {
++              // Ignore: worst case this specific rule keeps overriding an
++              // explicit type attribute, same as before this fix existed.
++            }
++          }
++        });
++      }
++
++      function processCkeStyleNode(node) {
++        if (node.sheet) {
++          fixListStyleOverride(node.sheet);
++        } else {
++          node.addEventListener(
++            'load',
++            () => fixListStyleOverride(node.sheet),
++            { once: true },
++          );
++        }
++      }
++
++      // No `context` argument: this must run exactly once globally, the
++      // first time any editor attaches, regardless of whether that attach
++      // came from the initial page load or an AJAX/off-canvas response
++      // (whose fragment never contains an <html> element to match against).
++      if (once('editorStyleFix', 'html').length) {
++        document
++          .querySelectorAll('style[data-cke]')
++          .forEach(processCkeStyleNode);
++
++        new MutationObserver((mutations) => {
++          mutations.forEach((mutation) => {
++            mutation.addedNodes.forEach((node) => {
++              if (
++                node.nodeType === Node.ELEMENT_NODE &&
++                node.tagName === 'STYLE' &&
++                node.hasAttribute('data-cke')
++              ) {
++                processCkeStyleNode(node);
++              }
++            });
++          });
++        }).observe(document.head, { childList: true });
++
++        // Dialog-independent safety net: rather than rely on detecting
++        // every possible dialog wrapper a CKEditor5 instance might be
++        // rendered inside (off-canvas tray, core's generic AJAX modal,
++        // layout_builder_browser's own "Add block" modal, ...), apply the
++        // explicit-ancestor-type cascade unconditionally so it works
++        // regardless of which (if any) dialog triggered the editor.
++        const explicitAncestorCascadeCss = [
++          // Each starting type below is at or past some step into the
++          // decimal -> lower-alpha -> lower-roman (or disc -> circle ->
++          // square) sequence. A start at the beginning of the sequence
++          // (1/disc) continues advancing through it for 2/3 levels deep.
++          // A start already at or past the sequence's last step (a/i,
++          // circle/square) has no canonical next step to advance to, so it
++          // holds at that terminal style for every level below it instead
++          // of wrapping back to the start.
++          `.ck-content ol[type='1'] ol:not([type]) {list-style-type: lower-alpha}`,
++          `.ck-content ol[type='1'] ol:not([type]) ol:not([type]) {list-style-type: lower-roman}`,
++          `.ck-content ol[type='a'] ol:not([type]) {list-style-type: lower-roman}`,
++          `.ck-content ol[type='a'] ol:not([type]) ol:not([type]) {list-style-type: lower-roman}`,
++          `.ck-content ol[type='i'] ol:not([type]) {list-style-type: lower-roman}`,
++          `.ck-content ol[type='i'] ol:not([type]) ol:not([type]) {list-style-type: lower-roman}`,
++          `.ck-content ul[type='disc'] ul:not([type]) {list-style-type: circle}`,
++          `.ck-content ul[type='disc'] ul:not([type]) ul:not([type]) {list-style-type: square}`,
++          `.ck-content ul[type='circle'] ul:not([type]) {list-style-type: square}`,
++          `.ck-content ul[type='circle'] ul:not([type]) ul:not([type]) {list-style-type: square}`,
++          `.ck-content ul[type='square'] ul:not([type]) {list-style-type: square}`,
++          `.ck-content ul[type='square'] ul:not([type]) ul:not([type]) {list-style-type: square}`,
++        ].join('\n');
++        const explicitAncestorCascadeStyle = document.createElement('style');
++        explicitAncestorCascadeStyle.textContent = explicitAncestorCascadeCss;
++        explicitAncestorCascadeStyle.setAttribute(
++          'id',
++          'ckeditor5-explicit-ancestor-list-cascade',
++        );
++        document.head.appendChild(explicitAncestorCascadeStyle);
++      }
+     },
+   };
+ 
+diff -ruN a/core/modules/ckeditor5/src/Plugin/CKEditor4To5Upgrade/Core.php b/core/modules/ckeditor5/src/Plugin/CKEditor4To5Upgrade/Core.php
+--- a/core/modules/ckeditor5/src/Plugin/CKEditor4To5Upgrade/Core.php	2026-10-29 09:36:31
++++ b/core/modules/ckeditor5/src/Plugin/CKEditor4To5Upgrade/Core.php	2026-10-29 09:36:31
+@@ -274,14 +274,16 @@
+       case 'ckeditor5_list':
+         $restrictions = $text_format->getHtmlRestrictions();
+         if ($restrictions === FALSE) {
+-          // The default is to allow a reversed list and a start index, which makes sense when there
+-          // are no restrictions.
+-          // @see \Drupal\ckeditor5\Plugin\CKEditor5Plugin\ListPlugin::default_configuration()
++          // The default is to allow a reversed list, a start index and the
++          // list style type, which makes sense when there are no
++          // restrictions.
++          // @see \Drupal\ckeditor5\Plugin\CKEditor5Plugin\ListPlugin::defaultConfiguration()
+           return NULL;
+         }
+         $configuration = [];
+         $configuration['properties']['reversed'] = !empty($restrictions['allowed']['ol']['reversed']);
+         $configuration['properties']['startIndex'] = !empty($restrictions['allowed']['ol']['start']);
++        $configuration['properties']['styles'] = !empty($restrictions['allowed']['ol']['type']) || !empty($restrictions['allowed']['ul']['type']);
+         return $configuration;
+ 
+       case 'media_media':
+diff -ruN a/core/modules/ckeditor5/src/Plugin/CKEditor5Plugin/ListPlugin.php b/core/modules/ckeditor5/src/Plugin/CKEditor5Plugin/ListPlugin.php
+--- a/core/modules/ckeditor5/src/Plugin/CKEditor5Plugin/ListPlugin.php	2026-10-29 09:36:31
++++ b/core/modules/ckeditor5/src/Plugin/CKEditor5Plugin/ListPlugin.php	2026-10-29 09:36:31
+@@ -26,7 +26,11 @@
+    */
+   public function defaultConfiguration() {
+     return [
+-      'properties' => ['reversed' => TRUE, 'startIndex' => TRUE],
++      'properties' => [
++        'reversed' => TRUE,
++        'startIndex' => TRUE,
++        'styles' => TRUE,
++      ],
+       'multiBlock' => TRUE,
+     ];
+   }
+@@ -50,6 +54,12 @@
+       '#title' => $this->t('Allow the user to create paragraphs in list items (or other block elements)'),
+       '#default_value' => $this->configuration['multiBlock'],
+     ];
++    $form['styles'] = [
++      '#type' => 'checkbox',
++      '#title' => $this->t('Allow the user to choose a list style type'),
++      '#description' => $this->t('Available list style types for ordered lists: letters and Roman numerals instead of only numbers. Available list style types for unordered lists: circles and squares instead of only discs.'),
++      '#default_value' => $this->configuration['properties']['styles'],
++    ];
+ 
+     return $form;
+   }
+@@ -62,6 +72,8 @@
+     $form_state->setValue('reversed', (bool) $form_value);
+     $form_value = $form_state->getValue('startIndex');
+     $form_state->setValue('startIndex', (bool) $form_value);
++    $form_value = $form_state->getValue('styles');
++    $form_state->setValue('styles', (bool) $form_value);
+     $form_value = $form_state->getValue('multiBlock');
+     $form_state->setValue('multiBlock', (bool) $form_value);
+   }
+@@ -72,6 +84,7 @@
+   public function submitConfigurationForm(array &$form, FormStateInterface $form_state) {
+     $this->configuration['properties']['reversed'] = $form_state->getValue('reversed');
+     $this->configuration['properties']['startIndex'] = $form_state->getValue('startIndex');
++    $this->configuration['properties']['styles'] = $form_state->getValue('styles');
+     $this->configuration['multiBlock'] = $form_state->getValue('multiBlock');
+   }
+ 
+@@ -79,7 +92,23 @@
+    * {@inheritdoc}
+    */
+   public function getDynamicPluginConfig(array $static_plugin_config, EditorInterface $editor): array {
+-    $static_plugin_config['list']['properties'] = $this->getConfiguration()['properties'] + $static_plugin_config['list']['properties'];
++    $static_plugin_config['list']['properties'] = $this->getConfiguration()['properties'];
++    // Generate configuration to use `type` attribute-based list styles on
++    // <ul> and <ol> elements.
++    // @see https://ckeditor.com/docs/ckeditor5/latest/api/module_list_listconfig-ListPropertiesStyleConfig.html#member-useAttribute
++    if ($this->getConfiguration()['properties']['styles']) {
++      $static_plugin_config['list']['properties']['styles'] = [
++        'useAttribute' => TRUE,
++        // Limit ordered list styles to the ones YaleSites' design system
++        // actually themes (decimal/lower-roman/lower-alpha, by nesting
++        // depth); CKEditor 5's own default also offers decimal-leading-zero
++        // and the upper-case roman/alpha variants, none of which have
++        // corresponding CSS.
++        'listStyleTypes' => [
++          'numbered' => ['decimal', 'lower-roman', 'lower-latin'],
++        ],
++      ];
++    }
+     $static_plugin_config['list']['multiBlock'] = $this->getConfiguration()['multiBlock'];
+     return $static_plugin_config;
+   }
+@@ -89,6 +118,12 @@
+    */
+   public function getElementsSubset(): array {
+     $subset = $this->getPluginDefinition()->getElements();
++    if (!$this->getConfiguration()['properties']['styles']) {
++      $subset = array_diff($subset, [
++        '<ul type>',
++        '<ol type>',
++      ]);
++    }
+     $subset = array_diff($subset, ['<ol reversed start>']);
+     $reversed_enabled = $this->getConfiguration()['properties']['reversed'];
+     $start_index_enabled = $this->getConfiguration()['properties']['startIndex'];
