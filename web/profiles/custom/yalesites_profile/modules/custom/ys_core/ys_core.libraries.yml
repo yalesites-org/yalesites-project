@@ -80,6 +80,13 @@ facts_icon_preview:
     - core/jquery
     - core/once
     - chosen/chosen
+menu_link_form:
+  js:
+    js/menu-link-form.js: {}
+  dependencies:
+    - core/drupal
+    - core/jquery
+    - menu_ui/drupal.menu_ui
 
 # Editor affordances for the contrib Office Hours widget -- the Closed column
 # and the per-row operations menu (js/office-hours-widget.js).

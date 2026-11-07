@@ -101,7 +101,7 @@ class YSLayoutOptions extends LayoutDefault implements ContainerFactoryPluginInt
       '#title' => new TranslatableMarkup('Section Theme'),
       '#default_value' => $default_value,
       '#options' => [
-        'default' => new TranslatableMarkup('Default - no color'),
+        'default' => new TranslatableMarkup('Default - No Color'),
         'one' => new TranslatableMarkup('One'),
         'two' => new TranslatableMarkup('Two'),
         'three' => new TranslatableMarkup('Three'),

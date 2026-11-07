@@ -5,7 +5,7 @@ namespace Drupal\Tests\ys_starterkit\Unit\Plugin\SingleContentSyncFieldProcessor
 use Drupal\Core\Entity\FieldableEntityInterface;
 use Drupal\Core\Field\FieldItemListInterface;
 use Drupal\Tests\UnitTestCase;
-use Drupal\single_content_sync\Plugin\SingleContentSyncFieldProcessor\SimpleField;
+use Drupal\single_content_sync\Plugin\SingleContentSyncFieldProcessor\GenericField;
 use Drupal\single_content_sync\SingleContentSyncFieldProcessorInterface;
 use Drupal\ys_starterkit\Plugin\SingleContentSyncFieldProcessor\Embed;
 use Drupal\ys_starterkit\Plugin\SingleContentSyncFieldProcessor\Markup;
@@ -16,7 +16,7 @@ use Drupal\ys_starterkit\Plugin\SingleContentSyncFieldProcessor\ViewsBasicParams
  * Unit tests for the ys_starterkit single_content_sync field processors.
  *
  * Embed, Markup, SmartDate and ViewsBasicParams add no logic of their own --
- * each is an empty subclass of single_content_sync's SimpleField, whose
+ * each is an empty subclass of single_content_sync's GenericField, whose
  * export/import behavior is exercised here via the ys_starterkit class that
  * is actually instantiated in production.
  *
@@ -41,13 +41,13 @@ class SimpleFieldProcessorsTest extends UnitTestCase {
   }
 
   /**
-   * Each processor is a SimpleField / SingleContentSyncFieldProcessor.
+   * Each processor is a GenericField / SingleContentSyncFieldProcessor.
    *
    * @dataProvider fieldProcessorProvider
    */
-  public function testExtendsSimpleField(string $class): void {
+  public function testExtendsGenericField(string $class): void {
     $plugin = new $class([], 'test_id', []);
-    $this->assertInstanceOf(SimpleField::class, $plugin);
+    $this->assertInstanceOf(GenericField::class, $plugin);
     $this->assertInstanceOf(SingleContentSyncFieldProcessorInterface::class, $plugin);
   }
 
@@ -55,7 +55,7 @@ class SimpleFieldProcessorsTest extends UnitTestCase {
    * Tests exportFieldValue() returns the field's raw value.
    *
    * @dataProvider fieldProcessorProvider
-   * @covers \Drupal\single_content_sync\Plugin\SingleContentSyncFieldProcessor\SimpleField::exportFieldValue
+   * @covers \Drupal\single_content_sync\Plugin\SingleContentSyncFieldProcessor\GenericField::exportFieldValue
    */
   public function testExportFieldValueReturnsFieldValue(string $class): void {
     $plugin = new $class([], 'test_id', []);
@@ -69,7 +69,7 @@ class SimpleFieldProcessorsTest extends UnitTestCase {
    * Tests exportFieldValue() returns an empty array for an empty field.
    *
    * @dataProvider fieldProcessorProvider
-   * @covers \Drupal\single_content_sync\Plugin\SingleContentSyncFieldProcessor\SimpleField::exportFieldValue
+   * @covers \Drupal\single_content_sync\Plugin\SingleContentSyncFieldProcessor\GenericField::exportFieldValue
    */
   public function testExportFieldValueWithEmptyField(string $class): void {
     $plugin = new $class([], 'test_id', []);
@@ -83,7 +83,7 @@ class SimpleFieldProcessorsTest extends UnitTestCase {
    * Tests importFieldValue() sets the given value on the entity field.
    *
    * @dataProvider fieldProcessorProvider
-   * @covers \Drupal\single_content_sync\Plugin\SingleContentSyncFieldProcessor\SimpleField::importFieldValue
+   * @covers \Drupal\single_content_sync\Plugin\SingleContentSyncFieldProcessor\GenericField::importFieldValue
    */
   public function testImportFieldValueSetsFieldOnEntity(string $class): void {
     $plugin = new $class([], 'test_id', []);
@@ -99,7 +99,7 @@ class SimpleFieldProcessorsTest extends UnitTestCase {
    * Tests importFieldValue() sets an empty value on the entity field.
    *
    * @dataProvider fieldProcessorProvider
-   * @covers \Drupal\single_content_sync\Plugin\SingleContentSyncFieldProcessor\SimpleField::importFieldValue
+   * @covers \Drupal\single_content_sync\Plugin\SingleContentSyncFieldProcessor\GenericField::importFieldValue
    */
   public function testImportFieldValueWithEmptyValue(string $class): void {
     $plugin = new $class([], 'test_id', []);

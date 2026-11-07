@@ -150,7 +150,7 @@ class ContentExportControllerTest extends UnitTestCase {
    */
   public function testFailedRowGetsPlaceholder(): void {
     $this->logger->expects($this->once())->method('error')
-      ->with($this->anything(), ['@nid' => 2, '@message' => 'boom']);
+      ->with($this->anything(), ['@type' => 'node', '@id' => 2, '@message' => 'boom']);
     $this->storage->method('loadMultiple')->willReturn([
       1 => $this->node(1, 'A'),
       2 => $this->node(2, 'B', TRUE, 'label'),
@@ -171,7 +171,7 @@ class ContentExportControllerTest extends UnitTestCase {
    */
   public function testThrowingAccessCheckGetsPlaceholder(): void {
     $this->logger->expects($this->once())->method('error')
-      ->with($this->anything(), ['@nid' => 2, '@message' => 'hook broke']);
+      ->with($this->anything(), ['@type' => 'node', '@id' => 2, '@message' => 'hook broke']);
     $this->storage->method('loadMultiple')->willReturn([
       1 => $this->node(1, 'A'),
       2 => $this->node(2, 'Hidden title', TRUE, 'access'),

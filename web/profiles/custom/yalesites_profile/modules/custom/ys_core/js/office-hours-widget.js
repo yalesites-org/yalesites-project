@@ -30,13 +30,13 @@
  */
 
 ((Drupal, once) => {
-  const TIME_FIELDS = "input.form-time, select.form-select";
+  const TIME_FIELDS = 'input.form-time, select.form-select';
   const COMMENT_FIELD = 'input[data-drupal-selector$="-comment"]';
   const ALL_DAY_FIELD =
     'input[type="checkbox"][data-drupal-selector$="-all-day"]';
   // What the Closed control stores as the day's comment. Must match the value
   // atomic's _atomic_office_hours_day() translates; see the file docblock.
-  const CLOSED_MARKER = "__ys_office_hours_closed__";
+  const CLOSED_MARKER = '__ys_office_hours_closed__';
 
   /**
    * Collects the time inputs belonging to one weekday, across its slot rows.
@@ -51,7 +51,7 @@
     dayRows.reduce(
       (fields, row) =>
         fields.concat(Array.from(row.querySelectorAll(TIME_FIELDS))),
-      []
+      [],
     );
 
   /**
@@ -67,7 +67,7 @@
     dayRows.reduce(
       (fields, row) =>
         fields.concat(Array.from(row.querySelectorAll(COMMENT_FIELD))),
-      []
+      [],
     );
 
   /**
@@ -83,7 +83,7 @@
    *   TRUE for the first slot of a day.
    */
   const isFirstSlotRow = (row) =>
-    !!row.cells[0] && row.cells[0].tagName === "TH";
+    !!row.cells[0] && row.cells[0].tagName === 'TH';
 
   /**
    * Reads the day label that a slot row belongs under.
@@ -102,7 +102,7 @@
     while (candidate && !isFirstSlotRow(candidate)) {
       candidate = candidate.previousElementSibling;
     }
-    return candidate ? candidate.cells[0].textContent.trim() : "";
+    return candidate ? candidate.cells[0].textContent.trim() : '';
   };
 
   /**
@@ -138,28 +138,28 @@
     // stores that day too, and the tick has to reflect that or it would
     // misreport what the front end renders.
     const dayComments = commentFields(dayRows);
-    const allDayCell = allDay.closest("td");
+    const allDayCell = allDay.closest('td');
     const allDayIndex = allDayCell.cellIndex;
 
-    const closed = document.createElement("input");
-    closed.type = "checkbox";
+    const closed = document.createElement('input');
+    closed.type = 'checkbox';
     closed.id = `${allDay.id}-ys-closed`;
     // Deliberately not "form-checkbox": contrib's Clear and Copy handlers act
     // on every .form-checkbox in a row and expect a named all_day input.
     closed.className =
-      "form-boolean form-boolean--type-checkbox office-hours-closed__input";
+      'form-boolean form-boolean--type-checkbox office-hours-closed__input';
 
-    const label = document.createElement("label");
-    label.className = "form-item__label visually-hidden";
-    label.setAttribute("for", closed.id);
+    const label = document.createElement('label');
+    label.className = 'form-item__label visually-hidden';
+    label.setAttribute('for', closed.id);
     // Name it per day: seven checkboxes all called "Closed" are useless to a
     // screen reader user tabbing the widget.
-    label.textContent = Drupal.t("Closed on @day", {
-      "@day": dayLabelOf(firstRow),
+    label.textContent = Drupal.t('Closed on @day', {
+      '@day': dayLabelOf(firstRow),
     });
 
-    const cell = document.createElement("td");
-    cell.className = "office-hours-closed";
+    const cell = document.createElement('td');
+    cell.className = 'office-hours-closed';
     cell.append(label, closed);
     // Sits directly after the All day cell.
     allDayCell.after(cell);
@@ -167,21 +167,21 @@
     // Keep the remaining slot rows of this day aligned with the new column.
     // Their all_day input is a hidden field, so match on cell position.
     dayRows.slice(1).forEach((row) => {
-      const spacer = document.createElement("td");
-      spacer.className = "office-hours-closed";
+      const spacer = document.createElement('td');
+      spacer.className = 'office-hours-closed';
       row.children[allDayIndex].after(spacer);
     });
 
     const dayTimeFields = timeFields(dayRows);
-    const isBlank = (field) => field.value.trim() === "";
+    const isBlank = (field) => field.value.trim() === '';
     const isMarker = (field) => field.value === CLOSED_MARKER;
-    const hasHours = () => dayTimeFields.some((field) => field.value !== "");
+    const hasHours = () => dayTimeFields.some((field) => field.value !== '');
 
     // Retracts the marker, and ONLY the marker: anything else in the field is
     // the editor's own note and is never deleted.
     const retractMarker = () => {
       if (isMarker(comment)) {
-        comment.value = "";
+        comment.value = '';
       }
     };
 
@@ -216,17 +216,17 @@
       dayComments.forEach((field) => {
         const input = field;
         input.hidden = isMarker(input);
-        if (!input.hidden && input.getAttribute("value") === CLOSED_MARKER) {
-          input.removeAttribute("value");
+        if (!input.hidden && input.getAttribute('value') === CLOSED_MARKER) {
+          input.removeAttribute('value');
         }
       });
     };
 
-    closed.addEventListener("change", () => {
+    closed.addEventListener('change', () => {
       if (closed.checked) {
         dayTimeFields.forEach((field) => {
           const input = field;
-          input.value = "";
+          input.value = '';
         });
         // Mark the day only when no slot already carries a note: the box is
         // disabled then anyway, and the note already stores the day. The
@@ -256,7 +256,7 @@
       }
     });
 
-    allDay.addEventListener("change", () => {
+    allDay.addEventListener('change', () => {
       // Open around the clock contradicts the marker, so retract it.
       if (allDay.checked) {
         retractMarker();
@@ -267,7 +267,7 @@
     });
 
     dayTimeFields.forEach((field) => {
-      field.addEventListener("change", () => {
+      field.addEventListener('change', () => {
         // Entering hours contradicts the marker as surely as All day does.
         if (hasHours()) {
           retractMarker();
@@ -278,7 +278,7 @@
 
     // Typing a note on a day with no hours is itself a closed day.
     dayComments.forEach((field) => {
-      field.addEventListener("change", sync);
+      field.addEventListener('change', sync);
     });
 
     // Contrib's Clear and Copy find the comment by `.form-text` and the All
@@ -302,7 +302,7 @@
     const clearSlot = (row) => {
       row.querySelectorAll(COMMENT_FIELD).forEach((field) => {
         const input = field;
-        input.value = "";
+        input.value = '';
       });
       if (row === firstRow) {
         setAllDay(false);
@@ -312,11 +312,11 @@
 
     // Sunday wraps to Saturday and slots pair up by position, as in contrib.
     const copyPreviousDay = () => {
-      const day = Number(firstRow.getAttribute("office_hours_day"));
+      const day = Number(firstRow.getAttribute('office_hours_day'));
       const previousRows = firstRow
-        .closest("tbody")
+        .closest('tbody')
         .querySelectorAll(
-          `tr.office-hours-slot[office_hours_day="${day === 0 ? 6 : day - 1}"]`
+          `tr.office-hours-slot[office_hours_day="${day === 0 ? 6 : day - 1}"]`,
         );
       previousRows.forEach((source, i) => {
         const note = source.querySelector(COMMENT_FIELD);
@@ -338,12 +338,12 @@
       row
         .querySelectorAll('[data-drupal-selector$="clear"]')
         .forEach((link) => {
-          link.addEventListener("click", () => {
+          link.addEventListener('click', () => {
             window.setTimeout(clearSlot, 0, row);
           });
         });
       row.querySelectorAll('[data-drupal-selector$="copy"]').forEach((link) => {
-        link.addEventListener("click", () => {
+        link.addEventListener('click', () => {
           window.setTimeout(copyPreviousDay, 0);
         });
       });
@@ -361,8 +361,8 @@
    */
   const addClosedColumn = (table) => {
     const byDay = new Map();
-    table.querySelectorAll("tbody tr.office-hours-slot").forEach((row) => {
-      const day = row.getAttribute("office_hours_day");
+    table.querySelectorAll('tbody tr.office-hours-slot').forEach((row) => {
+      const day = row.getAttribute('office_hours_day');
       if (day === null) {
         return;
       }
@@ -382,11 +382,11 @@
       return;
     }
 
-    const headerRow = table.querySelector("thead tr");
+    const headerRow = table.querySelector('thead tr');
     if (headerRow && headerRow.cells[columnIndex - 1]) {
-      const header = document.createElement("th");
-      header.className = "th__closed";
-      header.textContent = Drupal.t("Closed");
+      const header = document.createElement('th');
+      header.className = 'th__closed';
+      header.textContent = Drupal.t('Closed');
       headerRow.cells[columnIndex - 1].after(header);
     }
   };
@@ -398,9 +398,9 @@
    *   A slot row of either the weekday or the exceptions table.
    */
   const collapseOperations = (row) => {
-    const cell = row.querySelector("td:last-child");
+    const cell = row.querySelector('td:last-child');
     const links = cell
-      ? Array.from(cell.querySelectorAll("a.js-office-hours-operation"))
+      ? Array.from(cell.querySelectorAll('a.js-office-hours-operation'))
       : [];
     if (!links.length) {
       return;
@@ -409,32 +409,32 @@
     // Name every toggle distinctly - a form can carry a dozen of them.
     const dayLabel = dayLabelOf(row);
 
-    const name = document.createElement("span");
-    name.className = "visually-hidden";
+    const name = document.createElement('span');
+    name.className = 'visually-hidden';
     if (!dayLabel) {
-      name.textContent = Drupal.t("Actions for this exception");
+      name.textContent = Drupal.t('Actions for this exception');
     } else if (isFirstSlotRow(row)) {
-      name.textContent = Drupal.t("Actions for @day", { "@day": dayLabel });
+      name.textContent = Drupal.t('Actions for @day', { '@day': dayLabel });
     } else {
-      name.textContent = Drupal.t("Actions for @day, extra time slot", {
-        "@day": dayLabel,
+      name.textContent = Drupal.t('Actions for @day, extra time slot', {
+        '@day': dayLabel,
       });
     }
 
-    const toggle = document.createElement("summary");
-    toggle.className = "ys-office-hours-actions__toggle";
+    const toggle = document.createElement('summary');
+    toggle.className = 'ys-office-hours-actions__toggle';
     toggle.append(name);
 
-    const menu = document.createElement("div");
-    menu.className = "ys-office-hours-actions__menu";
+    const menu = document.createElement('div');
+    menu.className = 'ys-office-hours-actions__menu';
     menu.append(...links);
 
-    const details = document.createElement("details");
-    details.className = "ys-office-hours-actions";
+    const details = document.createElement('details');
+    details.className = 'ys-office-hours-actions';
     details.append(toggle, menu);
 
     // Contrib's handlers preventDefault, so close the menu ourselves.
-    menu.addEventListener("click", () => {
+    menu.addEventListener('click', () => {
       details.open = false;
     });
 
@@ -459,19 +459,19 @@
   const isWeekdayTable = (table) =>
     !table.querySelector('tbody input[type="date"]') &&
     !!table.querySelector(
-      'tbody input[type="checkbox"][data-drupal-selector$="-all-day"]'
+      'tbody input[type="checkbox"][data-drupal-selector$="-all-day"]',
     );
 
   Drupal.behaviors.ysAdminThemeOfficeHours = {
     attach(context) {
-      once("ys-office-hours-closed", ".field--type-office-hours table", context)
+      once('ys-office-hours-closed', '.field--type-office-hours table', context)
         .filter(isWeekdayTable)
         .forEach(addClosedColumn);
 
       once(
-        "ys-office-hours-actions",
-        ".field--type-office-hours tr.office-hours-slot",
-        context
+        'ys-office-hours-actions',
+        '.field--type-office-hours tr.office-hours-slot',
+        context,
       ).forEach(collapseOperations);
     },
   };

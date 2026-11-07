@@ -1,8 +1,10 @@
 #!/bin/bash
 
-lando composer update
+source ./scripts/local/local-dev-tool.sh
+
+ys_local_composer update
 npm run confim
-lando drush cr
+ys_local_drush cr
 cd web/themes/contrib/atomic
 npm install
-lando drush uli
+ys_local_drush uli

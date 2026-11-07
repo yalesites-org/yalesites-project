@@ -1,0 +1,54 @@
+uuid: 532cd74f-2b35-4c8d-85dd-3472c4e12c92
+langcode: en
+status: true
+dependencies:
+  config:
+    - block_content.type.profile_list_item
+    - field.field.block_content.profile_list_item.field_heading
+    - field.field.block_content.profile_list_item.field_heading_links
+    - field.field.block_content.profile_list_item.field_instructions
+    - field.field.block_content.profile_list_item.field_padding_options
+    - field.field.block_content.profile_list_item.field_view_params
+  module:
+    - entity_reference_revisions
+    - options
+    - text
+    - ys_views_basic
+id: block_content.profile_list_item.default
+targetEntityType: block_content
+bundle: profile_list_item
+mode: default
+content:
+  field_heading:
+    type: text_default
+    label: hidden
+    settings: {  }
+    third_party_settings: {  }
+    weight: 0
+    region: content
+  field_heading_links:
+    type: entity_reference_revisions_entity_view
+    label: hidden
+    settings:
+      view_mode: default
+      link: ''
+    third_party_settings: {  }
+    weight: 1
+    region: content
+  field_padding_options:
+    type: list_default
+    label: above
+    settings: {  }
+    third_party_settings: {  }
+    weight: 10
+    region: content
+  field_view_params:
+    type: views_basic_default_formatter
+    label: hidden
+    settings: {  }
+    third_party_settings: {  }
+    weight: 2
+    region: content
+hidden:
+  field_instructions: true
+  search_api_excerpt: true

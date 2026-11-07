@@ -43,6 +43,7 @@ use Drupal\office_hours\OfficeHoursDateHelper;
 class OfficeHoursTableHeaderTest extends YsKernelTestBase {
 
   use ReadsProfileConfigTrait;
+  use RendersToDomTrait;
 
   /**
    * {@inheritdoc}
@@ -98,7 +99,7 @@ class OfficeHoursTableHeaderTest extends YsKernelTestBase {
    * 9:00 am-5:00 pm" rather than a bare run of times.
    */
   public function testEveryHoursCellHasColumnAndRowHeaders(): void {
-    $tables = $this->tables($this->renderSchedule($this->everyRowShape()));
+    $tables = $this->tables($this->buildSchedule($this->everyRowShape()));
     $this->assertNotEmpty($tables, 'The formatter should render at least one table');
 
     foreach ($tables as $index => $table) {
@@ -142,8 +143,8 @@ class OfficeHoursTableHeaderTest extends YsKernelTestBase {
    * the second one the exception header starts.
    */
   public function testHeaderColumnCountMatchesBodyRowsInEveryRowShape(): void {
-    $html = $this->renderSchedule($this->everyRowShape());
-    $tables = $this->tables($html);
+    $build = $this->buildSchedule($this->everyRowShape());
+    $tables = $this->tables($build);
 
     $this->assertGreaterThan(
       1,
@@ -151,7 +152,7 @@ class OfficeHoursTableHeaderTest extends YsKernelTestBase {
       'An exception day should start a second table'
     );
 
-    $this->assertShapeIsConsistent($html);
+    $this->assertShapeIsConsistent($build);
   }
 
   /**
@@ -168,11 +169,11 @@ class OfficeHoursTableHeaderTest extends YsKernelTestBase {
    * patch is meant to go upstream, where every supported option counts.
    */
   public function testHeaderShapeHoldsWithTheDayLabelHidden(): void {
-    $html = $this->renderSchedule($this->everyRowShape(), ['day_format' => 'none']);
+    $build = $this->buildSchedule($this->everyRowShape(), ['day_format' => 'none']);
 
-    $this->assertShapeIsConsistent($html);
+    $this->assertShapeIsConsistent($build);
 
-    foreach ($this->tables($html) as $index => $table) {
+    foreach ($this->tables($build) as $index => $table) {
       $this->assertCount(
         2,
         $this->headerCells($table),
@@ -184,8 +185,8 @@ class OfficeHoursTableHeaderTest extends YsKernelTestBase {
   /**
    * Asserts every rendered table declares as many columns as its rows fill.
    */
-  protected function assertShapeIsConsistent(string $html): void {
-    $tables = $this->tables($html);
+  protected function assertShapeIsConsistent(array $build): void {
+    $tables = $this->tables($build);
     $this->assertNotEmpty($tables, 'The formatter should render at least one table');
 
     foreach ($tables as $index => $table) {
@@ -220,9 +221,9 @@ class OfficeHoursTableHeaderTest extends YsKernelTestBase {
    */
   public function testSectionTitleRendersAsCaptionEscapedOnce(): void {
     $title = 'Holidays & Closures';
-    $html = $this->renderSchedule($this->everyRowShape(), ['exceptions' => ['title' => $title]]);
+    $build = $this->buildSchedule($this->everyRowShape(), ['exceptions' => ['title' => $title]]);
 
-    $tables = $this->tables($html);
+    $tables = $this->tables($build);
     $exceptions = end($tables);
     $caption = $exceptions->getElementsByTagName('caption')->item(0);
 
@@ -249,7 +250,7 @@ class OfficeHoursTableHeaderTest extends YsKernelTestBase {
   }
 
   /**
-   * Renders the field with the production formatter settings.
+   * Builds the field's render array with the production formatter settings.
    *
    * @param array $values
    *   Office hours field values.
@@ -258,10 +259,10 @@ class OfficeHoursTableHeaderTest extends YsKernelTestBase {
    *   shipped sub-array rather than replacing it, because the formatter
    *   back-fills that sub-array's own defaults.
    *
-   * @return string
-   *   The rendered markup.
+   * @return array
+   *   The render array.
    */
-  protected function renderSchedule(array $values, array $overrides = []): string {
+  protected function buildSchedule(array $values, array $overrides = []): array {
     $entity = EntityTest::create([
       'name' => 'Office hours',
       self::FIELD_NAME => array_values($values),
@@ -274,13 +275,11 @@ class OfficeHoursTableHeaderTest extends YsKernelTestBase {
     }
     $settings = $overrides + $settings;
 
-    $build = $entity->get(self::FIELD_NAME)->view([
+    return $entity->get(self::FIELD_NAME)->view([
       'type' => 'office_hours_table',
       'label' => 'hidden',
       'settings' => $settings,
     ]);
-
-    return (string) \Drupal::service('renderer')->renderRoot($build);
   }
 
   /**
@@ -307,19 +306,13 @@ class OfficeHoursTableHeaderTest extends YsKernelTestBase {
   }
 
   /**
-   * Returns every table element in the rendered markup.
+   * Renders a build array and returns every table element in its markup.
    *
    * @return \DOMElement[]
    *   The table elements, in document order.
    */
-  protected function tables(string $html): array {
-    $document = new \DOMDocument();
-    $previous = libxml_use_internal_errors(TRUE);
-    $document->loadHTML('<!DOCTYPE html><html><body>' . $html . '</body></html>');
-    libxml_clear_errors();
-    libxml_use_internal_errors($previous);
-
-    return iterator_to_array($document->getElementsByTagName('table'));
+  protected function tables(array $build): array {
+    return iterator_to_array($this->renderAndQuery($build)->query('//table'));
   }
 
   /**

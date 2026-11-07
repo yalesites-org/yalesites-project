@@ -9,3 +9,6 @@ services:
     arguments: ['@access_manager', '@current_user', '@entity_type.manager', '@module_handler', '@config.factory']
     decorates: menu.default_tree_manipulators
     decoration_priority: 100
+  ys_node_access.cas_protection_updater:
+    class: Drupal\ys_node_access\CasProtectionUpdater
+    arguments: ['@entity_type.manager', '@database', '@datetime.time', '@?content_moderation.moderation_information', '@?content_moderation.state_transition_validation']

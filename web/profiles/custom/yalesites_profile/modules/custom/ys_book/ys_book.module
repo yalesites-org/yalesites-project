@@ -143,7 +143,7 @@ function ys_book_form_alter(&$form, FormStateInterface $form_state, $form_id) {
     $form['book']['title'] = [
       '#type' => 'textfield',
       '#title' => t('Menu link title'),
-      '#description' => t('The title to display in the Content Collection menu. If left empty, the node title will be used.'),
+      '#description' => t('The title to display in the Content Collection menu. If left empty, the page title will be used.'),
       '#default_value' => $default_title,
       '#weight' => -4,
       '#maxlength' => 255,
@@ -202,7 +202,7 @@ function ys_book_form_alter(&$form, FormStateInterface $form_state, $form_id) {
     $form['book']['title'] = [
       '#type' => 'textfield',
       '#title' => t('Menu link title'),
-      '#description' => t('The title to display in the Content Collection menu. To edit this field, go to the node edit form and use the "Menu link title" field in the Content Collection sidebar widget.'),
+      '#description' => t('The title to display in the Content Collection menu. To edit this field, edit the page and use the "Menu link title" field in the Content Collection sidebar widget.'),
       '#default_value' => $default_title,
       '#weight' => -4,
       '#maxlength' => 255,
