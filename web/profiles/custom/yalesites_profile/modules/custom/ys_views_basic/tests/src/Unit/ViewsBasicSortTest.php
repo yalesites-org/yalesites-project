@@ -23,7 +23,7 @@ class ViewsBasicSortTest extends UnitTestCase {
   /**
    * Runs the sort with the given sort argument; returns the ORDER BY calls.
    */
-  protected function orderBy(mixed $sort): array {
+  protected function orderBy(mixed $sort, bool $pinned = FALSE): array {
     $calls = [];
     $query = $this->createMock(Sql::class);
     $query->method('ensureTable')->willReturn('node_field_data');
@@ -36,6 +36,7 @@ class ViewsBasicSortTest extends UnitTestCase {
     $view = $this->createMock(ViewExecutable::class);
     $view->args = [];
     $view->args[ViewsBasicManager::viewArgumentIndex('sort')] = $sort;
+    $view->args[ViewsBasicManager::viewArgumentIndex('pin_settings')] = json_encode(['pinned_to_top' => $pinned]);
 
     $plugin = (new \ReflectionClass(ViewsBasicSort::class))->newInstanceWithoutConstructor();
     $plugin->query = $query;
@@ -56,11 +57,25 @@ class ViewsBasicSortTest extends UnitTestCase {
       foreach (array_keys($definition['sort_by']) as $sort) {
         [$field, $direction] = explode(':', $sort);
         $calls = $this->orderBy($sort);
-        $this->assertCount(3, $calls, $sort);
+        $this->assertCount(2, $calls, $sort);
         $expected = str_starts_with($field, 'field') ? "node__$field.{$field}_value" : "node_field_data.$field";
-        $this->assertSame([$expected, $direction], $calls[1], $sort);
+        $this->assertSame([$expected, $direction], $calls[0], $sort);
       }
     }
+  }
+
+  /**
+   * Sticky content leads the list only when the block pins it.
+   *
+   * @covers ::query
+   */
+  public function testStickyLeadsOnlyWhenPinned(): void {
+    $unpinned = $this->orderBy('field_publish_date:DESC', FALSE);
+    $this->assertNotContains('node_field_data.sticky', array_column($unpinned, 0));
+
+    $pinned = $this->orderBy('field_publish_date:DESC', TRUE);
+    $this->assertSame(['node_field_data.sticky', 'DESC'], $pinned[0]);
+    $this->assertCount(3, $pinned);
   }
 
   /**

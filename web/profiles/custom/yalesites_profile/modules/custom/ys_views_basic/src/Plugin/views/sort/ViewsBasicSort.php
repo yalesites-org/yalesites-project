@@ -45,7 +45,16 @@ class ViewsBasicSort extends SortPluginBase {
       $field = "node_field_data.$fieldName";
     }
 
-    $query->addOrderBy(NULL, "node_field_data.sticky", 'DESC', 'views_basic_sort');
+    // Sticky content leads the list only when the block pins it (Highlight
+    // pinned). Otherwise the list follows the chosen sort. A view that does
+    // not carry pin settings (the legacy resources view packs its arguments
+    // differently) keeps the old sticky-first order.
+    $pin = ViewsBasicManager::displayOptionsFromArgs($this->view->args, 'pin_settings', [
+      'pinned_to_top' => TRUE,
+    ]);
+    if (!empty($pin['pinned_to_top'])) {
+      $query->addOrderBy(NULL, "node_field_data.sticky", 'DESC', 'views_basic_sort');
+    }
     $query->addOrderBy(NULL, $field, $direction, 'views_basic_sort');
     // Stable tiebreaker: when many rows share the same sort value (common
     // with date fields stored only as month/year), MySQL returns rows in
