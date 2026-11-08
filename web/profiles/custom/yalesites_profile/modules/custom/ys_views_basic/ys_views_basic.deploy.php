@@ -450,7 +450,8 @@ function ys_views_basic_deploy_10003(&$sandbox) {
  * whose params still equal that filterless preset gets the current preset
  * (ViewsBasicManager::predecessorPreset()), which adds the filter, its live
  * label, and the "only terms in use" option. A block an editor has changed
- * since is left alone. Idempotent: a second run finds no filterless preset.
+ * since is left alone. Blocks stored with display "all" before the pager fix
+ * match as well (#2172). Idempotent: a second run finds no filterless preset.
  * On a site where 10002 runs with the current preset, this finds nothing.
  */
 function ys_views_basic_deploy_10004(&$sandbox) {
@@ -475,8 +476,13 @@ function ys_views_basic_deploy_10004(&$sandbox) {
     $legacy = $sandbox['legacy'][$block->bundle()];
     $field = $block->get('field_view_params');
     $params = $field->isEmpty() ? NULL : json_decode($field->first()->getValue()['params'] ?? '', TRUE);
-    // Loose comparison: the same keys and values in any order.
-    if ($params != ViewsBasicManager::filterlessPredecessorParams($legacy)) {
+    // Loose comparison: the same keys and values in any order. Blocks stored
+    // with display "all" before the pager fix match too (#2172).
+    $old_params = [ViewsBasicManager::filterlessPredecessorParams($legacy)];
+    if ($all = ViewsBasicManager::displayAllPredecessorParams($legacy, TRUE)) {
+      $old_params[] = $all;
+    }
+    if (!in_array($params, $old_params, FALSE)) {
       continue;
     }
     $block->set('field_view_params', ['params' => json_encode(ViewsBasicManager::predecessorPreset($legacy)['params'])]);
@@ -550,4 +556,64 @@ function ys_views_basic_deploy_10005(&$sandbox) {
   $sandbox['#finished'] = 1;
   \Drupal::logger('ys_views_basic')->notice('Predecessor revisions: filled params on @n older revisions.', ['@n' => $sandbox['filled']]);
   return t('Predecessor revisions: filled params on @n older revisions.', ['@n' => $sandbox['filled']]);
+}
+
+/**
+ * Puts migrated Calendar List and Directory blocks back on a pager (#2172).
+ *
+ * Before #1705 the predecessor presets set display to "all", so blocks that
+ * deploy_10002 had already migrated list every event or profile with no
+ * pager. A block stored with display "all" and limit 10 is put on the pager
+ * and keeps its other settings. A block with a different display or limit is
+ * left alone.
+ * deploy_10004 repairs the filterless variant. Idempotent: a second run finds
+ * no block with the old params. Batched like deploy_10004.
+ */
+function ys_views_basic_deploy_10006(&$sandbox) {
+  $block_storage = \Drupal::entityTypeManager()->getStorage('block_content');
+
+  if (!isset($sandbox['ids'])) {
+    // Target bundle => predecessor bundle.
+    $sandbox['legacy'] = [];
+    foreach (['event_list', 'directory'] as $legacy) {
+      $sandbox['legacy'][ViewsBasicManager::predecessorPreset($legacy)['target']] = $legacy;
+    }
+    $sandbox['ids'] = array_values($block_storage->getQuery()
+      ->condition('type', array_keys($sandbox['legacy']), 'IN')
+      ->accessCheck(FALSE)
+      ->execute());
+    $sandbox['total'] = count($sandbox['ids']);
+    $sandbox['updated'] = 0;
+  }
+
+  $chunk = array_splice($sandbox['ids'], 0, ListingMigrator::BATCH_SIZE);
+  foreach ($block_storage->loadMultiple($chunk) as $block) {
+    $legacy = $sandbox['legacy'][$block->bundle()];
+    $field = $block->get('field_view_params');
+    $params = $field->isEmpty() ? NULL : json_decode($field->first()->getValue()['params'] ?? '', TRUE);
+    // Match on display "all" with limit 10 only, so a block an editor saved
+    // again (which adds and drops other keys) is still repaired. Every other
+    // setting is kept.
+    if (!is_array($params) || ($params['display'] ?? NULL) !== 'all' || (int) ($params['limit'] ?? 0) !== 10) {
+      continue;
+    }
+    $params['display'] = 'pager';
+    $block->set('field_view_params', ['params' => json_encode($params)]);
+    $block->save();
+    $sandbox['updated']++;
+  }
+  if ($chunk) {
+    $block_storage->resetCache($chunk);
+  }
+
+  if ($sandbox['ids']) {
+    $sandbox['#finished'] = ($sandbox['total'] - count($sandbox['ids'])) / $sandbox['total'];
+    return NULL;
+  }
+  if ($sandbox['updated']) {
+    \Drupal::service('cache.render')->invalidateAll();
+  }
+  $sandbox['#finished'] = 1;
+  \Drupal::logger('ys_views_basic')->notice('Predecessor pager: put @n migrated blocks back on a pager.', ['@n' => $sandbox['updated']]);
+  return t('Predecessor pager: put @n migrated blocks back on a pager.', ['@n' => $sandbox['updated']]);
 }
