@@ -2154,6 +2154,34 @@ class ViewsBasicManager extends ControllerBase implements ContainerInjectionInte
   }
 
   /**
+   * Returns the params a predecessor block stored before the pager fix.
+   *
+   * Until #1705 the Calendar List and Directory presets set display to "all",
+   * so migrated blocks list every item with no pager. This is the current
+   * preset with that old display value, or its filterless variant when
+   * $filterless is TRUE. deploy_10004 and deploy_10006 match blocks against
+   * these (#2172). Post Feed already paged, so it has no such params.
+   *
+   * @param string $legacy_bundle
+   *   The predecessor block content bundle id.
+   * @param bool $filterless
+   *   TRUE for the variant the first deploy_10002 wrote, without the filter.
+   *
+   * @return array|null
+   *   The old params, or NULL when the bundle never stored display "all".
+   */
+  public static function displayAllPredecessorParams(string $legacy_bundle, bool $filterless = FALSE): ?array {
+    if (!in_array($legacy_bundle, ['event_list', 'directory'], TRUE)) {
+      return NULL;
+    }
+    $params = $filterless
+      ? self::filterlessPredecessorParams($legacy_bundle)
+      : self::predecessorPreset($legacy_bundle)['params'];
+    $params['display'] = 'all';
+    return $params;
+  }
+
+  /**
    * Converts profile directory params to the equivalent card params (#1682).
    *
    * The directory design option was retired onto the profile card grid. Small
