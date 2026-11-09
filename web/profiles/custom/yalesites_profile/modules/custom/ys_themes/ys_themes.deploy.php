@@ -354,6 +354,93 @@ function ys_themes_deploy_10306(&$sandbox) {
 }
 
 /**
+ * Fills every empty required dial with its default on every block revision.
+ *
+ * Hooks 10303 to 10306 only covered the dials added by recent releases. Older
+ * revisions can also have other required settings empty (Padding Options,
+ * Wrapped Image position and style, Text style variation, Callout alignment),
+ * so Update still fails with "field is required" after a Revert
+ * (YaleSites-Internal#2151).
+ *
+ * Defaults come from each field's own definition, the same value a new block
+ * of that type starts with (the static default, or the component overrides
+ * through ys_themes_default_value_function), so no per-type table is kept.
+ * Only required option lists are touched: they are the settings that carry a
+ * default. Required content such as text or media is left for editors.
+ */
+function ys_themes_deploy_10307(&$sandbox) {
+  $block_storage = \Drupal::entityTypeManager()->getStorage('block_content');
+
+  if (!isset($sandbox['processed'])) {
+    $sandbox['processed'] = 0;
+    $sandbox['backfilled'] = 0;
+    $sandbox['total'] = $block_storage->getQuery()
+      ->accessCheck(FALSE)
+      ->allRevisions()
+      ->count()
+      ->execute();
+
+    if ($sandbox['total'] == 0) {
+      $sandbox['#finished'] = 1;
+      return t('No blocks found that need required settings filled.');
+    }
+  }
+
+  // Paged over every revision rather than filtered to the empty ones, so the
+  // result set does not shrink underneath the offset as values are filled in.
+  // An allRevisions() query returns revision_id => entity_id.
+  $result = $block_storage->getQuery()
+    ->accessCheck(FALSE)
+    ->allRevisions()
+    ->sort('revision_id')
+    ->range($sandbox['processed'], 50)
+    ->execute();
+
+  foreach (array_keys($result) as $revision_id) {
+    $sandbox['processed']++;
+
+    /** @var \Drupal\block_content\Entity\BlockContent|null $block */
+    $block = $block_storage->loadRevision($revision_id);
+    if (!$block) {
+      // A block deleted after the batch started must not stop the deploy.
+      \Drupal::logger('ys_themes')->notice('Skipped block revision @id: it no longer exists.', ['@id' => $revision_id]);
+      continue;
+    }
+
+    $filled = FALSE;
+    foreach ($block->getFieldDefinitions() as $name => $definition) {
+      if (!$definition->isRequired() || $definition->getType() !== 'list_string' || !$block->get($name)->isEmpty()) {
+        continue;
+      }
+      $block->get($name)->applyDefaultValue();
+      // A field with no usable default stays empty and is left alone.
+      $filled = $filled || !$block->get($name)->isEmpty();
+    }
+    if (!$filled) {
+      continue;
+    }
+
+    $changed = $block->getChangedTime();
+    // Saving a loaded revision updates it in place, so the revision id a
+    // layout pins to stays valid.
+    $block->setSyncing(TRUE);
+    $block->save();
+    _ys_themes_restore_block_changed_time($block, $changed);
+    $sandbox['backfilled']++;
+  }
+
+  $sandbox['#finished'] = (empty($result) || $sandbox['processed'] >= $sandbox['total'])
+    ? 1
+    : $sandbox['processed'] / $sandbox['total'];
+
+  if ($sandbox['#finished'] < 1) {
+    return NULL;
+  }
+
+  return t('Filled required settings on @count block revision(s).', ['@count' => $sandbox['backfilled']]);
+}
+
+/**
  * Writes a block revision's original "last updated" time back after a save.
  *
  * @param \Drupal\block_content\BlockContentInterface $block
