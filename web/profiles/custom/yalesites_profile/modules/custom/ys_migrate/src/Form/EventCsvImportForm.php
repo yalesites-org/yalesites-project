@@ -118,6 +118,8 @@ class EventCsvImportForm extends FormBase {
    * {@inheritdoc}
    */
   public function buildForm(array $form, FormStateInterface $form_state) {
+    $can_publish = $this->eventImport->canPublish();
+
     $form['intro'] = [
       '#type' => 'html_tag',
       '#tag' => 'p',
@@ -127,7 +129,9 @@ class EventCsvImportForm extends FormBase {
     $form['draft_notice'] = [
       '#type' => 'html_tag',
       '#tag' => 'p',
-      '#value' => $this->t('Events are imported as drafts, so review and publish them once the import finishes.'),
+      '#value' => $can_publish
+        ? $this->t('Events are imported as drafts unless you choose "Publish imported events" below. Review drafts and publish them once the import finishes.')
+        : $this->t('Events are imported as drafts, so review and publish them once the import finishes.'),
     ];
 
     $form['dates_notice'] = [
@@ -186,6 +190,16 @@ class EventCsvImportForm extends FormBase {
       '#title' => $this->t('Skip duplicates'),
       '#description' => $this->t('Skip rows whose title and start match an existing event, or whose Event ID matches an event imported earlier. Uncheck to import them anyway.'),
       '#default_value' => TRUE,
+    ];
+
+    // Hidden from roles that cannot publish an event by hand, so they cannot
+    // publish one by importing it either.
+    $form['publish'] = [
+      '#type' => 'checkbox',
+      '#title' => $this->t('Publish imported events'),
+      '#description' => $this->t('Leave unchecked to import the events as drafts, so you can review them before they go live.'),
+      '#default_value' => FALSE,
+      '#access' => $can_publish,
     ];
 
     $form['actions'] = [
@@ -254,11 +268,12 @@ class EventCsvImportForm extends FormBase {
     $csv_file = $form_state->getValue('csv_file');
     $preview_only = $form_state->getValue('preview');
     $skip_duplicates = $form_state->getValue('skip_duplicates');
+    $publish = (bool) $form_state->getValue('publish');
     $validation_result = $form_state->get('csv_validation');
     $fid = $csv_file[0];
 
     if ($preview_only) {
-      $this->previewImport($validation_result['data'], $skip_duplicates);
+      $this->previewImport($validation_result['data'], $skip_duplicates, $publish);
       // Preview renders its own response and never touches the batch queue,
       // so the upload is cleaned up immediately rather than by a batch
       // operation.
@@ -284,6 +299,7 @@ class EventCsvImportForm extends FormBase {
         'import_service_id' => 'ys_migrate.event_import',
         'skip_duplicates' => $skip_duplicates,
         'entity_label' => 'event',
+        'import_options' => ['publish' => $publish],
       ],
       $data,
       $fid,
@@ -330,17 +346,19 @@ class EventCsvImportForm extends FormBase {
    *   The CSV data.
    * @param bool $skip_duplicates
    *   Whether to skip duplicates.
+   * @param bool $publish
+   *   Whether the events would be published rather than left as drafts.
    */
-  protected function previewImport(array $data, $skip_duplicates) {
+  protected function previewImport(array $data, $skip_duplicates, $publish = FALSE) {
     $result = $this->eventImport->previewImport($data, $skip_duplicates);
+    $counts = [
+      '@valid' => count($result['valid_events']),
+      '@total' => $result['total'],
+    ];
 
-    $this->messenger->addStatus($this->t(
-      'Preview only, nothing was saved. @valid of @total row(s) would be imported.',
-      [
-        '@valid' => count($result['valid_events']),
-        '@total' => $result['total'],
-      ]
-    ));
+    $this->messenger->addStatus($publish
+      ? $this->t('Preview only, nothing was saved. @valid of @total row(s) would be imported and published.', $counts)
+      : $this->t('Preview only, nothing was saved. @valid of @total row(s) would be imported as drafts.', $counts));
 
     if (!empty($result['duplicates'])) {
       $this->messenger->addWarning($this->t(

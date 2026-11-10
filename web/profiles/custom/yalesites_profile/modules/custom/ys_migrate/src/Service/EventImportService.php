@@ -65,6 +65,18 @@ class EventImportService extends CsvImportServiceBase {
   const MODERATION_STATE = 'draft';
 
   /**
+   * Moderation state for events the editor chose to publish on import.
+   */
+  const PUBLISHED_STATE = 'published';
+
+  /**
+   * Permission for the events workflow's draft-to-published transition.
+   *
+   * Only roles that can publish an event by hand may publish them on import.
+   */
+  const PUBLISH_PERMISSION = 'use events transition publish';
+
+  /**
    * The Event Source term that marks an imported event.
    *
    * Created in the event_sources vocabulary on first use, as the Localist and
@@ -161,6 +173,12 @@ class EventImportService extends CsvImportServiceBase {
    *   only its own row rather than the whole file.
    */
   public function prepareEventData(array $row) {
+    // A Drupal 7 date field exports wrapped in a <span> unless the View strips
+    // its tags, and Description needs tags kept, so a date may arrive wrapped.
+    foreach (['start', 'end'] as $column) {
+      $row[$column] = strip_tags($row[$column] ?? '');
+    }
+
     $dates = $this->parseEventDates($row);
     $description = $this->parseRichText($row['description'] ?? '');
     $description['html'] = $this->filterDescription($description['html']);
@@ -194,6 +212,16 @@ class EventImportService extends CsvImportServiceBase {
       'url_alias' => $this->parseUrlAlias($row['url alias'] ?? ''),
       'event_id' => $this->parseString($row['event id'] ?? '', 'Event ID'),
     ];
+  }
+
+  /**
+   * Checks whether the current user may publish events on import.
+   *
+   * @return bool
+   *   TRUE if they can publish an event in the events workflow.
+   */
+  public function canPublish() {
+    return $this->currentUser->hasPermission(self::PUBLISH_PERMISSION);
   }
 
   /**
@@ -252,6 +280,8 @@ class EventImportService extends CsvImportServiceBase {
    *
    * @param array $data
    *   The event data, as returned by prepareEventData().
+   * @param bool $publish
+   *   Whether to publish the event rather than leave it a draft.
    *
    * @return \Drupal\node\NodeInterface
    *   The created node.
@@ -260,7 +290,7 @@ class EventImportService extends CsvImportServiceBase {
    *   If the node cannot be saved. The reason is logged and re-thrown so the
    *   caller can surface it instead of a generic failure message.
    */
-  public function createEventNode(array $data) {
+  public function createEventNode(array $data, $publish = FALSE) {
     $values = [
       'type' => self::BUNDLE,
       'title' => $data['title'],
@@ -279,8 +309,9 @@ class EventImportService extends CsvImportServiceBase {
       'uid' => $this->currentUser->id(),
       // The event bundle runs under the events workflow, so publication is
       // owned by moderation_state, and that workflow publishes new events by
-      // default. Imported events land as drafts for an editor to review.
-      'moderation_state' => self::MODERATION_STATE,
+      // default. Imported events land as drafts for an editor to review,
+      // unless the editor chose to publish them.
+      'moderation_state' => $publish ? self::PUBLISHED_STATE : self::MODERATION_STATE,
     ];
 
     // Optional values are omitted rather than written as empty, so an imported
@@ -350,8 +381,13 @@ class EventImportService extends CsvImportServiceBase {
    * Adds a 'needs_images' key: the titles whose Description held images,
    * video or embeds that could not be imported, which an editor must add by
    * hand.
+   *
+   * Takes a 'publish' option, honoured only for an editor who canPublish().
    */
   public function processImport(array $data, $skip_duplicates, array $options = []) {
+    // Checked here as well as on the form: a batch runs whatever options it
+    // was built with.
+    $publish = !empty($options['publish']) && $this->canPublish();
     $created = 0;
     $skipped = 0;
     $errors = [];
@@ -370,7 +406,7 @@ class EventImportService extends CsvImportServiceBase {
         // rows as skipped duplicates rather than as aliases already in use.
         $this->assertAliasAvailable($event_data['url_alias']);
 
-        $this->createEventNode($event_data);
+        $this->createEventNode($event_data, $publish);
         $created++;
 
         if ($event_data['description_has_media']) {

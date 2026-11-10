@@ -60,6 +60,13 @@ class EventImportServiceTest extends UnitTestCase {
   protected $loggerChannel;
 
   /**
+   * Permissions the current user holds; none unless a test grants them.
+   *
+   * @var string[]
+   */
+  protected $permissions = [];
+
+  /**
    * The service under test, reading times in America/New_York.
    *
    * @var \Drupal\ys_migrate\Service\EventImportService
@@ -103,6 +110,8 @@ class EventImportServiceTest extends UnitTestCase {
   protected function buildService(string $timezone): EventImportService {
     $currentUser = $this->createMock(AccountInterface::class);
     $currentUser->method('id')->willReturn(42);
+    $currentUser->method('hasPermission')
+      ->willReturnCallback(fn ($permission) => in_array($permission, $this->permissions, TRUE));
 
     $entityTypeManager = $this->createMock(EntityTypeManagerInterface::class);
     $entityTypeManager->method('getStorage')
@@ -397,6 +406,19 @@ class EventImportServiceTest extends UnitTestCase {
       'summer time' => [
         ['start' => '2026-07-04 21:00', 'end' => '2026-07-04 22:00'],
         '2026-07-04 21:00', '2026-07-04 22:00', FALSE,
+      ],
+      // A Drupal 7 date field exports wrapped in a <span> unless the View
+      // strips its tags.
+      'D7 date markup' => [
+        [
+          'start' => '<span class="date-display-start" property="dc:date" content="2026-03-04T14:00:00-05:00">2026-03-04 14:00</span>',
+          'end' => '<span class="date-display-end">2026-03-04 16:30</span>',
+        ],
+        '2026-03-04 14:00', '2026-03-04 16:30', FALSE,
+      ],
+      'D7 all-day date markup' => [
+        ['start' => '<span class="date-display-single">2026-03-04</span>'],
+        '2026-03-04 00:00', '2026-03-04 23:59', TRUE,
       ],
     ];
   }
@@ -954,6 +976,45 @@ class EventImportServiceTest extends UnitTestCase {
     $this->assertSame(0, $result['skipped']);
     $this->assertSame([], $result['errors']);
     $this->assertSame(['Had Image'], $result['needs_images']);
+  }
+
+  /**
+   * Events are published on import when an editor who can publish asks.
+   *
+   * @covers ::processImport
+   * @covers ::canPublish
+   * @covers ::createEventNode
+   */
+  public function testProcessImportPublishesForEditorWhoCanPublish() {
+    $this->permissions = ['use events transition publish'];
+    $this->captureNodeValues($captured);
+    $this->storages['node']->method('getQuery')->willReturn($this->mockQuery([]));
+
+    $result = $this->eventImport->processImport([
+      ['title' => 'Live', 'start' => '2026-03-04 14:00'],
+    ], FALSE, ['publish' => TRUE]);
+
+    $this->assertSame(1, $result['created']);
+    $this->assertSame('published', $captured['moderation_state']);
+    $this->assertArrayNotHasKey('status', $captured);
+  }
+
+  /**
+   * Publishing is refused to an editor who cannot publish an event by hand.
+   *
+   * @covers ::processImport
+   * @covers ::canPublish
+   */
+  public function testProcessImportKeepsDraftsForEditorWhoCannotPublish() {
+    $this->captureNodeValues($captured);
+    $this->storages['node']->method('getQuery')->willReturn($this->mockQuery([]));
+
+    $this->eventImport->processImport([
+      ['title' => 'Not Yet', 'start' => '2026-03-04 14:00'],
+    ], FALSE, ['publish' => TRUE]);
+
+    $this->assertFalse($this->eventImport->canPublish());
+    $this->assertSame('draft', $captured['moderation_state']);
   }
 
   /**
