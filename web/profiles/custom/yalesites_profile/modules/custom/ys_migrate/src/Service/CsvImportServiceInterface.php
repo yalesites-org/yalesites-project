@@ -25,6 +25,9 @@ interface CsvImportServiceInterface {
    *   The parsed CSV rows.
    * @param bool $skip_duplicates
    *   Whether to skip rows that duplicate existing content.
+   * @param array $options
+   *   Choices the editor made on the import form, such as 'publish' for
+   *   posts. An implementation ignores options it does not offer.
    *
    * @return array
    *   Import results, which always include:
@@ -32,9 +35,10 @@ interface CsvImportServiceInterface {
    *   - 'skipped': int, the number of rows skipped as duplicates.
    *   - 'errors': array, one message per row that could not be imported.
    *   An implementation may add further keys; CsvImportBatch understands
-   *   'needs_media' and 'needs_images' and ignores anything else.
+   *   'needs_media', 'needs_images' and 'needs_body' and ignores anything
+   *   else.
    */
-  public function processImport(array $data, $skip_duplicates);
+  public function processImport(array $data, $skip_duplicates, array $options = []);
 
   /**
    * Reports what importing the given rows would do, creating nothing.

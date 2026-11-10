@@ -384,6 +384,7 @@ class CsvValidatorService {
 
     while (($row = fgetcsv($handle)) !== FALSE) {
       $row_number++;
+      $row = array_map([$this, 'trimCell'], $row);
 
       // Skip empty rows.
       if (empty(array_filter($row))) {
@@ -465,6 +466,27 @@ class CsvValidatorService {
       // otherwise make the first column's header unrecognisable.
       return strtolower(trim(preg_replace('/^\xEF\xBB\xBF/', '', $header)));
     }, $headers);
+  }
+
+  /**
+   * Trims a cell, including non-breaking spaces at either end.
+   *
+   * A Drupal 7 Views Data Export decodes HTML entities in every cell, so an
+   * &nbsp; arrives as a real U+00A0, which trim() leaves in place. Left at the
+   * end of a date or a term name, it makes a valid value fail to match.
+   *
+   * @param string|null $value
+   *   The raw cell value.
+   *
+   * @return string
+   *   The value without leading or trailing whitespace.
+   */
+  protected function trimCell($value) {
+    $trimmed = preg_replace('/^[\s\x{00A0}]+|[\s\x{00A0}]+$/u', '', (string) $value);
+
+    // preg_replace() returns NULL for a cell that is not valid UTF-8, such as
+    // one from a file Excel saved in Windows-1252. trim() still works there.
+    return $trimmed ?? trim((string) $value);
   }
 
   /**

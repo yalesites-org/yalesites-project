@@ -49,4 +49,27 @@ class PostCsvSampleController extends CsvSampleControllerBase {
     ];
   }
 
+  /**
+   * {@inheritdoc}
+   *
+   * The second row is the other shape a post takes: a publication that links
+   * to its External Source and has no Body, which imports without a warning
+   * because visitors are sent to that address. Its Category is one every new
+   * site has, and its URL Alias is left for Pathauto.
+   */
+  protected function exampleRows() {
+    return [
+      $this->exampleRow(),
+      [
+        'title' => 'Coastal Flooding and Urban Planning',
+        'publish date' => '2026-02-12',
+        'author' => 'School of the Environment',
+        'category' => 'Environment',
+        'teaser text' => 'A new article on planning for coastal flood risk.',
+        'external source' => 'https://example.com/coastal-flooding',
+        'cas login required' => 'No',
+      ],
+    ];
+  }
+
 }

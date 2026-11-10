@@ -220,7 +220,7 @@ class ResourceImportService extends CsvImportServiceBase {
    * Adds a 'needs_media' key: the titles created without an External Source,
    * which are the ones an editor must still attach Resource Media to.
    */
-  public function processImport(array $data, $skip_duplicates) {
+  public function processImport(array $data, $skip_duplicates, array $options = []) {
     $created = 0;
     $skipped = 0;
     $errors = [];

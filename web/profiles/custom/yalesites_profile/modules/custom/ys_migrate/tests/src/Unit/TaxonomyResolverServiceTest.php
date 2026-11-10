@@ -253,6 +253,20 @@ class TaxonomyResolverServiceTest extends UnitTestCase {
   }
 
   /**
+   * Non-breaking spaces around a name are trimmed like ordinary spaces.
+   *
+   * A Drupal 7 export decodes &nbsp; into a real U+00A0. One inside a name is
+   * kept.
+   *
+   * @covers ::parseCommaSeparatedValues
+   */
+  public function testParseCommaSeparatedValuesTrimsNonBreakingSpaces() {
+    $result = $this->taxonomyResolver->parseCommaSeparatedValues("Alpha,\u{00A0}Beta\u{00A0}Two\u{00A0},\u{00A0}");
+
+    $this->assertSame(['Alpha', "Beta\u{00A0}Two"], $result);
+  }
+
+  /**
    * A whitespace-only segment is dropped rather than becoming an empty name.
    *
    * Trimming has to happen before the empty values are filtered out. The other

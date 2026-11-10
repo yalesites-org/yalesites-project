@@ -72,6 +72,13 @@ class PostImportServiceTest extends UnitTestCase {
   protected $createdBlocks = [];
 
   /**
+   * Permissions the current user holds; none unless a test grants them.
+   *
+   * @var string[]
+   */
+  protected $permissions = [];
+
+  /**
    * The service under test.
    *
    * @var \Drupal\ys_migrate\Service\PostImportService
@@ -99,6 +106,8 @@ class PostImportServiceTest extends UnitTestCase {
 
     $currentUser = $this->createMock(AccountInterface::class);
     $currentUser->method('id')->willReturn(42);
+    $currentUser->method('hasPermission')
+      ->willReturnCallback(fn ($permission) => in_array($permission, $this->permissions, TRUE));
 
     $this->taxonomyResolver = $this->createMock(TaxonomyResolverService::class);
     $this->taxonomyResolver->method('parseCommaSeparatedValues')
@@ -353,6 +362,23 @@ class PostImportServiceTest extends UnitTestCase {
   }
 
   /**
+   * A Publish Date wrapped in markup is read as its text.
+   *
+   * A Drupal 7 date field exports inside a <span> unless the View is set to
+   * strip its tags.
+   *
+   * @covers ::preparePostData
+   */
+  public function testPreparePostDataStripsTagsFromPublishDate() {
+    $result = $this->postImport->preparePostData([
+      'title' => 'Wrapped Date',
+      'publish date' => '<span class="date-display-single" property="dc:date" content="2026-03-04T00:00:00-05:00">2026-03-04</span>',
+    ]);
+
+    $this->assertSame('2026-03-04', $result['publish_date']);
+  }
+
+  /**
    * A term the site does not have is reported, never created.
    *
    * @covers ::preparePostData
@@ -485,6 +511,57 @@ class PostImportServiceTest extends UnitTestCase {
 
     $this->assertSame('', $result['body']);
     $this->assertTrue($result['body_has_media']);
+  }
+
+  /**
+   * A body with no text in it is imported with no Text block.
+   *
+   * @covers ::preparePostData
+   * @covers ::hasText
+   *
+   * @dataProvider textlessBodyProvider
+   */
+  public function testPreparePostDataTextlessBodyLeavesNoBody(string $body, bool $has_media) {
+    $result = $this->postImport->preparePostData([
+      'title' => 'Textless',
+      'publish date' => '2026-03-04',
+      'body' => $body,
+    ]);
+
+    $this->assertSame('', $result['body']);
+    $this->assertSame($has_media, $result['body_has_media']);
+  }
+
+  /**
+   * Body cells with nothing to read, and whether each held media.
+   */
+  public static function textlessBodyProvider(): array {
+    return [
+      // A D7 export decodes &nbsp; into a real U+00A0.
+      'non-breaking space paragraphs' => ["<p>\u{00A0}</p>\n<p>\u{00A0}</p>", FALSE],
+      'entity paragraph' => ['<p>&nbsp;</p>', FALSE],
+      'lone non-breaking space' => ["\u{00A0}", FALSE],
+      'image only' => ['<p><img src="/a.jpg" alt="A"></p>', TRUE],
+    ];
+  }
+
+  /**
+   * Non-breaking spaces inside a body's text are kept as written.
+   *
+   * They show the same as the &nbsp; they were on the old site.
+   *
+   * @covers ::preparePostData
+   */
+  public function testPreparePostDataKeepsNonBreakingSpacesInText() {
+    $body = "<p>Doors open at 10\u{00A0}am.</p><p>\u{00A0}</p>";
+
+    $result = $this->postImport->preparePostData([
+      'title' => 'Spaced',
+      'publish date' => '2026-03-04',
+      'body' => $body,
+    ]);
+
+    $this->assertSame($body, $result['body']);
   }
 
   /**
@@ -786,6 +863,79 @@ class PostImportServiceTest extends UnitTestCase {
     $this->assertSame(0, $result['skipped']);
     $this->assertSame([], $result['errors']);
     $this->assertSame(['Had Image'], $result['needs_images']);
+    $this->assertSame([], $result['needs_body']);
+  }
+
+  /**
+   * Posts with neither a Body nor an External Source are listed.
+   *
+   * An External Source redirects the post there, so its Body is never shown,
+   * and a post whose Body held only an image is already listed as needing
+   * images.
+   *
+   * @covers ::processImport
+   */
+  public function testProcessImportListsPostsWithNoBody() {
+    $this->defaultLayout();
+    $this->captureNodeValues($captured);
+    $this->storages['node']->method('getQuery')->willReturn($this->mockQuery([]));
+
+    $result = $this->postImport->processImport([
+      ['title' => 'Empty', 'publish date' => '2026-03-04', 'body' => ''],
+      ['title' => 'Filler', 'publish date' => '2026-03-05', 'body' => "<p>\u{00A0}</p>"],
+      [
+        'title' => 'Publication',
+        'publish date' => '2026-03-06',
+        'body' => '',
+        'external source' => 'https://example.com/paper',
+      ],
+      ['title' => 'Image Only', 'publish date' => '2026-03-07', 'body' => '<img src="/a.jpg">'],
+    ], FALSE);
+
+    $this->assertSame(4, $result['created']);
+    $this->assertSame(['Empty', 'Filler'], $result['needs_body']);
+    $this->assertSame(['Image Only'], $result['needs_images']);
+  }
+
+  /**
+   * Posts are published on import when an editor who can publish asks.
+   *
+   * @covers ::processImport
+   * @covers ::canPublish
+   * @covers ::createPostNode
+   */
+  public function testProcessImportPublishesForEditorWhoCanPublish() {
+    $this->permissions = ['use editorial transition publish'];
+    $this->defaultLayout();
+    $this->captureNodeValues($captured);
+    $this->storages['node']->method('getQuery')->willReturn($this->mockQuery([]));
+
+    $result = $this->postImport->processImport([
+      ['title' => 'Live', 'publish date' => '2026-03-04', 'body' => '<p>Words.</p>'],
+    ], FALSE, ['publish' => TRUE]);
+
+    $this->assertSame(1, $result['created']);
+    $this->assertSame('published', $captured['moderation_state']);
+    $this->assertArrayNotHasKey('status', $captured);
+  }
+
+  /**
+   * Publishing is refused to an editor who cannot publish a post by hand.
+   *
+   * @covers ::processImport
+   * @covers ::canPublish
+   */
+  public function testProcessImportKeepsDraftsForEditorWhoCannotPublish() {
+    $this->defaultLayout();
+    $this->captureNodeValues($captured);
+    $this->storages['node']->method('getQuery')->willReturn($this->mockQuery([]));
+
+    $this->postImport->processImport([
+      ['title' => 'Not Yet', 'publish date' => '2026-03-04', 'body' => '<p>Words.</p>'],
+    ], FALSE, ['publish' => TRUE]);
+
+    $this->assertFalse($this->postImport->canPublish());
+    $this->assertSame('draft', $captured['moderation_state']);
   }
 
   /**

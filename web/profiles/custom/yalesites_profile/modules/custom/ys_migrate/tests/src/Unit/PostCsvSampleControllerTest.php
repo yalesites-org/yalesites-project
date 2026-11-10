@@ -78,4 +78,29 @@ class PostCsvSampleControllerTest extends UnitTestCase {
     }
   }
 
+  /**
+   * The second example row is a publication: External Source and no Body.
+   *
+   * It must also import as written, so it passes through the real validator.
+   *
+   * @covers ::download
+   * @covers ::exampleRows
+   */
+  public function testDownloadIncludesPublicationRow() {
+    $csvValidator = new CsvValidatorService();
+    $csvValidator->setStringTranslation($this->getStringTranslationStub());
+    $controller = new PostCsvSampleController($csvValidator);
+
+    $path = tempnam(sys_get_temp_dir(), 'ys_migrate_post_sample_');
+    file_put_contents($path, $controller->download()->getContent());
+    $result = $csvValidator->validatePostCsvStructure($path);
+    unlink($path);
+
+    $this->assertTrue($result['valid']);
+    $this->assertCount(2, $result['data']);
+    $publication = $result['data'][1];
+    $this->assertSame('', $publication['body']);
+    $this->assertSame('https://example.com/coastal-flooding', $publication['external source']);
+  }
+
 }

@@ -180,6 +180,76 @@ class PostCsvImportFormTest extends UnitTestCase {
   }
 
   /**
+   * The publish checkbox is shown only to editors who can publish posts.
+   *
+   * @covers ::buildForm
+   */
+  public function testBuildFormOffersPublishingOnlyToEditorsWhoCanPublish() {
+    $this->csvValidator->method('getExpectedPostColumns')->willReturn(['title' => 'Title']);
+    $this->postImport->method('canPublish')->willReturnOnConsecutiveCalls(FALSE, TRUE);
+
+    $cannot = $this->form->buildForm([], new FormState());
+    $can = $this->form->buildForm([], new FormState());
+
+    $this->assertFalse($cannot['publish']['#access']);
+    $this->assertStringNotContainsString('Publish imported posts', (string) $cannot['draft_notice']['#value']);
+    $this->assertTrue($can['publish']['#access']);
+    $this->assertFalse($can['publish']['#default_value']);
+    $this->assertStringContainsString('Publish imported posts', (string) $can['draft_notice']['#value']);
+  }
+
+  /**
+   * SubmitForm() hands the publish choice to the batch.
+   *
+   * @covers ::submitForm
+   */
+  public function testSubmitFormPassesPublishToBatch() {
+    $this->fileStorage->method('load')->willReturn($this->createMock(FileInterface::class));
+
+    $captured = NULL;
+    $form = $this->partialForm(['setBatch']);
+    $form->method('setBatch')->willReturnCallback(function ($batch) use (&$captured) {
+      $captured = $batch;
+    });
+
+    $form_state = $this->submittedState(FALSE, [['title' => 'Post A', 'publish date' => '2026-03-04']]);
+    $form_state->setValue('publish', 1);
+    $form_array = [];
+    $form->submitForm($form_array, $form_state);
+
+    $this->assertSame(['publish' => TRUE], $captured['operations'][0][1][0]['import_options']);
+  }
+
+  /**
+   * The preview says whether the posts would be drafts or published.
+   *
+   * @covers ::submitForm
+   */
+  public function testSubmitFormPreviewSaysHowPostsWouldLand() {
+    $this->fileStorage->method('load')->willReturn(NULL);
+    $this->postImport->method('previewImport')->willReturn([
+      'valid_posts' => [],
+      'duplicates' => [],
+      'errors' => [],
+      'total' => 2,
+    ]);
+
+    $statuses = [];
+    $this->messenger->method('addStatus')->willReturnCallback(function ($message) use (&$statuses) {
+      $statuses[] = (string) $message;
+    });
+
+    $form_array = [];
+    $this->form->submitForm($form_array, $this->submittedState(TRUE, []));
+    $publishing = $this->submittedState(TRUE, []);
+    $publishing->setValue('publish', 1);
+    $this->form->submitForm($form_array, $publishing);
+
+    $this->assertStringContainsString('would be imported as drafts', $statuses[0]);
+    $this->assertStringContainsString('would be imported and published', $statuses[1]);
+  }
+
+  /**
    * SubmitForm() previews the import and cleans up the uploaded file.
    *
    * @covers ::submitForm
@@ -306,6 +376,7 @@ class PostCsvImportFormTest extends UnitTestCase {
       'import_service_id' => 'ys_migrate.post_import',
       'skip_duplicates' => TRUE,
       'entity_label' => 'post',
+      'import_options' => ['publish' => FALSE],
     ], $chunk_args[0]);
     $this->assertSame($data, $chunk_args[1]);
 

@@ -351,7 +351,7 @@ class EventImportService extends CsvImportServiceBase {
    * video or embeds that could not be imported, which an editor must add by
    * hand.
    */
-  public function processImport(array $data, $skip_duplicates) {
+  public function processImport(array $data, $skip_duplicates, array $options = []) {
     $created = 0;
     $skipped = 0;
     $errors = [];

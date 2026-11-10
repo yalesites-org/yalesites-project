@@ -391,8 +391,9 @@ abstract class CsvImportServiceBase implements CsvImportServiceInterface {
    *   paragraphs.
    *
    * @return array
-   *   'html': the markup to store, or an empty string. 'has_media': whether
-   *   the cell held images, video, embeds or D7 media tokens.
+   *   'html': the markup to store, or an empty string if the cell holds no
+   *   text. 'has_media': whether the cell held images, video, embeds or D7
+   *   media tokens.
    */
   protected function parseRichText($value) {
     $value = trim($value);
@@ -401,17 +402,42 @@ abstract class CsvImportServiceBase implements CsvImportServiceInterface {
     }
 
     $html = trim(preg_replace(self::D7_TOKEN_PATTERN, '', $value));
+    $has_media = (bool) preg_match(self::MEDIA_PATTERN, $value);
+
+    // A cell that is only filler, such as the <p>&nbsp;</p> a D7 editor leaves
+    // behind, or only an image this import drops, would be stored as markup
+    // that shows nothing. Treat it as empty.
+    if (!$this->hasText($html)) {
+      return ['html' => '', 'has_media' => $has_media];
+    }
 
     // A spreadsheet cell is often plain text, which would otherwise run its
     // paragraphs together into one.
-    if ($html !== '' && $html === strip_tags($html)) {
+    if ($html === strip_tags($html)) {
       $html = $this->plainTextToHtml($html);
     }
 
     return [
       'html' => $html,
-      'has_media' => (bool) preg_match(self::MEDIA_PATTERN, $value),
+      'has_media' => $has_media,
     ];
+  }
+
+  /**
+   * Checks whether markup holds any text once its tags are removed.
+   *
+   * @param string $html
+   *   The markup.
+   *
+   * @return bool
+   *   FALSE if it holds nothing but tags, whitespace and non-breaking spaces.
+   */
+  protected function hasText($html) {
+    $text = html_entity_decode(strip_tags($html), ENT_QUOTES | ENT_HTML5, 'UTF-8');
+
+    // A match failure (invalid UTF-8) counts as text, so content is never
+    // dropped because it could not be read.
+    return preg_match('/[^\s\x{00A0}]/u', $text) !== 0;
   }
 
   /**
