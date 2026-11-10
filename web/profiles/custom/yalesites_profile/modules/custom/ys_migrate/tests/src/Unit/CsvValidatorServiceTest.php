@@ -593,6 +593,47 @@ class CsvValidatorServiceTest extends UnitTestCase {
   }
 
   /**
+   * Cells lose whitespace at either end, including non-breaking spaces.
+   *
+   * A Drupal 7 Views Data Export decodes &nbsp; into a real U+00A0, which
+   * trim() leaves in place. Inside a cell it is kept.
+   *
+   * @covers ::validatePostCsvStructure
+   * @covers ::trimCell
+   */
+  public function testValidatePostCsvStructureTrimsNonBreakingSpaces() {
+    $nbsp = "\u{00A0}";
+    $path = $this->createCsvFile(
+      "Title,Publish Date,Tags,Body\n" .
+      "{$nbsp}Spaced Title {$nbsp},2026-03-04{$nbsp},\"Research,{$nbsp}Climate{$nbsp}\",\"<p>10{$nbsp}am</p>{$nbsp}\"\n"
+    );
+
+    $result = $this->csvValidator->validatePostCsvStructure($path);
+
+    $this->assertTrue($result['valid']);
+    $this->assertSame('Spaced Title', $result['data'][0]['title']);
+    $this->assertSame('2026-03-04', $result['data'][0]['publish date']);
+    $this->assertSame("Research,{$nbsp}Climate", $result['data'][0]['tags']);
+    $this->assertSame("<p>10{$nbsp}am</p>", $result['data'][0]['body']);
+  }
+
+  /**
+   * A cell that is not valid UTF-8 is still trimmed, rather than lost.
+   *
+   * @covers ::validatePostCsvStructure
+   * @covers ::trimCell
+   */
+  public function testValidatePostCsvStructureTrimsNonUtf8Cells() {
+    // "Café" as Windows-1252, the encoding Excel's plain "CSV" format writes.
+    $path = $this->createCsvFile("Title,Publish Date\n Caf\xE9 ,2026-03-04\n");
+
+    $result = $this->csvValidator->validatePostCsvStructure($path);
+
+    $this->assertTrue($result['valid']);
+    $this->assertSame("Caf\xE9", $result['data'][0]['title']);
+  }
+
+  /**
    * Post header aliases fold onto their canonical names.
    *
    * "CAS Protected" is the header ys_content_export writes.

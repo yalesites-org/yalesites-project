@@ -167,11 +167,17 @@ class TaxonomyResolverService {
       return [];
     }
 
+    // A Drupal 7 export decodes &nbsp; into a real U+00A0, which trim() keeps,
+    // so "News,&nbsp;Events" would look up a term named " Events". A segment
+    // that is not valid UTF-8 makes preg_replace() return NULL; trim() still
+    // works on it.
+    $trim = static fn ($segment) => preg_replace('/^[\s\x{00A0}]+|[\s\x{00A0}]+$/u', '', $segment) ?? trim($segment);
+
     // Trim before discarding empties: filtering first lets a whitespace-only
     // segment through, which then trims to '' and has findOrCreateTerm()
     // create a nameless term in the vocabulary. 'strlen' rather than the
     // default callback so a term legitimately named "0" survives.
-    return array_values(array_filter(array_map('trim', explode(',', $value)), 'strlen'));
+    return array_values(array_filter(array_map($trim, explode(',', $value)), 'strlen'));
   }
 
 }

@@ -124,7 +124,7 @@ class ProfileImportService extends CsvImportServiceBase {
   /**
    * {@inheritdoc}
    */
-  public function processImport(array $data, $skip_duplicates) {
+  public function processImport(array $data, $skip_duplicates, array $options = []) {
     $created = 0;
     $skipped = 0;
     $errors = [];

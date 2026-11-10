@@ -118,6 +118,8 @@ class PostCsvImportForm extends FormBase {
    * {@inheritdoc}
    */
   public function buildForm(array $form, FormStateInterface $form_state) {
+    $can_publish = $this->postImport->canPublish();
+
     $form['intro'] = [
       '#type' => 'html_tag',
       '#tag' => 'p',
@@ -127,7 +129,9 @@ class PostCsvImportForm extends FormBase {
     $form['draft_notice'] = [
       '#type' => 'html_tag',
       '#tag' => 'p',
-      '#value' => $this->t('Posts are imported as drafts, so review and publish them once the import finishes.'),
+      '#value' => $can_publish
+        ? $this->t('Posts are imported as drafts unless you choose "Publish imported posts" below. Review drafts and publish them once the import finishes.')
+        : $this->t('Posts are imported as drafts, so review and publish them once the import finishes.'),
     ];
 
     $form['body_notice'] = [
@@ -146,7 +150,7 @@ class PostCsvImportForm extends FormBase {
 
     $form['sample_download'] = [
       '#type' => 'link',
-      '#title' => $this->t('Download a sample CSV to see the expected columns and an example row.'),
+      '#title' => $this->t('Download a sample CSV to see the expected columns and example rows.'),
       '#url' => Url::fromRoute('ys_migrate.post_csv_sample'),
     ];
 
@@ -174,6 +178,16 @@ class PostCsvImportForm extends FormBase {
       '#title' => $this->t('Skip duplicates'),
       '#description' => $this->t('Skip rows whose title and publish date match an existing post. Uncheck to import them anyway.'),
       '#default_value' => TRUE,
+    ];
+
+    // Hidden from roles that cannot publish a post by hand, so they cannot
+    // publish one by importing it either.
+    $form['publish'] = [
+      '#type' => 'checkbox',
+      '#title' => $this->t('Publish imported posts'),
+      '#description' => $this->t('Leave unchecked to import the posts as drafts, so you can review them before they go live.'),
+      '#default_value' => FALSE,
+      '#access' => $can_publish,
     ];
 
     $form['actions'] = [
@@ -242,11 +256,12 @@ class PostCsvImportForm extends FormBase {
     $csv_file = $form_state->getValue('csv_file');
     $preview_only = $form_state->getValue('preview');
     $skip_duplicates = $form_state->getValue('skip_duplicates');
+    $publish = (bool) $form_state->getValue('publish');
     $validation_result = $form_state->get('csv_validation');
     $fid = $csv_file[0];
 
     if ($preview_only) {
-      $this->previewImport($validation_result['data'], $skip_duplicates);
+      $this->previewImport($validation_result['data'], $skip_duplicates, $publish);
       // Preview renders its own response and never touches the batch queue,
       // so the upload is cleaned up immediately rather than by a batch
       // operation.
@@ -272,6 +287,7 @@ class PostCsvImportForm extends FormBase {
         'import_service_id' => 'ys_migrate.post_import',
         'skip_duplicates' => $skip_duplicates,
         'entity_label' => 'post',
+        'import_options' => ['publish' => $publish],
       ],
       $data,
       $fid,
@@ -290,7 +306,7 @@ class PostCsvImportForm extends FormBase {
       'title' => $this->t('Required. Used with Publish Date to detect duplicates.'),
       'publish date' => $this->t('Required. YYYY-MM-DD or MM/DD/YYYY.'),
       'author' => $this->t('Plain text, shown as the byline.'),
-      'body' => $this->t('HTML, or plain text with a blank line between paragraphs. Imported as one Text block; images, video and embeds are left out.'),
+      'body' => $this->t('HTML, or plain text with a blank line between paragraphs. Imported as one Text block; images, video and embeds are left out. Leave empty for a post with an External Source.'),
       'category' => $this->t('Comma-separated. Terms must already exist.'),
       'tags' => $this->t('Comma-separated. Terms must already exist.'),
       'audience' => $this->t('Comma-separated. Terms must already exist.'),
@@ -310,17 +326,19 @@ class PostCsvImportForm extends FormBase {
    *   The CSV data.
    * @param bool $skip_duplicates
    *   Whether to skip duplicates.
+   * @param bool $publish
+   *   Whether the posts would be published rather than left as drafts.
    */
-  protected function previewImport(array $data, $skip_duplicates) {
+  protected function previewImport(array $data, $skip_duplicates, $publish = FALSE) {
     $result = $this->postImport->previewImport($data, $skip_duplicates);
+    $counts = [
+      '@valid' => count($result['valid_posts']),
+      '@total' => $result['total'],
+    ];
 
-    $this->messenger->addStatus($this->t(
-      'Preview only, nothing was saved. @valid of @total row(s) would be imported.',
-      [
-        '@valid' => count($result['valid_posts']),
-        '@total' => $result['total'],
-      ]
-    ));
+    $this->messenger->addStatus($publish
+      ? $this->t('Preview only, nothing was saved. @valid of @total row(s) would be imported and published.', $counts)
+      : $this->t('Preview only, nothing was saved. @valid of @total row(s) would be imported as drafts.', $counts));
 
     if (!empty($result['duplicates'])) {
       $this->messenger->addWarning($this->t(

@@ -46,6 +46,18 @@ class PostImportService extends CsvImportServiceBase {
   const MODERATION_STATE = 'draft';
 
   /**
+   * Moderation state for posts the editor chose to publish on import.
+   */
+  const PUBLISHED_STATE = 'published';
+
+  /**
+   * Permission for the editorial workflow's draft-to-published transition.
+   *
+   * Only roles that can publish a post by hand may publish them on import.
+   */
+  const PUBLISH_PERMISSION = 'use editorial transition publish';
+
+  /**
    * Vocabulary behind each taxonomy column, keyed by prepared-data key.
    */
   const VOCABULARIES = [
@@ -146,7 +158,10 @@ class PostImportService extends CsvImportServiceBase {
 
     return [
       'title' => trim($row['title'] ?? ''),
-      'publish_date' => $this->parseRequiredDate($row['publish date'] ?? '', 'Publish Date'),
+      // A Drupal 7 date field exports wrapped in a <span> unless the View
+      // strips its tags, and Body needs tags kept, so the date may arrive
+      // wrapped.
+      'publish_date' => $this->parseRequiredDate(strip_tags($row['publish date'] ?? ''), 'Publish Date'),
       'author' => trim($row['author'] ?? ''),
       'body' => $body['html'],
       'body_has_media' => $body['has_media'],
@@ -162,6 +177,16 @@ class PostImportService extends CsvImportServiceBase {
       'login_required' => $this->parseBoolean($row['cas login required'] ?? '', 'CAS Login Required'),
       'url_alias' => $this->parseUrlAlias($row['url alias'] ?? ''),
     ];
+  }
+
+  /**
+   * Checks whether the current user may publish posts on import.
+   *
+   * @return bool
+   *   TRUE if they can publish a post in the editorial workflow.
+   */
+  public function canPublish() {
+    return $this->currentUser->hasPermission(self::PUBLISH_PERMISSION);
   }
 
   /**
@@ -199,6 +224,8 @@ class PostImportService extends CsvImportServiceBase {
    *
    * @param array $data
    *   The post data, as returned by preparePostData().
+   * @param bool $publish
+   *   Whether to publish the post rather than leave it a draft.
    *
    * @return \Drupal\node\NodeInterface
    *   The created node.
@@ -207,7 +234,7 @@ class PostImportService extends CsvImportServiceBase {
    *   If the node cannot be saved. The reason is logged and re-thrown so the
    *   caller can surface it instead of a generic failure message.
    */
-  public function createPostNode(array $data) {
+  public function createPostNode(array $data, $publish = FALSE) {
     $values = [
       'type' => self::BUNDLE,
       'title' => $data['title'],
@@ -220,8 +247,9 @@ class PostImportService extends CsvImportServiceBase {
       'uid' => $this->currentUser->id(),
       // The post bundle runs under the editorial workflow, so publication is
       // owned by moderation_state; a 'status' value set here is silently
-      // overridden. Imported posts land as drafts for an editor to review.
-      'moderation_state' => self::MODERATION_STATE,
+      // overridden. Imported posts land as drafts for an editor to review,
+      // unless the editor chose to publish them.
+      'moderation_state' => $publish ? self::PUBLISHED_STATE : self::MODERATION_STATE,
     ];
 
     // Optional values are omitted rather than written as empty, so an imported
@@ -268,13 +296,21 @@ class PostImportService extends CsvImportServiceBase {
    * {@inheritdoc}
    *
    * Adds a 'needs_images' key: the titles whose Body held images, video or
-   * embeds that could not be imported, which an editor must add by hand.
+   * embeds that could not be imported, which an editor must add by hand. And
+   * a 'needs_body' key: the titles imported with neither a Body nor an
+   * External Source, whose page shows nothing but the title.
+   *
+   * Takes a 'publish' option, honoured only for an editor who canPublish().
    */
-  public function processImport(array $data, $skip_duplicates) {
+  public function processImport(array $data, $skip_duplicates, array $options = []) {
+    // Checked here as well as on the form: a batch runs whatever options it
+    // was built with.
+    $publish = !empty($options['publish']) && $this->canPublish();
     $created = 0;
     $skipped = 0;
     $errors = [];
     $needs_images = [];
+    $needs_body = [];
 
     foreach ($data as $index => $row) {
       try {
@@ -289,11 +325,16 @@ class PostImportService extends CsvImportServiceBase {
         // rows as skipped duplicates rather than as aliases already in use.
         $this->assertAliasAvailable($post_data['url_alias']);
 
-        $this->createPostNode($post_data);
+        $this->createPostNode($post_data, $publish);
         $created++;
 
         if ($post_data['body_has_media']) {
           $needs_images[] = $post_data['title'];
+        }
+        // A post with an External Source redirects there, so its Body is never
+        // shown. Without one, an empty Body leaves a page with only its title.
+        elseif ($post_data['body'] === '' && $post_data['external_source'] === '') {
+          $needs_body[] = $post_data['title'];
         }
       }
       catch (\Exception $e) {
@@ -306,6 +347,7 @@ class PostImportService extends CsvImportServiceBase {
       'skipped' => $skipped,
       'errors' => $errors,
       'needs_images' => $needs_images,
+      'needs_body' => $needs_body,
     ];
   }
 
@@ -402,8 +444,9 @@ class PostImportService extends CsvImportServiceBase {
    *   paragraphs.
    *
    * @return array
-   *   'html': the markup to store, or an empty string. 'has_media': whether
-   *   the cell held images, video, embeds or D7 media tokens.
+   *   'html': the markup to store, or an empty string if the cell holds no
+   *   text. 'has_media': whether the cell held images, video, embeds or D7
+   *   media tokens.
    */
   protected function parseBody($value) {
     $value = trim($value);
@@ -412,17 +455,42 @@ class PostImportService extends CsvImportServiceBase {
     }
 
     $html = trim(preg_replace(self::D7_TOKEN_PATTERN, '', $value));
+    $has_media = (bool) preg_match(self::MEDIA_PATTERN, $value);
+
+    // A Body that is only filler, such as the <p>&nbsp;</p> a D7 editor leaves
+    // behind, or only an image this import drops, would become a Text block
+    // that shows nothing. Treat it as no Body at all.
+    if (!$this->hasText($html)) {
+      return ['html' => '', 'has_media' => $has_media];
+    }
 
     // A spreadsheet cell is often plain text, which would otherwise run its
     // paragraphs together into one.
-    if ($html !== '' && $html === strip_tags($html)) {
+    if ($html === strip_tags($html)) {
       $html = $this->plainTextToHtml($html);
     }
 
     return [
       'html' => $html,
-      'has_media' => (bool) preg_match(self::MEDIA_PATTERN, $value),
+      'has_media' => $has_media,
     ];
+  }
+
+  /**
+   * Checks whether markup holds any text once its tags are removed.
+   *
+   * @param string $html
+   *   The markup.
+   *
+   * @return bool
+   *   FALSE if it holds nothing but tags, whitespace and non-breaking spaces.
+   */
+  protected function hasText($html) {
+    $text = html_entity_decode(strip_tags($html), ENT_QUOTES | ENT_HTML5, 'UTF-8');
+
+    // A match failure (invalid UTF-8) counts as text, so content is never
+    // dropped because it could not be read.
+    return preg_match('/[^\s\x{00A0}]/u', $text) !== 0;
   }
 
   /**
