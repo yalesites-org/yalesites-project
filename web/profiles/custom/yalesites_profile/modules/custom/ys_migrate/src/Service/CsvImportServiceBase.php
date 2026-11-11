@@ -67,9 +67,38 @@ abstract class CsvImportServiceBase implements CsvImportServiceInterface {
    *
    * Deliberately an explicit list rather than strtotime(): "03/04/2026" means
    * different days to different readers, and a silently wrong publication date
-   * is worse than a rejected row.
+   * is worse than a rejected row. Slashed dates are read month first, as in
+   * the US.
+   *
+   * Besides the ISO and US forms, the list holds the date part of each of
+   * Drupal 7's built-in date formats, which a D7 date field prints unless the
+   * export View is given a custom one. Spelled-out months cannot be misread.
+   * Leading zeros are optional and month names ignore case in every format.
    */
-  const DATE_INPUT_FORMATS = ['Y-m-d', 'm/d/Y', 'n/j/Y', 'Y-n-j'];
+  const DATE_INPUT_FORMATS = [
+    'Y-m-d',
+    'm/d/Y',
+    'Y/m/d',
+    'd.m.Y',
+    'F j, Y',
+    'M j, Y',
+    'F j Y',
+    'M j Y',
+    'j F Y',
+    'j M Y',
+    'j F, Y',
+    'j. F Y',
+    'Y, F j',
+    'Y M j',
+  ];
+
+  /**
+   * Matches a time of day, in 24-hour or 12-hour form.
+   *
+   * Captures the hour, the minutes and the am/pm marker. Seconds are accepted
+   * and dropped, since the event form itself works in whole minutes.
+   */
+  const TIME_PATTERN = '/^(\d{1,2})(?::(\d{2}))?(?::\d{2})?\s*([ap])?\.?\s*(?:m\.?)?$/i';
 
   /**
    * Fallback text format per long-text field, keyed by field machine name.
@@ -191,6 +220,9 @@ abstract class CsvImportServiceBase implements CsvImportServiceInterface {
   /**
    * Parses a date cell into a date-only field's storage format.
    *
+   * A time after the date is allowed and dropped: Drupal 7's Post date and
+   * most of its date formats print one.
+   *
    * @param string $value
    *   The raw cell value.
    * @param string $column
@@ -204,24 +236,149 @@ abstract class CsvImportServiceBase implements CsvImportServiceInterface {
    */
   protected function parseDate($value, $column) {
     $value = trim($value);
-    if ($value === '') {
+    $normalised = $this->normaliseDateText($value);
+    if ($normalised === '') {
       return NULL;
     }
 
-    foreach (self::DATE_INPUT_FORMATS as $format) {
-      $date = \DateTime::createFromFormat($format, $value);
-      // Re-formatting catches values PHP rolls over, such as 2026-02-31
-      // becoming 2026-03-03.
-      if ($date && $date->format($format) === $value) {
-        return $date->format('Y-m-d');
+    $parts = $this->splitDateAndTime($normalised);
+    if ($parts === NULL || ($parts['rest'] !== '' && $this->parseTime($parts['rest']) === NULL)) {
+      throw new \InvalidArgumentException(sprintf(
+        '%s "%s" is not a valid date. Use YYYY-MM-DD, MM/DD/YYYY or a date such as March 4, 2026.',
+        $column,
+        $value
+      ));
+    }
+
+    return $parts['date'];
+  }
+
+  /**
+   * Removes what Drupal 7 and spreadsheets add around a date.
+   *
+   * D7's built-in date formats lead with the weekday ("Wednesday, March 4,
+   * 2026 - 2:00pm"), and an all-day D7 date can print "(All day)" in place of
+   * its time. Both are dropped, which leaves an all-day date as a date alone.
+   * ISO 8601's T between the date and the time becomes a space, and runs of
+   * whitespace, non-breaking spaces included, become one space.
+   *
+   * @param string $value
+   *   The cell value, with any markup already stripped.
+   *
+   * @return string
+   *   The date text, trimmed.
+   */
+  protected function normaliseDateText($value) {
+    // Byte patterns rather than /u, so a cell that is not valid UTF-8 still
+    // reaches the error message instead of becoming NULL.
+    $value = trim(preg_replace('/(?:\s|\xC2\xA0)+/', ' ', $value));
+    $value = preg_replace('/\(\s*all[ -]?day\s*\)/i', '', $value);
+    $value = preg_replace('/^(?:mon|tue|wed|thu|fri|sat|sun)[a-z]*\.?,?\s+/i', '', trim($value));
+    $value = preg_replace('/^(\d{4}-\d{1,2}-\d{1,2})T/i', '$1 ', $value);
+    return trim($value);
+  }
+
+  /**
+   * Splits a cell into its date and whatever follows the date.
+   *
+   * The date is the longest run of leading words that reads as one, so
+   * "March 4, 2026 - 2:00pm" splits after "2026". The separator Drupal 7 puts
+   * between the date and the time (" - "), or a comma or "at", is dropped.
+   *
+   * @param string $value
+   *   The cell, already passed through normaliseDateText().
+   *
+   * @return array|null
+   *   'date' as Y-m-d and 'rest' as the text after it, empty for a date alone,
+   *   or NULL when the cell does not start with a date.
+   */
+  protected function splitDateAndTime($value) {
+    $words = explode(' ', $value);
+    // No accepted date format runs to more than three words.
+    for ($count = min(count($words), 3); $count > 0; $count--) {
+      $date = $this->readDate(rtrim(implode(' ', array_slice($words, 0, $count)), ','));
+      if ($date !== NULL) {
+        $rest = implode(' ', array_slice($words, $count));
+        return [
+          'date' => $date,
+          'rest' => trim(preg_replace('/^(?:-|,|at\b)\s*/i', '', $rest)),
+        ];
       }
     }
 
-    throw new \InvalidArgumentException(sprintf(
-      '%s "%s" is not a valid date. Use YYYY-MM-DD or MM/DD/YYYY.',
-      $column,
-      $value
-    ));
+    return NULL;
+  }
+
+  /**
+   * Reads a date written in one of the accepted formats.
+   *
+   * @param string $value
+   *   The date text alone.
+   *
+   * @return string|null
+   *   The date as Y-m-d, or NULL when the text matches no accepted format or
+   *   is not a real day.
+   */
+  protected function readDate($value) {
+    foreach (self::DATE_INPUT_FORMATS as $format) {
+      // The ! zeroes every field the format leaves out, the time included.
+      $date = \DateTimeImmutable::createFromFormat('!' . $format, $value);
+      if (!$date) {
+        continue;
+      }
+      // PHP rolls an impossible date over (2026-02-31 becomes 2026-03-03) and
+      // only warns that it did.
+      $errors = \DateTimeImmutable::getLastErrors();
+      if ($errors && $errors['warning_count'] > 0) {
+        continue;
+      }
+      // Y also reads a two-digit year, as the first century: 3/4/26 would
+      // otherwise import as the year 26.
+      if (strpos($value, $date->format('Y')) === FALSE) {
+        continue;
+      }
+      return $date->format('Y-m-d');
+    }
+
+    return NULL;
+  }
+
+  /**
+   * Reads a time of day.
+   *
+   * @param string $value
+   *   The text to read, such as "14:00", "2:00 PM" or "2pm".
+   *
+   * @return string|null
+   *   The time as H:i, or NULL when the text is not a time.
+   */
+  protected function parseTime($value) {
+    if (!preg_match(self::TIME_PATTERN, trim($value), $matches)) {
+      return NULL;
+    }
+
+    $hour = (int) $matches[1];
+    $minute = (int) ($matches[2] ?? 0);
+    $meridiem = strtolower($matches[3] ?? '');
+
+    if ($minute > 59) {
+      return NULL;
+    }
+
+    if ($meridiem === '') {
+      // Without am/pm a bare number is too ambiguous to be a time.
+      if (($matches[2] ?? '') === '' || $hour > 23) {
+        return NULL;
+      }
+    }
+    else {
+      if ($hour < 1 || $hour > 12) {
+        return NULL;
+      }
+      $hour = ($hour % 12) + ($meridiem === 'p' ? 12 : 0);
+    }
+
+    return sprintf('%02d:%02d', $hour, $minute);
   }
 
   /**

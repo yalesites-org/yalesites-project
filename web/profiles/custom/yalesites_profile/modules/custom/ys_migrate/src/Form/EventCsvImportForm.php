@@ -316,7 +316,7 @@ class EventCsvImportForm extends FormBase {
   protected function columnNotes() {
     return [
       'title' => $this->t('Required. Used with Start to detect duplicates.'),
-      'start' => $this->t('Required. A date and time, such as 2026-03-04 14:00 or 3/4/2026 2:00 PM. A date alone means an all-day event.'),
+      'start' => $this->t('Required. A date and time, such as 2026-03-04 14:00, 3/4/2026 2:00 PM or March 4, 2026 - 2:00pm. A date alone means an all-day event.'),
       'end' => $this->t('A date and time, or just a time for an event that ends the same day. Must not be before Start. Leave empty for an event with no end time.'),
       'all day' => $this->t('Yes or No. Leave empty to decide from Start: a date with no time is all day. For a multi-day event, put the last day in End.'),
       'description' => $this->t('HTML, or plain text with a blank line between paragraphs. Images, video and embeds are left out.'),

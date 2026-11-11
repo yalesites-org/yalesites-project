@@ -103,14 +103,6 @@ class EventImportService extends CsvImportServiceBase {
   const STRING_MAX_LENGTH = 255;
 
   /**
-   * Matches a time of day, in 24-hour or 12-hour form.
-   *
-   * Captures the hour, the minutes and the am/pm marker. Seconds are accepted
-   * and dropped, since the event form itself works in whole minutes.
-   */
-  const TIME_PATTERN = '/^(\d{1,2})(?::(\d{2}))?(?::\d{2})?\s*([ap])?\.?\s*(?:m\.?)?$/i';
-
-  /**
    * Stored format of Start and End in the prepared data and the preview.
    *
    * The same format ys_content_export writes, so an export reads back in.
@@ -173,6 +165,8 @@ class EventImportService extends CsvImportServiceBase {
    *   only its own row rather than the whole file.
    */
   public function prepareEventData(array $row) {
+    $d7_start_time = $this->d7MarkupTime($row['start'] ?? '');
+
     // A Drupal 7 date field exports wrapped in a <span> unless the View strips
     // its tags, and Description needs tags kept, so a date may arrive wrapped.
     foreach (['start', 'end'] as $column) {
@@ -180,6 +174,19 @@ class EventImportService extends CsvImportServiceBase {
     }
 
     $dates = $this->parseEventDates($row);
+
+    // A D7 date format without times, such as "Medium no time", would
+    // otherwise turn every timed event into an all-day one without a word.
+    // D7 stores an all-day date from midnight, so a later time means the
+    // export dropped it.
+    if ($dates['all_day'] && trim($row['all day'] ?? '') === ''
+      && $d7_start_time !== NULL && $d7_start_time !== '00:00') {
+      throw new \InvalidArgumentException(sprintf(
+        'Start "%s" has no time, but the Drupal 7 event starts at %s. Export the date with a format that shows the time, such as Long, Medium or Short.',
+        trim($row['start']),
+        $d7_start_time
+      ));
+    }
     $description = $this->parseRichText($row['description'] ?? '');
     $description['html'] = $this->filterDescription($description['html']);
     $website = $this->parseEventWebsite($row['event website'] ?? '', $row['event website text'] ?? '');
@@ -563,7 +570,34 @@ class EventImportService extends CsvImportServiceBase {
   }
 
   /**
+   * Reads the time a Drupal 7 date field's markup records for Start.
+   *
+   * With the RDF module on, as in D7's standard profile, a date field wraps
+   * its text in a <span> whose content attribute holds the date in ISO 8601,
+   * whatever date format the text uses. Only Start's is trustworthy: with "End
+   * date only", D7 still writes the start there.
+   *
+   * @param string $cell
+   *   The Start cell, before its markup is stripped.
+   *
+   * @return string|null
+   *   The time as H:i, or NULL when the cell has no such attribute.
+   */
+  protected function d7MarkupTime($cell) {
+    if (preg_match('/\bcontent="\d{4}-\d{2}-\d{2}T(\d{2}:\d{2})/', $cell, $matches)) {
+      return $matches[1];
+    }
+    return NULL;
+  }
+
+  /**
    * Splits a date-and-time cell into its date and its time.
+   *
+   * Reads every date form parseDate() does, so the default Long, Medium and
+   * Short formats of a Drupal 7 date field ("Wednesday, March 4, 2026 -
+   * 2:00pm") need no custom format in the export View. A D7 date's markup is
+   * stripped before this runs, and its content attribute is not read: with
+   * "End date only", D7 still puts the start's time there.
    *
    * @param string $value
    *   The raw cell value: a date, a date and a time, or (for End) a time.
@@ -579,35 +613,30 @@ class EventImportService extends CsvImportServiceBase {
    */
   protected function parseDateTime($value, $column) {
     $value = trim($value);
-    if ($value === '') {
+    $normalised = $this->normaliseDateText($value);
+    if ($normalised === '') {
       return NULL;
     }
 
-    $time = $this->parseTime($value);
+    $time = $this->parseTime($normalised);
     if ($time !== NULL) {
       return ['date' => NULL, 'time' => $time];
     }
 
-    // ISO 8601 joins the date and time with a T rather than a space.
-    $normalised = preg_replace('/^(\d{4}-\d{1,2}-\d{1,2})T/i', '$1 ', $value);
-    [$date_part, $time_part] = array_pad(preg_split('/\s+/', $normalised, 2), 2, '');
-
-    try {
-      $date = $this->parseDate($date_part, $column);
-    }
-    catch (\InvalidArgumentException $e) {
+    $parts = $this->splitDateAndTime($normalised);
+    if ($parts === NULL) {
       throw new \InvalidArgumentException(sprintf(
-        '%s "%s" is not a valid date and time. Use YYYY-MM-DD HH:MM or MM/DD/YYYY H:MM AM.',
+        '%s "%s" is not a valid date and time. Use YYYY-MM-DD HH:MM, MM/DD/YYYY H:MM AM or a date such as March 4, 2026 - 2:00pm.',
         $column,
         $value
       ));
     }
 
-    if ($time_part === '') {
-      return ['date' => $date, 'time' => NULL];
+    if ($parts['rest'] === '') {
+      return ['date' => $parts['date'], 'time' => NULL];
     }
 
-    $time = $this->parseTime($time_part);
+    $time = $this->parseTime($parts['rest']);
     if ($time === NULL) {
       throw new \InvalidArgumentException(sprintf(
         '%s "%s" does not have a valid time. Use a time such as 14:00 or 2:00 PM.',
@@ -616,45 +645,7 @@ class EventImportService extends CsvImportServiceBase {
       ));
     }
 
-    return ['date' => $date, 'time' => $time];
-  }
-
-  /**
-   * Reads a time of day.
-   *
-   * @param string $value
-   *   The text to read, such as "14:00", "2:00 PM" or "2pm".
-   *
-   * @return string|null
-   *   The time as H:i, or NULL when the text is not a time.
-   */
-  protected function parseTime($value) {
-    if (!preg_match(self::TIME_PATTERN, trim($value), $matches)) {
-      return NULL;
-    }
-
-    $hour = (int) $matches[1];
-    $minute = (int) ($matches[2] ?? 0);
-    $meridiem = strtolower($matches[3] ?? '');
-
-    if ($minute > 59) {
-      return NULL;
-    }
-
-    if ($meridiem === '') {
-      // Without am/pm a bare number is too ambiguous to be a time.
-      if (($matches[2] ?? '') === '' || $hour > 23) {
-        return NULL;
-      }
-    }
-    else {
-      if ($hour < 1 || $hour > 12) {
-        return NULL;
-      }
-      $hour = ($hour % 12) + ($meridiem === 'p' ? 12 : 0);
-    }
-
-    return sprintf('%02d:%02d', $hour, $minute);
+    return ['date' => $parts['date'], 'time' => $time];
   }
 
   /**

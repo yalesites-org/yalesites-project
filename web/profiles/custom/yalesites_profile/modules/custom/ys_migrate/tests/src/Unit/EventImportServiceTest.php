@@ -420,6 +420,68 @@ class EventImportServiceTest extends UnitTestCase {
         ['start' => '<span class="date-display-single">2026-03-04</span>'],
         '2026-03-04 00:00', '2026-03-04 23:59', TRUE,
       ],
+      // The YaleSites D7 platform's Long, Medium and Short date formats, which
+      // a D7 date field prints unless the View sets a custom one.
+      'D7 Long format' => [
+        ['start' => 'Wednesday, March 4, 2026 - 2:00pm', 'end' => 'Wednesday, March 4, 2026 - 4:30pm'],
+        '2026-03-04 14:00', '2026-03-04 16:30', FALSE,
+      ],
+      'D7 Medium format' => [
+        ['start' => 'March 4, 2026 - 2:00pm', 'end' => 'March 4, 2026 - 4:30pm'],
+        '2026-03-04 14:00', '2026-03-04 16:30', FALSE,
+      ],
+      'D7 Short format' => [
+        ['start' => '03/04/2026 - 2:00pm', 'end' => '03/04/2026 - 4:30pm'],
+        '2026-03-04 14:00', '2026-03-04 16:30', FALSE,
+      ],
+      'D7 core default Medium and Long formats' => [
+        ['start' => 'Wed, 03/04/2026 - 14:00', 'end' => 'Wednesday, March 4, 2026 - 16:30'],
+        '2026-03-04 14:00', '2026-03-04 16:30', FALSE,
+      ],
+      'D7 day-first and year-first formats with names or dots' => [
+        ['start' => '4 March 2026 - 14:00', 'end' => '2026, March 4 - 16:30'],
+        '2026-03-04 14:00', '2026-03-04 16:30', FALSE,
+      ],
+      'D7 dotted and slashed year-first formats' => [
+        ['start' => '04.03.2026 - 14:00', 'end' => '2026/03/04 - 16:30'],
+        '2026-03-04 14:00', '2026-03-04 16:30', FALSE,
+      ],
+      // D7 writes Start's time into the content attribute even when the field
+      // shows "End date only", so only the visible text may be read.
+      'D7 Long format markup, End date only' => [
+        [
+          'start' => '<span class="date-display-single" property="dc:date" datatype="xsd:dateTime" content="2026-03-04T14:00:00-05:00">Wednesday, March 4, 2026 - 2:00pm</span>',
+          'end' => '<span class="date-display-single" property="dc:date" datatype="xsd:dateTime" content="2026-03-04T14:00:00-05:00">Friday, March 6, 2026 - 4:30pm</span>',
+        ],
+        '2026-03-04 14:00', '2026-03-06 16:30', FALSE,
+      ],
+      'D7 all-day markup, whose content starts at midnight' => [
+        ['start' => '<span class="date-display-single" property="dc:date" datatype="xsd:dateTime" content="2026-03-04T00:00:00-05:00">March 4, 2026</span>'],
+        '2026-03-04 00:00', '2026-03-04 23:59', TRUE,
+      ],
+      'All Day Yes accepts a D7 date shown without its time' => [
+        [
+          'start' => '<span class="date-display-single" property="dc:date" datatype="xsd:dateTime" content="2026-03-04T14:00:00-05:00">March 4, 2026</span>',
+          'all day' => 'Yes',
+        ],
+        '2026-03-04 00:00', '2026-03-04 23:59', TRUE,
+      ],
+      'D7 all-day label' => [
+        ['start' => 'Wednesday, March 4, 2026 (All day)', 'end' => 'Friday, March 6, 2026 (All day)'],
+        '2026-03-04 00:00', '2026-03-06 23:59', TRUE,
+      ],
+      'date and time joined by a comma or "at"' => [
+        ['start' => 'March 4, 2026, 2:00 PM', 'end' => 'Mar 4, 2026 at 4:30 PM'],
+        '2026-03-04 14:00', '2026-03-04 16:30', FALSE,
+      ],
+      'Excel date with seconds' => [
+        ['start' => '3/4/2026 2:00:00 PM', 'end' => '3/4/2026 4:30:00 PM'],
+        '2026-03-04 14:00', '2026-03-04 16:30', FALSE,
+      ],
+      'non-breaking spaces from the export' => [
+        ['start' => "March\u{00A0}4, 2026\u{00A0}- 2:00pm"],
+        '2026-03-04 14:00', '2026-03-04 14:00', FALSE,
+      ],
     ];
   }
 
@@ -501,6 +563,22 @@ class EventImportServiceTest extends UnitTestCase {
       'unrecognised All Day' => [
         ['start' => '2026-03-04', 'all day' => 'maybe'],
         'All Day "maybe" is not a yes/no value.',
+      ],
+      'two-digit year' => [
+        ['start' => '3/4/26 2:00 PM'],
+        'Start "3/4/26 2:00 PM" is not a valid date and time.',
+      ],
+      'D7 format with an impossible date' => [
+        ['start' => 'February 31, 2026 - 2:00pm'],
+        'Start "February 31, 2026 - 2:00pm" is not a valid date and time.',
+      ],
+      'D7 date format that drops the time' => [
+        ['start' => '<span class="date-display-single" property="dc:date" datatype="xsd:dateTime" content="2026-03-04T14:00:00-05:00">March 4, 2026</span>'],
+        'Start "March 4, 2026" has no time, but the Drupal 7 event starts at 14:00.',
+      ],
+      'D7 format with a bad time' => [
+        ['start' => 'March 4, 2026 - 2:75pm'],
+        'Start "March 4, 2026 - 2:75pm" does not have a valid time.',
       ],
     ];
   }
