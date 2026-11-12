@@ -219,6 +219,48 @@ class ListingMigrator {
   }
 
   /**
+   * Replaces the params of a block's current revision, keeping its dates.
+   *
+   * Writes the data and revision field rows directly, so the block's changed
+   * time and revision log are not touched (#2191). Older revisions are left
+   * alone.
+   *
+   * @param int|string $entity_id
+   *   The block content entity id.
+   * @param array $params
+   *   The params to store.
+   */
+  public function replaceCurrentParams(int|string $entity_id, array $params): void {
+    $storage = $this->entityTypeManager->getStorage('block_content');
+    $definition = $this->entityFieldManager->getFieldStorageDefinitions('block_content')['field_view_params'] ?? NULL;
+    if (!$definition || !$storage instanceof SqlEntityStorageInterface) {
+      return;
+    }
+    /** @var \Drupal\Core\Entity\Sql\DefaultTableMapping $mapping */
+    $mapping = $storage->getTableMapping();
+    $column = $mapping->getFieldColumnName($definition, 'params');
+    $revision_id = $this->database->select($storage->getEntityType()->getBaseTable(), 'b')
+      ->fields('b', [$storage->getEntityType()->getKey('revision')])
+      ->condition($storage->getEntityType()->getKey('id'), $entity_id)
+      ->execute()
+      ->fetchField();
+    if (!$revision_id) {
+      return;
+    }
+    $schema = $this->database->schema();
+    foreach ([$mapping->getDedicatedDataTableName($definition), $mapping->getDedicatedRevisionTableName($definition)] as $table) {
+      if ($schema->tableExists($table)) {
+        $this->database->update($table)
+          ->fields([$column => serialize(json_encode($params))])
+          ->condition('entity_id', $entity_id)
+          ->condition('revision_id', $revision_id)
+          ->condition('deleted', 0)
+          ->execute();
+      }
+    }
+  }
+
+  /**
    * Returns the dedicated block_content field tables that exist.
    *
    * Resolved once through the table mapping, so hashed table names are found

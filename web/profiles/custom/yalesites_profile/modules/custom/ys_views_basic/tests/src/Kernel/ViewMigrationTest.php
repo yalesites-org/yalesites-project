@@ -426,6 +426,20 @@ class ViewMigrationTest extends YsKernelTestBase {
     $event = $make('event_list_item', $event_old);
     $directory = $make('profile_card', $directory_old);
     $filterless = $make('event_list_item', ViewsBasicManager::displayAllPredecessorParams('event_list', TRUE));
+    // Listings an editor built to show every item (#2191): same display and
+    // limit as the old preset, but not the old preset.
+    $editor_event = $make('event_list_item', ['display' => 'all', 'limit' => 10, 'sort_by' => 'field_event_start:ASC']);
+    $editor_people = $make('profile_card', [
+      'display' => 'all',
+      'limit' => 10,
+      'sort_by' => 'field_last_name:ASC',
+      'card_size' => 'small',
+    ]);
+    // Age every block's changed time so a save() during the deploy shows.
+    $this->container->get('database')->update('block_content_field_data')->fields(['changed' => 1000000000])->execute();
+    $this->container->get('database')->update('block_content_field_revision')->fields(['changed' => 1000000000])->execute();
+    $this->blockStorage->resetCache();
+    $changed_before = 1000000000;
     // A block saved again through the form: extra keys added, operator dropped.
     $resaved_params = $event_old;
     unset($resaved_params['operator']);
@@ -442,7 +456,10 @@ class ViewMigrationTest extends YsKernelTestBase {
     $this->assertEquals($event_new, $this->storedParams($event));
     $this->assertEquals($event_new, $this->storedParams($filterless));
     $this->assertEquals(ViewsBasicManager::predecessorPreset('directory')['params'], $this->storedParams($directory));
-    $this->assertEquals(['display' => 'pager'] + $resaved_params, $this->storedParams($resaved));
+    $this->assertEquals($resaved_params, $this->storedParams($resaved), 'A re-saved block no longer matches the old preset and is left alone.');
+    $this->assertSame('all', $this->storedParams($editor_event)['display'], 'An editor-built Events listing keeps "Display all items".');
+    $this->assertSame('all', $this->storedParams($editor_people)['display'], 'An editor-built People listing keeps "Display all items".');
+    $this->assertSame($changed_before, (int) $this->blockStorage->load($event)->getChangedTime(), 'A repaired block keeps its Updated date.');
     $this->assertSame('pager', $this->storedParams($event)['display']);
     $this->assertSame(10, $this->storedParams($event)['limit']);
     $this->assertEquals(['limit' => 25] + $event_old, $this->storedParams($edited_limit));
