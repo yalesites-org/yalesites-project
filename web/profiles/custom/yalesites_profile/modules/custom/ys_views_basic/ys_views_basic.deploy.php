@@ -455,6 +455,8 @@ function ys_views_basic_deploy_10003(&$sandbox) {
  * On a site where 10002 runs with the current preset, this finds nothing.
  */
 function ys_views_basic_deploy_10004(&$sandbox) {
+  /** @var \Drupal\ys_views_basic\Service\ListingMigrator $migrator */
+  $migrator = \Drupal::service('ys_views_basic.listing_migrator');
   $block_storage = \Drupal::entityTypeManager()->getStorage('block_content');
 
   if (!isset($sandbox['ids'])) {
@@ -485,8 +487,7 @@ function ys_views_basic_deploy_10004(&$sandbox) {
     if (!in_array($params, $old_params, FALSE)) {
       continue;
     }
-    $block->set('field_view_params', ['params' => json_encode(ViewsBasicManager::predecessorPreset($legacy)['params'])]);
-    $block->save();
+    $migrator->replaceCurrentParams($block->id(), ViewsBasicManager::predecessorPreset($legacy)['params']);
     $sandbox['updated']++;
   }
   if ($chunk) {
@@ -564,12 +565,15 @@ function ys_views_basic_deploy_10005(&$sandbox) {
  * Before #1705 the predecessor presets set display to "all", so blocks that
  * deploy_10002 had already migrated list every event or profile with no
  * pager. A block stored with display "all" and limit 10 is put on the pager
- * and keeps its other settings. A block with a different display or limit is
- * left alone.
+ * and keeps its other settings. Only a block whose params equal the old
+ * preset is changed, so a listing an editor built to show every item is left
+ * alone (#2191). The rows are written directly, so Updated dates stay.
  * deploy_10004 repairs the filterless variant. Idempotent: a second run finds
  * no block with the old params. Batched like deploy_10004.
  */
 function ys_views_basic_deploy_10006(&$sandbox) {
+  /** @var \Drupal\ys_views_basic\Service\ListingMigrator $migrator */
+  $migrator = \Drupal::service('ys_views_basic.listing_migrator');
   $block_storage = \Drupal::entityTypeManager()->getStorage('block_content');
 
   if (!isset($sandbox['ids'])) {
@@ -591,15 +595,15 @@ function ys_views_basic_deploy_10006(&$sandbox) {
     $legacy = $sandbox['legacy'][$block->bundle()];
     $field = $block->get('field_view_params');
     $params = $field->isEmpty() ? NULL : json_decode($field->first()->getValue()['params'] ?? '', TRUE);
-    // Match on display "all" with limit 10 only, so a block an editor saved
-    // again (which adds and drops other keys) is still repaired. Every other
-    // setting is kept.
-    if (!is_array($params) || ($params['display'] ?? NULL) !== 'all' || (int) ($params['limit'] ?? 0) !== 10) {
+    // Match the exact old preset (same keys and values in any order), as
+    // deploy_10004 does. Display "all" with limit 10 alone also describes a
+    // listing an editor built to show every item, which must stay as it is
+    // (#2191).
+    if ($params != ViewsBasicManager::displayAllPredecessorParams($legacy)) {
       continue;
     }
     $params['display'] = 'pager';
-    $block->set('field_view_params', ['params' => json_encode($params)]);
-    $block->save();
+    $migrator->replaceCurrentParams($block->id(), $params);
     $sandbox['updated']++;
   }
   if ($chunk) {
