@@ -30,7 +30,9 @@ class BeaconSuperadminOnlyAccessCheckTest extends UnitTestCase {
     // The access result adds the 'user' cache context via cachePerUser(), which
     // validates the token against the cache_contexts_manager service.
     $container = new ContainerBuilder();
-    $container->set('cache_contexts_manager', $this->createMock(CacheContextsManager::class));
+    $cache_contexts_manager = $this->createMock(CacheContextsManager::class);
+    $cache_contexts_manager->method('assertValidTokens')->willReturn(TRUE);
+    $container->set('cache_contexts_manager', $cache_contexts_manager);
     \Drupal::setContainer($container);
   }
 

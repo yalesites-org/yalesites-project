@@ -63,3 +63,11 @@ services:
   ys_layouts.orphaned_inline_block_cleaner:
     class: Drupal\ys_layouts\Service\OrphanedInlineBlockCleaner
     arguments: ['@entity_type.manager', '@entity_field.manager', '@inline_block.usage', '@logger.channel.ys_layouts']
+  # Core only grants an inline block's child items (e.g. Callout items) access
+  # when the layout uses the block's default revision. After a page revert the
+  # layout pins an older revision, so match on the block ID instead.
+  ys_layouts.pinned_inline_block_dependency:
+    class: Drupal\ys_layouts\EventSubscriber\PinnedInlineBlockDependency
+    arguments: ['@entity_type.manager', '@database', '@inline_block.usage', '@plugin.manager.layout_builder.section_storage']
+    tags:
+      - { name: event_subscriber }

@@ -248,21 +248,6 @@ function ys_layouts_form_alter(&$form, $form_state, $form_id) {
       // reordered. ys_views_basic_form_alter() runs after this hook and
       // groups that container, not the two fields, into the listing-block
       // General tab.
-      //
-      // Split into its own visually distinct warning (#1481): it's the only
-      // irreversible decision on this form and used to trail as plain help
-      // text easy to skim past. Styled from this module's own
-      // reusable-toggle.css rather than borrowing core's "messages
-      // messages--warning", whose rendering here depends on which route built
-      // the form: in the off-canvas modal (the normal editor path) gin_lb
-      // namespaces messages to .glb-messages* (gin_lb/src/classes.json) and
-      // raw #prefix/#suffix markup never passes through the glb_classes()
-      // renamer, so the bare classes resolve to nothing — transparent
-      // background, plain body text. On the full-page /layout_builder/add
-      // route Gin's admin CSS is present and styles them as a dark box
-      // instead. Owning the styling keeps it identical on both.
-      $form['reusable']['#suffix'] = '<div role="note" class="ys-toggle-row__warning">' . t('This setting cannot be changed after saving.') . '</div>';
-
       $form['info']['#title'] = t('Reusable Block title');
       $form['info']['#description'] = t('Add a short, descriptive title to easily find and reuse the Reusable Block. Defaults to Administrative label if no title is provided.');
       // Disabled (not hidden) while unchecked, matching the same pattern as
