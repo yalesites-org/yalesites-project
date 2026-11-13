@@ -211,8 +211,18 @@ ys_core.site:
           type: label
           label: 'Custom vocabulary name'
     font_pairing:
-      type: string
+      type: mapping
       label: 'Font pairing'
+      mapping:
+        heading_font:
+          type: string
+          label: 'Heading font'
+        heading_numerals:
+          type: string
+          label: 'Heading numeral style'
+        body_numerals:
+          type: string
+          label: 'Body numeral style'
     cas_app_name:
       type: string
       label: 'CAS application name'
