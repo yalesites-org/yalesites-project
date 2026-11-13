@@ -9,6 +9,7 @@ use Drupal\Core\Routing\RouteMatchInterface;
 use Drupal\Core\Session\AccountInterface;
 use Drupal\Tests\UnitTestCase;
 use Drupal\node\NodeInterface;
+use Drupal\taxonomy\TermInterface;
 use Drupal\ys_toolbar\ToolbarItemsService;
 
 /**
@@ -75,14 +76,19 @@ class ToolbarItemsServiceTest extends UnitTestCase {
    *   The value returned for the route's "node" parameter.
    * @param string $routeName
    *   The current route name.
+   * @param mixed $term
+   *   The value returned for the route's "taxonomy_term" parameter.
    *
    * @return \Drupal\ys_toolbar\ToolbarItemsService
    *   The service under test.
    */
-  protected function createService($node, string $routeName = ''): ToolbarItemsService {
+  protected function createService($node, string $routeName = '', $term = NULL): ToolbarItemsService {
     $this->routeMatch->method('getParameter')
-      ->with('node')
-      ->willReturn($node);
+      ->willReturnCallback(fn($name) => match ($name) {
+        'node' => $node,
+        'taxonomy_term' => $term,
+        default => NULL,
+      });
     $this->routeMatch->method('getRouteName')
       ->willReturn($routeName);
 
@@ -486,6 +492,44 @@ class ToolbarItemsServiceTest extends UnitTestCase {
 
     $this->assertArrayHasKey('toolbar_unpublish_link', $items);
     $this->assertArrayNotHasKey('toolbar_publish_link', $items);
+  }
+
+  /**
+   * Term pages get Manage Settings and Edit Layout, with a destination.
+   *
+   * @covers ::addItems
+   */
+  public function testAddItemsOnTermRouteHasEditAndLayoutOnly() {
+    $this->accessManager->method('checkNamedRoute')->willReturn(TRUE);
+    $this->redirectDestination->method('getAsArray')->willReturn(['destination' => '/tags/x']);
+    $term = $this->createMock(TermInterface::class);
+    $term->method('id')->willReturn(5);
+    $service = $this->createService(NULL, 'entity.taxonomy_term.canonical', $term);
+
+    $items = $service->addItems();
+
+    $this->assertSame(['toolbar_edit_link', 'toolbar_layout_link'], array_keys($items));
+    $url = $items['toolbar_edit_link']['tab']['#url'];
+    $this->assertSame('entity.taxonomy_term.edit_form', $url->getRouteName());
+    $this->assertSame(['taxonomy_term' => 5], $url->getRouteParameters());
+    $this->assertSame(['destination' => '/tags/x'], $url->getOption('query'));
+    $this->assertSame('Manage Settings', $items['toolbar_edit_link']['tab']['#title']);
+    $this->assertSame('layout_builder.overrides.taxonomy_term.view', $items['toolbar_layout_link']['tab']['#url']->getRouteName());
+  }
+
+  /**
+   * The term edit form does not show its own Manage Settings button.
+   *
+   * @covers ::addItems
+   */
+  public function testAddItemsOnTermEditRouteOmitsEditLink() {
+    $this->accessManager->method('checkNamedRoute')->willReturn(TRUE);
+    $this->redirectDestination->method('getAsArray')->willReturn([]);
+    $term = $this->createMock(TermInterface::class);
+    $term->method('id')->willReturn(5);
+    $service = $this->createService(NULL, 'entity.taxonomy_term.edit_form', $term);
+
+    $this->assertArrayNotHasKey('toolbar_edit_link', $service->addItems());
   }
 
 }
