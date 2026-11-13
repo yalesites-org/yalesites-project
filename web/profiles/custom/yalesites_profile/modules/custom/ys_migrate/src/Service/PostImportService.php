@@ -496,6 +496,11 @@ class PostImportService extends CsvImportServiceBase {
   /**
    * Converts plain text into paragraphs, keeping single line breaks.
    *
+   * A single line break becomes a <br> with no newline after it. The Text
+   * block's basic_html format runs core's autop filter, which adds a <br />
+   * before every newline that does not directly follow "<br />", so a newline
+   * left after the <br> would show as a blank line.
+   *
    * @param string $text
    *   Plain text with blank lines between paragraphs.
    *
@@ -503,10 +508,17 @@ class PostImportService extends CsvImportServiceBase {
    *   The text as escaped HTML paragraphs.
    */
   protected function plainTextToHtml($text) {
-    $paragraphs = array_filter(array_map('trim', preg_split('/\R\s*\R/', $text)), 'strlen');
+    // (*BSR_ANYCRLF) limits \R to CR, LF and CRLF. By default it also matches
+    // the byte 0x85, which ends letters such as "ą" and "Å" in UTF-8, so a
+    // line ending in one would split into two paragraphs mid-letter. The u
+    // flag would fix that too, but fails on a cell that is not valid UTF-8.
+    $paragraphs = array_filter(array_map('trim', preg_split('/(*BSR_ANYCRLF)\R\s*\R/', $text)), 'strlen');
 
+    // str_replace() rather than \R, which without the u flag also matches the
+    // 0x85 byte inside letters such as "Å". CRLF is listed first so it becomes
+    // one <br>, not two.
     return implode("\n", array_map(
-      static fn ($paragraph) => '<p>' . nl2br(Html::escape($paragraph), FALSE) . '</p>',
+      static fn ($paragraph) => '<p>' . str_replace(["\r\n", "\r", "\n"], '<br>', Html::escape($paragraph)) . '</p>',
       $paragraphs
     ));
   }

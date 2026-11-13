@@ -567,17 +567,43 @@ class PostImportServiceTest extends UnitTestCase {
   /**
    * Plain text becomes escaped paragraphs, keeping single line breaks.
    *
+   * No newline may follow a <br>: the Text block's autop filter would add a
+   * second line break before it, which shows as a blank line. The "Å" holds
+   * the 0x85 byte that a non-UTF-8 \R would mistake for a line break.
+   *
    * @covers ::preparePostData
    */
   public function testPreparePostDataWrapsPlainTextBody() {
     $result = $this->postImport->preparePostData([
       'title' => 'Plain',
       'publish date' => '2026-03-04',
-      'body' => "Research & teaching\nin one line pair.\r\n\r\nSecond paragraph.",
+      'body' => "Research & teaching\nin \u{00C5}land.\r\nOpen to all.\r\n\r\nSecond paragraph.",
     ]);
 
     $this->assertSame(
-      "<p>Research &amp; teaching<br>\nin one line pair.</p>\n<p>Second paragraph.</p>",
+      "<p>Research &amp; teaching<br>in \u{00C5}land.<br>Open to all.</p>\n<p>Second paragraph.</p>",
+      $result['body']
+    );
+  }
+
+  /**
+   * A letter just before a single line break stays whole.
+   *
+   * In UTF-8, "ą" is C4 85 and "Å" is C3 85. A \R that matches 0x85 as a
+   * line break reads that byte and the newline after it as a blank line,
+   * splitting the paragraph mid-letter.
+   *
+   * @covers ::preparePostData
+   */
+  public function testPreparePostDataKeepsLetterBeforeLineBreak() {
+    $result = $this->postImport->preparePostData([
+      'title' => 'Plain',
+      'publish date' => '2026-03-04',
+      'body' => "Line ending in \u{0105}\nLine ending in \u{00C5}\nLast line.",
+    ]);
+
+    $this->assertSame(
+      "<p>Line ending in \u{0105}<br>Line ending in \u{00C5}<br>Last line.</p>",
       $result['body']
     );
   }
