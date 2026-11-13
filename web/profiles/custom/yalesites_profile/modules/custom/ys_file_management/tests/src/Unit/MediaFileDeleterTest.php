@@ -142,75 +142,6 @@ class MediaFileDeleterTest extends UnitTestCase {
   }
 
   /**
-   * Tests validateFile() with a valid FileInterface object.
-   *
-   * @covers ::validateFile
-   */
-  public function testValidateFileWithValidFile() {
-    $file = $this->createMockFile();
-    $result = $this->mediaFileDeleter->validateFile($file);
-    $this->assertTrue($result);
-  }
-
-  /**
-   * Tests validateFile() with NULL.
-   *
-   * @covers ::validateFile
-   */
-  public function testValidateFileWithNull() {
-    $result = $this->mediaFileDeleter->validateFile(NULL);
-    $this->assertFalse($result);
-  }
-
-  /**
-   * Tests validateFile() with invalid object.
-   *
-   * @covers ::validateFile
-   */
-  public function testValidateFileWithInvalidObject() {
-    $this->loggerChannel->expects($this->once())
-      ->method('error')
-      ->with('Invalid file object provided to MediaFileDeleter');
-
-    $result = $this->mediaFileDeleter->validateFile(new \stdClass());
-    $this->assertFalse($result);
-  }
-
-  /**
-   * Tests validateFileUri() with a valid URI.
-   *
-   * @covers ::validateFileUri
-   */
-  public function testValidateFileUriWithValidUri() {
-    // Mock only isValidScheme - getScheme is static and will work normally.
-    $this->streamWrapperManager->method('isValidScheme')
-      ->with('public')
-      ->willReturn(TRUE);
-
-    $result = $this->mediaFileDeleter->validateFileUri('public://test.jpg');
-    $this->assertTrue($result);
-  }
-
-  /**
-   * Tests validateFileUri() with invalid URI scheme.
-   *
-   * @covers ::validateFileUri
-   */
-  public function testValidateFileUriWithInvalidScheme() {
-    // Mock only isValidScheme - getScheme is static and will work normally.
-    $this->streamWrapperManager->method('isValidScheme')
-      ->with('invalid')
-      ->willReturn(FALSE);
-
-    $this->loggerChannel->expects($this->once())
-      ->method('error')
-      ->with('Invalid file URI scheme for @uri', ['@uri' => 'invalid://test.jpg']);
-
-    $result = $this->mediaFileDeleter->validateFileUri('invalid://test.jpg');
-    $this->assertFalse($result);
-  }
-
-  /**
    * Tests deleteFile() with successful deletion.
    *
    * @covers ::deleteFile
@@ -378,24 +309,10 @@ class MediaFileDeleterTest extends UnitTestCase {
   }
 
   /**
-   * Tests deleteFile() with invalid file object.
-   *
-   * @covers ::validateFile
-   */
-  public function testDeleteFileWithInvalidFile() {
-    $this->loggerChannel->expects($this->once())
-      ->method('error')
-      ->with('Invalid file object provided to MediaFileDeleter');
-
-    // Test validateFile with non-FileInterface.
-    $result = $this->mediaFileDeleter->validateFile(new \stdClass());
-    $this->assertFalse($result);
-  }
-
-  /**
    * Tests deleteFile() with invalid URI.
    *
    * @covers ::deleteFile
+   * @covers ::validateFileUri
    */
   public function testDeleteFileWithInvalidUri() {
     $file = $this->createMockFile(123, 'invalid://test.jpg', 'test.jpg');
@@ -406,25 +323,28 @@ class MediaFileDeleterTest extends UnitTestCase {
       ->willReturn(FALSE);
 
     $this->messenger->expects($this->once())
-      ->method('addError');
+      ->method('addError')
+      ->with($this->callback(
+        fn($message) => $message->getUntranslatedString() === 'Cannot delete file: invalid file location.'
+      ));
 
-    // Logger is called twice: once in validateFileUri, once in deleteFile.
+    // Logger is called twice: once for the scheme check, once in deleteFile.
+    $errors = [];
     $this->loggerChannel->expects($this->exactly(2))
-      ->method('error');
+      ->method('error')
+      ->willReturnCallback(function (...$args) use (&$errors) {
+        $errors[] = $args;
+      });
+
+    // Nothing is deleted when the scheme is rejected.
+    $this->fileSystem->expects($this->never())->method('delete');
+    $file->expects($this->never())->method('delete');
 
     $result = $this->mediaFileDeleter->deleteFile($file);
     $this->assertFalse($result);
-  }
-
-  /**
-   * Tests that the service implements the interface.
-   *
-   * @covers ::__construct
-   */
-  public function testServiceImplementsInterface() {
-    $this->assertInstanceOf(
-      'Drupal\ys_file_management\Service\MediaFileDeleterInterface',
-      $this->mediaFileDeleter
+    $this->assertSame(
+      ['Invalid file URI scheme for @uri', ['@uri' => 'invalid://test.jpg']],
+      $errors[0]
     );
   }
 

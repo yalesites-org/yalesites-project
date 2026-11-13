@@ -10,6 +10,8 @@ use Drupal\Core\Form\FormStateInterface;
 use Drupal\Core\Routing\RouteMatchInterface;
 use Drupal\Tests\UnitTestCase;
 use Drupal\taxonomy\TermStorageInterface;
+use Drupal\views\Plugin\views\display\DisplayPluginBase;
+use Drupal\views\ViewExecutable;
 use Drupal\ys_views_content_resources\ViewsContentResourcesManager;
 
 /**
@@ -640,6 +642,48 @@ class ViewsContentResourcesManagerTest extends UnitTestCase {
     $this->assertSame(['offset'], $selectors['offset_array']);
     $this->assertSame(['pinned_to_top'], $selectors['pinned_to_top_array']);
     $this->assertSame(ViewsContentResourcesManager::DEFAULT_PIN_LABEL, $selectors['pin_label_ajax']);
+  }
+
+  /**
+   * An empty preview becomes an empty render array, with no PHP warning.
+   *
+   * ViewExecutable::preview() returns NULL when the build failed and FALSE
+   * when the display could not be set (yalesites-org/YaleSites-Internal#1970).
+   * The re-entry flag must still be cleared, so a second call runs again.
+   *
+   * @covers ::setupView
+   */
+  public function testSetupViewWithEmptyPreviewReturnsEmptyRenderArray() {
+    $params = json_encode([
+      'filters' => [
+        'types' => ['resource'],
+        'terms_include' => [],
+        'terms_exclude' => [],
+      ],
+      'operator' => '+',
+      'sort_by' => 'field_publish_date:DESC',
+      'view_mode' => 'card',
+      'display' => 'limit',
+      'limit' => 10,
+      'offset' => 0,
+      'field_options' => [],
+      'show_current_entity' => 0,
+      'pinned_to_top' => FALSE,
+      'pin_label' => '',
+    ]);
+
+    foreach ([NULL, FALSE] as $preview) {
+      $display = $this->createMock(DisplayPluginBase::class);
+      $display->method('getOption')->willReturn([]);
+      $view = $this->createMock(ViewExecutable::class);
+      $view->method('getDisplay')->willReturn($display);
+      $view->expects($this->once())->method('execute');
+      $view->expects($this->once())->method('preview')->willReturn($preview);
+
+      $this->manager->setupView($view, $params);
+
+      $this->assertSame([], $view);
+    }
   }
 
 }

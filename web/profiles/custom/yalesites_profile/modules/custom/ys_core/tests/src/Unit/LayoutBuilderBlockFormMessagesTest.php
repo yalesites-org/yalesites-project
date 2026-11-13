@@ -3,7 +3,9 @@
 namespace Drupal\Tests\ys_core\Unit;
 
 use Drupal\Core\Form\FormState;
+use Drupal\Core\Routing\AdminContext;
 use Drupal\Tests\UnitTestCase;
+use Symfony\Component\DependencyInjection\ContainerBuilder;
 
 /**
  * Tests that Layout Builder block forms render their own validation messages.
@@ -26,7 +28,7 @@ use Drupal\Tests\UnitTestCase;
  * wherever the form is rendered, in the dialog or as a standalone page.
  *
  * This is a Unit test rather than a kernel test because every branch
- * ys_core_form_alter() takes for these inputs is plain array manipulation:
+ * the alter takes for these inputs is plain array manipulation:
  * ys_core_get_block_type() reads the plugin id out of the build info and
  * only reaches the entity type manager for a 36-character UUID block type,
  * and _ys_core_disable_event_fields() and _ys_core_attach_icon_preview()
@@ -45,12 +47,20 @@ class LayoutBuilderBlockFormMessagesTest extends UnitTestCase {
     parent::setUp();
     // The function under test is procedural, so the file has to be loaded.
     require_once dirname(__DIR__, 3) . '/ys_core.module';
+
+    // ys_core_form_alter() asks whether this is an admin route before
+    // anything else. Layout Builder forms are, so no inline-errors opt-out.
+    $admin_context = $this->createMock(AdminContext::class);
+    $admin_context->method('isAdminRoute')->willReturn(TRUE);
+    $container = new ContainerBuilder();
+    $container->set('router.admin_context', $admin_context);
+    \Drupal::setContainer($container);
   }
 
   /**
    * Builds a Layout Builder block form array and its form state.
    *
-   * The admin label default must be non-empty: ys_core_form_alter() only
+   * The admin label default must be non-empty: the alter only
    * reaches into the form object for the current component when it is missing,
    * which a bare form state cannot supply.
    */
@@ -79,7 +89,7 @@ class LayoutBuilderBlockFormMessagesTest extends UnitTestCase {
         "The messages element must come from the alter, not the fixture ($form_id)."
       );
 
-      ys_core_form_alter($form, $form_state, $form_id);
+      ys_core_form_layout_builder_configure_block_alter($form, $form_state, $form_id);
 
       $this->assertArrayHasKey(
         'status_messages',
@@ -104,7 +114,7 @@ class LayoutBuilderBlockFormMessagesTest extends UnitTestCase {
    */
   public function testCoreAjaxMessagesElementDoesNotDuplicateOurs(): void {
     [$form, $form_state] = $this->blockForm('inline_block:quick_links');
-    ys_core_form_alter($form, $form_state, 'layout_builder_update_block');
+    ys_core_form_layout_builder_configure_block_alter($form, $form_state, 'layout_builder_update_block');
 
     // Exactly what core does when an Ajax submit fails validation.
     $form['status_messages'] = [
@@ -126,15 +136,20 @@ class LayoutBuilderBlockFormMessagesTest extends UnitTestCase {
   }
 
   /**
-   * The messages element is not added to unrelated forms.
+   * The site-wide hook_form_alter() does not carry this alteration.
+   *
+   * The messages element is added by hook_form_FORM_ID_alter(), so Drupal -
+   * not a form-ID comparison of ours - is what keeps it off unrelated forms.
+   * What is still worth asserting is the other direction: that the catch-all
+   * ys_core_form_alter(), which runs on every form on the site, has not
+   * regained this logic. Passing it one of the very form IDs the alteration
+   * targets makes the assertion meaningful rather than vacuous.
    */
-  public function testUnrelatedFormIsNotAltered(): void {
+  public function testSiteWideFormAlterDoesNotCarryTheAlteration(): void {
     [$form, $form_state] = $this->blockForm('inline_block:quick_links');
 
-    ys_core_form_alter($form, $form_state, 'user_login_form');
+    ys_core_form_alter($form, $form_state, 'layout_builder_update_block');
 
-    // The key the alter writes is status_messages; asserting a name that
-    // never existed passed no matter what the alter did.
     $this->assertArrayNotHasKey('status_messages', $form);
   }
 

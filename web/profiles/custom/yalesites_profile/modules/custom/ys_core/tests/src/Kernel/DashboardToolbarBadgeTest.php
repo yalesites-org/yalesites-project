@@ -2,6 +2,7 @@
 
 namespace Drupal\Tests\ys_core\Kernel;
 
+use Drupal\Component\Utility\Html;
 use Drupal\Core\Session\AnonymousUserSession;
 use Drupal\Core\Url;
 use Drupal\user\Entity\User;
@@ -242,6 +243,32 @@ class DashboardToolbarBadgeTest extends YsKernelTestBase {
       $build['#cache']['tags'],
       'The badge is tagged for the user it was rendered for.'
     );
+  }
+
+  /**
+   * Screen readers get the full phrase, not the bare number.
+   *
+   * ARIA ignores aria-label on a span with no role, so some screen readers
+   * read only "2". The visible pill is hidden from assistive tech and the
+   * phrase is carried as visually hidden text inside the link instead.
+   */
+  public function testBadgeIsAnnouncedAsPhrase(): void {
+    $this->setLastSeen($this->first, self::OLDEST);
+
+    $build = $this->replayLazyBuilder($this->buildBadgePlaceholder($this->first));
+    $html = (string) \Drupal::service('renderer')->renderInIsolation($build);
+    $xpath = new \DOMXPath(Html::load($html));
+
+    $pill = $xpath->query('//span[contains(@class, "ys-dashboard-badge--unread")]')->item(0);
+    $this->assertNotNull($pill, 'The visible pill still renders.');
+    $this->assertSame('2', trim($pill->textContent), 'The pill still shows the bare count.');
+    $this->assertSame('true', $pill->getAttribute('aria-hidden'));
+    $this->assertFalse($pill->hasAttribute('aria-label'), 'No aria-label on a role-less span.');
+
+    $hidden = $xpath->query('//span[contains(@class, "visually-hidden")]')->item(0);
+    $this->assertNotNull($hidden, 'The phrase is rendered as visually hidden text.');
+    // The leading space separates the phrase from "Dashboard" in the link name.
+    $this->assertSame(' 2 unread announcements', $hidden->textContent);
   }
 
   /**

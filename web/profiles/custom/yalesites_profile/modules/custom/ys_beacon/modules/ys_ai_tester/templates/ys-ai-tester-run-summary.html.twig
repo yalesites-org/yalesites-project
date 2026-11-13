@@ -1,0 +1,23 @@
+{#
+/**
+ * @file
+ * The single-run page's header line: when a run ran, from what file, by whom.
+ *
+ * The comparison states the same facts for two runs at once and needs a
+ * different shape for it, so it has its own template rather than a variant of
+ * this one: see ys-ai-tester-compare-run-meta.html.twig.
+ *
+ * One {% trans %} block rather than a run of translated fragments, so a
+ * translator gets the whole sentence and can reorder it. Keep it on a single
+ * line: {% trans %} preserves its literal whitespace, so wrapping it would put
+ * newlines into the translatable string.
+ *
+ * Available variables:
+ * - id: The run id.
+ * - date: The run's creation time, already formatted.
+ * - file: The uploaded source filename.
+ * - backend: The assistant's label, already resolved from its machine name.
+ * - status: The run's status.
+ */
+#}
+<p>{% trans %}<strong>Run #{{ id }}</strong> — {{ date }} — File: {{ file }} — Assistant: {{ backend }} — Status: {{ status }}{% endtrans %}</p>

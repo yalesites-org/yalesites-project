@@ -6,19 +6,27 @@ use Drupal\Core\Config\ConfigFactoryInterface;
 use Drupal\Core\Config\ImmutableConfig;
 use Drupal\Core\Database\Connection;
 use Drupal\Core\Database\Schema;
+use Drupal\Core\DependencyInjection\ContainerBuilder;
 use Drupal\Core\Entity\EntityFieldManager;
 use Drupal\Core\Entity\EntityStorageException;
 use Drupal\Core\Entity\EntityStorageInterface;
 use Drupal\Core\Entity\EntityTypeManagerInterface;
 use Drupal\Core\Entity\Query\QueryInterface;
+use Drupal\Core\Entity\RevisionableStorageInterface;
 use Drupal\Core\Field\FieldDefinitionInterface;
 use Drupal\Core\Field\FieldItemListInterface;
+use Drupal\Core\KeyValueStore\KeyValueExpirableFactoryInterface;
+use Drupal\Core\KeyValueStore\KeyValueStoreExpirableInterface;
+use Drupal\Core\Layout\LayoutInterface;
+use Drupal\Core\Layout\LayoutPluginManagerInterface;
 use Drupal\Core\Messenger\MessengerInterface;
+use Drupal\Core\TempStore\SharedTempStoreFactory;
 use Drupal\Tests\UnitTestCase;
 use Drupal\block_content\Entity\BlockContent;
 use Drupal\block_content\Entity\BlockContentType;
 use Drupal\layout_builder\Field\LayoutSectionItemList;
 use Drupal\layout_builder\Section;
+use Drupal\node\Entity\Node;
 use Drupal\node\NodeInterface;
 use Drupal\node\NodeTypeInterface;
 use Drupal\ys_layouts\Service\LayoutUpdater;
@@ -77,6 +85,20 @@ class LayoutUpdaterTest extends UnitTestCase {
   protected $messenger;
 
   /**
+   * The expirable key/value factory mock, serving no cached layouts.
+   *
+   * @var \Drupal\Core\KeyValueStore\KeyValueExpirableFactoryInterface|\PHPUnit\Framework\MockObject\MockObject
+   */
+  protected $keyValueExpirable;
+
+  /**
+   * The shared tempstore factory mock.
+   *
+   * @var \Drupal\Core\TempStore\SharedTempStoreFactory|\PHPUnit\Framework\MockObject\MockObject
+   */
+  protected $tempStoreFactory;
+
+  /**
    * The LayoutUpdater service under test.
    *
    * @var \Drupal\ys_layouts\Service\LayoutUpdater
@@ -95,6 +117,12 @@ class LayoutUpdaterTest extends UnitTestCase {
     $this->entityFieldManager = $this->createMock(EntityFieldManager::class);
     $this->logger = $this->createMock(LoggerInterface::class);
     $this->messenger = $this->createMock(MessengerInterface::class);
+    // LayoutUpdaterDraftTest covers cached layouts with a real tempstore.
+    $this->keyValueExpirable = $this->createMock(KeyValueExpirableFactoryInterface::class);
+    $keyValueStore = $this->createMock(KeyValueStoreExpirableInterface::class);
+    $keyValueStore->method('getAll')->willReturn([]);
+    $this->keyValueExpirable->method('get')->willReturn($keyValueStore);
+    $this->tempStoreFactory = $this->createMock(SharedTempStoreFactory::class);
 
     $this->layoutUpdater = new LayoutUpdater(
       $this->configFactory,
@@ -102,9 +130,23 @@ class LayoutUpdaterTest extends UnitTestCase {
       $this->entityTypeManager,
       $this->entityFieldManager,
       $this->logger,
-      $this->messenger
+      $this->messenger,
+      $this->keyValueExpirable,
+      $this->tempStoreFactory,
     );
     $this->layoutUpdater->setStringTranslation($this->getStringTranslationStub());
+
+    // Section::getLayoutSettings() builds the layout plugin; echo back the
+    // settings the section was created with.
+    $layoutManager = $this->createMock(LayoutPluginManagerInterface::class);
+    $layoutManager->method('createInstance')->willReturnCallback(function ($id, array $settings = []) {
+      $layout = $this->createMock(LayoutInterface::class);
+      $layout->method('getConfiguration')->willReturn($settings);
+      return $layout;
+    });
+    $container = new ContainerBuilder();
+    $container->set('plugin.manager.core.layout', $layoutManager);
+    \Drupal::setContainer($container);
   }
 
   /**
@@ -129,11 +171,11 @@ class LayoutUpdaterTest extends UnitTestCase {
   }
 
   /**
-   * Locked sections are extracted and keyed by layout ID.
+   * Locked sections are extracted with their layout ID and label.
    *
    * @covers ::getLockConfigs
    */
-  public function testGetLockConfigsExtractsLocksByLayoutId(): void {
+  public function testGetLockConfigsExtractsLocksPerSection(): void {
     $config = $this->createMock(ImmutableConfig::class);
     $config->method('get')
       ->with('third_party_settings.layout_builder')
@@ -141,6 +183,7 @@ class LayoutUpdaterTest extends UnitTestCase {
         'sections' => [
           [
             'layout_id' => 'ys_layout_banner',
+            'layout_settings' => ['label' => 'Banner'],
             'third_party_settings' => [
               'layout_builder_lock' => ['lock' => [5 => 5, 6 => 6]],
             ],
@@ -154,7 +197,9 @@ class LayoutUpdaterTest extends UnitTestCase {
 
     $result = $this->layoutUpdater->getLockConfigs('page');
 
-    $this->assertSame(['ys_layout_banner' => [5 => 5, 6 => 6]], $result);
+    $this->assertSame([
+      ['layout_id' => 'ys_layout_banner', 'label' => 'Banner', 'lock' => [5 => 5, 6 => 6]],
+    ], $result);
   }
 
   /**
@@ -225,9 +270,10 @@ class LayoutUpdaterTest extends UnitTestCase {
 
     $node = $this->createMock(NodeInterface::class);
     $node->method('get')->with('layout_builder__layout')->willReturn($layout);
+    $node->method('getTranslationLanguages')->willReturn([]);
     $node->expects($this->once())->method('save');
 
-    $nodeStorage = $this->createMock(EntityStorageInterface::class);
+    $nodeStorage = $this->createMock(RevisionableStorageInterface::class);
     $nodeStorage->method('load')->with(1)->willReturn($node);
 
     $query = $this->createMock(QueryInterface::class);
@@ -256,6 +302,238 @@ class LayoutUpdaterTest extends UnitTestCase {
   }
 
   /**
+   * Two sections sharing a layout ID each receive their own default locks.
+   *
+   * Posts have a "Title and Metadata" and a "Content Section", both
+   * layout_onecol. Matching on layout ID alone would let one overwrite the
+   * other.
+   *
+   * @covers ::updateLocks
+   * @covers ::getLockConfigs
+   */
+  public function testUpdateLocksMatchesSectionsSharingLayoutIdByLabel(): void {
+    $title = new Section('layout_onecol', ['label' => 'Title and Metadata']);
+    $content = new Section('layout_onecol', ['label' => 'Content Section']);
+    $custom = new Section('layout_onecol', ['label' => 'Added by editor']);
+    // Layout Builder saves an editor-added section with an empty label.
+    $unlabelled = new Section('layout_onecol', ['label' => '']);
+    $twoCol = new Section('ys_layout_two_column_50_50', ['label' => 'Two']);
+    $twoCol->setThirdPartySetting('layout_builder_lock', 'lock', [1 => 1]);
+
+    $layout = $this->createMock(LayoutSectionItemList::class);
+    $layout->method('isEmpty')->willReturn(FALSE);
+    $layout->method('getSections')->willReturn([$title, $content, $custom, $unlabelled, $twoCol]);
+
+    $node = $this->createMock(NodeInterface::class);
+    $node->method('get')->with('layout_builder__layout')->willReturn($layout);
+    $node->method('getTranslationLanguages')->willReturn([]);
+    $node->expects($this->once())->method('save');
+
+    $nodeStorage = $this->createMock(RevisionableStorageInterface::class);
+    $nodeStorage->method('load')->with(1)->willReturn($node);
+    $query = $this->createMock(QueryInterface::class);
+    $query->method('accessCheck')->willReturnSelf();
+    $query->method('condition')->willReturnSelf();
+    $query->method('execute')->willReturn([1]);
+    $nodeStorage->method('getQuery')->willReturn($query);
+
+    $config = $this->createMock(ImmutableConfig::class);
+    $config->method('get')->willReturn([
+      'sections' => [
+        [
+          'layout_id' => 'layout_onecol',
+          'layout_settings' => ['label' => 'Title and Metadata'],
+          'third_party_settings' => [
+            'layout_builder_lock' => ['lock' => [1 => 1, 7 => 7, 8 => 8]],
+          ],
+        ],
+        [
+          'layout_id' => 'layout_onecol',
+          'layout_settings' => ['label' => 'Content Section'],
+          'third_party_settings' => [
+            'layout_builder_lock' => ['lock' => [6 => 6]],
+          ],
+        ],
+      ],
+    ]);
+    $this->configFactory->method('get')->willReturn($config);
+    $this->entityTypeManager->method('getStorage')->with('node')->willReturn($nodeStorage);
+
+    $this->layoutUpdater->updateLocks('post');
+
+    $this->assertSame([1 => 1, 7 => 7, 8 => 8], $title->getThirdPartySetting('layout_builder_lock', 'lock'));
+    $this->assertSame([6 => 6], $content->getThirdPartySetting('layout_builder_lock', 'lock'));
+    // Ambiguous layout ID with no label match: untouched.
+    $this->assertNull($custom->getThirdPartySetting('layout_builder_lock', 'lock'));
+    // Unlabelled with two candidate defaults: untouched.
+    $this->assertNull($unlabelled->getThirdPartySetting('layout_builder_lock', 'lock'));
+    // Layout ID absent from defaults: untouched.
+    $this->assertSame([1 => 1], $twoCol->getThirdPartySetting('layout_builder_lock', 'lock'));
+  }
+
+  /**
+   * Only default sections with a label match receive locks.
+   *
+   * Resources have three layout_onecol defaults but only the title is locked.
+   * A layout ID match alone must not lock the other onecol sections.
+   *
+   * @covers ::updateLocks
+   */
+  public function testUpdateLocksRequiresLabelMatchWhenNodeSectionHasLabel(): void {
+    $title = new Section('layout_onecol', ['label' => 'TItle and Metadata']);
+    $content = new Section('layout_onecol', ['label' => 'Content Section']);
+    $custom = new Section('layout_onecol', ['label' => 'Added by editor']);
+
+    $nodeStorage = $this->mockNodeStorage([1], [
+      [
+        'layout_id' => 'layout_onecol',
+        'layout_settings' => ['label' => 'TItle and Metadata'],
+        'third_party_settings' => [
+          'layout_builder_lock' => ['lock' => [1 => 1, 8 => 8]],
+        ],
+      ],
+    ]);
+    $nodeStorage->method('load')->with(1)->willReturn($this->mockNode([$title, $content, $custom], 10));
+
+    $this->layoutUpdater->updateLocks('resource');
+
+    $this->assertSame([1 => 1, 8 => 8], $title->getThirdPartySetting('layout_builder_lock', 'lock'));
+    $this->assertNull($content->getThirdPartySetting('layout_builder_lock', 'lock'));
+    $this->assertNull($custom->getThirdPartySetting('layout_builder_lock', 'lock'));
+  }
+
+  /**
+   * An unlabelled section falls back to a sole default with its layout ID.
+   *
+   * @covers ::updateLocks
+   */
+  public function testUpdateLocksFallsBackToLayoutIdForUnlabelledSection(): void {
+    $banner = new Section('ys_layout_banner');
+
+    $nodeStorage = $this->mockNodeStorage([1], [
+      [
+        'layout_id' => 'ys_layout_banner',
+        'layout_settings' => ['label' => 'Banner'],
+        'third_party_settings' => [
+          'layout_builder_lock' => ['lock' => [5 => 5]],
+        ],
+      ],
+    ]);
+    $nodeStorage->method('load')->with(1)->willReturn($this->mockNode([$banner], 10));
+
+    $this->layoutUpdater->updateLocks('page');
+
+    $this->assertSame([5 => 5], $banner->getThirdPartySetting('layout_builder_lock', 'lock'));
+  }
+
+  /**
+   * A pending draft is updated in place alongside the default revision.
+   *
+   * Layout Builder edits the latest revision, so a draft left with the old
+   * locks would still block editors and restore them when published.
+   *
+   * @covers ::updateLocks
+   */
+  public function testUpdateLocksUpdatesPendingLatestRevisionInPlace(): void {
+    $defaultSection = new Section('ys_layout_banner');
+    $draftSection = new Section('ys_layout_banner');
+    $draftSection->setThirdPartySetting('layout_builder_lock', 'lock', [5 => 5, 6 => 6]);
+
+    $default = $this->mockNode([$defaultSection], 10);
+    $default->expects($this->never())->method('setNewRevision');
+    $default->expects($this->once())->method('setSyncing')->with(TRUE);
+    $draft = $this->mockNode([$draftSection], 12, TRUE);
+    $draft->expects($this->once())->method('setNewRevision')->with(FALSE);
+    $draft->expects($this->once())->method('setSyncing')->with(TRUE);
+
+    $nodeStorage = $this->mockNodeStorage([1], [
+      [
+        'layout_id' => 'ys_layout_banner',
+        'third_party_settings' => [
+          'layout_builder_lock' => ['lock' => [5 => 5]],
+        ],
+      ],
+    ]);
+    $nodeStorage->method('load')->with(1)->willReturn($default);
+    $nodeStorage->method('getLatestRevisionId')->with(1)->willReturn(12);
+    $nodeStorage->method('loadRevision')->with(12)
+      ->willReturn($draft);
+
+    $this->layoutUpdater->updateLocks('page');
+
+    $this->assertSame([5 => 5], $defaultSection->getThirdPartySetting('layout_builder_lock', 'lock'));
+    $this->assertSame([5 => 5], $draftSection->getThirdPartySetting('layout_builder_lock', 'lock'));
+  }
+
+  /**
+   * Builds a node storage mock serving the given node IDs and lock defaults.
+   *
+   * @param int[] $nids
+   *   Node IDs the entity query returns.
+   * @param array $defaultSections
+   *   Layout builder sections of the bundle's default display.
+   *
+   * @return \Drupal\Core\Entity\RevisionableStorageInterface|\PHPUnit\Framework\MockObject\MockObject
+   *   The node storage mock; callers stub load() and revision methods.
+   */
+  protected function mockNodeStorage(array $nids, array $defaultSections) {
+    $query = $this->createMock(QueryInterface::class);
+    $query->method('accessCheck')->willReturnSelf();
+    $query->method('condition')->willReturnSelf();
+    $query->method('execute')->willReturn($nids);
+
+    $nodeStorage = $this->createMock(RevisionableStorageInterface::class);
+    $nodeStorage->method('getQuery')->willReturn($query);
+    $this->entityTypeManager->method('getStorage')->with('node')->willReturn($nodeStorage);
+
+    $config = $this->createMock(ImmutableConfig::class);
+    $config->method('get')->willReturn(['sections' => $defaultSections]);
+    $this->configFactory->method('get')->willReturn($config);
+
+    return $nodeStorage;
+  }
+
+  /**
+   * Builds a node revision mock with the given sections, expecting one save.
+   *
+   * @param \Drupal\layout_builder\Section[] $sections
+   *   The node's layout sections.
+   * @param int $revisionId
+   *   The revision ID.
+   * @param bool $mockSet
+   *   Whether to mock __set() so property writes can be asserted.
+   *
+   * @return \Drupal\node\NodeInterface|\PHPUnit\Framework\MockObject\MockObject
+   *   The node mock.
+   */
+  protected function mockNode(array $sections, int $revisionId, bool $mockSet = FALSE) {
+    $layout = $this->createMock(LayoutSectionItemList::class);
+    $layout->method('isEmpty')->willReturn(FALSE);
+    $layout->method('getSections')->willReturn($sections);
+
+    $node = $mockSet
+      ? $this->getMockBuilder(Node::class)
+        ->disableOriginalConstructor()
+        ->onlyMethods([
+          'get',
+          'getRevisionId',
+          'getTranslationLanguages',
+          'isDefaultRevision',
+          'save',
+          'setNewRevision',
+          'setSyncing',
+          '__set',
+        ])
+        ->getMock()
+      : $this->createMock(NodeInterface::class);
+    $node->method('get')->with('layout_builder__layout')->willReturn($layout);
+    $node->method('getRevisionId')->willReturn($revisionId);
+    $node->method('getTranslationLanguages')->willReturn([]);
+    $node->expects($this->once())->method('save');
+    return $node;
+  }
+
+  /**
    * A node with no layout builder sections is skipped without saving.
    *
    * @covers ::updateLocks
@@ -268,7 +546,7 @@ class LayoutUpdaterTest extends UnitTestCase {
     $node->method('get')->willReturn($layout);
     $node->expects($this->never())->method('save');
 
-    $nodeStorage = $this->createMock(EntityStorageInterface::class);
+    $nodeStorage = $this->createMock(RevisionableStorageInterface::class);
     $nodeStorage->method('load')->willReturn($node);
     $query = $this->createMock(QueryInterface::class);
     $query->method('accessCheck')->willReturnSelf();
@@ -290,7 +568,7 @@ class LayoutUpdaterTest extends UnitTestCase {
    * @covers ::updateLocks
    */
   public function testUpdateLocksSkipsMissingNode(): void {
-    $nodeStorage = $this->createMock(EntityStorageInterface::class);
+    $nodeStorage = $this->createMock(RevisionableStorageInterface::class);
     $nodeStorage->method('load')->willReturn(NULL);
     $query = $this->createMock(QueryInterface::class);
     $query->method('accessCheck')->willReturnSelf();
@@ -322,9 +600,10 @@ class LayoutUpdaterTest extends UnitTestCase {
 
     $node = $this->createMock(NodeInterface::class);
     $node->method('get')->willReturn($layout);
+    $node->method('getTranslationLanguages')->willReturn([]);
     $node->method('save')->willThrowException(new EntityStorageException('DB down'));
 
-    $nodeStorage = $this->createMock(EntityStorageInterface::class);
+    $nodeStorage = $this->createMock(RevisionableStorageInterface::class);
     $nodeStorage->method('load')->willReturn($node);
     $query = $this->createMock(QueryInterface::class);
     $query->method('accessCheck')->willReturnSelf();
@@ -375,6 +654,8 @@ class LayoutUpdaterTest extends UnitTestCase {
         $this->entityFieldManager,
         $this->logger,
         $this->messenger,
+        $this->keyValueExpirable,
+        $this->tempStoreFactory,
       ])
       ->onlyMethods(['getContentTypes', 'updateLocks'])
       ->getMock();
@@ -419,7 +700,7 @@ class LayoutUpdaterTest extends UnitTestCase {
     $this->database->method('schema')->willReturn($schema);
 
     $node = $this->createMock(NodeInterface::class);
-    $nodeStorage = $this->createMock(EntityStorageInterface::class);
+    $nodeStorage = $this->createMock(RevisionableStorageInterface::class);
     $nodeStorage->expects($this->once())
       ->method('loadMultiple')
       ->with(NULL)

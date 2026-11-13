@@ -3,24 +3,23 @@
 namespace Drupal\ys_dcn_field\Plugin\Field\FieldWidget;
 
 use Drupal\Core\Entity\EntityTypeManagerInterface;
+use Drupal\Core\Field\Attribute\FieldWidget;
 use Drupal\Core\Field\FieldDefinitionInterface;
 use Drupal\Core\Field\FieldItemListInterface;
 use Drupal\Core\Field\WidgetBase;
 use Drupal\Core\Form\FormStateInterface;
 use Drupal\Core\Plugin\ContainerFactoryPluginInterface;
+use Drupal\Core\StringTranslation\TranslatableMarkup;
 use Symfony\Component\DependencyInjection\ContainerInterface;
 
 /**
  * Plugin implementation of the 'dcn_field_default' widget.
- *
- * @FieldWidget(
- *   id = "dcn_field_default",
- *   label = @Translation("DCN Field"),
- *   field_types = {
- *     "dcn_field"
- *   }
- * )
  */
+#[FieldWidget(
+  id: 'dcn_field_default',
+  label: new TranslatableMarkup('DCN Field'),
+  field_types: ['dcn_field'],
+)]
 class DcnFieldDefaultWidget extends WidgetBase implements ContainerFactoryPluginInterface {
 
   /**

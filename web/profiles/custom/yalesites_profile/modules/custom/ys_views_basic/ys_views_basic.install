@@ -1,0 +1,38 @@
+<?php
+
+/**
+ * @file
+ * Install, update, and requirements hooks for ys_views_basic.
+ */
+
+/**
+ * Implements hook_requirements().
+ *
+ * Warns administrators on the status report if any legacy "view" listing
+ * blocks remain unconverted after the migration (#1169/#1170). The legacy
+ * "view" bundle is intentionally kept in config so such blocks do not break;
+ * this surfaces them so they can be migrated.
+ */
+function ys_views_basic_requirements($phase) {
+  $requirements = [];
+  if ($phase !== 'runtime') {
+    return $requirements;
+  }
+
+  $count = (int) \Drupal::entityTypeManager()->getStorage('block_content')->getQuery()
+    ->condition('type', 'view')
+    ->accessCheck(FALSE)
+    ->count()
+    ->execute();
+
+  if ($count > 0) {
+    $requirements['ys_views_basic_legacy_view'] = [
+      'title' => t('Views Basic legacy blocks'),
+      'value' => \Drupal::translation()->formatPlural($count, '1 unconverted "view" block', '@count unconverted "view" blocks'),
+      'severity' => REQUIREMENT_WARNING,
+      'description' => t('Legacy "view" listing blocks have not been migrated to the per-content-type listing bundles. Run database updates (for example "drush deploy") to migrate them; see the ys_views_basic README.'),
+    ];
+  }
+
+  return $requirements;
+}

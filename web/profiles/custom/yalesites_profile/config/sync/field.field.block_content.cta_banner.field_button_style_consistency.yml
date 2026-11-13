@@ -1,0 +1,21 @@
+uuid: 9dc9d04a-5ed4-4eae-bd26-e8974046bf83
+langcode: en
+status: true
+dependencies:
+  config:
+    - block_content.type.cta_banner
+    - field.storage.block_content.field_button_style_consistency
+  module:
+    - options
+id: block_content.cta_banner.field_button_style_consistency
+field_name: field_button_style_consistency
+entity_type: block_content
+bundle: cta_banner
+label: 'Button Style'
+description: ''
+required: true
+translatable: true
+default_value: {  }
+default_value_callback: ys_themes_default_value_function
+settings: {  }
+field_type: list_string

@@ -10,7 +10,7 @@ id: block_content.callout.field_overlay_background_image
 field_name: field_overlay_background_image
 entity_type: block_content
 bundle: callout
-label: 'Overlay background image'
+label: 'Overlay Background Image'
 description: ''
 required: false
 translatable: false

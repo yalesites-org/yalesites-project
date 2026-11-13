@@ -21,39 +21,37 @@
         parseInt(settings.warningThreshold, 10) || maxLength;
 
       const editors = once(
-        "ys-beacon-instructions-counter",
+        'ys-beacon-instructions-counter',
         'textarea[name="instructions[value]"]',
-        context
+        context,
       );
 
       editors.forEach(function processEditor(textarea) {
-        const counter = document.getElementById(
-          "instructions-character-count"
-        );
+        const counter = document.getElementById('instructions-character-count');
         if (!counter) {
           return;
         }
 
         function render(length) {
           counter.textContent = Drupal.t(
-            "Content recommended length set to @max characters, remaining: @remaining",
+            'Content recommended length set to @max characters, remaining: @remaining',
             {
-              "@max": maxLength,
-              "@remaining": maxLength - length,
-            }
+              '@max': maxLength,
+              '@remaining': maxLength - length,
+            },
           );
           counter.classList.toggle(
-            "warning",
-            length > warningThreshold && length <= maxLength
+            'warning',
+            length > warningThreshold && length <= maxLength,
           );
-          counter.classList.toggle("error", length > maxLength);
+          counter.classList.toggle('error', length > maxLength);
         }
 
         // Strip HTML to approximate the number of authored characters. Parse
         // into an inert document (no script execution or resource loads).
         function textLength(html) {
-          const parsed = new DOMParser().parseFromString(html, "text/html");
-          return (parsed.body.textContent || "").length;
+          const parsed = new DOMParser().parseFromString(html, 'text/html');
+          return (parsed.body.textContent || '').length;
         }
 
         // The CKEditor 5 instance attaches asynchronously; wait for it, then
@@ -61,7 +59,7 @@
         // to counting the raw textarea value.
         let attempts = 0;
         function bind() {
-          const id = textarea.getAttribute("data-ckeditor5-id");
+          const id = textarea.getAttribute('data-ckeditor5-id');
           const editor =
             id && Drupal.CKEditor5Instances
               ? Drupal.CKEditor5Instances.get(id)
@@ -71,7 +69,7 @@
             const update = function update() {
               render(textLength(editor.getData()));
             };
-            editor.model.document.on("change:data", update);
+            editor.model.document.on('change:data', update);
             update();
             return;
           }
@@ -86,7 +84,7 @@
           const update = function update() {
             render(textarea.value.length);
           };
-          textarea.addEventListener("input", update);
+          textarea.addEventListener('input', update);
           update();
         }
 

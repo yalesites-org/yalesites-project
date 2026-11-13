@@ -92,6 +92,10 @@
 #drupal-off-canvas .ys-themes--global-settings .colors {
   display: flex;
   margin-top: .42rem;
+  /* The tray fans the swatches out from an overlap on hover, so it opts out of
+     the page-level spacing set at the bottom of this file. */
+  margin-left: 0;
+  gap: 0;
 }
 
 #drupal-off-canvas .ys-themes--global-settings .colors > span {
@@ -467,4 +471,28 @@
   :is(#drupal-off-canvas-wrapper input[type="checkbox"])
   + label {
   display: block;
+}
+
+/*
+/* Standalone theme settings page (/admin/yalesites/themes)
+/*
+/* Every rule above is scoped to #drupal-off-canvas and so does not apply on the
+/* settings page itself, where the same form renders as an ordinary admin page.
+/* Gin's variables are used rather than the --color-* / --size-* ones above,
+/* because admin pages do not load the front-end token stylesheet.
+*/
+
+.ys-themes--global-settings .colors {
+  display: inline-flex;
+  gap: var(--gin-spacing-xxs);
+  margin-left: var(--gin-spacing-xs);
+  vertical-align: middle;
+}
+
+.ys-themes--global-settings .colors > span {
+  display: block;
+  width: 1.25rem;
+  height: 1.25rem;
+  border: 1px solid var(--gin-border-color-form-element);
+  border-radius: 100%;
 }

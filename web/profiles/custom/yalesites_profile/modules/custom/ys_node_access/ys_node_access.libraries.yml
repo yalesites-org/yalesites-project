@@ -8,5 +8,12 @@ cas_protection_modal:
   dependencies:
     - core/jquery
     - core/drupal
+    - core/drupalSettings
     - core/drupal.dialog
     - core/drupal.dialog.ajax
+
+cas_protection_confirm:
+  version: 1.x
+  css:
+    theme:
+      css/cas_protection_confirm.css: {}

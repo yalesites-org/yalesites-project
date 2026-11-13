@@ -6,25 +6,24 @@ use Drupal\Core\Ajax\AjaxResponse;
 use Drupal\Core\Ajax\InvokeCommand;
 use Drupal\Core\Ajax\ReplaceCommand;
 use Drupal\Core\Entity\EntityTypeManagerInterface;
+use Drupal\Core\Field\Attribute\FieldWidget;
 use Drupal\Core\Field\FieldDefinitionInterface;
 use Drupal\Core\Field\FieldItemListInterface;
 use Drupal\Core\Field\WidgetBase;
 use Drupal\Core\Form\FormStateInterface;
 use Drupal\Core\Plugin\ContainerFactoryPluginInterface;
+use Drupal\Core\StringTranslation\TranslatableMarkup;
 use Drupal\ys_views_content_resources\ViewsContentResourcesManager;
 use Symfony\Component\DependencyInjection\ContainerInterface;
 
 /**
  * Plugin implementation of the 'views_content_resources_default' widget.
- *
- * @FieldWidget(
- *   id = "views_content_resources_default_widget",
- *   label = @Translation("Views Content Resources default widget"),
- *   field_types = {
- *     "views_content_resources_params"
- *   }
- * )
  */
+#[FieldWidget(
+  id: 'views_content_resources_default_widget',
+  label: new TranslatableMarkup('Views Content Resources default widget'),
+  field_types: ['views_content_resources_params'],
+)]
 class ViewsContentResourcesDefaultWidget extends WidgetBase implements ContainerFactoryPluginInterface {
 
   /**

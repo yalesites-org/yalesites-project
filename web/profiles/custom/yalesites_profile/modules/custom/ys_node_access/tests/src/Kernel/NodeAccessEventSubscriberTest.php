@@ -5,8 +5,7 @@ namespace Drupal\Tests\ys_node_access\Kernel;
 use Drupal\Core\Routing\TrustedRedirectResponse;
 use Drupal\Core\Session\AnonymousUserSession;
 use Drupal\Tests\ys_core\Kernel\YsKernelTestBase;
-use Drupal\field\Entity\FieldConfig;
-use Drupal\field\Entity\FieldStorageConfig;
+use Drupal\Tests\ys_node_access\Traits\CasProtectedNodeTypeTrait;
 use Drupal\node\Entity\Node;
 use Drupal\node\Entity\NodeType;
 use Drupal\user\Entity\User;
@@ -29,6 +28,8 @@ use Symfony\Component\HttpKernel\HttpKernelInterface;
  * @group ys_node_access
  */
 class NodeAccessEventSubscriberTest extends YsKernelTestBase {
+
+  use CasProtectedNodeTypeTrait;
 
   /**
    * {@inheritdoc}
@@ -64,18 +65,7 @@ class NodeAccessEventSubscriberTest extends YsKernelTestBase {
     $this->installSchema('node', ['node_access']);
     $this->installConfig(['user']);
 
-    NodeType::create(['type' => 'protected_type', 'name' => 'Protected type'])->save();
-    $field_storage = FieldStorageConfig::create([
-      'field_name' => 'field_login_required',
-      'entity_type' => 'node',
-      'type' => 'boolean',
-    ]);
-    $field_storage->save();
-    FieldConfig::create([
-      'field_storage' => $field_storage,
-      'bundle' => 'protected_type',
-      'label' => 'CAS Login Required',
-    ])->save();
+    $this->createCasProtectedNodeType();
 
     $this->httpKernel = $this->createMock(HttpKernelInterface::class);
   }

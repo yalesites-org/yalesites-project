@@ -1,0 +1,8 @@
+uuid: e064addf-f7e6-4a4e-9b00-bdaaf174475a
+langcode: en
+status: true
+dependencies: {  }
+id: event_condensed
+label: 'Events - Condensed View'
+revision: true
+description: 'Events - Condensed listing block.'

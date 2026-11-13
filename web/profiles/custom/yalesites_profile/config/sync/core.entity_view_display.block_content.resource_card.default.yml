@@ -1,0 +1,43 @@
+uuid: bfbaa65c-1b82-4d82-845f-b063a3f84feb
+langcode: en
+status: true
+dependencies:
+  config:
+    - block_content.type.resource_card
+    - field.field.block_content.resource_card.field_heading
+    - field.field.block_content.resource_card.field_instructions
+    - field.field.block_content.resource_card.field_padding_options
+    - field.field.block_content.resource_card.field_view_params
+  module:
+    - options
+    - text
+    - ys_views_basic
+id: block_content.resource_card.default
+targetEntityType: block_content
+bundle: resource_card
+mode: default
+content:
+  field_heading:
+    type: text_default
+    label: hidden
+    settings: {  }
+    third_party_settings: {  }
+    weight: 0
+    region: content
+  field_padding_options:
+    type: list_default
+    label: above
+    settings: {  }
+    third_party_settings: {  }
+    weight: 10
+    region: content
+  field_view_params:
+    type: views_basic_default_formatter
+    label: hidden
+    settings: {  }
+    third_party_settings: {  }
+    weight: 2
+    region: content
+hidden:
+  field_instructions: true
+  search_api_excerpt: true

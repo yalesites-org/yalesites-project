@@ -1,4 +1,4 @@
-import { useMemo, type ReactNode } from "react";
+import { useMemo, useRef, type ReactNode } from "react";
 import { Stack } from "@fluentui/react";
 import aiAvatar from "../../assets/yaleLogo.svg";
 import styles from "./Answer.module.css";
@@ -21,6 +21,40 @@ export const Answer = ({
     onCitationClicked
 }: Props) => {
     const parsedAnswer = useMemo(() => parseAnswer(answer), [answer]);
+
+    // Chat re-renders on every state change (opening or closing the citation
+    // overlay included) and hands Answer new props each time. A new `sup`
+    // renderer per render would make ReactMarkdown remount every superscript
+    // button, so the one that opened the overlay would be gone when the overlay
+    // tries to return focus to it (WCAG 2.4.3). Keep the renderer stable and
+    // read the current citations and handler through a ref instead.
+    const latest = useRef({ citations: parsedAnswer.citations, onCitationClicked });
+    latest.current = { citations: parsedAnswer.citations, onCitationClicked };
+    const markdownComponents = useMemo(() => ({
+        ...demotedHeadingComponents,
+        sup: ({ children }: { children?: ReactNode }) => {
+            const text = Array.isArray(children) ? children.join("") : String(children ?? "");
+            const n = Number(text);
+            const citation = Number.isInteger(n) ? latest.current.citations[n - 1] : undefined;
+            if (!citation) {
+                // Non-citation superscript (e.g. genuine ^x^ markdown): leave inert.
+                return <sup>{children}</sup>;
+            }
+            return (
+                <sup>
+                    <button
+                        type="button"
+                        className={styles.clickableSup}
+                        onClick={() => latest.current.onCitationClicked(citation, n)}
+                        aria-label={`View citation ${n}${citation.title ? `: ${citation.title}` : ""}`}
+                        title={`Citation ${n}`}
+                    >
+                        {n}
+                    </button>
+                </sup>
+            );
+        },
+    }), []);
 
     return (
         <>
@@ -54,31 +88,7 @@ export const Answer = ({
                         remarkPlugins={[remarkGfm, supersub]}
                         children={parsedAnswer.markdownFormatText}
                         className={styles.answerText}
-                        components={{
-                            ...demotedHeadingComponents,
-                            sup: ({ children }: { children?: ReactNode }) => {
-                                const text = Array.isArray(children) ? children.join("") : String(children ?? "");
-                                const n = Number(text);
-                                const citation = Number.isInteger(n) ? parsedAnswer.citations[n - 1] : undefined;
-                                if (!citation) {
-                                    // Non-citation superscript (e.g. genuine ^x^ markdown): leave inert.
-                                    return <sup>{children}</sup>;
-                                }
-                                return (
-                                    <sup>
-                                        <button
-                                            type="button"
-                                            className={styles.clickableSup}
-                                            onClick={() => onCitationClicked(citation, n)}
-                                            aria-label={`View citation ${n}${citation.title ? `: ${citation.title}` : ""}`}
-                                            title={`Citation ${n}`}
-                                        >
-                                            {n}
-                                        </button>
-                                    </sup>
-                                );
-                            },
-                        }}
+                        components={markdownComponents}
                     />
                 </Stack.Item>
             </Stack>

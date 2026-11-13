@@ -3,7 +3,9 @@
 namespace Drupal\ys_beacon\Plugin\QueueWorker;
 
 use Drupal\Core\Plugin\ContainerFactoryPluginInterface;
+use Drupal\Core\Queue\Attribute\QueueWorker;
 use Drupal\Core\Queue\QueueWorkerBase;
+use Drupal\Core\StringTranslation\TranslatableMarkup;
 use Drupal\ys_beacon\Service\PdfTextIndexer;
 use Symfony\Component\DependencyInjection\ContainerInterface;
 
@@ -12,13 +14,12 @@ use Symfony\Component\DependencyInjection\ContainerInterface;
  *
  * Queued on media save so a large PDF never slows the editorial save; the
  * worker runs on cron.
- *
- * @QueueWorker(
- *   id = "ys_beacon_pdf_text_extraction",
- *   title = @Translation("Beacon PDF text extraction"),
- *   cron = {"time" = 60}
- * )
  */
+#[QueueWorker(
+  id: 'ys_beacon_pdf_text_extraction',
+  title: new TranslatableMarkup('Beacon PDF text extraction'),
+  cron: ['time' => 60],
+)]
 class PdfTextExtraction extends QueueWorkerBase implements ContainerFactoryPluginInterface {
 
   /**

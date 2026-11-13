@@ -6,7 +6,7 @@ use Drupal\Core\Form\ConfirmFormBase;
 use Drupal\Core\Form\FormStateInterface;
 use Drupal\Core\StringTranslation\TranslatableMarkup;
 use Drupal\Core\Url;
-use Drupal\ys_layouts\Service\OrphanedInlineBlockCleanerInterface;
+use Drupal\ys_layouts\Service\OrphanedInlineBlockCleaner;
 use Symfony\Component\DependencyInjection\ContainerInterface;
 
 /**
@@ -28,11 +28,11 @@ class OrphanedInlineBlockDeleteForm extends ConfirmFormBase {
   /**
    * Constructs an OrphanedInlineBlockDeleteForm.
    *
-   * @param \Drupal\ys_layouts\Service\OrphanedInlineBlockCleanerInterface $cleaner
+   * @param \Drupal\ys_layouts\Service\OrphanedInlineBlockCleaner $cleaner
    *   The orphaned inline block cleaner.
    */
   public function __construct(
-    protected OrphanedInlineBlockCleanerInterface $cleaner,
+    protected OrphanedInlineBlockCleaner $cleaner,
   ) {}
 
   /**

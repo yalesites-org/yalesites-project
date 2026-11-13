@@ -26,6 +26,8 @@ use Drupal\ys_core\Form\MarkAnnouncementsReadForm;
  */
 class DashboardAnnouncementIndicatorTest extends YsKernelTestBase {
 
+  use RendersToDomTrait;
+
   /**
    * {@inheritdoc}
    */
@@ -131,20 +133,6 @@ class DashboardAnnouncementIndicatorTest extends YsKernelTestBase {
   protected function buildDashboard(): array {
     \Drupal::currentUser()->setAccount($this->editor);
     return DashboardController::create($this->container)->content();
-  }
-
-  /**
-   * Renders a build array and returns an XPath query over its markup.
-   */
-  protected function renderAndQuery(array $build): \DOMXPath {
-    $html = (string) \Drupal::service('renderer')->renderInIsolation($build);
-
-    $dom = new \DOMDocument();
-    // The dashboard is a fragment, and Views may emit markup DOMDocument warns
-    // about; neither is what these tests assert on.
-    @$dom->loadHTML('<?xml encoding="utf-8" ?>' . $html);
-
-    return new \DOMXPath($dom);
   }
 
   /**

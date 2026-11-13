@@ -38,10 +38,9 @@ class PlatformAdminChecker implements PlatformAdminCheckerInterface {
     // Drupal 10.3 that bypass lives in SuperUserAccessPolicy behind the
     // security.enable_super_user container parameter, so a permission check
     // alone would stop being true for user 1 the day that parameter is
-    // hardened off. Note this covers callers of this service only - routes
-    // gated with a bare _permission requirement, including this module's own
-    // ys_core.platform_admin_settings, would still 403 for user 1 in that
-    // scenario. See PlatformAdminCheckerInterface for that caveat.
+    // hardened off. Routes share that guarantee, because they gate on
+    // PlatformAdminAccessCheck rather than requiring the permission directly;
+    // one gated on a bare _permission requirement would not.
     return (int) $account->id() === 1
       || $account->hasPermission(self::PERMISSION);
   }

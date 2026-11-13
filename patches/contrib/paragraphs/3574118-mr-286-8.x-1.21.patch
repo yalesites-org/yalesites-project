@@ -1,0 +1,19 @@
+Guard the #rows loop in paragraphs_preprocess_field_multiple_value_form().
+
+Port of https://git.drupalcode.org/project/paragraphs/-/merge_requests/286
+(https://www.drupal.org/project/paragraphs/issues/3574118) to 8.x-1.21, where
+the hook still lives in paragraphs.module. From 8.x-1.22 on it moved to
+src/Hook/ParagraphsHooks.php; use the MR diff there instead.
+
+diff --git a/paragraphs.module b/paragraphs.module
+--- a/paragraphs.module
++++ b/paragraphs.module
+@@ -429,7 +429,7 @@
+     unset($variables['table']['#tabledrag'], $variables['table']['#header'][2]);
+   }
+ 
+-  foreach ($variables['table']['#rows'] as $key => $row) {
++  foreach ($variables['table']['#rows'] ?? [] as $key => $row) {
+     // Add the paragraph type as a class to every row.
+     if ($paragraph_widget && isset($row['data'][1]['data']['#paragraph_type'])) {
+       $variables['table']['#rows'][$key]['class'][] = 'paragraph-type--' . str_replace('_', '-', $row['data'][1]['data']['#paragraph_type']);

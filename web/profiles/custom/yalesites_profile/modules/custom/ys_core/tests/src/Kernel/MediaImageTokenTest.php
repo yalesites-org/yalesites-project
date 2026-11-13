@@ -2,11 +2,11 @@
 
 namespace Drupal\Tests\ys_core\Kernel;
 
-use Drupal\Core\Serialization\Yaml;
 use Drupal\file\Entity\File;
 use Drupal\media\MediaInterface;
 use Drupal\Tests\media\Traits\MediaTypeCreationTrait;
 use Drupal\Tests\user\Traits\UserCreationTrait;
+use Drupal\Tests\ys_core\Traits\ReadsProfileConfigTrait;
 
 /**
  * Tests that an image media token resolves to a bare URL, not rendered markup.
@@ -32,6 +32,7 @@ use Drupal\Tests\user\Traits\UserCreationTrait;
 class MediaImageTokenTest extends YsKernelTestBase {
 
   use MediaTypeCreationTrait;
+  use ReadsProfileConfigTrait;
   use UserCreationTrait;
 
   /**
@@ -101,15 +102,6 @@ class MediaImageTokenTest extends YsKernelTestBase {
     // Rendering an image field checks view access on the referenced file.
     $this->container->get('current_user')
       ->setAccount($this->createUser(['access content']));
-  }
-
-  /**
-   * Reads a config file from the profile's sync directory.
-   */
-  private function readConfig(string $name): array {
-    return Yaml::decode(file_get_contents(
-      \Drupal::root() . '/profiles/custom/yalesites_profile/config/sync/' . $name . '.yml'
-    ));
   }
 
   /**

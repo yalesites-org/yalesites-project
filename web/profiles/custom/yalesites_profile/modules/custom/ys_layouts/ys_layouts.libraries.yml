@@ -1,8 +1,46 @@
+block_dialog:
+  version: VERSION
+  css:
+    theme:
+      css/block-dialog.css: {}
+
 detach_reusable_block:
   version: VERSION
   css:
     theme:
       css/detach-reusable-block.css: {}
+
+# color-scheme for every gin_lb form control. Nothing attaches this directly:
+# ys_layouts_library_info_alter() adds it as a dependency of gin_lb/gin_lb, so
+# it loads wherever gin_lb's stylesheet does.
+gin_lb_color_scheme:
+  version: VERSION
+  css:
+    theme:
+      css/gin-lb-color-scheme.css: {}
+
+# Visible resize edge for the Layout Builder side panel; loaded like the one above.
+off_canvas_resize_handle:
+  version: VERSION
+  css:
+    theme:
+      css/off-canvas-resize-handle.css: {}
+
+# Help-text spacing for rich-text fields in gin_lb forms. Attached by
+# ys_layouts_preprocess_text_format_wrapper__gin_lb().
+gin_lb_text_format:
+  version: VERSION
+  css:
+    theme:
+      css/gin-lb-text-format.css: {}
+
+# Icon + spacing for the "Clone" action on the section toolbar. Attached by
+# SectionCloneLinkBuilder when it adds the link.
+clone_section:
+  version: VERSION
+  css:
+    theme:
+      css/clone-section.css: {}
 
 ys_layout_banner:
   version: VERSION
@@ -24,3 +62,23 @@ ys_layout_three_column_33_33_33:
   css:
     theme:
       layouts/three_column_33_33_33/three-column_33_33_33.css: {}
+reusable_toggle:
+  version: VERSION
+  css:
+    theme:
+      assets/css/reusable-toggle.css: {}
+ys_layout_onecol:
+  version: VERSION
+  css:
+    theme:
+      layouts/onecol/onecol.css: {}
+
+# Browser-side "required" check for a checkbox group, so its error stays in
+# the Layout Builder dialog. Attached by TaxonomyDisplayBlock::blockForm().
+required_checkboxes:
+  version: VERSION
+  js:
+    js/required-checkboxes.js: {}
+  dependencies:
+    - core/drupal
+    - core/once

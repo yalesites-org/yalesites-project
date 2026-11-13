@@ -1,0 +1,8 @@
+uuid: bd59846c-a7aa-4e21-b884-2f88e26cc622
+langcode: en
+status: true
+dependencies: {  }
+id: page_card
+label: 'Pages - Card Grid View'
+revision: true
+description: 'Pages - Card Grid listing block.'

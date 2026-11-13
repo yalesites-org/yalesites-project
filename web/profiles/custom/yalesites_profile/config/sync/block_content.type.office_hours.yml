@@ -1,0 +1,33 @@
+uuid: 44ee820d-c13a-4b80-b935-fcd8fa518f7a
+langcode: en
+status: true
+dependencies:
+  module:
+    - entity_redirect
+third_party_settings:
+  entity_redirect:
+    redirect:
+      add:
+        active: 0
+        destination: default
+        url: ''
+        external: ''
+      edit:
+        active: 0
+        destination: default
+        url: ''
+        external: ''
+      delete:
+        active: 0
+        destination: default
+        url: ''
+        external: ''
+      anonymous:
+        active: 0
+        destination: default
+        url: ''
+        external: ''
+id: office_hours
+label: 'Office Hours'
+revision: true
+description: 'Display opening hours for a location, with a weekly schedule and holiday or exception dates.'

@@ -2,11 +2,6 @@
 
 namespace Drupal\ys_migrate\Service;
 
-use Drupal\Core\Entity\EntityTypeManagerInterface;
-use Drupal\Core\Logger\LoggerChannelFactoryInterface;
-use Drupal\Core\Session\AccountInterface;
-use Drupal\Core\StringTranslation\StringTranslationTrait;
-
 /**
  * Service for importing resource content from CSV data.
  *
@@ -14,9 +9,7 @@ use Drupal\Core\StringTranslation\StringTranslationTrait;
  * one. Rows with an External Source are usable immediately; the rest are listed
  * in the import result so the editor knows which nodes still need a file.
  */
-class ResourceImportService {
-
-  use StringTranslationTrait;
+class ResourceImportService extends CsvImportServiceBase {
 
   /**
    * Date formats accepted in the Resource Publication Date column.
@@ -88,34 +81,6 @@ class ResourceImportService {
   const FALSE_VALUES = ['no', 'false', '0', 'off', ''];
 
   /**
-   * The current user.
-   *
-   * @var \Drupal\Core\Session\AccountInterface
-   */
-  protected $currentUser;
-
-  /**
-   * The taxonomy resolver service.
-   *
-   * @var \Drupal\ys_migrate\Service\TaxonomyResolverService
-   */
-  protected $taxonomyResolver;
-
-  /**
-   * The entity type manager.
-   *
-   * @var \Drupal\Core\Entity\EntityTypeManagerInterface
-   */
-  protected $entityTypeManager;
-
-  /**
-   * The logger factory.
-   *
-   * @var \Drupal\Core\Logger\LoggerChannelFactoryInterface
-   */
-  protected $loggerFactory;
-
-  /**
    * Allowed Date Format values, resolved once per import run.
    *
    * @var array|null
@@ -135,30 +100,6 @@ class ResourceImportService {
    * @var int|null
    */
   protected $teaserTextMaxLength;
-
-  /**
-   * Constructs a ResourceImportService object.
-   *
-   * @param \Drupal\Core\Session\AccountInterface $current_user
-   *   The current user.
-   * @param \Drupal\ys_migrate\Service\TaxonomyResolverService $taxonomy_resolver
-   *   The taxonomy resolver service.
-   * @param \Drupal\Core\Entity\EntityTypeManagerInterface $entity_type_manager
-   *   The entity type manager.
-   * @param \Drupal\Core\Logger\LoggerChannelFactoryInterface $logger_factory
-   *   The logger factory.
-   */
-  public function __construct(
-    AccountInterface $current_user,
-    TaxonomyResolverService $taxonomy_resolver,
-    EntityTypeManagerInterface $entity_type_manager,
-    LoggerChannelFactoryInterface $logger_factory,
-  ) {
-    $this->currentUser = $current_user;
-    $this->taxonomyResolver = $taxonomy_resolver;
-    $this->entityTypeManager = $entity_type_manager;
-    $this->loggerFactory = $logger_factory;
-  }
 
   /**
    * Prepares resource data from a CSV row.
@@ -315,17 +256,10 @@ class ResourceImportService {
   }
 
   /**
-   * Processes the import and creates resource nodes.
+   * {@inheritdoc}
    *
-   * @param array $data
-   *   The CSV data.
-   * @param bool $skip_duplicates
-   *   Whether to skip rows whose title already exists.
-   *
-   * @return array
-   *   Import results with 'created', 'skipped', 'errors' and 'needs_media'
-   *   keys, the last being the titles created without an External Source,
-   *   which are the ones an editor must still attach Resource Media to.
+   * Adds a 'needs_media' key: the titles created without an External Source,
+   * which are the ones an editor must still attach Resource Media to.
    */
   public function processImport(array $data, $skip_duplicates) {
     $created = 0;
@@ -363,16 +297,11 @@ class ResourceImportService {
   }
 
   /**
-   * Previews the import without creating content.
+   * {@inheritdoc}
    *
-   * @param array $data
-   *   The CSV data.
-   * @param bool $skip_duplicates
-   *   Whether to skip rows whose title already exists.
-   *
-   * @return array
-   *   Preview results with 'valid_resources', 'duplicates', 'errors' and
-   *   'total' keys.
+   * Resources are keyed by title, and a title repeated inside the file counts
+   * as a duplicate too. Adds an 'errors' key alongside 'valid_resources', so
+   * a row that cannot be parsed is reported at preview rather than at import.
    */
   public function previewImport(array $data, $skip_duplicates) {
     $duplicates = [];
@@ -407,28 +336,6 @@ class ResourceImportService {
       'errors' => $errors,
       'total' => count($data),
     ];
-  }
-
-  /**
-   * Formats a row-scoped error message.
-   *
-   * @param array $row
-   *   The CSV row, which may carry the true line number from the validator.
-   * @param int $index
-   *   The array offset, used when the row has no line number.
-   * @param \Exception $e
-   *   The exception raised while handling the row.
-   *
-   * @return \Drupal\Core\StringTranslation\TranslatableMarkup
-   *   The message to show the editor.
-   */
-  protected function rowError(array $row, $index, \Exception $e) {
-    return $this->t('Row @row: @error', [
-      // Prefer the true CSV line threaded through by the validator; blank rows
-      // it skipped mean the array offset is not the line the editor sees.
-      '@row' => $row['_row_number'] ?? ($index + 2),
-      '@error' => $e->getMessage(),
-    ]);
   }
 
   /**
