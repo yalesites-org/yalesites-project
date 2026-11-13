@@ -18,6 +18,7 @@ includes one row per item with these columns:
 - **Tags**, **Audience**, **Custom Vocab** (on every type)
 - The type's category column — **Category** (Pages, Posts), **Event Category**,
   **Resource Category** — or **Affiliation** (Profiles)
+- **Updated** and **Last Updated By**, at the end of every row on every type
 
 Taxonomy cells list every applied term, separated by ", " (matching the on-screen
 columns).
@@ -28,6 +29,14 @@ on-screen Date column shows only the first and last. Dates render in the site's
 timezone, and an all-day occurrence reads "(All day)" rather than a 12:00 am to
 11:59 pm range. **Resource Publication Date** is the same `YYYY-MM-DD` shown on
 the Manage Resources screen. An item with no date exports an empty cell.
+
+**Updated** and **Last Updated By** hold the same values as the Manage screen's
+columns of the same name. **Updated** is written as `YYYY-MM-DD HH:MM` on a
+24-hour clock in the site's timezone (the screen's "10/07/2026 - 11:14" exports
+as "2026-10-07 11:14"), so a spreadsheet sorts it as a date. **Last Updated
+By** is the name of the person who last saved the item. It is empty if that
+account no longer exists, and reads "Anonymous" if the account was cancelled
+with its content reassigned to Anonymous.
 
 Note that a cell holding many dates cannot be sorted as a date in a spreadsheet;
 that trade-off was accepted in favour of showing every occurrence.
@@ -79,7 +88,11 @@ Dates render in the site's timezone.
   platform's existing `event_date_only` / `event_time_only` date formats. The
   resource publication date is a date-only field already stored as `Y-m-d`, so
   it is emitted verbatim — reformatting it would only risk a timezone shift of
-  a day.
+  a day. **Updated** reads whichever field the matching Manage view renders:
+  the current revision's `revision_timestamp` on four types, but `changed` on
+  Profiles (`BUNDLE_UPDATED`). The two differ when a node is saved without a
+  new revision. **Last Updated By** is `getRevisionUser()`, which is `NULL`
+  when the revision's account has been deleted.
 - `PeopleExportBuilder` — the same shape for user accounts: a pure column map
   and row builder, service-free and unit tested, reusing
   `ContentExportBuilder::sanitizeCell()` rather than restating what makes a
