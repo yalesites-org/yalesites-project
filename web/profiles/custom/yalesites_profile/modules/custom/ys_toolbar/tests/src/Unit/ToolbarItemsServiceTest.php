@@ -495,11 +495,11 @@ class ToolbarItemsServiceTest extends UnitTestCase {
   }
 
   /**
-   * Term pages get Manage Settings and Edit Layout, with a destination.
+   * Term pages get Manage, Layout and Theme Settings buttons.
    *
    * @covers ::addItems
    */
-  public function testAddItemsOnTermRouteHasEditAndLayoutOnly() {
+  public function testAddItemsOnTermRouteHasEditLayoutAndThemeSettings() {
     $this->accessManager->method('checkNamedRoute')->willReturn(TRUE);
     $this->redirectDestination->method('getAsArray')->willReturn(['destination' => '/tags/x']);
     $term = $this->createMock(TermInterface::class);
@@ -508,13 +508,14 @@ class ToolbarItemsServiceTest extends UnitTestCase {
 
     $items = $service->addItems();
 
-    $this->assertSame(['toolbar_edit_link', 'toolbar_layout_link'], array_keys($items));
+    $this->assertSame(['toolbar_edit_link', 'toolbar_layout_link', 'toolbar_theme_settings_link'], array_keys($items));
     $url = $items['toolbar_edit_link']['tab']['#url'];
     $this->assertSame('entity.taxonomy_term.edit_form', $url->getRouteName());
     $this->assertSame(['taxonomy_term' => 5], $url->getRouteParameters());
     $this->assertSame(['destination' => '/tags/x'], $url->getOption('query'));
     $this->assertSame('Manage Settings', $items['toolbar_edit_link']['tab']['#title']);
     $this->assertSame('layout_builder.overrides.taxonomy_term.view', $items['toolbar_layout_link']['tab']['#url']->getRouteName());
+    $this->assertSame('Theme Settings', $items['toolbar_theme_settings_link']['tab']['#title']);
   }
 
   /**

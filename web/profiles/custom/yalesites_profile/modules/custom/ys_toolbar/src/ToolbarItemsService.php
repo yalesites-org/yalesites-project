@@ -192,6 +192,11 @@ class ToolbarItemsService {
       'Edit Layout And Content'
     );
 
+    $this->toolbarItems['toolbar_theme_settings_link'] = $this->buildOffCanvasButton(
+      'ys_themes.theme_settings',
+      'Theme Settings'
+    );
+
     return $this->toolbarItems;
   }
 
