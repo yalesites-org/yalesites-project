@@ -13,11 +13,16 @@ includes one row per item with these columns:
 
 - **Title**, **URL** (path alias), **Published** (Yes/No), and
   **CAS Protected** (Yes/No — whether the item requires CAS login)
-- The type's date column, immediately after Title — **Dates** (Events),
-  **Resource Publication Date** (Resources). Other types have no date column.
+- The type's date column, immediately after Title — **Publish Date** (Posts),
+  **Dates** (Events), **Resource Publication Date** (Resources). Other types
+  have no date column.
 - **Tags**, **Audience**, **Custom Vocab** (on every type)
 - The type's category column — **Category** (Pages, Posts), **Event Category**,
   **Resource Category** — or **Affiliation** (Profiles)
+- Events only: **Start** and **End** after Dates, and **Description**,
+  **Location Details**, **Event Experience**, **Event Website**, **Event
+  Website Text**, **Ticket Cost**, **Ticket Registration URL** and **Stream
+  URL** at the end — the columns, and headers, the Event CSV import reads
 
 Taxonomy cells list every applied term, separated by ", " (matching the on-screen
 columns).
@@ -27,10 +32,19 @@ separated by ", " — so a recurring series shows all of its dates, where the
 on-screen Date column shows only the first and last. Dates render in the site's
 timezone, and an all-day occurrence reads "(All day)" rather than a 12:00 am to
 11:59 pm range. **Resource Publication Date** is the same `YYYY-MM-DD` shown on
-the Manage Resources screen. An item with no date exports an empty cell.
+the Manage Resources screen, and **Publish Date** is a post's publish date in
+the same format — the format, and the header, the Post CSV import reads. An
+item with no date exports an empty cell.
 
 Note that a cell holding many dates cannot be sorted as a date in a spreadsheet;
 that trade-off was accepted in favour of showing every occurrence.
+
+**Start** and **End** give the event's _first_ occurrence as `YYYY-MM-DD HH:MM`
+in the site's timezone, or the date alone for an all-day occurrence, which the
+Event CSV import reads back as all day. A recurring series exports its first
+date only there; the Dates cell still lists them all. Links to pages on the
+same site are written as the path (`/events/register`) rather than the
+`internal:` or `entity:` form Drupal stores.
 
 The export reflects the same items you see in the Manage view — including
 any filters or search you have applied — and both published and unpublished items,
@@ -77,8 +91,8 @@ Dates render in the site's timezone.
   tested. It takes no injected services, so a `DateFormatterInterface` is
   passed into `getRow()` rather than resolved inside it; event dates reuse the
   platform's existing `event_date_only` / `event_time_only` date formats. The
-  resource publication date is a date-only field already stored as `Y-m-d`, so
-  it is emitted verbatim — reformatting it would only risk a timezone shift of
+  post and resource publish date is a date-only field already stored as
+  `Y-m-d`, so it is emitted verbatim — reformatting it would only risk a timezone shift of
   a day.
 - `PeopleExportBuilder` — the same shape for user accounts: a pure column map
   and row builder, service-free and unit tested, reusing

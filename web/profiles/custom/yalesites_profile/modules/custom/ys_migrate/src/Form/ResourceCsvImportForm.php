@@ -283,7 +283,7 @@ class ResourceCsvImportForm extends FormBase {
       'resource category' => $this->t('Comma-separated. Terms are created if missing.'),
       'audience' => $this->t('Comma-separated. Terms are created if missing.'),
       'custom vocab' => $this->t('Comma-separated. "Custom Vocabulary" also works as a header.'),
-      'resource publication date' => $this->t('YYYY-MM-DD or MM/DD/YYYY.'),
+      'resource publication date' => $this->t('A date such as 2026-03-04, 3/4/2026 or March 4, 2026.'),
       'date format' => $this->t('Year, Month/Year, or Month/Day/Year.'),
       'tags' => $this->t('Comma-separated. Terms are created if missing.'),
       'teaser title' => $this->t('Plain text.'),
