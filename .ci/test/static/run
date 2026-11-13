@@ -9,6 +9,10 @@ set -eo pipefail
 # Some example are code sniffing and unit testing
 #
 
+# Use the atomic branch matching this pull request branch if there is one,
+# the same as the deploy job, so unit tests see the same atomic code.
+./.ci/build/require_matching_atomic_branch
+
 # Run composer install to get the vendor directory
 composer install --no-ansi --no-interaction --optimize-autoloader --no-progress
 
