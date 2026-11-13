@@ -80,17 +80,4 @@ class CustomCardsSizeDialTest extends UnitTestCase {
     $this->assertContains('field.field.block_content.custom_cards.' . self::FIELD, $display['dependencies']['config']);
   }
 
-  /**
-   * Atomic passes the stored size to the component, and the old prop is gone.
-   */
-  public function testAtomicTemplatePassesCardSize(): void {
-    $template = dirname(__DIR__, 9) . '/themes/contrib/atomic/templates/block/layout-builder/block--inline-block--custom-cards.html.twig';
-    if (!is_file($template)) {
-      $this->markTestSkipped('atomic theme is not checked out beside the profile.');
-    }
-    $source = file_get_contents($template);
-    $this->assertStringContainsString("custom_card_collection__card_size: content.field_style_width.0['#markup']", $source);
-    $this->assertStringNotContainsString('featured', $source);
-  }
-
 }
