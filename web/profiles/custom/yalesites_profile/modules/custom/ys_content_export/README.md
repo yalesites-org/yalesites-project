@@ -34,7 +34,9 @@ that trade-off was accepted in favour of showing every occurrence.
 
 The export reflects the same items you see in the Manage view — including
 any filters or search you have applied — and both published and unpublished items,
-subject to your access.
+subject to your access. A filter value that no longer exists, such as a deleted
+category kept in a bookmarked link, makes the Manage view show an error and no
+items, so the export has no items either.
 
 The last row of the file reports how many rows were exported, for example
 "Export complete: 48 of 50 rows exported (1 failed, 1 skipped)". If that row is
@@ -49,7 +51,9 @@ skipped.
 On the People page (`admin/people`) use the **Export to CSV** button, next to
 the Add user actions. It is available to anyone who can open the page, and it
 exports the accounts matching the filters and search currently applied on
-screen. One row per account, with these columns:
+screen. A filter value that no longer exists, such as a deleted role kept in a
+bookmarked link, matches no accounts, so the file holds only the header row.
+One row per account, with these columns:
 
 - **NetID** — the account username. Accounts here are provisioned from CAS, so
   that username is the person's NetID, and the column is headed the way admins
@@ -92,7 +96,9 @@ Dates render in the site's timezone.
 - `Controller\ExportControllerBase` — the shared half of both exports: it
   resolves an admin view's filtered entity ids (replaying the request's
   exposed-filter query, de-duplicated because a multi-value join can repeat an
-  entity) and streams them to a CSV download in `CHUNK_SIZE` batches, loading
+  entity; when the exposed form rejects a value, Views stops the build without a
+  query, so it returns no ids and drops the form errors the download would
+  otherwise leave queued for the admin's next page) and streams them to a CSV download in `CHUNK_SIZE` batches, loading
   and releasing each chunk so memory stays bounded on a long list. Each row is
   built inside a `\Throwable` catch (failure becomes a placeholder row plus a
   watchdog entry), entities failing `access('view')` are skipped and logged in

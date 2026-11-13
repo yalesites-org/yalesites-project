@@ -3,9 +3,11 @@
 namespace Drupal\ys_content_export\Controller;
 
 use Drupal\Core\Controller\ControllerBase;
+use Drupal\Core\Database\Query\SelectInterface;
 use Drupal\Core\Datetime\DateFormatterInterface;
 use Drupal\Core\Entity\EntityStorageInterface;
 use Drupal\Core\Entity\EntityTypeManagerInterface;
+use Drupal\Core\Messenger\MessengerInterface;
 use Drupal\views\Views;
 use Drupal\ys_content_export\ContentExportBuilder;
 use Symfony\Component\DependencyInjection\ContainerInterface;
@@ -94,7 +96,9 @@ abstract class ExportControllerBase extends ControllerBase {
    *   The current request, carrying the admin page's exposed-filter query.
    *
    * @return int[]
-   *   The matching entity ids, in the view's sort order, de-duplicated.
+   *   The matching entity ids, in the view's sort order, de-duplicated. Empty
+   *   when the view rejects a filter value, as the list page then shows no
+   *   rows.
    */
   protected function filteredIds(string $view_id, string $id_column, Request $request): array {
     $view = Views::getView($view_id);
@@ -112,10 +116,26 @@ abstract class ExportControllerBase extends ControllerBase {
     // Export every matching row, not just the on-screen page.
     $view->setItemsPerPage(0);
 
+    $queued_errors = $this->messenger()->messagesByType(MessengerInterface::TYPE_ERROR);
     $view->preExecute();
     $view->build();
 
+    // A filter value the exposed form rejects, such as a deleted role kept in
+    // a bookmarked URL, makes Views stop the build before it creates a query.
+    // The list page shows the form's errors over an empty list, so the export
+    // is empty too. The form also queued those errors for display, but a
+    // download never shows messages; restore the queue so they do not appear
+    // on the admin's next page instead.
     $select = $view->build_info['query'];
+    if (!$select instanceof SelectInterface) {
+      $view->destroy();
+      $this->messenger()->deleteByType(MessengerInterface::TYPE_ERROR);
+      foreach ($queued_errors as $error) {
+        $this->messenger()->addError($error, TRUE);
+      }
+      return [];
+    }
+
     $ids = array_column($select->execute()->fetchAll(), $id_column);
     $view->destroy();
 
