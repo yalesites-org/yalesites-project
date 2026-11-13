@@ -7,10 +7,10 @@ namespace Drupal\ys_migrate\Service;
  *
  * CsvImportBatch resolves an import service from a string id carried in the
  * batch options and calls processImport() on whatever it gets back, so there
- * is no type at that call site to guarantee the two importers stay in step.
+ * is no type at that call site to guarantee the importers stay in step.
  * This interface is that guarantee: it is what CsvImportBatch checks before
- * it calls, and what a third importer would implement to become usable by the
- * same batch machinery without touching it.
+ * it calls, and what a new importer implements to become usable by the same
+ * batch machinery.
  *
  * Rows arrive already parsed and normalised by CsvValidatorService, keyed by
  * lowercased column header, and may carry a '_row_number' key holding the
@@ -25,6 +25,9 @@ interface CsvImportServiceInterface {
    *   The parsed CSV rows.
    * @param bool $skip_duplicates
    *   Whether to skip rows that duplicate existing content.
+   * @param array $options
+   *   Choices the editor made on the import form, such as 'publish' for
+   *   posts. An implementation ignores options it does not offer.
    *
    * @return array
    *   Import results, which always include:
@@ -32,9 +35,10 @@ interface CsvImportServiceInterface {
    *   - 'skipped': int, the number of rows skipped as duplicates.
    *   - 'errors': array, one message per row that could not be imported.
    *   An implementation may add further keys; CsvImportBatch understands
-   *   'needs_media' and ignores anything else.
+   *   'needs_media', 'needs_images' and 'needs_body' and ignores anything
+   *   else.
    */
-  public function processImport(array $data, $skip_duplicates);
+  public function processImport(array $data, $skip_duplicates, array $options = []);
 
   /**
    * Reports what importing the given rows would do, creating nothing.
@@ -49,8 +53,9 @@ interface CsvImportServiceInterface {
    *   - 'duplicates': array, labels of the rows that would be skipped.
    *   - 'total': int, the number of rows examined.
    *   The rows that would be created come back under a per-implementation key
-   *   ('valid_profiles', 'valid_resources'), because each confirmation form
-   *   renders its own content type and holds the concrete service to do it.
+   *   ('valid_profiles', 'valid_resources', 'valid_posts'), because each
+   *   confirmation form renders its own content type and holds the concrete
+   *   service to do it.
    */
   public function previewImport(array $data, $skip_duplicates);
 

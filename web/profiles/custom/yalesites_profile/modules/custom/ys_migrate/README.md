@@ -8,6 +8,132 @@ This README details the process for Drupal migrations at Yale, specifically the 
 
 The Profile CSV Import tool includes a "Download CSV Template" link that redirects users to an external CSV template file. The external URL is hardcoded in the controller and can be updated by developers as needed.
 
+## Post CSV Import
+
+Site owners can bulk-create posts from a spreadsheet at **Content > Manage
+Posts > CSV Import** (`/admin/content/manage-posts/csv-import`, permission
+`create post content`). The form lists every recognised column with a note and
+links to a sample CSV. Like the Resource importer it offers a preview that saves
+nothing, skips duplicates (matched on Title **and** Publish Date, since a series
+such as a weekly update reuses its title), runs the real import as a batch, and
+creates every post as a **draft**, unless the editor ticks **Publish imported
+posts**. That checkbox is shown only to roles that can publish a post by hand
+(`use editorial transition publish`), and the importer checks the permission
+again before publishing.
+
+How the columns land on a post (`PostImportService`):
+
+- **Title** and **Publish Date** are required. An empty Title rejects the file;
+  every other problem fails only its own row and is listed in the preview and
+  the import summary. HTML tags in Publish Date are removed before it is read,
+  since a Drupal 7 date field exports wrapped in a `<span>`.
+- Every cell is trimmed of whitespace at either end, including non-breaking
+  spaces (U+00A0), and so is every name in a taxonomy cell. A Drupal 7 Views
+  Data Export decodes `&nbsp;` into a real U+00A0, which PHP's `trim()` leaves
+  in place. Non-breaking spaces inside a cell are kept: they display as the
+  `&nbsp;` they were. This applies to every CSV importer in this module.
+- **Body** has no field to go in: a post's content is built in Layout Builder.
+  The importer copies the post bundle's default layout (keeping the locked
+  "Title and Metadata" section, as Layout Builder does when an editor first
+  edits a layout) and adds one inline **Text** block holding the Body to the
+  "Content Section". The block is handed to the node unsaved
+  (`block_serialized`), so saving the post saves it and records its inline block
+  usage. Plain text is turned into paragraphs. The Text block's `basic_html`
+  format allows no `<img>`, `<iframe>`, `<video>` or embedded media, so a Body
+  containing them (or D7 `[[{"type":"media"...}]]` / `[[nid:123]]` tokens, which
+  are removed) is imported without them and listed in the summary as needing
+  images added by hand.
+- **An empty Body is allowed.** A Body with no text, whether empty or only
+  filler such as `<p>&nbsp;</p>`, adds no Text block. A post with an External
+  Source redirects there, so its Body is never shown, and it imports without
+  comment. A post with neither is listed in the summary, because its page
+  shows only the title.
+- **Category**, **Tags**, **Audience**, **Custom Vocab** only accept terms that
+  already exist. Unlike the profile and resource importers, a misspelt term
+  fails its row (`TaxonomyResolverService::findTerm()`) rather than being
+  created.
+- There is no teaser image column: the importer brings in no images, so editors
+  add them to each post after import.
+- **URL Alias** sets the path alias and switches Pathauto off for that post; it
+  must not already be in use. Leave it empty for Pathauto's usual alias.
+- **Author**, **Teaser Title**, **Teaser Text** (capped at the form display's
+  limit), **External Source** and **CAS Login Required** map to their fields.
+
+`ys_content_export` writes **Publish Date**, **Category** and **CAS Protected**
+headers that this importer reads, so a Manage Posts export can be filled in and
+imported; its URL and Published columns are reported as ignored.
+
+The sample CSV has two rows: a post with a Body, and a publication with an
+External Source and no Body.
+
+### Getting a CSV out of Drupal 7
+
+**Feeds can't do it.** In D7, Feeds only imports content; it has no export. If
+a site's posts were first loaded through Feeds, the original CSV may still
+exist, but it won't include any edits made since.
+
+**The easiest route is a View with
+[Views Data Export](https://www.drupal.org/project/views_data_export)
+(7.x-3.x).** It needs no code, and it can be re-run whenever a fresh file is
+needed.
+
+1. Create a View of the news content type, filtered to published nodes and
+   showing all items.
+2. Add a "Data export" display with the CSV style.
+3. In the CSV settings:
+   - Check **Keep HTML tags**. Otherwise the module strips the Body down to
+     plain text.
+   - Leave **Replace newlines** off. The importer handles line breaks inside
+     quoted cells.
+4. Add the fields below. Give each one the importer's column name as its
+   label; the importer doesn't care about upper or lower case.
+
+| Column | D7 field | Settings |
+|---|---|---|
+| Title | Content: Title | Turn off "Link this field to the original piece of content" |
+| Publish Date | Content: Post date, or the site's own date field | Custom format `Y-m-d`. A date field arrives wrapped in a `<span>`; the importer removes it, so "Strip HTML tags" is optional |
+| Body | Content: Body | Formatter "Default" (the full text, not trimmed) |
+| Category, Tags | The term reference fields | Formatter "Plain text"; all values in one row, separated by `, ` |
+| External Source | A link field, for posts that point to another site | The URL only. Leave Body empty for these posts |
+| URL Alias | Content: Path | Turn off "Use absolute link" |
+| Author | A byline field, if the site has one | Not "User: Name", which is usually a NetID account rather than a byline |
+
+All other columns are optional. A column the importer doesn't recognise is
+listed as ignored and doesn't cause an error.
+
+Things to watch for:
+
+- **Terms:** term names must already exist on the YaleSites site, spelled
+  exactly the same. D7 vocabularies often differ, so the terms need creating
+  first or renaming in the spreadsheet. A term with a comma in its name gets
+  split into two names.
+- **Non-breaking spaces:** the export turns every `&nbsp;` into a real
+  non-breaking space, and most D7 Bodies have some. The importer trims them
+  from the ends of cells and names, ignores paragraphs that hold nothing else,
+  and keeps the rest, so they need no cleaning up.
+- **Empty Bodies:** a post with no Body imports. It is listed in the summary
+  unless it has an External Source.
+- **Excel:**
+  - Excel silently cuts any cell longer than 32,767 characters when it saves,
+    which can truncate long posts. If the file needs editing, use Google
+    Sheets or keep the edits light.
+  - If Excel changes the dates to M/D/YYYY, that's fine; the importer accepts
+    that format.
+- **Links in the Body:** links to D7 files (`/sites/default/files/...`) and
+  `/node/123` links will break, because those files and nodes don't move over.
+- **Images in the Body:** D7 media tags, or the `<img>` tags the "Default"
+  formatter produces from them, are removed. The import lists those posts as
+  needing images added by hand.
+- **URL Alias:** on a D7 site that lives in a subfolder, Content: Path includes
+  the folder name, which needs removing. Leave the column out entirely to use
+  YaleSites' usual pattern of publish date plus title.
+
+If the D7 site can't add a module, a developer with Drush or database access
+could write a short script that outputs the same CSV. With that level of
+access, though, a real migration is usually a better choice than CSV. The
+ONHA, WHC and Sustainability News submodules in `ys_migrate` already pull
+straight from a D7 database.
+
 ## General Migration Setup
 
 Each migration within Yale is organized into specific migration groups. These groups manage the migration of data and content from old Drupal instances to new ones, focusing on maintaining data integrity and meeting the unique requirements of each site. This document outlines the migrations for the Office of New Haven Affairs (ONHA), but the framework and methods described are applicable to other Yale sites.
@@ -100,7 +226,7 @@ drush migrate:import --tag=whc_node --execute-dependencies
 
 ## Running tests
 
-This module has PHPUnit tests under `tests/src/Unit/` for the CSV importer (`CsvValidatorService`, `TaxonomyResolverService`, `ProfileImportService`, `ProfileCsvImportForm`). Run them from the project root on the local Lando environment, passing the module's `tests` path so PHPUnit only discovers this module's tests (not Drupal core/contrib):
+This module has PHPUnit tests under `tests/src/Unit/` for the CSV importers (`CsvValidatorService`, `TaxonomyResolverService`, `CsvImportBatch`, and the profile, resource and post import services, forms and sample controllers). Run them from the project root on the local Lando environment, passing the module's `tests` path so PHPUnit only discovers this module's tests (not Drupal core/contrib):
 
 ```bash
 lando ssh -c "env SIMPLETEST_DB=mysql://pantheon:pantheon@database/pantheon \

@@ -88,25 +88,12 @@ class TaxonomyResolverService {
    *   The term or null on failure.
    */
   public function findOrCreateTerm($name, $vocabulary) {
-    $cache_key = $vocabulary . ':' . $name;
-    if (isset($this->resolvedTerms[$cache_key])) {
-      return $this->resolvedTerms[$cache_key];
-    }
-
-    // First, try to find existing term.
-    $query = $this->entityTypeManager->getStorage('taxonomy_term')->getQuery()
-      ->condition('vid', $vocabulary)
-      ->condition('name', $name)
-      ->range(0, 1)
-      ->accessCheck(FALSE);
-
-    $tids = $query->execute();
-
-    if (!empty($tids)) {
-      $term = $this->entityTypeManager->getStorage('taxonomy_term')->load(reset($tids));
-      $this->resolvedTerms[$cache_key] = $term;
+    $term = $this->findTerm($name, $vocabulary);
+    if ($term) {
       return $term;
     }
+
+    $cache_key = $vocabulary . ':' . $name;
 
     // Create new term if it doesn't exist.
     try {
@@ -130,6 +117,43 @@ class TaxonomyResolverService {
   }
 
   /**
+   * Finds an existing taxonomy term by name, never creating one.
+   *
+   * For importers that must report a misspelt term rather than quietly add a
+   * new one to the site's vocabulary.
+   *
+   * @param string $name
+   *   The term name.
+   * @param string $vocabulary
+   *   The vocabulary machine name.
+   *
+   * @return \Drupal\taxonomy\TermInterface|null
+   *   The term, or NULL when the vocabulary has no term by that name.
+   */
+  public function findTerm($name, $vocabulary) {
+    $cache_key = $vocabulary . ':' . $name;
+    if (isset($this->resolvedTerms[$cache_key])) {
+      return $this->resolvedTerms[$cache_key];
+    }
+
+    $tids = $this->entityTypeManager->getStorage('taxonomy_term')->getQuery()
+      ->condition('vid', $vocabulary)
+      ->condition('name', $name)
+      ->range(0, 1)
+      ->accessCheck(FALSE)
+      ->execute();
+
+    if (empty($tids)) {
+      // Deliberately not cached: findOrCreateTerm() may create it next.
+      return NULL;
+    }
+
+    $term = $this->entityTypeManager->getStorage('taxonomy_term')->load(reset($tids));
+    $this->resolvedTerms[$cache_key] = $term;
+    return $term;
+  }
+
+  /**
    * Parses comma-separated values into an array.
    *
    * @param string $value
@@ -143,11 +167,17 @@ class TaxonomyResolverService {
       return [];
     }
 
+    // A Drupal 7 export decodes &nbsp; into a real U+00A0, which trim() keeps,
+    // so "News,&nbsp;Events" would look up a term named " Events". A segment
+    // that is not valid UTF-8 makes preg_replace() return NULL; trim() still
+    // works on it.
+    $trim = static fn ($segment) => preg_replace('/^[\s\x{00A0}]+|[\s\x{00A0}]+$/u', '', $segment) ?? trim($segment);
+
     // Trim before discarding empties: filtering first lets a whitespace-only
     // segment through, which then trims to '' and has findOrCreateTerm()
     // create a nameless term in the vocabulary. 'strlen' rather than the
     // default callback so a term legitimately named "0" survives.
-    return array_values(array_filter(array_map('trim', explode(',', $value)), 'strlen'));
+    return array_values(array_filter(array_map($trim, explode(',', $value)), 'strlen'));
   }
 
 }
