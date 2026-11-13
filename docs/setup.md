@@ -121,12 +121,12 @@ Without it the pull stops with `Please make sure you have set TERMINUS_MACHINE_T
 
 Current DDEV reads its global config only from `~/.ddev/`. If you set the token with an older DDEV, it may be in `~/.config/ddev/` instead, which is no longer read; run the command above again to add it to the current config.
 
-The site and environment come from **`PANTHEON_SITE`** and **`PANTHEON_ENVIRONMENT`** in the committed `.ddev/config.yaml`. To point at a different site or environment without editing that file, create **`.ddev/config.local.yaml`** (ignored by the `.ddev/.gitignore` DDEV generates on first start; do not commit it):
+The site and environment come from **`DDEV_PANTHEON_SITE`** and **`DDEV_PANTHEON_ENVIRONMENT`** in the committed `.ddev/config.yaml`. To point at a different site or environment without editing that file, create **`.ddev/config.local.yaml`** (ignored by the `.ddev/.gitignore` DDEV generates on first start; do not commit it):
 
 ```yaml
 web_environment:
-  - PANTHEON_SITE=my-site-name
-  - PANTHEON_ENVIRONMENT=dev
+  - DDEV_PANTHEON_SITE=my-site-name
+  - DDEV_PANTHEON_ENVIRONMENT=dev
 ```
 
 DDEV merges every `.ddev/config.*.yaml` file into the project configuration, so only create one when you actually want it applied.
@@ -148,6 +148,10 @@ Useful commands:
   tests contaminate each other's container state when hundreds run in one PHPUnit process,
   which produces failures that do not reproduce per module. Running with no path at all also
   pulls in contrib tests with unmet dependencies.
+- **`ddev composer unit-test`** — run the PHPUnit Unit suite for every custom module, one
+  PHPUnit process per module (Lando: **`lando composer unit-test`**). This is the same command CI
+  runs, and it fails if any Unit test fails. It needs no database. Kernel tests are not part of it;
+  use **`ddev phpunit <path>`** for those.
 - **`ddev redis-cli`** / **`ddev redis-flush`** — inspect or clear the local Redis instance. If these report `service redis does not exist`, run **`ddev restart`**: the Redis container is only created on a restart after the add-on files arrive (for example on first checkout of a branch that adds them).
 
 If **`ddev pull pantheon`** fails with **`mkdir .../.ddev/.downloads: file exists`** while Mutagen performance mode is on, set **`performance_mode: "none"`** for this project (already set in the committed `config.yaml`) or see comments in that file.
