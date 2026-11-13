@@ -5,9 +5,10 @@ declare(strict_types=1);
 namespace Drupal\ys_views_basic\Controller;
 
 use Drupal\Core\Ajax\AjaxResponse;
+use Drupal\Core\Ajax\AnnounceCommand;
 use Drupal\Core\Ajax\ReplaceCommand;
 use Drupal\Core\Controller\ControllerBase;
-use Drupal\ys_views_basic\Service\EventsCalendarInterface;
+use Drupal\ys_views_basic\Service\EventsCalendar;
 use Symfony\Component\DependencyInjection\ContainerInterface;
 use Symfony\Component\HttpFoundation\Request;
 
@@ -20,7 +21,7 @@ final class EventsCalendarController extends ControllerBase {
    * The controller constructor.
    */
   public function __construct(
-    private EventsCalendarInterface $eventsCalendar,
+    private EventsCalendar $eventsCalendar,
   ) {}
 
   /**
@@ -97,7 +98,34 @@ final class EventsCalendarController extends ControllerBase {
       $response->addCommand(new ReplaceCommand($calendar_id, $calendar_wrapper));
     }
 
+    // Tell screen readers which month is now showing. Month navigation only
+    // swaps the grid, so without this the last announcement (often from a
+    // filter change) keeps naming the previous month.
+    $response->addCommand(new AnnounceCommand((string) $this->t('Showing @month.', [
+      '@month' => $this->monthLabel($month, $year),
+    ]), 'polite'));
+
     return $response;
+  }
+
+  /**
+   * Builds the "Month Year" label for the announcement.
+   *
+   * @param mixed $month
+   *   The requested month number.
+   * @param mixed $year
+   *   The requested year.
+   *
+   * @return string
+   *   The label, such as "December 2026".
+   */
+  private function monthLabel(mixed $month, mixed $year): string {
+    $month = (int) $month;
+    $year = (int) $year;
+    if ($month < 1 || $month > 12 || $year < 1) {
+      return (new \DateTimeImmutable('now'))->format('F Y');
+    }
+    return (new \DateTimeImmutable(sprintf('%04d-%02d-01', $year, $month)))->format('F Y');
   }
 
   /**

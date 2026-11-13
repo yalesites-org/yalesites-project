@@ -48,10 +48,44 @@ class ContentExportBuilderTest extends UnitTestCase {
       'at formula' => ['@SUM(A1)', "'@SUM(A1)"],
       'tab prefix' => ["\tvalue", "'\tvalue"],
       'carriage return prefix' => ["\rvalue", "'\rvalue"],
+      'newline prefix' => ["\n=1", "'\n=1"],
+      'leading space then formula' => [' =1+1', "' =1+1"],
       'ordinary text' => ['Hello world', 'Hello world'],
+      'comma text safe' => ['normal, text', 'normal, text'],
+      'leading space without formula safe' => [' hello', ' hello'],
+      'whitespace only safe' => ['   ', '   '],
+      'multibyte safe' => ["\u{00e9}=1", "\u{00e9}=1"],
       'internal equals safe' => ['a=b', 'a=b'],
       'empty' => ['', ''],
     ];
+  }
+
+  /**
+   * Tests that a value cannot break out of its own CSV field.
+   *
+   * The sanitizeCell() guard only inspects the start of each value, which is
+   * only safe if every value stays inside its own field. PHP's default
+   * backslash escape breaks that: a value containing \" is written with an
+   * un-doubled quote, which ends the field early for an RFC 4180 reader and
+   * lets the remainder be re-parsed as extra cells that never saw
+   * sanitizeCell(). Parsing here uses an empty $escape, which is how Excel,
+   * Numbers and Google Sheets read a CSV. Restoring the default escape in
+   * writeRow() fails this test.
+   *
+   * @covers ::writeRow
+   */
+  public function testWriteRowKeepsValuesInTheirOwnField(): void {
+    $payload = '\\",=1+1,"x';
+    $handle = fopen('php://temp', 'r+');
+    ContentExportBuilder::writeRow($handle, [$payload, '/node/1', 'Yes']);
+    rewind($handle);
+    $parsed = fgetcsv($handle, 0, ',', '"', '');
+    fclose($handle);
+
+    $this->assertSame([$payload, '/node/1', 'Yes'], $parsed);
+    foreach ($parsed as $field) {
+      $this->assertNotSame('=', $field[0], 'No field may start a live formula.');
+    }
   }
 
   /**

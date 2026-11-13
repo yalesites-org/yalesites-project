@@ -1,0 +1,45 @@
+/**
+ * @file
+ * A reusable "toggle reveals a dependent field" accordion row (#1481).
+ *
+ * Extracted from ys_views_basic's listing-block exposed-filter rows
+ * (ViewsBasicWidgetBase::buildExposedFilterAccordion(), views-basic.css —
+ * "Show Category" etc.) so the same pattern can be used on any Layout
+ * Builder block configure form, not just listing blocks. This file lives in
+ * ys_layouts (loaded platform-wide by ys_layouts_form_alter(), whenever
+ * $form['reusable'] exists) rather than ys_views_basic (loaded only on
+ * listing-block forms), so it uses its own ys-toggle-row-prefixed classes
+ * instead of the vb-prefixed ones that library keeps — using the vb- prefix
+ * here would wrongly imply a views_basic dependency.
+ *
+ * Disclosure is driven by :has() off the row's own header checkbox — no
+ * chevron, no JS widget: the checkbox itself is the disclosure control, and
+ * the row degrades to a plain checkbox + always-visible field without JS or
+ * :has() support (the body just never collapses).
+ */
+.ys-toggle-row {
+  border: 1px solid var(--gin-border-color, #d4d4d4);
+  border-radius: 4px;
+  margin-bottom: 0.5rem;
+}
+
+.ys-toggle-row > .form-item,
+.ys-toggle-row > .form-type--checkbox,
+.ys-toggle-row > .js-form-type-checkbox,
+.ys-toggle-row > .glb-form-item,
+.ys-toggle-row > .glb-form-type--checkbox {
+  margin: 0 !important;
+  padding: 0.75rem;
+}
+
+.ys-toggle-row__body {
+  margin-left: 1rem;
+  padding: 0.75rem;
+  border-top: 1px solid var(--gin-border-color, #d4d4d4);
+  border-left: 2px solid var(--gin-border-color, #d4d4d4);
+}
+
+/* Collapsed while the toggle is switched off. */
+.ys-toggle-row--has-settings:not(:has(input[type="checkbox"]:checked)) .ys-toggle-row__body {
+  display: none;
+}

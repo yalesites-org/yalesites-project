@@ -2,25 +2,24 @@
 
 namespace Drupal\ys_views_basic\Plugin\Field\FieldFormatter;
 
+use Drupal\Core\Field\Attribute\FieldFormatter;
 use Drupal\Core\Field\FieldDefinitionInterface;
 use Drupal\Core\Field\FieldItemListInterface;
 use Drupal\Core\Field\FormatterBase;
 use Drupal\Core\Plugin\ContainerFactoryPluginInterface;
-use Drupal\ys_views_basic\Service\EventsCalendarInterface;
+use Drupal\Core\StringTranslation\TranslatableMarkup;
+use Drupal\ys_views_basic\Service\EventsCalendar;
 use Drupal\ys_views_basic\ViewsBasicManager;
 use Symfony\Component\DependencyInjection\ContainerInterface;
 
 /**
  * Plugin implementation of the 'views_basic_default' formatter.
- *
- * @FieldFormatter(
- *   id = "views_basic_default_formatter",
- *   label = @Translation("Views Basic View"),
- *   field_types = {
- *     "views_basic_params"
- *   }
- * )
  */
+#[FieldFormatter(
+  id: 'views_basic_default_formatter',
+  label: new TranslatableMarkup('Views Basic View'),
+  field_types: ['views_basic_params'],
+)]
 class ViewsBasicDefaultFormatter extends FormatterBase implements ContainerFactoryPluginInterface {
 
   /**
@@ -33,9 +32,9 @@ class ViewsBasicDefaultFormatter extends FormatterBase implements ContainerFacto
   /**
    * The Events Calendar service.
    *
-   * @var \Drupal\ys_views_basic\Service\EventsCalendarInterface
+   * @var \Drupal\ys_views_basic\Service\EventsCalendar
    */
-  protected EventsCalendarInterface $eventsCalendar;
+  protected EventsCalendar $eventsCalendar;
 
   /**
    * Constructs an views basic default formatter object.
@@ -56,7 +55,7 @@ class ViewsBasicDefaultFormatter extends FormatterBase implements ContainerFacto
    *   Any third party settings.
    * @param \Drupal\ys_views_basic\ViewsBasicManager $viewsBasicManager
    *   The views basic manager service.
-   * @param \Drupal\ys_views_basic\Service\EventsCalendarInterface $eventsCalendar
+   * @param \Drupal\ys_views_basic\Service\EventsCalendar $eventsCalendar
    *   The Events Calendar service.
    */
   public function __construct(
@@ -68,7 +67,7 @@ class ViewsBasicDefaultFormatter extends FormatterBase implements ContainerFacto
     string $view_mode,
     array $third_party_settings,
     ViewsBasicManager $viewsBasicManager,
-    EventsCalendarInterface $eventsCalendar,
+    EventsCalendar $eventsCalendar,
   ) {
     parent::__construct(
       $plugin_id,
@@ -132,7 +131,16 @@ class ViewsBasicDefaultFormatter extends FormatterBase implements ContainerFacto
         ];
       }
       else {
-        $view = $this->viewsBasicManager->getView('rendered', $item->getValue()['params']);
+        // Pass the host block UUID so each instance gets an isolated, cloned
+        // view and a distinct pager element (#906 / #1306).
+        $block = $items->getEntity();
+        $blockUuid = $block ? $block->uuid() : NULL;
+        // Whether the block renders its own heading determines the result-card
+        // heading level (H3 nested under the block heading, H2 without). The
+        // component-wrapper only renders the heading when field_heading is not
+        // empty, so mirror that condition here.
+        $blockHasHeading = $block && $block->hasField('field_heading') && !$block->get('field_heading')->isEmpty();
+        $view = $this->viewsBasicManager->getView('rendered', $item->getValue()['params'], $blockUuid, $blockHasHeading);
         // Extract exposed widgets from the view.
         $exposedWidgets = NULL;
         if ($view && is_array($view) && isset($view['#view']) && isset($view['#view']->exposed_widgets)) {

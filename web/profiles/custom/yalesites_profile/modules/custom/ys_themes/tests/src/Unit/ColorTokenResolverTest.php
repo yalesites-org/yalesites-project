@@ -48,11 +48,14 @@ class ColorTokenResolverTest extends UnitTestCase {
    *   Logger to use; a permissive mock is created if omitted.
    * @param string $global_theme_setting
    *   The value ThemeSettingsManager::getSetting('global_theme') returns.
+   * @param array $setting_options
+   *   The value ThemeSettingsManager::getOptions() returns. Only the swatch
+   *   tests need it, so it defaults to the real THEME_SETTINGS constant.
    *
    * @return \Drupal\ys_themes\ColorTokenResolver
    *   The resolver under test.
    */
-  protected function createResolver(?string $json_path = NULL, ?LoggerInterface $logger = NULL, string $global_theme_setting = 'one'): ColorTokenResolver {
+  protected function createResolver(?string $json_path = NULL, ?LoggerInterface $logger = NULL, string $global_theme_setting = 'one', ?array $setting_options = NULL): ColorTokenResolver {
     $logger = $logger ?? $this->createMock(LoggerInterface::class);
 
     $theme_extension_list = $this->createMock(ThemeExtensionList::class);
@@ -62,6 +65,7 @@ class ColorTokenResolverTest extends UnitTestCase {
 
     $theme_settings_manager = $this->createMock(ThemeSettingsManager::class);
     $theme_settings_manager->method('getSetting')->willReturn($global_theme_setting);
+    $theme_settings_manager->method('getOptions')->willReturn($setting_options ?? ThemeSettingsManager::THEME_SETTINGS);
 
     $renderer = $this->createMock(RendererInterface::class);
 
@@ -326,6 +330,43 @@ class ColorTokenResolverTest extends UnitTestCase {
   }
 
   /**
+   * The 'default' swatch is labelled with the option's own label when given.
+   *
+   * Editors read the swatch label, not the hidden select, so the agreed
+   * "Default - No Color" wording has to reach the swatch (YaleSites-Internal
+   * #1777).
+   *
+   * @covers ::buildColorInfo
+   */
+  public function testBuildColorInfoForDefaultOptionUsesOptionLabel(): void {
+    $resolver = $this->createResolver($this->fixturePath);
+    $info = $resolver->buildColorInfo('default', 'some-var', 'Default - No Color');
+    $this->assertSame('Default - No Color', $info['token_name']);
+    $this->assertSame('#ffffff', $info['hex']);
+  }
+
+  /**
+   * An empty option label falls back to the generic 'Default' swatch name.
+   *
+   * @covers ::buildColorInfo
+   */
+  public function testBuildColorInfoForDefaultOptionFallsBackWhenLabelEmpty(): void {
+    $resolver = $this->createResolver($this->fixturePath);
+    $this->assertSame('Default', $resolver->buildColorInfo('default', NULL, '')['token_name']);
+  }
+
+  /**
+   * A non-default option keeps its palette color name, whatever its label.
+   *
+   * @covers ::buildColorInfo
+   */
+  public function testBuildColorInfoIgnoresLabelForPaletteOptions(): void {
+    $resolver = $this->createResolver($this->fixturePath);
+    $info = $resolver->buildColorInfo('one', 'var(--global-themes-one-colors-slot-one)', 'One');
+    $this->assertSame('Blue Yale', $info['token_name']);
+  }
+
+  /**
    * Tests build color info returns empty for missing background color.
    *
    * BuildColorInfo() returns an all-empty structure when no background color
@@ -471,6 +512,10 @@ class ColorTokenResolverTest extends UnitTestCase {
 
     $this->assertSame(['var(--global-themes-one-colors-slot-one)'], $styles['one']['one']);
     $this->assertSame(['var(--global-themes-one-colors-slot-five)'], $styles['one']['five']);
+    // The sixth option is slot-nine, not slot-six -- the one place the 1:1
+    // mapping is not literally 1:1, and the pair the previous assertions left
+    // unpinned.
+    $this->assertSame(['var(--global-themes-one-colors-slot-nine)'], $styles['one']['six']);
     // Global theme 'four' gets no swap under the base mapping.
     $this->assertSame(['var(--global-themes-four-colors-slot-two)'], $styles['four']['two']);
   }
@@ -504,36 +549,35 @@ class ColorTokenResolverTest extends UnitTestCase {
   }
 
   /**
-   * Tests that layout sections expose five color options, not six.
+   * Tests that layout sections expose six color options, including slot-three.
    *
-   * Every block-content mapping in getColorStylesForEntity() offers six
-   * options covering slots one, two, three, four, five and nine. Sections
-   * deliberately offer five and never expose slot-three: an option for it was
-   * added and then removed again within ticket #897, and #1153 reused the
-   * freed 'five' key for slot-nine. This test pins that decision so the
-   * difference reads as intentional rather than as a missed slot (#1506), and
-   * so adding a sixth option is a deliberate change with a test to update.
+   * Sections offered five options for a long time while every block-content
+   * mapping offered six: slot-three was the one palette slot sections never
+   * exposed. #1518 closed that gap, so sections now match the block pickers
+   * at six options and 'six' is the key that resolves to slot-three.
    *
    * @covers ::getColorStylesForEntity
    */
-  public function testGetColorStylesForEntitySectionExposesFiveOptions(): void {
+  public function testGetColorStylesForEntitySectionExposesSixOptions(): void {
     $resolver = $this->createResolver($this->fixturePath);
     $styles = $resolver->getColorStylesForEntity('layout_section', 'ys_layout_options');
 
     $this->assertSame(
-      ['one', 'two', 'three', 'four', 'five'],
+      ['one', 'two', 'three', 'four', 'five', 'six'],
       array_keys($styles['one']),
     );
 
-    // No option resolves to slot-three under any global theme.
-    foreach ($styles as $global_theme => $options) {
-      foreach ($options as $option_key => $declarations) {
-        $this->assertNotContains(
-          "var(--global-themes-{$global_theme}-colors-slot-three)",
-          $declarations,
-          "Section option '{$option_key}' unexpectedly resolves to slot-three.",
-        );
-      }
+    // Option 'six' resolves to slot-three under every global theme. Theme
+    // 'four' (Onha) is included deliberately: its slot swap exchanges
+    // slot-two and slot-five only, so slot-three must pass through untouched
+    // there too -- mirroring the SCSS, which likewise leaves slot-three out
+    // of that swap.
+    foreach (array_keys($styles) as $global_theme) {
+      $this->assertSame(
+        ["var(--global-themes-{$global_theme}-colors-slot-three)"],
+        $styles[$global_theme]['six'],
+        "Section option 'six' should resolve to slot-three under global theme '{$global_theme}'.",
+      );
     }
   }
 
@@ -695,6 +739,82 @@ class ColorTokenResolverTest extends UnitTestCase {
   }
 
   /**
+   * The hidden select leaves the tab order and names the swatch group.
+   *
+   * Keyboard focus belongs on the swatches, so the native select (zero-size
+   * and transparent) is taken out of the tab order and the accessibility
+   * tree, and its title is handed to the template as the radiogroup's name.
+   *
+   * @covers ::processColorPicker
+   */
+  public function testProcessColorPickerHidesSelectFromKeyboardAndPassesGroupLabel(): void {
+    $resolver = $this->createResolver($this->fixturePath, NULL, 'one');
+    $rendered_argument = NULL;
+    $renderer = $this->createMock(RendererInterface::class);
+    $renderer->method('render')->willReturnCallback(function (&$element) use (&$rendered_argument) {
+      $rendered_argument = $element;
+      return '<div></div>';
+    });
+    $this->setRendererOnResolver($resolver, $renderer);
+
+    $element = [
+      '#title' => 'Section Theme',
+      '#default_value' => 'one',
+      '#options' => ['default' => 'Default - No Color', 'one' => 'One'],
+    ];
+    $form_state = $this->createMock(FormStateInterface::class);
+    $complete_form = [];
+
+    $result = $resolver->processColorPicker($element, $form_state, $complete_form, 'layout_section', 'ys_layout_options');
+
+    $this->assertSame('-1', $result['#attributes']['tabindex']);
+    $this->assertSame('true', $result['#attributes']['aria-hidden']);
+    $this->assertSame('Section Theme', (string) $rendered_argument['#group_label']);
+  }
+
+  /**
+   * Section themes render as a dropdown; every other picker keeps swatches.
+   *
+   * The block-level pickers (no mapping, or the callout mapping that the
+   * Taxonomy Display block uses for its own theme) must keep the swatch row.
+   *
+   * @covers ::processColorPicker
+   * @dataProvider providerPickerDisplay
+   */
+  public function testProcessColorPickerChoosesDisplayBySection(?string $entity_type, ?string $bundle, string $expected): void {
+    $resolver = $this->createResolver($this->fixturePath, NULL, 'one');
+    $rendered_argument = NULL;
+    $renderer = $this->createMock(RendererInterface::class);
+    $renderer->method('render')->willReturnCallback(function (&$element) use (&$rendered_argument) {
+      $rendered_argument = $element;
+      return '<div></div>';
+    });
+    $this->setRendererOnResolver($resolver, $renderer);
+
+    $element = [
+      '#default_value' => 'one',
+      '#options' => ['default' => 'Default - No Color', 'one' => 'One'],
+    ];
+    $form_state = $this->createMock(FormStateInterface::class);
+    $complete_form = [];
+
+    $resolver->processColorPicker($element, $form_state, $complete_form, $entity_type, $bundle);
+
+    $this->assertSame($expected, $rendered_argument['#display']);
+  }
+
+  /**
+   * Data provider for testProcessColorPickerChoosesDisplayBySection().
+   */
+  public static function providerPickerDisplay(): array {
+    return [
+      'section theme' => ['layout_section', 'ys_layout_options', 'dropdown'],
+      'block theme, callout mapping' => ['block_content', 'callout', 'swatches'],
+      'no mapping' => [NULL, NULL, 'swatches'],
+    ];
+  }
+
+  /**
    * Tests process color picker reorders options for section layout.
    *
    * ProcessColorPicker() reorders palette options and sets #palette_order
@@ -714,10 +834,12 @@ class ColorTokenResolverTest extends UnitTestCase {
       '#default_value' => 'one',
       '#options' => [
         '_none' => '- None -',
+        'six' => 'Six',
         'one' => 'One',
         'two' => 'Two',
         'three' => 'Three',
         'four' => 'Four',
+        'five' => 'Five',
         'default' => 'Default',
       ],
     ];
@@ -726,7 +848,36 @@ class ColorTokenResolverTest extends UnitTestCase {
 
     $result = $resolver->processColorPicker($element, $form_state, $complete_form, 'layout_section', 'ys_layout_options');
 
-    $this->assertSame(['default', 'one', 'two', 'three', 'four'], array_keys($result['#options']));
+    $this->assertSame(['default', 'one', 'two', 'three', 'four', 'five', 'six'], array_keys($result['#options']));
+  }
+
+  /**
+   * Tests the section picker labels the default swatch with its option label.
+   *
+   * @covers ::processColorPicker
+   */
+  public function testProcessColorPickerLabelsDefaultSwatchWithOptionLabel(): void {
+    $resolver = $this->createResolver($this->fixturePath, NULL, 'one');
+    $rendered_argument = NULL;
+    $renderer = $this->createMock(RendererInterface::class);
+    $renderer->method('render')->willReturnCallback(function (&$element) use (&$rendered_argument) {
+      $rendered_argument = $element;
+      return '<div></div>';
+    });
+    $this->setRendererOnResolver($resolver, $renderer);
+
+    $element = [
+      '#default_value' => 'one',
+      '#options' => ['default' => 'Default - No Color', 'one' => 'One'],
+    ];
+    $form_state = $this->createMock(FormStateInterface::class);
+    $complete_form = [];
+
+    $resolver->processColorPicker($element, $form_state, $complete_form, 'layout_section', 'ys_layout_options');
+
+    $this->assertSame('Default - No Color', $rendered_argument['#color_info']['default']['token_name']);
+    // The stored option key is unchanged.
+    $this->assertSame(['default', 'one'], array_keys($rendered_argument['#palette_options']));
   }
 
   /**
@@ -758,6 +909,164 @@ class ColorTokenResolverTest extends UnitTestCase {
     // resolves against theme 'one' styles.
     $this->assertSame('unknown-theme', $rendered_argument['#global_theme']);
     $this->assertSame('#00366b', $rendered_argument['#color_info']['one']['hex']);
+  }
+
+  /**
+   * The token file is parsed once per request, not once per caller.
+   *
+   * The theme settings form resolves colors for 41 radios, and before this was
+   * memoised each one re-read and re-decoded the same ~25 KB token file twice.
+   * Asserted through the logger because that is the observable side effect: a
+   * missing file warns once now, not once per call.
+   *
+   * @covers ::getGlobalThemeColors
+   */
+  public function testGlobalThemeColorsAreParsedOnlyOnce(): void {
+    $warnings = 0;
+    $logger = $this->createMock(LoggerInterface::class);
+    $logger->method('warning')->willReturnCallback(function () use (&$warnings) {
+      $warnings++;
+    });
+
+    // No json_path override, so the resolved path does not exist.
+    $resolver = $this->createResolver(NULL, $logger);
+    $warnings = 0;
+
+    $this->assertSame([], $resolver->getGlobalThemeColors());
+    $this->assertSame([], $resolver->getGlobalThemeColors());
+    $this->assertSame([], $resolver->getGlobalThemeColors());
+    $this->assertSame(1, $warnings, 'The missing token file was reported once, so later calls came from the memo.');
+  }
+
+  /**
+   * The Color Palette radio shows the six selectable slots of its own palette.
+   *
+   * Each global_theme option *is* a palette, so the swatches come from that
+   * option's own theme rather than from the saved one -- otherwise all seven
+   * radios would show the same six colors. The fixture palette 'one' defines
+   * only slot-one and slot-two, which also covers a palette that does not
+   * define every selectable slot: the rest are skipped rather than emitted as
+   * empty chips that would render as stray grey circles.
+   *
+   * @covers ::buildThemeSettingSwatches
+   */
+  public function testGlobalThemeSwatchesComeFromTheOptionsOwnPalette(): void {
+    // Saved palette is 'two', but the 'one' radio must still show palette one.
+    $resolver = $this->createResolver($this->fixturePath, NULL, 'two');
+
+    $this->assertSame(
+      [
+        ['slot' => 'one', 'hex' => '#00366b', 'token_name' => 'Blue Yale'],
+        ['slot' => 'two', 'hex' => '#808080', 'token_name' => 'Slot Two'],
+      ],
+      $resolver->buildThemeSettingSwatches('global_theme', 'one'),
+      'Palette swatches resolve against the option itself, in slot order, skipping slots the palette does not define.'
+    );
+  }
+
+  /**
+   * A palette shows six chips, the sixth of which is slot-nine.
+   *
+   * This is the case the whole server-side resolution exists for: the generated
+   * token CSS stops at slot-eight, so slot-nine has no custom property and the
+   * sixth chip could never have been rendered from one. Asserted against a
+   * fixture palette that defines every slot, because the shared fixture
+   * deliberately defines only two and would pass with slot-nine dropped.
+   *
+   * @covers ::buildThemeSettingSwatches
+   */
+  public function testPaletteShowsSixChipsEndingWithSlotNine(): void {
+    $resolver = $this->createResolver(__DIR__ . '/../../fixtures/tokens-fixture-full-palette.json');
+
+    $swatches = $resolver->buildThemeSettingSwatches('global_theme', 'one');
+
+    $this->assertSame(
+      ['one', 'two', 'three', 'four', 'five', 'nine'],
+      array_column($swatches, 'slot'),
+      'A palette shows the six selectable slots in order, skipping the internal slots six to eight.'
+    );
+    $this->assertSame('#00366b', $swatches[0]['hex']);
+    $this->assertSame('Blue Yale', $swatches[0]['token_name']);
+    $this->assertSame('#d9d9d9', $swatches[5]['hex']);
+    $this->assertSame('Gray 200', $swatches[5]['token_name']);
+  }
+
+  /**
+   * A component setting's swatches resolve against the saved global theme.
+   *
+   * Options on header_theme, footer_theme, header_accent, footer_accent,
+   * button_theme and book_navigation name *slots* ('color_theme', plus
+   * 'color_theme_2' for the two-tone header/footer options) rather than
+   * palettes, so they only mean anything relative to the palette in effect --
+   * which the resolver reads for itself rather than being told.
+   *
+   * @covers ::buildThemeSettingSwatches
+   */
+  public function testComponentSettingSwatchesResolveAgainstTheGlobalTheme(): void {
+    $resolver = $this->createResolver($this->fixturePath, NULL, 'one', [
+      'header_theme' => [
+        'values' => [
+          'one' => [
+            'label' => 'Base & White',
+            'color_theme' => 'one',
+            'color_theme_2' => 'two',
+          ],
+        ],
+      ],
+    ]);
+
+    $this->assertSame(
+      [
+        ['slot' => 'one', 'hex' => '#00366b', 'token_name' => 'Blue Yale'],
+        ['slot' => 'two', 'hex' => '#808080', 'token_name' => 'Slot Two'],
+      ],
+      $resolver->buildThemeSettingSwatches('header_theme', 'one'),
+      'A two-tone option shows color_theme then color_theme_2, resolved in the saved palette.'
+    );
+  }
+
+  /**
+   * Degenerate options yield no swatches rather than empty chips.
+   *
+   * The label template renders whatever it is handed, so [] is what keeps such
+   * an option rendering as a plain label instead of an empty swatch wrapper.
+   * The last case is a slot the saved palette does not define at all: fixture
+   * palette 'two' has only slot-one.
+   *
+   * @covers ::buildThemeSettingSwatches
+   */
+  public function testOptionsWithNoResolvableColorsYieldNoSwatches(): void {
+    $resolver = $this->createResolver($this->fixturePath);
+    $this->assertSame([], $resolver->buildThemeSettingSwatches('global_theme', 'not-a-palette'));
+    $this->assertSame([], $resolver->buildThemeSettingSwatches('not_a_setting', 'one'));
+
+    $missing_slot = $this->createResolver($this->fixturePath, NULL, 'two', [
+      'header_accent' => [
+        'values' => ['two' => ['label' => 'Two', 'color_theme' => 'two']],
+      ],
+    ]);
+    $this->assertSame([], $missing_slot->buildThemeSettingSwatches('header_accent', 'two'));
+  }
+
+  /**
+   * Every palette's slot colors are exposed for the browser to re-tint with.
+   *
+   * The settings form hands this to levers.js so selecting a palette can
+   * re-tint the swatches of the settings that follow it. It must be keyed by
+   * theme then by the same slot-<name> keys the swatch markup carries.
+   *
+   * @covers ::getSlotHexMap
+   */
+  public function testSlotHexMapIsKeyedByThemeThenSlot(): void {
+    $resolver = $this->createResolver($this->fixturePath);
+
+    $this->assertSame(
+      [
+        'one' => ['slot-one' => '#00366b', 'slot-two' => '#808080'],
+        'two' => ['slot-one' => '#26734d'],
+      ],
+      $resolver->getSlotHexMap()
+    );
   }
 
   /**

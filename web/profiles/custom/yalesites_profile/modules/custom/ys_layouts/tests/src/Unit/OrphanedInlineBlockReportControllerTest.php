@@ -9,7 +9,7 @@ use Drupal\Core\Pager\PagerManagerInterface;
 use Drupal\Tests\UnitTestCase;
 use Drupal\block_content\BlockContentInterface;
 use Drupal\ys_layouts\Controller\OrphanedInlineBlockReportController;
-use Drupal\ys_layouts\Service\OrphanedInlineBlockCleanerInterface;
+use Drupal\ys_layouts\Service\OrphanedInlineBlockCleaner;
 
 /**
  * Tests the orphaned inline block report screen.
@@ -31,7 +31,7 @@ class OrphanedInlineBlockReportControllerTest extends UnitTestCase {
   /**
    * The orphaned inline block cleaner mock.
    *
-   * @var \Drupal\ys_layouts\Service\OrphanedInlineBlockCleanerInterface|\PHPUnit\Framework\MockObject\MockObject
+   * @var \Drupal\ys_layouts\Service\OrphanedInlineBlockCleaner|\PHPUnit\Framework\MockObject\MockObject
    */
   protected $cleaner;
 
@@ -65,7 +65,7 @@ class OrphanedInlineBlockReportControllerTest extends UnitTestCase {
   protected function setUp(): void {
     parent::setUp();
 
-    $this->cleaner = $this->createMock(OrphanedInlineBlockCleanerInterface::class);
+    $this->cleaner = $this->createMock(OrphanedInlineBlockCleaner::class);
     $this->blockStorage = $this->createMock(EntityStorageInterface::class);
 
     $entity_type_manager = $this->createMock(EntityTypeManagerInterface::class);

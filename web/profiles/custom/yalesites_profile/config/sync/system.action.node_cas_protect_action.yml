@@ -1,0 +1,12 @@
+uuid: 14fd5618-e496-4d01-91a1-dd1d434f1c01
+langcode: en
+status: true
+dependencies:
+  module:
+    - node
+    - ys_node_access
+id: node_cas_protect_action
+label: 'CAS protect'
+type: node
+plugin: ys_node_access_cas_protect
+configuration: {  }

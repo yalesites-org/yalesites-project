@@ -4,6 +4,7 @@ namespace Drupal\ys_campus_groups\Form;
 
 use Drupal\Core\Form\ConfigFormBase;
 use Drupal\Core\Form\FormStateInterface;
+use Drupal\Core\Url;
 use Drupal\ys_campus_groups\Plugin\migrate\source\CampusGroupUrl;
 
 /**
@@ -32,9 +33,12 @@ class CampusGroupsSettings extends ConfigFormBase {
     $config = $this->config('ys_campus_groups.settings');
 
     if ($config->get('enable_campus_groups_sync')) {
+      // A route-built link, so core adds the route's CSRF token.
       $form['sync_now_button'] = [
-        '#type' => 'markup',
-        '#markup' => '<a class="button" href="/admin/yalesites/campus_groups/sync">Sync now</a>',
+        '#type' => 'link',
+        '#title' => $this->t('Sync now'),
+        '#url' => Url::fromRoute('ys_campus_groups.run_migrations'),
+        '#attributes' => ['class' => ['button']],
       ];
     }
 

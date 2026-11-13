@@ -70,11 +70,11 @@ class ViewsBasicSortTest extends UnitTestCase {
   }
 
   /**
-   * A non-field sort key (e.g. "title") is used as-is, with no table join.
+   * A title sort orders by the base table column, with no field table join.
    *
    * @covers ::query
    */
-  public function testQueryWithNonFieldSortUsesRawFieldName() {
+  public function testQueryWithTitleSortUsesBaseTableColumn() {
     [$sort, $query] = $this->createSortWithArgs([NULL, NULL, NULL, 'title:ASC']);
 
     $query->expects($this->never())->method('addTable');
@@ -86,7 +86,88 @@ class ViewsBasicSortTest extends UnitTestCase {
 
     $sort->query();
 
-    $this->assertSame([NULL, 'title', 'ASC', 'views_basic_sort'], array_slice($calls[1], 0, 4));
+    $this->assertCount(3, $calls);
+    $this->assertSame([NULL, 'node_field_data.sticky', 'DESC', 'views_basic_sort'], array_slice($calls[0], 0, 4));
+    $this->assertSame([NULL, 'node_field_data.title', 'ASC', 'views_basic_sort'], array_slice($calls[1], 0, 4));
+    $this->assertSame([NULL, 'node_field_data.nid', 'ASC', 'views_basic_sort'], array_slice($calls[2], 0, 4));
+  }
+
+  /**
+   * A publish date sort joins its field table and orders by its value.
+   *
+   * @covers ::query
+   */
+  public function testQueryWithPublishDateSort() {
+    [$sort, $query] = $this->createSortWithArgs([NULL, NULL, NULL, 'field_publish_date:DESC']);
+
+    $query->expects($this->once())
+      ->method('addTable')
+      ->with('node__field_publish_date')
+      ->willReturn('node__field_publish_date');
+
+    $calls = [];
+    $query->method('addOrderBy')->willReturnCallback(function (...$args) use (&$calls) {
+      $calls[] = $args;
+    });
+
+    $sort->query();
+
+    $this->assertCount(3, $calls);
+    $this->assertSame([NULL, 'node__field_publish_date.field_publish_date_value', 'DESC', 'views_basic_sort'], array_slice($calls[1], 0, 4));
+  }
+
+  /**
+   * The direction is matched case-insensitively and normalized to upper case.
+   *
+   * @covers ::query
+   */
+  public function testQueryNormalizesDirectionCase() {
+    [$sort, $query] = $this->createSortWithArgs([NULL, NULL, NULL, 'title:desc']);
+
+    $calls = [];
+    $query->method('addOrderBy')->willReturnCallback(function (...$args) use (&$calls) {
+      $calls[] = $args;
+    });
+
+    $sort->query();
+
+    $this->assertSame([NULL, 'node_field_data.title', 'DESC', 'views_basic_sort'], array_slice($calls[1], 0, 4));
+    $this->assertSame([NULL, 'node_field_data.nid', 'DESC', 'views_basic_sort'], array_slice($calls[2], 0, 4));
+  }
+
+  /**
+   * Provides sort arguments that are not on the allowlist.
+   *
+   * @return array
+   *   Test cases keyed by description.
+   */
+  public static function invalidSortProvider(): array {
+    return [
+      'unknown field' => ['not_a_field:ASC'],
+      'no direction' => ['title'],
+      'unknown direction' => ['field_publish_date:SIDEWAYS'],
+      'expression' => ['(1):ASC'],
+      'qualified column' => ['node_field_data.nid:ASC'],
+      'extra segment' => ['title:ASC:DESC'],
+      'empty field' => [':ASC'],
+      'unknown field prefix' => ['field_unknown:ASC'],
+      'non-string argument' => [['title:ASC']],
+    ];
+  }
+
+  /**
+   * An argument that is not on the allowlist adds no ordering or joins.
+   *
+   * @dataProvider invalidSortProvider
+   * @covers ::query
+   */
+  public function testInvalidSortArgumentAddsNoOrdering($sortBy) {
+    [$sort, $query] = $this->createSortWithArgs([NULL, NULL, NULL, $sortBy]);
+
+    $query->expects($this->never())->method('addOrderBy');
+    $query->expects($this->never())->method('addTable');
+
+    $sort->query();
   }
 
   /**

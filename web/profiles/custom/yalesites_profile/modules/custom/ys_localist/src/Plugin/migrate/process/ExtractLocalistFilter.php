@@ -4,17 +4,13 @@ declare(strict_types=1);
 
 namespace Drupal\ys_localist\Plugin\migrate\process;
 
+use Drupal\migrate\Attribute\MigrateProcess;
 use Drupal\migrate\MigrateExecutableInterface;
 use Drupal\migrate\ProcessPluginBase;
 use Drupal\migrate\Row;
 
 /**
  * Extracts filters from Localist events to prepare for entity reference.
- *
- * @MigrateProcessPlugin(
- *   id = "extract_localist_filter",
- *   handle_multiples = TRUE
- * )
  *
  * Localist events can contain filters which can be imported into Drupal by
  * way of an entity reference to a taxonomy term, for example. To choose the
@@ -27,6 +23,10 @@ use Drupal\migrate\Row;
  *     filter: event_types
  * @endcode
  */
+#[MigrateProcess(
+  id: 'extract_localist_filter',
+  handle_multiples: TRUE,
+)]
 class ExtractLocalistFilter extends ProcessPluginBase {
 
   /**

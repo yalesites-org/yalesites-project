@@ -1,14 +1,27 @@
 import styles from "./Layout.module.css";
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import Chat from "../../pages/chat/Chat";
 import Footer from "../Footer/Footer";
 import aiLogo from "../../assets/Logo.svg";
 import Modal from "../../components/Modal/Modal";
 
+// The first Beacon launch link a visitor can see, else the first one at all.
+const firstVisibleLaunchLink = () => {
+    const links = Array.from(
+        document.querySelectorAll<HTMLElement>('a[href="#launch-chat"]')
+    );
+    return links.find((link) => link.getClientRects().length > 0) ?? links[0] ?? null;
+};
+
 const Layout = () => {
     const [isModalOpen, setIsModalOpen] = useState(false);
+    // The Beacon link that launched the chat. js/events.js clicks the hidden
+    // launch button without moving focus, so this is the link the visitor
+    // used, or <body> when a #launch-chat URL opened the chat on page load.
+    const openerRef = useRef<HTMLElement | null>(null);
 
     const handleOpenModal = () => {
+        openerRef.current = document.activeElement as HTMLElement | null;
         setIsModalOpen(true);
     };
 
@@ -56,6 +69,17 @@ const Layout = () => {
             document.body.style.top = '';
             window.scrollTo(0, scrollY);
             inerted.forEach((el) => el.removeAttribute('inert'));
+
+            // Return focus here, not in the Modal: React runs the Modal's
+            // cleanup first, while the page is still inert, so a focus() call
+            // there is ignored (WCAG 2.4.3). With no launching link (a
+            // #launch-chat page load), use the first visible Beacon link.
+            const opener = openerRef.current;
+            const target =
+                opener && opener !== document.body && opener.isConnected
+                    ? opener
+                    : firstVisibleLaunchLink();
+            target?.focus({ preventScroll: true });
         };
     }, [isModalOpen]);
 
@@ -67,19 +91,6 @@ const Layout = () => {
             </>
         );
     }
-    /**
-     * Close modal on escape key press.
-     */
-    useEffect(() => {
-        const close = (e: { key: string; }) => {
-          if(e.key === 'Escape'){
-            handleCloseModal()
-          }
-        }
-        window.addEventListener('keydown', close)
-      return () => window.removeEventListener('keydown', close)
-    },[])
-
     return (
     <div className={styles.layout}>
       {isModalOpen && (
@@ -90,15 +101,24 @@ const Layout = () => {
           close={handleCloseModal}
           variant={""}
           ariaLabel="Beacon chat"
+          restoreFocus={false}
         >
           <Chat />
         </Modal>
       )}
+      {/*
+        Programmatic launch hook only: js/events.js calls .click() on this
+        button when a visitor follows a #launch-chat link. Visitors never reach
+        it directly, so it is hidden from assistive technology and removed from
+        the tab order (YaleSites-Internal#1944: axe "region" rule).
+      */}
       <button
         type="button"
         id="ys-beacon-launch-modal"
         onClick={handleOpenModal}
         className="visually-hidden"
+        aria-hidden="true"
+        tabIndex={-1}
       >
         Try Beacon Now
       </button>

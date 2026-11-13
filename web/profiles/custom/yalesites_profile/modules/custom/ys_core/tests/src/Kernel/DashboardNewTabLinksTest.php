@@ -22,6 +22,8 @@ namespace Drupal\Tests\ys_core\Kernel;
  */
 class DashboardNewTabLinksTest extends YsKernelTestBase {
 
+  use RendersToDomTrait;
+
   /**
    * {@inheritdoc}
    */
@@ -51,14 +53,7 @@ class DashboardNewTabLinksTest extends YsKernelTestBase {
       '#platform_version' => '1.0.0',
       '#announcements' => [],
     ];
-    $html = (string) \Drupal::service('renderer')->renderInIsolation($build);
-
-    $dom = new \DOMDocument();
-    // The dashboard is a fragment, and Views may emit markup DOMDocument warns
-    // about; neither is what this test is asserting on.
-    @$dom->loadHTML('<?xml encoding="utf-8" ?>' . $html);
-
-    return new \DOMXPath($dom);
+    return $this->renderAndQuery($build);
   }
 
   /**

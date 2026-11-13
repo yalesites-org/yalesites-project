@@ -8,6 +8,7 @@ The YaleSites Themes module empowers site administrators with a suite of feature
 - **Dials**: The module offers granular control over theme settings at the level of individual components. Site authors can fine-tune background colors, layouts, and orientations of these components, providing them with the flexibility to craft their unique narrative and visual experience.
 - **Theme Settings Management**: This module streamlines the organization of theme settings and incorporates them into the code as data attributes and CSS custom variables. This approach enhances the maintainability and consistency of the theme settings, making it easier for developers to manage and customize the site's visual elements.
 - **Install Configuration**: The module houses default values for theme-related configuration files used during the creation of new sites on the platform. While technically not mandatory, maintaining these install files is considered a best practice, as they ensure consistency and serve as a reference point for values that should ideally reside in the profile's config/sync directory.
+  - **The profile's `config/sync` is the source of truth for deployed dial options.** To add or change a dial, edit `config/sync/ys_themes.component_overrides.yml`, then copy it over `config/install/ys_themes.component_overrides.yml`. The same goes for `ys_themes.theme_settings.yml`. `ComponentOverridesConfigTest` fails if either pair differs, or if a dial entry names a field its bundle does not have.
 
 ## Running tests
 

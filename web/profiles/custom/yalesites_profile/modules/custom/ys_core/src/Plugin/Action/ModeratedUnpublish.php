@@ -2,19 +2,22 @@
 
 namespace Drupal\ys_core\Plugin\Action;
 
+use Drupal\Core\Action\Attribute\Action;
+use Drupal\Core\Action\Plugin\Action\Derivative\EntityPublishedActionDeriver;
 use Drupal\Core\Action\Plugin\Action\UnpublishAction;
-use Drupal\Core\Session\AccountInterface;
+use Drupal\Core\StringTranslation\TranslatableMarkup;
 
 /**
  * Unpublishes an entity.
- *
- * @Action(
- *   id = "entity:unpublish_moderated_action",
- *   action_label = @Translation("Unpublish Moderated"),
- *   deriver = "Drupal\Core\Action\Plugin\Action\Derivative\EntityPublishedActionDeriver",
- * )
  */
+#[Action(
+  id: 'entity:unpublish_moderated_action',
+  action_label: new TranslatableMarkup('Unpublish Moderated'),
+  deriver: EntityPublishedActionDeriver::class,
+)]
 class ModeratedUnpublish extends UnpublishAction {
+
+  use ModeratedActionAccessTrait;
 
   /**
    * {@inheritdoc}
@@ -22,25 +25,6 @@ class ModeratedUnpublish extends UnpublishAction {
   public function execute($entity = NULL) {
     $entity->set('moderation_state', 'archived');
     $entity->setUnpublished()->save();
-  }
-
-  /**
-   * {@inheritdoc}
-   */
-  public function access($object, ?AccountInterface $account = NULL, $return_as_object = FALSE) {
-    $key = $object->getEntityType()->getKey('published');
-
-    /** @var \Drupal\Core\Entity\EntityInterface $object */
-    $result = $object->access('update', $account, TRUE)
-      ->andIf($object->$key->access('edit', $account, TRUE));
-
-    // Allow the action if the entity error is only because of moderation being
-    // enabled.
-    if ($result->getReason() == 'Cannot edit the published field of moderated entities.') {
-      return TRUE;
-    }
-
-    return $return_as_object ? $result : $result->isAllowed();
   }
 
 }

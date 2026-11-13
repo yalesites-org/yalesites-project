@@ -25,3 +25,249 @@ ys_core.dashboard_settings:
       label: 'Category names allowed to appear on downstream dashboards'
       sequence:
         type: string
+
+ys_core.header_settings:
+  type: config_object
+  label: 'YaleSites header settings'
+  mapping:
+    header_variation:
+      type: string
+      label: 'Header variation'
+    nav_position:
+      type: string
+      label: 'Primary navigation position'
+    dropdown_button_title:
+      type: label
+      label: 'Dropdown button title'
+    cta_content:
+      type: label
+      label: 'Call-to-action link text'
+    cta_url:
+      # Not type uri: Linkit stores an internal path such as /node/12, or the
+      # path alias once translateNodeLinks() has run. Neither is a URI.
+      type: string
+      label: 'Call-to-action link URL'
+    search:
+      type: mapping
+      label: 'Search options'
+      mapping:
+        enable_search_form:
+          # Integer, not boolean: these are checkboxes left at core's default
+          # '#return_value' => 1, so the saved value is int 1/0.
+          type: integer
+          label: 'Enable the search form'
+        enable_cas_search:
+          type: integer
+          label: 'Enable CAS-only search'
+        enable_all_yale_search:
+          type: integer
+          label: 'Enable all-of-Yale search'
+    focus_header_image:
+      # A media_library element returns implode(',', $ids), so a string even
+      # when several items are selected. Legacy data can hold an array here -
+      # see the comment in ys_core_preprocess_region(), which clears the key on
+      # the next header render. Not repaired by ys_core_deploy_10009() because
+      # that read already self-heals it.
+      type: string
+      label: 'Focus header image'
+    site_name_image:
+      # A managed_file element returns a list of file IDs, and every reader
+      # indexes [0]. The IDs are integers - core casts with (int) in
+      # \Drupal\file\Element\ManagedFile::valueCallback() and otherwise appends
+      # $file->id() - so declaring strings here would report a schema error on
+      # every site that has ever uploaded one, and would rewrite the stored IDs
+      # to numeric strings on the next save. See ys_core_deploy_10009().
+      type: sequence
+      label: 'Site name image'
+      sequence:
+        type: integer
+    site_wide_branding_name:
+      type: label
+      label: 'Site-wide branding name'
+    site_wide_branding_link:
+      type: string
+      label: 'Site-wide branding link'
+
+ys_core_footer_link:
+  type: mapping
+  label: 'Footer link'
+  mapping:
+    link_url:
+      type: string
+      label: 'Link URL'
+    link_title:
+      type: label
+      label: 'Link title'
+
+ys_core.footer_settings:
+  type: config_object
+  label: 'YaleSites footer settings'
+  mapping:
+    footer_variation:
+      type: string
+      label: 'Footer variation'
+    content:
+      type: mapping
+      label: 'Footer content'
+      mapping:
+        logos:
+          type: sequence
+          label: 'Footer logos'
+          sequence:
+            type: mapping
+            label: 'Footer logo'
+            mapping:
+              logo:
+                type: string
+                label: 'Logo media ID'
+              logo_url:
+                type: string
+                label: 'Logo link URL'
+        school_logo:
+          type: string
+          label: 'School logo media ID'
+        school_logo_url:
+          type: string
+          label: 'School logo link URL'
+        text:
+          type: text_format
+          label: 'Footer text'
+    links:
+      type: mapping
+      label: 'Footer links'
+      mapping:
+        links_col_1_heading:
+          type: label
+          label: 'Links column 1 heading'
+        links_col_2_heading:
+          type: label
+          label: 'Links column 2 heading'
+        links_col_1:
+          type: sequence
+          label: 'Links column 1'
+          sequence:
+            type: ys_core_footer_link
+        links_col_2:
+          type: sequence
+          label: 'Links column 2'
+          sequence:
+            type: ys_core_footer_link
+
+ys_core.site:
+  type: config_object
+  label: 'YaleSites site settings'
+  mapping:
+    page:
+      type: mapping
+      label: 'Page assignments'
+      mapping:
+        posts:
+          type: string
+          label: 'Posts landing page'
+        events:
+          type: string
+          label: 'Events landing page'
+    seo:
+      type: mapping
+      label: 'SEO settings'
+      mapping:
+        google_site_verification:
+          type: string
+          label: 'Google site verification token'
+        google_analytics_id:
+          # Superseded by Google Tag Manager and read by nothing, but still
+          # shipped in config/install and config/sync, so it needs an entry.
+          type: string
+          label: 'Google Analytics ID (unused)'
+    image_fallback:
+      type: mapping
+      label: 'Fallback images'
+      mapping:
+        teaser:
+          type: string
+          label: 'Teaser fallback image media ID'
+    custom_favicon:
+      # A managed_file element returns a list of integer file IDs; readers
+      # index [0]. See the note on header_settings site_name_image.
+      type: sequence
+      label: 'Custom favicon'
+      sequence:
+        type: integer
+    environment_indicator:
+      type: mapping
+      label: 'Environment indicator'
+      mapping:
+        show:
+          # Boolean is what the current writer casts to and what
+          # config/install ships. Sites that last saved this through the old
+          # SiteSettingsForm hold int 1; ys_core_deploy_10009() casts those.
+          type: boolean
+          label: 'Show the environment indicator'
+    taxonomy:
+      type: mapping
+      label: 'Taxonomy settings'
+      mapping:
+        custom_vocab_name:
+          type: label
+          label: 'Custom vocabulary name'
+    font_pairing:
+      type: string
+      label: 'Font pairing'
+    cas_app_name:
+      type: string
+      label: 'CAS application name'
+    search:
+      type: mapping
+      label: 'Search options (legacy)'
+      mapping:
+        enable_search_form:
+          # Legacy location. ys_core.header_settings is authoritative and the
+          # only reader left is ys_core_update_9002(), the one-time migration
+          # out of here. config/sync still ships the key, but ys_core* is in
+          # config_ignore, so it reaches a site only on a pre-9002 install or a
+          # site:install --existing-config. Declared rather than cleared
+          # because clearing it is a data change on every site.
+          type: integer
+          label: 'Enable the search form (migrated to header settings)'
+
+ys_core.social_links:
+  type: config_object
+  label: 'YaleSites social links'
+  mapping:
+    facebook:
+      type: string
+      label: 'Facebook URL'
+    instagram:
+      type: string
+      label: 'Instagram URL'
+    x-twitter:
+      type: string
+      label: 'X (Twitter) URL'
+    youtube:
+      type: string
+      label: 'YouTube URL'
+    weibo:
+      type: string
+      label: 'Weibo URL'
+    linkedin:
+      type: string
+      label: 'LinkedIn URL'
+    bluesky:
+      type: string
+      label: 'Bluesky URL'
+
+ys_core.views_settings:
+  type: config_object
+  label: 'YaleSites views settings'
+  mapping:
+    show_content_type_filter:
+      # Checkbox at core's default '#return_value' => 1, as elsewhere here.
+      type: integer
+      label: 'Show the Content Type filter on the Search view'
+    content_type_list:
+      # A checkboxes element keyed by content-type machine name, run through
+      # array_filter() on save, so the keys are dynamic rather than fixed.
+      type: sequence
+      label: 'Content types offered in the Content Type filter'
+      sequence:
+        type: string

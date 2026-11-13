@@ -21,7 +21,7 @@ class Qualtrics extends EmbedSourceBase implements EmbedSourceInterface {
   /**
    * {@inheritdoc}
    */
-  protected static $pattern = '/^https:\/\/yalesurvey.ca1.qualtrics.com\/jfe\/form\/(?<form_id>.+)/';
+  protected static $pattern = '/^https:\/\/yalesurvey\.ca1\.qualtrics\.com\/jfe\/form\/(?<form_id>.+)/';
 
   /**
    * {@inheritdoc}

@@ -6,6 +6,9 @@ dependencies:
     - block_content.type.audio
     - field.field.block_content.audio.field_audio_label
     - field.field.block_content.audio.field_media
+    - field.field.block_content.audio.field_transcription
+  module:
+    - text
 id: block_content.audio.default
 targetEntityType: block_content
 bundle: audio
@@ -27,6 +30,13 @@ content:
       link: false
     third_party_settings: {  }
     weight: 0
+    region: content
+  field_transcription:
+    type: text_default
+    label: hidden
+    settings: {  }
+    third_party_settings: {  }
+    weight: 2
     region: content
 hidden:
   search_api_excerpt: true

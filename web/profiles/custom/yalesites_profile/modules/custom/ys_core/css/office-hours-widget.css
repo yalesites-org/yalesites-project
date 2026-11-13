@@ -1,0 +1,204 @@
+/**
+ * @file
+ * Contrib Office Hours widget (the Office Hours block's Hours field).
+ *
+ * js/office-hours-widget.js adds the Closed column and the per-row operations
+ * menu; the rules below style those, fit the table to narrow containers such
+ * as the Layout Builder tray, separate the field description from the details
+ * summary, and fix the disabled treatment in Gin dark mode.
+ *
+ * Authored as plain CSS, matching every other stylesheet in this module -- no
+ * custom module in the profile carries SCSS or a sass build step. The Gin
+ * rules below are all either scoped to `.gin--dark-mode` or use a var()
+ * fallback, so they no-op under a different admin theme.
+ */
+
+/* Claro renders the field description flush against the details summary. */
+.field--type-office-hours .claro-details__description {
+  margin-top: 0.75rem;
+}
+
+/*
+ * A comment holding the Closed control's marker is never shown. The value
+ * attribute rule covers first paint, before the script runs; the script sets
+ * `hidden` from then on, which Gin's input display rules would otherwise
+ * override. Must match CLOSED_MARKER in js/office-hours-widget.js.
+ */
+.field--type-office-hours input[value='__ys_office_hours_closed__'],
+.field--type-office-hours input[data-drupal-selector$='-comment'][hidden] {
+  display: none;
+}
+
+.field--type-office-hours .office-hours-closed {
+  vertical-align: middle;
+}
+
+/*
+ * Layout. The table sizes itself from its content, so the Layout Builder tray
+ * (300px by default) scrolled it sideways. Container queries follow the width
+ * the form actually has, which is not the viewport's in the tray or a modal.
+ */
+.field--type-office-hours {
+  container-type: inline-size;
+}
+
+/* Headers flush with the start of their fields rather than centred over them. */
+.field--type-office-hours :is(thead tr, tr.office-hours-slot) > * {
+  text-align: start;
+}
+
+/*
+ * Wide enough for one row per slot: space between every column, fixed day
+ * and checkbox columns, and a comment wide enough for a short note such as
+ * "Closed".
+ */
+@container (width >= 55rem) {
+  .field--type-office-hours :is(thead tr, tr.office-hours-slot) > * {
+    padding-inline-end: var(--gin-spacing-xs, 0.5rem);
+  }
+
+  .field--type-office-hours :is(thead tr, tr.office-hours-slot) > :first-child {
+    width: 7rem;
+  }
+
+  .field--type-office-hours
+    :is(thead tr, tr.office-hours-slot)
+    > :is(:nth-child(2), .office-hours-closed, .th__closed) {
+    width: 4.5rem;
+  }
+
+  .field--type-office-hours input[data-drupal-selector$='-comment'] {
+    min-width: 8rem;
+  }
+}
+
+/*
+ * Too narrow for one row per slot: stack each row on a four-column grid. The
+ * header row uses the same grid and is placed by the same counts, so each
+ * header sits over its field: Day, All day, Closed; From, To; Comment, and
+ * the operations menu. The last four columns are always From, To, Comment and
+ * Operations; whatever sits between the first cell and those is a checkbox.
+ */
+@container (width < 55rem) {
+  .field--type-office-hours :is(table, thead, tbody) {
+    display: block;
+  }
+
+  .field--type-office-hours :is(thead tr, tr.office-hours-slot) {
+    display: grid;
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    gap: var(--gin-spacing-xs, 0.5rem);
+    align-items: center;
+
+    /* Each row also carries .form-item, whose margin a table row ignores. */
+    margin: 0;
+    padding-block: var(--gin-spacing-xs, 0.5rem);
+  }
+
+  .field--type-office-hours tr.office-hours-slot {
+    border-block-end: 1px solid var(--gin-border-color, #d3d4d9);
+  }
+
+  /* Clear Claro's cell padding and its fixed table header height. */
+  .field--type-office-hours :is(thead tr, tr.office-hours-slot) > * {
+    height: auto;
+    padding: 0;
+  }
+
+  .field--type-office-hours
+    :is(thead tr, tr.office-hours-slot)
+    > :is(:first-child, :nth-last-child(3), :nth-last-child(4)) {
+    grid-column: span 2;
+  }
+
+  .field--type-office-hours
+    :is(thead tr, tr.office-hours-slot)
+    > :nth-last-child(2) {
+    grid-column: span 3;
+  }
+
+  /* An exception's date needs more room than a day name; it has no Closed. */
+  .field--type-office-hours
+    table:has(input[type='date'])
+    :is(thead tr, tr.office-hours-slot)
+    > :first-child {
+    grid-column: span 3;
+  }
+
+  /* The date, times and comment fill the columns they span. */
+  .field--type-office-hours tr.office-hours-slot input:not([type='checkbox']) {
+    width: 100%;
+  }
+
+  /* Too long for its column; each toggle names its own row. Not core's
+   * .visually-hidden class: the header is hidden only below 55rem. */
+  .field--type-office-hours thead th:last-child {
+    position: absolute;
+    overflow: hidden;
+    clip: rect(0 0 0 0);
+    width: 1px;
+    height: 1px;
+    white-space: nowrap;
+  }
+}
+
+.field--type-office-hours .ys-office-hours-actions {
+  position: relative;
+  display: inline-block;
+}
+
+.field--type-office-hours .ys-office-hours-actions__toggle {
+  display: inline-block;
+  padding: 0.25rem 0.5rem;
+  cursor: pointer;
+  border-radius: 4px;
+  list-style: none;
+}
+
+/* Safari still paints the default disclosure triangle without this. */
+.field--type-office-hours
+  .ys-office-hours-actions__toggle::-webkit-details-marker {
+  display: none;
+}
+
+.field--type-office-hours .ys-office-hours-actions__toggle::after {
+  content: '\22ef';
+  font-size: 1.25rem;
+  line-height: 1;
+}
+
+.field--type-office-hours .ys-office-hours-actions__toggle:hover {
+  background-color: var(--gin-bg-layer2, rgb(0 0 0 / 6%));
+}
+
+/**
+ * Claro/Gin strip the browser default ring from summary elements, so reinstate
+ * Gin's own focus treatment rather than a bespoke one.
+ */
+.field--type-office-hours .ys-office-hours-actions__toggle:focus-visible {
+  outline: none;
+  box-shadow: 0 0 0 1px var(--gin-color-focus-border, #fff),
+    0 0 0 4px var(--gin-color-focus, #26a769);
+}
+
+.field--type-office-hours .ys-office-hours-actions__menu {
+  position: absolute;
+  z-index: 1;
+  inset-inline-end: 0;
+  min-width: 11rem;
+  padding: 0.5rem;
+  border: 1px solid var(--gin-border-color, #d3d4d9);
+  border-radius: 4px;
+  background-color: var(--gin-bg-layer, #fff);
+  box-shadow: 0 2px 6px rgb(0 0 0 / 15%);
+}
+
+/**
+ * Gin's disabled background sits within a few percent of its input background
+ * in dark mode, so an all-day-disabled From/To field still reads as editable.
+ * Recess it onto the layer colour instead. Gin sets its own background-color
+ * with !important, so overriding it needs the same.
+ */
+.gin--dark-mode .field--type-office-hours .form-element[disabled] {
+  background-color: var(--gin-bg-layer) !important;
+}
