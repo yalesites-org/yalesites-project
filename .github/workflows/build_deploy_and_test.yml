@@ -11,9 +11,10 @@ concurrency:
 
 jobs:
   static_tests:
-    name: Test
+    name: Lint and Unit tests
     runs-on: ubuntu-26.04
     env:
+      BRANCH: ${{ github.head_ref || github.ref_name }}
       YALESITES_BUILD_TOKEN: ${{ secrets.YALESITES_BUILD_TOKEN }}
     steps:
       - name: Checkout

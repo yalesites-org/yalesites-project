@@ -564,6 +564,14 @@ class LayoutUpdater {
       return FALSE;
     }
 
+    // Saving stamps the request time as the changed time, which would make
+    // every migrated page look edited at deploy time (sitemap lastmod, admin
+    // lists). Note each translation's changed time to put back afterwards.
+    $changedTimes = [];
+    foreach (array_keys($revision->getTranslationLanguages()) as $langcode) {
+      $changedTimes[$langcode] = $revision->getTranslation($langcode)->getChangedTime();
+    }
+
     try {
       // Update this revision in place: without setNewRevision(FALSE) the save
       // spawns a revision, and the loaded revision already carries its own
@@ -572,6 +580,7 @@ class LayoutUpdater {
       $revision->setNewRevision(FALSE);
       $revision->setSyncing(TRUE);
       $revision->save();
+      $this->restoreChangedTimes($revision, $changedTimes);
 
       return TRUE;
     }

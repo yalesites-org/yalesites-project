@@ -68,3 +68,18 @@
   .ui-dialog-title {
   margin-block: 0 !important;
 }
+
+/**
+ * "This block is reusable!" notice in the Configure panel (core patch 2999491).
+ *
+ * gin_lb colours a warning message with --gin-color-warning-light on a dark
+ * amber box, and does so correctly outside the dialog. Inside the off-canvas
+ * dialog the dialog's own dark text colour wins, so the notice rendered as dark
+ * text on dark amber: 1.47:1 against the 4.5:1 AA needs. Restore the warning
+ * colour (about 7:1). !important is needed because the dialog colour is declared
+ * with it. Scoped to this form's class like the rule above (YaleSites-Internal#2120).
+ */
+.ys-block-dialog .glb-messages.glb-messages--warning,
+.ys-block-dialog .glb-messages.glb-messages--warning .glb-messages__content {
+  color: var(--gin-color-warning-light) !important;
+}

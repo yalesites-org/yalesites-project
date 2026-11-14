@@ -114,14 +114,16 @@ class ViewsBasicManagerSetupViewTest extends UnitTestCase {
   }
 
   /**
-   * An unlisted sort and view mode are replaced by the type defaults.
+   * An absent sort and an unlisted view mode are replaced by the defaults.
+   *
+   * An unlisted sort is refused outright instead (#1161, see
+   * testUnlistedSortRendersNothing()).
    *
    * @covers ::setupView
    */
-  public function testUnknownSortAndViewModeUseTypeDefaults() {
+  public function testMissingSortAndUnknownViewModeUseTypeDefaults() {
     $this->runSetupView([
       'filters' => ['types' => ['post']],
-      'sort_by' => '(1):ASC',
       'view_mode' => 'nope',
     ]);
 
@@ -180,18 +182,36 @@ class ViewsBasicManagerSetupViewTest extends UnitTestCase {
   }
 
   /**
-   * An events view with an unlisted sort uses the default direction.
+   * An events view with no sort uses the default, soonest first (#1864).
    *
    * @covers ::setupView
    */
-  public function testEventSortDirectionFallsBackToDefault() {
+  public function testEventWithoutSortUsesDefaultDirection() {
     $this->runSetupView([
       'filters' => ['types' => ['event']],
-      'sort_by' => 'field_event_date:SIDEWAYS',
     ]);
 
-    $this->assertSame('DESC', $this->displayOptions['sorts'][0]['order']);
-    $this->assertSame('field_event_date:DESC', $this->viewArgs['sort']);
+    $this->assertSame('ASC', $this->displayOptions['sorts'][0]['order']);
+    $this->assertSame('field_event_date:ASC', $this->viewArgs['sort']);
+  }
+
+  /**
+   * A sort no content type offers is refused, so the listing renders nothing.
+   *
+   * The sort reaches the query as an ORDER BY expression, and on the
+   * views/ajax path it comes from the browser (#1161).
+   *
+   * @covers ::setupView
+   */
+  public function testUnlistedSortRendersNothing() {
+    foreach (['(1):ASC', 'field_event_date:SIDEWAYS'] as $sort) {
+      [$view] = $this->runSetupView([
+        'filters' => ['types' => ['event']],
+        'sort_by' => $sort,
+      ]);
+      $this->assertNull($this->viewArgs, $sort);
+      $this->assertSame([], $view, $sort);
+    }
   }
 
   /**
@@ -248,7 +268,7 @@ class ViewsBasicManagerSetupViewTest extends UnitTestCase {
   }
 
   /**
-   * GetView() returns an empty render array when no type is known.
+   * GetView() returns NULL when no type is known.
    *
    * Valid parameters are not covered here: initView() loads the view through
    * the Views static service, which needs a container and database.
@@ -256,10 +276,10 @@ class ViewsBasicManagerSetupViewTest extends UnitTestCase {
    * @dataProvider noKnownTypeProvider
    * @covers ::getView
    */
-  public function testGetViewWithNoKnownTypeReturnsEmptyArray($params) {
-    $this->assertSame([], $this->manager->getView('rendered', $params));
-    // The re-entry flag was not left set: a second call still returns [].
-    $this->assertSame([], $this->manager->getView('rendered', $params));
+  public function testGetViewWithNoKnownTypeReturnsNull($params) {
+    $this->assertNull($this->manager->getView('rendered', $params));
+    // The re-entry flag was not left set: a second call still returns NULL.
+    $this->assertNull($this->manager->getView('rendered', $params));
   }
 
 }

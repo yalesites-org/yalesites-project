@@ -2,7 +2,7 @@
 
 namespace Drupal\Tests\ys_layouts\Kernel;
 
-use Drupal\KernelTests\KernelTestBase;
+use Drupal\Tests\ys_core\Kernel\YsKernelTestBase;
 
 /**
  * Tests that gin_lb's stylesheet pulls in ys_layouts' color-scheme fix.
@@ -19,7 +19,7 @@ use Drupal\KernelTests\KernelTestBase;
  * @group yalesites
  * @group ys_layouts
  */
-class GinLbColorSchemeTest extends KernelTestBase {
+class GinLbColorSchemeTest extends YsKernelTestBase {
 
   /**
    * {@inheritdoc}
