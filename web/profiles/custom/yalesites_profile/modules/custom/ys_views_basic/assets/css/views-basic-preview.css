@@ -27,6 +27,17 @@
   margin-top: 1rem;
 }
 
+/*
+ * The preview is for the "Add block" pop-up only (#2256). Configuring a block
+ * opens the narrow Layout Builder side panel (off-canvas), including for a
+ * block not yet saved with the page, which the server cannot tell apart from
+ * the pop-up. Hide it there; display: none removes the box, so the single-column
+ * stack keeps no gap.
+ */
+#drupal-off-canvas-wrapper .vb-preview-wrapper {
+  display: none;
+}
+
 .vb-preview-wrapper__header {
   margin-bottom: 0.75rem;
 }
