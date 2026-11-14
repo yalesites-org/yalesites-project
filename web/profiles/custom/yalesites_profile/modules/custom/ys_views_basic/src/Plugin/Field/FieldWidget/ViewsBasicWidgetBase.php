@@ -361,9 +361,11 @@ abstract class ViewsBasicWidgetBase extends WidgetBase implements ContainerFacto
       '#attributes' => ['class' => ['views-basic--params']],
     ];
 
-    // The live mockup preview is scoped to the block-creation form only
-    // (#1318): it helps a site builder picture the result while placing a new
-    // block and is not shown when reconfiguring an existing one.
+    // The live mockup preview is for the "Add block" pop-up only (#1318): it
+    // helps a site builder picture the result while placing a new block and is
+    // not built when reconfiguring a saved one. A block not yet saved with the
+    // page still counts as new in the side panel, so the stylesheet hides the
+    // preview there (#2256).
     $is_create_form = $this->isCreateForm($items);
 
     $this->initSelectionContainers($form);
@@ -399,9 +401,11 @@ abstract class ViewsBasicWidgetBase extends WidgetBase implements ContainerFacto
   /**
    * Determines whether the form is creating a new block (vs. configuring one).
    *
-   * The live mockup preview (#1318) is scoped to the creation form. A new
-   * inline block's host entity is unsaved, so isNew() distinguishes the
-   * "Add block" form from the "Configure" form of an existing block.
+   * The live mockup preview (#1318) is built only for new blocks. A new
+   * inline block's host entity is unsaved, so isNew() separates the "Add
+   * block" pop-up from the "Configure" form of a saved block. It cannot tell
+   * the pop-up from the side panel for a block not yet saved with the page;
+   * views-basic-preview.css hides the preview in the side panel (#2256).
    *
    * @param \Drupal\Core\Field\FieldItemListInterface $items
    *   The field items whose host entity is the block being placed.

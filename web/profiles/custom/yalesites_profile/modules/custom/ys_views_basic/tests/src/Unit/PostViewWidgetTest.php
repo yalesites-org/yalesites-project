@@ -210,6 +210,22 @@ class PostViewWidgetTest extends UnitTestCase {
   }
 
   /**
+   * The preview stylesheet hides the preview in the Layout Builder side panel.
+   *
+   * A block not yet saved with the page is still new when configured in the
+   * side panel, so isNew() alone cannot keep the preview out of it (#2256).
+   */
+  public function testPreviewHiddenInSidePanel() {
+    $css = file_get_contents(dirname(__DIR__, 3) . '/assets/css/views-basic-preview.css');
+
+    $this->assertMatchesRegularExpression(
+      '/#drupal-off-canvas-wrapper\s+\.vb-preview-wrapper\s*\{[^}]*display:\s*none/',
+      $css,
+      'The preview is hidden inside the off-canvas side panel.'
+    );
+  }
+
+  /**
    * The save path injects post_field_options into the stored params.
    *
    * @covers ::massageEntitySpecificParams
