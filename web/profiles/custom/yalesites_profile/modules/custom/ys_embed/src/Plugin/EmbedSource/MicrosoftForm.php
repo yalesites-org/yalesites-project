@@ -19,6 +19,13 @@ use Drupal\ys_embed\Plugin\EmbedSourceInterface;
 class MicrosoftForm extends EmbedSourceBase implements EmbedSourceInterface {
   /**
    * {@inheritdoc}
+   *
+   * Microsoft Forms is a Microsoft service.
+   */
+  protected static $klaroService = 'microsoft_forms';
+
+  /**
+   * {@inheritdoc}
    */
   protected static $pattern = '/^<iframe.+src=\"?https:\/\/forms\.(?<domain>office\.com|cloud\.microsoft)\/(?:(?:Pages\/ResponsePage\.aspx(?<page_params>\?[^"\s]+))|(?:r\/(?<form_id>[^"\?\s]+)(?<r_params>\?[^"\s]+)?))\"?.+/';
 

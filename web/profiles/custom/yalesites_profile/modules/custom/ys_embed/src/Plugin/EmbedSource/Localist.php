@@ -19,6 +19,15 @@ use Drupal\ys_embed\Plugin\EmbedSourceInterface;
 class Localist extends EmbedSourceBase implements EmbedSourceInterface {
 
   /**
+   * {@inheritdoc}
+   *
+   * Localist runs on Yale's own Localist tenant. Like 25Live it is a
+   * contracted vendor rather than literally first-party, but it is out of scope
+   * for the consent MVP, so it is not gated.
+   */
+  protected static $klaroService = NULL;
+
+  /**
    * Regex fragment matching a widget script URL on an allowed Localist host.
    *
    * Allowed hosts are <sub>.localist.com, <sub>.enterprise.localist.com, and

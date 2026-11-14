@@ -20,6 +20,13 @@ class GoogleCalendar extends EmbedSourceBase implements EmbedSourceInterface {
 
   /**
    * {@inheritdoc}
+   *
+   * Google Calendar is a Google service; the embed sets Google cookies.
+   */
+  protected static $klaroService = 'google_calendar';
+
+  /**
+   * {@inheritdoc}
    */
   protected static $pattern = '/^<iframe[^>]*src=\"https:\/\/calendar\.google\.com\/calendar\/embed(?<calendar_params>\?.+?)\"[^>]*>.*<\/iframe>$/s';
 
