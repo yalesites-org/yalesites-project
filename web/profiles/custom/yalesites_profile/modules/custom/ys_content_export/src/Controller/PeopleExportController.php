@@ -20,6 +20,11 @@ class PeopleExportController extends ExportControllerBase {
   const VIEW_ID = 'user_admin_people';
 
   /**
+   * No status line: it would land in the NetID column like an account row.
+   */
+  const SUMMARY_ROW = FALSE;
+
+  /**
    * Streams a CSV download of the accounts shown on the People page.
    *
    * The route permission ("administer users") gates access, mirroring the

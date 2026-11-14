@@ -102,6 +102,39 @@ function ys_themes_deploy_10304(&$sandbox) {
 }
 
 /**
+ * Saves a block revision without moving its "Updated" time.
+ *
+ * ChangedItem::preSave() stamps the request time whenever another field
+ * changed, so the stored value is written back to the block tables afterward.
+ * A deploy backfill is not an editor edit (YaleSites-Internal#2116).
+ *
+ * @param \Drupal\block_content\BlockContentInterface $block
+ *   A loaded block revision with its new field values set.
+ */
+function _ys_themes_save_keeping_changed($block): void {
+  $changed = [];
+  foreach ($block->getTranslationLanguages() as $langcode => $language) {
+    $changed[$langcode] = $block->getTranslation($langcode)->getChangedTime();
+  }
+  $block->save();
+
+  $database = \Drupal::database();
+  $tables = ['block_content_field_revision' => ['revision_id', $block->getRevisionId()]];
+  if ($block->isDefaultRevision()) {
+    $tables['block_content_field_data'] = ['id', $block->id()];
+  }
+  foreach ($changed as $langcode => $time) {
+    foreach ($tables as $table => [$column, $id]) {
+      $database->update($table)
+        ->fields(['changed' => $time])
+        ->condition($column, $id)
+        ->condition('langcode', $langcode)
+        ->execute();
+    }
+  }
+}
+
+/**
  * Batch-fills an empty dial on the latest revision of existing blocks.
  *
  * @param array $sandbox
@@ -127,15 +160,25 @@ function _ys_themes_backfill_dials(array &$sandbox, array $defaults): int {
 
   foreach (array_splice($sandbox['ids'], 0, 50) as $id) {
     $latest_revision_id = $block_storage->getLatestRevisionId($id);
-    $block = $latest_revision_id
-      ? $block_storage->loadRevision($latest_revision_id)
-      : $block_storage->createRevision($block_storage->load($id));
+    if ($latest_revision_id) {
+      $block = $block_storage->loadRevision($latest_revision_id);
+    }
+    else {
+      $existing = $block_storage->load($id);
+      $block = $existing ? $block_storage->createRevision($existing) : NULL;
+    }
+
+    // A block deleted after the id list was built must not stop the deploy.
+    if (!$block) {
+      \Drupal::logger('ys_themes')->notice('Skipped block @id: it no longer exists.', ['@id' => $id]);
+      continue;
+    }
 
     /** @var \Drupal\block_content\Entity\BlockContent $block */
     [$field, $value] = $defaults[$block->bundle()];
     if ($block->hasField($field) && $block->get($field)->isEmpty()) {
       $block->set($field, $value);
-      $block->save();
+      _ys_themes_save_keeping_changed($block);
       $sandbox['updated']++;
     }
   }
@@ -209,7 +252,7 @@ function ys_themes_deploy_10305(&$sandbox) {
     $block->set('field_style_video_playback', 'loop');
     // Saving a loaded revision updates it in place rather than creating a new
     // one, so the revision id a layout pins to stays valid.
-    $block->save();
+    _ys_themes_save_keeping_changed($block);
     $sandbox['backfilled']++;
   }
 
@@ -227,4 +270,196 @@ function ys_themes_deploy_10305(&$sandbox) {
   }
 
   return t('Set video playback to loop on @count banner block revision(s).', ['@count' => $sandbox['backfilled']]);
+}
+
+/**
+ * Fills the wave 1 and Image Size dials on every revision of existing blocks.
+ *
+ * The deploy hooks 10303 and 10304 only touched each block's latest revision.
+ * After an editor reverts a page, Layout Builder pins an older block revision
+ * with these required dials empty, and Update fails with "Image Size field is
+ * required" or "Divider Thickness field is required"
+ * (YaleSites-Internal#2117). The same defaults are used, so nothing changes
+ * how a block renders.
+ */
+function ys_themes_deploy_10306(&$sandbox) {
+  $block_storage = \Drupal::entityTypeManager()->getStorage('block_content');
+  $defaults = [
+    'divider' => ['field_style_thickness', '1'],
+    'callout' => ['field_style_variation', 'cta'],
+    'cta_banner' => ['field_button_style_consistency', 'filled_outline'],
+    'wrapped_image' => ['field_style_width', 'large'],
+  ];
+
+  if (!isset($sandbox['processed'])) {
+    $sandbox['processed'] = 0;
+    $sandbox['backfilled'] = 0;
+    $sandbox['total'] = $block_storage->getQuery()
+      ->accessCheck(FALSE)
+      ->allRevisions()
+      ->condition('type', array_keys($defaults), 'IN')
+      ->count()
+      ->execute();
+
+    if ($sandbox['total'] == 0) {
+      $sandbox['#finished'] = 1;
+      return t('No blocks found that need dial defaults.');
+    }
+  }
+
+  // Paged over every revision rather than filtered to the empty ones, so the
+  // result set does not shrink underneath the offset as values are filled in.
+  // An allRevisions() query returns revision_id => entity_id.
+  $result = $block_storage->getQuery()
+    ->accessCheck(FALSE)
+    ->allRevisions()
+    ->condition('type', array_keys($defaults), 'IN')
+    ->sort('revision_id')
+    ->range($sandbox['processed'], 50)
+    ->execute();
+
+  foreach (array_keys($result) as $revision_id) {
+    $sandbox['processed']++;
+
+    /** @var \Drupal\block_content\Entity\BlockContent|null $block */
+    $block = $block_storage->loadRevision($revision_id);
+    if (!$block) {
+      continue;
+    }
+    [$field, $value] = $defaults[$block->bundle()];
+    if (!$block->hasField($field) || !$block->get($field)->isEmpty()) {
+      continue;
+    }
+    $changed = $block->getChangedTime();
+    $block->set($field, $value);
+    // Saving a loaded revision updates it in place, so the revision id a
+    // layout pins to stays valid.
+    $block->setSyncing(TRUE);
+    $block->save();
+    // Syncing does not stop ChangedItem::preSave() from stamping the deploy
+    // time, so write the original "last updated" value back.
+    _ys_themes_restore_block_changed_time($block, $changed);
+    $sandbox['backfilled']++;
+  }
+
+  $sandbox['#finished'] = (empty($result) || $sandbox['processed'] >= $sandbox['total'])
+    ? 1
+    : $sandbox['processed'] / $sandbox['total'];
+
+  if ($sandbox['#finished'] < 1) {
+    return NULL;
+  }
+
+  return t('Set dial defaults on @count block revision(s).', ['@count' => $sandbox['backfilled']]);
+}
+
+/**
+ * Fills every empty required dial with its default on every block revision.
+ *
+ * Hooks 10303 to 10306 only covered the dials added by recent releases. Older
+ * revisions can also have other required settings empty (Padding Options,
+ * Wrapped Image position and style, Text style variation, Callout alignment),
+ * so Update still fails with "field is required" after a Revert
+ * (YaleSites-Internal#2151).
+ *
+ * Defaults come from each field's own definition, the same value a new block
+ * of that type starts with (the static default, or the component overrides
+ * through ys_themes_default_value_function), so no per-type table is kept.
+ * Only required option lists are touched: they are the settings that carry a
+ * default. Required content such as text or media is left for editors.
+ */
+function ys_themes_deploy_10307(&$sandbox) {
+  $block_storage = \Drupal::entityTypeManager()->getStorage('block_content');
+
+  if (!isset($sandbox['processed'])) {
+    $sandbox['processed'] = 0;
+    $sandbox['backfilled'] = 0;
+    $sandbox['total'] = $block_storage->getQuery()
+      ->accessCheck(FALSE)
+      ->allRevisions()
+      ->count()
+      ->execute();
+
+    if ($sandbox['total'] == 0) {
+      $sandbox['#finished'] = 1;
+      return t('No blocks found that need required settings filled.');
+    }
+  }
+
+  // Paged over every revision rather than filtered to the empty ones, so the
+  // result set does not shrink underneath the offset as values are filled in.
+  // An allRevisions() query returns revision_id => entity_id.
+  $result = $block_storage->getQuery()
+    ->accessCheck(FALSE)
+    ->allRevisions()
+    ->sort('revision_id')
+    ->range($sandbox['processed'], 50)
+    ->execute();
+
+  foreach (array_keys($result) as $revision_id) {
+    $sandbox['processed']++;
+
+    /** @var \Drupal\block_content\Entity\BlockContent|null $block */
+    $block = $block_storage->loadRevision($revision_id);
+    if (!$block) {
+      // A block deleted after the batch started must not stop the deploy.
+      \Drupal::logger('ys_themes')->notice('Skipped block revision @id: it no longer exists.', ['@id' => $revision_id]);
+      continue;
+    }
+
+    $filled = FALSE;
+    foreach ($block->getFieldDefinitions() as $name => $definition) {
+      if (!$definition->isRequired() || $definition->getType() !== 'list_string' || !$block->get($name)->isEmpty()) {
+        continue;
+      }
+      $block->get($name)->applyDefaultValue();
+      // A field with no usable default stays empty and is left alone.
+      $filled = $filled || !$block->get($name)->isEmpty();
+    }
+    if (!$filled) {
+      continue;
+    }
+
+    $changed = $block->getChangedTime();
+    // Saving a loaded revision updates it in place, so the revision id a
+    // layout pins to stays valid.
+    $block->setSyncing(TRUE);
+    $block->save();
+    _ys_themes_restore_block_changed_time($block, $changed);
+    $sandbox['backfilled']++;
+  }
+
+  $sandbox['#finished'] = (empty($result) || $sandbox['processed'] >= $sandbox['total'])
+    ? 1
+    : $sandbox['processed'] / $sandbox['total'];
+
+  if ($sandbox['#finished'] < 1) {
+    return NULL;
+  }
+
+  return t('Filled required settings on @count block revision(s).', ['@count' => $sandbox['backfilled']]);
+}
+
+/**
+ * Writes a block revision's original "last updated" time back after a save.
+ *
+ * @param \Drupal\block_content\BlockContentInterface $block
+ *   The block revision that was just saved.
+ * @param int $changed
+ *   The changed time it had before the save.
+ */
+function _ys_themes_restore_block_changed_time($block, int $changed): void {
+  $database = \Drupal::database();
+  $database->update('block_content_field_revision')
+    ->fields(['changed' => $changed])
+    ->condition('revision_id', $block->getRevisionId())
+    ->condition('langcode', $block->language()->getId())
+    ->execute();
+  if ($block->isDefaultRevision()) {
+    $database->update('block_content_field_data')
+      ->fields(['changed' => $changed])
+      ->condition('id', $block->id())
+      ->condition('langcode', $block->language()->getId())
+      ->execute();
+  }
 }

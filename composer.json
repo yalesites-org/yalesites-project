@@ -44,6 +44,7 @@
     },
     "require": {
         "composer/installers": "^1.9",
+        "consolidation/robo": "5.1.1",
         "cweagans/composer-patches": "^1.7",
         "drupal/core-composer-scaffold": "10.6.19",
         "drupal/core-project-message": "10.6.19",
@@ -149,7 +150,7 @@
             "composer install --optimize-autoloader --no-dev"
         ],
         "prepare-for-pantheon": "DrupalProject\\composer\\ScriptHandler::prepareForPantheon",
-        "unit-test": "echo 'No unit test step defined.'",
+        "unit-test": "scripts/shared/unit-test.sh",
         "code-sniff": [
             "./vendor/bin/phpcs --standard=Drupal --extensions=php,module,inc,install,test,profile,theme,info,txt --colors --ignore=node_modules,bower_components,vendor ./web/modules/custom ./web/themes/custom ./web/profiles/custom",
             "./vendor/bin/phpcs --standard=DrupalPractice --extensions=php,module,inc,install,test,profile,theme,info,txt --colors --ignore=node_modules,bower_components,vendor ./web/modules/custom ./web/themes/custom ./web/profiles/custom"

@@ -148,6 +148,10 @@ Useful commands:
   tests contaminate each other's container state when hundreds run in one PHPUnit process,
   which produces failures that do not reproduce per module. Running with no path at all also
   pulls in contrib tests with unmet dependencies.
+- **`ddev composer unit-test`** — run the PHPUnit Unit suite for every custom module, one
+  PHPUnit process per module (Lando: **`lando composer unit-test`**). This is the same command CI
+  runs, and it fails if any Unit test fails. It needs no database. Kernel tests are not part of it;
+  use **`ddev phpunit <path>`** for those.
 - **`ddev redis-cli`** / **`ddev redis-flush`** — inspect or clear the local Redis instance. If these report `service redis does not exist`, run **`ddev restart`**: the Redis container is only created on a restart after the add-on files arrive (for example on first checkout of a branch that adds them).
 
 If **`ddev pull pantheon`** fails with **`mkdir .../.ddev/.downloads: file exists`** while Mutagen performance mode is on, set **`performance_mode: "none"`** for this project (already set in the committed `config.yaml`) or see comments in that file.

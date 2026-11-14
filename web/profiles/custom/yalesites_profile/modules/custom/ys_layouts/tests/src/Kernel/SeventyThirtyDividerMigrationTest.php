@@ -338,6 +338,44 @@ class SeventyThirtyDividerMigrationTest extends YsKernelTestBase {
   }
 
   /**
+   * The migration keeps every revision's original changed time.
+   *
+   * The changed time feeds the sitemap's lastmod and the admin lists, so
+   * stamping the deploy time on every migrated node loses the real "last
+   * updated" date for good (yalesites-org/YaleSites-Internal#2116).
+   *
+   * @covers ::enableSeventyThirtyDividers
+   */
+  public function testMigrationKeepsChangedTimes(): void {
+    $now = $this->container->get('datetime.time')->getRequestTime();
+    $publishedTime = $now - 5000;
+    $draftTime = $now - 3000;
+
+    $node = Node::create(['type' => 'page', 'title' => 'Dated', 'status' => 1]);
+    $node->set('layout_builder__layout', [new Section('ys_layout_two_column')]);
+    $node->setChangedTime($publishedTime);
+    $node->save();
+    $publishedVid = (int) $node->getRevisionId();
+
+    $node->set('layout_builder__layout', [new Section('ys_layout_two_column')]);
+    $node->setNewRevision(TRUE);
+    $node->isDefaultRevision(FALSE);
+    $node->setChangedTime($draftTime);
+    $node->save();
+
+    $storage = $this->container->get('entity_type.manager')->getStorage('node');
+    $draftVid = (int) $storage->getLatestRevisionId($node->id());
+    $this->assertNotSame($publishedVid, $draftVid);
+
+    $this->assertSame(2, $this->updater()->enableSeventyThirtyDividers());
+
+    $storage->resetCache([$node->id()]);
+    $this->assertSame($publishedTime, (int) $storage->load($node->id())->getChangedTime(), 'The node table was re-stamped.');
+    $this->assertSame($publishedTime, (int) $storage->loadRevision($publishedVid)->getChangedTime(), 'The published revision was re-stamped.');
+    $this->assertSame($draftTime, (int) $storage->loadRevision($draftVid)->getChangedTime(), 'The draft revision was re-stamped.');
+  }
+
+  /**
    * A 50/50-only node is a pre-filter candidate but is left untouched.
    *
    * `getSeventyThirtyNodeIds()` matches the layout id as a substring, and

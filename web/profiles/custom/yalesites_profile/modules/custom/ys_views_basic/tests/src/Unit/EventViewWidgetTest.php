@@ -139,6 +139,7 @@ class EventViewWidgetTest extends UnitTestCase {
       ->method('getTagsForVocabularies')
       ->with(['event_category', 'tags', 'audience', 'custom_vocab'])
       ->willReturn($grouped);
+    $this->manager->method('addStoredTermOptions')->willReturnArgument(0);
 
     $item = (object) ['params' => NULL];
     $items = $this->createMock(FieldItemListInterface::class);
