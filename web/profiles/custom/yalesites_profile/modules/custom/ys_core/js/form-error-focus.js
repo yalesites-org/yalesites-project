@@ -2,6 +2,9 @@
   const FOCUSABLE =
     'input:not([type="hidden"]), select, textarea, button, a[href], [contenteditable="true"]';
 
+  const TAB_PANE =
+    '.vertical-tabs__pane, .js-vertical-tabs__pane, .horizontal-tabs-pane';
+
   const canFocus = (el) =>
     el.matches(FOCUSABLE) &&
     !el.disabled &&
@@ -77,6 +80,110 @@
   };
 
   /**
+   * Reveals an element hidden in a closed details, vertical tab, or sidebar.
+   *
+   * @param {HTMLElement} el
+   *   The element to reveal.
+   */
+  const reveal = (el) => {
+    const panes = [];
+    let pane = el.closest(TAB_PANE);
+    while (pane) {
+      panes.push(pane);
+      pane = pane.parentElement?.closest(TAB_PANE);
+    }
+    // Outermost tab first, so an inner tab is in a shown pane when opened.
+    panes.reverse().forEach((tabPane) => {
+      const $pane = window.jQuery?.(tabPane);
+      const tab = $pane?.data('verticalTab') || $pane?.data('horizontalTab');
+      if (tab) {
+        tab.tabShow();
+      } else {
+        document
+          .querySelector(`.vertical-tabs__menu a[href="#${tabPane.id}"]`)
+          ?.click();
+      }
+    });
+    // A field in Gin's meta sidebar stays off-screen while the sidebar is
+    // closed. Gin's own method opens it and keeps its toggle state in sync.
+    if (
+      el.closest('#gin_sidebar') &&
+      document.body.dataset.metaSidebar !== 'open'
+    ) {
+      Drupal.ginSidebar?.showSidebar();
+    }
+    let details = el.closest('details:not([open])');
+    while (details) {
+      details.open = true;
+      details = details.parentElement?.closest('details:not([open])');
+    }
+  };
+
+  /**
+   * Finds the field an error summary link means.
+   *
+   * Some links name an id the page does not render (a media picker's), so
+   * fall back to an element the id prefixes, then the form's first invalid
+   * field.
+   *
+   * @param {string} id
+   *   The link's fragment.
+   * @param {HTMLElement} link
+   *   The summary link.
+   *
+   * @return {HTMLElement|null}
+   *   The element the link points at.
+   */
+  const linkTarget = (id, link) => {
+    const exact = document.getElementById(id);
+    if (exact) {
+      return exact;
+    }
+    // A prefix match inside a closed tab has no visible control yet, so take
+    // the first that holds any control at all.
+    const holdsControl = (el) =>
+      el.matches(FOCUSABLE) || el.querySelector(FOCUSABLE);
+    return (
+      [
+        ...(link.closest('form') || document).querySelectorAll(
+          `[id^="${CSS.escape(`${id}-`)}"]`,
+        ),
+      ].find(holdsControl) ||
+      (link.closest('form') || document).querySelector('[aria-invalid="true"]')
+    );
+  };
+
+  /**
+   * Sends focus to a visible field, opening what hides it first.
+   *
+   * @param {HTMLElement} target
+   *   The field, or a group holding it.
+   */
+  const focusField = (target) => {
+    reveal(target);
+    if (target.dataset.ckeditor5Id) {
+      withEditor(target, (editor) => editor.editing.view.focus());
+      return;
+    }
+    // Look inside the target before the group around it, so a wrapper div
+    // does not hand focus to an unrelated neighbor.
+    const editorField = target.querySelector('[data-ckeditor5-id]');
+    if (editorField) {
+      withEditor(editorField, (editor) => editor.editing.view.focus());
+      return;
+    }
+    const inside = [target, ...target.querySelectorAll(FOCUSABLE)].filter(
+      canFocus,
+    );
+    const field =
+      inside.find((el) => !el.matches('button, a')) ||
+      inside[0] ||
+      focusTarget(target);
+    field?.scrollIntoView({ block: 'center' });
+    field?.focus();
+  };
+
+  /**
    * Moves focus to the first invalid field after a failed form submission.
    *
    * Without it focus stays on the page body, so a screen reader user is not
@@ -87,6 +194,21 @@
    */
   Drupal.behaviors.ysCoreFormErrorFocus = {
     attach(context) {
+      // An error summary link opens the tab or sidebar hiding its field, then
+      // focuses the field. Core's anchor jump cannot reach a hidden target.
+      once(
+        'ys-core-error-summary-link',
+        '[data-drupal-messages] .messages--error a[href^="#"], .messages--error a[href^="#"]',
+        context,
+      ).forEach((link) => {
+        link.addEventListener('click', (event) => {
+          const target = linkTarget(link.getAttribute('href').slice(1), link);
+          if (target) {
+            event.preventDefault();
+            focusField(target);
+          }
+        });
+      });
       const invalid = once(
         'ys-core-form-error-focus',
         '[aria-invalid="true"]',

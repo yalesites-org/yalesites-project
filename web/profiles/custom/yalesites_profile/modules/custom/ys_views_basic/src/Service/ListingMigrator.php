@@ -149,6 +149,118 @@ class ListingMigrator {
   }
 
   /**
+   * Gives every older revision of a block the params it is missing.
+   *
+   * The predecessor bundles (post_list, event_list, directory) carry no
+   * field_view_params, so before the migration only the current revision got
+   * the preset params. An older revision, which an editor can still Revert
+   * to, kept no params row and rendered as an empty listing (#2118). This
+   * writes the given params into the revision-table row of each revision that
+   * has none. Revisions that already hold a row are left alone, so an
+   * editor's own settings are never overwritten, and the block's changed
+   * dates are not touched because the rows go in directly.
+   *
+   * @param int|string $entity_id
+   *   The block content entity id.
+   * @param string $bundle
+   *   The block's current bundle id.
+   * @param array $params
+   *   The params to write for revisions that have none.
+   *
+   * @return int
+   *   The number of revisions filled.
+   */
+  public function fillMissingRevisionParams(int|string $entity_id, string $bundle, array $params): int {
+    $storage = $this->entityTypeManager->getStorage('block_content');
+    $definition = $this->entityFieldManager->getFieldStorageDefinitions('block_content')['field_view_params'] ?? NULL;
+    if (!$definition || !$storage instanceof SqlEntityStorageInterface) {
+      return 0;
+    }
+    /** @var \Drupal\Core\Entity\Sql\DefaultTableMapping $mapping */
+    $mapping = $storage->getTableMapping();
+    $field_table = $mapping->getDedicatedRevisionTableName($definition);
+    $revision_table = $storage->getEntityType()->getRevisionTable();
+    $schema = $this->database->schema();
+    if (!$schema->tableExists($field_table) || !$schema->tableExists($revision_table)) {
+      return 0;
+    }
+    $column = $mapping->getFieldColumnName($definition, 'params');
+    $revision_key = $storage->getEntityType()->getKey('revision');
+    $id_key = $storage->getEntityType()->getKey('id');
+
+    $have = $this->database->select($field_table, 'f')
+      ->fields('f', ['revision_id'])
+      ->condition('entity_id', $entity_id)
+      ->condition('deleted', 0)
+      ->execute()
+      ->fetchCol();
+    $query = $this->database->select($revision_table, 'r')
+      ->fields('r', [$revision_key, 'langcode'])
+      ->condition($id_key, $entity_id);
+    if ($have) {
+      $query->condition($revision_key, $have, 'NOT IN');
+    }
+    $filled = 0;
+    foreach ($query->execute()->fetchAll(\PDO::FETCH_ASSOC) as $row) {
+      $this->database->insert($field_table)
+        ->fields([
+          'bundle' => $bundle,
+          'deleted' => 0,
+          'entity_id' => $entity_id,
+          'revision_id' => $row[$revision_key],
+          'langcode' => $row['langcode'],
+          'delta' => 0,
+          $column => serialize(json_encode($params)),
+        ])
+        ->execute();
+      $filled++;
+    }
+    return $filled;
+  }
+
+  /**
+   * Replaces the params of a block's current revision, keeping its dates.
+   *
+   * Writes the data and revision field rows directly, so the block's changed
+   * time and revision log are not touched (#2191). Older revisions are left
+   * alone.
+   *
+   * @param int|string $entity_id
+   *   The block content entity id.
+   * @param array $params
+   *   The params to store.
+   */
+  public function replaceCurrentParams(int|string $entity_id, array $params): void {
+    $storage = $this->entityTypeManager->getStorage('block_content');
+    $definition = $this->entityFieldManager->getFieldStorageDefinitions('block_content')['field_view_params'] ?? NULL;
+    if (!$definition || !$storage instanceof SqlEntityStorageInterface) {
+      return;
+    }
+    /** @var \Drupal\Core\Entity\Sql\DefaultTableMapping $mapping */
+    $mapping = $storage->getTableMapping();
+    $column = $mapping->getFieldColumnName($definition, 'params');
+    $revision_id = $this->database->select($storage->getEntityType()->getBaseTable(), 'b')
+      ->fields('b', [$storage->getEntityType()->getKey('revision')])
+      ->condition($storage->getEntityType()->getKey('id'), $entity_id)
+      ->execute()
+      ->fetchField();
+    if (!$revision_id) {
+      return;
+    }
+    $schema = $this->database->schema();
+    foreach ([$mapping->getDedicatedDataTableName($definition), $mapping->getDedicatedRevisionTableName($definition)] as $table) {
+      if ($schema->tableExists($table)) {
+        $this->database->update($table)
+          ->fields([$column => serialize(json_encode($params))])
+          ->condition('entity_id', $entity_id)
+          ->condition('revision_id', $revision_id)
+          ->condition('deleted', 0)
+          ->execute();
+      }
+    }
+  }
+
+  /**
    * Returns the dedicated block_content field tables that exist.
    *
    * Resolved once through the table mapping, so hashed table names are found

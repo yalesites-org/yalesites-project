@@ -11,7 +11,12 @@
  * @ingroup themeable
  */
 #}
-{% if content %}
+{#
+  Render only the regions that have content, as before the yds-layout move.
+  An always-drawn empty region leaves a blank band (both empty) or squeezes the
+  other column (one empty).
+#}
+{% if content.content or content.sidebar %}
   {% if in_preview %}
     <div {{ attributes}}>
   {% endif %}
@@ -20,6 +25,8 @@
     layout__padding: settings.padding|default('default'),
     layout__divider: settings.divider ? 'true' : 'false',
     component__theme: settings.theme|default('default'),
+    layout__has_primary: content.content is not empty,
+    layout__has_secondary: content.sidebar is not empty,
   } %}
     {% block layout__primary %}
       <div {{ region_attributes.content }}>

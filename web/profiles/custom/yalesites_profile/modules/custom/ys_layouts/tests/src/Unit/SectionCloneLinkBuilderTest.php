@@ -3,6 +3,9 @@
 namespace Drupal\Tests\ys_layouts\Unit;
 
 use Drupal\Core\Access\AccessManagerInterface;
+use Drupal\Core\Access\AccessResult;
+use Drupal\Core\Session\AccountInterface;
+use Drupal\ys_layouts\Access\CloneSectionAccessCheck;
 use Drupal\Core\DependencyInjection\ContainerBuilder;
 use Drupal\Tests\UnitTestCase;
 use Drupal\layout_builder\SectionStorageInterface;
@@ -32,6 +35,13 @@ class SectionCloneLinkBuilderTest extends UnitTestCase {
   protected bool $routeAccess = TRUE;
 
   /**
+   * Whether the mocked lock check allows the section being rendered.
+   *
+   * @var bool
+   */
+  protected bool $lockAccess = TRUE;
+
+  /**
    * {@inheritdoc}
    */
   protected function setUp(): void {
@@ -46,6 +56,13 @@ class SectionCloneLinkBuilderTest extends UnitTestCase {
     $container = new ContainerBuilder();
     $container->set('string_translation', $this->getStringTranslationStub());
     $container->set('access_manager', $access_manager);
+
+    // The lock check is asked of the rendered storage directly (issue #2098).
+    $lock_check = $this->createMock(CloneSectionAccessCheck::class);
+    $lock_check->method('accessForDelta')
+      ->willReturnCallback(fn () => $this->lockAccess ? AccessResult::allowed() : AccessResult::forbidden());
+    $container->set('ys_layouts.clone_section_access', $lock_check);
+    $container->set('current_user', $this->createMock(AccountInterface::class));
     \Drupal::setContainer($container);
   }
 
@@ -291,6 +308,25 @@ class SectionCloneLinkBuilderTest extends UnitTestCase {
       $element['layout_builder'][1]['#attributes']['class'],
       'A section that may not be cloned is not marked, so the stylesheet leaves Configure where it is.'
     );
+  }
+
+  /**
+   * The link is hidden when the rendered storage's locks refuse the clone.
+   *
+   * Url::access() re-resolves the storage without Layout Builder's tempstore,
+   * so for an unsaved override it allows every delta. The lock check on the
+   * storage being rendered must still hide the link (issue #2098).
+   *
+   * @covers ::preRender
+   */
+  public function testCloneLinkIsHiddenWhenTheRenderedStorageIsLocked(): void {
+    $this->routeAccess = TRUE;
+    $this->lockAccess = FALSE;
+
+    $element = SectionCloneLinkBuilder::preRender($this->element());
+
+    $this->assertFalse($element['layout_builder'][1]['clone']['#access'], 'A locked section shows no clone link even when the route lookup allows it.');
+    $this->assertNotContains('ys-has-clone-action', $element['layout_builder'][1]['#attributes']['class']);
   }
 
   /**
