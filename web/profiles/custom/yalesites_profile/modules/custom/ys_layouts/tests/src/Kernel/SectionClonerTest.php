@@ -6,7 +6,7 @@ use Drupal\block_content\Entity\BlockContent;
 use Drupal\block_content\Entity\BlockContentType;
 use Drupal\field\Entity\FieldConfig;
 use Drupal\field\Entity\FieldStorageConfig;
-use Drupal\KernelTests\KernelTestBase;
+use Drupal\Tests\ys_core\Kernel\YsKernelTestBase;
 use Drupal\layout_builder\Section;
 use Drupal\layout_builder\SectionComponent;
 use Drupal\layout_builder\SectionStorageInterface;
@@ -31,7 +31,7 @@ use Drupal\ys_layouts\Service\SectionCloner;
  *
  * @coversDefaultClass \Drupal\ys_layouts\Service\SectionCloner
  */
-class SectionClonerTest extends KernelTestBase {
+class SectionClonerTest extends YsKernelTestBase {
 
   /**
    * {@inheritdoc}
