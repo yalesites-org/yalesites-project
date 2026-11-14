@@ -17,6 +17,8 @@ dependencies:
     - field.field.node.event.field_event_recurring
     - field.field.node.event.field_event_room
     - field.field.node.event.field_event_source
+    - field.field.node.event.field_event_speaker
+    - field.field.node.event.field_event_speaker_affiliation
     - field.field.node.event.field_event_status
     - field.field.node.event.field_event_topics
     - field.field.node.event.field_event_type
@@ -133,6 +135,8 @@ third_party_settings:
     group_basic_info:
       children:
         - title
+        - field_event_speaker
+        - field_event_speaker_affiliation
         - field_event_description
         - field_event_cta
         - group_place
@@ -368,6 +372,22 @@ content:
     weight: 31
     region: content
     settings: {  }
+    third_party_settings: {  }
+  field_event_speaker:
+    type: string_textfield
+    weight: 40
+    region: content
+    settings:
+      size: 60
+      placeholder: ''
+    third_party_settings: {  }
+  field_event_speaker_affiliation:
+    type: string_textfield
+    weight: 41
+    region: content
+    settings:
+      size: 60
+      placeholder: ''
     third_party_settings: {  }
   field_event_status:
     type: options_select

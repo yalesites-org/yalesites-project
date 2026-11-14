@@ -263,6 +263,26 @@ class MetaFieldsManager implements ContainerFactoryPluginInterface {
   }
 
   /**
+   * Gets the "Speaker Name, Affiliation" line shown under an event title.
+   *
+   * @param \Drupal\node\NodeInterface $node
+   *   The event node.
+   *
+   * @return string|null
+   *   The speaker, followed by the affiliation when one is set. Just the
+   *   speaker when the affiliation is empty. NULL when there is no speaker,
+   *   since an affiliation alone does not name anyone.
+   */
+  public function getSpeakerLine(NodeInterface $node): ?string {
+    $speaker = trim($node->get('field_event_speaker')->getString());
+    if ($speaker === '') {
+      return NULL;
+    }
+    $affiliation = trim($node->get('field_event_speaker_affiliation')->getString());
+    return $affiliation !== '' ? $speaker . ', ' . $affiliation : $speaker;
+  }
+
+  /**
    * Gets event all fields.
    */
   public function getEventData($node) {
@@ -405,6 +425,7 @@ class MetaFieldsManager implements ContainerFactoryPluginInterface {
       'ticket_url' => $ticketLink,
       'ticket_cost' => $ticketCost,
       'description' => $description,
+      'speaker' => $this->getSpeakerLine($node),
       'room' => $location['room'],
       'location_details' => $location['location_details'],
       'external_website_url' => $externalEventWebsiteUrl,

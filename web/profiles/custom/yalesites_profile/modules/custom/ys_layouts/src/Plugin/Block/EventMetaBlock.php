@@ -116,6 +116,7 @@ class EventMetaBlock extends BlockBase implements ContainerFactoryPluginInterfac
       '#event_audience' => $eventFieldData['event_audience'],
       '#event_topics' => $eventFieldData['event_topics'],
       '#description' => $eventFieldData['description'],
+      '#speaker' => $eventFieldData['speaker'],
       '#room' => $eventFieldData['room'],
       '#location_details' => $eventFieldData['location_details'],
       '#event_meta__cta_primary__href' => $eventFieldData['external_website_url'],
