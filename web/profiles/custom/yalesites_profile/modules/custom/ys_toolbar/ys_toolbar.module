@@ -11,8 +11,10 @@
 function ys_toolbar_toolbar_alter(&$items) {
 
   // Alter the label of the "Local Tasks" link created by the Gin Toolbar for
-  // all nodes. Change to "Manage this Page" to make it easier to understand.
-  if (\Drupal::service('ys_toolbar.items')->isCurrentRouteNode()) {
+  // all nodes and taxonomy terms. Change to "More Actions" to make it easier
+  // to understand.
+  $toolbar_items = \Drupal::service('ys_toolbar.items');
+  if ($toolbar_items->isCurrentRouteNode() || $toolbar_items->isCurrentRouteTerm()) {
     if (!empty($items['admin_toolbar_local_tasks']['tab']['#title'])) {
       $items['admin_toolbar_local_tasks']['tab']['#title'] = 'More Actions';
     }
