@@ -2,6 +2,8 @@
 
 namespace Drupal\Tests\ys_views_content_resources\Unit;
 
+use Drupal\Core\Entity\EntityStorageInterface;
+use Drupal\Core\Entity\EntityInterface;
 use Drupal\Core\Cache\CacheTagsInvalidatorInterface;
 use Drupal\Core\Entity\EntityDisplayRepository;
 use Drupal\Core\Entity\EntityTypeManagerInterface;
@@ -340,6 +342,202 @@ class ViewsContentResourcesManagerSetupViewTest extends UnitTestCase {
     ]));
 
     $this->assertSame(0, $this->viewArgs['items']);
+  }
+
+  /**
+   * Provides labels and the value each should resolve to.
+   *
+   * @return array
+   *   Test cases keyed by description: label, default, expected.
+   */
+  public static function labelProvider(): array {
+    return [
+      'plain text passes' => ['Featured', 'Pinned', 'Featured'],
+      'text is trimmed' => ['  Featured  ', 'Pinned', 'Featured'],
+      'empty uses default' => ['', 'Pinned', 'Pinned'],
+      'blank uses default' => ['   ', 'Pinned', 'Pinned'],
+      'markup uses default' => ['<script>x</script>', 'Pinned', 'Pinned'],
+      'control character uses default' => ["a\nb", 'Pinned', 'Pinned'],
+      'too long uses default' => [str_repeat('a', 256), 'Pinned', 'Pinned'],
+      'longest allowed passes' => [str_repeat('a', 255), 'Pinned', str_repeat('a', 255)],
+      'array uses default' => [['x'], 'Pinned', 'Pinned'],
+      'number uses default' => [5, 'Pinned', 'Pinned'],
+      'null uses default' => [NULL, 'Pinned', 'Pinned'],
+    ];
+  }
+
+  /**
+   * Labels are plain text of a limited length.
+   *
+   * @dataProvider labelProvider
+   * @covers ::getValidatedLabel
+   */
+  public function testGetValidatedLabel($label, string $default, string $expected) {
+    $this->assertSame($expected, ViewsContentResourcesManager::getValidatedLabel($label, $default));
+  }
+
+  /**
+   * Provides term IDs and the value each should resolve to.
+   *
+   * @return array
+   *   Test cases keyed by description: input, expected.
+   */
+  public static function termIdProvider(): array {
+    return [
+      'integer' => [5, 5],
+      'digit string' => ['12', 12],
+      'zero' => [0, NULL],
+      'zero string' => ['0', NULL],
+      'negative' => [-3, NULL],
+      'negative string' => ['-3', NULL],
+      'float string' => ['1.5', NULL],
+      'float' => [1.5, NULL],
+      'text' => ['abc', NULL],
+      'digits with text' => ['5abc', NULL],
+      'array' => [[5], NULL],
+      'empty string' => ['', NULL],
+      'null' => [NULL, NULL],
+      'bool' => [TRUE, NULL],
+    ];
+  }
+
+  /**
+   * Term IDs must be whole numbers above zero.
+   *
+   * @dataProvider termIdProvider
+   * @covers ::getValidatedTermId
+   */
+  public function testGetValidatedTermId($input, ?int $expected) {
+    $this->assertSame($expected, ViewsContentResourcesManager::getValidatedTermId($input));
+  }
+
+  /**
+   * Only the listed search fields are kept.
+   *
+   * @covers ::getValidatedSearchFields
+   */
+  public function testGetValidatedSearchFields() {
+    $defaults = [
+      'title' => 'title',
+      'field_teaser_text' => 'field_teaser_text',
+      'field_teaser_title' => 'field_teaser_title',
+    ];
+
+    $this->assertNull(ViewsContentResourcesManager::getValidatedSearchFields(NULL));
+    $this->assertNull(ViewsContentResourcesManager::getValidatedSearchFields('title'));
+    $this->assertNull(ViewsContentResourcesManager::getValidatedSearchFields([]));
+
+    // Unchecked boxes are dropped, checked ones kept.
+    $this->assertSame(
+      ['title' => 'title', 'field_journal_publication_name' => 'field_journal_publication_name'],
+      ViewsContentResourcesManager::getValidatedSearchFields([
+        'title' => 'title',
+        'field_teaser_text' => 0,
+        'field_journal_publication_name' => 'field_journal_publication_name',
+      ])
+    );
+    // Unknown and non-string values are dropped.
+    $this->assertSame(
+      ['title' => 'title'],
+      ViewsContentResourcesManager::getValidatedSearchFields([
+        'title',
+        'users_field_data.pass',
+        ['title'],
+        5,
+      ])
+    );
+    // Nothing usable selected falls back to the defaults.
+    $this->assertSame($defaults, ViewsContentResourcesManager::getValidatedSearchFields(['users_field_data.pass']));
+    $this->assertSame($defaults, ViewsContentResourcesManager::getValidatedSearchFields(['title' => 0]));
+  }
+
+  /**
+   * A request cannot put its own pin label into the render cache keys.
+   *
+   * @covers ::setupView
+   */
+  public function testPinLabelInCacheKeysIsValidated() {
+    $cases = [
+      ['Featured', 'Featured'],
+      ['<b>x</b>', 'Pinned'],
+      [str_repeat('a', 300), 'Pinned'],
+      [['x'], 'Pinned'],
+    ];
+    foreach ($cases as [$sent, $expected]) {
+      $view = $this->createView();
+      $view->method('preview')->willReturn(['#rows' => ['#rows' => [[]]]]);
+      $params = json_encode([
+        'filters' => ['types' => ['resource']],
+        'pinned_to_top' => 1,
+        'pin_label' => $sent,
+      ]);
+      $this->manager->setupView($view, $params);
+      $pin = json_decode($this->viewArgs['pin_settings'], TRUE);
+      $this->assertSame($expected, $pin['pin_label']);
+    }
+  }
+
+  /**
+   * Unusable filter settings never reach the view's filters.
+   *
+   * @covers ::setupView
+   */
+  public function testFilterSettingsAreValidated() {
+    $display = $this->createMock(DisplayPluginBase::class);
+    $display->method('getOption')->willReturn([
+      'field_category_target_id' => [],
+      'field_custom_vocab_target_id' => [],
+      'combine' => ['fields' => ['title' => 'title']],
+    ]);
+    $filters = NULL;
+    $display->method('setOption')->willReturnCallback(function ($option, $value) use (&$filters) {
+      if ($option === 'filters') {
+        $filters = $value;
+      }
+    });
+    $view = $this->createMock(ViewExecutable::class);
+    $view->method('getDisplay')->willReturn($display);
+    $view->method('preview')->willReturn([]);
+
+    $storage = $this->createMock(TermStorageInterface::class);
+    $storage->expects($this->never())->method('loadTree');
+    $label = $this->createMock(EntityInterface::class);
+    $label->method('label')->willReturn('Custom');
+    $vocabStorage = $this->createMock(EntityStorageInterface::class);
+    $vocabStorage->method('load')->willReturn($label);
+    $entityTypeManager = $this->createMock(EntityTypeManagerInterface::class);
+    $entityTypeManager->method('getStorage')->willReturnMap([
+      ['taxonomy_term', $storage],
+      ['taxonomy_vocabulary', $vocabStorage],
+    ]);
+    $manager = new ViewsContentResourcesManager(
+      $entityTypeManager,
+      $this->createMock(EntityDisplayRepository::class),
+      $this->createMock(RouteMatchInterface::class),
+      $this->createMock(CacheTagsInvalidatorInterface::class),
+    );
+
+    $manager->setupView($view, json_encode([
+      'filters' => ['types' => ['resource']],
+      'exposed_filter_options' => [
+        'show_category_filter' => 1,
+        'show_custom_vocab_filter' => 1,
+        'show_search_filter' => 1,
+      ],
+      'category_included_terms' => ['1', '2'],
+      'custom_vocab_included_terms' => '3abc',
+      'category_filter_label' => '<i>Topic</i>',
+      'search_fields' => ['users_field_data.pass'],
+    ]));
+
+    $this->assertArrayNotHasKey('limit', $filters['field_category_target_id']);
+    $this->assertArrayNotHasKey('label', $filters['field_category_target_id']['expose'] ?? []);
+    $this->assertArrayNotHasKey('limit', $filters['field_custom_vocab_target_id']);
+    $this->assertSame([
+      'title' => 'title',
+      'field_teaser_text' => 'field_teaser_text',
+      'field_teaser_title' => 'field_teaser_title',
+    ], $filters['combine']['fields']);
   }
 
 }

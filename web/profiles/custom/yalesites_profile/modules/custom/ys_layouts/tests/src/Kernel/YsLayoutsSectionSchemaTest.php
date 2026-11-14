@@ -3,7 +3,7 @@
 namespace Drupal\Tests\ys_layouts\Kernel;
 
 use Drupal\Component\Serialization\Yaml;
-use Drupal\KernelTests\KernelTestBase;
+use Drupal\Tests\ys_core\Kernel\YsKernelTestBase;
 
 /**
  * Tests that every themed Section layout declares its settings schema.
@@ -24,7 +24,7 @@ use Drupal\KernelTests\KernelTestBase;
  * @group yalesites
  * @group ys_layouts
  */
-class YsLayoutsSectionSchemaTest extends KernelTestBase {
+class YsLayoutsSectionSchemaTest extends YsKernelTestBase {
 
   /**
    * {@inheritdoc}

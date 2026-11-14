@@ -50,7 +50,7 @@ final class FormErrorDescription implements TrustedCallbackInterface {
    * {@inheritdoc}
    */
   public static function trustedCallbacks() {
-    return ['preRenderDatetime'];
+    return ['preRenderDatetime', 'preRenderForm'];
   }
 
   /**
@@ -68,6 +68,53 @@ final class FormErrorDescription implements TrustedCallbackInterface {
     if (!\Drupal::service('router.admin_context')->isAdminRoute()) {
       $form['#disable_inline_form_errors'] = TRUE;
     }
+    else {
+      $form['#pre_render'][] = [self::class, 'preRenderForm'];
+    }
+  }
+
+  /**
+   * Shows an inherited error once, on the element that owns it.
+   *
+   * Core gives every descendant of a failing element that element's error, so
+   * a widget with fifteen nested inputs printed one message fifteen times
+   * (yalesites-org/YaleSites-Internal#2108). A descendant whose error matches
+   * its parent's keeps its aria-invalid state but prints no message of its
+   * own, and Inline Form Errors drops it from the summary too.
+   *
+   * @param array $element
+   *   The form, or any element within it.
+   *
+   * @return array
+   *   The element with inherited inline messages suppressed.
+   */
+  public static function preRenderForm(array $element): array {
+    return self::suppressInherited($element, NULL);
+  }
+
+  /**
+   * Recursively suppresses messages repeating an ancestor's.
+   *
+   * @param array $element
+   *   The element to walk.
+   * @param mixed $inherited
+   *   The nearest ancestor's error that prints inline, if there is one.
+   *
+   * @return array
+   *   The element with its repeats marked #error_no_message.
+   */
+  private static function suppressInherited(array $element, mixed $inherited): array {
+    $own = $element['#errors'] ?? NULL;
+    if ($own !== NULL && $own !== '' && $inherited !== NULL && (string) $own === (string) $inherited) {
+      $element['#error_no_message'] = TRUE;
+    }
+    // Only an element that prints its message can stand in for its children;
+    // an error on a bare container would otherwise print nowhere.
+    $pass = self::id($element) ? $own : $inherited;
+    foreach (Element::children($element) as $key) {
+      $element[$key] = self::suppressInherited($element[$key], $pass);
+    }
+    return $element;
   }
 
   /**

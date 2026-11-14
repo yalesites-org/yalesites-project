@@ -28,7 +28,9 @@ class MetatagValueSetActionAccessTest extends UnitTestCase {
     // allowedIfHasPermission()/entity access add cache contexts, validated
     // against the cache_contexts_manager service.
     $container = new ContainerBuilder();
-    $container->set('cache_contexts_manager', $this->createMock(CacheContextsManager::class));
+    $cache_contexts_manager = $this->createMock(CacheContextsManager::class);
+    $cache_contexts_manager->method('assertValidTokens')->willReturn(TRUE);
+    $container->set('cache_contexts_manager', $cache_contexts_manager);
     \Drupal::setContainer($container);
   }
 

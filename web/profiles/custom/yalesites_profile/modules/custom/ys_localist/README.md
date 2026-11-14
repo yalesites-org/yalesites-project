@@ -137,3 +137,13 @@ lando ssh -c "env SIMPLETEST_DB=mysql://pantheon:pantheon@database/pantheon \
 ```
 
 Add `--testdox` for readable output.
+
+## Event structured data
+
+A published event's full page outputs one schema.org `Event` as JSON-LD in the page head, so search engines can show its date, time and location. Other view modes output nothing, and neither do unpublished events or events with no date.
+
+- `Drupal\ys_localist\EventStructuredData` builds the array from `MetaFieldsManager::getEventData()`, so it agrees with the event meta block on the featured date, location and image. `ys_localist_page_attachments()` prints it.
+- Recurring events output only the featured occurrence (the next upcoming date, or the last one if all are past).
+- The page cache expires when the featured occurrence ends, so the next date takes over.
+- Out of scope: `organizer`, `performer`, `eventSchedule`, and a per-event off switch.
+- Check output with Google's Rich Results Test: https://search.google.com/test/rich-results

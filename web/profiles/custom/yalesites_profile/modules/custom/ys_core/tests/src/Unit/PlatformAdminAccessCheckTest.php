@@ -30,7 +30,12 @@ class PlatformAdminAccessCheckTest extends UnitTestCase {
     parent::setUp();
     // cachePerUser() validates its cache context token against this service.
     $container = new ContainerBuilder();
-    $container->set('cache_contexts_manager', $this->createMock(CacheContextsManager::class));
+    // Cache::mergeContexts() wraps assertValidTokens() in assert(), and the
+    // method has no return type, so a bare mock returns NULL and fails the
+    // assertion whenever zend.assertions is on.
+    $cacheContextsManager = $this->createMock(CacheContextsManager::class);
+    $cacheContextsManager->method('assertValidTokens')->willReturn(TRUE);
+    $container->set('cache_contexts_manager', $cacheContextsManager);
     \Drupal::setContainer($container);
   }
 

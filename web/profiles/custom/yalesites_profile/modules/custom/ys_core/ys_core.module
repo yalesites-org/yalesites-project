@@ -1294,6 +1294,8 @@ function ys_core_form_views_exposed_form_alter(&$form, FormStateInterface $form_
  * (yalesites-org/YaleSites-Internal#1610).
  */
 function ys_core_menu_local_tasks_alter(&$data, $route_name, $cachability) {
+  // The tab list depends on who is viewing, so it must vary by user.
+  $cachability->addCacheContexts(['user']);
   if (isset($data['tabs'][0])) {
     foreach ($data['tabs'][0] as $key => $tab) {
       if (strpos($key, 'single_content_sync') === 0 &&

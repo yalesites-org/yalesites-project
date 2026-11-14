@@ -6,7 +6,7 @@ use Drupal\block_content\Entity\BlockContent;
 use Drupal\block_content\Entity\BlockContentType;
 use Drupal\field\Entity\FieldConfig;
 use Drupal\field\Entity\FieldStorageConfig;
-use Drupal\KernelTests\KernelTestBase;
+use Drupal\Tests\ys_core\Kernel\YsKernelTestBase;
 use Drupal\layout_builder\Section;
 use Drupal\layout_builder\SectionComponent;
 use Drupal\node\Entity\NodeType;
@@ -24,7 +24,7 @@ use Drupal\ys_views_basic\ViewsBasicManager;
  *
  * @group yalesites
  */
-class ViewMigrationTest extends KernelTestBase {
+class ViewMigrationTest extends YsKernelTestBase {
 
   /**
    * {@inheritdoc}
@@ -326,6 +326,152 @@ class ViewMigrationTest extends KernelTestBase {
       $this->assertSame($label, $params['category_filter_label'], "$legacy keeps its filter label.");
       $this->assertTrue($params['used_terms_only'], "$legacy lists only terms in use, as live did.");
     }
+  }
+
+  /**
+   * Older revisions of a migrated predecessor block keep their listing (#2118).
+   *
+   * Layout Builder renders an inline block by revision id, and an editor can
+   * Revert a page to a pre-deploy version. That revision must carry the preset
+   * params, or the Calendar List renders as its heading alone.
+   */
+  public function testPredecessorMigrationFillsOlderRevisions() {
+    $block = BlockContent::create(['type' => 'event_list', 'info' => 'Calendar List']);
+    $block->save();
+    $first_revision = $block->getRevisionId();
+    $block->setNewRevision(TRUE);
+    $block->set('info', 'Calendar List, edited');
+    $block->save();
+    $this->assertNotEquals($first_revision, $block->getRevisionId());
+    $changed = $this->blockStorage->load($block->id())->getChangedTime();
+
+    $this->runHook('ys_views_basic_deploy_10002');
+    $this->blockStorage->resetCache();
+
+    $expected = ViewsBasicManager::predecessorPreset('event_list')['params'];
+    $old = $this->blockStorage->loadRevision($first_revision);
+    $this->assertSame('event_list_item', $old->bundle());
+    $this->assertFalse($old->get('field_view_params')->isEmpty(), 'The pre-deploy revision has params.');
+    $this->assertEquals($expected, json_decode($old->get('field_view_params')->first()->getValue()['params'], TRUE));
+    $this->assertEquals($expected, $this->storedParams($block->id()));
+    $this->assertSame($changed, $this->blockStorage->load($block->id())->getChangedTime(), 'The changed date is kept.');
+  }
+
+  /**
+   * Deploy 10005 repairs blocks an earlier 10002 left with bare revisions.
+   */
+  public function testOlderRevisionsOfAlreadyMigratedBlocksGetParams() {
+    $block = BlockContent::create(['type' => 'event_list', 'info' => 'Calendar List']);
+    $block->save();
+    $first_revision = $block->getRevisionId();
+    $block->setNewRevision(TRUE);
+    $block->save();
+    $second_revision = $block->getRevisionId();
+    $this->runHook('ys_views_basic_deploy_10002');
+
+    // Put the site back in the state the first 10002 left: the old revision
+    // has no params row, and a later one holds an editor's own settings.
+    $db = $this->container->get('database');
+    $db->delete('block_content_revision__field_view_params')
+      ->condition('revision_id', $first_revision)
+      ->execute();
+    $custom = ['view_mode' => 'card', 'limit' => 3];
+    $db->update('block_content_revision__field_view_params')
+      ->fields(['field_view_params_params' => serialize(json_encode($custom))])
+      ->condition('revision_id', $second_revision)
+      ->execute();
+    $this->blockStorage->resetCache();
+    $this->assertTrue($this->blockStorage->loadRevision($first_revision)->get('field_view_params')->isEmpty());
+
+    $this->runHook('ys_views_basic_deploy_10005');
+    $this->blockStorage->resetCache();
+
+    $this->assertEquals(
+      ViewsBasicManager::predecessorPreset('event_list')['params'],
+      json_decode($this->blockStorage->loadRevision($first_revision)->get('field_view_params')->first()->getValue()['params'], TRUE)
+    );
+    $this->assertEquals(
+      $custom,
+      json_decode($this->blockStorage->loadRevision($second_revision)->get('field_view_params')->first()->getValue()['params'], TRUE),
+      'A revision with its own params is left alone.'
+    );
+
+    // Idempotent: a second run changes nothing.
+    $message = $this->runHook('ys_views_basic_deploy_10005');
+    $this->assertStringContainsString('filled params on 0 older', $message);
+  }
+
+  /**
+   * Blocks stored with display "all" go back on a pager (#2172).
+   *
+   * An old Calendar List and Directory block is repaired, the filterless
+   * variant is repaired by deploy_10004, an edited block is untouched, and a
+   * second run changes nothing.
+   */
+  public function testDisplayAllBlocksGetTheirPager() {
+    $make = function (string $bundle, array $params) {
+      $block = BlockContent::create([
+        'type' => $bundle,
+        'info' => 'stored ' . $bundle,
+        'field_view_params' => ['params' => json_encode($params)],
+      ]);
+      $block->save();
+      return $block->id();
+    };
+    $event_old = ViewsBasicManager::displayAllPredecessorParams('event_list');
+    $directory_old = ViewsBasicManager::displayAllPredecessorParams('directory');
+    $this->assertSame('all', $event_old['display']);
+    $this->assertNull(ViewsBasicManager::displayAllPredecessorParams('post_list'));
+
+    $event = $make('event_list_item', $event_old);
+    $directory = $make('profile_card', $directory_old);
+    $filterless = $make('event_list_item', ViewsBasicManager::displayAllPredecessorParams('event_list', TRUE));
+    // Listings an editor built to show every item (#2191): same display and
+    // limit as the old preset, but not the old preset.
+    $editor_event = $make('event_list_item', ['display' => 'all', 'limit' => 10, 'sort_by' => 'field_event_start:ASC']);
+    $editor_people = $make('profile_card', [
+      'display' => 'all',
+      'limit' => 10,
+      'sort_by' => 'field_last_name:ASC',
+      'card_size' => 'small',
+    ]);
+    // Age every block's changed time so a save() during the deploy shows.
+    $this->container->get('database')->update('block_content_field_data')->fields(['changed' => 1000000000])->execute();
+    $this->container->get('database')->update('block_content_field_revision')->fields(['changed' => 1000000000])->execute();
+    $this->blockStorage->resetCache();
+    $changed_before = 1000000000;
+    // A block saved again through the form: extra keys added, operator dropped.
+    $resaved_params = $event_old;
+    unset($resaved_params['operator']);
+    $resaved_params += ['search_scope' => 'all', 'card_size' => 'medium', 'category_filter_label' => 'My label'];
+    $resaved = $make('event_list_item', $resaved_params);
+    $edited_limit = $make('event_list_item', ['limit' => 25] + $event_old);
+    $edited_display = $make('profile_card', ['display' => 'limit'] + $directory_old);
+
+    $this->runHook('ys_views_basic_deploy_10004');
+    $this->runHook('ys_views_basic_deploy_10006');
+    $this->blockStorage->resetCache();
+
+    $event_new = ViewsBasicManager::predecessorPreset('event_list')['params'];
+    $this->assertEquals($event_new, $this->storedParams($event));
+    $this->assertEquals($event_new, $this->storedParams($filterless));
+    $this->assertEquals(ViewsBasicManager::predecessorPreset('directory')['params'], $this->storedParams($directory));
+    $this->assertEquals($resaved_params, $this->storedParams($resaved), 'A re-saved block no longer matches the old preset and is left alone.');
+    $this->assertSame('all', $this->storedParams($editor_event)['display'], 'An editor-built Events listing keeps "Display all items".');
+    $this->assertSame('all', $this->storedParams($editor_people)['display'], 'An editor-built People listing keeps "Display all items".');
+    $this->assertSame($changed_before, (int) $this->blockStorage->load($event)->getChangedTime(), 'A repaired block keeps its Updated date.');
+    $this->assertSame('pager', $this->storedParams($event)['display']);
+    $this->assertSame(10, $this->storedParams($event)['limit']);
+    $this->assertEquals(['limit' => 25] + $event_old, $this->storedParams($edited_limit));
+    $this->assertEquals(['display' => 'limit'] + $directory_old, $this->storedParams($edited_display));
+
+    // Idempotent: a second run changes nothing.
+    $this->runHook('ys_views_basic_deploy_10004');
+    $message = $this->runHook('ys_views_basic_deploy_10006');
+    $this->blockStorage->resetCache();
+    $this->assertStringContainsString('put 0 migrated', $message);
+    $this->assertEquals($event_new, $this->storedParams($event));
+    $this->assertEquals(['limit' => 25] + $event_old, $this->storedParams($edited_limit));
   }
 
   /**
