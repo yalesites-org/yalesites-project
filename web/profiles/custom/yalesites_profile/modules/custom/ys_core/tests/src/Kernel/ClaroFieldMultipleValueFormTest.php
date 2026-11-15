@@ -3,7 +3,6 @@
 namespace Drupal\Tests\ys_core\Kernel;
 
 use Drupal\Core\Template\Attribute;
-use Drupal\KernelTests\KernelTestBase;
 
 /**
  * Tests Claro's field_multiple_value_form preprocess against contrib headers.
@@ -32,7 +31,7 @@ use Drupal\KernelTests\KernelTestBase;
  *
  * @group ys_core
  */
-class ClaroFieldMultipleValueFormTest extends KernelTestBase {
+class ClaroFieldMultipleValueFormTest extends YsKernelTestBase {
 
   /**
    * {@inheritdoc}
