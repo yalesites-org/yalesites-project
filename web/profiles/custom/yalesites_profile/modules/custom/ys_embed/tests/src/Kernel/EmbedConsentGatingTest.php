@@ -2,7 +2,7 @@
 
 namespace Drupal\Tests\ys_embed\Kernel;
 
-use Drupal\KernelTests\KernelTestBase;
+use Drupal\Tests\ys_core\Kernel\YsKernelTestBase;
 use Drupal\user\Entity\Role;
 use Drupal\user\RoleInterface;
 
@@ -17,7 +17,7 @@ use Drupal\user\RoleInterface;
  * @group yalesites
  * @group ys_embed
  */
-class EmbedConsentGatingTest extends KernelTestBase {
+class EmbedConsentGatingTest extends YsKernelTestBase {
 
   /**
    * {@inheritdoc}
