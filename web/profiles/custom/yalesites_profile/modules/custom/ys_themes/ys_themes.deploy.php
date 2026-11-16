@@ -441,7 +441,7 @@ function ys_themes_deploy_10307(&$sandbox) {
 }
 
 /**
- * Sets the new Card Size dial to Small on existing Custom Card Collections.
+ * Sets the new Card size dial to Small on existing Custom Card Collections.
  *
  * The field is required, so an existing block with no value cannot be
  * re-saved until an editor picks one. Small is the 4-up grid these blocks
@@ -453,7 +453,7 @@ function ys_themes_deploy_10308(&$sandbox) {
     'custom_cards' => ['field_style_width', 'small'],
   ]);
 
-  return t('Set Card Size to Small on @count Custom Card Collection block(s).', ['@count' => $updated]);
+  return t('Set Card size to Small on @count Custom Card Collection block(s).', ['@count' => $updated]);
 }
 
 /**

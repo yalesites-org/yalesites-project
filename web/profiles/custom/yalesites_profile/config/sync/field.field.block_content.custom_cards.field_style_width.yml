@@ -11,7 +11,7 @@ id: block_content.custom_cards.field_style_width
 field_name: field_style_width
 entity_type: block_content
 bundle: custom_cards
-label: 'Card Size'
+label: 'Card size'
 description: 'Small is the size Custom Card Collection has always used. Large gives bigger cards.'
 required: true
 translatable: true

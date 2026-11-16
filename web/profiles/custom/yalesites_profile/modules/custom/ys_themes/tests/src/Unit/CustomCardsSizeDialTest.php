@@ -6,7 +6,7 @@ use Drupal\Tests\UnitTestCase;
 use Symfony\Component\Yaml\Yaml;
 
 /**
- * Custom Card Collection offers a Card Size dial (YaleSites-Internal#1842).
+ * Custom Card Collection offers a Card size dial (YaleSites-Internal#1842).
  *
  * Small is today's 4-up grid and the default; Large uses the Large grid of the
  * card collection. The dial reuses the field_style_width storage. Asserted
@@ -49,7 +49,7 @@ class CustomCardsSizeDialTest extends UnitTestCase {
     $this->assertFileExists($file);
     $field = Yaml::parseFile($file);
 
-    $this->assertSame('Card Size', $field['label']);
+    $this->assertSame('Card size', $field['label']);
     $this->assertTrue($field['required']);
     $this->assertSame('ys_themes_default_value_function', $field['default_value_callback']);
     $this->assertContains('field.storage.block_content.' . self::FIELD, $field['dependencies']['config']);

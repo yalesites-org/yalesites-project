@@ -11,7 +11,7 @@ use Drupal\Tests\ys_core\Kernel\YsKernelTestBase;
 /**
  * Existing Custom Card Collection blocks are backfilled to Small (#1842).
  *
- * The Card Size dial is required, so a block saved before it existed could
+ * The Card size dial is required, so a block saved before it existed could
  * not be re-saved until an editor picked a size. ys_themes_deploy_10308 sets
  * those to 'small', which renders the same as an empty value.
  *
@@ -57,7 +57,7 @@ class CustomCardsSizeBackfillTest extends YsKernelTestBase {
         'field_name' => 'field_style_width',
         'entity_type' => 'block_content',
         'bundle' => $bundle,
-        'label' => 'Card Size',
+        'label' => 'Card size',
       ])->save();
     }
 
