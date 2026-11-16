@@ -38,6 +38,16 @@
   display: none;
 }
 
+/*
+ * With the preview hidden, the two-column grid below (container query) would
+ * leave the right half empty once the panel is widened past 40rem. Drop back
+ * to a block so the options take the full width. The ID selector outranks the
+ * grid rules, so no extra override is needed in the query.
+ */
+#drupal-off-canvas-wrapper .vb-display-row:has(> .vb-preview-wrapper) {
+  display: block;
+}
+
 .vb-preview-wrapper__header {
   margin-bottom: 0.75rem;
 }

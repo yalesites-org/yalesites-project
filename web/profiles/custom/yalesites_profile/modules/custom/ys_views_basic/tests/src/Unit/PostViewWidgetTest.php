@@ -223,6 +223,12 @@ class PostViewWidgetTest extends UnitTestCase {
       $css,
       'The preview is hidden inside the off-canvas side panel.'
     );
+
+    $this->assertMatchesRegularExpression(
+      '/#drupal-off-canvas-wrapper\s+\.vb-display-row:has\(>\s*\.vb-preview-wrapper\)\s*\{[^}]*display:\s*block/',
+      $css,
+      'The options take the full width in a widened side panel, with no empty half.'
+    );
   }
 
   /**
