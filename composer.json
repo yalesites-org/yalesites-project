@@ -44,6 +44,7 @@
     },
     "require": {
         "composer/installers": "^1.9",
+        "consolidation/robo": "5.1.1",
         "cweagans/composer-patches": "^1.7",
         "drupal/core-composer-scaffold": "10.6.19",
         "drupal/core-project-message": "10.6.19",
