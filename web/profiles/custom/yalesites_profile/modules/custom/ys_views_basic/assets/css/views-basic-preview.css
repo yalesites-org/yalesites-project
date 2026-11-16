@@ -37,7 +37,7 @@
  * pop-up. Configuring a block not yet saved with the page opens the side panel
  * but still counts as new, which the server cannot tell apart from the pop-up.
  */
-@container (max-width: 39.99rem) {
+@container (width < 40rem) {
   #drupal-off-canvas-wrapper .vb-preview-wrapper {
     display: none;
   }
@@ -335,6 +335,26 @@
 }
 
 /*
+ * Keep the card at its pop-up size in a wide side panel (#2256). Drupal core's
+ * off-canvas reset (`#drupal-off-canvas-wrapper .ui-dialog-content div:not(...)
+ * { max-width: inherit !important; }`) beats the plain max-width caps above, so
+ * the card would keep growing with the panel. These repeat each cap with
+ * !important and enough specificity to win.
+ */
+#drupal-off-canvas-wrapper .ui-dialog-content .vb-preview-wrapper div.vb-preview {
+  max-width: 22rem !important;
+}
+
+#drupal-off-canvas-wrapper .ui-dialog-content .vb-preview-wrapper div.vb-preview[data-view-mode='list_item'],
+#drupal-off-canvas-wrapper .ui-dialog-content .vb-preview-wrapper div.vb-preview[data-view-mode='condensed'] {
+  max-width: 26rem !important;
+}
+
+#drupal-off-canvas-wrapper .ui-dialog-content .vb-preview-wrapper div.vb-preview[data-view-mode='portrait_grid'] {
+  max-width: 12rem !important;
+}
+
+/*
  * Two-column layout for the "Field display & filters" tab on the block-create
  * form (#1318, revised for #1337).
  *
@@ -358,7 +378,7 @@
   container-type: inline-size;
 }
 
-@container (min-width: 40rem) {
+@container (width >= 40rem) {
   .vb-display-row:has(> .vb-preview-wrapper) {
     display: grid;
     grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);

@@ -221,16 +221,40 @@ class PostViewWidgetTest extends UnitTestCase {
     $css = file_get_contents(dirname(__DIR__, 3) . '/assets/css/views-basic-preview.css');
 
     $this->assertMatchesRegularExpression(
-      '/@container\s*\(max-width:\s*39\.99rem\)\s*\{\s*#drupal-off-canvas-wrapper\s+\.vb-preview-wrapper\s*\{[^}]*display:\s*none/',
+      '/@container\s*\(width\s*<\s*40rem\)\s*\{\s*#drupal-off-canvas-wrapper\s+\.vb-preview-wrapper\s*\{[^}]*display:\s*none/',
       $css,
       'The preview is hidden in the off-canvas side panel only below the 40rem breakpoint.'
     );
 
-    $this->assertDoesNotMatchRegularExpression(
-      '/^#drupal-off-canvas-wrapper[^{]*\{/m',
-      $css,
-      'No unconditional off-canvas rule hides the preview or collapses the grid in a wide panel.'
-    );
+    // Unconditional off-canvas rules may only cap the card's max-width, never
+    // hide the preview or collapse the grid in a wide panel.
+    preg_match_all('/^#drupal-off-canvas-wrapper[^{]*\{([^}]*)\}/m', $css, $rules);
+    foreach ($rules[1] as $body) {
+      $this->assertMatchesRegularExpression('/^\s*max-width:\s*[\d.]+rem\s*!important;\s*$/', $body, 'Unconditional off-canvas rules only cap the card width.');
+    }
+  }
+
+  /**
+   * The side panel keeps the card at its pop-up size (#2256).
+   *
+   * Core's off-canvas reset forces max-width: inherit !important, so each cap
+   * is repeated with !important under a side-panel selector.
+   */
+  public function testPreviewCardCappedInSidePanel() {
+    $css = file_get_contents(dirname(__DIR__, 3) . '/assets/css/views-basic-preview.css');
+    $caps = [
+      "div.vb-preview {" => '22rem',
+      "[data-view-mode='list_item']," => '26rem',
+      "[data-view-mode='condensed'] {" => '26rem',
+      "[data-view-mode='portrait_grid'] {" => '12rem',
+    ];
+    foreach ($caps as $needle => $width) {
+      $this->assertMatchesRegularExpression(
+        '/#drupal-off-canvas-wrapper[^{]*' . preg_quote($needle, '/') . '[^}]*max-width:\s*' . $width . '\s*!important/s',
+        $css,
+        "Side panel caps $needle at $width."
+      );
+    }
   }
 
   /**
