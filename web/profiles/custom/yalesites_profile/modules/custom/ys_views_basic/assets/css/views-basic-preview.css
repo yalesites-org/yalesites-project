@@ -28,24 +28,19 @@
 }
 
 /*
- * The preview is for the "Add block" pop-up only (#2256). Configuring a block
- * opens the narrow Layout Builder side panel (off-canvas), including for a
- * block not yet saved with the page, which the server cannot tell apart from
- * the pop-up. Hide it there; display: none removes the box, so the single-column
- * stack keeps no gap.
+ * In the Layout Builder side panel (off-canvas) the preview follows the same
+ * 40rem container breakpoint as the two-column grid further down (#2256).
+ * At the default ~450px panel width there is no room beside the options, so
+ * hide the preview; display: none removes the box, so the single-column stack
+ * keeps no gap. Once the panel is widened to 40rem or more, these rules stop
+ * applying and the card shows beside the options, as in the "Add block"
+ * pop-up. Configuring a block not yet saved with the page opens the side panel
+ * but still counts as new, which the server cannot tell apart from the pop-up.
  */
-#drupal-off-canvas-wrapper .vb-preview-wrapper {
-  display: none;
-}
-
-/*
- * With the preview hidden, the two-column grid below (container query) would
- * leave the right half empty once the panel is widened past 40rem. Drop back
- * to a block so the options take the full width. The ID selector outranks the
- * grid rules, so no extra override is needed in the query.
- */
-#drupal-off-canvas-wrapper .vb-display-row:has(> .vb-preview-wrapper) {
-  display: block;
+@container (max-width: 39.99rem) {
+  #drupal-off-canvas-wrapper .vb-preview-wrapper {
+    display: none;
+  }
 }
 
 .vb-preview-wrapper__header {

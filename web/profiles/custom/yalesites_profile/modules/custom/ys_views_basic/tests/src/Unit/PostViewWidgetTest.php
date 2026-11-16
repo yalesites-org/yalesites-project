@@ -210,24 +210,26 @@ class PostViewWidgetTest extends UnitTestCase {
   }
 
   /**
-   * The preview stylesheet hides the preview in the Layout Builder side panel.
+   * The stylesheet hides the preview in a narrow Layout Builder side panel.
    *
    * A block not yet saved with the page is still new when configured in the
-   * side panel, so isNew() alone cannot keep the preview out of it (#2256).
+   * side panel, so isNew() alone cannot keep the preview out of it. The hide
+   * rule is limited to containers narrower than the 40rem two-column
+   * breakpoint, so a widened panel shows it beside the options (#2256).
    */
-  public function testPreviewHiddenInSidePanel() {
+  public function testPreviewHiddenOnlyInNarrowSidePanel() {
     $css = file_get_contents(dirname(__DIR__, 3) . '/assets/css/views-basic-preview.css');
 
     $this->assertMatchesRegularExpression(
-      '/#drupal-off-canvas-wrapper\s+\.vb-preview-wrapper\s*\{[^}]*display:\s*none/',
+      '/@container\s*\(max-width:\s*39\.99rem\)\s*\{\s*#drupal-off-canvas-wrapper\s+\.vb-preview-wrapper\s*\{[^}]*display:\s*none/',
       $css,
-      'The preview is hidden inside the off-canvas side panel.'
+      'The preview is hidden in the off-canvas side panel only below the 40rem breakpoint.'
     );
 
-    $this->assertMatchesRegularExpression(
-      '/#drupal-off-canvas-wrapper\s+\.vb-display-row:has\(>\s*\.vb-preview-wrapper\)\s*\{[^}]*display:\s*block/',
+    $this->assertDoesNotMatchRegularExpression(
+      '/^#drupal-off-canvas-wrapper[^{]*\{/m',
       $css,
-      'The options take the full width in a widened side panel, with no empty half.'
+      'No unconditional off-canvas rule hides the preview or collapses the grid in a wide panel.'
     );
   }
 

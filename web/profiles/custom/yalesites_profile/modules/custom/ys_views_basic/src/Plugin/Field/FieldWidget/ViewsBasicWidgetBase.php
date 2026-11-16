@@ -365,7 +365,7 @@ abstract class ViewsBasicWidgetBase extends WidgetBase implements ContainerFacto
     // helps a site builder picture the result while placing a new block and is
     // not built when reconfiguring a saved one. A block not yet saved with the
     // page still counts as new in the side panel, so the stylesheet hides the
-    // preview there (#2256).
+    // preview there while the panel is narrow (#2256).
     $is_create_form = $this->isCreateForm($items);
 
     $this->initSelectionContainers($form);
@@ -405,7 +405,7 @@ abstract class ViewsBasicWidgetBase extends WidgetBase implements ContainerFacto
    * inline block's host entity is unsaved, so isNew() separates the "Add
    * block" pop-up from the "Configure" form of a saved block. It cannot tell
    * the pop-up from the side panel for a block not yet saved with the page;
-   * views-basic-preview.css hides the preview in the side panel (#2256).
+   * views-basic-preview.css hides the preview in a narrow side panel (#2256).
    *
    * @param \Drupal\Core\Field\FieldItemListInterface $items
    *   The field items whose host entity is the block being placed.
