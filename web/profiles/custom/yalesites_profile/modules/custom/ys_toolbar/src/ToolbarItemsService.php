@@ -10,6 +10,7 @@ use Drupal\Core\Routing\RouteMatchInterface;
 use Drupal\Core\Session\AccountInterface;
 use Drupal\Core\Url;
 use Drupal\node\NodeInterface;
+use Drupal\taxonomy\TermInterface;
 
 /**
  * Tools for customizing the Drupal toolbar to engance the authoring experience.
@@ -19,6 +20,8 @@ class ToolbarItemsService {
   const NODE_VIEW_ROUTE = 'entity.node.canonical';
   const NODE_EDIT_ROUTE = 'entity.node.edit_form';
   const NODE_LAYOUT_ROUTE = 'layout_builder.overrides.node.view';
+  const TERM_EDIT_ROUTE = 'entity.taxonomy_term.edit_form';
+  const TERM_LAYOUT_ROUTE = 'layout_builder.overrides.taxonomy_term.view';
 
   /**
    * The access manager.
@@ -40,6 +43,13 @@ class ToolbarItemsService {
    * @var \Drupal\node\NodeInterface
    */
   protected $currentNode;
+
+  /**
+   * The taxonomy term related to the current route.
+   *
+   * @var \Drupal\taxonomy\TermInterface|null
+   */
+  protected $currentTerm;
 
   /**
    * Local task manager.
@@ -96,6 +106,7 @@ class ToolbarItemsService {
     $this->account = $account;
     $this->localTaskManager = $local_task_manager;
     $this->currentNode = $this->routeMatch->getParameter('node');
+    $this->currentTerm = $this->routeMatch->getParameter('taxonomy_term');
   }
 
   /**
@@ -105,9 +116,13 @@ class ToolbarItemsService {
    *   A renderable array of toolbar items.
    */
   public function addItems(): array {
-    // Exit early if the current route is not a node. We only want to modify the
-    // toolbar links for node entities. This could work for other entities such
-    // as taxonomy_terms but this is out of scope at this time.
+    // Taxonomy term pages get a reduced set of buttons: Manage Settings and
+    // Edit Layout.
+    if ($this->isCurrentRouteTerm()) {
+      return $this->addTermItems();
+    }
+
+    // Exit early if the current route is not a node or a term.
     if (!$this->isCurrentRouteNode()) {
       return [];
     }
@@ -151,6 +166,48 @@ class ToolbarItemsService {
       );
 
     return $this->toolbarItems;
+  }
+
+  /**
+   * Build the toolbar items for a taxonomy term route.
+   *
+   * @return array
+   *   A renderable array of toolbar items.
+   */
+  protected function addTermItems(): array {
+    // Skip the edit button on the edit form itself. The destination returns
+    // the editor to the term page after saving.
+    if ($this->routeMatch->getRouteName() !== self::TERM_EDIT_ROUTE) {
+      $this->toolbarItems['toolbar_edit_link'] = $this->buildButton(
+        self::TERM_EDIT_ROUTE,
+        'Manage Settings',
+        ['query' => $this->redirectDestination->getAsArray()]
+      );
+    }
+
+    // Access checks keep this link hidden unless the term has Layout Builder
+    // enabled. The route does not exist otherwise, which denies access.
+    $this->toolbarItems['toolbar_layout_link'] = $this->buildButton(
+      self::TERM_LAYOUT_ROUTE,
+      'Edit Layout And Content'
+    );
+
+    $this->toolbarItems['toolbar_theme_settings_link'] = $this->buildOffCanvasButton(
+      'ys_themes.theme_settings',
+      'Theme Settings'
+    );
+
+    return $this->toolbarItems;
+  }
+
+  /**
+   * Check if the current route is a taxonomy term.
+   *
+   * @return bool
+   *   True if the current route is a taxonomy term.
+   */
+  public function isCurrentRouteTerm(): bool {
+    return $this->currentTerm instanceof TermInterface;
   }
 
   /**
@@ -226,6 +283,9 @@ class ToolbarItemsService {
    *   Array of values to substitute into the route path pattern.
    */
   protected function getNodeRouteParams(): array {
+    if ($this->isCurrentRouteTerm()) {
+      return ['taxonomy_term' => $this->currentTerm->id()];
+    }
     return [
       'node' => $this->currentNode->id(),
     ];
@@ -238,11 +298,13 @@ class ToolbarItemsService {
    *   The route for the toolbar item destination.
    * @param string $label
    *   The text label for the toolbar item.
+   * @param array $options
+   *   Optional URL options, such as a destination query.
    *
    * @return array
    *   A rennder array for a toolbar item.
    */
-  protected function buildButton(string $route, string $label): array {
+  protected function buildButton(string $route, string $label, array $options = []): array {
     return [
       '#type' => 'toolbar_item',
       'tab' => [
@@ -250,7 +312,8 @@ class ToolbarItemsService {
         '#title' => $label,
         '#url' => Url::fromRoute(
           $route,
-          $this->getNodeRouteParams()
+          $this->getNodeRouteParams(),
+          $options
         ),
         '#access' => $this->accessManager->checkNamedRoute(
           $route,
