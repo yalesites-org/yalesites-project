@@ -139,4 +139,23 @@ class InstagramTest extends UnitTestCase {
     $this->assertStringContainsString('</blockquote>', $markup);
   }
 
+  /**
+   * @covers ::build
+   * @dataProvider emptyMarkupProvider
+   */
+  public function testBuildToleratesEmptyMarkup(string $markup): void {
+    $build = $this->plugin->build(['title' => '', 'blockquote' => $markup]);
+    $this->assertSame('', (string) $build['#embedSource']['#context']['blockquote']);
+  }
+
+  /**
+   * Markup that is empty, or filtered to empty by the allowed-tags filter.
+   */
+  public static function emptyMarkupProvider(): array {
+    return [
+      'empty string' => [''],
+      'only a disallowed tag' => ['<script></script>'],
+    ];
+  }
+
 }
