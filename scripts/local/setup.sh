@@ -39,7 +39,6 @@ if [[ ! -f "vendor/bin/drush" ]]; then
 fi
 
 # Generate local secrets file.
-terminus plugin:install pantheon-systems/terminus-secrets-manager-plugin
 terminus secret:site:local-generate yalesites-platform --filepath=./secrets.json
 
 # Install packages and install Drupal using yalesites_profile.
