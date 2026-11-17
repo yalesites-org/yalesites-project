@@ -8,6 +8,19 @@ This README details the process for Drupal migrations at Yale, specifically the 
 
 The Profile CSV Import tool includes a "Download CSV Template" link that redirects users to an external CSV template file. The external URL is hardcoded in the controller and can be updated by developers as needed.
 
+## Importing a Manage Resources export
+
+A file from **Export to CSV** on Manage Resources (`ys_content_export`) can be uploaded to the Resource CSV import without editing it:
+
+- The export puts an apostrophe in front of any cell that starts with `-`, `+`, `@` or `=` (or a tab or line break, including after leading spaces), so spreadsheet apps don't read it as a formula. The importer removes that apostrophe from every cell, so a resource titled `-Draft` exports as `'-Draft`, imports as `-Draft` again, and **Skip duplicates** matches it. A file that has been through a spreadsheet app which already dropped the apostrophe imports the same way.
+- The apostrophe is only removed when one of those characters follows it, so a title such as `'Tis the season` imports unchanged. A value that genuinely starts with an apostrophe followed by one of those characters, such as `'-Draft`, can't be told apart from an exported cell and loses its apostrophe.
+- **URL** and **Published** are recognised but ignored: a new resource gets its URL from its title, and resources are always imported as drafts.
+- **CAS Protected** is read as **CAS Login Required**, and the export's trailing "Export complete" row is skipped.
+
+The profile import does not remove apostrophes, since a profile export can't be imported as profiles.
+
+`CsvValidatorService::removeFormulaGuard()` is the inverse of `ContentExportBuilder::sanitizeCell()` and is duplicated rather than shared, because `ys_content_export` may not be enabled. `ResourceExportRoundTripTest` runs real export output through the importer and fails if the two drift apart.
+
 ## General Migration Setup
 
 Each migration within Yale is organized into specific migration groups. These groups manage the migration of data and content from old Drupal instances to new ones, focusing on maintaining data integrity and meeting the unique requirements of each site. This document outlines the migrations for the Office of New Haven Affairs (ONHA), but the framework and methods described are applicable to other Yale sites.

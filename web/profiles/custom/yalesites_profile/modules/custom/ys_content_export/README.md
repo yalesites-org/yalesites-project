@@ -73,8 +73,10 @@ Dates render in the site's timezone.
 
 - `ContentExportBuilder` — pure column map + row builder for nodes;
   `sanitizeCell()` neutralises CSV formula injection (values starting with
-  `=`, `+`, `-`, `@`, tab or carriage return are prefixed with a quote). Unit
-  tested. It takes no injected services, so a `DateFormatterInterface` is
+  `=`, `+`, `-`, `@`, tab, carriage return or newline, including after leading
+  spaces, are prefixed with a quote). Unit tested. The resource CSV import in
+  `ys_migrate` removes that quote again so an export can be imported back
+  (`CsvValidatorService::removeFormulaGuard()`); change the two together. It takes no injected services, so a `DateFormatterInterface` is
   passed into `getRow()` rather than resolved inside it; event dates reuse the
   platform's existing `event_date_only` / `event_time_only` date formats. The
   resource publication date is a date-only field already stored as `Y-m-d`, so

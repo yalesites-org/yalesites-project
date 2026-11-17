@@ -61,6 +61,18 @@ class CsvValidatorServiceTest extends UnitTestCase {
   }
 
   /**
+   * Formats one CSV line, quoting cells that hold tabs or line breaks.
+   */
+  protected function csvLine(array $cells): string {
+    $handle = fopen('php://temp', 'r+');
+    fputcsv($handle, $cells, ',', '"', '');
+    rewind($handle);
+    $line = stream_get_contents($handle);
+    fclose($handle);
+    return $line;
+  }
+
+  /**
    * A well-formed CSV with multiple rows and columns validates successfully.
    *
    * @covers ::validateCsvStructure
@@ -466,6 +478,99 @@ class CsvValidatorServiceTest extends UnitTestCase {
     $this->assertContains('Tag', $unknown);
     $this->assertContains('Editor Notes', $unknown);
     $this->assertNotContains('Title', $unknown);
+  }
+
+  /**
+   * The URL and Published columns a content export writes are not flagged.
+   *
+   * @covers ::getUnknownResourceColumns
+   */
+  public function testGetUnknownResourceColumnsAcceptsExportOnlyColumns() {
+    $path = $this->createCsvFile("Title,URL,Published\nAnnual Report,/resource/annual-report,Yes\n");
+
+    $result = $this->csvValidator->validateResourceCsvStructure($path);
+
+    $this->assertTrue($result['valid']);
+    $this->assertSame([], $this->csvValidator->getUnknownResourceColumns($result['headers']));
+  }
+
+  /**
+   * The apostrophe an export puts in front of formula-like cells is removed.
+   *
+   * It is removed only when the character after it is one the export guards,
+   * so a value that merely starts with an apostrophe imports as written.
+   *
+   * @param string $cell
+   *   The cell as it appears in the file.
+   * @param string $expected
+   *   The value the importer should read.
+   *
+   * @dataProvider formulaGuardProvider
+   * @covers ::validateResourceCsvStructure
+   * @covers ::removeFormulaGuard
+   */
+  public function testValidateResourceCsvStructureRemovesFormulaGuard(string $cell, string $expected) {
+    // Tags shows the guard is removed from every column, not just Title.
+    $path = $this->createCsvFile("Title,Tags\n" . $this->csvLine([$cell, $cell]));
+
+    $result = $this->csvValidator->validateResourceCsvStructure($path);
+
+    $this->assertTrue($result['valid']);
+    $this->assertSame($expected, $result['data'][0]['title']);
+    $this->assertSame($expected, $result['data'][0]['tags']);
+  }
+
+  /**
+   * Provides file cells and the value the resource import should read.
+   *
+   * @return array
+   *   Cases: [cell, expected].
+   */
+  public static function formulaGuardProvider(): array {
+    return [
+      'guarded dash' => ["'-DOMINO TEST c90 formula", '-DOMINO TEST c90 formula'],
+      'guarded equals' => ["'=1+1", '=1+1'],
+      'guarded plus' => ["'+1 rating", '+1 rating'],
+      'guarded at' => ["'@yale, Research", '@yale, Research'],
+      'guarded leading space then formula' => ["' =1+1", ' =1+1'],
+      'guarded tab' => ["'\tIndented", "\tIndented"],
+      'apostrophe before ordinary text kept' => ["'Tis the season", "'Tis the season"],
+      'lone apostrophe kept' => ["'", "'"],
+      'doubled apostrophe kept' => ["''-Draft", "''-Draft"],
+      'apostrophe after a space kept' => [" '-Draft", " '-Draft"],
+      'unguarded formula untouched' => ['-Already plain', '-Already plain'],
+    ];
+  }
+
+  /**
+   * The required-Title check runs on the value left after the guard is gone.
+   *
+   * @covers ::validateResourceCsvStructure
+   */
+  public function testValidateResourceCsvStructureChecksTitleWithoutGuard() {
+    $path = $this->createCsvFile("Title,Tags\n" . $this->csvLine(["'\t", 'tag1']));
+
+    $result = $this->csvValidator->validateResourceCsvStructure($path);
+
+    $this->assertFalse($result['valid']);
+    $this->assertStringContainsString('Row 2: Title is required.', (string) $result['message']);
+  }
+
+  /**
+   * The profile import reads a leading apostrophe as written.
+   *
+   * A profile export cannot be imported as profiles, so there is no export
+   * apostrophe to remove.
+   *
+   * @covers ::validateCsvStructure
+   */
+  public function testValidateCsvStructureKeepsLeadingApostrophe() {
+    $path = $this->createCsvFile("Display Name\n'-Jane Doe\n");
+
+    $result = $this->csvValidator->validateCsvStructure($path);
+
+    $this->assertTrue($result['valid']);
+    $this->assertSame("'-Jane Doe", $result['data'][0]['display name']);
   }
 
   /**
