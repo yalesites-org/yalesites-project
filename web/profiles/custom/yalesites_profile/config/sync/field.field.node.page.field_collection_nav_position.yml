@@ -10,7 +10,7 @@ field_name: field_collection_nav_position
 entity_type: node
 bundle: page
 label: 'Collection Navigation Display'
-description: 'Choose where to display the collection navigation. For more information, see <a href="https://yalesites.yale.edu/collections" target="_blank">Content Collections documentation</a>.'
+description: 'Choose where to display the collection navigation. For more information, see <a href="https://yalesites.yale.edu/secondary-navigation-with-content-collections" target="_blank">Content Collections documentation</a>.'
 required: true
 translatable: false
 default_value:
