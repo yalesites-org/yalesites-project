@@ -231,10 +231,12 @@ abstract class EmbedSourceBase extends PluginBase implements EmbedSourceInterfac
    * @param string $markup
    *   The stored provider markup.
    *
-   * @return \Drupal\Core\Render\Markup
-   *   The filtered markup, safe to print without the raw filter.
+   * @return \Drupal\Core\Render\Markup|string
+   *   The filtered markup, safe to print without the raw filter. An empty
+   *   string when the markup is empty or filters down to nothing, because
+   *   Markup::create() returns a plain string for empty input.
    */
-  protected static function filterMarkup(string $markup): Markup {
+  protected static function filterMarkup(string $markup): Markup|string {
     return Markup::create(Html::normalize(Xss::filter($markup, static::$allowedTags)));
   }
 

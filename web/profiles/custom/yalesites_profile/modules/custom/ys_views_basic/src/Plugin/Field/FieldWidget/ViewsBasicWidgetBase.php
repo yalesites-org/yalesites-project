@@ -807,7 +807,7 @@ abstract class ViewsBasicWidgetBase extends WidgetBase implements ContainerFacto
       // Renamed from "Filter by Category Parent Term" (#1481) — "Parent
       // Term" is taxonomy-internal vocabulary.
       '#title' => $this->t('Limit choices to'),
-      '#description' => $this->t("Select a parent term to show content tagged with that term's sub-items. This ignores content tagged as the parent term and any other parent terms in the vocabulary."),
+      '#description' => $this->t("Select a parent term to limit the choices visitors see in the filter dropdown. This does not hide any content from the list."),
       '#options' => $category_parents,
       '#default_value' => static::offeredDefault($category_parents, $params ? $this->viewsBasicManager->getDefaultParamValue('category_included_terms', $params) : NULL),
       '#prefix' => '<div id="edit-category-included-terms">',
@@ -819,7 +819,7 @@ abstract class ViewsBasicWidgetBase extends WidgetBase implements ContainerFacto
     $form['group_user_selection']['entity_and_view_mode']['custom_vocab_included_terms'] = [
       '#type' => 'select',
       '#title' => $this->t('Filter by @vocab Parent Term', ['@vocab' => $custom_vocab_label]),
-      '#description' => $this->t("Select a parent term to show content tagged with that term's sub-items. This ignores content tagged as the parent term and any other parent terms in the vocabulary."),
+      '#description' => $this->t("Select a parent term to limit the choices visitors see in the filter dropdown. This does not hide any content from the list."),
       '#options' => $custom_vocab_parents,
       '#default_value' => static::offeredDefault($custom_vocab_parents, $params ? $this->viewsBasicManager->getDefaultParamValue('custom_vocab_included_terms', $params) : NULL),
       '#prefix' => '<div id="edit-custom-vocab-included-terms">',
