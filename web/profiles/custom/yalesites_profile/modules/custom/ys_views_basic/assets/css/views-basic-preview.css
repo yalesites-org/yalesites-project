@@ -339,10 +339,13 @@
  * off-canvas reset (`#drupal-off-canvas-wrapper .ui-dialog-content div:not(...)
  * { max-width: inherit !important; }`) beats the plain max-width caps above, so
  * the card would keep growing with the panel. These repeat each cap with
- * !important and enough specificity to win.
+ * !important and enough specificity to win. Core's reset also sets
+ * `width: inherit !important`, which drops `.vb-preview { width: 100% }` and
+ * shrinks image-less cards (condensed) to their title, so width is restored too.
  */
 #drupal-off-canvas-wrapper .ui-dialog-content .vb-preview-wrapper div.vb-preview {
   max-width: 22rem !important;
+  width: 100% !important;
 }
 
 #drupal-off-canvas-wrapper .ui-dialog-content .vb-preview-wrapper div.vb-preview[data-view-mode='list_item'],
