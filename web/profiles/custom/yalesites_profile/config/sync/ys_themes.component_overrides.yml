@@ -366,3 +366,9 @@ office_hours:
       five: Five
       six: Six
     default: default
+custom_cards:
+  field_style_width:
+    values:
+      small: Small
+      large: Large
+    default: small
