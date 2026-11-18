@@ -12,11 +12,11 @@ selection_criteria:
   8ce66998-9056-4157-8d0f-2e7061015616:
     id: 'entity_bundle:node'
     negate: false
-    uuid: 8ce66998-9056-4157-8d0f-2e7061015616
     context_mapping:
       node: node
     bundles:
       event: event
+    uuid: 8ce66998-9056-4157-8d0f-2e7061015616
 selection_logic: and
 weight: -5
 relationships: {  }

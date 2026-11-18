@@ -63,6 +63,7 @@ third_party_settings:
         layout_settings:
           label: 'Title and Metadata'
           context_mapping: {  }
+          divider: 0
         components:
           c9287566-5875-443f-8b6c-7c76dd1a60d4:
             uuid: c9287566-5875-443f-8b6c-7c76dd1a60d4
@@ -101,6 +102,7 @@ third_party_settings:
         layout_settings:
           label: 'Content Section'
           context_mapping: {  }
+          divider: 0
         components: {  }
         third_party_settings:
           layout_builder_lock:

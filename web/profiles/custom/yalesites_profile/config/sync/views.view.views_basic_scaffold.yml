@@ -578,11 +578,6 @@ display:
             multiple: false
             remember_roles:
               authenticated: authenticated
-              anonymous: '0'
-              contributor: '0'
-              editor: '0'
-              site_admin: '0'
-              platform_admin: '0'
             placeholder: ''
           is_grouped: false
           group_info:
@@ -627,11 +622,6 @@ display:
             multiple: true
             remember_roles:
               authenticated: authenticated
-              anonymous: '0'
-              contributor: '0'
-              editor: '0'
-              site_admin: '0'
-              platform_admin: '0'
             reduce: 0
           is_grouped: false
           group_info:
@@ -671,11 +661,6 @@ display:
             multiple: true
             remember_roles:
               authenticated: authenticated
-              anonymous: '0'
-              contributor: '0'
-              editor: '0'
-              site_admin: '0'
-              platform_admin: '0'
             reduce: false
           is_grouped: false
           group_info:
@@ -721,11 +706,6 @@ display:
             multiple: true
             remember_roles:
               authenticated: authenticated
-              anonymous: '0'
-              contributor: '0'
-              editor: '0'
-              site_admin: '0'
-              platform_admin: '0'
             reduce: false
           is_grouped: false
           group_info:
@@ -771,11 +751,6 @@ display:
             multiple: true
             remember_roles:
               authenticated: authenticated
-              anonymous: '0'
-              contributor: '0'
-              editor: '0'
-              site_admin: '0'
-              platform_admin: '0'
             reduce: false
           is_grouped: false
           group_info:
@@ -821,11 +796,6 @@ display:
             multiple: true
             remember_roles:
               authenticated: authenticated
-              anonymous: '0'
-              contributor: '0'
-              editor: '0'
-              site_admin: '0'
-              platform_admin: '0'
             reduce: false
           is_grouped: false
           group_info:
@@ -871,11 +841,6 @@ display:
             multiple: true
             remember_roles:
               authenticated: authenticated
-              anonymous: '0'
-              contributor: '0'
-              editor: '0'
-              site_admin: '0'
-              platform_admin: '0'
             reduce: false
           is_grouped: false
           group_info:

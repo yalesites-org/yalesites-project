@@ -85,6 +85,7 @@ third_party_settings:
         layout_settings:
           label: 'Content Section'
           context_mapping: {  }
+          divider: 0
         components: {  }
         third_party_settings:
           layout_builder_lock:
