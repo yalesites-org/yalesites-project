@@ -12,36 +12,32 @@
  */
 #}
 {#
-  Render only the regions that have content, as before the yds-layout move.
-  An always-drawn empty region leaves a blank band (both empty) or squeezes the
-  other column (one empty). A colored (non-default theme) section is the
-  exception: it renders even when empty so the color band shows, as on live.
+  Always render the section, even with both regions empty, so an empty section
+  keeps its padded band (and a colored one its color band) as on live.
 #}
 {% set section_theme = settings.theme|default('default') %}
-{% if content.content or content.sidebar or section_theme != 'default' %}
-  {% if in_preview %}
-    <div {{ attributes}}>
-  {% endif %}
-  {% embed "@organisms/layout/layout/yds-layout.twig" with {
-    component__layout: 'seventy-thirty',
-    layout__padding: settings.padding|default('default'),
-    layout__divider: settings.divider ? 'true' : 'false',
-    component__theme: section_theme,
-    layout__has_primary: content.content is not empty,
-    layout__has_secondary: content.sidebar is not empty,
-  } %}
-    {% block layout__primary %}
-      <div {{ region_attributes.content }}>
-        {{ content.content }}
-      </div>
-    {% endblock %}
-    {% block layout__secondary %}
-      <div {{ region_attributes.sidebar }}>
-        {{ content.sidebar }}
-      </div>
-    {% endblock %}
-  {% endembed %}
-  {% if in_preview %}
+{% if in_preview %}
+  <div {{ attributes}}>
+{% endif %}
+{% embed "@organisms/layout/layout/yds-layout.twig" with {
+  component__layout: 'seventy-thirty',
+  layout__padding: settings.padding|default('default'),
+  layout__divider: settings.divider ? 'true' : 'false',
+  component__theme: section_theme,
+  layout__has_primary: content.content is not empty,
+  layout__has_secondary: content.sidebar is not empty,
+} %}
+  {% block layout__primary %}
+    <div {{ region_attributes.content }}>
+      {{ content.content }}
     </div>
-  {% endif %}
+  {% endblock %}
+  {% block layout__secondary %}
+    <div {{ region_attributes.sidebar }}>
+      {{ content.sidebar }}
+    </div>
+  {% endblock %}
+{% endembed %}
+{% if in_preview %}
+  </div>
 {% endif %}
