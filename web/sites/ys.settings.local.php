@@ -10,8 +10,7 @@
 /**
  * Assertions.
  */
-assert_options(ASSERT_ACTIVE, TRUE);
-\Drupal\Component\Assertion\Handle::register();
+ini_set('zend.assertions', 1);
 
 /**
  * Enable local development services.

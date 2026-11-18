@@ -1,5 +1,5 @@
 name: YaleSites mail
 type: module
 description: Email support for YaleSites
-core_version_requirement: '^9 || ^10'
+core_version_requirement: '^9 || ^10 || ^11'
 package: YaleSites

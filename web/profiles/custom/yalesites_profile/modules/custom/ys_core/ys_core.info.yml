@@ -1,7 +1,7 @@
 name: YaleSites core
 type: module
 description: YaleSites Core Configuation
-core_version_requirement: '^9 || ^10'
+core_version_requirement: '^9 || ^10 || ^11'
 package: YaleSites
 dependencies:
   - multivalue_form_element

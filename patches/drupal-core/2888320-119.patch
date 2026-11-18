@@ -1,0 +1,434 @@
+diff --git a/core/modules/layout_builder/src/LayoutOverrideFieldHelper.php b/core/modules/layout_builder/src/LayoutOverrideFieldHelper.php
+index b304464..04b1f61 100644
+--- a/core/modules/layout_builder/src/LayoutOverrideFieldHelper.php
++++ b/core/modules/layout_builder/src/LayoutOverrideFieldHelper.php
+@@ -5,6 +5,7 @@ declare(strict_types=1);
+ namespace Drupal\layout_builder;
+ 
+ use Drupal\Core\DependencyInjection\ContainerInjectionInterface;
++use Drupal\Core\Entity\EntityTypeManagerInterface;
+ use Drupal\Core\Entity\FieldableEntityInterface;
+ use Drupal\layout_builder\Plugin\SectionStorage\OverridesSectionStorage;
+ use Drupal\layout_builder\SectionStorage\SectionStorageManagerInterface;
+@@ -23,6 +24,7 @@ class LayoutOverrideFieldHelper implements ContainerInjectionInterface {
+   public function __construct(
+     protected SectionStorageManagerInterface $sectionStorageManager,
+     protected LayoutTempstoreRepositoryInterface $layoutTempstoreRepository,
++    protected EntityTypeManagerInterface $entityTypeManager,
+   ) {
+   }
+ 
+@@ -33,6 +35,7 @@ class LayoutOverrideFieldHelper implements ContainerInjectionInterface {
+     return new static(
+       $container->get('plugin.manager.layout_builder.section_storage'),
+       $container->get('layout_builder.tempstore_repository'),
++      $container->get('entity_type.manager'),
+     );
+   }
+ 
+diff --git a/core/modules/views/config/schema/views.area.schema.yml b/core/modules/views/config/schema/views.area.schema.yml
+index 6eb6d20..67a7175 100644
+--- a/core/modules/views/config/schema/views.area.schema.yml
++++ b/core/modules/views/config/schema/views.area.schema.yml
+@@ -51,6 +51,17 @@ views.area.result:
+       type: text
+       label: 'The shown text of the result summary area'
+ 
++views.area.result_plural:
++  type: views.area.result
++  label: 'Result plural'
++  mapping:
++    content_plural:
++      type: text
++      label: 'Text to use for the plural form'
++    plural_count_token:
++      type: text
++      label: 'Plural count token'
++
+ views.area.title:
+   type: views_area
+   label: 'Title'
+diff --git a/core/modules/views/src/Hook/ViewsViewsHooks.php b/core/modules/views/src/Hook/ViewsViewsHooks.php
+index 215c98a..699b886 100644
+--- a/core/modules/views/src/Hook/ViewsViewsHooks.php
++++ b/core/modules/views/src/Hook/ViewsViewsHooks.php
+@@ -88,6 +88,13 @@ class ViewsViewsHooks {
+         'id' => 'result',
+       ],
+     ];
++    $data['views']['result_plural'] = [
++      'title' => $this->t('Result summary (plural)'),
++      'help' => $this->t('Shows result summary, for example the items per page, with support for having singular and plural text depending on the number of results.'),
++      'area' => [
++        'id' => 'result_plural',
++      ],
++    ];
+     $data['views']['messages'] = [
+       'title' => $this->t('Messages'),
+       'help' => $this->t('Displays messages in an area.'),
+diff --git a/core/modules/views/src/Plugin/views/area/Result.php b/core/modules/views/src/Plugin/views/area/Result.php
+index 25475f6..d4c7e1f 100644
+--- a/core/modules/views/src/Plugin/views/area/Result.php
++++ b/core/modules/views/src/Plugin/views/area/Result.php
+@@ -74,13 +74,44 @@ class Result extends AreaPluginBase {
+       return [];
+     }
+     $output = '';
++    $replacements = $this->getReplacements();
+     $format = $this->options['content'];
++
++    // Send the output.
++    if (!empty($this->getTotal()) || !empty($this->options['empty'])) {
++      $output .= str_replace(array_keys($replacements), $replacements, $format);
++      // Return as render array.
++      return [
++        '#markup' => $output,
++      ];
++    }
++
++    return [];
++  }
++
++  /**
++   * Get the total number of results.
++   *
++   * @return int|null
++   *   Total number of results.
++   */
++  protected function getTotal(): ?int {
++    return $this->view->total_rows ?? count($this->view->result);
++  }
++
++  /**
++   * Calculate the replacement tokens.
++   *
++   * @return array
++   *   The token replacements.
++   */
++  protected function getReplacements(): array {
+     // Calculate the page totals.
+     $current_page = (int) $this->view->getCurrentPage() + 1;
+     $per_page = (int) $this->view->getItemsPerPage();
+     // @todo Maybe use a possible is views empty functionality.
+     // Not every view has total_rows set, use view->result instead.
+-    $total = $this->view->total_rows ?? count($this->view->result);
++    $total = $this->getTotal();
+     $label = Html::escape($this->view->storage->label());
+     // If there is no result the "start" and "current_record_count" should be
+     // equal to 0. To have the same calculation logic, we use a "start offset"
+@@ -111,16 +142,8 @@ class Result extends AreaPluginBase {
+     $replacements['@current_page'] = (string) $current_page;
+     $replacements['@current_record_count'] = (string) $current_record_count;
+     $replacements['@page_count'] = (string) $page_count;
+-    // Send the output.
+-    if (!empty($total) || !empty($this->options['empty'])) {
+-      $output .= str_replace(array_keys($replacements), $replacements, $format);
+-      // Return as render array.
+-      return [
+-        '#markup' => $output,
+-      ];
+-    }
+ 
+-    return [];
++    return $replacements;
+   }
+ 
+ }
+diff --git a/core/modules/views/src/Plugin/views/area/ResultPlural.php b/core/modules/views/src/Plugin/views/area/ResultPlural.php
+new file mode 100644
+index 0000000..855d0d9
+--- /dev/null
++++ b/core/modules/views/src/Plugin/views/area/ResultPlural.php
+@@ -0,0 +1,116 @@
++<?php
++
++namespace Drupal\views\Plugin\views\area;
++
++use Drupal\Component\Gettext\PoItem;
++use Drupal\Component\Utility\Xss;
++use Drupal\Core\Form\FormStateInterface;
++use Drupal\Core\StringTranslation\PluralTranslatableMarkup;
++use Drupal\views\Attribute\ViewsArea;
++use Drupal\views\Plugin\views\style\DefaultSummary;
++
++/**
++ * Views area handler to display result summary handling plural.
++ *
++ * @ingroup views_area_handlers
++ */
++#[ViewsArea("result_plural")]
++class ResultPlural extends Result {
++
++  /**
++   * {@inheritdoc}
++   */
++  protected function defineOptions() {
++    $options = parent::defineOptions();
++
++    $options['content_plural'] = [
++      'default' => $this->t('Displaying @start - @end of @total'),
++    ];
++    $options['plural_count_token'] = ['default' => '@total'];
++
++    return $options;
++  }
++
++  /**
++   * {@inheritdoc}
++   */
++  public function buildOptionsForm(&$form, FormStateInterface $form_state) {
++    parent::buildOptionsForm($form, $form_state);
++    $format_plural_count_options = [
++      '@start',
++      '@end',
++      '@total',
++      '@label',
++      '@per_page',
++      '@current_page',
++      '@current_record_count',
++      '@page_count',
++    ];
++    $description = $form['content']['#description'];
++
++    // Overrides parent plugin form.
++    unset($form['content']['#description']);
++    $form['content']['#title'] = $this->t('Singular form');
++    $form['content']['#weight'] = 5;
++
++    $form['plural_count_token'] = [
++      '#type' => 'select',
++      '#title' => $this->t('Count token'),
++      '#description' => $this->t('Token used to detect plurality. If the token value is more than one, the "Plural form" textarea will be used.'),
++      '#default_value' => ($this->options['plural_count_token'] ?? ''),
++      '#options' => array_combine($format_plural_count_options, $format_plural_count_options),
++    ];
++    $form['content_plural'] = [
++      '#type' => 'textarea',
++      '#title' => $this->t('Plural form'),
++      '#description' => $description,
++      '#default_value' => $this->options['content_plural'],
++      '#weight' => 10,
++      '#rows' => 3,
++    ];
++  }
++
++  /**
++   * {@inheritdoc}
++   */
++  public function query() {
++    parent::query();
++    if (str_contains($this->options['content_plural'], '@total')) {
++      $this->view->get_total_rows = TRUE;
++    }
++  }
++
++  /**
++   * {@inheritdoc}
++   */
++  public function render($empty = FALSE) {
++    // Must have options and does not work on summaries.
++    if (!isset($this->options['content']) || !isset($this->options['content_plural']) || !isset($this->options['plural_count_token']) || $this->view->style_plugin instanceof DefaultSummary) {
++      return [];
++    }
++    $output = '';
++    $replacements = $this->getReplacements();
++    $format = PluralTranslatableMarkup::createFromTranslatedString(
++      (int) $replacements[$this->options['plural_count_token']],
++      implode(
++        PoItem::DELIMITER,
++        [
++          $this->options['content'],
++          $this->options['content_plural'],
++        ]
++      )
++    );
++
++    // Send the output.
++    if (!empty($this->getTotal()) || !empty($this->options['empty'])) {
++      $output .= Xss::filterAdmin(str_replace(array_keys($replacements), $replacements, (string) $format));
++      // Return as render array.
++      return [
++        '#markup' => $output,
++      ];
++    }
++
++    return [];
++  }
++
++}
+diff --git a/core/modules/views/tests/modules/views_test_config/test_views/views.view.test_area_result_plural.yml b/core/modules/views/tests/modules/views_test_config/test_views/views.view.test_area_result_plural.yml
+new file mode 100644
+index 0000000..c824ed8
+--- /dev/null
++++ b/core/modules/views/tests/modules/views_test_config/test_views/views.view.test_area_result_plural.yml
+@@ -0,0 +1,82 @@
++langcode: en
++status: true
++dependencies: { }
++id: test_area_result_plural
++label: test_area_result_plural
++module: views
++description: ''
++tag: ''
++base_table: views_test_data
++base_field: nid
++display:
++  default:
++    display_options:
++      defaults:
++        fields: false
++        pager: false
++        sorts: false
++      fields:
++        id:
++          field: id
++          id: id
++          relationship: none
++          table: views_test_data
++          plugin_id: numeric
++      pager:
++        options:
++          offset: 0
++        type: none
++      sorts:
++        id:
++          field: id
++          id: id
++          order: ASC
++          relationship: none
++          table: views_test_data
++          plugin_id: numeric
++      empty:
++        title:
++          field: title
++          id: title
++          table: views
++          plugin_id: title
++          title: test_title_empty
++      header:
++        result_plural:
++          id: result_plural
++          table: views
++          field: result_plural
++          relationship: none
++          group_type: group
++          admin_label: ''
++          empty: true
++          content: "SINGULAR start: @start | end: @end | total: @total | label: @label | per page: @per_page | current page: @current_page | current record count: @current_record_count | page count: @page_count"
++          content_plural: 'PLURAL start: @start | end: @end | total: @total | label: @label | per page: @per_page | current page: @current_page | current record count: @current_record_count | page count: @page_count'
++          plural_count_token: '@start'
++          plugin_id: result_plural
++    display_plugin: default
++    display_title: Master
++    id: default
++    position: 0
++  page_1:
++    display_options:
++      path: test-area-result-plural
++      defaults:
++        header: false
++      header:
++        result_plural:
++          id: result_plural
++          table: views
++          field: result_plural
++          relationship: none
++          group_type: group
++          admin_label: ''
++          empty: false
++          content: "SINGULAR start: @start | end: @end | total: @total | label: @label | per page: @per_page | current page: @current_page | current record count: @current_record_count | page count: @page_count"
++          content_plural: 'PLURAL start: @start | end: @end | total: @total | label: @label | per page: @per_page | current page: @current_page | current record count: @current_record_count | page count: @page_count'
++          plural_count_token: '@start'
++          plugin_id: result_plural
++    display_plugin: page
++    display_title: 'Page 1'
++    id: page_1
++    position: 1
+diff --git a/core/modules/views/tests/src/Kernel/Handler/AreaResultPluralTest.php b/core/modules/views/tests/src/Kernel/Handler/AreaResultPluralTest.php
+new file mode 100644
+index 0000000..773d874
+--- /dev/null
++++ b/core/modules/views/tests/src/Kernel/Handler/AreaResultPluralTest.php
+@@ -0,0 +1,82 @@
++<?php
++
++declare(strict_types=1);
++
++namespace Drupal\Tests\views\Kernel\Handler;
++
++use Drupal\Tests\views\Kernel\ViewsKernelTestBase;
++use Drupal\views\Views;
++use PHPUnit\Framework\Attributes\Group;
++use PHPUnit\Framework\Attributes\RunTestsInSeparateProcesses;
++
++/**
++ * Tests the result plural area handler.
++ *
++ * @see \Drupal\views\Plugin\views\area\Result
++ */
++#[Group('views')]
++#[RunTestsInSeparateProcesses]
++class AreaResultPluralTest extends ViewsKernelTestBase {
++
++  /**
++   * {@inheritdoc}
++   */
++  public static $testViews = [
++    'test_area_result_plural',
++  ];
++
++  /**
++   * Tests that the singular text is displayed.
++   */
++  public function testResult(): void {
++    $view = Views::getView('test_area_result_plural');
++    $view->setDisplay('default');
++    $this->executeView($view);
++    $output = $view->render();
++    $output = \Drupal::service('renderer')->renderRoot($output);
++    $this->setRawContent($output);
++    $this->assertText('SINGULAR start: 1 | end: 5 | total: 5 | label: test_area_result_plural | per page: 0 | current page: 1 | current record count: 5 | page count: 1');
++  }
++
++  /**
++   * Tests that the plural text is displayed.
++   */
++  public function testResultEmpty(): void {
++    $view = Views::getView('test_area_result_plural');
++
++    // Test that the area is displayed if we have checked the empty checkbox.
++    $view->setDisplay('default');
++
++    // Add a filter that will make the result set empty.
++    $view->displayHandlers->get('default')->overrideOption('filters', [
++      'name' => [
++        'id' => 'name',
++        'table' => 'views_test_data',
++        'field' => 'name',
++        'relationship' => 'none',
++        'operator' => '=',
++        'value' => 'non-existing-name',
++      ],
++    ]);
++
++    $this->executeView($view);
++    $output = $view->render();
++    $output = \Drupal::service('renderer')->renderRoot($output);
++    $this->setRawContent($output);
++    $this->assertText('PLURAL start: 0 | end: 0 | total: 0 | label: test_area_result_plural | per page: 0 | current page: 1 | current record count: 0 | page count: 1');
++    $this->assertRaw('<header>');
++
++    // Test that the area is not displayed if we have not checked the empty
++    // checkbox.
++    $view->setDisplay('page_1');
++
++    $this->executeView($view);
++    $output = $view->render();
++    $output = \Drupal::service('renderer')->renderRoot($output);
++    $this->setRawContent($output);
++    $this->assertNoText('PLURAL start: 0 | end: 0 | total: 0 | label: test_area_result_plural | per page: 0 | current page: 1 | current record count: 0 | page count: 1');
++    // Make sure the empty header region isn't rendered.
++    $this->assertNoRaw('<header>');
++  }
++
++}
