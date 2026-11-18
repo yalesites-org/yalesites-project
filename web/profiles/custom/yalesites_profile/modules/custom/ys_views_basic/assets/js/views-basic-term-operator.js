@@ -29,14 +29,17 @@
  */
 
 (function (Drupal, once, $) {
-  // Pairs each multi-select with the operator it disables/enables.
+  // Pairs each multi-select with the operator it disables/enables. The suffix
+  // has no leading bracket: in Layout Builder the name is
+  // settings[...][terms_include][], but on the full-page reusable block form
+  // it is a bare terms_include[] (#2277).
   const REVEALS = [
     {
-      selectSuffix: '[terms_include][]',
+      selectSuffix: 'terms_include[]',
       operatorClass: 'vb-term-operator--include',
     },
     {
-      selectSuffix: '[terms_exclude][]',
+      selectSuffix: 'terms_exclude[]',
       operatorClass: 'vb-term-operator--exclude',
     },
   ];
