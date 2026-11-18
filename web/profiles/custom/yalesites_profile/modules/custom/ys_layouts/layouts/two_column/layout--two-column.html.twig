@@ -14,9 +14,11 @@
 {#
   Render only the regions that have content, as before the yds-layout move.
   An always-drawn empty region leaves a blank band (both empty) or squeezes the
-  other column (one empty).
+  other column (one empty). A colored (non-default theme) section is the
+  exception: it renders even when empty so the color band shows, as on live.
 #}
-{% if content.content or content.sidebar %}
+{% set section_theme = settings.theme|default('default') %}
+{% if content.content or content.sidebar or section_theme != 'default' %}
   {% if in_preview %}
     <div {{ attributes}}>
   {% endif %}
@@ -24,7 +26,7 @@
     component__layout: 'seventy-thirty',
     layout__padding: settings.padding|default('default'),
     layout__divider: settings.divider ? 'true' : 'false',
-    component__theme: settings.theme|default('default'),
+    component__theme: section_theme,
     layout__has_primary: content.content is not empty,
     layout__has_secondary: content.sidebar is not empty,
   } %}
