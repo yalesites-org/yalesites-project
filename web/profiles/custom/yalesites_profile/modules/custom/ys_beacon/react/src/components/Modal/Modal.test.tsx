@@ -1,5 +1,5 @@
 import { describe, it, expect, beforeEach, afterEach, vi } from "vitest";
-import { render, screen, within } from "@testing-library/react";
+import { render, screen, waitFor, within } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import Modal from "./Modal";
 
@@ -119,6 +119,188 @@ describe("Modal focus management", () => {
     second.unmount();
     expect(firstSection?.hasAttribute("inert")).toBe(false);
     first.unmount();
+  });
+
+  it("focuses the dialog beneath, not <body>, when the stacked modal's opener is gone on close", () => {
+    const first = render(
+      <Modal show close={vi.fn()} header={<span>Chat</span>} footer={null} variant="" ariaLabel="Beacon chat">
+        <button type="button">Citation 1</button>
+      </Modal>
+    );
+    const firstSection = screen.getByRole("dialog", { name: "Beacon chat" });
+    const opener = screen.getByRole("button", { name: "Citation 1" });
+    opener.focus();
+
+    const second = render(
+      <Modal show close={vi.fn()} header={<span>Citations</span>} footer={null} variant="citation" ariaLabel="Citations">
+        <p>Citation body</p>
+      </Modal>
+    );
+    // The opener re-renders away while the overlay is open.
+    opener.remove();
+
+    second.unmount();
+
+    expect(firstSection).toHaveFocus();
+    first.unmount();
+  });
+});
+
+// YaleSites-Internal#1945: Tab and Shift+Tab must cycle only through the
+// dialog's controls, whatever currently has focus (WCAG 2.4.3 / 2.1.2).
+describe("Modal focus trap (#1945)", () => {
+  const renderWithControls = () =>
+    render(
+      <Modal show close={vi.fn()} header={<span>Header</span>} footer={<a href="/privacy">Privacy</a>} variant="" ariaLabel="Beacon chat">
+        <button type="button">Prompt one</button>
+        <button type="button" disabled>Disabled</button>
+        <textarea aria-label="Ask a question" />
+      </Modal>
+    );
+
+  // A page control outside the dialog, before the widget host in DOM order, so
+  // a Tab that escapes the dialog has somewhere to land.
+  let outside: HTMLButtonElement;
+  beforeEach(() => {
+    outside = document.createElement("button");
+    outside.textContent = "Page control";
+    document.body.insertBefore(outside, document.body.firstChild);
+  });
+  afterEach(() => outside.remove());
+
+  const controls = () => [
+    screen.getByRole("button", { name: /close modal/i }),
+    screen.getByRole("button", { name: "Prompt one" }),
+    screen.getByRole("textbox", { name: "Ask a question" }),
+    screen.getByRole("link", { name: "Privacy" }),
+  ];
+
+  it("cycles forward through the dialog's controls and wraps from the last to the first", async () => {
+    const user = userEvent.setup();
+    renderWithControls();
+    const [close, prompt, input, privacy] = controls();
+
+    const visited: Element[] = [];
+    for (let i = 0; i < 8; i++) {
+      await user.tab();
+      visited.push(document.activeElement as Element);
+    }
+
+    expect(visited).toEqual([close, prompt, input, privacy, close, prompt, input, privacy]);
+  });
+
+  it("cycles backward with Shift+Tab and wraps from the first to the last", async () => {
+    const user = userEvent.setup();
+    renderWithControls();
+    const [close, prompt, input, privacy] = controls();
+    close.focus();
+
+    const visited: Element[] = [];
+    for (let i = 0; i < 5; i++) {
+      await user.tab({ shift: true });
+      visited.push(document.activeElement as Element);
+    }
+
+    expect(visited).toEqual([privacy, input, prompt, close, privacy]);
+  });
+
+  it("moves Shift+Tab from the dialog itself to its last control, not out of the dialog", async () => {
+    const user = userEvent.setup();
+    renderWithControls();
+    // The dialog takes focus when it opens.
+    expect(screen.getByRole("dialog")).toHaveFocus();
+
+    await user.tab({ shift: true });
+
+    expect(screen.getByRole("link", { name: "Privacy" })).toHaveFocus();
+  });
+
+  it("keeps the dialog container itself out of the tab order", () => {
+    renderWithControls();
+
+    expect(screen.getByRole("dialog").getAttribute("tabindex")).toBe("-1");
+  });
+
+  it("pulls focus back into the dialog when Tab is pressed with focus outside it", async () => {
+    const user = userEvent.setup();
+    renderWithControls();
+    const [close, , , privacy] = controls();
+
+    (document.activeElement as HTMLElement).blur();
+    expect(document.body).toHaveFocus();
+    await user.tab();
+    expect(close).toHaveFocus();
+
+    outside.focus();
+    await user.tab({ shift: true });
+    expect(privacy).toHaveFocus();
+  });
+
+  it("puts focus back on the dialog when the focused control drops it", async () => {
+    renderWithControls();
+    const prompt = screen.getByRole("button", { name: "Prompt one" });
+    prompt.focus();
+
+    // What a browser does when the focused control is disabled or removed.
+    prompt.blur();
+    expect(document.body).toHaveFocus();
+
+    await waitFor(() => expect(screen.getByRole("dialog")).toHaveFocus());
+  });
+
+  it("skips controls removed from the tab order with tabindex=-1", async () => {
+    const user = userEvent.setup();
+    render(
+      <Modal show close={vi.fn()} header={<span>Header</span>} footer={<a href="/hidden" tabIndex={-1}>Hidden</a>} variant="" ariaLabel="Beacon chat">
+        <a href="/privacy">Privacy</a>
+      </Modal>
+    );
+
+    await user.tab({ shift: true });
+
+    expect(screen.getByRole("link", { name: "Privacy" })).toHaveFocus();
+  });
+
+  it("leaves Tab handling to the top dialog when another modal is stacked on it", async () => {
+    const user = userEvent.setup();
+    renderWithControls();
+    render(
+      <Modal show close={vi.fn()} header={<span>Citations</span>} footer={null} variant="citation" ariaLabel="Citations">
+        <a href="/source">Source</a>
+      </Modal>
+    );
+    const citations = screen.getByRole("dialog", { name: "Citations" });
+    const citationClose = within(citations).getByRole("button", { name: /close modal/i });
+    const source = within(citations).getByRole("link", { name: "Source" });
+
+    await user.tab();
+    expect(citationClose).toHaveFocus();
+    await user.tab();
+    expect(source).toHaveFocus();
+    await user.tab();
+    expect(citationClose).toHaveFocus();
+  });
+});
+
+describe("Modal restoreFocus (#1945)", () => {
+  it("leaves focus alone on close when the parent restores it", () => {
+    const opener = document.createElement("button");
+    opener.textContent = "Open";
+    document.body.appendChild(opener);
+    opener.focus();
+
+    try {
+      const { unmount } = render(
+        <Modal show close={vi.fn()} header={<span>Header</span>} footer={null} variant="" ariaLabel="Beacon chat" restoreFocus={false}>
+          <p>Chat body</p>
+        </Modal>
+      );
+      unmount();
+
+      expect(opener).not.toHaveFocus();
+    } finally {
+      opener.remove();
+    }
   });
 });
 

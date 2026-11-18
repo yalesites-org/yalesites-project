@@ -45,6 +45,25 @@ class BeaconIndexManager {
   public const MAX_INDEXES = 50;
 
   /**
+   * Seconds to wait for an Azure AI Search response.
+   *
+   * Tighter than the platform-wide default because provisioning runs inside an
+   * admin request: these are small management-API calls against a service in
+   * the same region, so anything slower is a fault rather than a slow success.
+   */
+  public const REQUEST_TIMEOUT = 15;
+
+  /**
+   * Seconds to wait for the connection itself.
+   *
+   * Tighter than the platform-wide default for the same same-region reason as
+   * REQUEST_TIMEOUT: opening a connection to the search service should be
+   * effectively instant, so a slow handshake is a fault worth surfacing to the
+   * admin quickly rather than waiting out.
+   */
+  public const CONNECT_TIMEOUT = 5;
+
+  /**
    * Request-scoped cache of the per-site key, computed once by getSiteId().
    */
   protected ?string $siteId = NULL;
@@ -730,7 +749,8 @@ class BeaconIndexManager {
         'api-key' => $api_key,
       ],
       'query' => ['api-version' => $api_version ?: '2023-11-01'],
-      'timeout' => 15,
+      'timeout' => self::REQUEST_TIMEOUT,
+      'connect_timeout' => self::CONNECT_TIMEOUT,
     ];
     if ($json !== NULL) {
       $options['json'] = $json;

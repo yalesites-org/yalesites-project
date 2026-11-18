@@ -1,0 +1,16 @@
+#!/usr/bin/env bash
+
+## Description: Run PHPUnit tests
+## Usage: phpunit [flags] [args]
+## Example: "ddev phpunit" or "ddev phpunit web/profiles/custom/yalesites_profile/modules/custom/ys_embed/tests"
+## ProjectTypes: drupal,drupal8,drupal9,drupal10,drupal11
+## ExecRaw: true
+
+# phpunit.xml ships SIMPLETEST_DB and SIMPLETEST_BASE_URL as empty <env> values.
+# PHPUnit does not override a real environment variable with an empty one, so
+# setting them here lets kernel and functional tests run. Without SIMPLETEST_DB
+# every kernel test errors with "There is no database connection".
+export SIMPLETEST_DB="${SIMPLETEST_DB:-mysql://db:db@db/db}"
+export SIMPLETEST_BASE_URL="${SIMPLETEST_BASE_URL:-$DDEV_PRIMARY_URL}"
+
+php /var/www/html/vendor/bin/phpunit -c /var/www/html/phpunit.xml "$@"

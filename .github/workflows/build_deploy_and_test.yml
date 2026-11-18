@@ -11,7 +11,7 @@ concurrency:
 
 jobs:
   static_tests:
-    name: Test
+    name: Lint and Unit tests
     runs-on: ubuntu-26.04
     env:
       YALESITES_BUILD_TOKEN: ${{ secrets.YALESITES_BUILD_TOKEN }}

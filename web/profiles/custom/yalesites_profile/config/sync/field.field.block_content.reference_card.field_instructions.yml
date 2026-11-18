@@ -20,6 +20,6 @@ default_value:
 default_value_callback: ''
 settings:
   markup:
-    value: '<p>Select an existing Post, Event, or Profile to display a single card.</p>'
+    value: '<p>Select an existing Page, Post, Event, Profile, or Resource to display a single card.</p>'
     format: basic_html
 field_type: markup

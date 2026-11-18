@@ -1,0 +1,4 @@
+ys_views_wizard:
+  css:
+    theme:
+      assets/css/views-wizard.css: {}

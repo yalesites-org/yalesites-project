@@ -110,6 +110,8 @@ lando ssh -c "env SIMPLETEST_DB=mysql://pantheon:pantheon@database/pantheon \
 
 Add `--testdox` for readable output. Unit-only tests (no database) can also be run with the shorthand `lando phpunit web/profiles/custom/yalesites_profile/modules/custom/ys_migrate/tests`.
 
+`tests/fixtures/profile-import-sample.csv` is a sample Profile CSV that is uploaded by hand through the Profile CSV import form when testing the importer. No production code reads it, so `ProfileImportSampleFixtureTest` pins its header row to `CsvValidatorService::EXPECTED_COLUMNS` — if the importer's columns change, that test fails rather than letting the sample go quietly stale.
+
 The `ys_migrate_onha`, `ys_migrate_sustainability_news`, and `ys_migrate_whc` submodules each have their own tests, under their own `tests/src/Unit/` directories, covering their migrate process/source plugins. Run each the same way, substituting its own `tests` path, e.g.:
 
 ```bash

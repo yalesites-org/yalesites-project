@@ -11,6 +11,7 @@ use Drupal\Tests\UnitTestCase;
 use Drupal\ys_ai_tester\AnswerBackendRegistry;
 use Drupal\ys_ai_tester\Controller\AiTesterController;
 use Drupal\ys_ai_tester\RunComparator;
+use Drupal\ys_ai_tester\RunExporter;
 use Symfony\Component\DependencyInjection\ContainerBuilder;
 
 /**
@@ -117,6 +118,7 @@ class AiTesterRunRenderTest extends UnitTestCase {
       $date_formatter,
       $this->createMock(RunComparator::class),
       $registry,
+      $this->createMock(RunExporter::class),
     );
   }
 
@@ -239,7 +241,7 @@ class AiTesterRunRenderTest extends UnitTestCase {
 
     $this->assertSame('empty', $results['#tabs'][0]['status']);
     $content = $results['#panels'][0]['sides'][0]['content'];
-    $this->assertStringContainsString('Empty answer', (string) $content['meta']['#markup']);
+    $this->assertStringContainsString('Empty answer', (string) $content['meta']['#value']);
   }
 
   /**
@@ -312,7 +314,7 @@ class AiTesterRunRenderTest extends UnitTestCase {
     ]);
 
     $content = $controller->run(3)['results']['#panels'][0]['sides'][0]['content'];
-    $meta = (string) $content['meta']['#markup'];
+    $meta = (string) $content['meta']['#value'];
 
     $this->assertStringContainsString('Operation timed out', $meta);
     $this->assertStringNotContainsString('No answer', $meta);
@@ -331,7 +333,7 @@ class AiTesterRunRenderTest extends UnitTestCase {
 
     $content = $controller->run(3)['results']['#panels'][0]['sides'][0]['content'];
 
-    $this->assertStringContainsString('Empty answer', (string) $content['meta']['#markup']);
+    $this->assertStringContainsString('Empty answer', (string) $content['meta']['#value']);
   }
 
   /**
@@ -360,11 +362,16 @@ class AiTesterRunRenderTest extends UnitTestCase {
     // substring check for the cited case passes even when every source is
     // uncited, and json_encode() flattens the link's #url to {} so it cannot
     // tell citationLink()'s link branch from its plain-text fallback either.
+    // The title is #plain_text, which is what keeps a source title escaped now
+    // that the link text is a render array rather than a markup string.
     $this->assertCount(2, $items);
-    $this->assertStringContainsString('Request Beacon', (string) $items[0]['link']['#title']);
-    $this->assertSame(' — <em>cited</em>', $items[0]['flag']['#markup']);
-    $this->assertStringContainsString('Office Hours', (string) $items[1]['link']['#title']);
-    $this->assertSame(' — <em>retrieved, not cited</em>', $items[1]['flag']['#markup']);
+    $this->assertSame('ys_ai_tester_citation', $items[0]['#theme']);
+    $this->assertSame('Request Beacon', $items[0]['#link']['#title']['text']['#plain_text']);
+    $this->assertSame('cited', (string) $items[0]['#flag']);
+    $this->assertSame('Office Hours', $items[1]['#link']['#title']['text']['#plain_text']);
+    $this->assertSame('retrieved, not cited', (string) $items[1]['#flag']);
+    // No other run to be unique against on a single-run page.
+    $this->assertFalse($items[0]['#only_here']);
   }
 
   /**
@@ -422,7 +429,7 @@ class AiTesterRunRenderTest extends UnitTestCase {
       $this->resultRow('Injected?', '<script>alert(1)</script>'),
     ]);
 
-    $answer = (string) $controller->run(3)['results']['#panels'][0]['sides'][0]['content']['answer']['#markup'];
+    $answer = (string) $controller->run(3)['results']['#panels'][0]['sides'][0]['content']['answer']['#value'];
 
     $this->assertStringNotContainsString('<script>', $answer);
     $this->assertStringContainsString('&lt;script&gt;', $answer);
@@ -460,11 +467,18 @@ class AiTesterRunRenderTest extends UnitTestCase {
 
     $build = $controller->run(3);
 
-    $meta = (string) $build['meta']['#markup'];
-    $this->assertStringContainsString('Run #3', $meta);
-    $this->assertStringContainsString('run-1-questions.txt', $meta);
-    $this->assertStringContainsString('Beacon', $meta);
-    $this->assertStringContainsString('complete', $meta);
+    // The header is a themed element, so the variables handed to the template
+    // are what there is to assert on; the sentence lives in the template.
+    $meta = $build['meta'];
+    $this->assertSame('ys_ai_tester_run_summary', $meta['#theme']);
+    $this->assertSame(3, $meta['#id']);
+    $this->assertSame('run-1-questions.txt', $meta['#file']);
+    $this->assertSame('Beacon', $meta['#backend']);
+    $this->assertSame('complete', $meta['#status']);
+    // The single-run header is its own theme hook, not a variant of the
+    // comparison's: it states one run on one line and carries no label or host.
+    $this->assertArrayNotHasKey('#label', $meta);
+    $this->assertArrayNotHasKey('#host', $meta);
 
     foreach (['json', 'csv', 'questions'] as $key) {
       $this->assertSame('link', $build['downloads'][$key]['#type']);

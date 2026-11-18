@@ -31,7 +31,7 @@ use Drupal\layout_builder\Section;
  * See the module README for the operator-facing description and the full list
  * of safety guarantees.
  */
-class OrphanedInlineBlockCleaner implements OrphanedInlineBlockCleanerInterface {
+class OrphanedInlineBlockCleaner {
 
   /**
    * How many entities to load, or blocks to delete, at a time.
@@ -68,7 +68,15 @@ class OrphanedInlineBlockCleaner implements OrphanedInlineBlockCleanerInterface 
   ) {}
 
   /**
-   * {@inheritdoc}
+   * Analyses every layout on the site for unreferenced inline blocks.
+   *
+   * @return array
+   *   An associative array with two keys, each a sorted list of block_content
+   *   entity IDs:
+   *   - orphans: referenced by no layout at all. Safe to delete.
+   *   - revision_only: referenced only by a non-default entity revision, never
+   *     by a current layout. Reported for review but never deleted, because
+   *     rolling that revision back would make the block live again.
    */
   public function analyze(): array {
     [$referenced_anywhere, $referenced_currently] = $this->collectReferencedRevisionIds();
@@ -94,7 +102,14 @@ class OrphanedInlineBlockCleaner implements OrphanedInlineBlockCleanerInterface 
   }
 
   /**
-   * {@inheritdoc}
+   * Deletes every orphan found by a fresh analysis.
+   *
+   * This deliberately takes no ID list. Deriving the orphans here is what makes
+   * deleting a block that is still on a page structurally impossible, rather
+   * than something a caller has to be trusted not to ask for.
+   *
+   * @return int
+   *   The number of blocks deleted.
    */
   public function deleteOrphans(): int {
     $orphans = $this->analyze()['orphans'];

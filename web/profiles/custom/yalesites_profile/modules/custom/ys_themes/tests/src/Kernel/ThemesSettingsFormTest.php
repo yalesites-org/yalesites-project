@@ -162,4 +162,71 @@ class ThemesSettingsFormTest extends YsKernelTestBase {
     $this->assertSame('<current>', $redirect->getRouteName());
   }
 
+  /**
+   * The form hands the browser every palette's colors and its cache tag.
+   *
+   * The browser re-tints the palette-following swatches from this payload when
+   * a different palette is picked; without it the chips would keep showing the
+   * saved palette's colors while the page previews another one. The cache tag
+   * is what keeps a cached render of the form from showing the old palette's
+   * chips after a save.
+   *
+   * @covers ::buildForm
+   */
+  public function testBuildFormAttachesPaletteColorsAndTheConfigCacheTag(): void {
+    $form = $this->form->buildForm([], new FormState());
+
+    $this->assertContains('ys_themes/levers', $form['#attached']['library']);
+    $this->assertContains('config:ys_themes.theme_settings', $form['#cache']['tags']);
+
+    $palette_colors = $form['#attached']['drupalSettings']['ysThemes']['paletteColors'] ?? [];
+    $this->assertNotEmpty($palette_colors, 'The palette color map reached drupalSettings.');
+    foreach ($palette_colors as $slots) {
+      foreach ($slots as $slot => $hex) {
+        $this->assertMatchesRegularExpression('/^slot-[a-z]+$/', $slot);
+        $this->assertMatchesRegularExpression('/^#[0-9a-f]{6}$/', $hex);
+      }
+    }
+  }
+
+  /**
+   * Only the component settings' swatches are flagged to follow the palette.
+   *
+   * That flag is the sole thing stopping levers.js from re-tinting the palette
+   * radios into seven identical rows when a palette is picked, and a typo in it
+   * would fail silently, so it is pinned here rather than left to the browser.
+   */
+  public function testSwatchesFollowPaletteOnlyForTheComponentSettings(): void {
+    $variables = [
+      'name' => 'global_theme',
+      'element' => [
+        '#return_value' => 'one',
+        '#formdazzle' => ['form_id' => 'ys_themes_settings_form'],
+      ],
+    ];
+    ys_themes_preprocess_form_element($variables);
+    $this->assertFalse($variables['label']['#context']['swatches_follow_palette']);
+    $this->assertNotEmpty($variables['label']['#context']['swatches']);
+
+    $variables['name'] = 'header_theme';
+    ys_themes_preprocess_form_element($variables);
+    $this->assertTrue($variables['label']['#context']['swatches_follow_palette']);
+    $this->assertNotEmpty($variables['label']['#context']['swatches']);
+  }
+
+  /**
+   * A form element from any other form is left alone.
+   */
+  public function testPreprocessIgnoresElementsFromOtherForms(): void {
+    $variables = [
+      'name' => 'global_theme',
+      'element' => [
+        '#return_value' => 'one',
+        '#formdazzle' => ['form_id' => 'some_other_form'],
+      ],
+    ];
+    ys_themes_preprocess_form_element($variables);
+    $this->assertArrayNotHasKey('label', $variables);
+  }
+
 }

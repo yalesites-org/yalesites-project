@@ -21,6 +21,16 @@ services:
     arguments:
       - '@database'
 
+  # Builds the body of every downloadable artefact — a run's results as JSON or
+  # CSV, its question list, and a comparison as JSON or CSV. Kept out of the
+  # controller so an export can be asserted on without going through a
+  # Response; the controller supplies only the HTTP envelope.
+  ys_ai_tester.run_exporter:
+    class: Drupal\ys_ai_tester\RunExporter
+    arguments:
+      - '@database'
+      - '@ys_ai_tester.run_comparator'
+
   # Collects every tagged assistant. A backend disappears with the module that
   # provides it, so uninstalling a backend submodule removes the option without
   # the tester core ever referencing that submodule.

@@ -3,8 +3,11 @@
 namespace Drupal\ys_embed\Plugin;
 
 use Drupal\Component\Plugin\PluginBase;
+use Drupal\Component\Utility\Html;
+use Drupal\Component\Utility\Xss;
 use Drupal\Core\Config\ConfigFactoryInterface;
 use Drupal\Core\Plugin\ContainerFactoryPluginInterface;
+use Drupal\Core\Render\Markup;
 use Symfony\Component\DependencyInjection\ContainerInterface;
 
 /**
@@ -77,6 +80,25 @@ abstract class EmbedSourceBase extends PluginBase implements EmbedSourceInterfac
   ];
 
   /**
+   * The param that holds provider markup printed into the template, if any.
+   *
+   * When set, isValid() rejects embed code whose captured markup carries
+   * script tags or event handler attributes, and build() filters the stored
+   * value through Xss::filter() with $allowedTags before it reaches the
+   * template. The template must print it without the raw filter.
+   *
+   * @var string|null
+   */
+  protected static $markupParam = NULL;
+
+  /**
+   * HTML tags kept in $markupParam when the markup is filtered for output.
+   *
+   * @var string[]
+   */
+  protected static $allowedTags = [];
+
+  /**
    * The accessible title to use when the editor leaves Title blank.
    *
    * @var string
@@ -134,7 +156,60 @@ abstract class EmbedSourceBase extends PluginBase implements EmbedSourceInterfac
    * {@inheritdoc}
    */
   public static function isValid(?string $input): bool {
-    return !empty(preg_match(static::$pattern, $input, $matches));
+    if (empty(preg_match(static::$pattern, $input ?? '', $matches))) {
+      return FALSE;
+    }
+    if (static::$markupParam !== NULL) {
+      return !static::containsUnsafeMarkup($matches[static::$markupParam] ?? '');
+    }
+    return TRUE;
+  }
+
+  /**
+   * Checks markup for script tags or event handler attributes.
+   *
+   * @param string $markup
+   *   The markup captured from the embed code.
+   *
+   * @return bool
+   *   TRUE if the markup contains a script tag or an on* attribute.
+   */
+  protected static function containsUnsafeMarkup(string $markup): bool {
+    // Cheap fallback for a script tag the parser might hide, such as one
+    // inside a comment or in malformed markup.
+    if (preg_match('/<\s*script\b/i', $markup)) {
+      return TRUE;
+    }
+    // Parse rather than regex-scan tags, so a quoted attribute value that
+    // contains ">" cannot hide an on* attribute that follows it.
+    $xpath = new \DOMXPath(Html::load($markup));
+    foreach ($xpath->query('//*') as $element) {
+      if (strtolower($element->nodeName) === 'script') {
+        return TRUE;
+      }
+      foreach ($element->attributes as $attribute) {
+        if (stripos($attribute->nodeName, 'on') === 0) {
+          return TRUE;
+        }
+      }
+    }
+    return FALSE;
+  }
+
+  /**
+   * Filters provider markup down to the tags the provider's embed needs.
+   *
+   * Html::normalize() closes any tag the stored markup leaves open, so an
+   * unclosed element cannot wrap page content that follows the embed.
+   *
+   * @param string $markup
+   *   The stored provider markup.
+   *
+   * @return \Drupal\Core\Render\Markup
+   *   The filtered markup, safe to print without the raw filter.
+   */
+  protected static function filterMarkup(string $markup): Markup {
+    return Markup::create(Html::normalize(Xss::filter($markup, static::$allowedTags)));
   }
 
   /**
@@ -170,6 +245,11 @@ abstract class EmbedSourceBase extends PluginBase implements EmbedSourceInterfac
    * {@inheritdoc}
    */
   public function build(array $params): array {
+    $markupParam = static::$markupParam;
+    if ($markupParam !== NULL && isset($params[$markupParam])) {
+      $params[$markupParam] = static::filterMarkup((string) $params[$markupParam]);
+    }
+
     $isIframe = $this->isIframe();
     $displayAttributes = static::$displayAttributes ?? [];
     if (!isset($displayAttributes['isIframe'])) {

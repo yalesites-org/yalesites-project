@@ -127,6 +127,17 @@ class BeaconAzureAiSearchProvider extends AzureAiSearchProvider {
 
   /**
    * {@inheritdoc}
+   *
+   * TRUE when Beacon's key map secret is configured; the contrib api_key is
+   * blank. Per-endpoint resolution stays in getClient(), so an endpoint with no
+   * key still fails isAvailable() via ping() but stays editable on the form.
+   */
+  public function isSetup(): bool {
+    return $this->beaconCredentials->hasKeyMap();
+  }
+
+  /**
+   * {@inheritdoc}
    */
   public function insertIntoCollection(
     string $collection_name,

@@ -34,7 +34,6 @@ cd /tmp
 git clone --single-branch --branch "$BRANCH" https://github.com/yalesites-org/component-library-twig && cd component-library-twig
 rm -rf .git
 npm ci --omit=dev --ignore-scripts
-npm install webpack-cli
 npm run build
 rm -rf node_modules
 
