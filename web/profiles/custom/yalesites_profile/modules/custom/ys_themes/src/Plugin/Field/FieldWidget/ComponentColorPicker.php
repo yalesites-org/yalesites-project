@@ -114,9 +114,13 @@ class ComponentColorPicker extends OptionsSelectWidget implements ContainerFacto
     $selected_value = $this->getSelectedOptions($items);
     $selected_value = is_array($selected_value) ? reset($selected_value) : $selected_value;
 
-    // Hide the select element visually.
+    // Hide the select element visually and from keyboard and screen reader
+    // users: the swatches are the control, and the select only carries the
+    // submitted value.
     $element['#attributes']['class'][] = 'palette-select-hidden';
     $element['#attributes']['style'] = 'position: absolute; opacity: 0; pointer-events: none; width: 0; height: 0; overflow: hidden;';
+    $element['#attributes']['tabindex'] = '-1';
+    $element['#attributes']['aria-hidden'] = 'true';
 
     // Filter out the _none option for palette display.
     $palette_options = array_filter($options, function ($key) {
@@ -194,12 +198,13 @@ class ComponentColorPicker extends OptionsSelectWidget implements ContainerFacto
     $color_info = [];
     foreach ($safe_palette_options as $option_key => $option_label) {
       $background_color_var = $color_styles[$option_key][0] ?? NULL;
-      $color_info[$option_key] = $this->colorTokenResolver->buildColorInfo($option_key, $background_color_var);
+      $color_info[$option_key] = $this->colorTokenResolver->buildColorInfo($option_key, $background_color_var, $option_label);
     }
 
     // Render the palette UI.
     $palette_render = [
       '#theme' => 'component_color_picker',
+      '#group_label' => $element['#title'] ?? NULL,
       '#palette_options' => $safe_palette_options,
       '#global_theme' => $global_theme,
       '#selected_value' => $selected_value_string,

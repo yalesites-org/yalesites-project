@@ -105,10 +105,12 @@ class YsTaxonomyManagerMainController extends TaxonomyManagerMainController {
     $header = [
       [
         'data' => $this->t('Vocabulary'),
+        'scope' => 'col',
         'style' => 'width: 50%',
       ],
       [
         'data' => $this->t('Content Types'),
+        'scope' => 'col',
         'style' => 'width: 50%',
       ],
     ];

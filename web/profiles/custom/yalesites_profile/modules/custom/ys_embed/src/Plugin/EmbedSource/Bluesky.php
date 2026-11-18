@@ -26,7 +26,17 @@ class Bluesky extends EmbedSourceBase implements EmbedSourceInterface {
   /**
    * {@inheritdoc}
    */
-  protected static $template = "{{ blockquote|raw }}\r\n<script async src=\"https://embed.bsky.app/static/embed.js\" charset=\"utf-8\"></script>\r\n";
+  protected static $template = "{{ blockquote }}\r\n<script async src=\"https://embed.bsky.app/static/embed.js\" charset=\"utf-8\"></script>\r\n";
+
+  /**
+   * {@inheritdoc}
+   */
+  protected static $markupParam = 'blockquote';
+
+  /**
+   * {@inheritdoc}
+   */
+  protected static $allowedTags = ['blockquote', 'p', 'a', 'br'];
 
   /**
    * {@inheritdoc}

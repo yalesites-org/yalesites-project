@@ -1,0 +1,99 @@
+<?php
+
+namespace Drupal\ys_views_basic\Plugin\Field\FieldWidget;
+
+use Drupal\Core\Field\Attribute\FieldWidget;
+use Drupal\Core\Field\FieldItemListInterface;
+use Drupal\Core\Form\FormStateInterface;
+use Drupal\Core\StringTranslation\TranslatableMarkup;
+use Drupal\ys_views_basic\ViewsBasicManager;
+
+/**
+ * Event listing widget.
+ *
+ * Serves the event_card, event_list_item, and event_condensed bundles. The
+ * calendar display mode keeps its own existing event_calendar bundle and
+ * EventCalendarDefaultWidget and is out of scope here. The display mode is
+ * fixed by the bundle (ADR DR-2), so this widget only adds the event-specific
+ * controls: the "Hide Add to Calendar link" option and the event time period
+ * (future / past / all). Events are queried through the events scaffold view
+ * (with distinct de-duplication and a manual date sort) which
+ * ViewsBasicManager selects from the stored content type — ADR DR-5.
+ */
+#[FieldWidget(
+  id: 'event_view_widget',
+  label: new TranslatableMarkup('Event listing widget'),
+  field_types: ['views_basic_params'],
+)]
+class EventViewWidget extends ViewsBasicWidgetBase {
+
+  /**
+   * Event time period options.
+   */
+  const TIME_PERIOD_FUTURE = 'future';
+  const TIME_PERIOD_PAST = 'past';
+  const TIME_PERIOD_ALL = 'all';
+
+  /**
+   * {@inheritdoc}
+   */
+  protected function getContentType(): ?string {
+    return ViewsBasicManager::CONTENT_TYPE_EVENT;
+  }
+
+  /**
+   * {@inheritdoc}
+   *
+   * Adds the event-only "Hide Add to Calendar link" option and the event time
+   * period selector. No #states are needed because this widget only ever
+   * serves events.
+   */
+  protected function buildEntitySpecificOptions(array &$form, FieldItemListInterface $items, int $delta): void {
+    $params = $items[$delta]->params;
+
+    $form['group_user_selection']['entity_and_view_mode']['event_field_options'] = $this->buildResultOptionsSubsection(
+      $this->t('Event options'),
+      ['hide_add_to_calendar' => $this->t('Hide Add to Calendar link')],
+      $this->getStoredOptions('event_field_options', $params),
+    );
+
+    $icon_base = '/profiles/custom/yalesites_profile/modules/custom/ys_views_basic/assets/icons/';
+    $form['group_user_selection']['options']['event_time_period'] = [
+      '#type' => 'radios',
+      '#title' => $this->t('Event Time Period'),
+      '#options' => [
+        self::TIME_PERIOD_FUTURE => $this->t('Future Events') . '<img src="' . $icon_base . 'event-time-future.svg" alt="Future Events icon showing a calendar with a future-pointing arrow to the right.">',
+        self::TIME_PERIOD_PAST => $this->t('Past Events') . '<img src="' . $icon_base . 'event-time-past.svg" alt="Past Events icon showing a calendar with a past-pointing arrow to the left.">',
+        self::TIME_PERIOD_ALL => $this->t('All Events') . '<img src="' . $icon_base . 'event-time-all.svg" alt="All Events icon showing a calendar.">',
+      ],
+      '#default_value' => $params ? $this->viewsBasicManager->getDefaultParamValue('event_time_period', $params) : self::TIME_PERIOD_FUTURE,
+      // Lead the Display options group: the display/limit/offset/
+      // show_current_entity controls carry no #weight (i.e. 0), so a negative
+      // weight floats this event-scoping control to the top of the group.
+      '#weight' => -10,
+      '#prefix' => '<div id="edit-event-time-period">',
+      '#suffix' => '</div>',
+    ];
+  }
+
+  /**
+   * {@inheritdoc}
+   *
+   * Events add the Localist "Event Type" filter, which the predecessor
+   * Calendar List block offered (#1967).
+   */
+  protected function getExposedFilterOptions(): array {
+    $options = parent::getExposedFilterOptions();
+    $options['show_event_type_filter'] = $this->t('Show Event Type');
+    return $options;
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  protected function massageEntitySpecificParams(array &$paramData, array $built, array $form, FormStateInterface $form_state): void {
+    $paramData['event_field_options'] = $built['event_field_options']['#value'] ?? [];
+    $paramData['filters']['event_time_period'] = $form['group_user_selection']['options']['event_time_period']['#value'];
+  }
+
+}

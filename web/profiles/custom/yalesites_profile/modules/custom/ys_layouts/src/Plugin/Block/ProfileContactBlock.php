@@ -2,23 +2,24 @@
 
 namespace Drupal\ys_layouts\Plugin\Block;
 
+use Drupal\Core\Block\Attribute\Block;
 use Drupal\Core\Block\BlockBase;
 use Drupal\Core\Entity\EntityTypeManagerInterface;
 use Drupal\Core\Form\FormStateInterface;
 use Drupal\Core\Plugin\ContainerFactoryPluginInterface;
 use Drupal\Core\Routing\RouteMatchInterface;
+use Drupal\Core\StringTranslation\TranslatableMarkup;
 use Symfony\Component\DependencyInjection\ContainerInterface;
 use Symfony\Component\HttpFoundation\RequestStack;
 
 /**
  * Block for profile contact data that appears in the sidebar of profiles.
- *
- * @Block(
- *   id = "profile_contact_block",
- *   admin_label = @Translation("Profile Contact Block"),
- *   category = @Translation("YaleSites Layouts"),
- * )
  */
+#[Block(
+  id: 'profile_contact_block',
+  admin_label: new TranslatableMarkup('Profile Contact Block'),
+  category: new TranslatableMarkup('YaleSites Layouts'),
+)]
 class ProfileContactBlock extends BlockBase implements ContainerFactoryPluginInterface {
 
   /**

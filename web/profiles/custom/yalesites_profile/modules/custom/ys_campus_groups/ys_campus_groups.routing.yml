@@ -12,3 +12,5 @@ ys_campus_groups.run_migrations:
     _title: 'Import Campus Groups events now'
   requirements:
     _permission: 'yalesites manage campus groups+yalesites sync campus groups'
+    # Changes data on GET, so a token blocks cross-site triggering.
+    _csrf_token: 'TRUE'

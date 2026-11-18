@@ -1,0 +1,8 @@
+uuid: ee3c8299-178d-4a9b-8e7e-6e68c6d3ae98
+langcode: en
+status: true
+dependencies: {  }
+id: page_condensed
+label: 'Pages - Condensed View'
+revision: true
+description: 'Pages - Condensed listing block.'

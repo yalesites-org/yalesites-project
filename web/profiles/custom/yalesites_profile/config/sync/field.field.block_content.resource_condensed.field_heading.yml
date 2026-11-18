@@ -1,0 +1,24 @@
+uuid: 73d4e81d-b90d-4282-b634-85de762f618d
+langcode: en
+status: true
+dependencies:
+  config:
+    - block_content.type.resource_condensed
+    - field.storage.block_content.field_heading
+    - filter.format.heading_html
+  module:
+    - text
+id: block_content.resource_condensed.field_heading
+field_name: field_heading
+entity_type: block_content
+bundle: resource_condensed
+label: 'View Heading'
+description: 'Shown above the list on your page. Leave blank for no heading.'
+required: false
+translatable: true
+default_value: {  }
+default_value_callback: ''
+settings:
+  allowed_formats:
+    - heading_html
+field_type: text

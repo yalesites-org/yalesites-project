@@ -19,14 +19,22 @@ use Drupal\ys_embed\Plugin\EmbedSourceInterface;
 class Localist extends EmbedSourceBase implements EmbedSourceInterface {
 
   /**
-   * {@inheritdoc}
+   * Regex fragment matching a widget script URL on an allowed Localist host.
+   *
+   * Allowed hosts are <sub>.localist.com, <sub>.enterprise.localist.com, and
+   * Yale's own Localist host, events.yale.edu.
    */
-  protected static $pattern = '/<div\s+id="localist-widget-(?<widget_id>\d+)"\s+class="localist-widget"><\/div><script\s+defer\s+type="text\/javascript"\s+src="(?<localist_source>[^"]+)"><\/script>/';
+  const SOURCE_PATTERN = 'https:\/\/([a-z0-9-]+(\.enterprise)?\.localist\.com|events\.yale\.edu)\/[^"]*';
 
   /**
    * {@inheritdoc}
    */
-  protected static $template = '<div id="localist-widget-{{ widget_id }}" class="localist-widget"></div><script defer type="text/javascript" src="{{ localist_source }}"></script>';
+  protected static $pattern = '/<div\s+id="localist-widget-(?<widget_id>\d+)"\s+class="localist-widget"><\/div><script\s+defer\s+type="text\/javascript"\s+src="(?<localist_source>' . self::SOURCE_PATTERN . ')"><\/script>/';
+
+  /**
+   * {@inheritdoc}
+   */
+  protected static $template = '<div id="localist-widget-{{ widget_id }}" class="localist-widget"></div>{% if localist_source %}<script defer type="text/javascript" src="{{ localist_source }}"></script>{% endif %}';
 
   /**
    * {@inheritdoc}
@@ -37,5 +45,18 @@ class Localist extends EmbedSourceBase implements EmbedSourceInterface {
    * {@inheritdoc}
    */
   protected static $example = '<div id="localist-widget-86302562" class="localist-widget"></div><script defer type="text/javascript" src="https://yale.enterprise.localist.com/widget/view?schools=yale&groups=asian-network-at-yale&days=31&num=50&experience=inperson&container=localist-widget-86302562&template=modern"></script><div id="lclst_widget_footer"><a style="margin-left:auto;margin-right:auto;display:block;width:81px;margin-top:10px;" title="Widget powered by Concept3D Event Calendar Software" href="https://www.localist.com?utm_source=widget&utm_campaign=widget_footer&utm_medium=branded%20link"><img src="//d3e1o4bcbhmj8g.cloudfront.net/assets/platforms/default/about/widget_footer.png" alt="Localist Online Calendar Software" style="vertical-align: middle;" width="81" height="23"></a></div>';
+
+  /**
+   * {@inheritdoc}
+   */
+  public function build(array $params): array {
+    // Embeds saved before the host check could carry any script source; drop
+    // a stored source that is not on an allowed Localist host.
+    $source = $params['localist_source'] ?? '';
+    if (!preg_match('/^' . self::SOURCE_PATTERN . '$/', $source)) {
+      $params['localist_source'] = '';
+    }
+    return parent::build($params);
+  }
 
 }

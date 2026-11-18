@@ -1,0 +1,19 @@
+uuid: bfc4f547-11a0-483b-b72f-d2d31c6a1dd6
+langcode: en
+status: true
+dependencies:
+  config:
+    - block_content.type.content_spotlight_portrait
+    - field.storage.block_content.field_overline
+id: block_content.content_spotlight_portrait.field_overline
+field_name: field_overline
+entity_type: block_content
+bundle: content_spotlight_portrait
+label: Overline
+description: 'A few words, shown in capital letters above the heading.'
+required: false
+translatable: false
+default_value: {  }
+default_value_callback: ''
+settings: {  }
+field_type: string

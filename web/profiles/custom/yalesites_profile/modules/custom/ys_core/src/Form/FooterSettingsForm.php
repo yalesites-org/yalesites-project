@@ -17,15 +17,6 @@ use Symfony\Component\DependencyInjection\ContainerInterface;
  */
 class FooterSettingsForm extends ConfigFormBase {
 
-  use SettingsFormTrait;
-
-  /**
-   * {@inheritdoc}
-   */
-  protected function getPathAliasManager(): AliasManager {
-    return $this->pathAliasManager;
-  }
-
   /**
    * {@inheritdoc}
    */
@@ -80,7 +71,7 @@ class FooterSettingsForm extends ConfigFormBase {
         'basic' => $this->t('Basic') . '<img src="/profiles/custom/yalesites_profile/modules/custom/ys_core/images/preview-icons/footer-basic.svg" class="preview-icon" alt="Basic footer icon showing a small Yale logo, and gray placeholders for copyright and social media icons.">',
         'mega' => $this->t('Mega') . '<img src="/profiles/custom/yalesites_profile/modules/custom/ys_core/images/preview-icons/footer-mega-2.svg" class="preview-icon" alt="Mega footer icon with gray placeholders for more information than the basic footer.">',
       ],
-      '#title' => $this->t('Footer variation'),
+      '#title' => $this->t('Footer Variation'),
       '#default_value' => ($footerConfig->get('footer_variation')) ? $footerConfig->get('footer_variation') : 'basic',
       '#attributes' => [
         'class' => [
@@ -198,7 +189,7 @@ class FooterSettingsForm extends ConfigFormBase {
 
     $form['footer_logos']['school_logo_group']['school_logo'] = [
       '#type' => 'media_library',
-      '#title' => $this->t('School logo'),
+      '#title' => $this->t('School Logo'),
       '#allowed_bundles' => ['image'],
       '#required' => FALSE,
       '#default_value' => ($footerConfig->get('content.school_logo')) ? $footerConfig->get('content.school_logo') : NULL,
@@ -206,7 +197,7 @@ class FooterSettingsForm extends ConfigFormBase {
 
     $form['footer_logos']['school_logo_group']['school_logo_url'] = [
       '#type' => 'linkit',
-      '#title' => $this->t('School logo URL'),
+      '#title' => $this->t('School Logo URL'),
       '#description' => $this->t('Type the URL or autocomplete for internal paths.'),
       '#autocomplete_route_name' => 'linkit.autocomplete',
       '#autocomplete_route_parameters' => [
@@ -401,6 +392,38 @@ class FooterSettingsForm extends ConfigFormBase {
     $this->cacheRender = $cache_render;
     $this->socialLinks = $social_links_manager;
     $this->pathAliasManager = $path_alias_manager;
+  }
+
+  /**
+   * Translate internal node links to path links.
+   *
+   * @param string $link
+   *   The path entered from the form.
+   */
+  protected function translateNodeLinks($link) {
+    // If link URL is an internal path, use the path alias instead.
+    return (str_starts_with($link, "/node/")) ? $this->pathAliasManager->getAliasByPath($link) : $link;
+  }
+
+  /**
+   * Check that links have both a URL and a link title.
+   *
+   * @param \Drupal\Core\Form\FormStateInterface $form_state
+   *   The form state of the parent form.
+   * @param string $field_id
+   *   The id of a field on the config form.
+   */
+  protected function validateLinks($form_state, $field_id) {
+    if (($value = $form_state->getValue($field_id))) {
+      foreach ($value as $link) {
+        if (empty($link['link_url']) || empty($link['link_title'])) {
+          $form_state->setErrorByName(
+            $field_id,
+            $this->t("Any link specified must have both a URL and a link title."),
+          );
+        }
+      }
+    }
   }
 
 }

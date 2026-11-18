@@ -6,7 +6,7 @@ use Drupal\Core\Config\ConfigFactoryInterface;
 use Drupal\Core\Controller\ControllerBase;
 use Drupal\Core\DependencyInjection\ContainerInjectionInterface;
 use Drupal\Core\Messenger\MessengerInterface;
-use Drupal\Core\Url;
+use Drupal\ys_core\SameSiteRedirect;
 use Drupal\ys_localist\LocalistManager;
 use Symfony\Component\DependencyInjection\ContainerInterface;
 use Symfony\Component\HttpFoundation\RedirectResponse;
@@ -128,16 +128,10 @@ class RunMigrations extends ControllerBase implements ContainerInjectionInterfac
    * Retrieves the URL to redirect to after the migration is run.
    *
    * @return string
-   *   The URL to redirect to.
+   *   The Referer if it is on this site, otherwise the front page.
    */
   protected function getRedirectUrl(): string {
-    $referer = $this->requestStack->getCurrentRequest()->server->get('HTTP_REFERER');
-
-    if ($referer == NULL) {
-      $referer = Url::fromRoute('<front>')->toString();
-    }
-
-    return $referer;
+    return SameSiteRedirect::fromReferer($this->requestStack->getCurrentRequest());
   }
 
 }

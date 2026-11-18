@@ -91,8 +91,11 @@ class AddTermsToNodesFormTest extends YsKernelTestBase {
 
     // The form's node query runs with accessCheck(TRUE), so grant the
     // permission published nodes are gated behind and switch to that user.
+    // The form only lists and updates nodes the user can edit, so grant that
+    // too.
     $role = Role::create(['id' => 'tester', 'label' => 'Tester']);
     $role->grantPermission('access content');
+    $role->grantPermission('edit any article content');
     $role->save();
 
     $user = User::create(['name' => 'tester', 'status' => 1]);
@@ -228,6 +231,140 @@ class AddTermsToNodesFormTest extends YsKernelTestBase {
     $this->assertInstanceOf(Url::class, $redirect);
     $this->assertEquals('taxonomy_manager.admin_vocabulary', $redirect->getRouteName());
     $this->assertEquals($this->vocabulary->id(), $redirect->getRouteParameters()['taxonomy_vocabulary']);
+  }
+
+  /**
+   * Tests nodes the user cannot edit are neither listed nor updated.
+   *
+   * The user can create terms and edit their own articles, but not an article
+   * owned by someone else. Submitting the form for both nodes must add the
+   * terms to the editable node only, leave the other untouched, and warn that
+   * it was skipped.
+   *
+   * @covers ::buildForm
+   * @covers ::submitForm
+   */
+  public function testFormSkipsNodesTheUserCannotEdit() {
+    $role = Role::create(['id' => 'own_editor', 'label' => 'Own editor']);
+    $role->grantPermission('access content');
+    $role->grantPermission('create terms in ' . $this->vocabulary->id());
+    $role->grantPermission('edit own article content');
+    $role->save();
+
+    $other_user = User::create(['name' => 'other', 'status' => 1]);
+    $other_user->save();
+    $limited_user = User::create(['name' => 'limited', 'status' => 1]);
+    $limited_user->addRole('own_editor');
+    $limited_user->save();
+    $this->container->get('current_user')->setAccount($limited_user);
+
+    $term = Term::create(['vid' => $this->vocabulary->id(), 'name' => 'New Term']);
+    $term->save();
+
+    $editable_node = Node::create([
+      'type' => 'article',
+      'title' => 'Editable Article',
+      'status' => 1,
+      'uid' => $limited_user->id(),
+    ]);
+    $editable_node->save();
+    $protected_node = Node::create([
+      'type' => 'article',
+      'title' => 'Protected Article',
+      'status' => 1,
+      'uid' => $other_user->id(),
+    ]);
+    $protected_node->save();
+
+    $editable_key = $editable_node->id() . '-field_tags';
+    $protected_key = $protected_node->id() . '-field_tags';
+
+    $form = $this->form->buildForm([], new FormState(), $this->vocabulary);
+    $this->assertArrayHasKey($editable_key, $form['nodes']['#options']);
+    $this->assertArrayNotHasKey($protected_key, $form['nodes']['#options']);
+
+    // Submit both nodes anyway, as a forged form submission could.
+    $form = [];
+    $form_state = new FormState();
+    $form_state->setValue('voc', $this->vocabulary);
+    $form_state->setValue('terms', [$term->id() => $term->id()]);
+    $form_state->setValue('nodes', [$editable_key, $protected_key]);
+
+    $this->form->submitForm($form, $form_state);
+
+    $node_storage = \Drupal::entityTypeManager()->getStorage('node');
+    $node_storage->resetCache();
+
+    $editable_node = $node_storage->load($editable_node->id());
+    $this->assertEquals([$term->id()], array_column($editable_node->get('field_tags')->getValue(), 'target_id'));
+
+    $protected_node = $node_storage->load($protected_node->id());
+    $this->assertTrue($protected_node->get('field_tags')->isEmpty(), 'A node the user cannot edit must not be changed.');
+
+    $messages = \Drupal::messenger()->all();
+    $this->assertCount(1, $messages['status']);
+    $this->assertStringContainsString('Editable Article', (string) $messages['status'][0]);
+    $this->assertStringNotContainsString('Protected Article', (string) $messages['status'][0]);
+    $this->assertCount(1, $messages['warning']);
+    $this->assertStringContainsString('Protected Article', (string) $messages['warning'][0]);
+  }
+
+  /**
+   * Tests no success message is shown when no node could be updated.
+   *
+   * Also covers a selected node that no longer exists: it is skipped rather
+   * than causing a fatal error.
+   *
+   * @covers ::submitForm
+   */
+  public function testSubmitFormShowsNoSuccessMessageWhenNothingUpdated() {
+    $term = Term::create(['vid' => $this->vocabulary->id(), 'name' => 'New Term']);
+    $term->save();
+
+    $form = [];
+    $form_state = new FormState();
+    $form_state->setValue('voc', $this->vocabulary);
+    $form_state->setValue('terms', [$term->id() => $term->id()]);
+    $form_state->setValue('nodes', ['999999-field_tags']);
+
+    $this->form->submitForm($form, $form_state);
+
+    $messages = \Drupal::messenger()->all();
+    $this->assertArrayNotHasKey('status', $messages);
+    $this->assertNotEmpty($messages['warning']);
+  }
+
+  /**
+   * Shows a message when the user can edit none of the matching nodes.
+   *
+   * @covers ::buildForm
+   */
+  public function testBuildFormShowsMessageWhenNoNodeIsEditable() {
+    $role = Role::create(['id' => 'term_creator', 'label' => 'Term creator']);
+    $role->grantPermission('access content');
+    $role->grantPermission('create terms in ' . $this->vocabulary->id());
+    $role->save();
+
+    $other_user = User::create(['name' => 'other', 'status' => 1]);
+    $other_user->save();
+    $term_creator = User::create(['name' => 'term_creator', 'status' => 1]);
+    $term_creator->addRole('term_creator');
+    $term_creator->save();
+    $this->container->get('current_user')->setAccount($term_creator);
+
+    Node::create([
+      'type' => 'article',
+      'title' => 'Someone Else Article',
+      'status' => 1,
+      'uid' => $other_user->id(),
+    ])->save();
+
+    $form = $this->form->buildForm([], new FormState(), $this->vocabulary);
+
+    $this->assertStringContainsString('No content you can edit', (string) $form['message']['#markup']);
+    $this->assertArrayNotHasKey('terms', $form);
+    $this->assertArrayNotHasKey('nodes', $form);
+    $this->assertArrayNotHasKey('submit', $form);
   }
 
 }

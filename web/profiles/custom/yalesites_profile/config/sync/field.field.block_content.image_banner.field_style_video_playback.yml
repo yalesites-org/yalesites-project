@@ -1,0 +1,21 @@
+uuid: 3902f533-9395-43c9-ac85-6cc23d13bcd5
+langcode: en
+status: true
+dependencies:
+  config:
+    - block_content.type.image_banner
+    - field.storage.block_content.field_style_video_playback
+  module:
+    - options
+id: block_content.image_banner.field_style_video_playback
+field_name: field_style_video_playback
+entity_type: block_content
+bundle: image_banner
+label: 'Video Playback'
+description: 'Applies only when the media is a background video. Play once and stop holds the video on its last frame; visitors can press play to watch it again.'
+required: true
+translatable: false
+default_value: {  }
+default_value_callback: ys_themes_default_value_function
+settings: {  }
+field_type: list_string

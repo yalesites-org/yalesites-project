@@ -9,6 +9,7 @@ use Drupal\Core\Logger\LoggerChannelFactoryInterface;
 use Drupal\Core\Plugin\ContainerFactoryPluginInterface;
 use Drupal\layout_builder\Section;
 use Drupal\layout_builder\SectionComponent;
+use Drupal\migrate\Attribute\MigrateProcess;
 use Drupal\migrate\MigrateExecutableInterface;
 use Drupal\migrate\ProcessPluginBase;
 use Drupal\migrate\Row;
@@ -19,11 +20,10 @@ use Symfony\Component\DependencyInjection\ContainerInterface;
  *
  * This plugin converts body fields from Drupal 7 nodes into block content
  * entities and incorporates them into Layout Builder sections in Drupal 9/10.
- *
- * @MigrateProcessPlugin(
- *   id = "onha_body_to_layout_builder"
- * )
  */
+#[MigrateProcess(
+  id: 'onha_body_to_layout_builder',
+)]
 class BodyToLayoutBuilder extends ProcessPluginBase implements ContainerFactoryPluginInterface {
 
   /**

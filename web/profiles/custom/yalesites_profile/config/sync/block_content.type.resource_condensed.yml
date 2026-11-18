@@ -1,0 +1,8 @@
+uuid: 4e11bf4f-fa54-4573-9c36-8fdc9ee097ca
+langcode: en
+status: true
+dependencies: {  }
+id: resource_condensed
+label: 'Resources - Condensed View'
+revision: true
+description: 'Resources - Condensed listing block.'

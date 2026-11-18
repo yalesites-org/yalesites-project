@@ -4,12 +4,14 @@ declare(strict_types=1);
 
 namespace Drupal\Tests\ys_ai_tester\Unit;
 
+use Drupal\Component\Render\MarkupInterface;
 use Drupal\Core\Database\Connection;
 use Drupal\Core\Datetime\DateFormatterInterface;
 use Drupal\Tests\UnitTestCase;
 use Drupal\ys_ai_tester\AnswerBackendRegistry;
 use Drupal\ys_ai_tester\Controller\AiTesterController;
 use Drupal\ys_ai_tester\RunComparator;
+use Drupal\ys_ai_tester\RunExporter;
 use Symfony\Component\DependencyInjection\ContainerBuilder;
 
 /**
@@ -81,6 +83,7 @@ class AiTesterCompareRenderTest extends UnitTestCase {
       $date_formatter,
       $comparator,
       $registry,
+      $this->createMock(RunExporter::class),
     );
   }
 
@@ -152,7 +155,7 @@ class AiTesterCompareRenderTest extends UnitTestCase {
     $this->assertArrayHasKey('meta', $build);
     $this->assertArrayHasKey('downloads', $build);
     $this->assertArrayHasKey('results', $build);
-    $this->assertArrayHasKey('#markup', $build['meta']['a']);
+    $this->assertSame('ys_ai_tester_compare_run_meta', $build['meta']['a']['#theme']);
 
     // One tab and one panel per question pair, each panel holding both runs.
     $tabs = $build['results'];
@@ -321,13 +324,13 @@ class AiTesterCompareRenderTest extends UnitTestCase {
     $build = $this->controllerReturning($data)->compare(2, 3);
     $sides = $build['results']['#panels'][0]['sides'];
 
-    $this->assertStringContainsString(
+    $this->assertContains(
       'ys-diff--a',
-      (string) $sides[0]['content']['answer']['#markup']
+      $sides[0]['content']['answer']['#attributes']['class']
     );
-    $this->assertStringContainsString(
+    $this->assertContains(
       'ys-diff--b',
-      (string) $sides[1]['content']['answer']['#markup']
+      $sides[1]['content']['answer']['#attributes']['class']
     );
 
     $legend = $build['legend'];
@@ -404,31 +407,31 @@ class AiTesterCompareRenderTest extends UnitTestCase {
 
     // The http(s) source becomes a link that opens in a new window, hardened
     // with rel and carrying the visually-hidden a11y cue.
-    $link = $items[0]['link'];
+    $link = $items[0]['#link'];
     $this->assertSame('link', $link['#type']);
     $this->assertSame('_blank', $link['#attributes']['target']);
     $this->assertSame('noopener noreferrer', $link['#attributes']['rel']);
     $this->assertSame('https://a.example', $link['#url']->getUri());
-    $title = (string) $link['#title'];
-    $this->assertStringContainsString('About A', $title);
-    $this->assertStringContainsString('visually-hidden', $title);
-    $this->assertStringContainsString('opens in new window', $title);
-
-    // A retrieved-but-unused document says so, rather than being left out.
-    $this->assertSame(' — <em>cited</em>', $items[0]['flag']['#markup']);
-    $this->assertSame(' — <em>retrieved, not cited</em>', $items[2]['flag']['#markup']);
-
-    // Run-unique sources are marked; the one both runs retrieved is not.
-    $this->assertArrayHasKey('only_here', $items[0]);
-    $this->assertArrayHasKey('only_here', $items[1]);
-    $this->assertArrayNotHasKey('only_here', $items[2]);
-    $this->assertContains(
-      'ys-compare-badge--only_here',
-      $items[0]['only_here']['#attributes']['class']
+    $this->assertSame('About A', $link['#title']['text']['#plain_text']);
+    $this->assertContains('visually-hidden', $link['#title']['cue']['#attributes']['class']);
+    $this->assertStringContainsString(
+      'opens in new window',
+      (string) $link['#title']['cue']['#value']
     );
 
+    // A retrieved-but-unused document says so, rather than being left out.
+    $this->assertSame('cited', (string) $items[0]['#flag']);
+    $this->assertSame('retrieved, not cited', (string) $items[2]['#flag']);
+
+    // Run-unique sources are marked; the one both runs retrieved is not. The
+    // template renders the badge off this flag, so it is the flag that has to
+    // be right per source.
+    $this->assertTrue($items[0]['#only_here']);
+    $this->assertTrue($items[1]['#only_here']);
+    $this->assertFalse($items[2]['#only_here']);
+
     // A non-http(s) URL never renders as a live link — it degrades to text.
-    $sneaky = $items[1]['link'];
+    $sneaky = $items[1]['#link'];
     $this->assertArrayNotHasKey('#type', $sneaky);
     $this->assertArrayHasKey('#markup', $sneaky);
     $this->assertStringNotContainsString('<a', (string) $sneaky['#markup']);
@@ -464,14 +467,18 @@ class AiTesterCompareRenderTest extends UnitTestCase {
       ['title' => 'No link', 'url' => 'mailto:x@example.com', 'cited' => FALSE],
     ]);
 
-    $link = $cell['#items'][0]['link'];
+    $link = $cell['#items'][0]['#link'];
     $this->assertSame('link', $link['#type']);
     $this->assertSame('_blank', $link['#attributes']['target']);
     $this->assertSame('noopener noreferrer', $link['#attributes']['rel']);
-    $this->assertStringContainsString('opens in new window', (string) $link['#title']);
+    $this->assertStringContainsString(
+      'opens in new window',
+      (string) $link['#title']['cue']['#value']
+    );
+    $this->assertContains('visually-hidden', $link['#title']['cue']['#attributes']['class']);
 
     // Non-http(s) citation stays plain text.
-    $fallback = $cell['#items'][1]['link'];
+    $fallback = $cell['#items'][1]['#link'];
     $this->assertArrayNotHasKey('#type', $fallback);
     $this->assertArrayHasKey('#markup', $fallback);
   }
@@ -524,8 +531,8 @@ class AiTesterCompareRenderTest extends UnitTestCase {
 
     $build = $this->controllerReturning($data)->compare(2, 3);
 
-    $this->assertArrayHasKey('#markup', $build['caveat']);
-    $caveat = (string) $build['caveat']['#markup'];
+    $this->assertArrayHasKey('#value', $build['caveat']);
+    $caveat = (string) $build['caveat']['#value'];
     $this->assertStringContainsString('different assistants', $caveat);
     $this->assertStringContainsString('not a regression', $caveat);
     $this->assertStringContainsString('Beacon', $caveat);
@@ -557,7 +564,7 @@ class AiTesterCompareRenderTest extends UnitTestCase {
 
     $build = $this->controllerReturning($data)->compare(2, 3);
     // Panel 0 side 1 is Run B's column, the side carrying the recorded error.
-    $meta = (string) $build['results']['#panels'][0]['sides'][1]['content']['meta']['#markup'];
+    $meta = (string) $build['results']['#panels'][0]['sides'][1]['content']['meta']['#value'];
 
     $this->assertStringContainsString('Operation timed out', $meta);
     $this->assertStringNotContainsString('Empty answer', $meta);
@@ -565,6 +572,11 @@ class AiTesterCompareRenderTest extends UnitTestCase {
 
   /**
    * Builds the comparison header for two runs answered on the given hosts.
+   *
+   * @return array
+   *   Run A's and Run B's ys_ai_tester_compare_run_meta render elements. The
+   *   header is a themed element now, so the variables handed to the template
+   *   are what there is to assert on — the sentence lives in the template.
    */
   protected function metaBlocksFor(string $host_a, string $host_b): array {
     $data = $this->comparisonOf('beacon', 'beacon', $this->side('B answer.', 1, 1, FALSE));
@@ -573,10 +585,7 @@ class AiTesterCompareRenderTest extends UnitTestCase {
 
     $build = $this->controllerReturning($data)->compare(2, 3);
 
-    return [
-      (string) $build['meta']['a']['#markup'],
-      (string) $build['meta']['b']['#markup'],
-    ];
+    return [$build['meta']['a'], $build['meta']['b']];
   }
 
   /**
@@ -594,8 +603,8 @@ class AiTesterCompareRenderTest extends UnitTestCase {
       'sitea.yale.edu',
     );
 
-    $this->assertStringContainsString('Host: v2260-sitea-yale-edu.pantheonsite.io', $meta_a);
-    $this->assertStringContainsString('Host: sitea.yale.edu', $meta_b);
+    $this->assertSame('v2260-sitea-yale-edu.pantheonsite.io', $meta_a['#host']);
+    $this->assertSame('sitea.yale.edu', $meta_b['#host']);
   }
 
   /**
@@ -606,24 +615,31 @@ class AiTesterCompareRenderTest extends UnitTestCase {
   public function testRunMetaBlockReportsAnUnknownHost(): void {
     [$meta_a] = $this->metaBlocksFor('', 'sitea.yale.edu');
 
-    $this->assertStringContainsString('unknown (no citation named one)', $meta_a);
+    $this->assertStringContainsString('unknown (no citation named one)', (string) $meta_a['#host']);
   }
 
   /**
-   * The host is escaped on the way into the header.
+   * The host reaches the template as untrusted text, so Twig escapes it.
    *
    * It is derived from a citation URL, which on a borrowed index came from
    * another site's stored field, so it is not ours to trust. parse_url really
    * does return a host containing markup for a URL shaped like this one, so
    * this is a reachable input rather than a contrived one.
    *
+   * The escaping moved with the sentence: it used to be t()'s @host
+   * placeholder here, and is now the {% trans %} placeholder in
+   * ys-ai-tester-compare-run-meta.html.twig. That escaping only happens while
+   * the host arrives as a plain string — marking it safe anywhere on the way
+   * in would put it on the page verbatim — so that is what is asserted.
+   * AiTesterTemplateEscapingTest covers the template's own half.
+   *
    * @covers ::runMetaBlock
    */
-  public function testRunMetaBlockEscapesTheHost(): void {
+  public function testRunMetaBlockPassesTheHostToTheTemplateAsUntrustedText(): void {
     [$meta_a] = $this->metaBlocksFor('<script>alert(1)</script>', 'sitea.yale.edu');
 
-    $this->assertStringNotContainsString('<script>', $meta_a);
-    $this->assertStringContainsString('&lt;script&gt;', $meta_a);
+    $this->assertSame('<script>alert(1)</script>', $meta_a['#host']);
+    $this->assertNotInstanceOf(MarkupInterface::class, $meta_a['#host']);
   }
 
 }

@@ -1,0 +1,11 @@
+uuid: 4cce8b98-3005-44bd-b5f3-5ab8e79bd9b1
+langcode: en
+status: true
+dependencies:
+  module:
+    - media
+id: media.reference_card_1_1_
+label: 'Reference Card (1:1)'
+description: ''
+targetEntityType: media
+cache: true
