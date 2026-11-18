@@ -226,11 +226,12 @@ class PostViewWidgetTest extends UnitTestCase {
       'The preview is hidden in the off-canvas side panel only below the 40rem breakpoint.'
     );
 
-    // Unconditional off-canvas rules may only cap the card's max-width, never
+    // Unconditional off-canvas rules may only cap the card's max-width (and
+    // restore width: 100% that core's reset drops), never
     // hide the preview or collapse the grid in a wide panel.
     preg_match_all('/^#drupal-off-canvas-wrapper[^{]*\{([^}]*)\}/m', $css, $rules);
     foreach ($rules[1] as $body) {
-      $this->assertMatchesRegularExpression('/^\s*max-width:\s*[\d.]+rem\s*!important;\s*$/', $body, 'Unconditional off-canvas rules only cap the card width.');
+      $this->assertMatchesRegularExpression('/^\s*max-width:\s*[\d.]+rem\s*!important;(\s*width:\s*100%\s*!important;)?\s*$/', $body, 'Unconditional off-canvas rules only cap the card width and restore width: 100%.');
     }
   }
 
