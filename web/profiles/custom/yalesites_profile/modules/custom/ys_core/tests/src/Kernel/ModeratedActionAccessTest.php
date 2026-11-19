@@ -96,11 +96,29 @@ class ModeratedActionAccessTest extends YsKernelTestBase {
   /**
    * Creates a saved node of the page bundle.
    */
-  protected function node(): Node {
+  protected function node(string $state = 'draft'): Node {
     $node = Node::create(['type' => 'page', 'title' => 'Test']);
-    $node->moderation_state = 'draft';
+    $node->moderation_state = $state;
     $node->save();
     return $node;
+  }
+
+  /**
+   * Creates a contributor: can edit pages, may not use publish or archive.
+   */
+  protected function createContributor() {
+    return $this->createUser([
+      'access content',
+      'edit any page content',
+      'use editorial transition create_new_draft',
+    ]);
+  }
+
+  /**
+   * A node in the state each action starts from.
+   */
+  protected function nodeFor(string $class): Node {
+    return $this->node($class === ModeratedPublish::class ? 'draft' : 'published');
   }
 
   /**
@@ -112,7 +130,7 @@ class ModeratedActionAccessTest extends YsKernelTestBase {
     $account = $this->createEditor();
     $action = $this->action($class, $id);
     $this->assertInstanceOf($class, $action);
-    $node = $this->node();
+    $node = $this->nodeFor($class);
 
     $this->assertTrue($action->access($node, $account, FALSE));
   }
@@ -125,7 +143,7 @@ class ModeratedActionAccessTest extends YsKernelTestBase {
   public function testModerationOnlyBlockReturnsObjectWhenAsked(string $class, string $id): void {
     $account = $this->createEditor();
     $action = $this->action($class, $id);
-    $node = $this->node();
+    $node = $this->nodeFor($class);
 
     $result = $action->access($node, $account, TRUE);
     $this->assertInstanceOf(AccessResultInterface::class, $result);
@@ -141,6 +159,22 @@ class ModeratedActionAccessTest extends YsKernelTestBase {
     $account = $this->createUser(['access content']);
     $action = $this->action($class, $id);
     $node = $this->node();
+
+    $this->assertFalse($action->access($node, $account, FALSE));
+    $result = $action->access($node, $account, TRUE);
+    $this->assertInstanceOf(AccessResultInterface::class, $result);
+    $this->assertFalse($result->isAllowed());
+  }
+
+  /**
+   * A contributor, who can edit but lacks the transition, is denied.
+   *
+   * @dataProvider actionProvider
+   */
+  public function testContributorWithoutTransitionIsDenied(string $class, string $id): void {
+    $account = $this->createContributor();
+    $action = $this->action($class, $id);
+    $node = $this->nodeFor($class);
 
     $this->assertFalse($action->access($node, $account, FALSE));
     $result = $action->access($node, $account, TRUE);

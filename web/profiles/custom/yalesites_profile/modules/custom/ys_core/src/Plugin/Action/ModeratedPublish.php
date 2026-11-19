@@ -22,6 +22,13 @@ class ModeratedPublish extends PublishAction {
   /**
    * {@inheritdoc}
    */
+  protected function targetModerationState(): string {
+    return 'published';
+  }
+
+  /**
+   * {@inheritdoc}
+   */
   public function execute($entity = NULL) {
     $entity->set('moderation_state', 'published');
     $entity->setPublished()->save();
