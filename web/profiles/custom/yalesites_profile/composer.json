@@ -155,7 +155,7 @@
         "fix layout route https://www.drupal.org/project/entity_redirect/issues/3352265": "patches/contrib/entity_redirect/3352265-mr-6.diff"
       },
       "drupal/focal_point": {
-        "Limit image styles on preview page": "patches/contrib/focal_point/2830678-mr-27.diff"
+        "Limit image styles on preview page": "patches/contrib/focal_point/2830678-46.patch"
       },
       "drupal/gin": {
         "fix description toggle for CKEditor fields https://www.drupal.org/project/gin/issues/3316265": "patches/contrib/gin/3316265-mr-227.patch"
