@@ -104,9 +104,8 @@ Dates render in the site's timezone.
   views, gated by the `yalesites manage settings` permission (same as those
   views).
 - `Controller\PeopleExportController::export($request)` — the
-  `user_admin_people` view, gated by `administer users` (same as that view's
-  own access check, so the button is visible to exactly the admins who can
-  open the page).
+  `user_admin_people` view, gated by the dedicated `export people to csv`
+  permission, granted only to the Site and Platform administrator roles.
 - `Plugin\Menu\LocalAction\ContentExportLocalAction` — shared by every export
   button; forwards the admin page's active filter query onto the export link so
   the button exports what you see.
