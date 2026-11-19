@@ -130,7 +130,7 @@
         "preferred-install": "dist",
         "sort-packages": true,
         "platform": {
-            "php": "8.3"
+            "php": "8.5"
         },
         "allow-plugins": {
             "composer/installers": true,
