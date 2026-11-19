@@ -9,6 +9,7 @@ use Drupal\Core\Cache\Cache;
 use Drupal\Core\Entity\EntityTypeManagerInterface;
 use Drupal\Core\Form\FormStateInterface;
 use Drupal\Core\Plugin\ContainerFactoryPluginInterface;
+use Drupal\Core\Plugin\Context\ContextDefinition;
 use Drupal\Core\Routing\RouteMatchInterface;
 use Drupal\Core\StringTranslation\TranslatableMarkup;
 use Drupal\node\NodeInterface;
@@ -36,7 +37,6 @@ use Symfony\Component\HttpFoundation\RequestStack;
   id: 'related_content_block',
   admin_label: new TranslatableMarkup('Related Content'),
   category: new TranslatableMarkup('YaleSites Layouts'),
-  description: new TranslatableMarkup("Displays a curated list of related content as cards, sourced from the current page's Related Content field."),
   context_definitions: [
     'layout_builder.entity' => new ContextDefinition(
       data_type: 'entity',
