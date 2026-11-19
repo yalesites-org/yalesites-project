@@ -1,29 +1,29 @@
 ((Drupal, $, once) => {
   Drupal.behaviors.ysCoreHeaderFooterSettings = {
-    attach: function() { // eslint-disable-line
+    attach() {
       // Function to handle radio input checked behavior based on radio element selection.
       function handleRadioInputs(radioGroup) {
         // Get references to the radio input elements within the specified group
         const radioInputs = document.querySelectorAll(radioGroup);
         const detailGroups = document.querySelectorAll(
-          ".ys-core-footer-settings-form details"
+          '.ys-core-footer-settings-form details',
         );
 
         // Add event listener to each radio input
         radioInputs.forEach((input) => {
-          input.addEventListener("change", function () {
+          input.addEventListener('change', function () {
             if (this.checked) {
-              this.setAttribute("checked", "checked");
+              this.setAttribute('checked', 'checked');
               // Remove the 'checked' attribute from other radio inputs
               radioInputs.forEach((otherInput) => {
                 if (otherInput !== this) {
-                  otherInput.removeAttribute("checked");
+                  otherInput.removeAttribute('checked');
                 }
               });
 
               // Closes all details after selecting a new footer variation.
               for (let i = 0; i < detailGroups.length; i++) {
-                detailGroups[i].removeAttribute("open");
+                detailGroups[i].removeAttribute('open');
               }
             }
           });
@@ -60,13 +60,13 @@
   Drupal.behaviors.ysCoreStatesCkeditor5 = {
     attach(context) {
       once(
-        "ys-core-states-ckeditor5",
-        ".ys-core-header-footer-settings",
-        context
+        'ys-core-states-ckeditor5',
+        '.ys-core-header-footer-settings',
+        context,
       ).forEach((form) => {
         // jQuery events bubble, so listening on the form catches state changes
         // in its own sections without watching the whole document.
-        $(form).on("state:disabled", (event) => {
+        $(form).on('state:disabled', (event) => {
           // Only react to changes driven by a dependency, matching core.
           if (!event.trigger) {
             return;
@@ -75,11 +75,11 @@
           // find() plus addBack() mirrors core, so a #states set straight on a
           // text_format element is covered as well as one set on its wrapper.
           $(event.target)
-            .find("textarea[data-ckeditor5-id]")
-            .addBack("textarea[data-ckeditor5-id]")
+            .find('textarea[data-ckeditor5-id]')
+            .addBack('textarea[data-ckeditor5-id]')
             .each((index, element) => {
               const editor = Drupal.CKEditor5Instances.get(
-                element.getAttribute("data-ckeditor5-id")
+                element.getAttribute('data-ckeditor5-id'),
               );
 
               // The instance is only registered once its async setup resolves.
@@ -88,9 +88,9 @@
               }
 
               if (event.value) {
-                editor.enableReadOnlyMode("ckeditor5_disabled");
+                editor.enableReadOnlyMode('ckeditor5_disabled');
               } else {
-                editor.disableReadOnlyMode("ckeditor5_disabled");
+                editor.disableReadOnlyMode('ckeditor5_disabled');
               }
             });
         });

@@ -2,7 +2,7 @@
 
 namespace Drupal\ys_starterkit\Plugin\SingleContentSyncFieldProcessor;
 
-use Drupal\single_content_sync\Plugin\SingleContentSyncFieldProcessor\SimpleField;
+use Drupal\single_content_sync\Plugin\SingleContentSyncFieldProcessor\GenericField;
 
 /**
  * Single Content Sync ViewsBasicParams Handler.
@@ -13,5 +13,5 @@ use Drupal\single_content_sync\Plugin\SingleContentSyncFieldProcessor\SimpleFiel
  *   field_type = "views_basic_params",
  * )
  */
-class ViewsBasicParams extends SimpleField {
+class ViewsBasicParams extends GenericField {
 }

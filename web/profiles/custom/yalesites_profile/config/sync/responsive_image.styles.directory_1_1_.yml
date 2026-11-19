@@ -1,0 +1,27 @@
+uuid: 581093b0-2817-40fd-a024-844a22a9a2a2
+langcode: en
+status: true
+dependencies:
+  config:
+    - image.style.1_1_1200
+    - image.style.1_1_300_
+    - image.style.1_1_500
+    - image.style.1_1_600
+    - image.style.1_1_900
+id: directory_1_1_
+label: 'Directory (1:1)'
+image_style_mappings:
+  -
+    image_mapping_type: sizes
+    image_mapping:
+      sizes: '(min-width: 1400px) 300px, (min-width: 992px) 22vw, (min-width: 768px) 50vw, 100vw'
+      sizes_image_styles:
+        - '1_1_1200'
+        - '1_1_300_'
+        - '1_1_500'
+        - '1_1_600'
+        - '1_1_900'
+    breakpoint_id: responsive_image.viewport_sizing
+    multiplier: 1x
+breakpoint_group: responsive_image
+fallback_image_style: '1_1_500'

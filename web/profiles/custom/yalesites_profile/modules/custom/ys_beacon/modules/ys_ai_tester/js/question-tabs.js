@@ -26,7 +26,7 @@
   function select(tabs, panels, index, focus) {
     tabs.forEach((tab, i) => {
       const selected = i === index;
-      tab.setAttribute("aria-selected", selected ? "true" : "false");
+      tab.setAttribute('aria-selected', selected ? 'true' : 'false');
       tab.tabIndex = selected ? 0 : -1;
       if (panels[i]) {
         panels[i].hidden = !selected;
@@ -53,13 +53,13 @@
    */
   function nextIndex(key, current, last) {
     switch (key) {
-      case "ArrowDown":
+      case 'ArrowDown':
         return current === last ? 0 : current + 1;
-      case "ArrowUp":
+      case 'ArrowUp':
         return current === 0 ? last : current - 1;
-      case "Home":
+      case 'Home':
         return 0;
-      case "End":
+      case 'End':
         return last;
       default:
         return -1;
@@ -79,26 +79,26 @@
     }
 
     const panels = tabs.map((tab) =>
-      document.getElementById(tab.getAttribute("aria-controls"))
+      document.getElementById(tab.getAttribute('aria-controls')),
     );
 
     // The markup deliberately ships every panel visible so that without
     // JavaScript the view is still a readable stacked list of answers.
     // Collapsing it to one panel is this behavior's job, not the template's.
     const marked = tabs.findIndex(
-      (tab) => tab.getAttribute("aria-selected") === "true"
+      (tab) => tab.getAttribute('aria-selected') === 'true',
     );
     select(tabs, panels, Math.max(marked, 0), false);
 
     // Hands visibility over from the pre-paint CSS rule, which collapses to the
     // first panel only until this attribute appears. Set after the first
     // select() so no frame is governed by neither.
-    root.setAttribute("data-ys-qtabs-ready", "");
+    root.setAttribute('data-ys-qtabs-ready', '');
 
     tabs.forEach((tab, i) => {
-      tab.addEventListener("click", () => select(tabs, panels, i, true));
+      tab.addEventListener('click', () => select(tabs, panels, i, true));
 
-      tab.addEventListener("keydown", (event) => {
+      tab.addEventListener('keydown', (event) => {
         // Automatic activation: for a vertical tab list the arrows both move
         // focus and select, which is the APG tabs pattern.
         const target = nextIndex(event.key, i, tabs.length - 1);
@@ -116,7 +116,7 @@
 
   Drupal.behaviors.ysAiTesterQuestionTabs = {
     attach(context) {
-      once("ys-qtabs", "[data-ys-qtabs]", context).forEach(wire);
+      once('ys-qtabs', '[data-ys-qtabs]', context).forEach(wire);
     },
   };
 })(Drupal, once);

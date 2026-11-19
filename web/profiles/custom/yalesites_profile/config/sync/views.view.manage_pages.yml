@@ -88,6 +88,8 @@ display:
             - pathauto_update_alias_node
             - publish_moderated_content
             - unpublish_moderated_content
+            - node_cas_protect_action
+            - node_cas_unprotect_action
         title_1:
           id: title_1
           table: node_field_data

@@ -84,7 +84,7 @@ class PageMetaBlock extends BlockBase implements ContainerFactoryPluginInterface
    * @param \Symfony\Component\HttpFoundation\RequestStack $request_stack
    *   The request stack.
    * @param \Drupal\ys_themes\ColorTokenResolver $color_token_resolver
-   *   The color token resolver, used for the section theme swatch picker.
+   *   The color token resolver, used for the section theme dropdown picker.
    */
   public function __construct(array $configuration, $plugin_id, $plugin_definition, RouteMatchInterface $route_match, TitleResolver $title_resolver, RequestStack $request_stack, ColorTokenResolver $color_token_resolver) {
     parent::__construct($configuration, $plugin_id, $plugin_definition);
@@ -212,7 +212,7 @@ class PageMetaBlock extends BlockBase implements ContainerFactoryPluginInterface
       '#description' => $this->t('Breadcrumbs help visitors understand where a page sits within the site. They are shown by default.'),
     ];
 
-    // Same options and swatch picker as a One column section's Section Theme.
+    // Same options and dropdown picker as a One column section's Section Theme.
     $form['section_theme'] = YSLayoutOptions::sectionThemeElement($config['section_theme'] ?? 'default') + [
       '#after_build' => [
         [$this, 'processColorPicker'],

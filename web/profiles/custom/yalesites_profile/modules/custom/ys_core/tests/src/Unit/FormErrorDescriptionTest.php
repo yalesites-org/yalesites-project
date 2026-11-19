@@ -394,12 +394,62 @@ class FormErrorDescriptionTest extends UnitTestCase {
   }
 
   /**
-   * The #pre_render callback is trusted, or Drupal refuses to call it.
+   * A child that only inherits its parent's error shows no second message.
+   *
+   * Core hands every descendant of a failing element the ancestor's error, so
+   * one date range error printed fifteen times (YaleSites-Internal#2108).
+   *
+   * @covers ::preRenderForm
+   */
+  public function testInheritedErrorShownOnce(): void {
+    $error = 'The end date cannot be before the start date';
+    $printing = ['#id' => 'edit-x', '#theme_wrappers' => ['form_element']];
+    $form = [
+      'date' => [
+        '#errors' => $error,
+        'start' => ['#errors' => $error, 'deep' => ['#errors' => $error]],
+        'end' => ['#errors' => $error],
+        'other' => ['#errors' => 'A different message'],
+      ] + $printing,
+      'title' => ['#errors' => $error],
+    ];
+    $form = FormErrorDescription::preRenderForm($form);
+
+    $this->assertEmpty($form['date']['#error_no_message'] ?? NULL);
+    $this->assertTrue($form['date']['start']['#error_no_message']);
+    $this->assertTrue($form['date']['start']['deep']['#error_no_message']);
+    $this->assertTrue($form['date']['end']['#error_no_message']);
+    $this->assertEmpty($form['date']['other']['#error_no_message'] ?? NULL);
+    // A sibling of the failing element keeps its own message.
+    $this->assertEmpty($form['title']['#error_no_message'] ?? NULL);
+  }
+
+  /**
+   * An error on a container that prints nothing still shows on its child.
+   *
+   * @covers ::preRenderForm
+   */
+  public function testErrorOnPlainContainerStillShown(): void {
+    $error = 'Too many items';
+    $form = [
+      'widget' => [
+        '#errors' => $error,
+        0 => $this->invalidTextfield(['#errors' => $error]),
+      ],
+    ];
+    $form = FormErrorDescription::preRenderForm($form);
+
+    $this->assertEmpty($form['widget'][0]['#error_no_message'] ?? NULL);
+  }
+
+  /**
+   * The #pre_render callbacks are trusted, or Drupal refuses to call them.
    *
    * @covers ::trustedCallbacks
    */
   public function testPreRenderTrusted(): void {
     $this->assertContains('preRenderDatetime', FormErrorDescription::trustedCallbacks());
+    $this->assertContains('preRenderForm', FormErrorDescription::trustedCallbacks());
   }
 
 }

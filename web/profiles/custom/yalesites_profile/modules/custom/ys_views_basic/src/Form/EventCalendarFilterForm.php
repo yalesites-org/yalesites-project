@@ -2,9 +2,16 @@
 
 namespace Drupal\ys_views_basic\Form;
 
+use Drupal\Core\Ajax\AjaxResponse;
+use Drupal\Core\Ajax\AnnounceCommand;
+use Drupal\Core\Ajax\ReplaceCommand;
+use Drupal\Core\Datetime\DrupalDateTime;
 use Drupal\Core\Form\FormBase;
+use Drupal\Core\Form\FormBuilderInterface;
 use Drupal\Core\Form\FormStateInterface;
 use Drupal\Core\Entity\EntityTypeManagerInterface;
+use Drupal\Core\StringTranslation\TranslatableMarkup;
+use Drupal\ys_views_basic\Service\ExposedTaxonomyFilterOptions;
 use Drupal\ys_views_basic\ViewsBasicManager;
 use Drupal\ys_views_basic\Service\EventsCalendar;
 use Symfony\Component\DependencyInjection\ContainerInterface;
@@ -90,6 +97,7 @@ class EventCalendarFilterForm extends FormBase {
       'atomic/chosen-select',
       'atomic/calendar',
       'ys_views_basic/ys_views_basic',
+      'ys_views_basic/event_calendar_live_filter',
     ];
 
     // Store the calendar wrapper ID in the form state.
@@ -109,8 +117,12 @@ class EventCalendarFilterForm extends FormBase {
     // Add hidden fields.
     $this->addHiddenFields($form, $paramsDecoded, $form_state);
 
-    // Render initial calendar.
-    $this->renderCalendar($form, $this->getFiltersFromParams($paramsDecoded), $form_state);
+    // Render the calendar. A rebuild comes from a no-JS Apply, so it shows the
+    // visitor's choices; a first load shows only the block's own filters.
+    $filters = $form_state->isRebuilding()
+      ? $this->getFiltersFromFormState($form_state)
+      : $this->getFiltersFromParams($paramsDecoded);
+    $this->renderCalendar($form, $filters, $form_state);
 
     return $form;
   }
@@ -119,15 +131,21 @@ class EventCalendarFilterForm extends FormBase {
    * {@inheritdoc}
    */
   public function submitForm(array &$form, FormStateInterface $form_state) {
-    // Form submission is handled via AJAX callback.
-    // This method is called but the actual filtering happens in
-    // ajaxFilterCallback.
+    // With JavaScript, filtering happens in ajaxFilterCallback. Without it,
+    // Apply is a plain POST: rebuild so the calendar renders the submitted
+    // filters instead of redirecting back to an unfiltered page.
+    if (!$this->getRequest()->query->has(FormBuilderInterface::AJAX_FORM_REQUEST)) {
+      $form_state->setRebuild();
+    }
   }
 
   /**
    * AJAX callback for filter form.
+   *
+   * Replaces the calendar and announces the new result count to screen
+   * readers, since filters apply without the visitor pressing a button.
    */
-  public function ajaxFilterCallback(array &$form, FormStateInterface $form_state) {
+  public function ajaxFilterCallback(array &$form, FormStateInterface $form_state): AjaxResponse {
     // Ensure navigated month/year from user input are persisted in form state.
     $user_input = (array) $form_state->getUserInput();
     $filters_container_input = $user_input['filters_container'] ?? [];
@@ -195,8 +213,41 @@ class EventCalendarFilterForm extends FormBase {
     // Render updated calendar.
     $this->renderCalendar($form, $filters, $form_state);
 
-    // Return just the calendar container.
-    return $form['calendar_container']['calendar'];
+    $calendar = $form['calendar_container']['calendar'];
+    $response = new AjaxResponse();
+    $response->addCommand(new ReplaceCommand('#' . self::CALENDAR_WRAPPER_ID, $calendar));
+    $response->addCommand(new AnnounceCommand((string) $this->buildResultsAnnouncement($calendar['calendar_content']['#month_data']), 'polite'));
+    return $response;
+  }
+
+  /**
+   * Builds the screen reader message for the calendar's results.
+   *
+   * @param array $grid
+   *   The calendar grid from EventsCalendar::getCalendar(). Its second row
+   *   always lies in the displayed month; the first and last rows can hold
+   *   days from the adjacent months, which are not counted.
+   *
+   * @return \Drupal\Core\StringTranslation\TranslatableMarkup
+   *   The message, counting each event once however many days it spans.
+   */
+  protected function buildResultsAnnouncement(array $grid): TranslatableMarkup {
+    $month = $grid[1][0]['date']['month'] ?? date('m');
+    $year = $grid[1][0]['date']['year'] ?? date('Y');
+    $urls = [];
+    foreach ($grid as $row) {
+      foreach ($row as $cell) {
+        if ($cell['date']['month'] === $month && $cell['date']['year'] === $year) {
+          foreach ($cell['events'] as $event) {
+            $urls[$event['url']] = TRUE;
+          }
+        }
+      }
+    }
+    $label = (new DrupalDateTime("$year-$month-01"))->format('F Y');
+    return $urls
+      ? $this->formatPlural(count($urls), '1 event found for @month.', '@count events found for @month.', ['@month' => $label])
+      : $this->t('No events found for @month.', ['@month' => $label]);
   }
 
   /**
@@ -222,7 +273,8 @@ class EventCalendarFilterForm extends FormBase {
 
     $weight = 0;
 
-    // Search filter (no AJAX - will use Apply button).
+    // Search filter. The calendar component debounces typing in inputs with
+    // the ys-events-search-input class; the live filter script then submits.
     if (!empty($exposedFilterOptions['show_search_filter'])) {
       $form['filters_container']['search'] = [
         '#type' => 'textfield',
@@ -230,7 +282,7 @@ class EventCalendarFilterForm extends FormBase {
         '#default_value' => $currentValues['search'],
         '#attributes' => [
           'placeholder' => $this->t('Search events'),
-          'class' => ['form-text'],
+          'class' => ['form-text', 'ys-events-search-input'],
         ],
         '#weight' => $weight++,
       ];
@@ -240,7 +292,7 @@ class EventCalendarFilterForm extends FormBase {
     if (!empty($exposedFilterOptions['show_category_filter'])) {
       $category_element = $this->createFilterElement(
         'Category',
-        $this->getTaxonomyOptions('event_category', $paramsDecoded['category_included_terms'] ?? NULL),
+        $this->getTaxonomyOptions('event_category', $paramsDecoded['category_included_terms'] ?? NULL, $paramsDecoded['terms_exclude'] ?? []),
         $currentValues['category']
       );
       // Remove AJAX from filter element.
@@ -253,7 +305,7 @@ class EventCalendarFilterForm extends FormBase {
     if (!empty($exposedFilterOptions['show_audience_filter'])) {
       $audience_element = $this->createFilterElement(
         'Audience',
-        $this->getTaxonomyOptions('audience', $paramsDecoded['audience_included_terms'] ?? NULL),
+        $this->getTaxonomyOptions('audience', $paramsDecoded['audience_included_terms'] ?? NULL, $paramsDecoded['terms_exclude'] ?? []),
         $currentValues['audience']
       );
       // Remove AJAX from filter element.
@@ -271,7 +323,7 @@ class EventCalendarFilterForm extends FormBase {
 
       $custom_vocab_element = $this->createFilterElement(
         $custom_vocab_label,
-        $this->getTaxonomyOptions('custom_vocab', $paramsDecoded['custom_vocab_included_terms'] ?? NULL),
+        $this->getTaxonomyOptions('custom_vocab', $paramsDecoded['custom_vocab_included_terms'] ?? NULL, $paramsDecoded['terms_exclude'] ?? []),
         $currentValues['custom_vocab']
       );
       // Remove AJAX from filter element.
@@ -280,7 +332,9 @@ class EventCalendarFilterForm extends FormBase {
       $form['filters_container']['custom_vocab_included_terms'] = $custom_vocab_element;
     }
 
-    // Add Apply button only when at least one filter is configured.
+    // Add Apply button only when at least one filter is configured. With
+    // JavaScript the filters apply themselves, so js-hide hides the button;
+    // without it, Apply is the only way to submit.
     if ($weight > 0) {
       $form['filters_container']['actions'] = [
         '#type' => 'actions',
@@ -293,9 +347,12 @@ class EventCalendarFilterForm extends FormBase {
           'callback' => '::ajaxFilterCallback',
           'wrapper' => self::CALENDAR_WRAPPER_ID,
           'progress' => ['type' => 'none'],
+          // Keep focus on the filter the visitor changed, not the hidden
+          // button that submitted the change.
+          'disable-refocus' => TRUE,
         ],
         '#attributes' => [
-          'class' => ['button', 'button--primary'],
+          'class' => ['button', 'button--primary', 'js-hide'],
         ],
       ];
     }
@@ -315,6 +372,9 @@ class EventCalendarFilterForm extends FormBase {
    *   The filter element array.
    */
   private function createFilterElement(string $title, array $options, $default_value): array {
+    if (!$options) {
+      return ExposedTaxonomyFilterOptions::emptyFilterElement($this->t('@title', ['@title' => $title]));
+    }
     return [
       '#type' => 'select',
       '#title' => $this->t('@title', ['@title' => $title]),
@@ -338,11 +398,16 @@ class EventCalendarFilterForm extends FormBase {
    *   The vocabulary machine name.
    * @param mixed $parent_term_id
    *   The parent term ID from widget configuration, if any.
+   * @param array $excluded
+   *   The widget's excluded terms: plain ids, or legacy target_id arrays.
+   *   They are never offered, since picking one would return no events.
    *
    * @return array
    *   The taxonomy options.
    */
-  private function getTaxonomyOptions(string $vocabulary, $parent_term_id = NULL): array {
+  private function getTaxonomyOptions(string $vocabulary, $parent_term_id = NULL, array $excluded = []): array {
+    $excluded = array_map(fn ($term) => (int) (is_array($term) ? $term['target_id'] : $term), $excluded);
+
     // If a parent term is selected in the widget, show only its children.
     if (!empty($parent_term_id)) {
       $options = [];
@@ -357,13 +422,13 @@ class EventCalendarFilterForm extends FormBase {
         }
       }
 
-      return $options;
+      return ExposedTaxonomyFilterOptions::reduceTermsForExposure($options, $excluded);
     }
 
     // Default behavior: show all parent terms.
     $options = $this->viewsBasicManager->getTaxonomyParents($vocabulary);
     unset($options['']);
-    return $options;
+    return ExposedTaxonomyFilterOptions::reduceTermsForExposure($options, $excluded);
   }
 
   /**

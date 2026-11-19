@@ -11,7 +11,7 @@ id: block_content.image_banner.field_media
 field_name: field_media
 entity_type: block_content
 bundle: image_banner
-label: Image
+label: Media
 description: ''
 required: true
 translatable: false

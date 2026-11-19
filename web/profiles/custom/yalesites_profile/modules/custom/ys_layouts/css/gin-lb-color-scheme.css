@@ -1,0 +1,36 @@
+/**
+ * @file
+ * Native colour scheme for the form controls in gin_lb's Layout Builder forms.
+ *
+ * `color-scheme` tells the browser which palette to draw the parts of a control
+ * it owns: number-input stepper arrows, date-picker icons, select popups,
+ * scrollbars. Gin declares `.gin--dark-mode .form-element { color-scheme: dark }`
+ * for this, but the rule never reaches a Layout Builder form. The page renders
+ * in the front-end theme, so Gin's base stylesheet is not loaded, and gin_lb
+ * renames `form-element` to `glb-form-element` (its src/classes.json), so the
+ * copy in Gin's dialog stylesheet, which is loaded, no longer matches. gin_lb
+ * declares no color-scheme of its own. In dark mode every gin_lb input
+ * therefore gets gin_lb's dark background with light-scheme native widgets
+ * drawn on top: the stepper arrows on "Limit to N items" and "Skip the first N
+ * results" are dark-on-dark.
+ *
+ * Light mode is pinned too, not left to the browser default the way Gin leaves
+ * it. Gin owns its whole page; gin_lb shares the page with the front-end theme,
+ * and color-scheme inherits, so a front-end `color-scheme: light dark` would
+ * otherwise draw dark widgets on gin_lb's light background whenever the OS is
+ * in dark mode. Atomic declares none today, so this changes nothing visible in
+ * light mode.
+ *
+ * ys_layouts_library_info_alter() makes this a dependency of gin_lb's own
+ * stylesheet, so it loads exactly where the glb- classes it targets are
+ * rendered. It lives here rather than in the ys_admin_theme admin theme
+ * because none of ys_admin_theme's stylesheets load on the Layout Builder
+ * surface. Drop it once gin_lb declares color-scheme itself.
+ */
+.glb-form-element {
+  color-scheme: light;
+}
+
+.gin--dark-mode .glb-form-element {
+  color-scheme: dark;
+}
