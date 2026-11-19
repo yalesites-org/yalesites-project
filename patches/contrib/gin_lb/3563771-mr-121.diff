@@ -1,0 +1,12 @@
+diff --git a/src/TwigExtension/GinLbExtension.php b/src/TwigExtension/GinLbExtension.php
+index 7dbdb5764a8de49cbfdc15f0a7a236d389c9eab1..166ca7477dcbe5ab4b7030f77361ab366c222212 100644
+--- a/src/TwigExtension/GinLbExtension.php
++++ b/src/TwigExtension/GinLbExtension.php
+@@ -80,6 +80,7 @@ class GinLbExtension extends AbstractExtension {
+     // and the custom glb one.
+     $script_classes = [
+       'form-autocomplete',
++      'views-exposed-form',
+     ];
+ 
+     /** @var \Drupal\Core\Template\AttributeArray $attribute_classes */

@@ -2,8 +2,7 @@
 
 namespace Drupal\Tests\ys_core\Traits;
 
-use Drupal\Component\Annotation\Doctrine\SimpleAnnotationReader;
-use Drupal\Core\Block\Annotation\Block;
+use Drupal\Core\Block\Attribute\Block;
 use Drupal\Core\Block\BlockPluginInterface;
 use Drupal\Core\Cache\Cache;
 use Drupal\Core\DependencyInjection\ContainerBuilder;
@@ -19,7 +18,7 @@ use Drupal\Core\Plugin\ContextAwarePluginInterface;
  * Shared by every block that prefers the entity Layout Builder is rendering
  * over a node named by the route. Each of those test classes needs the same
  * scaffolding -- a container carrying the services a context-aware plugin
- * reaches for, a context-definition fixture matching the real annotation, a
+ * reaches for, a context-definition fixture matching the real attribute, a
  * way to put an entity into the block's context, and the two guards for the
  * trait's own behaviour -- so it lives here instead of being copied per block.
  */
@@ -28,7 +27,7 @@ trait LayoutBuilderEntityContextTestTrait {
   /**
    * Sets up the container a context-aware block plugin needs.
    *
-   * The @Translation inside the plugin annotation renders through
+   * The TranslatableMarkup inside the plugin attribute renders through
    * string_translation, and BlockBase's configuration form reaches for
    * context.handler once the plugin declares a context.
    */
@@ -40,7 +39,7 @@ trait LayoutBuilderEntityContextTestTrait {
   }
 
   /**
-   * Context definitions fixture matching the block's real annotation.
+   * Context definitions fixture matching the block's real attribute.
    *
    * @param string $class
    *   The block plugin class under test.
@@ -72,33 +71,35 @@ trait LayoutBuilderEntityContextTestTrait {
   }
 
   /**
-   * Asserts the real annotation declares the slot Layout Builder publishes.
+   * Asserts the real attribute declares the slot Layout Builder publishes.
    *
    * This is the guard for the whole approach, so it deliberately reads the
-   * real @Block annotation through the same annotation reader plugin discovery
-   * uses, rather than the hand-built definition the test passes in --
-   * asserting the fixture would only prove the fixture. Renaming the
-   * annotation's slot to "entity" would still resolve while rendering but NOT
-   * during Layout Builder preview, where OverridesSectionStorage unsets
-   * "entity", and would put back the need to rewrite the stored
-   * context_mapping of every node with an overridden layout. Optional is
-   * asserted too: a required slot would throw where no entity is offered
-   * instead of degrading to the route.
+   * real #[Block] attribute off the class, rather than the hand-built
+   * definition the test passes in -- asserting the fixture would only prove
+   * the fixture. Renaming the attribute's slot to "entity" would still
+   * resolve while rendering but NOT during Layout Builder preview, where
+   * OverridesSectionStorage unsets "entity", and would put back the need to
+   * rewrite the stored context_mapping of every node with an overridden
+   * layout. Optional is asserted too: a required slot would throw where no
+   * entity is offered instead of degrading to the route.
+   *
+   * Reading the attribute rather than the plugin manager's definition keeps
+   * this a unit test: reflection needs no container and no discovery pass.
    *
    * @param string $class
    *   The block plugin class under test.
    */
   protected function assertDeclaresLayoutBuilderEntitySlot(string $class): void {
-    $reader = new SimpleAnnotationReader();
-    $reader->addNamespace('Drupal\Core\Block\Annotation');
-    $reader->addNamespace('Drupal\Core\Annotation');
-
-    $annotation = $reader->getClassAnnotation(new \ReflectionClass($class), Block::class);
-    $definition = $annotation->get();
+    // IS_INSTANCEOF mirrors AttributeDiscoveryWithAnnotations, so this asserts
+    // against whatever discovery would actually pick up.
+    $attributes = (new \ReflectionClass($class))
+      ->getAttributes(Block::class, \ReflectionAttribute::IS_INSTANCEOF);
+    $this->assertCount(1, $attributes, $class . ' must declare exactly one #[Block] attribute.');
+    $block = $attributes[0]->newInstance();
 
     $this->assertSame('layout_builder.entity', $class::ENTITY_CONTEXT);
-    $this->assertArrayHasKey($class::ENTITY_CONTEXT, $definition['context_definitions']);
-    $this->assertFalse($definition['context_definitions'][$class::ENTITY_CONTEXT]->isRequired());
+    $this->assertArrayHasKey($class::ENTITY_CONTEXT, $block->context_definitions);
+    $this->assertFalse($block->context_definitions[$class::ENTITY_CONTEXT]->isRequired());
   }
 
   /**

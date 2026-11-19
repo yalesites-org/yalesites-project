@@ -2,21 +2,21 @@
 
 namespace Drupal\ys_views_basic\Plugin\Field\FieldWidget;
 
+use Drupal\Core\Field\Attribute\FieldWidget;
 use Drupal\Core\Field\FieldItemListInterface;
 use Drupal\Core\Form\FormStateInterface;
+use Drupal\Core\StringTranslation\TranslatableMarkup;
+use Drupal\ys_views_basic\ViewsBasicManager;
 
 /**
  * Plugin implementation of the 'event_calendar_default' widget.
- *
- * @FieldWidget(
- *   id = "event_calendar_default_widget",
- *   label = @Translation("Event calendar default widget"),
- *   field_types = {
- *     "event_calendar_basic_params"
- *   }
- * )
  */
-class EventCalendarDefaultWidget extends ViewsBasicDefaultWidget {
+#[FieldWidget(
+  id: 'event_calendar_default_widget',
+  label: new TranslatableMarkup('Event calendar default widget'),
+  field_types: ['event_calendar_basic_params'],
+)]
+class EventCalendarDefaultWidget extends ViewsBasicWidgetBase {
 
   /**
    * Vocabulary IDs used in the widget.
@@ -37,6 +37,23 @@ class EventCalendarDefaultWidget extends ViewsBasicDefaultWidget {
   const TIME_PERIOD_FUTURE = 'future';
   const TIME_PERIOD_PAST = 'past';
   const TIME_PERIOD_ALL = 'all';
+
+  /**
+   * {@inheritdoc}
+   */
+  protected function getContentType(): ?string {
+    return ViewsBasicManager::CONTENT_TYPE_EVENT;
+  }
+
+  /**
+   * {@inheritdoc}
+   *
+   * The calendar widget's only entity-specific control is the event time
+   * period, built by buildEventSpecificOptions().
+   */
+  protected function buildEntitySpecificOptions(array &$form, FieldItemListInterface $items, int $delta): void {
+    $this->buildEventSpecificOptions($form, $items, $delta);
+  }
 
   /**
    * {@inheritdoc}
@@ -339,10 +356,14 @@ class EventCalendarDefaultWidget extends ViewsBasicDefaultWidget {
    *   The form element array.
    */
   private function createTaxonomyFilterElement(string $title, string $vocabulary_id, string $field_name, FieldItemListInterface $items, int $delta, string $visibility_selector): array {
+    $description = $this->t('Select a parent term to limit the choices visitors see in the filter dropdown. This does not hide any events. To show or hide events, use the include and exclude terms.');
+    if ($vocabulary_id === 'event_category') {
+      $description = $this->t('Select a parent term to limit the choices visitors see in the filter dropdown. This does not hide any events. To show or hide events, use the include and exclude terms. Categories imported from Localist that are outside the parent will not appear as choices.');
+    }
     return [
       '#type' => 'select',
       '#title' => $this->t('@title', ['@title' => $title]),
-      '#description' => $this->t("Select a parent term to show content tagged with that terms sub-items. This ignores content tagged as the parent term and any other parent terms in the vocabulary."),
+      '#description' => $description,
       '#options' => $this->viewsBasicManager->getTaxonomyParents($vocabulary_id),
       '#default_value' => $this->getDefaultParamValue($field_name, $items, $delta),
       '#validated' => 'true',

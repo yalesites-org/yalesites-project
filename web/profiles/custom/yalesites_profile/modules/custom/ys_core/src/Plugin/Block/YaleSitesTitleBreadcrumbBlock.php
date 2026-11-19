@@ -2,11 +2,14 @@
 
 namespace Drupal\ys_core\Plugin\Block;
 
+use Drupal\Core\Block\Attribute\Block;
 use Drupal\Core\Block\BlockBase;
 use Drupal\Core\Controller\TitleResolver;
 use Drupal\Core\Form\FormStateInterface;
 use Drupal\Core\Plugin\ContainerFactoryPluginInterface;
+use Drupal\Core\Plugin\Context\ContextDefinition;
 use Drupal\Core\Routing\RouteMatchInterface;
+use Drupal\Core\StringTranslation\TranslatableMarkup;
 use Drupal\node\NodeInterface;
 use Symfony\Component\DependencyInjection\ContainerInterface;
 use Symfony\Component\HttpFoundation\RequestStack;
@@ -16,20 +19,20 @@ use Symfony\Component\HttpFoundation\RequestStack;
  *
  * The "layout_builder.entity" context slot and its name are explained on
  * \Drupal\ys_core\Plugin\Block\LayoutBuilderEntityContextTrait. An
- * annotation cannot be inherited from a trait, so the slot is declared here.
- *
- * @Block(
- *   id = "ys_title_breadcrumb_block",
- *   admin_label = @Translation("YaleSites Page Title and Breadcrumb Block"),
- *   category = @Translation("YaleSites Core"),
- *   context_definitions = {
- *     "layout_builder.entity" = @ContextDefinition("entity",
- *       label = @Translation("Entity being viewed"),
- *       required = FALSE
- *     )
- *   }
- * )
+ * attribute cannot be inherited from a trait, so the slot is declared here.
  */
+#[Block(
+  id: 'ys_title_breadcrumb_block',
+  admin_label: new TranslatableMarkup('YaleSites Page Title and Breadcrumb Block'),
+  category: new TranslatableMarkup('YaleSites Core'),
+  context_definitions: [
+    'layout_builder.entity' => new ContextDefinition(
+      data_type: 'entity',
+      label: new TranslatableMarkup('Entity being viewed'),
+      required: FALSE,
+    ),
+  ],
+)]
 class YaleSitesTitleBreadcrumbBlock extends BlockBase implements ContainerFactoryPluginInterface {
 
   use LayoutBuilderEntityContextTrait;

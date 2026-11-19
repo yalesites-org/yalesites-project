@@ -12,6 +12,7 @@ dependencies:
     - field.field.node.event.field_event_description
     - field.field.node.event.field_event_format
     - field.field.node.event.field_event_id
+    - field.field.node.event.field_event_location_details
     - field.field.node.event.field_event_place
     - field.field.node.event.field_event_recurring
     - field.field.node.event.field_event_room
@@ -412,6 +413,7 @@ content:
 hidden:
   addtoany: true
   field_event_format: true
+  field_event_location_details: true
   field_localist_id: true
   field_login_required: true
   field_metatags: true

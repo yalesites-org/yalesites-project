@@ -50,6 +50,55 @@ cd web/profiles/custom/yalesites_profile/modules/custom
 # Custom modules are added directly to the profile repo.
 ```
 
+## Declaring a plugin
+
+**Write new plugins with a PHP attribute, not a docblock annotation.** Drupal deprecated
+annotation-based plugin discovery in 11.2, requires an attribute class in 12.0, and removes
+annotations entirely in 13.0.
+
+```php
+use Drupal\Core\Block\Attribute\Block;
+use Drupal\Core\StringTranslation\TranslatableMarkup;
+
+/**
+ * Provides a block to render an active alert.
+ */
+#[Block(
+  id: 'alert_block',
+  admin_label: new TranslatableMarkup('Alert block'),
+)]
+class AlertBlock extends BlockBase {
+```
+
+The docblock keeps the human-readable summary and any other tags (`@ingroup`, `@code`
+examples); only the plugin declaration moves out of it and onto the class.
+
+Translatable values become `new TranslatableMarkup(...)` rather than `@Translation(...)`, a
+`deriver` becomes `SomeDeriver::class`, and `{...}` becomes a PHP array. Every attribute class
+documents its own named parameters — read the constructor rather than guessing which keys it
+accepts, because an attribute silently accepts no key its constructor does not declare.
+
+A plugin type only supports attributes when core or the owning contrib module ships an attribute
+class **and** its plugin manager registers it (argument 5 of `DefaultPluginManager::__construct()`).
+A few types used here have no attribute class available and must stay on their annotation:
+
+| Annotation | Owner | Why |
+|---|---|---|
+| `@EmbedSource` | `ys_embed` (**ours**) | No attribute class, and `EmbedSourceManager` registers an annotation only. Unlike the rows below this is not an upstream blocker, just work we have not done: writing an `#[EmbedSource]` attribute and switching our own manager would settle it. |
+| `@MigrateSource` | core `migrate` | `MigrateSourcePluginManager::getDiscovery()` hardcodes annotation-only discovery whatever the constructor was passed, and core ships no `MigrateSource` attribute to carry the annotation's fields. |
+| `@MetatagTag`, `@MetatagGroup` | contrib `metatag` | No `src/Attribute/`. |
+| `@SingleContentSyncFieldProcessor` | contrib `single_content_sync` | No `src/Attribute/`. |
+| `@DataParser` | contrib `migrate_plus` | No `src/Attribute/`. |
+
+Re-check that list when a contrib dependency is bumped — an upstream attribute migration moves a
+row out of it.
+
+`#[FieldType]` types its `category` parameter as a plain `string`, so passing
+`new TranslatableMarkup(...)` throws a `TypeError` where the annotation merely triggered a
+deprecation. Omit it: `FieldTypePluginManager::processDefinition()` has replaced a translatable
+category with the fallback category since Drupal 10.2, so a field type that dropped one loses
+nothing. (`#[Block]` is the opposite case - its `category` is a `?TranslatableMarkup`.)
+
 ## Installing a contrib module or theme
 
 Contributed projects extend the functionality of Drupal to add new features or alter existing functionality. Projects are added to the installation profile and pushed out to all sites on the platform. When developing locally, adding a project to the profile will not automatically rebuild the composer installed dependencies in the parent project. The following process may be followed when installing a contributed project in a local development environment.

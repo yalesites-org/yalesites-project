@@ -35,7 +35,10 @@ trait ColumnReferenceTableTrait {
     return [
       '#type' => 'table',
       '#caption' => $this->t('Recognised columns'),
-      '#header' => [$this->t('Column'), $this->t('Notes')],
+      '#header' => [
+        ['data' => $this->t('Column'), 'scope' => 'col'],
+        ['data' => $this->t('Notes'), 'scope' => 'col'],
+      ],
       '#rows' => $rows,
     ];
   }

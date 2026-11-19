@@ -1,0 +1,29 @@
+{#
+/**
+ * @file
+ * One retrieved source inside a panel's "Sources" list.
+ *
+ * Every source the assistant retrieved is listed, cited or not: what it had
+ * available and declined to use is as diagnostic as what it quoted. The
+ * comparison additionally marks the sources no other run retrieved.
+ *
+ * This is one item of a theme('item_list'), so it renders inline content with
+ * no <li> of its own. Whitespace control is load-bearing throughout — item_list
+ * puts this straight into the <li>, and a stray newline between the flag and
+ * the badge would become a rendered space.
+ *
+ * Available variables:
+ * - link: The source title, as a link when it has an http(s) URL and as plain
+ *   text otherwise. Built in PHP because the scheme allowlist is a decision,
+ *   not markup.
+ * - flag: Whether the source was cited, already translated.
+ * - only_here: TRUE when no other run in this comparison retrieved this
+ *   source. Always FALSE on the single-run page, which has nothing to be
+ *   unique against.
+ * - url: The source URL, shown under the title so a reader can see where a
+ *   source came from without hovering. Empty when the source has none.
+ */
+#}
+{{- link }} — <em>{{ flag }}</em>
+{%- if only_here %}<span class="ys-compare-badge ys-compare-badge--only_here">{{ 'only in this run'|t }}</span>{% endif -%}
+{%- if url %}<br><small>{{ url }}</small>{% endif -%}

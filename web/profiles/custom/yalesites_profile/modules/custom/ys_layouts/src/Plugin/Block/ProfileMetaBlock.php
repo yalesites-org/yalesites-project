@@ -2,10 +2,13 @@
 
 namespace Drupal\ys_layouts\Plugin\Block;
 
+use Drupal\Core\Block\Attribute\Block;
 use Drupal\Core\Block\BlockBase;
 use Drupal\Core\Entity\EntityTypeManagerInterface;
 use Drupal\Core\Form\FormStateInterface;
 use Drupal\Core\Plugin\ContainerFactoryPluginInterface;
+use Drupal\Core\Plugin\Context\ContextDefinition;
+use Drupal\Core\StringTranslation\TranslatableMarkup;
 use Drupal\node\NodeInterface;
 use Drupal\ys_core\Plugin\Block\LayoutBuilderEntityContextTrait;
 use Symfony\Component\DependencyInjection\ContainerInterface;
@@ -16,20 +19,20 @@ use Symfony\Component\HttpFoundation\RequestStack;
  *
  * The "layout_builder.entity" context slot and its name are explained on
  * \Drupal\ys_core\Plugin\Block\LayoutBuilderEntityContextTrait. An
- * annotation cannot be inherited from a trait, so the slot is declared here.
- *
- * @Block(
- *   id = "profile_meta_block",
- *   admin_label = @Translation("Profile Meta Block"),
- *   category = @Translation("YaleSites Layouts"),
- *   context_definitions = {
- *     "layout_builder.entity" = @ContextDefinition("entity",
- *       label = @Translation("Entity being viewed"),
- *       required = FALSE
- *     )
- *   }
- * )
+ * attribute cannot be inherited from a trait, so the slot is declared here.
  */
+#[Block(
+  id: 'profile_meta_block',
+  admin_label: new TranslatableMarkup('Profile Meta Block'),
+  category: new TranslatableMarkup('YaleSites Layouts'),
+  context_definitions: [
+    'layout_builder.entity' => new ContextDefinition(
+      data_type: 'entity',
+      label: new TranslatableMarkup('Entity being viewed'),
+      required: FALSE,
+    ),
+  ],
+)]
 class ProfileMetaBlock extends BlockBase implements ContainerFactoryPluginInterface {
 
   use LayoutBuilderEntityContextTrait;
@@ -182,7 +185,7 @@ class ProfileMetaBlock extends BlockBase implements ContainerFactoryPluginInterf
     // The form field is defined and added to the form array here.
     $form['image_orientation'] = [
       '#type' => 'select',
-      '#title' => $this->t('Image orientation'),
+      '#title' => $this->t('Image Orientation'),
       '#default_value' => $config['image_orientation'] ?? 'portrait',
       '#options' => [
         'landscape' => $this->t('Landscape'),
@@ -192,17 +195,17 @@ class ProfileMetaBlock extends BlockBase implements ContainerFactoryPluginInterf
 
     $form['image_style'] = [
       '#type' => 'select',
-      '#title' => $this->t('Image style'),
+      '#title' => $this->t('Image Style'),
       '#default_value' => $config['image_style'] ?? 'inline',
       '#options' => [
         'inline' => $this->t('Inline'),
-        'outdent' => $this->t('Outdent'),
+        'outdent' => $this->t('Offset'),
       ],
     ];
 
     $form['image_alignment'] = [
       '#type' => 'select',
-      '#title' => $this->t('Image alignment'),
+      '#title' => $this->t('Image Alignment'),
       '#default_value' => $config['image_alignment'] ?? 'left',
       '#options' => [
         'left' => $this->t('Left'),

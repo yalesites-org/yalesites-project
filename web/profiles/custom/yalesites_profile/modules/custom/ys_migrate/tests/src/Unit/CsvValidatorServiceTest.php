@@ -412,6 +412,45 @@ class CsvValidatorServiceTest extends UnitTestCase {
   }
 
   /**
+   * An export's trailing summary row is skipped, not counted or rejected.
+   *
+   * @covers ::validateResourceCsvStructure
+   */
+  public function testValidateResourceCsvStructureSkipsExportSummaryRow() {
+    $path = $this->createCsvFile(
+      "\xEF\xBB\xBFTitle,Description,CAS Protected\n" .
+      "Annual Report,A summary.,No\n" .
+      "Style Guide,How we write.,Yes\n" .
+      "\"Export complete: 2 of 2 rows exported (0 failed, 0 skipped)\"\n"
+    );
+
+    $result = $this->csvValidator->validateResourceCsvStructure($path);
+
+    $this->assertTrue($result['valid']);
+    $this->assertCount(2, $result['data']);
+    $this->assertEquals('CSV file is valid. Found 2 resources.', (string) $result['message']);
+  }
+
+  /**
+   * An export's failed-row placeholder is rejected with a clear message.
+   *
+   * @covers ::validateResourceCsvStructure
+   */
+  public function testValidateResourceCsvStructureRejectsExportPlaceholderRow() {
+    $path = $this->createCsvFile(
+      "Title,Description,CAS Protected\n" .
+      "Annual Report,A summary.,No\n" .
+      "Export failed for node 123,,\n"
+    );
+
+    $result = $this->csvValidator->validateResourceCsvStructure($path);
+
+    $this->assertFalse($result['valid']);
+    $this->assertStringContainsString('Row 3: this row is a placeholder for content that failed to export. Remove it or export again.', (string) $result['message']);
+    $this->assertSame([], $result['data']);
+  }
+
+  /**
    * Headers the importer will silently ignore are reported to the caller.
    *
    * @covers ::getUnknownResourceColumns

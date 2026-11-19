@@ -12,6 +12,8 @@ ys_localist.run_migrations:
     _title: 'Import Localist events now'
   requirements:
     _permission: 'yalesites manage localist+yalesites sync localist'
+    # Changes data on GET, so a token blocks cross-site triggering.
+    _csrf_token: 'TRUE'
 ys_localist.sync_groups:
   path: '/admin/yalesites/localist/sync-groups'
   defaults:
@@ -19,3 +21,4 @@ ys_localist.sync_groups:
     _title: 'Sync Localist groups'
   requirements:
     _permission: 'yalesites manage localist'
+    _csrf_token: 'TRUE'

@@ -91,9 +91,9 @@ class RunMigrationsTest extends UnitTestCase {
       ->method('addStatus')
       ->with('Synchronized 5 events.');
 
-    $response = $this->createController('/admin/yalesites/localist')->runAllMigrations();
+    $response = $this->createController('http://localhost/admin/yalesites/localist')->runAllMigrations();
 
-    $this->assertSame('/admin/yalesites/localist', $response->getTargetUrl());
+    $this->assertSame('http://localhost/admin/yalesites/localist', $response->getTargetUrl());
   }
 
   /**
@@ -107,7 +107,7 @@ class RunMigrationsTest extends UnitTestCase {
       ->method('addError')
       ->with('Localist sync is not enabled. No sync was performed.');
 
-    $this->createController('/admin/yalesites/localist')->runAllMigrations();
+    $this->createController('http://localhost/admin/yalesites/localist')->runAllMigrations();
   }
 
   /**
@@ -116,15 +116,39 @@ class RunMigrationsTest extends UnitTestCase {
   public function testGetRedirectUrlFallsBackToFrontPageWhenNoReferer(): void {
     $this->config->method('get')->with('enable_localist_sync')->willReturn(FALSE);
 
+    $this->setUrlGenerator();
+
+    $response = $this->createController(NULL)->runAllMigrations();
+
+    $this->assertSame('/', $response->getTargetUrl());
+  }
+
+  /**
+   * An off-site Referer redirects to the front page.
+   *
+   * The ys_core SameSiteRedirectTest covers every off-site case; this
+   * only checks both actions use it.
+   *
+   * @covers ::getRedirectUrl
+   */
+  public function testOffSiteRefererRedirectsToFrontPage(): void {
+    $this->config->method('get')->with('enable_localist_sync')->willReturn(FALSE);
+    $this->setUrlGenerator();
+    $referer = 'https://evil.example.com/admin/yalesites/localist';
+
+    $this->assertSame('/', $this->createController($referer)->runAllMigrations()->getTargetUrl());
+    $this->assertSame('/', $this->createController($referer)->syncGroups()->getTargetUrl());
+  }
+
+  /**
+   * Registers a URL generator that resolves the front page to '/'.
+   */
+  protected function setUrlGenerator(): void {
     $url_generator = $this->createMock(UrlGeneratorInterface::class);
     $url_generator->method('generateFromRoute')->with('<front>')->willReturn('/');
     $container = new ContainerBuilder();
     $container->set('url_generator', $url_generator);
     \Drupal::setContainer($container);
-
-    $response = $this->createController(NULL)->runAllMigrations();
-
-    $this->assertSame('/', $response->getTargetUrl());
   }
 
   /**
@@ -140,9 +164,9 @@ class RunMigrationsTest extends UnitTestCase {
       ->method('addStatus')
       ->with('Successfully imported Localist groups.');
 
-    $response = $this->createController('/admin/yalesites/localist')->syncGroups();
+    $response = $this->createController('http://localhost/admin/yalesites/localist')->syncGroups();
 
-    $this->assertSame('/admin/yalesites/localist', $response->getTargetUrl());
+    $this->assertSame('http://localhost/admin/yalesites/localist', $response->getTargetUrl());
   }
 
   /**
@@ -157,7 +181,7 @@ class RunMigrationsTest extends UnitTestCase {
       ->method('addError')
       ->with('Error getting groups. Check that the endpoint is correct.');
 
-    $this->createController('/admin/yalesites/localist')->syncGroups();
+    $this->createController('http://localhost/admin/yalesites/localist')->syncGroups();
   }
 
   /**
@@ -171,7 +195,7 @@ class RunMigrationsTest extends UnitTestCase {
       ->method('addError')
       ->with('Localist sync is not enabled. No sync was performed.');
 
-    $this->createController('/admin/yalesites/localist')->syncGroups();
+    $this->createController('http://localhost/admin/yalesites/localist')->syncGroups();
   }
 
   /**

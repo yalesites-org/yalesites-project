@@ -1,0 +1,41 @@
+uuid: 7c33f195-5f4d-49e5-b8fa-20b62e9c5cea
+langcode: en
+status: true
+dependencies:
+  config:
+    - core.entity_view_mode.media.quote_callout_1_1_
+    - field.field.media.image.field_media_image
+    - field.field.media.image.field_tags
+    - media.type.image
+    - responsive_image.styles.quote_callout_1_1_
+  module:
+    - layout_builder
+    - responsive_image
+third_party_settings:
+  layout_builder:
+    enabled: false
+    allow_custom: false
+id: media.image.quote_callout_1_1_
+targetEntityType: media
+bundle: image
+mode: quote_callout_1_1_
+content:
+  field_media_image:
+    type: responsive_image
+    label: hidden
+    settings:
+      responsive_image_style: quote_callout_1_1_
+      image_link: ''
+      image_loading:
+        attribute: eager
+    third_party_settings: {  }
+    weight: 0
+    region: content
+hidden:
+  addtoany: true
+  created: true
+  field_tags: true
+  name: true
+  search_api_excerpt: true
+  thumbnail: true
+  uid: true

@@ -10,8 +10,9 @@ use Drupal\ys_core\Form\SiteSettingsForm;
 /**
  * Tests the Site email domain validation on the site settings form.
  *
- * YaleSites sends through Mailchimp Transactional, which is authorized to send
- * from exactly two domains. The previous check was
+ * YaleSites sends through Mailchimp Transactional, which delivers only from
+ * domains we have verified with it, so the allowlist is per-domain rather than
+ * a general *.yale.edu allowance. The previous check was
  * `strpos($value, 'yale.edu') === FALSE` - a substring test anywhere in the
  * string - so an address on any other Yale subdomain saved without complaint
  * and then silently bounced, taking every Pre-Built Form submission with it.
@@ -32,6 +33,10 @@ class SiteSettingsFormEmailValidationTest extends UnitTestCase {
     return [
       'plain yale.edu' => ['user@yale.edu'],
       'noreply subdomain' => ['noreply@noreply.yale.edu'],
+      // Verified with Mailchimp for gsa.yale.edu, whose address is on Yale's
+      // mailing-list system and has no @yale.edu equivalent.
+      // See yalesites-org/YaleSites-Internal#1735.
+      'elilists subdomain' => ['yalegsa@elilists.yale.edu'],
       // The domain is case-insensitive, and strpos() got this wrong too.
       'mixed case' => ['Someone@YALE.EDU'],
     ];
@@ -52,8 +57,10 @@ class SiteSettingsFormEmailValidationTest extends UnitTestCase {
    */
   public static function rejectedProvider(): array {
     return [
-      // The reported case: gsa.yale.edu's saved address.
-      'yale subdomain' => ['yalegsa@elilists.yale.edu'],
+      // A Yale subdomain that is not a verified sending domain. This is what
+      // keeps the allowlist honest: adding elilists.yale.edu for #1735 must
+      // not quietly become a *.yale.edu wildcard.
+      'unverified yale subdomain' => ['user@lists.yale.edu'],
       // Passed the old substring check in the local part.
       'allowed domain as local part' => ['yale.edu@gmail.com'],
       // Passed the old substring check as a domain prefix.
@@ -82,7 +89,7 @@ class SiteSettingsFormEmailValidationTest extends UnitTestCase {
     // separately is deliberate - the domains appear in most of the rejected
     // addresses too, so a looser assertion would pass on the echo alone.
     $this->assertStringContainsString(
-      'must end in @yale.edu or @noreply.yale.edu',
+      'must end in @yale.edu, @noreply.yale.edu, or @elilists.yale.edu',
       $error
     );
     $this->assertStringContainsString($email, $error);

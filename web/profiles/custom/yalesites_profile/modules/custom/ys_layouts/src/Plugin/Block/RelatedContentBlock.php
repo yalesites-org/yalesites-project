@@ -3,12 +3,14 @@
 namespace Drupal\ys_layouts\Plugin\Block;
 
 use Drupal\Component\Utility\Html;
+use Drupal\Core\Block\Attribute\Block;
 use Drupal\Core\Block\BlockBase;
 use Drupal\Core\Cache\Cache;
 use Drupal\Core\Entity\EntityTypeManagerInterface;
 use Drupal\Core\Form\FormStateInterface;
 use Drupal\Core\Plugin\ContainerFactoryPluginInterface;
 use Drupal\Core\Routing\RouteMatchInterface;
+use Drupal\Core\StringTranslation\TranslatableMarkup;
 use Drupal\node\NodeInterface;
 use Drupal\views\Views;
 use Drupal\ys_core\Plugin\Block\LayoutBuilderEntityContextTrait;
@@ -28,21 +30,27 @@ use Symfony\Component\HttpFoundation\RequestStack;
  *
  * The "layout_builder.entity" context slot and its name are explained on
  * \Drupal\ys_core\Plugin\Block\LayoutBuilderEntityContextTrait. An
- * annotation cannot be inherited from a trait, so the slot is declared here.
- *
- * @Block(
- *   id = "related_content_block",
- *   admin_label = @Translation("Related Content"),
- *   category = @Translation("YaleSites Layouts"),
- *   description = @Translation("Displays a curated list of related content as cards, sourced from the current page's Related Content field."),
- *   context_definitions = {
- *     "layout_builder.entity" = @ContextDefinition("entity",
- *       label = @Translation("Entity being viewed"),
- *       required = FALSE
- *     )
- *   }
- * )
+ * attribute cannot be inherited from a trait, so the slot is declared here.
  */
+#[Block(
+  id: 'related_content_block',
+  admin_label: new TranslatableMarkup('Related Content'),
+  category: new TranslatableMarkup('YaleSites Layouts'),
+  description: new TranslatableMarkup("Displays a curated list of related content as cards, sourced from the current page's Related Content field."),
+  context_definitions: [
+    'layout_builder.entity' => new ContextDefinition(
+      data_type: 'entity',
+      label: new TranslatableMarkup('Entity being viewed'),
+      required: FALSE,
+    ),
+  ],
+)]
+ */
+#[Block(
+  id: 'related_content_block',
+  admin_label: new TranslatableMarkup('Related Content'),
+  category: new TranslatableMarkup('YaleSites Layouts'),
+)]
 class RelatedContentBlock extends BlockBase implements ContainerFactoryPluginInterface {
 
   use LayoutBuilderEntityContextTrait;

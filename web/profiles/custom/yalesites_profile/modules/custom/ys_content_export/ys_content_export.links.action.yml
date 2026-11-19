@@ -32,3 +32,13 @@ ys_content_export.export_resources:
   title: 'Export to CSV'
   appears_on:
     - view.manage_resources.page_1
+
+ys_content_export.export_people:
+  route_name: ys_content_export.export_people
+  class: 'Drupal\ys_content_export\Plugin\Menu\LocalAction\ContentExportLocalAction'
+  title: 'Export to CSV'
+  appears_on:
+    - entity.user.collection
+  # Sits after "Add NetId user(s)" (ys_core, weight 1), which itself follows
+  # core's "Add user" (weight 0), so Export is the last action on the page.
+  weight: 2

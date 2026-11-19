@@ -3,6 +3,7 @@
 namespace Drupal\ys_migrate\Batch;
 
 use Drupal\Core\StringTranslation\TranslatableMarkup;
+use Drupal\ys_migrate\Service\CsvImportServiceInterface;
 
 /**
  * Batch API glue shared by the profile and resource CSV importers.
@@ -29,12 +30,10 @@ class CsvImportBatch {
    * Builds a batch definition that imports $rows through $options.
    *
    * @param array $options
-   *   Batch options: 'import_service_id' (service id of an import service
-   *   exposing processImport(array $rows, bool $skip_duplicates): array,
-   *   returning 'created', 'skipped', 'errors' and, optionally,
-   *   'needs_media' keys), 'skip_duplicates' (whether to skip duplicates),
-   *   and 'entity_label' (singular noun for the imported entity, e.g.
-   *   'profile' or 'resource').
+   *   Batch options: 'import_service_id' (service id of a service
+   *   implementing \Drupal\ys_migrate\Service\CsvImportServiceInterface),
+   *   'skip_duplicates' (whether to skip duplicates), and 'entity_label'
+   *   (singular noun for the imported entity, e.g. 'profile' or 'resource').
    * @param array $rows
    *   The full set of already-parsed CSV rows.
    * @param int $file_id
@@ -91,7 +90,20 @@ class CsvImportBatch {
       ];
     }
 
-    $chunk_result = \Drupal::service($options['import_service_id'])->processImport($chunk, $options['skip_duplicates']);
+    $import_service = \Drupal::service($options['import_service_id']);
+
+    // Resolved from a serialized id in a later request, so the type is not
+    // guaranteed here. Naming the service beats a fatal "call to undefined
+    // method" from inside a batch operation.
+    if (!$import_service instanceof CsvImportServiceInterface) {
+      throw new \InvalidArgumentException(sprintf(
+        'The service "%s" must implement %s to be used as a CSV import service.',
+        $options['import_service_id'],
+        CsvImportServiceInterface::class
+      ));
+    }
+
+    $chunk_result = $import_service->processImport($chunk, $options['skip_duplicates']);
 
     $context['results']['created'] += $chunk_result['created'];
     $context['results']['skipped'] += $chunk_result['skipped'];

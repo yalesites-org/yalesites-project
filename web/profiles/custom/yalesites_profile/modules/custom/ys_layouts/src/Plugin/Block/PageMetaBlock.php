@@ -2,13 +2,18 @@
 
 namespace Drupal\ys_layouts\Plugin\Block;
 
+use Drupal\Core\Block\Attribute\Block;
 use Drupal\Core\Block\BlockBase;
 use Drupal\Core\Controller\TitleResolver;
 use Drupal\Core\Form\FormStateInterface;
 use Drupal\Core\Plugin\ContainerFactoryPluginInterface;
+use Drupal\Core\Plugin\Context\ContextDefinition;
 use Drupal\Core\Routing\RouteMatchInterface;
+use Drupal\Core\StringTranslation\TranslatableMarkup;
 use Drupal\node\NodeInterface;
+use Drupal\ys_themes\ColorTokenResolver;
 use Drupal\ys_core\Plugin\Block\LayoutBuilderEntityContextTrait;
+use Drupal\ys_layouts\Plugin\Layout\YSLayoutOptions;
 use Symfony\Component\DependencyInjection\ContainerInterface;
 use Symfony\Component\HttpFoundation\RequestStack;
 
@@ -17,20 +22,20 @@ use Symfony\Component\HttpFoundation\RequestStack;
  *
  * The "layout_builder.entity" context slot and its name are explained on
  * \Drupal\ys_core\Plugin\Block\LayoutBuilderEntityContextTrait. An
- * annotation cannot be inherited from a trait, so the slot is declared here.
- *
- * @Block(
- *   id = "page_meta_block",
- *   admin_label = @Translation("Page Meta Block"),
- *   category = @Translation("YaleSites Layouts"),
- *   context_definitions = {
- *     "layout_builder.entity" = @ContextDefinition("entity",
- *       label = @Translation("Entity being viewed"),
- *       required = FALSE
- *     )
- *   }
- * )
+ * attribute cannot be inherited from a trait, so the slot is declared here.
  */
+#[Block(
+  id: 'page_meta_block',
+  admin_label: new TranslatableMarkup('Page Meta Block'),
+  category: new TranslatableMarkup('YaleSites Layouts'),
+  context_definitions: [
+    'layout_builder.entity' => new ContextDefinition(
+      data_type: 'entity',
+      label: new TranslatableMarkup('Entity being viewed'),
+      required: FALSE,
+    ),
+  ],
+)]
 class PageMetaBlock extends BlockBase implements ContainerFactoryPluginInterface {
 
   use LayoutBuilderEntityContextTrait;
@@ -57,6 +62,13 @@ class PageMetaBlock extends BlockBase implements ContainerFactoryPluginInterface
   protected $requestStack;
 
   /**
+   * The color token resolver.
+   *
+   * @var \Drupal\ys_themes\ColorTokenResolver
+   */
+  protected ColorTokenResolver $colorTokenResolver;
+
+  /**
    * Constructs a new PageMetaBlock object.
    *
    * @param array $configuration
@@ -71,12 +83,15 @@ class PageMetaBlock extends BlockBase implements ContainerFactoryPluginInterface
    *   The title resolver.
    * @param \Symfony\Component\HttpFoundation\RequestStack $request_stack
    *   The request stack.
+   * @param \Drupal\ys_themes\ColorTokenResolver $color_token_resolver
+   *   The color token resolver, used for the section theme dropdown picker.
    */
-  public function __construct(array $configuration, $plugin_id, $plugin_definition, RouteMatchInterface $route_match, TitleResolver $title_resolver, RequestStack $request_stack) {
+  public function __construct(array $configuration, $plugin_id, $plugin_definition, RouteMatchInterface $route_match, TitleResolver $title_resolver, RequestStack $request_stack, ColorTokenResolver $color_token_resolver) {
     parent::__construct($configuration, $plugin_id, $plugin_definition);
     $this->routeMatch = $route_match;
     $this->titleResolver = $title_resolver;
     $this->requestStack = $request_stack;
+    $this->colorTokenResolver = $color_token_resolver;
   }
 
   /**
@@ -90,6 +105,7 @@ class PageMetaBlock extends BlockBase implements ContainerFactoryPluginInterface
       $container->get('current_route_match'),
       $container->get('title_resolver'),
       $container->get('request_stack'),
+      $container->get('ys_themes.color_token_resolver'),
     );
   }
 
@@ -196,7 +212,29 @@ class PageMetaBlock extends BlockBase implements ContainerFactoryPluginInterface
       '#description' => $this->t('Breadcrumbs help visitors understand where a page sits within the site. They are shown by default.'),
     ];
 
+    // Same options and dropdown picker as a One column section's Section Theme.
+    $form['section_theme'] = YSLayoutOptions::sectionThemeElement($config['section_theme'] ?? 'default') + [
+      '#after_build' => [
+        [$this, 'processColorPicker'],
+      ],
+    ];
+
     return $form;
+  }
+
+  /**
+   * After build callback to add the color picker palette UI.
+   *
+   * Mirrors YSLayoutOptions::processColorPicker().
+   */
+  public function processColorPicker(array $element, FormStateInterface $form_state) {
+    return $this->colorTokenResolver->processColorPicker(
+      $element,
+      $form_state,
+      $form_state->getCompleteForm(),
+      'layout_section',
+      'ys_layout_options',
+    );
   }
 
   /**
@@ -206,6 +244,7 @@ class PageMetaBlock extends BlockBase implements ContainerFactoryPluginInterface
     parent::blockSubmit($form, $form_state);
     $this->configuration['page_title_display'] = $form_state->getValue('page_title_display');
     $this->configuration['breadcrumb_display'] = $form_state->getValue('breadcrumb_display');
+    $this->configuration['section_theme'] = $form_state->getValue('section_theme');
   }
 
 }

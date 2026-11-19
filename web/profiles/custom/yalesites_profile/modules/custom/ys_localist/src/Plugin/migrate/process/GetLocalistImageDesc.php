@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Drupal\ys_localist\Plugin\migrate\process;
 
 use Drupal\Core\Plugin\ContainerFactoryPluginInterface;
+use Drupal\migrate\Attribute\MigrateProcess;
 use Drupal\migrate\MigrateExecutableInterface;
 use Drupal\migrate\ProcessPluginBase;
 use Drupal\migrate\Row;
@@ -15,17 +16,16 @@ use Symfony\Component\DependencyInjection\ContainerInterface;
 /**
  * Retrieves photo description from Localist based on a photo ID.
  *
- * @MigrateProcessPlugin(
- *   id = "get_localist_image_desc",
- *   handle_multiples = TRUE
- * )
- *
  * @code
  *   field_event_type:
  *     plugin: get_localist_image_desc
  *     source: image_id
  * @endcode
  */
+#[MigrateProcess(
+  id: 'get_localist_image_desc',
+  handle_multiples: TRUE,
+)]
 class GetLocalistImageDesc extends ProcessPluginBase implements ContainerFactoryPluginInterface {
 
   /**

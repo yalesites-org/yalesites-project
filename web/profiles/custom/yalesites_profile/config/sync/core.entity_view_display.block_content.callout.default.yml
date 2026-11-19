@@ -10,6 +10,7 @@ dependencies:
     - field.field.block_content.callout.field_padding_options
     - field.field.block_content.callout.field_style_alignment
     - field.field.block_content.callout.field_style_color
+    - field.field.block_content.callout.field_style_variation
   module:
     - entity_reference_revisions
     - options
@@ -56,6 +57,13 @@ content:
     settings: {  }
     third_party_settings: {  }
     weight: 1
+    region: content
+  field_style_variation:
+    type: list_default
+    label: hidden
+    settings: {  }
+    third_party_settings: {  }
+    weight: 3
     region: content
 hidden:
   field_instructions: true
