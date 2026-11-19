@@ -33,12 +33,6 @@ use Symfony\Component\HttpFoundation\RequestStack;
     ),
   ],
 )]
- */
-#[Block(
-  id: 'profile_contact_block',
-  admin_label: new TranslatableMarkup('Profile Contact Block'),
-  category: new TranslatableMarkup('YaleSites Layouts'),
-)]
 class ProfileContactBlock extends BlockBase implements ContainerFactoryPluginInterface {
 
   use LayoutBuilderEntityContextTrait;

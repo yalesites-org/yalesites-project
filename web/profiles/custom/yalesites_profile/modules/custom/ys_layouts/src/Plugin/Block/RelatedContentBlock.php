@@ -45,12 +45,6 @@ use Symfony\Component\HttpFoundation\RequestStack;
     ),
   ],
 )]
- */
-#[Block(
-  id: 'related_content_block',
-  admin_label: new TranslatableMarkup('Related Content'),
-  category: new TranslatableMarkup('YaleSites Layouts'),
-)]
 class RelatedContentBlock extends BlockBase implements ContainerFactoryPluginInterface {
 
   use LayoutBuilderEntityContextTrait;
