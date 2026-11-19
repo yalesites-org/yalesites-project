@@ -13,7 +13,7 @@ use Drupal\ys_integrations\IntegrationPluginBase;
 #[Integration(
   id: 'ys_ai_tester',
   label: new TranslatableMarkup('AI Tester'),
-  description: new TranslatableMarkup('Batch test the Beacon assistant against a YAML fixture of prompts.'),
+  description: new TranslatableMarkup('Batch test the Beacon assistant against a plain-text list of questions.'),
 )]
 class AiTesterIntegrationPlugin extends IntegrationPluginBase {
 
