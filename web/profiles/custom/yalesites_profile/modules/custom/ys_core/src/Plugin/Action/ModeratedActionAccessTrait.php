@@ -61,8 +61,11 @@ trait ModeratedActionAccessTrait {
     $type_plugin = $workflow->getTypePlugin();
     $from = $type_plugin->getState($entity->moderation_state->value ?: $type_plugin->getInitialState($entity)->id());
     $to = $type_plugin->getState($this->targetModerationState());
-    $valid = \Drupal::service('content_moderation.state_transition_validation')
-      ->isTransitionValid($workflow, $from, $to, $account, $entity);
+    // isTransitionValid() throws when the workflow has no such transition, as
+    // with draft to archived, so check the transition exists first.
+    $valid = $from->canTransitionTo($to->id())
+      && \Drupal::service('content_moderation.state_transition_validation')
+        ->isTransitionValid($workflow, $from, $to, $account, $entity);
 
     return AccessResult::allowedIf($valid)
       ->cachePerPermissions()

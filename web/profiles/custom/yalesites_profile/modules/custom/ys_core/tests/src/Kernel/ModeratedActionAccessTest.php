@@ -182,4 +182,14 @@ class ModeratedActionAccessTest extends YsKernelTestBase {
     $this->assertFalse($result->isAllowed());
   }
 
+  /**
+   * Unpublishing a draft, which has no archive transition, is denied cleanly.
+   */
+  public function testUnpublishOfDraftIsDeniedWithoutException(): void {
+    $account = $this->createEditor();
+    $action = $this->action(ModeratedUnpublish::class, 'entity:unpublish_moderated_action');
+
+    $this->assertFalse($action->access($this->node('draft'), $account, FALSE));
+  }
+
 }
