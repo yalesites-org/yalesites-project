@@ -59,7 +59,7 @@ The run view offers three downloads and the compare view two more, plus a modal.
 
 **Export for AI analysis** (`/tester/compare/A/B/export`) is a modal on the compare view, not a new file. It holds a ready-made research prompt that explains the comparison JSON's structure, a "Copy prompt" button, and a download link for the same `compare-A-B.json`. Attach both to whichever AI assistant you use.
 
-Both CSVs start with a UTF-8 BOM so accented characters open cleanly in Excel. Every cell goes through `RunExporter::csvCell()`. It prefixes a quote to any value starting with `=`, `+`, `-` or `@`, so a spreadsheet cannot run it as a formula. Multiline answers stay in one cell.
+Both CSVs start with a UTF-8 BOM so accented characters open cleanly in Excel. Every cell goes through `RunExporter::csvCell()`. It prefixes a quote to any value that starts with `=`, `+`, `-` or `@`, or with a tab, carriage return or line feed, so a spreadsheet cannot run it as a formula. Leading spaces, tabs and line breaks are skipped before that check, so `  =SUM(A1)` is caught too. Multiline answers stay in one cell.
 
 ## Environments
 
@@ -130,7 +130,7 @@ The only setting is `ys_beacon.settings:ai_tester_question_delay_ms`. It lives i
 
 ### Tests
 
-Unit tests in `tests/src/Unit/` cover the exporter, the comparator, progress, the reconciler, retry and failure logic, and the form guards. `tests/src/Kernel/AiTesterTemplateEscapingTest` compiles the run-summary, compare-run-meta and citation templates from their files, so it runs without installing Beacon. Everything is in the `ys_beacon` PHPUnit group.
+Unit tests in `tests/src/Unit/` cover the exporter, the comparator, progress, the reconciler, retry and failure logic, and the form guards. `tests/src/Kernel/AiTesterTemplateEscapingTest` compiles the run-summary, compare-run-meta and citation templates from their files, so it runs without installing Beacon. Every test is in the `ys_beacon` PHPUnit group; the kernel test also carries `ys_ai_tester`.
 
 ## Related
 
