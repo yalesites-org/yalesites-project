@@ -8,6 +8,274 @@ This README details the process for Drupal migrations at Yale, specifically the 
 
 The Profile CSV Import tool includes a "Download CSV Template" link that redirects users to an external CSV template file. The external URL is hardcoded in the controller and can be updated by developers as needed.
 
+## Post CSV Import
+
+Site owners can bulk-create posts from a spreadsheet at **Content > Manage
+Posts > CSV Import** (`/admin/content/manage-posts/csv-import`, permission
+`create post content`). The form lists every recognised column with a note and
+links to a sample CSV. Like the Resource importer it offers a preview that saves
+nothing, skips duplicates (matched on Title **and** Publish Date, since a series
+such as a weekly update reuses its title), runs the real import as a batch, and
+creates every post as a **draft**, unless the editor ticks **Publish imported
+posts**. That checkbox is shown only to roles that can publish a post by hand
+(`use editorial transition publish`), and the importer checks the permission
+again before publishing.
+
+How the columns land on a post (`PostImportService`):
+
+- **Title** and **Publish Date** are required. An empty Title rejects the file;
+  every other problem fails only its own row and is listed in the preview and
+  the import summary. HTML tags in Publish Date are removed before it is read,
+  since a Drupal 7 date field exports wrapped in a `<span>`.
+- Dates are read from an explicit list of formats, never guessed at
+  (`CsvImportServiceBase::DATE_INPUT_FORMATS`): `2026-03-04`, `3/4/2026`
+  (slashed dates are month first), and the named-month and dotted forms of
+  Drupal 7's built-in date formats, such as `March 4, 2026`, `4 March 2026` and
+  `04.03.2026`. A leading weekday, D7's `(All day)` label, and a time after the
+  date (`03/04/2026 - 2:00pm`, as D7's Post date prints) are dropped. A
+  two-digit year is rejected. This applies to every date column in this module.
+- Every cell is trimmed of whitespace at either end, including non-breaking
+  spaces (U+00A0), and so is every name in a taxonomy cell. A Drupal 7 Views
+  Data Export decodes `&nbsp;` into a real U+00A0, which PHP's `trim()` leaves
+  in place. Non-breaking spaces inside a cell are kept: they display as the
+  `&nbsp;` they were. This applies to every CSV importer in this module.
+- **Body** has no field to go in: a post's content is built in Layout Builder.
+  The importer copies the post bundle's default layout (keeping the locked
+  "Title and Metadata" section, as Layout Builder does when an editor first
+  edits a layout) and adds one inline **Text** block holding the Body to the
+  "Content Section". The block is handed to the node unsaved
+  (`block_serialized`), so saving the post saves it and records its inline block
+  usage. Plain text is turned into paragraphs. The Text block's `basic_html`
+  format allows no `<img>`, `<iframe>`, `<video>` or embedded media, so a Body
+  containing them (or D7 `[[{"type":"media"...}]]` / `[[nid:123]]` tokens, which
+  are removed) is imported without them and listed in the summary as needing
+  images added by hand.
+- **An empty Body is allowed.** A Body with no text, whether empty or only
+  filler such as `<p>&nbsp;</p>`, adds no Text block. A post with an External
+  Source redirects there, so its Body is never shown, and it imports without
+  comment. A post with neither is listed in the summary, because its page
+  shows only the title.
+- **Category**, **Tags**, **Audience**, **Custom Vocab** only accept terms that
+  already exist. Unlike the profile and resource importers, a misspelt term
+  fails its row (`TaxonomyResolverService::findTerm()`) rather than being
+  created.
+- There is no teaser image column: the importer brings in no images, so editors
+  add them to each post after import.
+- **URL Alias** sets the path alias and switches Pathauto off for that post; it
+  must not already be in use. Leave it empty for Pathauto's usual alias.
+- **Author**, **Teaser Title**, **Teaser Text** (capped at the form display's
+  limit), **External Source** and **CAS Login Required** map to their fields.
+
+`ys_content_export` writes **Publish Date**, **Category** and **CAS Protected**
+headers that this importer reads, so a Manage Posts export can be filled in and
+imported; its URL and Published columns are reported as ignored.
+
+The sample CSV has two rows: a post with a Body, and a publication with an
+External Source and no Body.
+
+### Getting a CSV out of Drupal 7
+
+**Feeds can't do it.** In D7, Feeds only imports content; it has no export. If
+a site's posts were first loaded through Feeds, the original CSV may still
+exist, but it won't include any edits made since.
+
+**The easiest route is a View with
+[Views Data Export](https://www.drupal.org/project/views_data_export)
+(7.x-3.x).** It needs no code, and it can be re-run whenever a fresh file is
+needed.
+
+1. Create a View of the news content type, filtered to published nodes and
+   showing all items.
+2. Add a "Data export" display with the CSV style.
+3. In the CSV settings:
+   - Check **Keep HTML tags**. Otherwise the module strips the Body down to
+     plain text.
+   - Leave **Replace newlines** off. The importer handles line breaks inside
+     quoted cells.
+4. Add the fields below. Give each one the importer's column name as its
+   label; the importer doesn't care about upper or lower case.
+
+| Column | D7 field | Settings |
+|---|---|---|
+| Title | Content: Title | Turn off "Link this field to the original piece of content" |
+| Publish Date | Content: Post date, or the site's own date field | Any of D7's Long, Medium or Short formats, or a custom one; the importer reads them all. A date field arrives wrapped in a `<span>`; the importer removes it, so "Strip HTML tags" is optional |
+| Body | Content: Body | Formatter "Default" (the full text, not trimmed) |
+| Category, Tags | The term reference fields | Formatter "Plain text"; all values in one row, separated by `, ` |
+| External Source | A link field, for posts that point to another site | The URL only. Leave Body empty for these posts |
+| URL Alias | Content: Path | Turn off "Use absolute link" |
+| Author | A byline field, if the site has one | Not "User: Name", which is usually a NetID account rather than a byline |
+
+All other columns are optional. A column the importer doesn't recognise is
+listed as ignored and doesn't cause an error.
+
+Things to watch for:
+
+- **Terms:** term names must already exist on the YaleSites site, spelled
+  exactly the same. D7 vocabularies often differ, so the terms need creating
+  first or renaming in the spreadsheet. A term with a comma in its name gets
+  split into two names.
+- **Non-breaking spaces:** the export turns every `&nbsp;` into a real
+  non-breaking space, and most D7 Bodies have some. The importer trims them
+  from the ends of cells and names, ignores paragraphs that hold nothing else,
+  and keeps the rest, so they need no cleaning up.
+- **Empty Bodies:** a post with no Body imports. It is listed in the summary
+  unless it has an External Source.
+- **Excel:**
+  - Excel silently cuts any cell longer than 32,767 characters when it saves,
+    which can truncate long posts. If the file needs editing, use Google
+    Sheets or keep the edits light.
+  - If Excel changes the dates to M/D/YYYY, that's fine; the importer accepts
+    that format.
+- **Day-first dates:** the importer reads `04/03/2026` as April 3. A D7 site
+  whose Long, Medium or Short format puts the day first with slashes
+  (`d/m/Y`) needs a different format chosen in the View.
+- **Links in the Body:** links to D7 files (`/sites/default/files/...`) and
+  `/node/123` links will break, because those files and nodes don't move over.
+- **Images in the Body:** D7 media tags, or the `<img>` tags the "Default"
+  formatter produces from them, are removed. The import lists those posts as
+  needing images added by hand.
+- **URL Alias:** on a D7 site that lives in a subfolder, Content: Path includes
+  the folder name, which needs removing. Leave the column out entirely to use
+  YaleSites' usual pattern of publish date plus title.
+
+If the D7 site can't add a module, a developer with Drush or database access
+could write a short script that outputs the same CSV. With that level of
+access, though, a real migration is usually a better choice than CSV. The
+ONHA, WHC and Sustainability News submodules in `ys_migrate` already pull
+straight from a D7 database.
+
+## Event CSV Import
+
+Site owners can bulk-create events at **Content > Manage Events > CSV Import**
+(`/admin/content/manage-events/csv-import`, permission `create event content`).
+It works like the Post importer: a column guide, a sample CSV, a preview that
+saves nothing, duplicate skipping, a batched import, and every event created
+as a **draft**, unless the editor ticks **Publish imported events**. The events
+workflow publishes new events by default, so the importer sets
+`moderation_state` to draft itself. As for posts, the checkbox is shown only to
+roles that can publish an event by hand (`use events transition publish`), and
+the importer checks the permission again before publishing.
+
+How the columns land on an event (`EventImportService`):
+
+- **Title** and **Start** are required.
+- **Start**, **End** and **All Day** make one Smart Date value, read in the
+  site's timezone (`system.date`, America/New_York; YaleSites users cannot pick
+  their own). The date is read as for posts, followed by an optional time, so
+  `2026-03-04 14:00`, `3/4/2026 2:00 PM`, ISO 8601 and D7's
+  `Wednesday, March 4, 2026 - 2:00pm` all work; End may be a time alone,
+  meaning Start's day. A Start with no time
+  is all day unless All Day says No, and an all-day event is stored as Smart
+  Date's widget stores one: midnight on the first day to 23:59 on the last. A
+  timed event with no End is a point in time. End before Start fails the row.
+  HTML tags in Start and End are removed before they are read, since a Drupal 7
+  date field exports wrapped in a `<span>`. Only the text is read: with "End
+  date only", D7 puts the start in the `<span>`'s `content` attribute. Start's
+  attribute is checked, though, so a D7 format that drops the time (such as
+  "Medium no time") fails the row instead of making every event all day.
+- **Recurring events are out of scope.** Each row is one event with one date;
+  an editor adds a repeat rule in the event form afterwards. Repeat rules are
+  stored separately from the dates and generated by the widget, and no one can
+  be expected to write one in a spreadsheet cell.
+- **Description** goes in `field_event_description` (`basic_html`), handled
+  like a post's Body: D7 tokens removed, plain text made into paragraphs, and
+  events whose Description held images, video or embeds listed in the summary.
+  Unlike a post's Body, it is also stored through `basic_html`'s HTML filter,
+  which drops those images and embeds, because the event page prints the
+  stored Description without running its text format.
+- **Location Details** is the one location field editors fill in, so a location
+  name and address both go there, on separate lines (`restricted_html` turns the
+  line breaks into HTML). Yale Location and Room belong to Localist and are not
+  importable.
+- **Event Experience** takes one existing `event_type` term (In-person, Online,
+  Hybrid). **Event Category**, **Tags**, **Audience** and **Custom Vocab** take
+  existing terms only, as for posts.
+- **Event Website** is the button at the top of the event page. It accepts a
+  full URL or a path on this site. The page uses **Event Website Text** as the
+  button label with no fallback of its own, so the importer defaults it to
+  "Event Website".
+- **Ticket Cost**, **Ticket Registration URL**, **Stream URL**, **Teaser
+  Title**, **Teaser Text**, **CAS Login Required** and **URL Alias** map to
+  their fields. There is no teaser image column.
+- **Event ID** is the event's id on the old site.
+
+### Localist
+
+Imported events cannot conflict with Localist-synced ones in how they are
+identified:
+
+- Every imported event gets the **"CSV import"** Event Source term (created in
+  `event_sources` on first use, as the Localist and Campus Groups migrations
+  create theirs), plus the old id in **Event ID** when the row has one.
+- **Localist ID** is never set. The Localist sync only updates events in its
+  own migrate map and never deletes missing ones, so it does not touch imported
+  events, and the event page treats any event with a Localist ID as a Localist
+  event (Room, ticket API).
+- The Localist-owned fields and taxonomies (Yale Location, Room, Event Type,
+  Groups, Event audience, Event topics) are left out of the template.
+
+What remains is duplicates: if the old site's events are also in Localist, both
+copies will exist. A row is skipped as a duplicate when an event with the same
+title already starts at the same moment, whatever created it, or when its
+Event ID matches one an earlier CSV import stored. IDs are compared within the
+CSV import source only, because Localist and Campus Groups put their own ids in
+the same field.
+
+`ys_content_export` writes **Start**, **End**, **Event Category** and the
+event content columns under the headers this importer reads, so a Manage Events
+export can be edited and imported into another site. Start and End describe the
+first occurrence only; the export's Dates, URL and Published columns are
+reported as ignored.
+
+### Getting an events CSV out of Drupal 7
+
+Use a Views Data Export view as for posts (see
+[Getting a CSV out of Drupal 7](#getting-a-csv-out-of-drupal-7)), here of the
+event content type. **Keep HTML tags** keeps the Description's markup. Add
+these fields, labelled with the importer's column names:
+
+| Column | D7 field | Settings |
+|---|---|---|
+| Title | Content: Title | Turn off "Link this field to the original piece of content" |
+| Start | The event's date field | Display "Start date only"; any format that shows the time, such as D7's Long, Medium or Short. The date arrives wrapped in a `<span>`; the importer removes it, so "Strip HTML tags" is optional |
+| End | The same date field, added a second time | Display "End date only"; same format as Start |
+| Description | Content: Body, or the event's description field | Formatter "Default" (the full text, not trimmed) |
+| Location Details | The location name and address fields | Combine them into one column with "Rewrite results" |
+| Event Website | The event's link field | Formatter "URL, as plain text" |
+| Event Category, Tags | The term reference fields | Formatter "Plain text"; all values in one row, separated by `, ` |
+| URL Alias | Content: Path | Turn off "Use absolute link" |
+| Event ID | Content: Nid | Lets a re-run of the same file skip events it has already imported |
+
+All other columns are optional.
+
+Things to watch for, besides those listed for posts:
+
+- **Repeating dates:** the importer creates one event with one date per row. On
+  the date field's "Multiple field settings", show only the first value, then
+  add the repeat rule in the event form after import. With one row per date
+  instead, each date becomes its own event, and rows after the first that share
+  an Event ID are skipped as duplicates.
+- **Time zone:** the importer reads times as Eastern. Check that the D7 site's
+  default time zone is America/New_York, and if D7 users can set their own,
+  that the person exporting uses Eastern.
+- **All-day events:** a date with no time imports as all day, and so does 00:00
+  to 23:59. If an all-day event exports as 00:00 to 00:00, put `Yes` in an
+  **All Day** column for that row.
+- **Event Experience:** the term (In-person, Online or Hybrid) must exist, as
+  for every taxonomy column.
+- **Localist:** if the old events are also in Localist and the site syncs
+  Localist, import only the events Localist doesn't have. A row with the same
+  title and start as an existing event is skipped, but the Localist sync
+  doesn't check for imported copies.
+- **Excel:** if Excel changes the dates to M/D/YYYY with AM/PM times, that's
+  fine; the importer accepts that format.
+- **URL Alias:** leave the column out to use YaleSites' usual pattern of start
+  date plus title.
+
+The WHC submodule in `ys_migrate` migrates D7 events straight from the
+database, which suits a developer with Drush or database access better than a
+CSV.
+
 ## General Migration Setup
 
 Each migration within Yale is organized into specific migration groups. These groups manage the migration of data and content from old Drupal instances to new ones, focusing on maintaining data integrity and meeting the unique requirements of each site. This document outlines the migrations for the Office of New Haven Affairs (ONHA), but the framework and methods described are applicable to other Yale sites.
@@ -100,7 +368,7 @@ drush migrate:import --tag=whc_node --execute-dependencies
 
 ## Running tests
 
-This module has PHPUnit tests under `tests/src/Unit/` for the CSV importer (`CsvValidatorService`, `TaxonomyResolverService`, `ProfileImportService`, `ProfileCsvImportForm`). Run them from the project root on the local Lando environment, passing the module's `tests` path so PHPUnit only discovers this module's tests (not Drupal core/contrib):
+This module has PHPUnit tests under `tests/src/Unit/` for the CSV importers (`CsvValidatorService`, `TaxonomyResolverService`, `CsvImportBatch`, and the profile, resource and post import services, forms and sample controllers). Run them from the project root on the local Lando environment, passing the module's `tests` path so PHPUnit only discovers this module's tests (not Drupal core/contrib):
 
 ```bash
 lando ssh -c "env SIMPLETEST_DB=mysql://pantheon:pantheon@database/pantheon \

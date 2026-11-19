@@ -490,4 +490,359 @@ class CsvValidatorServiceTest extends UnitTestCase {
     $this->assertCount(17, $columns);
   }
 
+  /**
+   * A well-formed post CSV validates and reports the post count.
+   *
+   * @covers ::validatePostCsvStructure
+   */
+  public function testValidatePostCsvStructureWithValidCsv() {
+    $path = $this->createCsvFile(
+      "Title,Publish Date,Body\n" .
+      "Climate Study,2026-03-04,<p>Findings.</p>\n" .
+      "Weekly Update,2026-03-05,\n"
+    );
+
+    $result = $this->csvValidator->validatePostCsvStructure($path);
+
+    $this->assertTrue($result['valid']);
+    $this->assertEquals('CSV file is valid. Found 2 posts.', (string) $result['message']);
+    $this->assertCount(2, $result['data']);
+    $this->assertSame('Climate Study', $result['data'][0]['title']);
+    $this->assertSame('2026-03-04', $result['data'][0]['publish date']);
+  }
+
+  /**
+   * A post CSV without a Title column is rejected.
+   *
+   * @covers ::validatePostCsvStructure
+   */
+  public function testValidatePostCsvStructureRequiresTitleColumn() {
+    $path = $this->createCsvFile("Publish Date,Body\n2026-03-04,Words\n");
+
+    $result = $this->csvValidator->validatePostCsvStructure($path);
+
+    $this->assertFalse($result['valid']);
+    $this->assertStringContainsString('must contain a "Title" column', (string) $result['message']);
+  }
+
+  /**
+   * A post CSV without a Publish Date column is rejected once, not per row.
+   *
+   * @covers ::validatePostCsvStructure
+   */
+  public function testValidatePostCsvStructureRequiresPublishDateColumn() {
+    $path = $this->createCsvFile("Title,Body\nClimate Study,Words\nWeekly Update,More words\n");
+
+    $result = $this->csvValidator->validatePostCsvStructure($path);
+
+    $this->assertFalse($result['valid']);
+    $this->assertEquals('The CSV file must contain a "Publish Date" column.', (string) $result['message']);
+    $this->assertSame([], $result['data']);
+  }
+
+  /**
+   * An empty Publish Date is left for the importer to report against its row.
+   *
+   * Rejecting the whole file here would block every other row over one gap.
+   *
+   * @covers ::validatePostCsvStructure
+   */
+  public function testValidatePostCsvStructureLeavesCellChecksToTheImporter() {
+    $path = $this->createCsvFile("Title,Publish Date\nNo Date,\nHas Date,2026-03-04\n");
+
+    $result = $this->csvValidator->validatePostCsvStructure($path);
+
+    $this->assertTrue($result['valid']);
+    $this->assertCount(2, $result['data']);
+  }
+
+  /**
+   * A post row with an empty Title is reported by line number.
+   *
+   * @covers ::validatePostCsvStructure
+   */
+  public function testValidatePostCsvStructureRequiresTitleValue() {
+    $path = $this->createCsvFile("Title,Publish Date\nFine,2026-03-04\n,2026-03-05\n");
+
+    $result = $this->csvValidator->validatePostCsvStructure($path);
+
+    $this->assertFalse($result['valid']);
+    $this->assertStringContainsString('Row 3: Title is required.', (string) $result['message']);
+  }
+
+  /**
+   * A quoted Body spanning several lines stays one cell in one row.
+   *
+   * @covers ::validatePostCsvStructure
+   */
+  public function testValidatePostCsvStructureKeepsMultilineBodyInOneRow() {
+    $path = $this->createCsvFile(
+      "Title,Publish Date,Body\n" .
+      "Climate Study,2026-03-04,\"First paragraph.\n\nSecond, with a comma.\"\n" .
+      "Weekly Update,2026-03-05,Short.\n"
+    );
+
+    $result = $this->csvValidator->validatePostCsvStructure($path);
+
+    $this->assertTrue($result['valid']);
+    $this->assertCount(2, $result['data']);
+    $this->assertSame("First paragraph.\n\nSecond, with a comma.", $result['data'][0]['body']);
+    // Row numbers count records, matching the row a spreadsheet shows, not the
+    // file's physical lines, which the multi-line cell above has stretched.
+    $this->assertSame(3, $result['data'][1]['_row_number']);
+  }
+
+  /**
+   * Cells lose whitespace at either end, including non-breaking spaces.
+   *
+   * A Drupal 7 Views Data Export decodes &nbsp; into a real U+00A0, which
+   * trim() leaves in place. Inside a cell it is kept.
+   *
+   * @covers ::validatePostCsvStructure
+   * @covers ::trimCell
+   */
+  public function testValidatePostCsvStructureTrimsNonBreakingSpaces() {
+    $nbsp = "\u{00A0}";
+    $path = $this->createCsvFile(
+      "Title,Publish Date,Tags,Body\n" .
+      "{$nbsp}Spaced Title {$nbsp},2026-03-04{$nbsp},\"Research,{$nbsp}Climate{$nbsp}\",\"<p>10{$nbsp}am</p>{$nbsp}\"\n"
+    );
+
+    $result = $this->csvValidator->validatePostCsvStructure($path);
+
+    $this->assertTrue($result['valid']);
+    $this->assertSame('Spaced Title', $result['data'][0]['title']);
+    $this->assertSame('2026-03-04', $result['data'][0]['publish date']);
+    $this->assertSame("Research,{$nbsp}Climate", $result['data'][0]['tags']);
+    $this->assertSame("<p>10{$nbsp}am</p>", $result['data'][0]['body']);
+  }
+
+  /**
+   * A cell that is not valid UTF-8 is still trimmed, rather than lost.
+   *
+   * @covers ::validatePostCsvStructure
+   * @covers ::trimCell
+   */
+  public function testValidatePostCsvStructureTrimsNonUtf8Cells() {
+    // "Café" as Windows-1252, the encoding Excel's plain "CSV" format writes.
+    $path = $this->createCsvFile("Title,Publish Date\n Caf\xE9 ,2026-03-04\n");
+
+    $result = $this->csvValidator->validatePostCsvStructure($path);
+
+    $this->assertTrue($result['valid']);
+    $this->assertSame("Caf\xE9", $result['data'][0]['title']);
+  }
+
+  /**
+   * Post header aliases fold onto their canonical names.
+   *
+   * "CAS Protected" is the header ys_content_export writes.
+   *
+   * @covers ::validatePostCsvStructure
+   */
+  public function testValidatePostCsvStructureFoldsHeaderAliases() {
+    $path = $this->createCsvFile(
+      "Title,Publish Date,Custom Vocabulary,CAS Protected\n" .
+      "Aliased,2026-03-04,Vocab A,Yes\n"
+    );
+
+    $result = $this->csvValidator->validatePostCsvStructure($path);
+
+    $this->assertTrue($result['valid']);
+    $this->assertSame('Vocab A', $result['data'][0]['custom vocab']);
+    $this->assertSame('Yes', $result['data'][0]['cas login required']);
+    $this->assertSame([], $this->csvValidator->getUnknownPostColumns($result['headers']));
+  }
+
+  /**
+   * A teaser image column is named as ignored: the import brings in no images.
+   *
+   * @covers ::getUnknownPostColumns
+   */
+  public function testGetUnknownPostColumnsIncludesTeaserImage() {
+    $path = $this->createCsvFile(
+      "Title,Publish Date,Teaser Media ID,Featured Image ID\n" .
+      "With Image,2026-03-04,123,123\n"
+    );
+
+    $result = $this->csvValidator->validatePostCsvStructure($path);
+
+    $this->assertTrue($result['valid']);
+    $this->assertSame(['Teaser Media ID', 'Featured Image ID'], $this->csvValidator->getUnknownPostColumns($result['headers']));
+  }
+
+  /**
+   * A Manage Posts export reads back in, its extra columns named as ignored.
+   *
+   * @covers ::validatePostCsvStructure
+   * @covers ::getUnknownPostColumns
+   */
+  public function testValidatePostCsvStructureReadsManagePostsExport() {
+    $path = $this->createCsvFile(
+      "\xEF\xBB\xBFTitle,Publish Date,URL,Published,CAS Protected,Tags,Audience,Custom Vocab,Category\n" .
+      "Climate Study,2026-03-04,/news/climate-study,Yes,No,Research,,,News\n" .
+      "\"Export complete: 1 of 1 rows exported (0 failed, 0 skipped)\"\n"
+    );
+
+    $result = $this->csvValidator->validatePostCsvStructure($path);
+
+    $this->assertTrue($result['valid']);
+    $this->assertCount(1, $result['data']);
+    $this->assertSame(['URL', 'Published'], $this->csvValidator->getUnknownPostColumns($result['headers']));
+  }
+
+  /**
+   * GetExpectedPostColumns() lists the template's columns, in order.
+   *
+   * @covers ::getExpectedPostColumns
+   */
+  public function testGetExpectedPostColumns() {
+    $this->assertSame([
+      'Title',
+      'Publish Date',
+      'Author',
+      'Body',
+      'Category',
+      'Tags',
+      'Audience',
+      'Custom Vocab',
+      'Teaser Title',
+      'Teaser Text',
+      'External Source',
+      'CAS Login Required',
+      'URL Alias',
+    ], array_values($this->csvValidator->getExpectedPostColumns()));
+  }
+
+  /**
+   * An event file without a Start column is rejected once, as a whole.
+   *
+   * @covers ::validateEventCsvStructure
+   */
+  public function testValidateEventCsvStructureRequiresStartColumn() {
+    $path = $this->createCsvFile("Title,Description\nSymposium,Talks\n");
+
+    $result = $this->csvValidator->validateEventCsvStructure($path);
+
+    $this->assertFalse($result['valid']);
+    $this->assertEquals('The CSV file must contain a "Start" column.', (string) $result['message']);
+    $this->assertSame([], $result['data']);
+  }
+
+  /**
+   * An empty Start is left for the importer to report against its row.
+   *
+   * @covers ::validateEventCsvStructure
+   */
+  public function testValidateEventCsvStructureLeavesCellChecksToTheImporter() {
+    $path = $this->createCsvFile("Title,Start\nNo Start,\nHas Start,2026-03-04 14:00\n");
+
+    $result = $this->csvValidator->validateEventCsvStructure($path);
+
+    $this->assertTrue($result['valid']);
+    $this->assertCount(2, $result['data']);
+    $this->assertEquals('CSV file is valid. Found 2 events.', (string) $result['message']);
+  }
+
+  /**
+   * Event header aliases fold onto their canonical names.
+   *
+   * @covers ::validateEventCsvStructure
+   */
+  public function testValidateEventCsvStructureFoldsHeaderAliases() {
+    $path = $this->createCsvFile(
+      "Title,Start Date/Time,End Date,Location,Registration URL,Category,Custom Vocabulary,CAS Protected\n" .
+      "Aliased,2026-03-04 14:00,2026-03-04 15:00,Kroon Hall,https://example.com/r,Lecture,Vocab A,Yes\n"
+    );
+
+    $result = $this->csvValidator->validateEventCsvStructure($path);
+
+    $this->assertTrue($result['valid']);
+    $row = $result['data'][0];
+    $this->assertSame('2026-03-04 14:00', $row['start']);
+    $this->assertSame('2026-03-04 15:00', $row['end']);
+    $this->assertSame('Kroon Hall', $row['location details']);
+    $this->assertSame('https://example.com/r', $row['ticket registration url']);
+    $this->assertSame('Lecture', $row['event category']);
+    $this->assertSame('Vocab A', $row['custom vocab']);
+    $this->assertSame('Yes', $row['cas login required']);
+    $this->assertSame([], $this->csvValidator->getUnknownEventColumns($result['headers']));
+  }
+
+  /**
+   * A Manage Events export reads back in, its extra columns named as ignored.
+   *
+   * The header row is the one ys_content_export writes for events, so a
+   * change to either side that breaks the round trip fails here.
+   *
+   * @covers ::validateEventCsvStructure
+   * @covers ::getUnknownEventColumns
+   */
+  public function testValidateEventCsvStructureReadsManageEventsExport() {
+    $path = $this->createCsvFile(
+      "\xEF\xBB\xBFTitle,Dates,Start,End,URL,Published,CAS Protected,Tags,Audience,Custom Vocab,Event Category," .
+      "Description,Location Details,Event Experience,Event Website,Event Website Text,Ticket Cost," .
+      "Ticket Registration URL,Stream URL\n" .
+      "Symposium,\"Wednesday, March 4th, 2026 2:00 pm EST - 4:30 pm EST\",2026-03-04 14:00,2026-03-04 16:30," .
+      "/events/symposium,Yes,No,Research,,,Lecture,<p>Talks.</p>,\"Kroon Hall\n195 Prospect Street\",In-person," .
+      "https://example.com,Register,Free,,\n" .
+      "\"Export complete: 1 of 1 rows exported (0 failed, 0 skipped)\"\n"
+    );
+
+    $result = $this->csvValidator->validateEventCsvStructure($path);
+
+    $this->assertTrue($result['valid']);
+    $this->assertCount(1, $result['data']);
+    $this->assertSame("Kroon Hall\n195 Prospect Street", $result['data'][0]['location details']);
+    $this->assertSame(['Dates', 'URL', 'Published'], $this->csvValidator->getUnknownEventColumns($result['headers']));
+  }
+
+  /**
+   * A teaser image or Localist column is named as ignored.
+   *
+   * @covers ::getUnknownEventColumns
+   */
+  public function testGetUnknownEventColumnsIncludesImagesAndLocalistFields() {
+    $path = $this->createCsvFile(
+      "Title,Start,Teaser Media ID,Localist ID,Room\n" .
+      "Symposium,2026-03-04 14:00,123,456,Burke Auditorium\n"
+    );
+
+    $result = $this->csvValidator->validateEventCsvStructure($path);
+
+    $this->assertTrue($result['valid']);
+    $this->assertSame(['Teaser Media ID', 'Localist ID', 'Room'], $this->csvValidator->getUnknownEventColumns($result['headers']));
+  }
+
+  /**
+   * GetExpectedEventColumns() lists the template's columns, in order.
+   *
+   * @covers ::getExpectedEventColumns
+   */
+  public function testGetExpectedEventColumns() {
+    $this->assertSame([
+      'Title',
+      'Start',
+      'End',
+      'All Day',
+      'Description',
+      'Location Details',
+      'Event Experience',
+      'Event Website',
+      'Event Website Text',
+      'Ticket Cost',
+      'Ticket Registration URL',
+      'Stream URL',
+      'Event Category',
+      'Tags',
+      'Audience',
+      'Custom Vocab',
+      'Teaser Title',
+      'Teaser Text',
+      'CAS Login Required',
+      'URL Alias',
+      'Event ID',
+    ], array_values($this->csvValidator->getExpectedEventColumns()));
+  }
+
 }

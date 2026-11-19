@@ -253,6 +253,20 @@ class TaxonomyResolverServiceTest extends UnitTestCase {
   }
 
   /**
+   * Non-breaking spaces around a name are trimmed like ordinary spaces.
+   *
+   * A Drupal 7 export decodes &nbsp; into a real U+00A0. One inside a name is
+   * kept.
+   *
+   * @covers ::parseCommaSeparatedValues
+   */
+  public function testParseCommaSeparatedValuesTrimsNonBreakingSpaces() {
+    $result = $this->taxonomyResolver->parseCommaSeparatedValues("Alpha,\u{00A0}Beta\u{00A0}Two\u{00A0},\u{00A0}");
+
+    $this->assertSame(['Alpha', "Beta\u{00A0}Two"], $result);
+  }
+
+  /**
    * A whitespace-only segment is dropped rather than becoming an empty name.
    *
    * Trimming has to happen before the empty values are filtered out. The other
@@ -277,6 +291,64 @@ class TaxonomyResolverServiceTest extends UnitTestCase {
     $result = $this->taxonomyResolver->parseCommaSeparatedValues('0, Alpha');
 
     $this->assertSame(['0', 'Alpha'], $result);
+  }
+
+  /**
+   * FindTerm() returns an existing term and never creates one.
+   *
+   * @covers ::findTerm
+   */
+  public function testFindTermReturnsExistingTerm() {
+    $term = $this->createMock(TermInterface::class);
+    $this->termStorage->method('getQuery')->willReturn($this->mockQuery([5 => '5']));
+    $this->termStorage->method('load')->with('5')->willReturn($term);
+    $this->termStorage->expects($this->never())->method('create');
+
+    $this->assertSame($term, $this->taxonomyResolver->findTerm('News', 'post_category'));
+  }
+
+  /**
+   * FindTerm() returns NULL for an unknown name rather than creating it.
+   *
+   * @covers ::findTerm
+   */
+  public function testFindTermReturnsNullForUnknownName() {
+    $this->termStorage->method('getQuery')->willReturn($this->mockQuery([]));
+    $this->termStorage->expects($this->never())->method('load');
+    $this->termStorage->expects($this->never())->method('create');
+
+    $this->assertNull($this->taxonomyResolver->findTerm('Reserch', 'tags'));
+  }
+
+  /**
+   * A miss is not cached, so a term created afterwards is still found.
+   *
+   * @covers ::findTerm
+   * @covers ::findOrCreateTerm
+   */
+  public function testFindTermDoesNotCacheMisses() {
+    $term = $this->createMock(TermInterface::class);
+    $this->termStorage->expects($this->exactly(2))->method('getQuery')
+      ->willReturnOnConsecutiveCalls($this->mockQuery([]), $this->mockQuery([5 => '5']));
+    $this->termStorage->method('load')->with('5')->willReturn($term);
+
+    $this->assertNull($this->taxonomyResolver->findTerm('Later', 'tags'));
+    $this->assertSame($term, $this->taxonomyResolver->findTerm('Later', 'tags'));
+  }
+
+  /**
+   * A term created by findOrCreateTerm() is then found without a query.
+   *
+   * @covers ::findTerm
+   * @covers ::findOrCreateTerm
+   */
+  public function testFindTermSharesTheRequestCacheWithFindOrCreateTerm() {
+    $term = $this->createMock(TermInterface::class);
+    $this->termStorage->expects($this->once())->method('getQuery')->willReturn($this->mockQuery([]));
+    $this->termStorage->method('create')->willReturn($term);
+
+    $this->assertSame($term, $this->taxonomyResolver->findOrCreateTerm('Fresh', 'tags'));
+    $this->assertSame($term, $this->taxonomyResolver->findTerm('Fresh', 'tags'));
   }
 
 }

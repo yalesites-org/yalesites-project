@@ -254,6 +254,32 @@ class EventsCalendarTest extends UnitTestCase {
   }
 
   /**
+   * An event with no end time renders its start time alone.
+   *
+   * Smart Date stores a missing end as the start, which used to render as
+   * "7:00PM to 7:00PM".
+   *
+   * @covers ::getCalendar
+   */
+  public function testCalendarLabelsEventWithNoEndWithStartTimeOnly() {
+    $start = strtotime('2024-06-15 19:00:00');
+    $node = $this->createMockEventNode([
+      'id' => 1,
+      'event_dates' => [[
+        'value' => $start,
+        'end_value' => $start,
+      ],
+      ],
+    ]);
+    $this->configureNodeStorageToReturn([1 => $node]);
+
+    $events = $this->eventsForDay($this->eventsCalendar->getCalendar('06', '2024'), '15', '06');
+
+    $this->assertCount(1, $events);
+    $this->assertSame('7:00PM', (string) $events[0]['time']);
+  }
+
+  /**
    * A day's event carries categories, tags, title, url, time, and timestamp.
    *
    * @covers ::getCalendar
