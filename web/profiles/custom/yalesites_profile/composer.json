@@ -8,7 +8,7 @@
     }
   },
   "require": {
-    "drupal/address": "2.0.4",
+    "drupal/address": "2.0.6",
     "drupal/addtoany": "2.0.7",
     "drupal/admin_toolbar": "3.6.3",
     "drupal/ai": "1.4.11",
@@ -124,7 +124,12 @@
   "minimum-stability": "dev",
   "prefer-stable": true,
   "config": {
-    "sort-packages": true
+    "sort-packages": true,
+    "allow-plugins": {
+      "drupal/core-composer-scaffold": true,
+      "php-http/discovery": true,
+      "symfony/runtime": true
+    }
   },
   "extra": {
     "enable-patching": true,
