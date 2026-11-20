@@ -14,8 +14,8 @@ use Drupal\metatag\Plugin\metatag\Tag\MetaNameBase;
  *
  * @MetatagTag(
  *   id = "ai_disable_indexing",
- *   label = @Translation("Disable indexing for AI feeds."),
- *   description = @Translation("Remove this content from the AI index."),
+ *   label = @Translation("Exclude from AI feeds and markdown"),
+ *   description = @Translation("Remove this content from the AI index, its .md markdown version, and /llms.txt."),
  *   name = "ai_disable_indexing",
  *   group = "ys_beacon",
  *   weight = 2,

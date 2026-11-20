@@ -15,6 +15,7 @@ use Drupal\Core\Render\Element;
 use Drupal\Core\Routing\RequestContext;
 use Drupal\Core\Session\AccountProxy;
 use Drupal\path_alias\AliasManagerInterface;
+use Drupal\ys_core\AiReadabilitySettings;
 use Drupal\ys_core\SiteMail;
 use Drupal\ys_media\YaleSitesMediaManager;
 use Symfony\Component\DependencyInjection\ContainerInterface;
@@ -399,6 +400,20 @@ class SiteSettingsForm extends ConfigFormBase implements ContainerInjectionInter
       )->toString(),
     ];
 
+    $form['search_and_analytics']['ai_markdown_enabled'] = [
+      '#type' => 'checkbox',
+      '#title' => $this->t('Offer a simple text version of each public page to AI tools'),
+      '#description' => $this->t('Lets AI tools such as chatbots read a plain text copy of your public pages, so they can describe your site accurately. Separate from the setting below.'),
+      '#default_value' => AiReadabilitySettings::isEnabled($yaleConfig, AiReadabilitySettings::MARKDOWN_ENABLED),
+    ];
+
+    $form['search_and_analytics']['ai_block_ai_crawlers'] = [
+      '#type' => 'checkbox',
+      '#title' => $this->t('Ask AI companies not to train their models on this site'),
+      '#description' => $this->t("Asks companies that train AI models not to collect this site's content. AI search tools can still find and link to your pages. This is a request, not a lock, and it is separate from the setting above."),
+      '#default_value' => AiReadabilitySettings::isEnabled($yaleConfig, AiReadabilitySettings::BLOCK_AI_CRAWLERS),
+    ];
+
     $form['content_and_tagging'] = [
       '#type' => 'details',
       '#title' => $this->t('Content and tagging'),
@@ -569,7 +584,9 @@ class SiteSettingsForm extends ConfigFormBase implements ContainerInjectionInter
       ->set('image_fallback.teaser', $form_state->getValue('teaser_image_fallback'))
       ->set('custom_favicon', $form_state->getValue('favicon'))
       ->set('font_pairing', $form_state->getValue('font_pairing'))
-      ->set('cas_app_name', $form_state->getValue('cas_app_name') ?? 'yalesites');
+      ->set('cas_app_name', $form_state->getValue('cas_app_name') ?? 'yalesites')
+      ->set(AiReadabilitySettings::MARKDOWN_ENABLED, (bool) $form_state->getValue('ai_markdown_enabled'))
+      ->set(AiReadabilitySettings::BLOCK_AI_CRAWLERS, (bool) $form_state->getValue('ai_block_ai_crawlers'));
 
     $yaleSiteConfig->save();
 

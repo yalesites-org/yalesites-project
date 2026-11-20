@@ -1,0 +1,34 @@
+services:
+  ys_markdown.path_processor:
+    class: Drupal\ys_markdown\PathProcessor\MarkdownPathProcessor
+    arguments:
+      - '@path_alias.manager'
+    tags:
+      # Above core's alias processor (100), which would otherwise see the
+      # ".md" suffix as part of an unknown alias.
+      - { name: path_processor_inbound, priority: 200 }
+
+  ys_markdown.eligibility:
+    class: Drupal\ys_markdown\MarkdownEligibility
+    arguments:
+      - '@config.factory'
+      - '@ys_beacon.indexability'
+      - '@path_alias.manager'
+      - '@path.matcher'
+
+  ys_markdown.public_html_filter:
+    class: Drupal\ys_markdown\PublicHtmlFilter
+
+  ys_markdown.builder:
+    class: Drupal\ys_markdown\MarkdownBuilder
+    arguments:
+      - '@entity_type.manager'
+      - '@renderer'
+      - '@account_switcher'
+      - '@request_stack'
+      - '@ys_markdown.public_html_filter'
+
+  ys_markdown.robotstxt_invalidator:
+    class: Drupal\ys_markdown\EventSubscriber\RobotsTxtInvalidator
+    tags:
+      - { name: event_subscriber }

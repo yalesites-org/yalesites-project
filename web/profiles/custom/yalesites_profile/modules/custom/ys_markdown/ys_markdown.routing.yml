@@ -1,0 +1,23 @@
+ys_markdown.node:
+  path: '/node/{node}/md'
+  defaults:
+    _controller: '\Drupal\ys_markdown\Controller\MarkdownController::node'
+    # Keep the redirect module's route normalizer from redirecting a
+    # ".md" request to this route's own /node/N/md URL.
+    _disable_route_normalizer: TRUE
+  requirements:
+    # Eligibility performs the anonymous view-access check itself, so a node
+    # the public cannot see answers 404 rather than revealing it with a 403.
+    _access: 'TRUE'
+  options:
+    parameters:
+      node:
+        type: entity:node
+
+ys_markdown.llms:
+  path: '/llms.txt'
+  defaults:
+    _controller: '\Drupal\ys_markdown\Controller\AiDirectivesController::llms'
+    _disable_route_normalizer: TRUE
+  requirements:
+    _access: 'TRUE'
