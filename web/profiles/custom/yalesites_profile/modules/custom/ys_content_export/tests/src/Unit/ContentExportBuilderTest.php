@@ -8,6 +8,7 @@ use Drupal\Core\Field\EntityReferenceFieldItemListInterface;
 use Drupal\Core\Url;
 use Drupal\Tests\UnitTestCase;
 use Drupal\node\NodeInterface;
+use Drupal\user\UserInterface;
 use Drupal\ys_content_export\ContentExportBuilder;
 
 /**
@@ -105,6 +106,8 @@ class ContentExportBuilderTest extends UnitTestCase {
         'field_audience',
         'field_custom_vocab',
         'field_category',
+        'revision_timestamp',
+        'revision_uid',
       ],
       array_keys($page)
     );
@@ -354,6 +357,157 @@ class ContentExportBuilderTest extends UnitTestCase {
 
     $row = ContentExportBuilder::getRow($node, 'resource', $this->dateFormatter());
     $this->assertSame("'-2026-04-01", $row[1]);
+  }
+
+  /**
+   * Tests Updated and Last Updated By close every row, with the screen headers.
+   *
+   * They come after every column earlier exports already had, so a spreadsheet
+   * built against those keeps its column positions.
+   *
+   * @param string $bundle
+   *   The node bundle machine name.
+   * @param string $updated_key
+   *   The field the bundle's Manage screen renders its Updated column from.
+   *
+   * @dataProvider updatedColumnProvider
+   * @covers ::getColumns
+   */
+  public function testUpdatedColumnsCloseEveryRow(string $bundle, string $updated_key): void {
+    $columns = ContentExportBuilder::getColumns($bundle);
+    $this->assertSame(
+      [$updated_key => 'Updated', 'revision_uid' => 'Last Updated By'],
+      array_slice($columns, -2, 2, TRUE)
+    );
+  }
+
+  /**
+   * Provides every bundle and the field its Updated column reads.
+   *
+   * Manage Profiles renders Updated from the node's changed time; the other
+   * four Manage views render the current revision's creation time.
+   *
+   * @return array
+   *   Cases: [bundle, Updated column key].
+   */
+  public static function updatedColumnProvider(): array {
+    return [
+      'pages' => ['page', 'revision_timestamp'],
+      'posts' => ['post', 'revision_timestamp'],
+      'events' => ['event', 'revision_timestamp'],
+      'profiles' => ['profile', 'changed'],
+      'resources' => ['resource', 'revision_timestamp'],
+    ];
+  }
+
+  /**
+   * Tests the Updated cell renders a sortable date and time.
+   *
+   * @param string $key
+   *   The Updated column key.
+   * @param int $timestamp
+   *   The stored timestamp.
+   * @param string $expected
+   *   The expected cell output.
+   *
+   * @dataProvider updatedProvider
+   * @covers ::cellValue
+   * @covers ::updated
+   */
+  public function testUpdatedCell(string $key, int $timestamp, string $expected): void {
+    $node = $this->createMock(NodeInterface::class);
+    $getter = $key === 'changed' ? 'getChangedTime' : 'getRevisionCreationTime';
+    $node->method($getter)->willReturn($timestamp);
+
+    $method = new \ReflectionMethod(ContentExportBuilder::class, 'cellValue');
+    $method->setAccessible(TRUE);
+    $this->assertSame($expected, $method->invoke(NULL, $node, $key, $this->dateFormatter()));
+  }
+
+  /**
+   * Provides Updated timestamps and their expected cell output.
+   *
+   * @return array
+   *   Cases: [column key, timestamp, expected].
+   */
+  public static function updatedProvider(): array {
+    return [
+      'revision time' => ['revision_timestamp', 1707058800, '2024-02-04 10:00'],
+      'changed time' => ['changed', 1707058800, '2024-02-04 10:00'],
+      'afternoon uses the 24-hour clock' => ['revision_timestamp', 2125173600, '2037-05-05 18:00'],
+      // 04:59 UTC on 4 February, so a UTC render would land on the wrong day.
+      'site timezone, not UTC' => ['revision_timestamp', 1707022740, '2024-02-03 23:59'],
+      'unset revision time' => ['revision_timestamp', 0, ''],
+      'unset changed time' => ['changed', 0, ''],
+    ];
+  }
+
+  /**
+   * Tests the Last Updated By cell, including a deleted account.
+   *
+   * @param string|null $display_name
+   *   The revision author's display name, or NULL when the account no longer
+   *   exists.
+   * @param string $expected
+   *   The expected cell output.
+   *
+   * @dataProvider lastUpdatedByProvider
+   * @covers ::cellValue
+   */
+  public function testLastUpdatedByCell(?string $display_name, string $expected): void {
+    $user = NULL;
+    if ($display_name !== NULL) {
+      $user = $this->createMock(UserInterface::class);
+      $user->method('getDisplayName')->willReturn($display_name);
+    }
+    $node = $this->createMock(NodeInterface::class);
+    $node->method('getRevisionUser')->willReturn($user);
+
+    $method = new \ReflectionMethod(ContentExportBuilder::class, 'cellValue');
+    $method->setAccessible(TRUE);
+    $this->assertSame($expected, $method->invoke(NULL, $node, 'revision_uid', $this->dateFormatter()));
+  }
+
+  /**
+   * Provides revision authors and their expected cell output.
+   *
+   * @return array
+   *   Cases: [display name or NULL, expected].
+   */
+  public static function lastUpdatedByProvider(): array {
+    return [
+      'account exists' => ['abc12', 'abc12'],
+      'account deleted' => [NULL, ''],
+    ];
+  }
+
+  /**
+   * Tests both Updated cells are sanitised like every other cell.
+   *
+   * The display name is the realistic formula-injection vector: a name
+   * beginning with "=" must reach the spreadsheet as text.
+   *
+   * @covers ::getRow
+   */
+  public function testUpdatedCellsAreSanitised(): void {
+    $user = $this->createMock(UserInterface::class);
+    $user->method('getDisplayName')->willReturn('=HYPERLINK("http://example.com")');
+
+    $node = $this->createMock(NodeInterface::class);
+    $node->method('label')->willReturn('A page');
+    $url = $this->createMock(Url::class);
+    $url->method('toString')->willReturn('/a-page');
+    $node->method('toUrl')->willReturn($url);
+    $node->method('isPublished')->willReturn(TRUE);
+    $node->method('hasField')->willReturn(FALSE);
+    $node->method('getRevisionCreationTime')->willReturn(1707058800);
+    $node->method('getRevisionUser')->willReturn($user);
+
+    $row = ContentExportBuilder::getRow($node, 'page', $this->dateFormatter());
+    $this->assertSame(
+      ['2024-02-04 10:00', '\'=HYPERLINK("http://example.com")'],
+      array_slice($row, -2)
+    );
   }
 
   /**
