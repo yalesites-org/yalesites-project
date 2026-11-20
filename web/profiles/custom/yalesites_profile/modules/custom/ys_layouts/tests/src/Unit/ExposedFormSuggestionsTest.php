@@ -54,6 +54,17 @@ class ExposedFormSuggestionsTest extends UnitTestCase {
   }
 
   /**
+   * Tests the media library Table view filter form keeps its gin_lb styling.
+   */
+  public function testMediaLibraryTableFormKeepsGinLbSuggestions(): void {
+    $result = ExposedFormSuggestions::filter(
+      self::GIN_LB_SUGGESTIONS,
+      ['#form_id' => 'views_exposed_form', '#id' => 'views-exposed-form-media-library-widget-table']
+    );
+    $this->assertSame(self::GIN_LB_SUGGESTIONS, $result);
+  }
+
+  /**
    * Tests other forms are untouched.
    */
   public function testOtherFormsUntouched(): void {

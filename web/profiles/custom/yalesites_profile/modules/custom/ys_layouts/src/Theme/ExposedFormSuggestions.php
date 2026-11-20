@@ -27,7 +27,7 @@ class ExposedFormSuggestions {
    */
   public static function filter(array $suggestions, array $element): array {
     if (($element['#form_id'] ?? '') !== 'views_exposed_form'
-      || ($element['#id'] ?? '') === 'views-exposed-form-media-library-widget') {
+      || str_starts_with((string) ($element['#id'] ?? ''), 'views-exposed-form-media-library-')) {
       return $suggestions;
     }
     return array_values(array_filter(
