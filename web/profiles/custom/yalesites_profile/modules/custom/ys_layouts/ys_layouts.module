@@ -15,6 +15,7 @@ use Drupal\ys_layouts\CloneBlockLinkBuilder;
 use Drupal\ys_layouts\Plugin\Layout\YSLayoutOneColumn;
 use Drupal\ys_layouts\Render\DetachContextualOperations;
 use Drupal\ys_layouts\SectionCloneLinkBuilder;
+use Drupal\ys_layouts\Theme\ExposedFormSuggestions;
 use Drupal\ys_layouts\WebformResultsLinkBuilder;
 
 /**
@@ -632,6 +633,19 @@ function ys_layouts_theme_suggestions_text_format_wrapper_alter(array &$suggesti
     && $context_validator->isLayoutBuilderRoute()
     && !in_array('text_format_wrapper__gin_lb', $suggestions, TRUE)) {
     $suggestions[] = 'text_format_wrapper__gin_lb';
+  }
+}
+
+/**
+ * Implements hook_theme_suggestions_alter().
+ *
+ * Runs after gin_lb's own alter (module order) and removes its __gin_lb form
+ * suggestions from View block filter forms, so atomic's ys-filter-form
+ * template still wins after a Layout Builder AJAX refresh (#2310).
+ */
+function ys_layouts_theme_suggestions_alter(array &$suggestions, array $variables, string $hook): void {
+  if ($hook === 'form' && isset($variables['element'])) {
+    $suggestions = ExposedFormSuggestions::filter($suggestions, $variables['element']);
   }
 }
 
