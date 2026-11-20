@@ -146,6 +146,29 @@
   margin: 0;
 }
 
+/*
+ * The full-page reusable block form renders through Claro, whose fieldset
+ * markup differs from Layout Builder's: the inner wrapper is
+ * .fieldset__wrapper--group (carrying a 2px top border) and each radio item
+ * keeps a left margin. Neutralize both so the two segments join exactly as
+ * they do in Layout Builder.
+ */
+form.block-content-form
+  .views-basic--group-user-selection
+  .vb-term-operator
+  .fieldset__wrapper {
+  margin: 0;
+  padding: 0;
+  border: 0;
+}
+
+form.block-content-form
+  .views-basic--group-user-selection
+  .vb-term-operator
+  .form-type--radio {
+  margin: 0;
+}
+
 /* Visually hide the native radio input; the label carries the visual. */
 :is(
   .layout-builder-configure-block .horizontal-tabs-panes,
@@ -352,4 +375,17 @@
   input.form-radio:not(:disabled, :checked)
   + label:hover {
   background: var(--gin-bg-item-hover, #f3f4f9) !important;
+}
+
+/*
+ * Result content checkboxes on the full-page reusable block form. These live
+ * here rather than in views-basic-form-tabs.css because that stylesheet's
+ * library (listing_form_tabs) is only attached to the Layout Builder block
+ * form, so a rule there never loads on the full-page form. The checkboxes
+ * render as .form-checkboxes; row-gap spaces them to match Layout Builder.
+ */
+form.block-content-form .views-basic--group-user-selection .form-checkboxes {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
 }
