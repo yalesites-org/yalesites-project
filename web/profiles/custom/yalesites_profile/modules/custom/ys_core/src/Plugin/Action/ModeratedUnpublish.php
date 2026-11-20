@@ -22,6 +22,13 @@ class ModeratedUnpublish extends UnpublishAction {
   /**
    * {@inheritdoc}
    */
+  protected function targetModerationState(): string {
+    return 'archived';
+  }
+
+  /**
+   * {@inheritdoc}
+   */
   public function execute($entity = NULL) {
     $entity->set('moderation_state', 'archived');
     $entity->setUnpublished()->save();

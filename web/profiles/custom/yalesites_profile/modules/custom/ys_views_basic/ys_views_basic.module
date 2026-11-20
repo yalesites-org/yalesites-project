@@ -367,6 +367,42 @@ function ys_views_basic_node_view(array &$build, NodeInterface $node, EntityView
 }
 
 /**
+ * Implements hook_ENTITY_TYPE_insert() for node.
+ */
+function ys_views_basic_node_insert(NodeInterface $node): void {
+  _ys_views_basic_warn_future_publish_date($node);
+}
+
+/**
+ * Implements hook_ENTITY_TYPE_update() for node.
+ */
+function ys_views_basic_node_update(NodeInterface $node): void {
+  _ys_views_basic_warn_future_publish_date($node);
+}
+
+/**
+ * Tells an editor when a saved, published post will be hidden from lists.
+ *
+ * Post lists only show posts dated today or earlier (see PostPublishDate), so
+ * a published post with a future Publish Date has a working page but does not
+ * appear in any View until that date. The list rule itself is unchanged.
+ */
+function _ys_views_basic_warn_future_publish_date(NodeInterface $node): void {
+  if ($node->bundle() !== 'post' || !$node->isPublished() || !$node->hasField('field_publish_date')) {
+    return;
+  }
+  $date = $node->get('field_publish_date')->value;
+  // Date-only ISO 'Y-m-d' strings compare correctly as text.
+  if (!$date || $date <= date('Y-m-d')) {
+    return;
+  }
+  $formatted = \Drupal::service('date.formatter')->format(strtotime($date . ' 12:00:00'), 'custom', 'F j, Y');
+  \Drupal::messenger()->addStatus(t('This post is published, but it will not appear in Views until its Publish Date, @date.', [
+    '@date' => $formatted,
+  ]));
+}
+
+/**
  * Implements hook_form_alter().
  *
  * Unifies the listing-block authoring form (Layout Builder add/update block)

@@ -128,6 +128,15 @@ cd web/themes/contrib/atomic
 
 Frontend tasks may often require changes to the site's fields, content types, or displays. If this is the case, then developers can follow the above process for updating site configuration. These config settings are tracked in the yalesites_profile. An automated process has not yet been defined for deploying config changes and theme changes into the same multidev environment.
 
+### How multidev builds pair atomic and the component library
+
+`.ci/build/build_frontend` picks the two front-end pieces for a pull request multidev:
+
+- **atomic:** the branch named like the pull request branch if one exists, otherwise the release pinned in the profile `composer.json`.
+- **component library:** the branch named like the pull request branch if one exists, otherwise the release that the installed atomic pins in its `package.json`. Only if that pin cannot be found does it fall back to the latest release.
+
+After the build, every component library script path listed in atomic's `atomic.libraries.yml` must exist. If one is missing, the build fails, because Drupal silently serves an empty file and component scripts such as the mobile menu stop working.
+
 ## Working with Starterkit content
 
 The ys_starterkit module defines content used to showcase how paragraphs and Drupal entities can be used together for site building. The content is also a useful tool for developers who want example pages for testing their work.
