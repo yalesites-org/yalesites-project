@@ -382,10 +382,25 @@ form.block-content-form
  * here rather than in views-basic-form-tabs.css because that stylesheet's
  * library (listing_form_tabs) is only attached to the Layout Builder block
  * form, so a rule there never loads on the full-page form. The checkboxes
- * render as .form-checkboxes; row-gap spaces them to match Layout Builder.
+ * render as .form-checkboxes; the 13px row-gap gives Layout Builder's 37px
+ * row pitch (24px row + 13px).
  */
 form.block-content-form .views-basic--group-user-selection .form-checkboxes {
   display: flex;
   flex-direction: column;
-  gap: 0.5rem;
+  gap: 0.8125rem;
+}
+
+/*
+ * The "Post options" / "Event options" subsection that follows the checkboxes.
+ * views-basic.css spaces it with var(--vb-space-group), but that scale is only
+ * defined on the Layout Builder form, so on the full-page form the margin
+ * resolved to 0 (the !important there beats a plain rule) and the heading touched the last checkbox. 2.5rem is the same
+ * value the scale gives Layout Builder.
+ */
+form.block-content-form
+  .views-basic--group-user-selection
+  .vb-result-content
+  .vb-result-content__subsection {
+  margin-top: 2.5rem !important;
 }
