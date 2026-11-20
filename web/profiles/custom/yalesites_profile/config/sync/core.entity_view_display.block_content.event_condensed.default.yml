@@ -11,7 +11,6 @@ dependencies:
     - field.field.block_content.event_condensed.field_view_params
   module:
     - entity_reference_revisions
-    - options
     - text
     - ys_views_basic
 id: block_content.event_condensed.default
@@ -35,13 +34,6 @@ content:
     third_party_settings: {  }
     weight: 1
     region: content
-  field_padding_options:
-    type: list_default
-    label: above
-    settings: {  }
-    third_party_settings: {  }
-    weight: 10
-    region: content
   field_view_params:
     type: views_basic_default_formatter
     label: hidden
@@ -51,4 +43,5 @@ content:
     region: content
 hidden:
   field_instructions: true
+  field_padding_options: true
   search_api_excerpt: true
