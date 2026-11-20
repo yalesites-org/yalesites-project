@@ -385,7 +385,7 @@ function ys_views_basic_node_update(NodeInterface $node): void {
  *
  * Post lists only show posts dated today or earlier (see PostPublishDate), so
  * a published post with a future Publish Date has a working page but does not
- * appear in any list until that date. The list rule itself is unchanged.
+ * appear in any View until that date. The list rule itself is unchanged.
  */
 function _ys_views_basic_warn_future_publish_date(NodeInterface $node): void {
   if ($node->bundle() !== 'post' || !$node->isPublished() || !$node->hasField('field_publish_date')) {
@@ -396,8 +396,9 @@ function _ys_views_basic_warn_future_publish_date(NodeInterface $node): void {
   if (!$date || $date <= date('Y-m-d')) {
     return;
   }
-  \Drupal::messenger()->addStatus(t('This post is published, but it will not appear in post lists until its Publish Date, @date.', [
-    '@date' => $date,
+  $formatted = \Drupal::service('date.formatter')->format(strtotime($date . ' 12:00:00'), 'custom', 'F j, Y');
+  \Drupal::messenger()->addStatus(t('This post is published, but it will not appear in Views until its Publish Date, @date.', [
+    '@date' => $formatted,
   ]));
 }
 

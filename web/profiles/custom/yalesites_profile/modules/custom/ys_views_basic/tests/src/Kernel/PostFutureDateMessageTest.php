@@ -94,8 +94,8 @@ class PostFutureDateMessageTest extends YsKernelTestBase {
     $future = date('Y-m-d', strtotime('+5 days'));
     $messages = $this->saveAndGetMessages($future);
     $this->assertCount(1, $messages);
-    $this->assertStringContainsString('will not appear in post lists', $messages[0]);
-    $this->assertStringContainsString($future, $messages[0]);
+    $this->assertStringContainsString('will not appear in Views', $messages[0]);
+    $this->assertStringContainsString(date('F j, Y', strtotime($future)), $messages[0]);
   }
 
   /**
