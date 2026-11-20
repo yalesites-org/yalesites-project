@@ -2534,8 +2534,10 @@ class ViewsBasicManager extends ControllerBase implements ContainerInjectionInte
    * lists made "All" stricter for includes but looser for excludes at the
    * same time — implode() joining the exclude list with "," (AND) only
    * excludes a node that carries every excluded term, not any one of them.
-   * A block saved before the split carries only the legacy 'operator' key,
-   * which this applies to both lists as before (no migration, per #1316).
+   * A block saved before the split carries only the legacy 'operator' key.
+   * That applies to the include list as before (no migration, per #1316). The
+   * exclude list ignores it and defaults to "+" (Any), because the exclude
+   * filter used to hide on Any whatever was stored (#2325).
    *
    * @param array $paramsDecoded
    *   The decoded stored params.
@@ -2549,7 +2551,7 @@ class ViewsBasicManager extends ControllerBase implements ContainerInjectionInte
     $legacyOperator = $valid($paramsDecoded['operator'] ?? NULL) ? $paramsDecoded['operator'] : '+';
     return [
       $valid($paramsDecoded['include_operator'] ?? NULL) ? $paramsDecoded['include_operator'] : $legacyOperator,
-      $valid($paramsDecoded['exclude_operator'] ?? NULL) ? $paramsDecoded['exclude_operator'] : $legacyOperator,
+      $valid($paramsDecoded['exclude_operator'] ?? NULL) ? $paramsDecoded['exclude_operator'] : '+',
     ];
   }
 

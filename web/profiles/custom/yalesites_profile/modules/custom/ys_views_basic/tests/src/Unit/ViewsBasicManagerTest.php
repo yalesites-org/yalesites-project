@@ -583,8 +583,9 @@ class ViewsBasicManagerTest extends UnitTestCase {
       $this->manager->resolveTermOperators(['include_operator' => '+', 'exclude_operator' => ','])
     );
 
-    // Legacy 'operator' key applies to both (pre-#1316 saved block).
-    $this->assertSame([',', ','], $this->manager->resolveTermOperators(['operator' => ',']));
+    // Legacy 'operator' key applies to includes only. Excludes default to
+    // "+" because they always hid on Any before the dedicated control (#2325).
+    $this->assertSame([',', '+'], $this->manager->resolveTermOperators(['operator' => ',']));
 
     // Neither key present defaults both to "+" (OR).
     $this->assertSame(['+', '+'], $this->manager->resolveTermOperators([]));
