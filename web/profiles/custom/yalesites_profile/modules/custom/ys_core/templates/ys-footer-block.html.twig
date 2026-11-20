@@ -2,14 +2,15 @@
 {% set link_group__base_class = 'link-group' %}
 {% set school_logo_url = school_logo_url|default('/') %}
 
-{% embed "@organisms/site-footer/yds-site-footer.twig" with {
+{% embed "atomic:site-footer" with {
   site_footer__border_thickness: '8',
   site_footer__theme: getThemeSetting('footer_theme'),
   site_footer__accent: getThemeSetting('footer_accent'),
   site_footer__variation: footer_variation|default('basic'),
 }%}
-  {% block footer__inner %}
-    {% if site_footer__variation == 'mega'%}
+  {% block footer__content %}
+    {% set site_footer__base_class = 'site-footer' %}
+    {% if footer_variation|default('basic') == 'mega'%}
       {% embed "@organisms/site-footer/_site-footer-mega.twig" %}
         {% block site_footer__logos %}
           {% for logo in footer_logos %}
