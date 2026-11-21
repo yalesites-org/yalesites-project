@@ -122,14 +122,19 @@
       once('vb-tabs-a11y', '[data-horizontal-tabs]', context).forEach(
         setupTabs,
       );
-      // Single on/off options only: a checkbox inside a "checkboxes" group is
-      // one of several choices, so it stays a checkbox.
+      // Round slider toggles in the listing form only (Reusable block, Show
+      // Search). Checkboxes inside a fieldset ("Result content", "Event
+      // options") draw as square boxes and stay checkboxes, and so do the
+      // toggles on any other block form opened in the same session.
       once(
         'vb-switch-a11y',
         '.layout-builder-configure-block input[type="checkbox"]',
         context,
       ).forEach((input) => {
-        if (!input.closest('.form-checkboxes')) {
+        if (
+          input.closest('form').querySelector('[data-horizontal-tabs]') &&
+          !input.closest('fieldset, .form-checkboxes')
+        ) {
           setupSwitch(input);
         }
       });
