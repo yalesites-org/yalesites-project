@@ -218,7 +218,8 @@
   width: auto;
 }
 
-.layout-builder-configure-block .horizontal-tabs-panes .form-boolean-group {
+.layout-builder-configure-block .horizontal-tabs-panes .form-boolean-group,
+form.block-content-form .views-basic--group-user-selection .form-boolean-group {
   display: flex;
   gap: 1rem;
   width: 100%;
