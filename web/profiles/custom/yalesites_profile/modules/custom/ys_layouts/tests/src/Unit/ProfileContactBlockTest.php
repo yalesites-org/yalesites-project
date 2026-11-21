@@ -6,13 +6,12 @@ use Drupal\Core\Entity\EntityStorageInterface;
 use Drupal\Core\Entity\EntityTypeManagerInterface;
 use Drupal\Core\Field\FieldItemListInterface;
 use Drupal\Core\Form\FormState;
-use Drupal\Core\Routing\RouteMatchInterface;
 use Drupal\Tests\UnitTestCase;
+use Drupal\Tests\ys_core\Traits\LayoutBuilderEntityContextTestTrait;
 use Drupal\node\NodeInterface;
 use Drupal\ys_layouts\Plugin\Block\ProfileContactBlock;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\RequestStack;
-use Symfony\Component\Routing\Route;
 
 /**
  * Tests the profile contact block.
@@ -24,12 +23,7 @@ use Symfony\Component\Routing\Route;
  */
 class ProfileContactBlockTest extends UnitTestCase {
 
-  /**
-   * The route match mock.
-   *
-   * @var \Drupal\Core\Routing\RouteMatchInterface|\PHPUnit\Framework\MockObject\MockObject
-   */
-  protected $routeMatch;
+  use LayoutBuilderEntityContextTestTrait;
 
   /**
    * The request stack mock.
@@ -58,18 +52,32 @@ class ProfileContactBlockTest extends UnitTestCase {
   protected function setUp(): void {
     parent::setUp();
 
-    $this->routeMatch = $this->createMock(RouteMatchInterface::class);
     $this->requestStack = $this->createMock(RequestStack::class);
     $this->entityTypeManager = $this->createMock(EntityTypeManagerInterface::class);
+
+    $this->setUpLayoutBuilderEntityContextContainer();
 
     $this->block = new ProfileContactBlock(
       [],
       'profile_contact_block',
-      ['provider' => 'ys_layouts'],
-      $this->routeMatch,
+      $this->blockDefinition(),
       $this->requestStack,
       $this->entityTypeManager
     );
+  }
+
+  /**
+   * The plugin definition, matching the keys the real annotation supplies.
+   *
+   * @return array
+   *   The plugin definition.
+   */
+  protected function blockDefinition(): array {
+    return [
+      'provider' => 'ys_layouts',
+      'admin_label' => 'Profile Contact Block',
+      'context_definitions' => $this->layoutBuilderEntityContextDefinitions(ProfileContactBlock::class),
+    ];
   }
 
   /**
@@ -88,7 +96,13 @@ class ProfileContactBlockTest extends UnitTestCase {
   }
 
   /**
-   * Contact fields are read from the route's current node.
+   * Contact fields are read from the node the request names.
+   *
+   * No route object is set up here on purpose. The block used to gate every
+   * field read on routeMatch->getRouteObject() being non-NULL, and never read
+   * the route inside that gate; there is no route object when Search API
+   * indexes from cron or drush -- the path that does most of the indexing --
+   * so the details stayed blank there.
    *
    * @covers ::build
    */
@@ -103,7 +117,6 @@ class ProfileContactBlockTest extends UnitTestCase {
     $request = new Request();
     $request->attributes->set('node', $node);
     $this->requestStack->method('getCurrentRequest')->willReturn($request);
-    $this->routeMatch->method('getRouteObject')->willReturn(new Route('/profiles/jane'));
 
     $build = $this->block->build();
 
@@ -122,7 +135,6 @@ class ProfileContactBlockTest extends UnitTestCase {
   public function testBuildWithNoNodeLeavesFieldsNull(): void {
     $request = new Request();
     $this->requestStack->method('getCurrentRequest')->willReturn($request);
-    $this->routeMatch->method('getRouteObject')->willReturn(new Route('/profiles/jane'));
 
     $build = $this->block->build();
 
@@ -143,7 +155,6 @@ class ProfileContactBlockTest extends UnitTestCase {
     $path = '/admin/config/content/layout_builder/update/overrides/node.42.default.en/0/content';
     $request = Request::create($path);
     $this->requestStack->method('getCurrentRequest')->willReturn($request);
-    $this->routeMatch->method('getRouteObject')->willReturn(new Route($path));
 
     $nodeStorage = $this->createMock(EntityStorageInterface::class);
     $nodeStorage->method('load')->with('42')->willReturn($node);
@@ -173,6 +184,118 @@ class ProfileContactBlockTest extends UnitTestCase {
   }
 
   /**
+   * The entity being rendered is used when the request names no node.
+   *
+   * A node is rendered on routes other than its canonical one, and Search API
+   * renders it in the request that saves it. On /node/add/profile (every new
+   * profile's first save) and on a bulk operation from /admin/content the
+   * request named no node, so the contact details were missing from what
+   * Beacon indexes.
+   *
+   * @covers ::getCurrentNode
+   */
+  public function testBuildUsesRenderedEntityWhenRequestHasNoNode(): void {
+    $node = $this->createMock(NodeInterface::class);
+    $node->method('get')->willReturn($this->createFieldWithValue('jane@yale.edu'));
+    $this->requestStack->method('getCurrentRequest')->willReturn(Request::create('/node/add/profile'));
+    $this->entityTypeManager->expects($this->never())->method('getStorage');
+
+    $this->setRenderedEntity($this->block, $node);
+
+    $this->assertSame('jane@yale.edu', $this->block->build()['#email']);
+  }
+
+  /**
+   * The entity being rendered beats a DIFFERENT node named by the request.
+   *
+   * @covers ::getCurrentNode
+   */
+  public function testBuildPrefersRenderedEntityOverRequestNode(): void {
+    $rendered = $this->createMock(NodeInterface::class);
+    $rendered->method('get')->willReturn($this->createFieldWithValue('jane@yale.edu'));
+    $other = $this->createMock(NodeInterface::class);
+    $other->method('get')->willReturn($this->createFieldWithValue('other@yale.edu'));
+
+    $request = new Request();
+    $request->attributes->set('node', $other);
+    $this->requestStack->method('getCurrentRequest')->willReturn($request);
+
+    $this->setRenderedEntity($this->block, $rendered);
+
+    $this->assertSame('jane@yale.edu', $this->block->build()['#email']);
+  }
+
+  /**
+   * A context holding something other than a node falls through to the request.
+   *
+   * @covers ::getCurrentNode
+   *
+   * @dataProvider providerNonNodeContextValues
+   */
+  public function testBuildIgnoresNonNodeEntityContext($value): void {
+    $other = $this->createMock(NodeInterface::class);
+    $other->method('get')->willReturn($this->createFieldWithValue('other@yale.edu'));
+    $request = new Request();
+    $request->attributes->set('node', $other);
+    $this->requestStack->method('getCurrentRequest')->willReturn($request);
+
+    $this->setRenderedEntity($this->block, $value);
+
+    $this->assertSame('other@yale.edu', $this->block->build()['#email']);
+  }
+
+  /**
+   * An unsaved sample entity does not stand in for real content.
+   *
+   * Layout Builder's Defaults layout screen offers a generated sample entity
+   * that core never saves. Before this block declared a context it rendered
+   * nothing there, and it deliberately still does.
+   *
+   * @covers ::getCurrentNode
+   */
+  public function testBuildIgnoresUnsavedSampleEntity(): void {
+    $sample = $this->createMock(NodeInterface::class);
+    $sample->method('isNew')->willReturn(TRUE);
+    $sample->method('get')->willReturn($this->createFieldWithValue('jane@yale.edu'));
+    $this->requestStack->method('getCurrentRequest')->willReturn(new Request());
+
+    $this->setRenderedEntity($this->block, $sample);
+
+    $this->assertNull($this->block->build()['#email']);
+  }
+
+  /**
+   * With no current request at all, the block resolves no node.
+   *
+   * There is no HTTP request in a drush or cron process, so the request tier
+   * has nothing to read. The guard is what keeps that path from calling
+   * attributes->get() on NULL.
+   *
+   * @covers ::getCurrentNode
+   */
+  public function testBuildWithNoCurrentRequestResolvesNoNode(): void {
+    $this->requestStack->method('getCurrentRequest')->willReturn(NULL);
+
+    $this->assertNull($this->block->build()['#email']);
+  }
+
+  /**
+   * The ANNOTATION declares the slot Layout Builder actually publishes.
+   */
+  public function testAnnotationDeclaresTheLayoutBuilderEntitySlot(): void {
+    $this->assertDeclaresLayoutBuilderEntitySlot(ProfileContactBlock::class);
+  }
+
+  /**
+   * The context-assignment select is kept off the editor's block form.
+   *
+   * @covers ::buildConfigurationForm
+   */
+  public function testConfigurationFormHasNoContextAssignmentSelect(): void {
+    $this->assertNoContextAssignmentSelect($this->block);
+  }
+
+  /**
    * The padding options select carries the configured default value.
    *
    * @covers ::blockForm
@@ -181,8 +304,7 @@ class ProfileContactBlockTest extends UnitTestCase {
     $block = new ProfileContactBlock(
       ['padding_options' => 'no_top'],
       'profile_contact_block',
-      ['provider' => 'ys_layouts'],
-      $this->routeMatch,
+      $this->blockDefinition(),
       $this->requestStack,
       $this->entityTypeManager
     );
