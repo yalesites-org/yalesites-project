@@ -15,7 +15,41 @@ namespace Drupal\ys_layouts\Theme;
 class ExposedFormSuggestions {
 
   /**
-   * Removes __gin_lb suggestions for a site exposed filter form.
+   * Property set on every element inside a site exposed filter form.
+   *
+   * The label, input, select and wrapper templates inside the form receive
+   * their own element, not the form, so they need a marker to be recognised.
+   */
+  public const MARKER = '#ys_skip_gin_lb';
+
+  /**
+   * Whether the element is a site exposed filter form (not media library).
+   */
+  public static function isSiteExposedForm(array $element): bool {
+    return ($element['#form_id'] ?? '') === 'views_exposed_form'
+      && !str_starts_with((string) ($element['#id'] ?? ''), 'views-exposed-form-media-library-');
+  }
+
+  /**
+   * Marks every child element of a site exposed filter form.
+   *
+   * @param array $form
+   *   The form (or a sub-element) to mark, passed by reference.
+   */
+  public static function markChildren(array &$form): void {
+    foreach (array_keys($form) as $key) {
+      if (is_string($key) && str_starts_with($key, '#')) {
+        continue;
+      }
+      if (is_array($form[$key])) {
+        $form[$key][self::MARKER] = TRUE;
+        self::markChildren($form[$key]);
+      }
+    }
+  }
+
+  /**
+   * Removes __gin_lb suggestions for a site exposed filter form or its fields.
    *
    * @param string[] $suggestions
    *   The form theme suggestions.
@@ -26,8 +60,7 @@ class ExposedFormSuggestions {
    *   The suggestions to use.
    */
   public static function filter(array $suggestions, array $element): array {
-    if (($element['#form_id'] ?? '') !== 'views_exposed_form'
-      || str_starts_with((string) ($element['#id'] ?? ''), 'views-exposed-form-media-library-')) {
+    if (empty($element[self::MARKER]) && !self::isSiteExposedForm($element)) {
       return $suggestions;
     }
     return array_values(array_filter(

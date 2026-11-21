@@ -75,4 +75,33 @@ class ExposedFormSuggestionsTest extends UnitTestCase {
     $this->assertSame(['form__gin_lb'], $result);
   }
 
+  /**
+   * Tests a marked field element loses its gin_lb suggestions.
+   */
+  public function testMarkedFieldLosesGinLbSuggestions(): void {
+    $form = [
+      '#form_id' => 'views_exposed_form',
+      '#id' => 'views-exposed-form-views-basic-scaffold-block-1',
+      'search' => ['#type' => 'textfield', 'nested' => ['#type' => 'select']],
+    ];
+    ExposedFormSuggestions::markChildren($form);
+    $this->assertTrue($form['search'][ExposedFormSuggestions::MARKER]);
+    $this->assertTrue($form['search']['nested'][ExposedFormSuggestions::MARKER]);
+    $this->assertArrayNotHasKey(ExposedFormSuggestions::MARKER, $form);
+
+    $result = ExposedFormSuggestions::filter(
+      ['input__textfield', 'input__gin_lb', 'input__textfield__gin_lb'],
+      $form['search']
+    );
+    $this->assertSame(['input__textfield'], $result);
+  }
+
+  /**
+   * Tests an unmarked field keeps its gin_lb suggestions.
+   */
+  public function testUnmarkedFieldKeepsGinLbSuggestions(): void {
+    $result = ExposedFormSuggestions::filter(['input__gin_lb'], ['#type' => 'textfield']);
+    $this->assertSame(['input__gin_lb'], $result);
+  }
+
 }

@@ -644,8 +644,20 @@ function ys_layouts_theme_suggestions_text_format_wrapper_alter(array &$suggesti
  * template still wins after a Layout Builder AJAX refresh (#2310).
  */
 function ys_layouts_theme_suggestions_alter(array &$suggestions, array $variables, string $hook): void {
-  if ($hook === 'form' && isset($variables['element'])) {
+  if (isset($variables['element']) && is_array($variables['element'])) {
     $suggestions = ExposedFormSuggestions::filter($suggestions, $variables['element']);
+  }
+}
+
+/**
+ * Implements hook_form_views_exposed_form_alter().
+ *
+ * Marks the fields of site filter forms so their label, input and select
+ * templates also lose gin_lb's __gin_lb suggestions (#2310).
+ */
+function ys_layouts_form_views_exposed_form_alter(array &$form, FormStateInterface $form_state, string $form_id): void {
+  if (ExposedFormSuggestions::isSiteExposedForm($form)) {
+    ExposedFormSuggestions::markChildren($form);
   }
 }
 
