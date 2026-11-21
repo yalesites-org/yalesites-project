@@ -108,6 +108,7 @@ settings:
       properties:
         reversed: false
         startIndex: true
+        styles: true
       multiBlock: true
     ckeditor5_sourceEditing:
       allowed_tags:
@@ -117,8 +118,6 @@ settings:
         - '<dd>'
         - '<span>'
         - '<blockquote cite>'
-        - '<ul type>'
-        - '<ol type>'
         - '<h2 id aria-level>'
         - '<h3 id aria-level>'
         - '<h4 id aria-level>'
