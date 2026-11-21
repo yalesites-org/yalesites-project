@@ -183,6 +183,37 @@ class LayoutUpdaterDraftTest extends YsKernelTestBase {
   }
 
   /**
+   * Only the first unlabeled section falls back to the default locks.
+   *
+   * Sections editors add have no label. One added below the first section must
+   * stay editable, while an unlabeled first section still gets its locks.
+   *
+   * @covers ::updateLocks
+   */
+  public function testUpdateLocksSkipsUnlabeledSectionsAfterTheFirst(): void {
+    $node = Node::create([
+      'type' => 'post',
+      'title' => 'Post',
+      'moderation_state' => 'published',
+      'layout_builder__layout' => [
+        ['section' => new Section('layout_onecol')],
+        ['section' => new Section('layout_twocol_section')],
+        ['section' => new Section('layout_twocol_section')],
+        ['section' => new Section('layout_onecol')],
+      ],
+    ]);
+    $node->save();
+
+    $this->createUpdater()->updateLocks('post');
+
+    $storage = $this->container->get('entity_type.manager')->getStorage('node');
+    $storage->resetCache();
+    $layout = $storage->load($node->id())->get('layout_builder__layout');
+    $this->assertEquals(self::LOCKS, $layout->getSection(0)->getThirdPartySetting('layout_builder_lock', 'lock'));
+    $this->assertNull($layout->getSection(3)->getThirdPartySetting('layout_builder_lock', 'lock'));
+  }
+
+  /**
    * Creates a published post with a newer pending draft.
    *
    * @return array
