@@ -24,6 +24,13 @@ listing_form_tabs:
   css:
     theme:
       assets/css/views-basic-form-tabs.css: {}
+  js:
+    assets/js/views-basic-form-a11y.js: {}
+  dependencies:
+    - core/drupal
+    - core/once
+    - core/jquery
+    - field_group/element.horizontal_tabs
 
 term_operator:
   css:
