@@ -662,6 +662,16 @@ function ys_layouts_form_views_exposed_form_alter(array &$form, FormStateInterfa
 }
 
 /**
+ * Implements hook_preprocess_form_element().
+ *
+ * Carries the filter form marker onto the label so the label template also
+ * loses its __gin_lb suggestion (#2310).
+ */
+function ys_layouts_preprocess_form_element(array &$variables): void {
+  ExposedFormSuggestions::markLabel($variables);
+}
+
+/**
  * To aids in styling per section, set layout_section if using layout builder.
  *
  * For now this is only used with the link grid component:

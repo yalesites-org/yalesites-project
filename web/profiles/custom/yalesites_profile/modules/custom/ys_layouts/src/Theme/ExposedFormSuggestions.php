@@ -49,6 +49,22 @@ class ExposedFormSuggestions {
   }
 
   /**
+   * Copies the marker from a field element onto its label render array.
+   *
+   * Core builds the label in template_preprocess_form_element() as a new
+   * render array that copies only a few keys from the field, so the marker
+   * is lost and the label would still take gin_lb's label template.
+   *
+   * @param array $variables
+   *   The form_element theme variables, passed by reference.
+   */
+  public static function markLabel(array &$variables): void {
+    if (!empty($variables['element'][self::MARKER]) && isset($variables['label']) && is_array($variables['label'])) {
+      $variables['label'][self::MARKER] = TRUE;
+    }
+  }
+
+  /**
    * Removes __gin_lb suggestions for a site exposed filter form or its fields.
    *
    * @param string[] $suggestions

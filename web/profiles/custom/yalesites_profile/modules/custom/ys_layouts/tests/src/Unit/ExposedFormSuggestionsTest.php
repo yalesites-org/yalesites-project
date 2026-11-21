@@ -104,4 +104,31 @@ class ExposedFormSuggestionsTest extends UnitTestCase {
     $this->assertSame(['input__gin_lb'], $result);
   }
 
+  /**
+   * Tests the marker is copied from a marked field to its label.
+   */
+  public function testLabelOfMarkedFieldIsMarked(): void {
+    $variables = [
+      'element' => [ExposedFormSuggestions::MARKER => TRUE],
+      'label' => ['#theme' => 'form_element_label', '#title' => 'Search'],
+    ];
+    ExposedFormSuggestions::markLabel($variables);
+    $this->assertTrue($variables['label'][ExposedFormSuggestions::MARKER]);
+
+    $result = ExposedFormSuggestions::filter(
+      ['form_element_label__gin_lb', 'form_element_label'],
+      $variables['label']
+    );
+    $this->assertSame(['form_element_label'], $result);
+  }
+
+  /**
+   * Tests the label of an unmarked field is left alone.
+   */
+  public function testLabelOfUnmarkedFieldNotMarked(): void {
+    $variables = ['element' => ['#type' => 'textfield'], 'label' => ['#theme' => 'form_element_label']];
+    ExposedFormSuggestions::markLabel($variables);
+    $this->assertArrayNotHasKey(ExposedFormSuggestions::MARKER, $variables['label']);
+  }
+
 }
