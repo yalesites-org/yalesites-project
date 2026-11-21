@@ -49,6 +49,27 @@ class ExposedFormSuggestions {
   }
 
   /**
+   * Form #after_build callback: marks the fields once every alter has run.
+   *
+   * Other modules (ys_views_basic) replace fields in their own form alters,
+   * which can run after ours, so marking at alter time misses those fields.
+   *
+   * @param array $form
+   *   The built form.
+   * @param \Drupal\Core\Form\FormStateInterface $form_state
+   *   The form state.
+   *
+   * @return array
+   *   The form with its fields marked.
+   */
+  public static function afterBuild(array $form, $form_state): array {
+    if (self::isSiteExposedForm($form)) {
+      self::markChildren($form);
+    }
+    return $form;
+  }
+
+  /**
    * Copies the marker from a field element onto its label render array.
    *
    * Core builds the label in template_preprocess_form_element() as a new

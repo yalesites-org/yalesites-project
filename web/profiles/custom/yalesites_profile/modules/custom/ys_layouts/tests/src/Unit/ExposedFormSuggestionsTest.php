@@ -131,4 +131,30 @@ class ExposedFormSuggestionsTest extends UnitTestCase {
     $this->assertArrayNotHasKey(ExposedFormSuggestions::MARKER, $variables['label']);
   }
 
+  /**
+   * Tests after-build marks a field swapped in after the form alter.
+   */
+  public function testAfterBuildMarksSwappedField(): void {
+    $form = [
+      '#form_id' => 'views_exposed_form',
+      '#id' => 'views-exposed-form-block-1',
+      'tags' => ['#type' => 'select', '#options' => []],
+    ];
+    $result = ExposedFormSuggestions::afterBuild($form, NULL);
+    $this->assertTrue($result['tags'][ExposedFormSuggestions::MARKER]);
+  }
+
+  /**
+   * Tests after-build leaves the media library filter form alone.
+   */
+  public function testAfterBuildSkipsMediaLibrary(): void {
+    $form = [
+      '#form_id' => 'views_exposed_form',
+      '#id' => 'views-exposed-form-media-library-widget',
+      'name' => ['#type' => 'textfield'],
+    ];
+    $result = ExposedFormSuggestions::afterBuild($form, NULL);
+    $this->assertArrayNotHasKey(ExposedFormSuggestions::MARKER, $result['name']);
+  }
+
 }
