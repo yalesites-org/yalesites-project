@@ -2431,8 +2431,13 @@ class ViewsBasicManager extends ControllerBase implements ContainerInjectionInte
       // Falls back to the legacy shared 'operator' key, then '+', for a
       // block saved before the include/exclude split (#1316).
       case 'include_operator':
-      case 'exclude_operator':
         $defaultParam = $paramsDecoded[$type] ?? ($paramsDecoded['operator'] ?? '+');
+        break;
+
+      // The exclude list ignores the legacy key and defaults to '+', matching
+      // resolveTermOperators() so the form shows what the page does (#2325).
+      case 'exclude_operator':
+        $defaultParam = $paramsDecoded[$type] ?? '+';
         break;
 
       case 'limit':
