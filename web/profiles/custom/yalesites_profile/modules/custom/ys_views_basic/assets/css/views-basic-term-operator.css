@@ -258,7 +258,7 @@
   z-index: 1;
   border-color: var(--gin-color-primary) !important;
   background: var(--gin-color-primary) !important;
-  color: #fff !important;
+  color: var(--gin-color-button-text, #fff) !important;
   font-weight: 700;
 }
 
