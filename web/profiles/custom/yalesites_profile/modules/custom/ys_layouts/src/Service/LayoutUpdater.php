@@ -308,10 +308,10 @@ class LayoutUpdater {
    *   The sections to update.
    */
   protected function applyDefaultLocks(array $defaultLocks, array $sections): void {
-    foreach ($sections as $section) {
+    foreach (array_values($sections) as $delta => $section) {
       // Authors can create their own sections. Only update sections that
       // match one of the default sections defined for this content type.
-      $locks = $this->findDefaultLocks($defaultLocks, $section);
+      $locks = $this->findDefaultLocks($defaultLocks, $section, $delta);
       if ($locks !== NULL) {
         $section->setThirdPartySetting('layout_builder_lock', 'lock', $locks);
       }
@@ -378,24 +378,28 @@ class LayoutUpdater {
    * Finds the default locks for a node section.
    *
    * Matches on layout ID and section label. A section with no label falls back
-   * to layout ID only, and only when exactly one default shares that layout.
+   * to layout ID only, and only when it is the first section of the page and
+   * exactly one default shares that layout. Sections editors add have no label,
+   * so any other unlabeled section is left alone.
    *
    * @param array $defaultLocks
    *   The result of getLockConfigs().
    * @param \Drupal\layout_builder\Section $section
    *   The node's section.
+   * @param int $delta
+   *   The section's position in the node's layout, starting at 0.
    *
    * @return array|null
    *   The lock values, or NULL if the section is not a default section.
    */
-  protected function findDefaultLocks(array $defaultLocks, Section $section): ?array {
+  protected function findDefaultLocks(array $defaultLocks, Section $section, int $delta): ?array {
     $candidates = array_filter($defaultLocks, fn($default) => $default['layout_id'] === $section->getLayoutId());
     if (!$candidates) {
       return NULL;
     }
     $label = $section->getLayoutSettings()['label'] ?? NULL;
     if (empty($label)) {
-      return count($candidates) === 1 ? reset($candidates)['lock'] : NULL;
+      return $delta === 0 && count($candidates) === 1 ? reset($candidates)['lock'] : NULL;
     }
     foreach ($candidates as $default) {
       if ($default['label'] === $label) {
