@@ -129,20 +129,51 @@
  * extra specificity from .layout-builder-configure-block .horizontal-tabs-panes
  * is enough to win outright.
  */
-.layout-builder-configure-block .horizontal-tabs-panes .vb-term-operator fieldset {
+:is(
+  .layout-builder-configure-block .horizontal-tabs-panes,
+  form.block-content-form .views-basic--group-user-selection
+) .vb-term-operator fieldset {
   margin: 0;
   padding: 0;
   border: 0;
   min-width: 0;
 }
 
-.layout-builder-configure-block .horizontal-tabs-panes .vb-term-operator .fieldset-wrapper {
+:is(
+  .layout-builder-configure-block .horizontal-tabs-panes,
+  form.block-content-form .views-basic--group-user-selection
+) .vb-term-operator .fieldset-wrapper {
+  margin: 0;
+}
+
+/*
+ * The full-page reusable block form renders through Claro, whose fieldset
+ * markup differs from Layout Builder's: the inner wrapper is
+ * .fieldset__wrapper--group (carrying a 2px top border) and each radio item
+ * keeps a left margin. Neutralize both so the two segments join exactly as
+ * they do in Layout Builder.
+ */
+form.block-content-form
+  .views-basic--group-user-selection
+  .vb-term-operator
+  .fieldset__wrapper {
+  margin: 0;
+  padding: 0;
+  border: 0;
+}
+
+form.block-content-form
+  .views-basic--group-user-selection
+  .vb-term-operator
+  .form-type--radio {
   margin: 0;
 }
 
 /* Visually hide the native radio input; the label carries the visual. */
-.layout-builder-configure-block
-  .horizontal-tabs-panes
+:is(
+  .layout-builder-configure-block .horizontal-tabs-panes,
+  form.block-content-form .views-basic--group-user-selection
+)
   .vb-term-operator
   input.form-radio {
   position: absolute !important;
@@ -156,8 +187,10 @@
   border: 0 !important;
 }
 
-.layout-builder-configure-block
-  .horizontal-tabs-panes
+:is(
+  .layout-builder-configure-block .horizontal-tabs-panes,
+  form.block-content-form .views-basic--group-user-selection
+)
   .vb-term-operator
   .form-boolean-group {
   display: flex !important;
@@ -166,12 +199,16 @@
   gap: 0 !important;
 }
 
-.layout-builder-configure-block
-  .horizontal-tabs-panes
+:is(
+  .layout-builder-configure-block .horizontal-tabs-panes,
+  form.block-content-form .views-basic--group-user-selection
+)
   .vb-term-operator
   .glb-form-type--radio,
-.layout-builder-configure-block
-  .horizontal-tabs-panes
+:is(
+  .layout-builder-configure-block .horizontal-tabs-panes,
+  form.block-content-form .views-basic--group-user-selection
+)
   .vb-term-operator
   .form-type--radio {
   position: relative;
@@ -187,13 +224,17 @@
  * the visual height next to the rest of this tab's compact fields mattered
  * more here. Still clears the 24×24 WCAG 2.5.8 floor with room to spare.
  */
-.layout-builder-configure-block
-  .horizontal-tabs-panes
+:is(
+  .layout-builder-configure-block .horizontal-tabs-panes,
+  form.block-content-form .views-basic--group-user-selection
+)
   .vb-term-operator
   .glb-form-type--radio
   label,
-.layout-builder-configure-block
-  .horizontal-tabs-panes
+:is(
+  .layout-builder-configure-block .horizontal-tabs-panes,
+  form.block-content-form .views-basic--group-user-selection
+)
   .vb-term-operator
   .form-type--radio
   label {
@@ -219,13 +260,17 @@
   cursor: pointer;
 }
 
-.layout-builder-configure-block
-  .horizontal-tabs-panes
+:is(
+  .layout-builder-configure-block .horizontal-tabs-panes,
+  form.block-content-form .views-basic--group-user-selection
+)
   .vb-term-operator
   .glb-form-type--radio:first-child
   label,
-.layout-builder-configure-block
-  .horizontal-tabs-panes
+:is(
+  .layout-builder-configure-block .horizontal-tabs-panes,
+  form.block-content-form .views-basic--group-user-selection
+)
   .vb-term-operator
   .form-type--radio:first-child
   label {
@@ -233,13 +278,17 @@
   border-end-start-radius: 6px !important;
 }
 
-.layout-builder-configure-block
-  .horizontal-tabs-panes
+:is(
+  .layout-builder-configure-block .horizontal-tabs-panes,
+  form.block-content-form .views-basic--group-user-selection
+)
   .vb-term-operator
   .glb-form-type--radio:last-child
   label,
-.layout-builder-configure-block
-  .horizontal-tabs-panes
+:is(
+  .layout-builder-configure-block .horizontal-tabs-panes,
+  form.block-content-form .views-basic--group-user-selection
+)
   .vb-term-operator
   .form-type--radio:last-child
   label {
@@ -249,8 +298,10 @@
 }
 
 /* Selected state: fill + weight change, not color alone (WCAG 1.4.1). */
-.layout-builder-configure-block
-  .horizontal-tabs-panes
+:is(
+  .layout-builder-configure-block .horizontal-tabs-panes,
+  form.block-content-form .views-basic--group-user-selection
+)
   .vb-term-operator
   input.form-radio:checked
   + label {
@@ -265,8 +316,10 @@
 /* Visible focus ring on the whole segment — the real input is what receives
  * keyboard focus, so :focus-visible has to be read off it and painted onto
  * the sibling label. */
-.layout-builder-configure-block
-  .horizontal-tabs-panes
+:is(
+  .layout-builder-configure-block .horizontal-tabs-panes,
+  form.block-content-form .views-basic--group-user-selection
+)
   .vb-term-operator
   input.form-radio:focus-visible
   + label {
@@ -281,8 +334,10 @@
  * Disabled while the paired multi-select is empty. Dimmed, not hidden, and
  * still above 3:1 contrast against the layer background — showing this
  * rather than hiding it only works if people can still tell it's there. */
-.layout-builder-configure-block
-  .horizontal-tabs-panes
+:is(
+  .layout-builder-configure-block .horizontal-tabs-panes,
+  form.block-content-form .views-basic--group-user-selection
+)
   .vb-term-operator
   input.form-radio:disabled
   + label {
@@ -296,8 +351,10 @@
   cursor: not-allowed;
 }
 
-.layout-builder-configure-block
-  .horizontal-tabs-panes
+:is(
+  .layout-builder-configure-block .horizontal-tabs-panes,
+  form.block-content-form .views-basic--group-user-selection
+)
   .vb-term-operator
   input.form-radio:disabled:checked
   + label {
@@ -316,10 +373,40 @@
  * convention (this selector is more specific than the single-pseudo-class
  * rules above), so source order doesn't reflect precedence here.
  */
-.layout-builder-configure-block
-  .horizontal-tabs-panes
+:is(
+  .layout-builder-configure-block .horizontal-tabs-panes,
+  form.block-content-form .views-basic--group-user-selection
+)
   .vb-term-operator
   input.form-radio:not(:disabled, :checked)
   + label:hover {
   background: var(--gin-bg-item-hover, #f3f4f9) !important;
+}
+
+/*
+ * Result content checkboxes on the full-page reusable block form. These live
+ * here rather than in views-basic-form-tabs.css because that stylesheet's
+ * library (listing_form_tabs) is only attached to the Layout Builder block
+ * form, so a rule there never loads on the full-page form. The checkboxes
+ * render as .form-checkboxes; the 13px row-gap gives Layout Builder's 37px
+ * row pitch (24px row + 13px).
+ */
+form.block-content-form .views-basic--group-user-selection .form-checkboxes {
+  display: flex;
+  flex-direction: column;
+  gap: 0.8125rem;
+}
+
+/*
+ * The "Post options" / "Event options" subsection that follows the checkboxes.
+ * views-basic.css spaces it with var(--vb-space-group), but that scale is only
+ * defined on the Layout Builder form, so on the full-page form the margin
+ * resolved to 0 (the !important there beats a plain rule) and the heading touched the last checkbox. 2.5rem is the same
+ * value the scale gives Layout Builder.
+ */
+form.block-content-form
+  .views-basic--group-user-selection
+  .vb-result-content
+  .vb-result-content__subsection {
+  margin-top: 2.5rem !important;
 }

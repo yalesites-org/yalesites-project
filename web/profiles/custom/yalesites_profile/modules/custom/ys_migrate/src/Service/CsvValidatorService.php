@@ -195,7 +195,7 @@ class CsvValidatorService {
     }
 
     // Read the header row.
-    $headers = fgetcsv($handle);
+    $headers = fgetcsv($handle, NULL, ',', '"', '');
     if (!$headers) {
       fclose($handle);
       return [
@@ -233,7 +233,7 @@ class CsvValidatorService {
     $row_number = 1;
     $errors = [];
 
-    while (($row = fgetcsv($handle)) !== FALSE) {
+    while (($row = fgetcsv($handle, NULL, ',', '"', '')) !== FALSE) {
       $row_number++;
 
       // Skip empty rows.

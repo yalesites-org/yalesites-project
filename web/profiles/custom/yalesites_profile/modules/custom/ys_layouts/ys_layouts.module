@@ -15,6 +15,7 @@ use Drupal\ys_layouts\CloneBlockLinkBuilder;
 use Drupal\ys_layouts\Plugin\Layout\YSLayoutOneColumn;
 use Drupal\ys_layouts\Render\DetachContextualOperations;
 use Drupal\ys_layouts\SectionCloneLinkBuilder;
+use Drupal\ys_layouts\Theme\ExposedFormSuggestions;
 use Drupal\ys_layouts\WebformResultsLinkBuilder;
 
 /**
@@ -633,6 +634,42 @@ function ys_layouts_theme_suggestions_text_format_wrapper_alter(array &$suggesti
     && !in_array('text_format_wrapper__gin_lb', $suggestions, TRUE)) {
     $suggestions[] = 'text_format_wrapper__gin_lb';
   }
+}
+
+/**
+ * Implements hook_theme_suggestions_alter().
+ *
+ * Runs after gin_lb's own alter (module order) and removes its __gin_lb form
+ * suggestions from View block filter forms, so atomic's ys-filter-form
+ * template still wins after a Layout Builder AJAX refresh (#2310).
+ */
+function ys_layouts_theme_suggestions_alter(array &$suggestions, array $variables, string $hook): void {
+  if (isset($variables['element']) && is_array($variables['element'])) {
+    $suggestions = ExposedFormSuggestions::filter($suggestions, $variables['element']);
+  }
+}
+
+/**
+ * Implements hook_form_views_exposed_form_alter().
+ *
+ * Queues marking of site filter form fields so their label, input and select
+ * templates also lose gin_lb's __gin_lb suggestions (#2310).
+ */
+function ys_layouts_form_views_exposed_form_alter(array &$form, FormStateInterface $form_state, string $form_id): void {
+  if (ExposedFormSuggestions::isSiteExposedForm($form)) {
+    // Mark in #after_build so fields other modules swap in later are covered.
+    $form['#after_build'][] = [ExposedFormSuggestions::class, 'afterBuild'];
+  }
+}
+
+/**
+ * Implements hook_preprocess_form_element().
+ *
+ * Carries the filter form marker onto the label so the label template also
+ * loses its __gin_lb suggestion (#2310).
+ */
+function ys_layouts_preprocess_form_element(array &$variables): void {
+  ExposedFormSuggestions::markLabel($variables);
 }
 
 /**

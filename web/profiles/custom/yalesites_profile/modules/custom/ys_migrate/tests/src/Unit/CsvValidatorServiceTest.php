@@ -595,4 +595,28 @@ class CsvValidatorServiceTest extends UnitTestCase {
     $this->assertCount(17, $columns);
   }
 
+  /**
+   * A cell ending in a backslash before its closing quote round-trips.
+   *
+   * The export writes with no escape character, so the reader must too.
+   *
+   * @covers ::validateCsvStructure
+   */
+  public function testValidateCsvStructureKeepsBackslashBeforeClosingQuote() {
+    $title = 'Notes on "Hamlet" C:\\';
+    $path = $this->createCsvFile(
+      $this->csvLine(['Display Name', 'Teaser Text']) .
+      $this->csvLine([$title, 'First']) .
+      $this->csvLine(['Jane Doe', 'Second'])
+    );
+
+    $result = $this->csvValidator->validateCsvStructure($path);
+
+    $this->assertTrue($result['valid'], (string) $result['message']);
+    $this->assertCount(2, $result['data']);
+    $this->assertSame($title, $result['data'][0]['display name']);
+    $this->assertSame('Jane Doe', $result['data'][1]['display name']);
+    $this->assertSame(3, $result['data'][1]['_row_number']);
+  }
+
 }
