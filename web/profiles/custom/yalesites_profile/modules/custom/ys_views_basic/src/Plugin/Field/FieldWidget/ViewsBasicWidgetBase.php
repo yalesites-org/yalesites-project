@@ -390,6 +390,7 @@ abstract class ViewsBasicWidgetBase extends WidgetBase implements ContainerFacto
     ];
 
     $form['#attached']['library'][] = 'ys_views_basic/ys_views_basic';
+    $form['#attached']['library'][] = 'ys_views_basic/chosen_a11y';
     $form['#attached']['library'][] = 'ys_views_basic/term_operator';
     if ($is_create_form) {
       $form['#attached']['library'][] = 'ys_views_basic/ys_views_basic_preview';
