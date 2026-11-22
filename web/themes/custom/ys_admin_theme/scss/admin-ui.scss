@@ -13,6 +13,27 @@
   float: none;
 }
 
+// Contrib double_field inline widget (the resource form's Non-Affiliated
+// Authors). In a multi-value table the inputs' size attribute sets the table's
+// minimum width and pushes the row's Remove button past the card. Size the
+// inputs to their column and let the pair wrap, as ys_dcn_field does for the
+// DCN widget. The column gap replaces contrib's margin-right; once wrapped,
+// Gin's margin under the first item spaces the rows.
+.double-field-widget-inline {
+  flex-wrap: wrap;
+  column-gap: 0.75em;
+
+  > .double-field-subfield-form-item {
+    flex: 1 1 12rem;
+    min-width: 0;
+    margin-right: 0;
+  }
+
+  .form-element {
+    width: 100%;
+  }
+}
+
 // Adjust error state colors for checkboxes and labels in Gin dark mode to
 // improve contrast and visibility on Gin's backgrounds.
 .gin--dark-mode {
