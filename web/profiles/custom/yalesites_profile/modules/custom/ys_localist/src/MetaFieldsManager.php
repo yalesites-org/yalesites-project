@@ -44,6 +44,13 @@ class MetaFieldsManager implements ContainerFactoryPluginInterface {
   protected $localistManager;
 
   /**
+   * Event data already built during this request, keyed by node ID.
+   *
+   * @var array
+   */
+  protected $eventDataCache = [];
+
+  /**
    * Constructs a new EventMetaBlock instance.
    *
    * @param \Drupal\Core\Datetime\DateFormatter $date_formatter
@@ -264,11 +271,29 @@ class MetaFieldsManager implements ContainerFactoryPluginInterface {
 
   /**
    * Gets event all fields.
+   *
+   * The result is kept per node ID for the rest of the request, so the
+   * structured data and the event meta block share one Localist ticket lookup.
    */
   public function getEventData($node) {
     if (!($node instanceof NodeInterface)) {
       return [];
     }
+
+    $nid = $node->id();
+    if ($nid === NULL) {
+      return $this->buildEventData($node);
+    }
+    if (!isset($this->eventDataCache[$nid])) {
+      $this->eventDataCache[$nid] = $this->buildEventData($node);
+    }
+    return $this->eventDataCache[$nid];
+  }
+
+  /**
+   * Builds event all fields, including the Localist ticket lookup.
+   */
+  protected function buildEventData(NodeInterface $node) {
 
     // Event basic fields.
     $localistId = $node->field_localist_id->first() ? $node->field_localist_id->first()->getValue()['value'] : NULL;
