@@ -29,14 +29,18 @@
  */
 
 (function (Drupal, once, $) {
-  // Pairs each multi-select with the operator it disables/enables.
+  // Pairs each multi-select with the operator it disables/enables. Layout Builder
+  // names end in [terms_include][]; the full-page reusable block form uses a
+  // bare terms_include[] (#2277), so both shapes are matched.
   const REVEALS = [
     {
-      selectSuffix: '[terms_include][]',
+      selectSelector:
+        'select[name$="[terms_include][]"], select[name="terms_include[]"]',
       operatorClass: 'vb-term-operator--include',
     },
     {
-      selectSuffix: '[terms_exclude][]',
+      selectSelector:
+        'select[name$="[terms_exclude][]"], select[name="terms_exclude[]"]',
       operatorClass: 'vb-term-operator--exclude',
     },
   ];
@@ -72,28 +76,26 @@
       // shows one "Configure block" dialog at a time, so a document-wide
       // lookup for this dialog's own operator class is unambiguous.
       REVEALS.forEach(function (reveal) {
-        once(
-          'vb-term-operator',
-          `select[name$="${reveal.selectSuffix}"]`,
-          context,
-        ).forEach(function (select) {
-          const operator = document.querySelector(`.${reveal.operatorClass}`);
-          if (!operator) {
-            return;
-          }
-          // Chosen updates the underlying select and calls jQuery's
-          // .trigger("change") on it, but that never reaches a native
-          // addEventListener("change", ...) — there is no native
-          // element.change() method for jQuery to fall back to the way it
-          // does for click/focus/submit, so the trigger stays entirely
-          // inside jQuery's own event system. Binding through jQuery here
-          // (this file already depends on core/jquery) is what actually
-          // catches it; a native listener never fires at all.
-          $(select).on('change', function () {
+        once('vb-term-operator', reveal.selectSelector, context).forEach(
+          function (select) {
+            const operator = document.querySelector(`.${reveal.operatorClass}`);
+            if (!operator) {
+              return;
+            }
+            // Chosen updates the underlying select and calls jQuery's
+            // .trigger("change") on it, but that never reaches a native
+            // addEventListener("change", ...) — there is no native
+            // element.change() method for jQuery to fall back to the way it
+            // does for click/focus/submit, so the trigger stays entirely
+            // inside jQuery's own event system. Binding through jQuery here
+            // (this file already depends on core/jquery) is what actually
+            // catches it; a native listener never fires at all.
+            $(select).on('change', function () {
+              refresh(select, operator);
+            });
             refresh(select, operator);
-          });
-          refresh(select, operator);
-        });
+          },
+        );
       });
     },
   };
