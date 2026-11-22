@@ -358,6 +358,50 @@ class ViewMigrationTest extends YsKernelTestBase {
   }
 
   /**
+   * A second run repairs a block stranded with the new type (#2335).
+   */
+  public function testSecondRunRepairsBlockWithNewTypeAndEmptyParams() {
+    // The state a run stopped between its two saves left behind: the bundle is
+    // already post_list_item, but no params were written.
+    $stranded = BlockContent::create(['type' => 'post_list_item', 'info' => 'Stranded feed']);
+    $stranded->save();
+    $this->assertTrue($this->blockStorage->load($stranded->id())->get('field_view_params')->isEmpty());
+
+    $this->runHook('ys_views_basic_deploy_10002');
+    $this->blockStorage->resetCache();
+
+    $repaired = $this->blockStorage->load($stranded->id());
+    $this->assertSame('post_list_item', $repaired->bundle());
+    $this->assertEquals(ViewsBasicManager::predecessorPreset('post_list')['params'], $this->storedParams($stranded->id()));
+  }
+
+  /**
+   * A second run on a finished site changes nothing (#2335).
+   */
+  public function testSecondRunOnFinishedSiteChangesNothing() {
+    $legacy = BlockContent::create(['type' => 'post_list', 'info' => 'Post feed']);
+    $legacy->save();
+    $this->runHook('ys_views_basic_deploy_10002');
+
+    // An editor changes the migrated block's settings afterwards.
+    $custom = ['view_mode' => 'card', 'limit' => 3];
+    $block = $this->blockStorage->load($legacy->id());
+    $block->set('field_view_params', ['params' => json_encode($custom)]);
+    $block->save();
+    $this->blockStorage->resetCache();
+    $revision = $this->blockStorage->load($legacy->id())->getRevisionId();
+    $changed = $this->blockStorage->load($legacy->id())->getChangedTime();
+
+    $this->runHook('ys_views_basic_deploy_10002');
+    $this->blockStorage->resetCache();
+
+    $after = $this->blockStorage->load($legacy->id());
+    $this->assertEquals($custom, $this->storedParams($legacy->id()));
+    $this->assertSame($revision, $after->getRevisionId());
+    $this->assertSame($changed, $after->getChangedTime());
+  }
+
+  /**
    * Deploy 10005 repairs blocks an earlier 10002 left with bare revisions.
    */
   public function testOlderRevisionsOfAlreadyMigratedBlocksGetParams() {
