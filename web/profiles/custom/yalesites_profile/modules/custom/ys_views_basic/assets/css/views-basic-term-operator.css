@@ -360,7 +360,11 @@ form.block-content-form
   + label {
   border-color: var(--gin-color-text-light, #6b7280) !important;
   background: var(--gin-bg-item-hover, #f3f4f9) !important;
-  color: var(--gin-color-text-light, #6b7280) !important;
+  color: color-mix(
+    in srgb,
+    var(--gin-color-text, #232323) 65%,
+    transparent
+  ) !important;
 }
 
 /*
