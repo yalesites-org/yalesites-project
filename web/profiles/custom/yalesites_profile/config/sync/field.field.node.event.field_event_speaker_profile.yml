@@ -1,0 +1,29 @@
+uuid: b7d24e90-1a3c-45f6-8e72-6c9d0f1a2b34
+langcode: en
+status: true
+dependencies:
+  config:
+    - field.storage.node.field_event_speaker_profile
+    - node.type.event
+    - node.type.profile
+id: node.event.field_event_speaker_profile
+field_name: field_event_speaker_profile
+entity_type: node
+bundle: event
+label: 'Associated Profile'
+description: 'Optional. Select the profile associated with the speaker. Leave blank for a speaker without a profile.'
+required: false
+translatable: false
+default_value: {  }
+default_value_callback: ''
+settings:
+  handler: 'default:node'
+  handler_settings:
+    target_bundles:
+      profile: profile
+    sort:
+      field: field_last_name
+      direction: ASC
+    auto_create: false
+    auto_create_bundle: ''
+field_type: entity_reference

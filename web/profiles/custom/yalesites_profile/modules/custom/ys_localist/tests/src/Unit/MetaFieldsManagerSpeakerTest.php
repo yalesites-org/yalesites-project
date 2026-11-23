@@ -11,7 +11,7 @@ use Drupal\ys_localist\LocalistManager;
 use Drupal\ys_localist\MetaFieldsManager;
 
 /**
- * Unit tests for the speaker line shown under an event title.
+ * Unit tests for the speaker name shown under an event title.
  *
  * @coversDefaultClass \Drupal\ys_localist\MetaFieldsManager
  *
@@ -23,11 +23,8 @@ class MetaFieldsManagerSpeakerTest extends UnitTestCase {
   /**
    * Calls getSpeakerLine() for an event with the given field values.
    */
-  protected function speakerLine(string $speaker, string $affiliation): ?string {
-    $values = [
-      'field_event_speaker' => $speaker,
-      'field_event_speaker_affiliation' => $affiliation,
-    ];
+  protected function speakerLine(string $speaker): ?string {
+    $values = ['field_event_speaker' => $speaker];
     $node = $this->createMock(NodeInterface::class);
     $node->method('get')->willReturnCallback(function ($name) use ($values) {
       $list = $this->createMock(FieldItemListInterface::class);
@@ -45,24 +42,17 @@ class MetaFieldsManagerSpeakerTest extends UnitTestCase {
   /**
    * @covers ::getSpeakerLine
    */
-  public function testSpeakerAndAffiliationJoinWithComma(): void {
-    $this->assertSame('Ada Lovelace, Analytical Society', $this->speakerLine('Ada Lovelace', 'Analytical Society'));
-  }
-
-  /**
-   * @covers ::getSpeakerLine
-   */
-  public function testEmptyAffiliationShowsOnlyTheSpeaker(): void {
-    $this->assertSame('Ada Lovelace', $this->speakerLine('Ada Lovelace', ''));
-    $this->assertSame('Ada Lovelace', $this->speakerLine(' Ada Lovelace ', '  '));
+  public function testSpeakerIsTrimmed(): void {
+    $this->assertSame('Ada Lovelace', $this->speakerLine('Ada Lovelace'));
+    $this->assertSame('Ada Lovelace', $this->speakerLine(' Ada Lovelace '));
   }
 
   /**
    * @covers ::getSpeakerLine
    */
   public function testNoSpeakerShowsNothing(): void {
-    $this->assertNull($this->speakerLine('', ''));
-    $this->assertNull($this->speakerLine('', 'Analytical Society'));
+    $this->assertNull($this->speakerLine(''));
+    $this->assertNull($this->speakerLine('   '));
   }
 
 }
