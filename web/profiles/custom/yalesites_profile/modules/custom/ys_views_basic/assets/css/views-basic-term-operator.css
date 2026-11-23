@@ -309,8 +309,8 @@ form.block-content-form
   z-index: 1;
   border-color: var(--gin-color-primary) !important;
   background: var(--gin-color-primary) !important;
-  color: #fff !important;
-  font-weight: 700;
+  color: var(--gin-color-button-text, #fff) !important;
+  font-weight: 700 !important;
 }
 
 /* Visible focus ring on the whole segment — the real input is what receives
@@ -329,7 +329,9 @@ form.block-content-form
   outline-offset: 2px;
 }
 
-/* Disabled while the paired multi-select is empty. Dimmed, not hidden, and
+/* Off-state text is mixed from the main text color so it stays legible in dark
+ * mode, where --gin-color-text-light nearly matches the background.
+ * Disabled while the paired multi-select is empty. Dimmed, not hidden, and
  * still above 3:1 contrast against the layer background — showing this
  * rather than hiding it only works if people can still tell it's there. */
 :is(
@@ -341,7 +343,11 @@ form.block-content-form
   + label {
   border-color: var(--gin-border-color, #d3d4d9) !important;
   background: var(--gin-bg-layer, #fff) !important;
-  color: var(--gin-color-text-light, #6b7280) !important;
+  color: color-mix(
+    in srgb,
+    var(--gin-color-text, #232323) 65%,
+    transparent
+  ) !important;
   cursor: not-allowed;
 }
 
@@ -354,7 +360,11 @@ form.block-content-form
   + label {
   border-color: var(--gin-color-text-light, #6b7280) !important;
   background: var(--gin-bg-item-hover, #f3f4f9) !important;
-  color: var(--gin-color-text-light, #6b7280) !important;
+  color: color-mix(
+    in srgb,
+    var(--gin-color-text, #232323) 65%,
+    transparent
+  ) !important;
 }
 
 /*

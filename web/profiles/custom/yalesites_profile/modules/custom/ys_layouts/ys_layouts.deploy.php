@@ -49,11 +49,16 @@ function ys_layouts_deploy_9004() {
  * Also updates layouts cached by Layout Builder, and keeps each node's
  * Updated date.
  */
-function ys_layouts_deploy_9005() {
-  $updater = \Drupal::service('ys_layouts.updater');
-  foreach (['post', 'event', 'resource'] as $bundle) {
-    $updater->updateLocks($bundle);
-  }
+function ys_layouts_deploy_9005(array &$sandbox) {
+  $handled = \Drupal::service('ys_layouts.updater')
+    ->updateLocksBatched(['post', 'event', 'resource'], $sandbox);
+
+  // Only the final pass's return value is surfaced by drush.
+  return \Drupal::translation()->formatPlural(
+    $handled,
+    'Checked section locks on 1 node.',
+    'Checked section locks on @count nodes.'
+  );
 }
 
 /**
