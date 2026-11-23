@@ -177,11 +177,14 @@ class BlockTemplateSuggestionTest extends UnitTestCase {
     $block = $this->createMock(BlockContentInterface::class);
     $block->method('bundle')->willReturn('text');
     $suggestions = ['block__block_content'];
-    ys_views_basic_theme_suggestions_block_alter($suggestions, ['elements' => [
-      '#base_plugin_id' => 'block_content',
-      '#derivative_plugin_id' => 'abc',
-      'content' => ['#block_content' => $block],
-    ]]);
+    $variables = [
+      'elements' => [
+        '#base_plugin_id' => 'block_content',
+        '#derivative_plugin_id' => 'abc',
+        'content' => ['#block_content' => $block],
+      ],
+    ];
+    ys_views_basic_theme_suggestions_block_alter($suggestions, $variables);
     $this->assertSame(['block__block_content'], $suggestions);
     // No entity in the build: a UUID derivative is never taken as a bundle.
     $this->assertNotContains('block__inline_block__view', $this->suggestionsFor('block_content', 'page_card'));
