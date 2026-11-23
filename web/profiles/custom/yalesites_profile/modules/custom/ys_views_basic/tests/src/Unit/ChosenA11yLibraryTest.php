@@ -86,8 +86,11 @@ class ChosenA11yLibraryTest extends UnitTestCase {
    */
   public function testFocusRingRulesExist(): void {
     $css = file_get_contents(dirname(__DIR__, 3) . '/assets/css/views-basic.css');
-    $this->assertMatchesRegularExpression('/\.layout-builder-configure-block\s+\.chosen-container\s+\.chosen-results\s+li\.highlighted\s*\{[^}]*outline:/', $css);
-    $this->assertMatchesRegularExpression('/\.gin--dark-mode\s+\.layout-builder-configure-block\s+\.chosen-container\s+\.chosen-results\s+li\.highlighted\s*\{[^}]*outline-color/', $css);
+    foreach (['include', 'exclude'] as $picker) {
+      $form_item = '\.form-item-settings-block-form-group-user-selection-filter-and-sort-terms-' . $picker;
+      $this->assertMatchesRegularExpression('/\.layout-builder-configure-block\s+' . $form_item . '\s+\.chosen-container\s+\.chosen-results\s+li\.highlighted\s*[,{][^}]*outline:/', $css, "Light-mode ring for the $picker picker.");
+      $this->assertMatchesRegularExpression('/\.gin--dark-mode\s+\.layout-builder-configure-block\s+' . $form_item . '\s+\.chosen-container\s+\.chosen-results\s+li\.highlighted\s*[,{][^}]*outline-color/', $css, "Dark-mode ring for the $picker picker.");
+    }
   }
 
   /**
