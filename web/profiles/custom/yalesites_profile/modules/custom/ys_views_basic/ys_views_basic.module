@@ -601,10 +601,10 @@ function _ys_views_basic_listing_form_tabs(array $element, FormStateInterface $f
   // fixed paths still resolve; only #group (and the active-tab #open flag) are
   // set here.
   // Weight the widget groups after General (#weight 0) so the bar reads
-  // General | Field display & filters | Tags, sorting & pinned |
+  // General | Tags, sorting & pinned | Results & filters |
   // Display options.
   $group_weight = 1;
-  foreach (['entity_and_view_mode', 'filter_and_sort', 'options'] as $group) {
+  foreach (['filter_and_sort', 'entity_and_view_mode', 'options'] as $group) {
     if (isset($element['group_user_selection'][$group])) {
       $element['group_user_selection'][$group]['#group'] = $tabs;
       $element['group_user_selection'][$group]['#open'] = FALSE;
