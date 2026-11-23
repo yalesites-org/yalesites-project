@@ -60,3 +60,10 @@ event_calendar_live_filter:
     - core/drupal.announce
     - core/jquery
     - core/once
+
+chosen_a11y:
+  js:
+    assets/js/views-basic-chosen-a11y.js: {}
+  dependencies:
+    - core/drupal
+    - core/once
