@@ -408,12 +408,20 @@ class CsvValidatorService {
       $row_number++;
       // The export's formula guard comes off the raw cell, before trimming:
       // sanitizeCell() decides from the untrimmed value, so the inverse must
-      // too. Done before validation so the required-Title check sees the value
-      // that will actually be imported.
-      if ($remove_formula_guard) {
-        $row = array_map([$this, 'removeFormulaGuard'], array_map('strval', $row));
-      }
-      $row = array_map([$this, 'trimCell'], $row);
+      // too. A cell that carried the guard is the exact exported value, so
+      // its leading space or tab is kept; every other cell is trimmed. Done
+      // before validation so the required-Title check sees the value that will
+      // actually be imported.
+      $row = array_map(function ($cell) use ($remove_formula_guard) {
+        $cell = (string) $cell;
+        if ($remove_formula_guard) {
+          $unguarded = $this->removeFormulaGuard($cell);
+          if ($unguarded !== $cell) {
+            return $unguarded;
+          }
+        }
+        return $this->trimCell($cell);
+      }, $row);
 
       // Skip empty rows.
       if (empty(array_filter($row))) {
