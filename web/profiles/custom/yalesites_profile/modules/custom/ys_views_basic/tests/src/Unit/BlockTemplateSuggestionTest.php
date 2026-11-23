@@ -141,9 +141,49 @@ class BlockTemplateSuggestionTest extends UnitTestCase {
   }
 
   /**
-   * Non-inline-block providers are ignored.
+   * A reusable listing (block_content:UUID) takes listing templates (#2366).
+   *
+   * Its derivative is a UUID, so the bundle comes from the rendered entity.
    */
-  public function testNonInlineBlockIgnored() {
+  public function testReusableListingReusesViewTemplate() {
+    foreach (['post_card' => 'block__inline_block__view', 'resource_card' => 'block__inline_block__resource_view'] as $bundle => $expected) {
+      $block = $this->createMock(BlockContentInterface::class);
+      $block->method('bundle')->willReturn($bundle);
+      $elements = [
+        '#base_plugin_id' => 'block_content',
+        '#derivative_plugin_id' => '0b6f6f0e-1111-4222-8333-444455556666',
+        'content' => ['#block_content' => $block],
+      ];
+      $suggestions = ['block__block_content', 'block__block_content__' . $bundle];
+      ys_views_basic_theme_suggestions_block_alter($suggestions, ['elements' => $elements]);
+      $this->assertSame($expected, end($suggestions), "Reusable $bundle gets $expected.");
+    }
+
+    // The resource params rename applies to the reusable placement too.
+    $variables = [
+      'elements' => $elements,
+      'base_plugin_id' => 'block_content',
+      'derivative_plugin_id' => '0b6f6f0e-1111-4222-8333-444455556666',
+      'content' => ['field_view_params' => ['#markup' => 'Listing']],
+    ];
+    ys_views_basic_preprocess_block($variables);
+    $this->assertSame(['#markup' => 'Listing'], $variables['content']['field_view_resource_params']);
+  }
+
+  /**
+   * Reusable non-listing blocks, and other providers, are left alone.
+   */
+  public function testReusableNonListingIgnored() {
+    $block = $this->createMock(BlockContentInterface::class);
+    $block->method('bundle')->willReturn('text');
+    $suggestions = ['block__block_content'];
+    ys_views_basic_theme_suggestions_block_alter($suggestions, ['elements' => [
+      '#base_plugin_id' => 'block_content',
+      '#derivative_plugin_id' => 'abc',
+      'content' => ['#block_content' => $block],
+    ]]);
+    $this->assertSame(['block__block_content'], $suggestions);
+    // No entity in the build: a UUID derivative is never taken as a bundle.
     $this->assertNotContains('block__inline_block__view', $this->suggestionsFor('block_content', 'page_card'));
     $this->assertNotContains('block__inline_block__view', $this->suggestionsFor(NULL, NULL));
   }
