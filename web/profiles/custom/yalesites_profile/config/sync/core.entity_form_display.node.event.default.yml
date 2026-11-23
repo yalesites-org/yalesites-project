@@ -135,14 +135,13 @@ third_party_settings:
     group_basic_info:
       children:
         - title
-        - field_event_speaker
-        - field_event_speaker_profile
         - field_event_description
         - field_event_cta
         - group_place
         - field_event_date
         - field_event_recurring
         - group_stream_information
+        - group_speaker_wrapper
       label: 'Basic info'
       region: content
       parent_name: group_event_tabs
@@ -245,6 +244,28 @@ third_party_settings:
         show_empty_fields: false
         id: ''
         description: ''
+        required_fields: true
+    group_speaker_wrapper:
+      children:
+        - field_event_speaker
+        - field_event_speaker_profile
+      label: 'Speaker Wrapper'
+      region: content
+      parent_name: group_basic_info
+      weight: 40
+      format_type: html_element
+      format_settings:
+        classes: ys-gin-two-column-wrapper
+        show_empty_fields: false
+        id: ''
+        label_as_html: false
+        element: div
+        show_label: false
+        label_element: h3
+        label_element_classes: ''
+        attributes: ''
+        effect: none
+        speed: fast
         required_fields: true
     group_localist_taxonomies:
       children:
