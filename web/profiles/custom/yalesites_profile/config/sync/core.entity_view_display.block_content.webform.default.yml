@@ -9,7 +9,6 @@ dependencies:
     - field.field.block_content.webform.field_instructions
     - field.field.block_content.webform.field_padding_options
   module:
-    - options
     - text
     - webform
 id: block_content.webform.default
@@ -33,13 +32,7 @@ content:
     third_party_settings: {  }
     weight: 0
     region: content
-  field_padding_options:
-    type: list_default
-    label: above
-    settings: {  }
-    third_party_settings: {  }
-    weight: 10
-    region: content
 hidden:
   field_instructions: true
+  field_padding_options: true
   search_api_excerpt: true

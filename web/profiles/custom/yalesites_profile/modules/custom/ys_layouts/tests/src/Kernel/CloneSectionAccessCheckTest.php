@@ -7,7 +7,7 @@ use Drupal\Core\Plugin\Context\Context;
 use Drupal\Core\Plugin\Context\ContextDefinition;
 use Drupal\Core\Plugin\Context\EntityContext;
 use Drupal\Core\Routing\RouteMatch;
-use Drupal\KernelTests\KernelTestBase;
+use Drupal\Tests\ys_core\Kernel\YsKernelTestBase;
 use Drupal\layout_builder\Plugin\SectionStorage\OverridesSectionStorage;
 use Drupal\layout_builder\Section;
 use Drupal\layout_builder\SectionStorageInterface;
@@ -57,7 +57,7 @@ use Symfony\Component\Routing\Route;
  *
  * @coversDefaultClass \Drupal\ys_layouts\Access\CloneSectionAccessCheck
  */
-class CloneSectionAccessCheckTest extends KernelTestBase {
+class CloneSectionAccessCheckTest extends YsKernelTestBase {
 
   /**
    * {@inheritdoc}

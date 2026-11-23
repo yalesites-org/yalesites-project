@@ -58,6 +58,21 @@ class ViewsContentResourcesManager extends ControllerBase implements ContainerIn
   const DEFAULT_PIN_LABEL = 'Pinned';
 
   /**
+   * Longest label accepted for the pin and category filter labels.
+   */
+  const MAX_LABEL_LENGTH = 255;
+
+  /**
+   * Fields the search filter can search, as offered by the block form.
+   */
+  const ALLOWED_SEARCH_FIELDS = [
+    'title',
+    'field_teaser_text',
+    'field_teaser_title',
+    'field_journal_publication_name',
+  ];
+
+  /**
    * The entity type manager.
    *
    * @var \Drupal\Core\Entity\EntityTypeManagerInterface
@@ -185,18 +200,20 @@ class ViewsContentResourcesManager extends ControllerBase implements ContainerIn
 
       // Check if 'category_included_terms' is provided for the current
       // filter type.
-      if (!empty($paramsDecoded['category_included_terms'])) {
+      $categoryParentId = self::getValidatedTermId($paramsDecoded['category_included_terms'] ?? NULL);
+      if ($categoryParentId) {
         $vid = "resource_category";
 
         // Limit the filter to specific terms if provided.
-        $filters[$category_filter_name]['value'] = $this->getChildTermsByParentId($paramsDecoded['category_included_terms'], $vid);
+        $filters[$category_filter_name]['value'] = $this->getChildTermsByParentId($categoryParentId, $vid);
         $filters[$category_filter_name]['limit'] = TRUE;
         $filters[$category_filter_name]['expose']['reduce'] = TRUE;
       }
 
       // Set a custom label for the 'Category' filter if provided.
-      if (!empty($paramsDecoded['category_filter_label'])) {
-        $filters[$category_filter_name]['expose']['label'] = $paramsDecoded['category_filter_label'];
+      $categoryLabel = self::getValidatedLabel($paramsDecoded['category_filter_label'] ?? NULL, '');
+      if ($categoryLabel !== '') {
+        $filters[$category_filter_name]['expose']['label'] = $categoryLabel;
       }
     }
     else {
@@ -215,12 +232,13 @@ class ViewsContentResourcesManager extends ControllerBase implements ContainerIn
 
       // Check if 'custom_vocab_included_terms' is provided for the current
       // filter type.
-      if (!empty($paramsDecoded['custom_vocab_included_terms'])) {
+      $customVocabParentId = self::getValidatedTermId($paramsDecoded['custom_vocab_included_terms'] ?? NULL);
+      if ($customVocabParentId) {
         // Determine the vocabulary ID based on the selected filter type.
         $vid = 'custom_vocab';
 
         // Limit the filter to specific terms if provided.
-        $filters['field_custom_vocab_target_id']['value'] = $this->getChildTermsByParentId($paramsDecoded['custom_vocab_included_terms'], $vid);
+        $filters['field_custom_vocab_target_id']['value'] = $this->getChildTermsByParentId($customVocabParentId, $vid);
         $filters['field_custom_vocab_target_id']['limit'] = TRUE;
         $filters['field_custom_vocab_target_id']['expose']['reduce'] = TRUE;
       }
@@ -249,6 +267,8 @@ class ViewsContentResourcesManager extends ControllerBase implements ContainerIn
       unset($filters['combine']);
     }
     else {
+      $paramsDecoded['search_fields'] = self::getValidatedSearchFields($paramsDecoded['search_fields'] ?? NULL);
+
       // Legacy: map old journal publication name filter to search fields.
       if (!empty($paramsDecoded['exposed_filter_options']['show_journal_publication_name_filter'])
           && empty($paramsDecoded['search_fields'])) {
@@ -381,7 +401,7 @@ class ViewsContentResourcesManager extends ControllerBase implements ContainerIn
       $itemsLimit = isset($paramsDecoded['limit']) ? max(0, (int) $paramsDecoded['limit']) : NULL;
     }
 
-    $pin_label = $paramsDecoded['pin_label'] ?? self::DEFAULT_PIN_LABEL;
+    $pin_label = self::getValidatedLabel($paramsDecoded['pin_label'] ?? NULL, self::DEFAULT_PIN_LABEL);
 
     if (!$pinned_to_top) {
       $pin_label = NULL;
@@ -573,6 +593,81 @@ class ViewsContentResourcesManager extends ControllerBase implements ContainerIn
       return $viewMode;
     }
     return array_key_first(self::ALLOWED_VIEW_MODES);
+  }
+
+  /**
+   * Returns a label to show, as plain text.
+   *
+   * @param mixed $label
+   *   The requested label.
+   * @param string $default
+   *   The label to use when the requested one is not usable.
+   *
+   * @return string
+   *   The requested label when it is a string of at most MAX_LABEL_LENGTH
+   *   characters with no markup or control characters, otherwise the default.
+   */
+  public static function getValidatedLabel($label, string $default): string {
+    if (!is_string($label)) {
+      return $default;
+    }
+    $label = trim($label);
+    if ($label === ''
+      || mb_strlen($label) > self::MAX_LABEL_LENGTH
+      || strip_tags($label) !== $label
+      || preg_match('/[\x00-\x1F\x7F]/', $label)) {
+      return $default;
+    }
+    return $label;
+  }
+
+  /**
+   * Returns the term ID to use.
+   *
+   * @param mixed $termId
+   *   The requested parent term ID.
+   *
+   * @return int|null
+   *   The requested ID when it is a whole number above zero, otherwise NULL.
+   */
+  public static function getValidatedTermId($termId): ?int {
+    if (is_int($termId)) {
+      return $termId > 0 ? $termId : NULL;
+    }
+    if (is_string($termId) && ctype_digit($termId) && (int) $termId > 0) {
+      return (int) $termId;
+    }
+    return NULL;
+  }
+
+  /**
+   * Returns the search fields to use.
+   *
+   * @param mixed $fields
+   *   The requested search fields, as submitted by the block form's checkboxes.
+   *
+   * @return array|null
+   *   The selected fields that are listed in ALLOWED_SEARCH_FIELDS, keyed by
+   *   field name, or the default fields when none are. NULL when the input is
+   *   not an array or empty, so the caller leaves the view's own fields alone.
+   */
+  public static function getValidatedSearchFields($fields): ?array {
+    if (!is_array($fields) || !$fields) {
+      return NULL;
+    }
+    $valid = [];
+    foreach (array_filter($fields) as $field) {
+      if (is_string($field) && in_array($field, self::ALLOWED_SEARCH_FIELDS, TRUE)) {
+        $valid[$field] = $field;
+      }
+    }
+    // Nothing usable selected: search the default fields, as an empty
+    // selection always has.
+    return $valid ?: [
+      'title' => 'title',
+      'field_teaser_text' => 'field_teaser_text',
+      'field_teaser_title' => 'field_teaser_title',
+    ];
   }
 
   /**

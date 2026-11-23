@@ -20,13 +20,18 @@ class PeopleExportController extends ExportControllerBase {
   const VIEW_ID = 'user_admin_people';
 
   /**
+   * No status line: it would land in the NetID column like an account row.
+   */
+  const SUMMARY_ROW = FALSE;
+
+  /**
    * Streams a CSV download of the accounts shown on the People page.
    *
-   * The route permission ("administer users") gates access, mirroring the
-   * People view's own access check, so the button is available to exactly the
-   * admins who can already open the page. The exported rows come from that
-   * view with the request's exposed-filter query replayed, so the CSV reflects
-   * the filters and search the admin has applied.
+   * The route permission ("export people to csv") gates access and is granted
+   * only to the Site and Platform administrator roles, so the button is
+   * available to the admins who manage accounts. The exported rows come from
+   * the People view with the request's exposed-filter query replayed, so the
+   * CSV reflects the filters and search the admin has applied.
    *
    * @param \Symfony\Component\HttpFoundation\Request $request
    *   The current request, carrying the People page's exposed-filter query.

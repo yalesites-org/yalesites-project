@@ -7,7 +7,6 @@ use Drupal\Core\Access\AccessResultInterface;
 use Drupal\Core\Routing\Access\AccessInterface;
 use Drupal\Core\Routing\RouteMatchInterface;
 use Drupal\Core\Session\AccountInterface;
-use Drupal\layout_builder\DefaultsSectionStorageInterface;
 use Drupal\layout_builder\OverridesSectionStorageInterface;
 use Drupal\layout_builder\Section;
 use Drupal\layout_builder\SectionStorageInterface;
@@ -92,8 +91,9 @@ use Drupal\layout_builder\TempStoreIdentifierInterface;
  * and shift it down. That is load-bearing, so it is asserted — see
  * CloneSectionAccessCheckTest::testLockedSectionsAreFencedAgainstBeingShifted().
  *
- * The bypass permissions are the same escape hatches layout_builder_lock itself
- * honours.
+ * Unlike layout_builder_lock itself, the lock bypass permissions do not apply:
+ * a locked section cannot be cloned by anyone, because a cloned Title and
+ * Metadata or Banner section gives the page a second h1.
  *
  * With layout_builder_lock uninstalled there are no lock settings to read, so
  * this check allows everything and needs no module_handler guard.
@@ -162,22 +162,43 @@ class CloneSectionAccessCheck implements AccessInterface {
    *   cannot bypass.
    */
   public function access(SectionStorageInterface $section_storage, AccountInterface $account, RouteMatchInterface $route_match): AccessResultInterface {
-    // Mirror layout_builder_lock's escape hatches: lock settings are managed on
-    // the default layout and bypassed on overrides.
-    $permission = $section_storage instanceof DefaultsSectionStorageInterface
-      ? 'manage lock settings on sections'
-      : 'bypass lock settings on layout overrides';
-
-    if ($account->hasPermission($permission)) {
-      return AccessResult::allowed()->addCacheContexts(['user.permissions']);
-    }
-
     $raw_delta = $route_match->getRawParameter('delta');
     if ($raw_delta === NULL) {
       return AccessResult::allowed()->addCacheContexts(['user.permissions']);
     }
-    $delta = (int) $raw_delta;
 
+    return $this->accessForDelta($section_storage, $account, (int) $raw_delta);
+  }
+
+  /**
+   * Checks whether a storage's section at a delta may be cloned.
+   *
+   * The toolbar link builder calls this directly, with the section storage it
+   * is rendering, instead of relying on Url::access() alone. Url::access()
+   * re-resolves the route's section_storage parameter through the param
+   * converter, which on its own does not read Layout Builder's tempstore (core
+   * applies that in a route enhancer that only runs on a real request). For a
+   * layout with no saved override the converter therefore returns an empty
+   * storage, the delta does not resolve, and the check below would allow the
+   * clone. On the first visit core's static tempstore cache hid that; from the
+   * second visit it showed a Clone link on locked sections (issue #2098).
+   *
+   * @param \Drupal\layout_builder\SectionStorageInterface $section_storage
+   *   The section storage the clone would happen in. It must be the one that
+   *   holds the sections being edited, so unsaved (tempstore) changes count.
+   * @param \Drupal\Core\Session\AccountInterface $account
+   *   The account to check.
+   * @param int $delta
+   *   The delta of the section being cloned.
+   *
+   * @return \Drupal\Core\Access\AccessResultInterface
+   *   Allowed unless the section's contents are locked in a way the account
+   *   cannot bypass.
+   */
+  public function accessForDelta(SectionStorageInterface $section_storage, AccountInterface $account, int $delta): AccessResultInterface {
+    // No lock-bypass escape hatch here, unlike layout_builder_lock itself: a
+    // cloned locked section (Title and Metadata, Banner) puts a second h1 on
+    // the page, so no account may clone one, user 1 and bypass roles included.
     try {
       $section = $section_storage->getSection($delta);
     }

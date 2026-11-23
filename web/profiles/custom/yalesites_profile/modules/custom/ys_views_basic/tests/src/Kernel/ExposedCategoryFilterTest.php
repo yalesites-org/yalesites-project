@@ -3,7 +3,7 @@
 namespace Drupal\Tests\ys_views_basic\Kernel;
 
 use Drupal\Component\Serialization\Yaml;
-use Drupal\KernelTests\KernelTestBase;
+use Drupal\Tests\ys_core\Kernel\YsKernelTestBase;
 use Drupal\views\Entity\View;
 
 /**
@@ -27,7 +27,7 @@ use Drupal\views\Entity\View;
  *
  * @group yalesites
  */
-class ExposedCategoryFilterTest extends KernelTestBase {
+class ExposedCategoryFilterTest extends YsKernelTestBase {
 
   /**
    * {@inheritdoc}

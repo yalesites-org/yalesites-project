@@ -86,7 +86,14 @@ class SectionCloneLinkBuilder implements TrustedCallbackInterface {
 
       // Computed once: it decides both whether the link renders and whether the
       // stylesheet shifts Configure aside to make room for it.
-      $can_clone = $url->access();
+      // Url::access() alone is not enough: it re-resolves the storage from the
+      // route without Layout Builder's tempstore, so for a layout with no saved
+      // override it sees no sections and allows every delta. The lock check is
+      // therefore asked of the storage being rendered (issue #2098).
+      $can_clone = $url->access()
+        && \Drupal::service('ys_layouts.clone_section_access')
+          ->accessForDelta($section_storage, \Drupal::currentUser(), $delta)
+          ->isAllowed();
 
       $link = [
         '#type' => 'link',

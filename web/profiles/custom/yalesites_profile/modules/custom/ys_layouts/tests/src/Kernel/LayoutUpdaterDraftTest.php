@@ -183,6 +183,118 @@ class LayoutUpdaterDraftTest extends YsKernelTestBase {
   }
 
   /**
+   * Only the first unlabeled section falls back to the default locks.
+   *
+   * Sections editors add have no label. One added below the first section must
+   * stay editable, while an unlabeled first section still gets its locks.
+   *
+   * @covers ::updateLocks
+   */
+  public function testUpdateLocksSkipsUnlabeledSectionsAfterTheFirst(): void {
+    $node = Node::create([
+      'type' => 'post',
+      'title' => 'Post',
+      'moderation_state' => 'published',
+      'layout_builder__layout' => [
+        ['section' => new Section('layout_onecol')],
+        ['section' => new Section('layout_twocol_section')],
+        ['section' => new Section('layout_twocol_section')],
+        ['section' => new Section('layout_onecol')],
+      ],
+    ]);
+    $node->save();
+
+    $this->createUpdater()->updateLocks('post');
+
+    $storage = $this->container->get('entity_type.manager')->getStorage('node');
+    $storage->resetCache();
+    $layout = $storage->load($node->id())->get('layout_builder__layout');
+    $this->assertEquals(self::LOCKS, $layout->getSection(0)->getThirdPartySetting('layout_builder_lock', 'lock'));
+    $this->assertNull($layout->getSection(3)->getThirdPartySetting('layout_builder_lock', 'lock'));
+  }
+
+  /**
+   * The batched repair finishes over several passes and locks every node.
+   *
+   * @covers ::updateLocksBatched
+   */
+  public function testUpdateLocksBatchedFinishesInSeveralPasses(): void {
+    $nids = $this->createLabeledPosts(120);
+
+    $sandbox = [];
+    $passes = 0;
+    do {
+      $passes++;
+      $this->createUpdater()->updateLocksBatched(['post'], $sandbox);
+      $this->assertLessThan(10, $passes, 'The repair must finish.');
+    } while ($sandbox['#finished'] < 1);
+
+    $this->assertGreaterThan(1, $passes);
+    $this->assertEquals(120, $sandbox['updated']);
+    $this->assertEquals(self::LOCKS, $this->lockOf(end($nids)));
+    $this->assertEquals(self::LOCKS, $this->lockOf(reset($nids)));
+  }
+
+  /**
+   * Running the batched repair twice leaves the same locks and dates.
+   *
+   * @covers ::updateLocksBatched
+   */
+  public function testUpdateLocksBatchedIsIdempotent(): void {
+    $nids = $this->createLabeledPosts(3);
+    $storage = $this->container->get('entity_type.manager')->getStorage('node');
+    $changed = $storage->load($nids[0])->getChangedTime();
+
+    $results = [];
+    foreach ([1, 2] as $run) {
+      $sandbox = [];
+      do {
+        $this->createUpdater()->updateLocksBatched(['post'], $sandbox);
+      } while ($sandbox['#finished'] < 1);
+      $results[$run] = array_map(fn($nid) => $this->lockOf($nid), $nids);
+    }
+
+    $this->assertEquals($results[1], $results[2]);
+    $this->assertEquals(self::LOCKS, $results[2][0]);
+    $this->assertEquals($changed, $storage->load($nids[0])->getChangedTime());
+  }
+
+  /**
+   * Creates published posts whose Title section has no locks yet.
+   *
+   * @return int[]
+   *   The node ids.
+   */
+  protected function createLabeledPosts(int $count): array {
+    $now = $this->container->get('datetime.time')->getRequestTime();
+    $nids = [];
+    for ($i = 0; $i < $count; $i++) {
+      $node = Node::create([
+        'type' => 'post',
+        'title' => "Post $i",
+        'moderation_state' => 'published',
+        'changed' => $now - 3000,
+        'layout_builder__layout' => [
+          ['section' => new Section('layout_onecol', ['label' => 'Title'])],
+        ],
+      ]);
+      $node->save();
+      $nids[] = (int) $node->id();
+    }
+    return $nids;
+  }
+
+  /**
+   * Reads the lock stored on a node's first section.
+   */
+  protected function lockOf(int $nid): ?array {
+    $storage = $this->container->get('entity_type.manager')->getStorage('node');
+    $storage->resetCache([$nid]);
+    return $storage->load($nid)->get('layout_builder__layout')->getSection(0)
+      ->getThirdPartySetting('layout_builder_lock', 'lock');
+  }
+
+  /**
    * Creates a published post with a newer pending draft.
    *
    * @return array

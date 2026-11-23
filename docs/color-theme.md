@@ -659,16 +659,15 @@ failure mode YaleSites-Internal#1614 hit, where a token-only computation reporte
 pairing that the browser resolved to something else.
 
 Where a finding needs proof from a real Drupal render rather than from the tokens, the captured
-evidence and the method for reproducing it live in the component library, not here:
-`docs/review/1614-section-color/README.md`. It records the four things that will silently
-produce wrong images if skipped (capture at ≥1400px or a 70/30 section renders stacked;
-cache-bust the URL; read `data-global-theme` back after each capture; take "before" from the
-branch base rather than a stash).
+evidence and the method for reproducing it are no longer kept in a folder. The component library
+removed `docs/review/1614-section-color/` (images and README) and they remain in its git history at
+commit `da077ff4`. Its README recorded the four things that will silently produce wrong images if
+skipped (capture at ≥1400px or a 70/30 section renders stacked; cache-bust the URL; read
+`data-global-theme` back after each capture; take "before" from the branch base rather than a
+stash). Audit evidence now belongs on the ticket or PR.
 
-The one-off fixture builders that produced it were deleted after the audit — they were named
-for their tickets, wired into no script, and are recoverable from git history; that README says
-where. Deliberately not restated here: this document and that README would drift apart, and the
-library is the side that owns the measuring.
+The one-off fixture builders that produced it were deleted after the audit. They were named for
+their tickets, wired into no script, and are recoverable from the same git history.
 
 Both carry a committed baseline of the failures that already existed when they landed, each with a reason and an owning ticket. The baselines may only ever shrink — adding to one to turn a red build green is not a fix. See "The contrast gate" in the `component-library-twig` README for how to retire a baseline entry.
 

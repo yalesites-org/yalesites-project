@@ -74,6 +74,19 @@ class CsvValidatorService {
   ];
 
   /**
+   * Columns a content export writes that the resource import does not read.
+   *
+   * Listed so a file from ys_content_export can be imported back without these
+   * being reported as unrecognised. URL is not read because a new resource
+   * gets its URL from its title; Published is not read because resources are
+   * always imported as drafts (ResourceImportService::MODERATION_STATE).
+   */
+  const IGNORED_RESOURCE_COLUMNS = [
+    'url' => 'URL',
+    'published' => 'Published',
+  ];
+
+  /**
    * Prefix of the trailing summary row a content export appends.
    *
    * This and EXPORT_PLACEHOLDER_PREFIX mirror the strings that
@@ -119,6 +132,10 @@ class CsvValidatorService {
    * ResourceImportService, so one typo does not reject the whole file and the
    * editor sees the problem in the preview.
    *
+   * The apostrophe a content export puts in front of formula-like cells is
+   * removed here (see removeFormulaGuard()), so an exported file imports with
+   * its original values and Skip duplicates still matches its titles.
+   *
    * @param string $file_path
    *   The path to the CSV file.
    *
@@ -131,7 +148,8 @@ class CsvValidatorService {
       'title',
       $this->t('The CSV file must contain a "Title" column.'),
       [$this, 'validateResourceRow'],
-      self::RESOURCE_COLUMN_ALIASES
+      self::RESOURCE_COLUMN_ALIASES,
+      remove_formula_guard: TRUE,
     );
 
     if ($result['valid']) {
@@ -156,12 +174,16 @@ class CsvValidatorService {
    * @param array $aliases
    *   Optional alternative header spellings, mapping the alias to the
    *   canonical header, so consumers only ever see canonical keys.
+   * @param bool $remove_formula_guard
+   *   Whether to strip the apostrophe a content export adds to formula-like
+   *   cells. Only the resource import reads exported files, so the profile
+   *   import leaves its cells exactly as written.
    *
    * @return array
    *   Validation result with 'valid', 'message', 'data', and 'headers' keys.
    *   On success 'message' is empty and the caller supplies its own.
    */
-  protected function parseCsv($file_path, $required_header, $missing_header_message, callable $row_validator, array $aliases = []) {
+  protected function parseCsv($file_path, $required_header, $missing_header_message, callable $row_validator, array $aliases = [], $remove_formula_guard = FALSE) {
     $handle = fopen($file_path, 'r');
     if (!$handle) {
       return [
@@ -173,7 +195,7 @@ class CsvValidatorService {
     }
 
     // Read the header row.
-    $headers = fgetcsv($handle);
+    $headers = fgetcsv($handle, NULL, ',', '"', '');
     if (!$headers) {
       fclose($handle);
       return [
@@ -211,7 +233,7 @@ class CsvValidatorService {
     $row_number = 1;
     $errors = [];
 
-    while (($row = fgetcsv($handle)) !== FALSE) {
+    while (($row = fgetcsv($handle, NULL, ',', '"', '')) !== FALSE) {
       $row_number++;
 
       // Skip empty rows.
@@ -246,6 +268,12 @@ class CsvValidatorService {
 
       // Create a data array with normalized keys.
       $row_data = array_combine($normalized_headers, $row);
+
+      // Done before validation so the required-Title check sees the value that
+      // will actually be imported.
+      if ($remove_formula_guard) {
+        $row_data = array_map([$this, 'removeFormulaGuard'], $row_data);
+      }
 
       // Validate the row data.
       $row_errors = $row_validator($row_data, $row_number);
@@ -294,6 +322,41 @@ class CsvValidatorService {
       // otherwise make the first column's header unrecognisable.
       return strtolower(trim(preg_replace('/^\xEF\xBB\xBF/', '', $header)));
     }, $headers);
+  }
+
+  /**
+   * Removes the apostrophe a content export adds to formula-like cells.
+   *
+   * The content export's ContentExportBuilder::sanitizeCell() puts an
+   * apostrophe in front of any cell a spreadsheet would read as a formula.
+   * This is its inverse: the apostrophe is removed only when what follows is
+   * something sanitizeCell() would have guarded, so "'Tis the season" is left
+   * alone. A value that really starts with an apostrophe followed by one of
+   * those characters cannot be told apart from an exported cell, and loses
+   * its apostrophe.
+   *
+   * The rule is duplicated rather than calling sanitizeCell() because
+   * ys_content_export may not be enabled. Change both together;
+   * ResourceExportRoundTripTest fails if they drift apart.
+   *
+   * @param string $value
+   *   The raw cell value.
+   *
+   * @return string
+   *   The value without the export's apostrophe.
+   */
+  protected function removeFormulaGuard($value) {
+    if (!str_starts_with($value, "'")) {
+      return $value;
+    }
+
+    $unguarded = substr($value, 1);
+    $trimmed = ltrim($unguarded, " \t\r\n");
+    if (($unguarded !== '' && in_array($unguarded[0], ["\t", "\r", "\n"], TRUE))
+      || ($trimmed !== '' && in_array($trimmed[0], ['=', '+', '-', '@'], TRUE))) {
+      return $unguarded;
+    }
+    return $value;
   }
 
   /**
@@ -373,6 +436,16 @@ class CsvValidatorService {
   }
 
   /**
+   * Gets the content-export columns the resource import accepts but ignores.
+   *
+   * @return array
+   *   Array of columns, keyed by normalised header.
+   */
+  public function getIgnoredResourceColumns(): array {
+    return self::IGNORED_RESOURCE_COLUMNS;
+  }
+
+  /**
    * Lists resource CSV headers the importer does not understand.
    *
    * A header the importer does not recognise is skipped in silence, so a
@@ -389,7 +462,7 @@ class CsvValidatorService {
   public function getUnknownResourceColumns(array $headers) {
     // Aliases were already folded into their canonical header when the file
     // was parsed, so only the canonical list needs comparing here.
-    return array_values(array_diff_key($headers, self::EXPECTED_RESOURCE_COLUMNS));
+    return array_values(array_diff_key($headers, self::EXPECTED_RESOURCE_COLUMNS, self::IGNORED_RESOURCE_COLUMNS));
   }
 
 }

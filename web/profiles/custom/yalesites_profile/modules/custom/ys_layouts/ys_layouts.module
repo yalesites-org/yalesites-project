@@ -15,6 +15,7 @@ use Drupal\ys_layouts\CloneBlockLinkBuilder;
 use Drupal\ys_layouts\Plugin\Layout\YSLayoutOneColumn;
 use Drupal\ys_layouts\Render\DetachContextualOperations;
 use Drupal\ys_layouts\SectionCloneLinkBuilder;
+use Drupal\ys_layouts\Theme\ExposedFormSuggestions;
 use Drupal\ys_layouts\WebformResultsLinkBuilder;
 
 /**
@@ -248,21 +249,6 @@ function ys_layouts_form_alter(&$form, $form_state, $form_id) {
       // reordered. ys_views_basic_form_alter() runs after this hook and
       // groups that container, not the two fields, into the listing-block
       // General tab.
-      //
-      // Split into its own visually distinct warning (#1481): it's the only
-      // irreversible decision on this form and used to trail as plain help
-      // text easy to skim past. Styled from this module's own
-      // reusable-toggle.css rather than borrowing core's "messages
-      // messages--warning", whose rendering here depends on which route built
-      // the form: in the off-canvas modal (the normal editor path) gin_lb
-      // namespaces messages to .glb-messages* (gin_lb/src/classes.json) and
-      // raw #prefix/#suffix markup never passes through the glb_classes()
-      // renamer, so the bare classes resolve to nothing — transparent
-      // background, plain body text. On the full-page /layout_builder/add
-      // route Gin's admin CSS is present and styles them as a dark box
-      // instead. Owning the styling keeps it identical on both.
-      $form['reusable']['#suffix'] = '<div role="note" class="ys-toggle-row__warning">' . t('This setting cannot be changed after saving.') . '</div>';
-
       $form['info']['#title'] = t('Reusable Block title');
       $form['info']['#description'] = t('Add a short, descriptive title to easily find and reuse the Reusable Block. Defaults to Administrative label if no title is provided.');
       // Disabled (not hidden) while unchecked, matching the same pattern as
@@ -648,6 +634,42 @@ function ys_layouts_theme_suggestions_text_format_wrapper_alter(array &$suggesti
     && !in_array('text_format_wrapper__gin_lb', $suggestions, TRUE)) {
     $suggestions[] = 'text_format_wrapper__gin_lb';
   }
+}
+
+/**
+ * Implements hook_theme_suggestions_alter().
+ *
+ * Runs after gin_lb's own alter (module order) and removes its __gin_lb form
+ * suggestions from View block filter forms, so atomic's ys-filter-form
+ * template still wins after a Layout Builder AJAX refresh (#2310).
+ */
+function ys_layouts_theme_suggestions_alter(array &$suggestions, array $variables, string $hook): void {
+  if (isset($variables['element']) && is_array($variables['element'])) {
+    $suggestions = ExposedFormSuggestions::filter($suggestions, $variables['element']);
+  }
+}
+
+/**
+ * Implements hook_form_views_exposed_form_alter().
+ *
+ * Queues marking of site filter form fields so their label, input and select
+ * templates also lose gin_lb's __gin_lb suggestions (#2310).
+ */
+function ys_layouts_form_views_exposed_form_alter(array &$form, FormStateInterface $form_state, string $form_id): void {
+  if (ExposedFormSuggestions::isSiteExposedForm($form)) {
+    // Mark in #after_build so fields other modules swap in later are covered.
+    $form['#after_build'][] = [ExposedFormSuggestions::class, 'afterBuild'];
+  }
+}
+
+/**
+ * Implements hook_preprocess_form_element().
+ *
+ * Carries the filter form marker onto the label so the label template also
+ * loses its __gin_lb suggestion (#2310).
+ */
+function ys_layouts_preprocess_form_element(array &$variables): void {
+  ExposedFormSuggestions::markLabel($variables);
 }
 
 /**

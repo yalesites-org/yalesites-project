@@ -6,7 +6,7 @@ use Drupal\Core\DependencyInjection\ContainerBuilder;
 use Drupal\Core\Entity\EntityTypeManagerInterface;
 use Drupal\Tests\UnitTestCase;
 use Drupal\ys_views_basic\Form\EventCalendarFilterForm;
-use Drupal\ys_views_basic\Service\EventsCalendarInterface;
+use Drupal\ys_views_basic\Service\EventsCalendar;
 use Drupal\ys_views_basic\ViewsBasicManager;
 
 /**
@@ -41,7 +41,7 @@ class EventCalendarFilterFormTest extends UnitTestCase {
     $this->form = new EventCalendarFilterForm(
       $this->manager,
       $this->createMock(EntityTypeManagerInterface::class),
-      $this->createMock(EventsCalendarInterface::class)
+      $this->createMock(EventsCalendar::class)
     );
   }
 
@@ -90,7 +90,7 @@ class EventCalendarFilterFormTest extends UnitTestCase {
     \Drupal::setContainer($container);
     $method = new \ReflectionMethod($this->form, 'createFilterElement');
     $method->setAccessible(TRUE);
-    return $method->invoke($this->form, 'Category', $options, []);
+    return $method->invoke($this->form, 'Category', $options, [], 'event_category');
   }
 
   /**
@@ -120,6 +120,21 @@ class EventCalendarFilterFormTest extends UnitTestCase {
     $this->assertSame('select', $element['#type']);
     $this->assertTrue($element['#multiple']);
     $this->assertTrue($element['#chosen']);
+  }
+
+  /**
+   * Filter lists carry cache tags for their terms and for event content.
+   *
+   * Without them a page cached while the list was empty never refreshes.
+   *
+   * @covers ::createFilterElement
+   */
+  public function testFilterCarriesTermAndEventCacheTags() {
+    foreach ([[], [5 => 'Five']] as $options) {
+      $tags = $this->element($options)['#cache']['tags'];
+      $this->assertContains('taxonomy_term_list:event_category', $tags);
+      $this->assertContains('node_list:event', $tags);
+    }
   }
 
 }

@@ -3,9 +3,11 @@
 namespace Drupal\ys_content_export\Controller;
 
 use Drupal\Core\Controller\ControllerBase;
+use Drupal\Core\Database\Query\SelectInterface;
 use Drupal\Core\Datetime\DateFormatterInterface;
 use Drupal\Core\Entity\EntityStorageInterface;
 use Drupal\Core\Entity\EntityTypeManagerInterface;
+use Drupal\Core\Messenger\MessengerInterface;
 use Drupal\views\Views;
 use Drupal\ys_content_export\ContentExportBuilder;
 use Symfony\Component\DependencyInjection\ContainerInterface;
@@ -33,6 +35,14 @@ abstract class ExportControllerBase extends ControllerBase {
    * one chunk at a time rather than all at once.
    */
   const CHUNK_SIZE = 50;
+
+  /**
+   * Whether the file ends with an "Export complete" summary row.
+   *
+   * On for content exports. A subclass whose rows are records a spreadsheet
+   * may sort or import, such as People, turns it off.
+   */
+  const SUMMARY_ROW = TRUE;
 
   /**
    * The admin views' page display id.
@@ -86,7 +96,9 @@ abstract class ExportControllerBase extends ControllerBase {
    *   The current request, carrying the admin page's exposed-filter query.
    *
    * @return int[]
-   *   The matching entity ids, in the view's sort order, de-duplicated.
+   *   The matching entity ids, in the view's sort order, de-duplicated. Empty
+   *   when the view rejects a filter value, as the list page then shows no
+   *   rows.
    */
   protected function filteredIds(string $view_id, string $id_column, Request $request): array {
     $view = Views::getView($view_id);
@@ -104,10 +116,26 @@ abstract class ExportControllerBase extends ControllerBase {
     // Export every matching row, not just the on-screen page.
     $view->setItemsPerPage(0);
 
+    $queued_errors = $this->messenger()->messagesByType(MessengerInterface::TYPE_ERROR);
     $view->preExecute();
     $view->build();
 
+    // A filter value the exposed form rejects, such as a deleted role kept in
+    // a bookmarked URL, makes Views stop the build before it creates a query.
+    // The list page shows the form's errors over an empty list, so the export
+    // is empty too. The form also queued those errors for display, but a
+    // download never shows messages; restore the queue so they do not appear
+    // on the admin's next page instead.
     $select = $view->build_info['query'];
+    if (!$select instanceof SelectInterface) {
+      $view->destroy();
+      $this->messenger()->deleteByType(MessengerInterface::TYPE_ERROR);
+      foreach ($queued_errors as $error) {
+        $this->messenger()->addError($error, TRUE);
+      }
+      return [];
+    }
+
     $ids = array_column($select->execute()->fetchAll(), $id_column);
     $view->destroy();
 
@@ -148,12 +176,13 @@ abstract class ExportControllerBase extends ControllerBase {
   }
 
   /**
-   * Writes the BOM, header, data rows, and trailing summary row to a handle.
+   * Writes the BOM, header, data rows, and optional summary row to a handle.
    *
    * A row that fails to build is replaced by a placeholder and logged, so one
    * bad entity cannot end the download. Entities the current user cannot view,
-   * or that fail to load, are skipped. The summary row is written last, so a
-   * stream that dies for any other reason visibly lacks it.
+   * or that fail to load, are skipped. When SUMMARY_ROW is TRUE the summary row
+   * is written last, so a stream that dies for any other reason visibly lacks
+   * it.
    *
    * @param resource $handle
    *   The open output stream.
@@ -228,7 +257,9 @@ abstract class ExportControllerBase extends ControllerBase {
         '@ids' => implode(', ', $skipped),
       ]);
     }
-    ContentExportBuilder::writeRow($handle, [sprintf('Export complete: %d of %d rows exported (%d failed, %d skipped)', $exported, count($ids), $failed, count($skipped))]);
+    if (static::SUMMARY_ROW) {
+      ContentExportBuilder::writeRow($handle, [sprintf('Export complete: %d of %d rows exported (%d failed, %d skipped)', $exported, count($ids), $failed, count($skipped))]);
+    }
   }
 
   /**

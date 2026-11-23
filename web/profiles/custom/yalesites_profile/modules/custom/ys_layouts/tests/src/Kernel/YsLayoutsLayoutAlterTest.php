@@ -2,7 +2,7 @@
 
 namespace Drupal\Tests\ys_layouts\Kernel;
 
-use Drupal\KernelTests\KernelTestBase;
+use Drupal\Tests\ys_core\Kernel\YsKernelTestBase;
 use Drupal\ys_layouts\Plugin\Layout\YSLayoutOneColumn;
 
 /**
@@ -17,7 +17,7 @@ use Drupal\ys_layouts\Plugin\Layout\YSLayoutOneColumn;
  * @group yalesites
  * @group ys_layouts
  */
-class YsLayoutsLayoutAlterTest extends KernelTestBase {
+class YsLayoutsLayoutAlterTest extends YsKernelTestBase {
 
   /**
    * {@inheritdoc}

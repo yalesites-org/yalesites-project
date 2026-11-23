@@ -293,7 +293,8 @@ class EventCalendarFilterForm extends FormBase {
       $category_element = $this->createFilterElement(
         'Category',
         $this->getTaxonomyOptions('event_category', $paramsDecoded['category_included_terms'] ?? NULL, $paramsDecoded['terms_exclude'] ?? []),
-        $currentValues['category']
+        $currentValues['category'],
+        'event_category'
       );
       // Remove AJAX from filter element.
       unset($category_element['#ajax']);
@@ -306,7 +307,8 @@ class EventCalendarFilterForm extends FormBase {
       $audience_element = $this->createFilterElement(
         'Audience',
         $this->getTaxonomyOptions('audience', $paramsDecoded['audience_included_terms'] ?? NULL, $paramsDecoded['terms_exclude'] ?? []),
-        $currentValues['audience']
+        $currentValues['audience'],
+        'audience'
       );
       // Remove AJAX from filter element.
       unset($audience_element['#ajax']);
@@ -324,7 +326,8 @@ class EventCalendarFilterForm extends FormBase {
       $custom_vocab_element = $this->createFilterElement(
         $custom_vocab_label,
         $this->getTaxonomyOptions('custom_vocab', $paramsDecoded['custom_vocab_included_terms'] ?? NULL, $paramsDecoded['terms_exclude'] ?? []),
-        $currentValues['custom_vocab']
+        $currentValues['custom_vocab'],
+        'custom_vocab'
       );
       // Remove AJAX from filter element.
       unset($custom_vocab_element['#ajax']);
@@ -367,15 +370,24 @@ class EventCalendarFilterForm extends FormBase {
    *   The filter options.
    * @param mixed $default_value
    *   The default value.
+   * @param string $vocabulary
+   *   The vocabulary the options come from, used for cache tags.
    *
    * @return array
    *   The filter element array.
    */
-  private function createFilterElement(string $title, array $options, $default_value): array {
+  private function createFilterElement(string $title, array $options, $default_value, string $vocabulary): array {
+    // The options depend on the vocabulary's terms and on event content, so a
+    // cached page must be cleared when either changes. Without these tags a
+    // page cached while the list was empty never refreshes.
+    $cache = [
+      'tags' => ['taxonomy_term_list:' . $vocabulary, 'node_list:event'],
+    ];
     if (!$options) {
-      return ExposedTaxonomyFilterOptions::emptyFilterElement($this->t('@title', ['@title' => $title]));
+      return ExposedTaxonomyFilterOptions::emptyFilterElement($this->t('@title', ['@title' => $title])) + ['#cache' => $cache];
     }
     return [
+      '#cache' => $cache,
       '#type' => 'select',
       '#title' => $this->t('@title', ['@title' => $title]),
       '#options' => $options,
