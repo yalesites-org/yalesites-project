@@ -2048,6 +2048,9 @@ class ViewsBasicManager extends ControllerBase implements ContainerInjectionInte
    *   with the "Post Category" filter.
    * - event_list -> event_list_item: future events, event-date ASC, with the
    *   "Event Type" (Localist event type) and "Event Category" filters.
+   * Neither predecessor View showed a teaser image, so both store the option
+   * switched off (#2375). An empty field_options would render the same, but
+   * the edit form reads empty as "never saved" and would tick the box again.
    * - directory  -> profile_card: profiles, last-name A-Z, small cards with
    *   department, email and phone (the retired directory look, #1682), with
    *   the "Affiliation" filter.
@@ -2073,7 +2076,7 @@ class ViewsBasicManager extends ControllerBase implements ContainerInjectionInte
    */
   public static function predecessorPreset(string $legacy_bundle): ?array {
     $base = [
-      'field_options' => ['show_thumbnail' => 'show_thumbnail'],
+      'field_options' => ['show_thumbnail' => 0],
       'event_field_options' => [],
       'post_field_options' => [],
       'exposed_filter_options' => [],
@@ -2142,6 +2145,44 @@ class ViewsBasicManager extends ControllerBase implements ContainerInjectionInte
   }
 
   /**
+   * Returns the params deploy_10002 wrote before teaser images were fixed.
+   *
+   * Until #2375 the Post Feed and Calendar List presets switched the teaser
+   * image on, though neither predecessor View showed one. This is the current
+   * preset with that old option. deploy_10007 matches blocks still holding
+   * it, and the older variants (filterless, display "all") are built on it,
+   * since those were written with the option on too. Directory keeps its
+   * photos, so it has no such params.
+   *
+   * @param string $legacy_bundle
+   *   The predecessor block content bundle id.
+   *
+   * @return array|null
+   *   The old params, or NULL when the bundle never stored the image wrongly.
+   */
+  public static function thumbnailOnPredecessorParams(string $legacy_bundle): ?array {
+    if (!in_array($legacy_bundle, ['post_list', 'event_list'], TRUE)) {
+      return NULL;
+    }
+    $params = self::predecessorPreset($legacy_bundle)['params'];
+    $params['field_options'] = ['show_thumbnail' => 'show_thumbnail'];
+    return $params;
+  }
+
+  /**
+   * Returns the preset as earlier deploys wrote it, before #2375.
+   *
+   * @param string $legacy_bundle
+   *   The predecessor block content bundle id.
+   *
+   * @return array|null
+   *   The params, or NULL if not a known predecessor bundle.
+   */
+  private static function historicalPresetParams(string $legacy_bundle): ?array {
+    return self::thumbnailOnPredecessorParams($legacy_bundle) ?? self::predecessorPreset($legacy_bundle)['params'] ?? NULL;
+  }
+
+  /**
    * Returns the params the first deploy_10002 wrote for a predecessor block.
    *
    * That version migrated the blocks without their exposed filter: the
@@ -2155,7 +2196,7 @@ class ViewsBasicManager extends ControllerBase implements ContainerInjectionInte
    *   The filterless params, or NULL if not a known predecessor bundle.
    */
   public static function filterlessPredecessorParams(string $legacy_bundle): ?array {
-    $params = self::predecessorPreset($legacy_bundle)['params'] ?? NULL;
+    $params = self::historicalPresetParams($legacy_bundle);
     if ($params === NULL) {
       return NULL;
     }
@@ -2186,7 +2227,7 @@ class ViewsBasicManager extends ControllerBase implements ContainerInjectionInte
     }
     $params = $filterless
       ? self::filterlessPredecessorParams($legacy_bundle)
-      : self::predecessorPreset($legacy_bundle)['params'];
+      : self::historicalPresetParams($legacy_bundle);
     $params['display'] = 'all';
     return $params;
   }

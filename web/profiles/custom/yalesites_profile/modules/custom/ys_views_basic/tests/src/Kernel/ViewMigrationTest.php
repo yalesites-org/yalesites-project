@@ -494,6 +494,8 @@ class ViewMigrationTest extends YsKernelTestBase {
 
     $this->runHook('ys_views_basic_deploy_10004');
     $this->runHook('ys_views_basic_deploy_10006');
+    // The old preset also had the teaser image on; 10007 switches it off.
+    $this->runHook('ys_views_basic_deploy_10007');
     $this->blockStorage->resetCache();
 
     $event_new = ViewsBasicManager::predecessorPreset('event_list')['params'];
@@ -516,6 +518,81 @@ class ViewMigrationTest extends YsKernelTestBase {
     $this->assertStringContainsString('put 0 migrated', $message);
     $this->assertEquals($event_new, $this->storedParams($event));
     $this->assertEquals(['limit' => 25] + $event_old, $this->storedParams($edited_limit));
+  }
+
+  /**
+   * Migrated Post Feed and Calendar List blocks stop asking for pictures.
+   *
+   * The predecessor blocks never showed a teaser image, but an earlier
+   * deploy_10002 stored the option switched on (#2375). Deploy 10007 switches
+   * it off on every revision still holding that preset, and leaves alone
+   * blocks an editor has changed since, editor-built listings in the same
+   * bundles, and Directory blocks, which did show photos. A second run changes
+   * nothing.
+   */
+  public function testMigratedPredecessorsStopShowingTeaserImages() {
+    $make = function (string $bundle, ?array $params, string $info = 'stored') {
+      $block = BlockContent::create([
+        'type' => $bundle,
+        'info' => $info,
+        'field_view_params' => $params === NULL ? [] : ['params' => json_encode($params)],
+      ]);
+      $block->save();
+      return $block;
+    };
+    $event_old = ViewsBasicManager::thumbnailOnPredecessorParams('event_list');
+    $post_old = ViewsBasicManager::thumbnailOnPredecessorParams('post_list');
+    $this->assertSame(['show_thumbnail' => 'show_thumbnail'], $event_old['field_options']);
+    $this->assertNull(ViewsBasicManager::thumbnailOnPredecessorParams('directory'));
+
+    $event = $make('event_list_item', $event_old);
+    // An older revision 10002 or 10005 filled with the same preset.
+    $old_revision = $event->getRevisionId();
+    $event->setNewRevision(TRUE);
+    $event->save();
+    $post = $make('post_list_item', $post_old);
+    $edited = $make('event_list_item', ['limit' => 3] + $event_old);
+    $editor_built = $make('post_list_item', [
+      'view_mode' => 'list_item',
+      'filters' => ['types' => ['post']],
+      'field_options' => ['show_thumbnail' => 'show_thumbnail'],
+    ]);
+    $directory = $make('profile_card', ViewsBasicManager::predecessorPreset('directory')['params']);
+    // What the first 10002 wrote, left on a revision 10004 did not reach.
+    $filterless_old = ViewsBasicManager::displayAllPredecessorParams('event_list', TRUE);
+    $filterless = $make('event_list_item', $filterless_old);
+
+    $message = $this->runHook('ys_views_basic_deploy_10007');
+    $this->blockStorage->resetCache();
+    $this->assertStringContainsString('3 migrated', $message);
+    $this->assertEquals(['field_options' => ['show_thumbnail' => 0]] + $filterless_old, $this->storedParams($filterless->id()), 'Only the teaser image option changes.');
+
+    $this->assertEquals(ViewsBasicManager::predecessorPreset('event_list')['params'], $this->storedParams($event->id()));
+    $this->assertEquals(ViewsBasicManager::predecessorPreset('post_list')['params'], $this->storedParams($post->id()));
+    $this->assertSame(['show_thumbnail' => 0], $this->storedParams($event->id())['field_options']);
+    $this->assertEquals(
+      ViewsBasicManager::predecessorPreset('event_list')['params'],
+      json_decode($this->blockStorage->loadRevision($old_revision)->get('field_view_params')->first()->getValue()['params'], TRUE),
+      'An older revision holding the preset is repaired too.'
+    );
+    $this->assertEquals(['limit' => 3] + $event_old, $this->storedParams($edited->id()));
+    $this->assertSame(['show_thumbnail' => 'show_thumbnail'], $this->storedParams($editor_built->id())['field_options']);
+    $this->assertEquals(ViewsBasicManager::predecessorPreset('directory')['params'], $this->storedParams($directory->id()));
+
+    $message = $this->runHook('ys_views_basic_deploy_10007');
+    $this->assertStringContainsString('0 migrated', $message);
+
+    // More blocks than one batch holds are all reached, across passes.
+    $count = ListingMigrator::BATCH_SIZE + 1;
+    $batched = [];
+    for ($i = 0; $i < $count; $i++) {
+      $batched[] = $make('post_list_item', $post_old)->id();
+    }
+    $message = $this->runHook('ys_views_basic_deploy_10007', $passes);
+    $this->blockStorage->resetCache();
+    $this->assertGreaterThanOrEqual(2, $passes);
+    $this->assertStringContainsString("$count migrated", $message);
+    $this->assertSame(['show_thumbnail' => 0], $this->storedParams(end($batched))['field_options']);
   }
 
   /**
