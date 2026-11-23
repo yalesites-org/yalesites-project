@@ -952,6 +952,16 @@ class ViewsBasicManager extends ControllerBase implements ContainerInjectionInte
       $view = [];
       return;
     }
+    // Two listings with identical settings produce identical view arguments,
+    // so their rendered output would share one render cache entry. A URL that
+    // scopes a search to one listing then served that listing's output (for
+    // example its empty message) to the others. The listing key tells the
+    // blocks apart (YaleSites-Internal#2104).
+    $outputKey = $blockUuid ? self::listingKey($blockUuid) : $listingKey;
+    if ($outputKey !== NULL && isset($view['#cache']['keys'])) {
+      $view['#cache']['keys'][] = 'listing';
+      $view['#cache']['keys'][] = $outputKey;
+    }
     // Add cache keys for each display option.
     // This ensures that if the options for showing categories, tags,
     // or thumbnails change, the cache will be invalidated,
