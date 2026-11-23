@@ -15,7 +15,10 @@ auto_added_reusable_block_content_bundles:
   directory: directory
   divider: divider
   embed: embed
+  event_card: event_card
+  event_condensed: event_condensed
   event_list: event_list
+  event_list_item: event_list_item
   facts: facts
   gallery: gallery
   grand_hero: grand_hero
@@ -25,11 +28,24 @@ auto_added_reusable_block_content_bundles:
   link_grid: link_grid
   media_grid: media_grid
   office_hours: office_hours
+  page_card: page_card
+  page_condensed: page_condensed
+  page_list_item: page_list_item
+  post_card: post_card
+  post_condensed: post_condensed
   post_list: post_list
+  post_list_item: post_list_item
+  profile_card: profile_card
+  profile_condensed: profile_condensed
+  profile_list_item: profile_list_item
   pull_quote: pull_quote
   quick_links: quick_links
   quote_callout: quote_callout
   reference_card: reference_card
+  resource_card: resource_card
+  resource_condensed: resource_condensed
+  resource_list_item: resource_list_item
+  resource_portrait_grid: resource_portrait_grid
   tabs: tabs
   text: text
   tiles: tiles
