@@ -300,7 +300,7 @@ class ViewsBasicDefaultWidget extends ViewsBasicWidgetBase {
     $form['group_user_selection']['entity_and_view_mode']['category_included_terms'] = [
       '#type' => 'select',
       '#title' => $this->t('Filter by Category Parent Term'),
-      '#description' => $this->t("Select a parent term to show content tagged with that terms sub-items. This ignores content tagged as the parent term and any other parent terms in the vocabulary."),
+      '#description' => $this->t("Select a parent term to limit the choices visitors see in the filter dropdown. This does not hide any content from the list."),
       '#options' => $this->viewsBasicManager->getTaxonomyParents($vocabulary_id),
       '#default_value' => ($items[$delta]->params) ? $this->viewsBasicManager->getDefaultParamValue('category_included_terms', $items[$delta]->params) : NULL,
       '#validated' => 'true',
@@ -315,7 +315,7 @@ class ViewsBasicDefaultWidget extends ViewsBasicWidgetBase {
     $form['group_user_selection']['entity_and_view_mode']['custom_vocab_included_terms'] = [
       '#type' => 'select',
       '#title' => $this->t('Filter by @vocab Parent Term', ['@vocab' => $custom_vocab_label]),
-      '#description' => $this->t("Select a parent term to show content tagged with that terms sub-items. This ignores content tagged as the parent term and any other parent terms in the vocabulary."),
+      '#description' => $this->t("Select a parent term to limit the choices visitors see in the filter dropdown. This does not hide any content from the list."),
       '#options' => $this->viewsBasicManager->getTaxonomyParents('custom_vocab'),
       '#default_value' => ($items[$delta]->params) ? $this->viewsBasicManager->getDefaultParamValue('custom_vocab_included_terms', $items[$delta]->params) : NULL,
       '#validated' => 'true',
@@ -490,6 +490,7 @@ class ViewsBasicDefaultWidget extends ViewsBasicWidgetBase {
     ];
 
     $form['#attached']['library'][] = 'ys_views_basic/ys_views_basic';
+    $form['#attached']['library'][] = 'ys_views_basic/chosen_a11y';
 
     return $element;
   }

@@ -252,6 +252,10 @@ function ys_views_basic_deploy_10002(&$sandbox) {
   $block_storage = \Drupal::entityTypeManager()->getStorage('block_content');
 
   $legacy_bundles = ['post_list', 'event_list', 'directory'];
+  $target_bundles = [];
+  foreach ($legacy_bundles as $legacy) {
+    $target_bundles[$legacy] = ViewsBasicManager::predecessorPreset($legacy)['target'] ?? NULL;
+  }
   if (!isset($sandbox['ids'])) {
     $sandbox['ids'] = [];
     $sandbox['counts'] = [];
@@ -264,6 +268,15 @@ function ys_views_basic_deploy_10002(&$sandbox) {
         ->accessCheck(FALSE)
         ->execute();
       $sandbox['ids'] = array_merge($sandbox['ids'], array_values($ids));
+      // A run that stopped between converting a block and filling its params
+      // left a block of the new type with none, which the legacy query above
+      // no longer finds. Pick those up too (#2335).
+      $stranded = $block_storage->getQuery()
+        ->condition('type', $target_bundles[$legacy])
+        ->notExists('field_view_params.params')
+        ->accessCheck(FALSE)
+        ->execute();
+      $sandbox['ids'] = array_merge($sandbox['ids'], array_values($stranded));
       $sandbox['counts'][$legacy] = 0;
     }
     $sandbox['total'] = count($sandbox['ids']);
@@ -276,6 +289,13 @@ function ys_views_basic_deploy_10002(&$sandbox) {
     $chunk = array_splice($sandbox['ids'], 0, ListingMigrator::BATCH_SIZE);
     foreach ($block_storage->loadMultiple($chunk) as $block) {
       $legacy = $block->bundle();
+      if (!in_array($legacy, $legacy_bundles, TRUE)) {
+        // A block of the new type that an earlier run left without params.
+        $legacy = array_search($legacy, $target_bundles, TRUE);
+        if ($legacy === FALSE) {
+          continue;
+        }
+      }
       $preset = ViewsBasicManager::predecessorPreset($legacy);
       if (!$preset) {
         continue;
@@ -286,6 +306,9 @@ function ys_views_basic_deploy_10002(&$sandbox) {
       // Reload so the new bundle's field list (which includes
       // field_view_params, absent on the predecessor bundle) is available,
       // then pre-fill the params that reproduce the predecessor View's query.
+      // Core caches the bundle on the entity, so this cannot be one save. A
+      // run that stops between the two is repaired by the next run, which
+      // also selects blocks of the new type that have no params (#2335).
       $block = $block_storage->load($block_id);
       $block->set('field_view_params', ['params' => json_encode($preset['params'])]);
       $block->save();

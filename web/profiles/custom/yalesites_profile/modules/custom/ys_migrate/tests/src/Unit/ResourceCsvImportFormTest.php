@@ -178,6 +178,35 @@ class ResourceCsvImportFormTest extends UnitTestCase {
   }
 
   /**
+   * BuildForm() lists the export-only columns and says they are ignored.
+   *
+   * An editor uploading a file from Export to CSV should see that URL and
+   * Published are understood, and why they have no effect.
+   *
+   * @covers ::buildForm
+   * @covers ::columnNotes
+   */
+  public function testBuildFormListsIgnoredExportColumns() {
+    $form = new ResourceCsvImportForm(
+      $this->messenger,
+      new CsvValidatorService(),
+      $this->resourceImport,
+      $this->entityTypeManager,
+      $this->renderer
+    );
+    $form->setStringTranslation($this->getStringTranslationStub());
+
+    $built = $form->buildForm([], new FormState());
+
+    $notes = [];
+    foreach ($built['columns']['#rows'] as [$label, $note]) {
+      $notes[$label] = (string) $note;
+    }
+    $this->assertStringStartsWith('Ignored.', $notes['URL']);
+    $this->assertStringStartsWith('Ignored.', $notes['Published']);
+  }
+
+  /**
    * SubmitForm() previews the import and cleans up the uploaded file.
    *
    * Preview renders its own response synchronously and never touches the

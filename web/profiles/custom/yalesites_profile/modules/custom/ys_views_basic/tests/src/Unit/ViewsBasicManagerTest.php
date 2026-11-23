@@ -386,6 +386,19 @@ class ViewsBasicManagerTest extends UnitTestCase {
   }
 
   /**
+   * The exclude operator form default ignores the legacy 'operator' key.
+   *
+   * @covers ::getDefaultParamValue
+   */
+  public function testGetDefaultParamValueExcludeOperatorIgnoresLegacyOperator() {
+    $legacy = json_encode(['operator' => ',']);
+    $this->assertSame('+', $this->manager->getDefaultParamValue('exclude_operator', $legacy));
+    $this->assertSame(',', $this->manager->getDefaultParamValue('include_operator', $legacy));
+    $stored = json_encode(['operator' => '+', 'exclude_operator' => ',']);
+    $this->assertSame(',', $this->manager->getDefaultParamValue('exclude_operator', $stored));
+  }
+
+  /**
    * GetDefaultParamValue('view_mode', ...) defaults to 'card' when unset.
    *
    * @covers ::getDefaultParamValue
@@ -540,8 +553,9 @@ class ViewsBasicManagerTest extends UnitTestCase {
    * GetDefaultParamValue() for include/exclude operators falls back per #1316.
    *
    * A block saved after the split reads its own key; one saved before it
-   * (only the legacy 'operator' key) falls back to that for both; one with
-   * neither key defaults to "+" (OR).
+   * (only the legacy 'operator' key) falls back to that for the include list
+   * only (exclude defaults to "+", #2325); one with neither key defaults to
+   * "+" (OR).
    *
    * @covers ::getDefaultParamValue
    */
@@ -552,7 +566,7 @@ class ViewsBasicManagerTest extends UnitTestCase {
 
     $legacy = json_encode(['operator' => ',']);
     $this->assertSame(',', $this->manager->getDefaultParamValue('include_operator', $legacy));
-    $this->assertSame(',', $this->manager->getDefaultParamValue('exclude_operator', $legacy));
+    $this->assertSame('+', $this->manager->getDefaultParamValue('exclude_operator', $legacy));
 
     $neither = json_encode([]);
     $this->assertSame('+', $this->manager->getDefaultParamValue('include_operator', $neither));
@@ -583,8 +597,9 @@ class ViewsBasicManagerTest extends UnitTestCase {
       $this->manager->resolveTermOperators(['include_operator' => '+', 'exclude_operator' => ','])
     );
 
-    // Legacy 'operator' key applies to both (pre-#1316 saved block).
-    $this->assertSame([',', ','], $this->manager->resolveTermOperators(['operator' => ',']));
+    // Legacy 'operator' key applies to includes only. Excludes default to
+    // "+" because they always hid on Any before the dedicated control (#2325).
+    $this->assertSame([',', '+'], $this->manager->resolveTermOperators(['operator' => ',']));
 
     // Neither key present defaults both to "+" (OR).
     $this->assertSame(['+', '+'], $this->manager->resolveTermOperators([]));

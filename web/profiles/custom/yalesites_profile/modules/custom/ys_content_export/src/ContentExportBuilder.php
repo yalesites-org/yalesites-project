@@ -302,6 +302,11 @@ class ContentExportBuilder {
    * dependency on a heavier module to reuse six lines; see
    * yalesites-org/YaleSites-Internal#1759.
    *
+   * The resource CSV import reverses this in
+   * \Drupal\ys_migrate\Service\CsvValidatorService::removeFormulaGuard(), so
+   * an exported file can be imported back. A change to which values are
+   * guarded must be made there too.
+   *
    * @param string $value
    *   The raw cell value.
    *
