@@ -406,6 +406,13 @@ class CsvValidatorService {
 
     while (($row = fgetcsv($handle, NULL, ',', '"', '')) !== FALSE) {
       $row_number++;
+      // The export's formula guard comes off the raw cell, before trimming:
+      // sanitizeCell() decides from the untrimmed value, so the inverse must
+      // too. Done before validation so the required-Title check sees the value
+      // that will actually be imported.
+      if ($remove_formula_guard) {
+        $row = array_map([$this, 'removeFormulaGuard'], array_map('strval', $row));
+      }
       $row = array_map([$this, 'trimCell'], $row);
 
       // Skip empty rows.
@@ -440,12 +447,6 @@ class CsvValidatorService {
 
       // Create a data array with normalized keys.
       $row_data = array_combine($normalized_headers, $row);
-
-      // Done before validation so the required-Title check sees the value that
-      // will actually be imported.
-      if ($remove_formula_guard) {
-        $row_data = array_map([$this, 'removeFormulaGuard'], $row_data);
-      }
 
       // Validate the row data.
       $row_errors = $row_validator($row_data, $row_number);

@@ -537,7 +537,9 @@ class CsvValidatorServiceTest extends UnitTestCase {
       'apostrophe before ordinary text kept' => ["'Tis the season", "'Tis the season"],
       'lone apostrophe kept' => ["'", "'"],
       'doubled apostrophe kept' => ["''-Draft", "''-Draft"],
-      'apostrophe after a space kept' => [" '-Draft", " '-Draft"],
+      // Cells are trimmed after the guard check, so the space goes but the
+      // apostrophe, which the export did not add, stays.
+      'apostrophe after a space kept' => [" '-Draft", "'-Draft"],
       'unguarded formula untouched' => ['-Already plain', '-Already plain'],
     ];
   }
