@@ -133,6 +133,41 @@ class ManagedFileConfigSchemaTest extends YsKernelTestBase {
   }
 
   /**
+   * The deploy hook collapses a legacy focus_header_image list to a string.
+   *
+   * The schema types the key as a string, so saving a list throws; the hook
+   * has to repair it before its own save, including when that save is only
+   * happening because site_name_image changed too.
+   *
+   * @dataProvider focusHeaderImageProvider
+   */
+  public function testDeployHookCollapsesFocusHeaderImageList(array|string $stored, string $expected): void {
+    $this->seedRawConfig('ys_core.header_settings', [
+      'focus_header_image' => $stored,
+      'site_name_image' => ['7'],
+    ]);
+
+    \Drupal::moduleHandler()->loadInclude('ys_core', 'php', 'ys_core.deploy');
+    ys_core_deploy_10009();
+
+    $config = $this->config('ys_core.header_settings');
+    $this->assertSame($expected, $config->get('focus_header_image'));
+    $this->assertSame([7], $config->get('site_name_image'));
+  }
+
+  /**
+   * Stored shapes of focus_header_image and what the hook leaves behind.
+   */
+  public static function focusHeaderImageProvider(): array {
+    return [
+      'list with one id' => [['12'], '12'],
+      'list with integer id' => [[12], '12'],
+      'empty list' => [[], ''],
+      'scalar left alone' => ['12', '12'],
+    ];
+  }
+
+  /**
    * An unset image stays a valid empty list.
    *
    * The shipped default in config/install is '', which ys_core_deploy_10009()
