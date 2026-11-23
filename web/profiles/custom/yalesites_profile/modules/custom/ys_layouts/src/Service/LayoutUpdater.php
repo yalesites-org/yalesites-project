@@ -239,64 +239,130 @@ class LayoutUpdater {
    */
   public function updateLocks($nodeBundleId) {
     $defaultLocks = $this->getLockConfigs($nodeBundleId);
-    /** @var \Drupal\Core\Entity\RevisionableStorageInterface $storage */
-    $storage = $this->entityTypeManager->getStorage('node');
     foreach ($this->getAllNodeIds($nodeBundleId) as $nid) {
-
-      // Load the node or exit early if the node does not exist.
-      $node = $storage->load($nid);
-      if (!$node instanceof NodeInterface) {
-        continue;
-      }
-      $revisions = [$node];
-
-      // Layout Builder edits the latest revision, so a pending draft needs the
-      // same locks. Update it in place rather than creating a new revision.
-      // Content moderation would otherwise force one; see setSyncing() below.
-      $latestId = $storage->getLatestRevisionId($nid);
-      if ($latestId && $latestId != $node->getRevisionId()) {
-        $latest = $storage->loadRevision($latestId);
-        if ($latest instanceof NodeInterface) {
-          $latest->setNewRevision(FALSE);
-          $revisions[] = $latest;
-        }
-      }
-
-      foreach ($revisions as $revision) {
-        // Load the layout builder sections. Skip if none are set.
-        /** @var \Drupal\layout_builder\Field\LayoutSectionItemList $layout */
-        $layout = $revision->get('layout_builder__layout');
-        if ($layout->isEmpty()) {
-          continue;
-        }
-        $this->applyDefaultLocks($defaultLocks, $layout->getSections());
-
-        // Saving stamps the request time as the changed time, so note each
-        // translation's changed time to put back afterwards.
-        $changed = [];
-        foreach (array_keys($revision->getTranslationLanguages()) as $langcode) {
-          $changed[$langcode] = $revision->getTranslation($langcode)->getChangedTime();
-        }
-
-        // Syncing stops content moderation from creating a new revision and
-        // changing which revision is default. Without it, saving the default
-        // revision would also bury a pending draft under a newer revision.
-        $revision->setSyncing(TRUE);
-        try {
-          $revision->save();
-          $this->restoreChangedTimes($revision, $changed);
-        }
-        catch (EntityStorageException $e) {
-          $this->logger->error(
-            'Error updating locks for node with ID @nid: @message',
-            ['@nid' => $nid, '@message' => $e->getMessage()]
-          );
-        }
-      }
-      $storage->resetCache([$nid]);
+      $this->updateNodeLocks((int) $nid, $defaultLocks);
     }
 
     $this->updateCachedLayouts($nodeBundleId, $defaultLocks);
+  }
+
+  /**
+   * Applies default layout locks in batches, for a deploy hook.
+   *
+   * Does the same work as updateLocks() for several bundles, but handles
+   * DIVIDER_BATCH_SIZE nodes per call so a large site cannot hit the time or
+   * memory limit in one pass, and a stopped run resumes where it left off
+   * instead of saving every node again. Pass the same $sandbox on every call.
+   *
+   * The first pass lists the node ids once, ordered by id, and repairs the
+   * layouts cached in the tempstore once.
+   *
+   * @param string[] $bundles
+   *   The machine names of the content types (node bundles).
+   * @param array $sandbox
+   *   The deploy hook's sandbox. Sets '#finished'.
+   *
+   * @return int
+   *   The number of nodes handled so far.
+   */
+  public function updateLocksBatched(array $bundles, array &$sandbox): int {
+    if (!isset($sandbox['ids'])) {
+      $sandbox['ids'] = $this->entityTypeManager->getStorage('node')
+        ->getQuery()
+        ->accessCheck(FALSE)
+        ->condition('type', $bundles, 'IN')
+        ->sort('nid')
+        ->execute();
+      $sandbox['ids'] = array_values($sandbox['ids']);
+      $sandbox['total'] = count($sandbox['ids']);
+      $sandbox['updated'] = 0;
+      foreach ($bundles as $bundle) {
+        $this->updateCachedLayouts($bundle, $this->getLockConfigs($bundle));
+      }
+    }
+
+    /** @var \Drupal\Core\Entity\RevisionableStorageInterface $storage */
+    $storage = $this->entityTypeManager->getStorage('node');
+    $locks = [];
+    foreach (array_splice($sandbox['ids'], 0, self::DIVIDER_BATCH_SIZE) as $nid) {
+      $node = $storage->load($nid);
+      if ($node instanceof NodeInterface && in_array($node->bundle(), $bundles, TRUE)) {
+        $bundle = $node->bundle();
+        $locks[$bundle] ??= $this->getLockConfigs($bundle);
+        $this->updateNodeLocks((int) $nid, $locks[$bundle]);
+      }
+      $sandbox['updated']++;
+    }
+
+    $sandbox['#finished'] = $sandbox['total'] > 0
+      ? 1 - (count($sandbox['ids']) / $sandbox['total'])
+      : 1;
+
+    return $sandbox['updated'];
+  }
+
+  /**
+   * Applies the default locks to one node's default and latest revisions.
+   *
+   * @param int $nid
+   *   The node id.
+   * @param array $defaultLocks
+   *   The result of getLockConfigs() for the node's bundle.
+   */
+  protected function updateNodeLocks(int $nid, array $defaultLocks): void {
+    /** @var \Drupal\Core\Entity\RevisionableStorageInterface $storage */
+    $storage = $this->entityTypeManager->getStorage('node');
+    // Load the node or exit early if the node does not exist.
+    $node = $storage->load($nid);
+    if (!$node instanceof NodeInterface) {
+      return;
+    }
+    $revisions = [$node];
+
+    // Layout Builder edits the latest revision, so a pending draft needs the
+    // same locks. Update it in place rather than creating a new revision.
+    // Content moderation would otherwise force one; see setSyncing() below.
+    $latestId = $storage->getLatestRevisionId($nid);
+    if ($latestId && $latestId != $node->getRevisionId()) {
+      $latest = $storage->loadRevision($latestId);
+      if ($latest instanceof NodeInterface) {
+        $latest->setNewRevision(FALSE);
+        $revisions[] = $latest;
+      }
+    }
+
+    foreach ($revisions as $revision) {
+      // Load the layout builder sections. Skip if none are set.
+      /** @var \Drupal\layout_builder\Field\LayoutSectionItemList $layout */
+      $layout = $revision->get('layout_builder__layout');
+      if ($layout->isEmpty()) {
+        continue;
+      }
+      $this->applyDefaultLocks($defaultLocks, $layout->getSections());
+
+      // Saving stamps the request time as the changed time, so note each
+      // translation's changed time to put back afterwards.
+      $changed = [];
+      foreach (array_keys($revision->getTranslationLanguages()) as $langcode) {
+        $changed[$langcode] = $revision->getTranslation($langcode)->getChangedTime();
+      }
+
+      // Syncing stops content moderation from creating a new revision and
+      // changing which revision is default. Without it, saving the default
+      // revision would also bury a pending draft under a newer revision.
+      $revision->setSyncing(TRUE);
+      try {
+        $revision->save();
+        $this->restoreChangedTimes($revision, $changed);
+      }
+      catch (EntityStorageException $e) {
+        $this->logger->error(
+          'Error updating locks for node with ID @nid: @message',
+          ['@nid' => $nid, '@message' => $e->getMessage()]
+        );
+      }
+    }
+    $storage->resetCache([$nid]);
   }
 
   /**
@@ -308,10 +374,10 @@ class LayoutUpdater {
    *   The sections to update.
    */
   protected function applyDefaultLocks(array $defaultLocks, array $sections): void {
-    foreach ($sections as $section) {
+    foreach (array_values($sections) as $delta => $section) {
       // Authors can create their own sections. Only update sections that
       // match one of the default sections defined for this content type.
-      $locks = $this->findDefaultLocks($defaultLocks, $section);
+      $locks = $this->findDefaultLocks($defaultLocks, $section, $delta);
       if ($locks !== NULL) {
         $section->setThirdPartySetting('layout_builder_lock', 'lock', $locks);
       }
@@ -378,24 +444,28 @@ class LayoutUpdater {
    * Finds the default locks for a node section.
    *
    * Matches on layout ID and section label. A section with no label falls back
-   * to layout ID only, and only when exactly one default shares that layout.
+   * to layout ID only, and only when it is the first section of the page and
+   * exactly one default shares that layout. Sections editors add have no label,
+   * so any other unlabeled section is left alone.
    *
    * @param array $defaultLocks
    *   The result of getLockConfigs().
    * @param \Drupal\layout_builder\Section $section
    *   The node's section.
+   * @param int $delta
+   *   The section's position in the node's layout, starting at 0.
    *
    * @return array|null
    *   The lock values, or NULL if the section is not a default section.
    */
-  protected function findDefaultLocks(array $defaultLocks, Section $section): ?array {
+  protected function findDefaultLocks(array $defaultLocks, Section $section, int $delta): ?array {
     $candidates = array_filter($defaultLocks, fn($default) => $default['layout_id'] === $section->getLayoutId());
     if (!$candidates) {
       return NULL;
     }
     $label = $section->getLayoutSettings()['label'] ?? NULL;
     if (empty($label)) {
-      return count($candidates) === 1 ? reset($candidates)['lock'] : NULL;
+      return $delta === 0 && count($candidates) === 1 ? reset($candidates)['lock'] : NULL;
     }
     foreach ($candidates as $default) {
       if ($default['label'] === $label) {

@@ -1,0 +1,28 @@
+#!/bin/bash
+
+set -eo pipefail
+
+# Point the profile at the atomic branch named like the pull request branch,
+# if that branch exists in the atomic repo. Otherwise leave the pinned release.
+#
+# This edits the profile composer.json in the CI workspace only. It is never
+# committed. Run it before `composer install` or `composer update`.
+#
+# Used by .ci/build/build_frontend (deploy) and .ci/test/static/run (lint and
+# unit tests) so both jobs test the same atomic code.
+#
+# Expects BRANCH to be set to the pull request branch name.
+
+if [ -z "$BRANCH" ]; then
+  echo "BRANCH is not set; using the pinned atomic release."
+  exit 0
+fi
+
+PROFILE_PATH="$(git rev-parse --show-toplevel)/web/profiles/custom/yalesites_profile"
+
+if [ -n "$(git ls-remote --heads https://github.com/yalesites-org/atomic.git "$BRANCH")" ]; then
+  echo "Using the atomic branch named $BRANCH."
+  (cd "$PROFILE_PATH" && composer require --prefer-dist --no-update yalesites-org/atomic:dev-"$BRANCH")
+else
+  echo "No atomic branch named $BRANCH; using the pinned atomic release."
+fi

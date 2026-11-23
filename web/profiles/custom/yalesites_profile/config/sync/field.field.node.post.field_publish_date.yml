@@ -12,7 +12,7 @@ field_name: field_publish_date
 entity_type: node
 bundle: post
 label: 'Publish Date'
-description: ''
+description: 'Posts are published right away, but a post with a future date stays out of Views until that date. This includes pinned posts. The post page itself works as soon as it is published.'
 required: true
 translatable: false
 default_value:

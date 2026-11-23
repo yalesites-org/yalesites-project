@@ -13,20 +13,27 @@ echo /composer.lock >> .git/info/exclude
 
 # Build atomic theme. We must do this from the profile by updating composer.json,
 # removing the existing atomic directory, and running composer update.
-cd "$GITHUB_WORKSPACE"/web/profiles/custom/yalesites_profile
+cd "$GITHUB_WORKSPACE"
 
 # Require the branch version of atomic if it exists.
-if [ -n "$(git ls-remote --heads https://github.com/yalesites-org/atomic.git "$BRANCH")" ]; then
-  composer require --prefer-dist --no-update yalesites-org/atomic:dev-"$BRANCH"
-fi
+./.ci/build/require_matching_atomic_branch
 
-cd "$GITHUB_WORKSPACE"
 rm -rf "${GITHUB_WORKSPACE:?}"/"$ATOMIC_PATH"
 composer update --prefer-dist
 
-# Set branch to latest release if current branch is not in component library.
+# If the current branch is not in the component library, build the release that
+# the installed atomic expects (its package.json pin). The latest release can
+# move files before atomic catches up, which leaves the theme pointing at JS
+# paths that do not exist. Fall back to the latest release only if no pin exists.
 if [ -z "$(git ls-remote --heads https://github.com/yalesites-org/component-library-twig.git "$BRANCH")" ]; then
-  BRANCH=$(curl -s https://api.github.com/repos/yalesites-org/component-library-twig/releases/latest | jq -r '.tag_name')
+  ATOMIC_CL_VERSION=$(jq -r '.dependencies["@yalesites-org/component-library-twig"] // empty' "$GITHUB_WORKSPACE"/"$ATOMIC_PATH"/package.json 2>/dev/null | sed 's/^[^0-9]*//')
+  if [ -n "$ATOMIC_CL_VERSION" ] && [ -n "$(git ls-remote --tags https://github.com/yalesites-org/component-library-twig.git "refs/tags/v$ATOMIC_CL_VERSION")" ]; then
+    BRANCH="v$ATOMIC_CL_VERSION"
+    echo "No component library branch; using v$ATOMIC_CL_VERSION, the version atomic expects."
+  else
+    BRANCH=$(curl -s https://api.github.com/repos/yalesites-org/component-library-twig/releases/latest | jq -r '.tag_name')
+    echo "No component library branch or atomic pin; using latest release $BRANCH."
+  fi
 fi
 
 # Clone and build the component library.
@@ -42,6 +49,20 @@ rm -rf node_modules
 rm -rf "$GITHUB_WORKSPACE"/"$ATOMIC_PATH"/node_modules/@yalesites-org/component-library-twig
 mkdir -p "$GITHUB_WORKSPACE"/"$ATOMIC_PATH"/node_modules/@yalesites-org
 mv /tmp/component-library-twig "$GITHUB_WORKSPACE"/"$ATOMIC_PATH"/node_modules/@yalesites-org
+
+# Fail the build if atomic points at component library JS that was not built.
+# Drupal treats a missing JS file as empty and logs nothing, so check here.
+MISSING=0
+while read -r JS_PATH; do
+  if [ ! -f "$GITHUB_WORKSPACE"/"$ATOMIC_PATH"/"$JS_PATH" ]; then
+    echo "Missing component library file referenced by atomic: $JS_PATH"
+    MISSING=1
+  fi
+done < <(grep -oE 'node_modules/@yalesites-org/component-library-twig/[^: ]+\.js' "$GITHUB_WORKSPACE"/"$ATOMIC_PATH"/atomic.libraries.yml | sort -u)
+if [ "$MISSING" -ne 0 ]; then
+  echo "Atomic and component library are mismatched; failing the build."
+  exit 1
+fi
 
 # Remove atomic from composer so Integrated Composer doesn't fail,
 cd "$GITHUB_WORKSPACE"/web/profiles/custom/yalesites_profile
