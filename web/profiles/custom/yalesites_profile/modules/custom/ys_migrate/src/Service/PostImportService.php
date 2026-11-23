@@ -58,7 +58,7 @@ class PostImportService extends CsvImportServiceBase {
   const PUBLISH_PERMISSION = 'use editorial transition publish';
 
   /**
-   * Vocabulary behind each taxonomy column, keyed by prepared-data key.
+   * {@inheritdoc}
    */
   const VOCABULARIES = [
     'category' => 'post_category',
@@ -66,6 +66,11 @@ class PostImportService extends CsvImportServiceBase {
     'audience' => 'audience',
     'custom_vocab' => 'custom_vocab',
   ];
+
+  /**
+   * {@inheritdoc}
+   */
+  const URL_ALIAS_EXAMPLE = '/news/my-post';
 
   /**
    * The Text block field the Body is stored in.
@@ -84,21 +89,6 @@ class PostImportService extends CsvImportServiceBase {
    * section is a one-column layout whose only region is "content".
    */
   const CONTENT_SECTION_LABEL = 'Content Section';
-
-  /**
-   * Matches body markup a Text block cannot show.
-   *
-   * None of these elements is allowed by the Text block's basic_html format,
-   * so they would be stripped when the page renders. D7 Media WYSIWYG tokens
-   * ([[{"type":"media",...}]]) and Node Embed tokens ([[nid:123]]) are matched
-   * too, since each stood in for an image or an embedded page.
-   */
-  const MEDIA_PATTERN = '/<(img|picture|iframe|video|audio|object|embed|svg|drupal-media|drupal-entity)\b|\[\[(\{.*?\}|nid:\d+)\]\]/is';
-
-  /**
-   * Matches the D7 inline tokens, which would otherwise render as plain text.
-   */
-  const D7_TOKEN_PATTERN = '/\[\[(\{.*?\}|nid:\d+)\]\]/s';
 
   /**
    * The UUID generator, for the Layout Builder components the import adds.
@@ -154,7 +144,7 @@ class PostImportService extends CsvImportServiceBase {
    *   only its own row rather than the whole file.
    */
   public function preparePostData(array $row) {
-    $body = $this->parseBody($row['body'] ?? '');
+    $body = $this->parseRichText($row['body'] ?? '');
 
     return [
       'title' => trim($row['title'] ?? ''),
@@ -433,73 +423,13 @@ class PostImportService extends CsvImportServiceBase {
   }
 
   /**
-   * Parses a Body cell into Text block markup.
-   *
-   * D7 inline tokens are removed because they would render as literal text.
-   * Everything else is kept as written: the Text block's own format filters
-   * what it cannot show when the page renders.
-   *
-   * @param string $value
-   *   The raw cell value: HTML, or plain text with blank lines between
-   *   paragraphs.
-   *
-   * @return array
-   *   'html': the markup to store, or an empty string if the cell holds no
-   *   text. 'has_media': whether the cell held images, video, embeds or D7
-   *   media tokens.
-   */
-  protected function parseBody($value) {
-    $value = trim($value);
-    if ($value === '') {
-      return ['html' => '', 'has_media' => FALSE];
-    }
-
-    $html = trim(preg_replace(self::D7_TOKEN_PATTERN, '', $value));
-    $has_media = (bool) preg_match(self::MEDIA_PATTERN, $value);
-
-    // A Body that is only filler, such as the <p>&nbsp;</p> a D7 editor leaves
-    // behind, or only an image this import drops, would become a Text block
-    // that shows nothing. Treat it as no Body at all.
-    if (!$this->hasText($html)) {
-      return ['html' => '', 'has_media' => $has_media];
-    }
-
-    // A spreadsheet cell is often plain text, which would otherwise run its
-    // paragraphs together into one.
-    if ($html === strip_tags($html)) {
-      $html = $this->plainTextToHtml($html);
-    }
-
-    return [
-      'html' => $html,
-      'has_media' => $has_media,
-    ];
-  }
-
-  /**
-   * Checks whether markup holds any text once its tags are removed.
-   *
-   * @param string $html
-   *   The markup.
-   *
-   * @return bool
-   *   FALSE if it holds nothing but tags, whitespace and non-breaking spaces.
-   */
-  protected function hasText($html) {
-    $text = html_entity_decode(strip_tags($html), ENT_QUOTES | ENT_HTML5, 'UTF-8');
-
-    // A match failure (invalid UTF-8) counts as text, so content is never
-    // dropped because it could not be read.
-    return preg_match('/[^\s\x{00A0}]/u', $text) !== 0;
-  }
-
-  /**
    * Converts plain text into paragraphs, keeping single line breaks.
    *
    * A single line break becomes a <br> with no newline after it. The Text
    * block's basic_html format runs core's autop filter, which adds a <br />
    * before every newline that does not directly follow "<br />", so a newline
-   * left after the <br> would show as a blank line.
+   * left after the <br> would show as a blank line. Events store their
+   * Description without running autop, so they keep the base version.
    *
    * @param string $text
    *   Plain text with blank lines between paragraphs.
@@ -521,135 +451,6 @@ class PostImportService extends CsvImportServiceBase {
       static fn ($paragraph) => '<p>' . str_replace(["\r\n", "\r", "\n"], '<br>', Html::escape($paragraph)) . '</p>',
       $paragraphs
     ));
-  }
-
-  /**
-   * Parses a taxonomy cell, checking every term already exists.
-   *
-   * @param string $value
-   *   The raw comma-separated cell value.
-   * @param string $key
-   *   The prepared-data key, which names the vocabulary in VOCABULARIES.
-   * @param string $column
-   *   The column label, for the error message.
-   *
-   * @return string[]
-   *   The term names.
-   *
-   * @throws \InvalidArgumentException
-   *   If any name does not match a term in the vocabulary.
-   */
-  protected function parseTerms($value, $key, $column) {
-    $names = $this->taxonomyResolver->parseCommaSeparatedValues($value);
-    $this->termIds($names, $key, $column);
-    return $names;
-  }
-
-  /**
-   * Resolves term names to the ids of existing terms.
-   *
-   * @param string[] $names
-   *   The term names.
-   * @param string $key
-   *   The prepared-data key, which names the vocabulary in VOCABULARIES.
-   * @param string $column
-   *   The column label, for the error message.
-   *
-   * @return array
-   *   The term ids, in the order given.
-   *
-   * @throws \InvalidArgumentException
-   *   If any name does not match a term in the vocabulary.
-   */
-  protected function termIds(array $names, $key, $column) {
-    $ids = [];
-    $missing = [];
-
-    foreach ($names as $name) {
-      $term = $this->taxonomyResolver->findTerm($name, self::VOCABULARIES[$key]);
-      if ($term) {
-        $ids[] = $term->id();
-      }
-      else {
-        $missing[] = '"' . $name . '"';
-      }
-    }
-
-    if ($missing) {
-      throw new \InvalidArgumentException(sprintf(
-        '%s has no existing term named %s. Add the term to the site first, or correct the spelling.',
-        $column,
-        implode(', ', $missing)
-      ));
-    }
-
-    return $ids;
-  }
-
-  /**
-   * Parses a URL Alias cell into a path alias.
-   *
-   * Whether the alias is free is checked separately, by assertAliasAvailable(),
-   * so a duplicate row is reported as a duplicate rather than as a clash.
-   *
-   * @param string $value
-   *   The raw cell value, with or without its leading slash.
-   *
-   * @return string
-   *   The alias with a leading slash, or an empty string when the cell is
-   *   empty.
-   *
-   * @throws \InvalidArgumentException
-   *   If the value is a full URL or contains characters a path cannot hold.
-   */
-  protected function parseUrlAlias($value) {
-    $value = trim($value);
-    if ($value === '') {
-      return '';
-    }
-
-    if (parse_url($value, PHP_URL_SCHEME) || str_starts_with($value, '//')) {
-      throw new \InvalidArgumentException(sprintf(
-        'URL Alias "%s" must be a path such as /news/my-post, not a full web address.',
-        $value
-      ));
-    }
-    if (preg_match('/[\s?#]/', $value)) {
-      throw new \InvalidArgumentException(sprintf(
-        'URL Alias "%s" cannot contain spaces, "?" or "#". Use a path such as /news/my-post.',
-        $value
-      ));
-    }
-
-    return '/' . ltrim($value, '/');
-  }
-
-  /**
-   * Checks no existing page already uses a URL alias.
-   *
-   * @param string $alias
-   *   The alias, or an empty string when the row has none.
-   *
-   * @throws \InvalidArgumentException
-   *   If the alias is already in use.
-   */
-  protected function assertAliasAvailable($alias) {
-    if ($alias === '') {
-      return;
-    }
-
-    $ids = $this->entityTypeManager->getStorage('path_alias')->getQuery()
-      ->condition('alias', $alias)
-      ->range(0, 1)
-      ->accessCheck(FALSE)
-      ->execute();
-
-    if (!empty($ids)) {
-      throw new \InvalidArgumentException(sprintf(
-        'URL Alias "%s" is already in use on this site.',
-        $alias
-      ));
-    }
   }
 
   /**

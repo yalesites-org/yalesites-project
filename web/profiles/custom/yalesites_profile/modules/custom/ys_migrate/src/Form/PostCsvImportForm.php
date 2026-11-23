@@ -304,7 +304,7 @@ class PostCsvImportForm extends FormBase {
   protected function columnNotes() {
     return [
       'title' => $this->t('Required. Used with Publish Date to detect duplicates.'),
-      'publish date' => $this->t('Required. YYYY-MM-DD or MM/DD/YYYY.'),
+      'publish date' => $this->t('Required. A date such as 2026-03-04, 3/4/2026 or March 4, 2026. A time after the date is ignored.'),
       'author' => $this->t('Plain text, shown as the byline.'),
       'body' => $this->t('HTML, or plain text with a blank line between paragraphs. Imported as one Text block; images, video and embeds are left out. Leave empty for a post with an External Source.'),
       'category' => $this->t('Comma-separated. Terms must already exist.'),

@@ -17,3 +17,7 @@ services:
   ys_migrate.post_import:
     class: Drupal\ys_migrate\Service\PostImportService
     arguments: ['@current_user', '@ys_migrate.taxonomy_resolver', '@entity_type.manager', '@logger.factory', '@uuid']
+
+  ys_migrate.event_import:
+    class: Drupal\ys_migrate\Service\EventImportService
+    arguments: ['@current_user', '@ys_migrate.taxonomy_resolver', '@entity_type.manager', '@logger.factory', '@config.factory']

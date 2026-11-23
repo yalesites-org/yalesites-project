@@ -280,6 +280,195 @@ class ContentExportBuilderTest extends UnitTestCase {
   }
 
   /**
+   * Tests the event columns, which an Event CSV import reads back in.
+   *
+   * Start and End follow Dates, and the event content columns follow the
+   * taxonomy, all under the headers the importer reads.
+   *
+   * @covers ::getColumns
+   */
+  public function testEventColumns(): void {
+    $this->assertSame(
+      [
+        'Title',
+        'Dates',
+        'Start',
+        'End',
+        'URL',
+        'Published',
+        'CAS Protected',
+        'Tags',
+        'Audience',
+        'Custom Vocab',
+        'Event Category',
+        'Description',
+        'Location Details',
+        'Event Experience',
+        'Event Website',
+        'Event Website Text',
+        'Ticket Cost',
+        'Ticket Registration URL',
+        'Stream URL',
+      ],
+      array_values(ContentExportBuilder::getColumns('event'))
+    );
+
+    // Other bundles gain none of the event columns.
+    $this->assertArrayNotHasKey('event_start', ContentExportBuilder::getColumns('post'));
+    $this->assertArrayNotHasKey('field_event_description', ContentExportBuilder::getColumns('page'));
+  }
+
+  /**
+   * Tests the Start and End cells for an event.
+   *
+   * @param array $instances
+   *   Stored field values, in delta order: each [value, end_value].
+   * @param string $start
+   *   The expected Start cell.
+   * @param string $end
+   *   The expected End cell.
+   *
+   * @dataProvider eventBoundaryProvider
+   * @covers ::cellValue
+   */
+  public function testEventStartAndEndCells(array $instances, string $start, string $end): void {
+    $items = [];
+    foreach ($instances as [$value, $end_value]) {
+      $items[] = (object) ['value' => $value, 'end_value' => $end_value];
+    }
+
+    $node = $this->createMock(NodeInterface::class);
+    $node->method('hasField')->with('field_event_date')->willReturn(TRUE);
+    $node->method('get')->with('field_event_date')->willReturn($items);
+
+    $method = new \ReflectionMethod(ContentExportBuilder::class, 'cellValue');
+    $method->setAccessible(TRUE);
+    $this->assertSame($start, $method->invoke(NULL, $node, 'event_start', $this->dateFormatter()));
+    $this->assertSame($end, $method->invoke(NULL, $node, 'event_end', $this->dateFormatter()));
+  }
+
+  /**
+   * Provides stored event date instances and their Start and End cells.
+   *
+   * @return array
+   *   Cases: [instances, start, end].
+   */
+  public static function eventBoundaryProvider(): array {
+    return [
+      'single timed instance' => [
+        [[2125173600, 2125177200]],
+        '2037-05-05 18:00',
+        '2037-05-05 19:00',
+      ],
+      // A date alone is how the importer recognises an all-day event.
+      'all day, single day' => [
+        [[1818043200, 1818129540]],
+        '2027-08-12',
+        '2027-08-12',
+      ],
+      'all day, spanning several days' => [
+        [[2098670400, 2098929540]],
+        '2036-07-03',
+        '2036-07-05',
+      ],
+      'recurring: only the earliest occurrence' => [
+        [
+          [2112127200, 2112130800],
+          [1707058800, 1707062400],
+        ],
+        '2024-02-04 10:00',
+        '2024-02-04 11:00',
+      ],
+      'no instances at all' => [
+        [],
+        '',
+        '',
+      ],
+    ];
+  }
+
+  /**
+   * Tests the event text and link cells.
+   *
+   * Paths on this site are written as the path, which the importer accepts,
+   * rather than with the internal: or entity: scheme they are stored with.
+   *
+   * @param string $key
+   *   The column key.
+   * @param string $field
+   *   The field the column reads.
+   * @param object|null $value
+   *   The field list's magic properties, or NULL when the node lacks the field.
+   * @param string $expected
+   *   The expected cell output.
+   *
+   * @dataProvider eventContentProvider
+   * @covers ::cellValue
+   */
+  public function testEventContentCells(string $key, string $field, ?object $value, string $expected): void {
+    $node = $this->createMock(NodeInterface::class);
+    $node->method('hasField')->with($field)->willReturn($value !== NULL);
+    if ($value !== NULL) {
+      $node->method('get')->with($field)->willReturn($value);
+    }
+
+    $method = new \ReflectionMethod(ContentExportBuilder::class, 'cellValue');
+    $method->setAccessible(TRUE);
+    $this->assertSame($expected, $method->invoke(NULL, $node, $key, $this->dateFormatter()));
+  }
+
+  /**
+   * Provides event text and link fields and their expected cell output.
+   *
+   * @return array
+   *   Cases: [column key, field name, field value, expected].
+   */
+  public static function eventContentProvider(): array {
+    return [
+      'description' => [
+        'field_event_description', 'field_event_description',
+        (object) ['value' => '<p>Talks.</p>'], '<p>Talks.</p>',
+      ],
+      'location details' => [
+        'field_event_location_details', 'field_event_location_details',
+        (object) ['value' => "Kroon Hall\n195 Prospect Street"], "Kroon Hall\n195 Prospect Street",
+      ],
+      'ticket cost' => [
+        'field_ticket_cost', 'field_ticket_cost',
+        (object) ['value' => 'Free'], 'Free',
+      ],
+      'empty text field' => [
+        'field_ticket_cost', 'field_ticket_cost',
+        (object) ['value' => NULL], '',
+      ],
+      'external link' => [
+        'field_event_cta', 'field_event_cta',
+        (object) ['uri' => 'https://example.com/rsvp'], 'https://example.com/rsvp',
+      ],
+      'path typed by an editor' => [
+        'field_event_cta', 'field_event_cta',
+        (object) ['uri' => 'internal:/events/register'], '/events/register',
+      ],
+      'link to a node' => [
+        'field_ticket_registration_url', 'field_ticket_registration_url',
+        (object) ['uri' => 'entity:node/5'], '/node/5',
+      ],
+      'empty link field' => [
+        'field_stream_url', 'field_stream_url',
+        (object) ['uri' => NULL], '',
+      ],
+      'event website text' => [
+        'event_website_text', 'field_event_cta',
+        (object) ['uri' => 'https://example.com/rsvp', 'title' => 'RSVP'], 'RSVP',
+      ],
+      'field absent' => [
+        'field_event_description', 'field_event_description',
+        NULL, '',
+      ],
+    ];
+  }
+
+  /**
    * Tests the Resource Publication Date cell.
    *
    * The field is date-only and stored as Y-m-d, which is already the format

@@ -379,6 +379,67 @@ class PostImportServiceTest extends UnitTestCase {
   }
 
   /**
+   * Publish Date reads the forms Drupal 7 and spreadsheets write.
+   *
+   * @param string $cell
+   *   The Publish Date cell.
+   *
+   * @covers ::preparePostData
+   *
+   * @dataProvider publishDateProvider
+   */
+  public function testPreparePostDataReadsPublishDateForms(string $cell) {
+    $result = $this->postImport->preparePostData(['title' => 'Dated', 'publish date' => $cell]);
+
+    $this->assertSame('2026-03-04', $result['publish_date']);
+  }
+
+  /**
+   * Publish Date cells that all mean March 4, 2026.
+   */
+  public static function publishDateProvider(): array {
+    return [
+      'ISO' => ['2026-03-04'],
+      'US without leading zeros' => ['3/4/2026'],
+      'D7 Long format, no time' => ['Wednesday, March 4, 2026'],
+      'D7 Medium format, no time' => ['March 4, 2026'],
+      'D7 Short format, no time' => ['03/04/2026'],
+      'abbreviated month' => ['Mar 4, 2026'],
+      'day first with a month name' => ['4 March 2026'],
+      'D7 Post date with its time' => ['03/04/2026 - 2:00pm'],
+      'D7 Long format with a time' => ['Wednesday, March 4, 2026 - 2:00pm'],
+      'Excel date and time' => ['3/4/2026 2:00:00 PM'],
+      'D7 date field markup, Long format' => [
+        '<span class="date-display-single" property="dc:date" datatype="xsd:dateTime" content="2026-03-04T00:00:00-05:00">Wednesday, March 4, 2026</span>',
+      ],
+    ];
+  }
+
+  /**
+   * A two-digit year is rejected rather than read as the first century.
+   *
+   * @covers ::preparePostData
+   */
+  public function testPreparePostDataRejectsTwoDigitYear() {
+    $this->expectException(\InvalidArgumentException::class);
+    $this->expectExceptionMessage('Publish Date "3/4/26" is not a valid date.');
+
+    $this->postImport->preparePostData(['title' => 'Short Year', 'publish date' => '3/4/26']);
+  }
+
+  /**
+   * Text after the date that is not a time fails the row.
+   *
+   * @covers ::preparePostData
+   */
+  public function testPreparePostDataRejectsTextAfterDate() {
+    $this->expectException(\InvalidArgumentException::class);
+    $this->expectExceptionMessage('Publish Date "March 4, 2026 - lunchtime" is not a valid date.');
+
+    $this->postImport->preparePostData(['title' => 'Vague', 'publish date' => 'March 4, 2026 - lunchtime']);
+  }
+
+  /**
    * A term the site does not have is reported, never created.
    *
    * @covers ::preparePostData
