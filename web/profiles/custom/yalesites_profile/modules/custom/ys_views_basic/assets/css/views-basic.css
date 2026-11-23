@@ -286,9 +286,16 @@
  * Real focus stays in the search box, so the active row is li.highlighted. A
  * two-tone ring (2px outline plus a 2px inner band of the opposite color)
  * keeps 3:1 contrast against the list and the highlight color in light and
- * dark mode.
+ * dark mode. Scoped to the include and exclude tag pickers so other Chosen
+ * dropdowns in block forms keep their look, whichever CSS the page loads.
  */
 .layout-builder-configure-block
+  .form-item-settings-block-form-group-user-selection-filter-and-sort-terms-include
+  .chosen-container
+  .chosen-results
+  li.highlighted,
+.layout-builder-configure-block
+  .form-item-settings-block-form-group-user-selection-filter-and-sort-terms-exclude
   .chosen-container
   .chosen-results
   li.highlighted {
@@ -299,11 +306,65 @@
 
 .gin--dark-mode
   .layout-builder-configure-block
+  .form-item-settings-block-form-group-user-selection-filter-and-sort-terms-include
+  .chosen-container
+  .chosen-results
+  li.highlighted,
+.gin--dark-mode
+  .layout-builder-configure-block
+  .form-item-settings-block-form-group-user-selection-filter-and-sort-terms-exclude
   .chosen-container
   .chosen-results
   li.highlighted {
   outline-color: #fff;
   box-shadow: inset 0 0 0 4px #000;
+}
+
+/* Picked rows unselect on click, so show the same hand cursor as other rows. */
+.layout-builder-configure-block
+  .form-item-settings-block-form-group-user-selection-filter-and-sort-terms-include
+  .chosen-container
+  .chosen-results
+  li.result-selected,
+.layout-builder-configure-block
+  .form-item-settings-block-form-group-user-selection-filter-and-sort-terms-exclude
+  .chosen-container
+  .chosen-results
+  li.result-selected {
+  cursor: pointer;
+}
+
+/*
+ * A picked row that is also the active row keeps a picked cue: bold text with
+ * a check mark. The active background hides the blue "picked" text color, and
+ * dark mode drops it, so the cue cannot rely on color alone.
+ */
+.layout-builder-configure-block
+  .form-item-settings-block-form-group-user-selection-filter-and-sort-terms-include
+  .chosen-container
+  .chosen-results
+  li.result-selected.highlighted,
+.layout-builder-configure-block
+  .form-item-settings-block-form-group-user-selection-filter-and-sort-terms-exclude
+  .chosen-container
+  .chosen-results
+  li.result-selected.highlighted {
+  font-weight: 700;
+}
+
+.layout-builder-configure-block
+  .form-item-settings-block-form-group-user-selection-filter-and-sort-terms-include
+  .chosen-container
+  .chosen-results
+  li.result-selected.highlighted::after,
+.layout-builder-configure-block
+  .form-item-settings-block-form-group-user-selection-filter-and-sort-terms-exclude
+  .chosen-container
+  .chosen-results
+  li.result-selected.highlighted::after {
+  content: "\2713";
+  float: right;
+  margin-left: 0.5rem;
 }
 
 /* visually hide the inputs */

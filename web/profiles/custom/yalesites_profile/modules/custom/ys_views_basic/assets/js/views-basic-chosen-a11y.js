@@ -127,6 +127,13 @@
   }
 
   function onKeydown(event, container) {
+    // Key repeat sends more keydowns before the keyup. Keep swallowing them,
+    // or Chosen would select the row that was just unselected.
+    if (event.repeat && container.dataset.vbSwallowKeyup === event.key) {
+      event.preventDefault();
+      event.stopImmediatePropagation();
+      return;
+    }
     delete container.dataset.vbSwallowKeyup;
     const chosen = chosenFor(container);
     if (!chosen || !container.classList.contains('chosen-with-drop')) {
@@ -177,7 +184,15 @@
   function onClick(event, container) {
     const row = event.target.closest('.chosen-results > li.result-selected');
     const chosen = chosenFor(container);
-    if (!row || !chosen) {
+    // Chosen selects an option on mouseup, so a click on an unpicked row
+    // lands on a row that is already picked. Only unselect rows that were
+    // picked when the press began.
+    const wasPicked =
+      row &&
+      row.getAttribute('data-option-array-index') ===
+        container.dataset.vbPressedPicked;
+    delete container.dataset.vbPressedPicked;
+    if (!row || !chosen || !wasPicked) {
       return;
     }
     event.preventDefault();
@@ -258,6 +273,23 @@
             highlight(chosen, row);
           }
         });
+        // Capture phase, before Chosen's mouseup selects the row.
+        container.addEventListener(
+          'mousedown',
+          function (event) {
+            const row = event.target.closest(
+              '.chosen-results > li.result-selected',
+            );
+            if (row) {
+              container.dataset.vbPressedPicked = row.getAttribute(
+                'data-option-array-index',
+              );
+            } else {
+              delete container.dataset.vbPressedPicked;
+            }
+          },
+          true,
+        );
         container.addEventListener('click', function (event) {
           onClick(event, container);
         });
