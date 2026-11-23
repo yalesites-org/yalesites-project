@@ -53,6 +53,21 @@ class ChosenA11yLibraryTest extends UnitTestCase {
   }
 
   /**
+   * The script marks selection and groups without wrapping Chosen's rows.
+   */
+  public function testSelectionAndGroupAttributes(): void {
+    $js = file_get_contents(dirname(__DIR__, 3) . '/assets/js/views-basic-chosen-a11y.js');
+    $this->assertStringContainsString("'aria-multiselectable', 'true'", $js);
+    $this->assertStringContainsString("'aria-selected'", $js);
+    $this->assertStringContainsString("classList.contains('result-selected')", $js);
+    $this->assertStringContainsString("'group-result'", $js);
+    $this->assertStringContainsString("'role', 'group'", $js);
+    $this->assertStringContainsString("'aria-owns'", $js);
+    $this->assertStringNotContainsString('createElement', $js);
+    $this->assertStringNotContainsString('wrapAll', $js);
+  }
+
+  /**
    * Widget files.
    */
   public static function widgetProvider(): array {

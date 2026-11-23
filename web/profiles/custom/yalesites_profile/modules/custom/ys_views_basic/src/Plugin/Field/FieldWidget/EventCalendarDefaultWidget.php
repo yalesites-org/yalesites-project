@@ -231,7 +231,14 @@ class EventCalendarDefaultWidget extends ViewsBasicWidgetBase {
    *   The delta value.
    */
   private function buildTermFilters(array &$form, FieldItemListInterface $items, int $delta) {
-    $event_tags = $this->viewsBasicManager->getEventTags();
+    // Same grouped, plain-name options as the Views block pickers. Term IDs
+    // are unchanged, so saved values still match.
+    $event_tags = $this->viewsBasicManager->getTagsForVocabularies([
+      'event_category',
+      'audience',
+      'custom_vocab',
+      'tags',
+    ]);
 
     // Get default values from saved params (stored at root level for calendar).
     $terms_include_default = [];
@@ -245,6 +252,10 @@ class EventCalendarDefaultWidget extends ViewsBasicWidgetBase {
         $terms_exclude_default = array_map('intval', $paramsDecoded['terms_exclude']);
       }
     }
+
+    // Keep stored terms from other vocabularies selectable, as the Views
+    // block does (#2101), so re-saving does not drop them.
+    $event_tags = $this->viewsBasicManager->addStoredTermOptions($event_tags, array_merge($terms_include_default, $terms_exclude_default));
 
     // Include terms.
     $form['group_user_selection']['filter_and_sort']['terms_include'] = [
