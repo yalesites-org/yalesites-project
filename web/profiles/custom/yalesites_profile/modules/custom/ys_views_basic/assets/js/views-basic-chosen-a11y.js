@@ -9,7 +9,9 @@
  * the closed list from assistive tech. Everything is scoped to
  * .layout-builder-configure-block so Better Exposed Filters widgets on public
  * pages are untouched. Chosen rebuilds the selected items on every change, so
- * the attributes are applied again after each rebuild.
+ * the attributes are applied again after each rebuild. Attribute values use
+ * the pass-through placeholder (!) because @ would HTML-escape "&" into
+ * a literal "&amp;" in the accessible name.
  */
 
 (function (Drupal, once) {
@@ -17,10 +19,9 @@
   const CONTAINER = `${SCOPE} .chosen-container-multi`;
 
   function labelFor(container) {
-    const select = container.id
-      ? document.getElementById(container.id.replace(/_chosen$/, ''))
-      : null;
-    if (!select || !select.id) {
+    // Chosen inserts its container right after the original select.
+    const select = container.previousElementSibling;
+    if (!select || select.tagName !== 'SELECT' || !select.id) {
       return '';
     }
     const label = document.querySelector(`label[for="${select.id}"]`);
@@ -35,7 +36,7 @@
       if (label) {
         choices.setAttribute(
           'aria-label',
-          Drupal.t('Selected: @label', { '@label': label }),
+          Drupal.t('Selected: !label', { '!label': label }),
         );
       }
       choices.querySelectorAll('li.search-choice').forEach(function (item) {
@@ -45,7 +46,7 @@
         if (close && text) {
           close.setAttribute(
             'aria-label',
-            Drupal.t('Remove @item', { '@item': text.textContent.trim() }),
+            Drupal.t('Remove !item', { '!item': text.textContent.trim() }),
           );
         }
       });

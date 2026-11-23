@@ -34,6 +34,25 @@ class ChosenA11yLibraryTest extends UnitTestCase {
   }
 
   /**
+   * The Resource View widget attaches the library too.
+   */
+  public function testResourceWidgetAttachesLibrary(): void {
+    $source = file_get_contents(dirname(__DIR__, 4) . '/ys_views_content_resources/src/Plugin/Field/FieldWidget/ViewsContentResourcesDefaultWidget.php');
+    $this->assertStringContainsString("'ys_views_basic/chosen_a11y'", $source);
+  }
+
+  /**
+   * Names use pass-through placeholders and the select comes from the DOM.
+   */
+  public function testNamesAreNotHtmlEscapedAndSelectFoundBySibling(): void {
+    $js = file_get_contents(dirname(__DIR__, 3) . '/assets/js/views-basic-chosen-a11y.js');
+    $this->assertStringNotContainsString("'@label'", $js);
+    $this->assertStringNotContainsString("'@item'", $js);
+    $this->assertStringContainsString('previousElementSibling', $js);
+    $this->assertStringNotContainsString('_chosen$', $js);
+  }
+
+  /**
    * Widget files.
    */
   public static function widgetProvider(): array {
