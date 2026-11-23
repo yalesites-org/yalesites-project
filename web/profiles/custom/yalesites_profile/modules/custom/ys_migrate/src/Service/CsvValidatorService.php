@@ -74,6 +74,42 @@ class CsvValidatorService {
   ];
 
   /**
+   * Expected CSV columns for post import.
+   *
+   * Body becomes a Text block in the post's layout. Teaser Media is absent
+   * because this import brings in no images; editors add them after import.
+   * Publish Date and Category match the headers ys_content_export writes, so
+   * an exported file can be filled in and imported.
+   */
+  const EXPECTED_POST_COLUMNS = [
+    'title' => 'Title',
+    'publish date' => 'Publish Date',
+    'author' => 'Author',
+    'body' => 'Body',
+    'category' => 'Category',
+    'tags' => 'Tags',
+    'audience' => 'Audience',
+    'custom vocab' => 'Custom Vocab',
+    'teaser title' => 'Teaser Title',
+    'teaser text' => 'Teaser Text',
+    'external source' => 'External Source',
+    'cas login required' => 'CAS Login Required',
+    'url alias' => 'URL Alias',
+  ];
+
+  /**
+   * Accepted alternative spellings for post columns.
+   *
+   * Values are the canonical normalised header each alias maps to. "CAS
+   * Protected" is the header ys_content_export writes for "CAS Login
+   * Required".
+   */
+  const POST_COLUMN_ALIASES = [
+    'custom vocabulary' => 'custom vocab',
+    'cas protected' => 'cas login required',
+  ];
+
+  /**
    * Columns a content export writes that the resource import does not read.
    *
    * Listed so a file from ys_content_export can be imported back without these
@@ -147,13 +183,53 @@ class CsvValidatorService {
       $file_path,
       'title',
       $this->t('The CSV file must contain a "Title" column.'),
-      [$this, 'validateResourceRow'],
+      [$this, 'validateTitledRow'],
       self::RESOURCE_COLUMN_ALIASES,
       remove_formula_guard: TRUE,
     );
 
     if ($result['valid']) {
       $result['message'] = $this->t('CSV file is valid. Found @count resources.', ['@count' => count($result['data'])]);
+    }
+
+    return $result;
+  }
+
+  /**
+   * Validates the CSV file structure and content for a post import.
+   *
+   * Only structure, the required headers and the required Title are checked
+   * here. Cell-level problems, an empty Publish Date included, are reported
+   * per row by PostImportService, so one gap does not reject the whole file
+   * and the editor sees the problem in the preview.
+   *
+   * @param string $file_path
+   *   The path to the CSV file.
+   *
+   * @return array
+   *   Validation result with 'valid', 'message', 'data', and 'headers' keys.
+   */
+  public function validatePostCsvStructure($file_path) {
+    $result = $this->parseCsv(
+      $file_path,
+      'title',
+      $this->t('The CSV file must contain a "Title" column.'),
+      [$this, 'validateTitledRow'],
+      self::POST_COLUMN_ALIASES
+    );
+
+    // Without the column every row would fail the same way, so say it once.
+    if ($result['valid'] && !isset($result['headers']['publish date'])) {
+      return [
+        'valid' => FALSE,
+        'message' => $this->t('The CSV file must contain a "Publish Date" column.'),
+        'data' => [],
+        'headers' => [],
+      ];
+    }
+
+    if ($result['valid']) {
+      $result['message'] = $this->t('CSV file is valid. Found @count posts.', ['@count' => count($result['data'])]);
     }
 
     return $result;
@@ -235,6 +311,22 @@ class CsvValidatorService {
 
     while (($row = fgetcsv($handle, NULL, ',', '"', '')) !== FALSE) {
       $row_number++;
+      // The export's formula guard comes off the raw cell, before trimming:
+      // sanitizeCell() decides from the untrimmed value, so the inverse must
+      // too. A cell that carried the guard is the exact exported value, so
+      // its leading space or tab is kept; every other cell is trimmed. Done
+      // before validation so the required-Title check sees the value that will
+      // actually be imported.
+      $row = array_map(function ($cell) use ($remove_formula_guard) {
+        $cell = (string) $cell;
+        if ($remove_formula_guard) {
+          $unguarded = $this->removeFormulaGuard($cell);
+          if ($unguarded !== $cell) {
+            return $unguarded;
+          }
+        }
+        return $this->trimCell($cell);
+      }, $row);
 
       // Skip empty rows.
       if (empty(array_filter($row))) {
@@ -268,12 +360,6 @@ class CsvValidatorService {
 
       // Create a data array with normalized keys.
       $row_data = array_combine($normalized_headers, $row);
-
-      // Done before validation so the required-Title check sees the value that
-      // will actually be imported.
-      if ($remove_formula_guard) {
-        $row_data = array_map([$this, 'removeFormulaGuard'], $row_data);
-      }
 
       // Validate the row data.
       $row_errors = $row_validator($row_data, $row_number);
@@ -322,6 +408,27 @@ class CsvValidatorService {
       // otherwise make the first column's header unrecognisable.
       return strtolower(trim(preg_replace('/^\xEF\xBB\xBF/', '', $header)));
     }, $headers);
+  }
+
+  /**
+   * Trims a cell, including non-breaking spaces at either end.
+   *
+   * A Drupal 7 Views Data Export decodes HTML entities in every cell, so an
+   * &nbsp; arrives as a real U+00A0, which trim() leaves in place. Left at the
+   * end of a date or a term name, it makes a valid value fail to match.
+   *
+   * @param string|null $value
+   *   The raw cell value.
+   *
+   * @return string
+   *   The value without leading or trailing whitespace.
+   */
+  protected function trimCell($value) {
+    $trimmed = preg_replace('/^[\s\x{00A0}]+|[\s\x{00A0}]+$/u', '', (string) $value);
+
+    // preg_replace() returns NULL for a cell that is not valid UTF-8, such as
+    // one from a file Excel saved in Windows-1252. trim() still works there.
+    return $trimmed ?? trim((string) $value);
   }
 
   /**
@@ -395,7 +502,9 @@ class CsvValidatorService {
   }
 
   /**
-   * Validates a single row of resource CSV data.
+   * Validates a single row of resource or post CSV data.
+   *
+   * Both importers check everything but the Title per row themselves.
    *
    * @param array $row_data
    *   The row data with normalized keys.
@@ -405,7 +514,7 @@ class CsvValidatorService {
    * @return array
    *   Array of validation errors.
    */
-  protected function validateResourceRow(array $row_data, $row_number) {
+  protected function validateTitledRow(array $row_data, $row_number) {
     $errors = [];
 
     if (empty(trim($row_data['title'] ?? ''))) {
@@ -433,6 +542,32 @@ class CsvValidatorService {
    */
   public function getExpectedResourceColumns() {
     return self::EXPECTED_RESOURCE_COLUMNS;
+  }
+
+  /**
+   * Gets the expected columns for post import.
+   *
+   * @return array
+   *   Array of expected columns, keyed by normalised header.
+   */
+  public function getExpectedPostColumns() {
+    return self::EXPECTED_POST_COLUMNS;
+  }
+
+  /**
+   * Lists post CSV headers the importer does not understand.
+   *
+   * @param array $headers
+   *   The header mapping returned by validatePostCsvStructure(), keyed by
+   *   normalised header.
+   *
+   * @return array
+   *   The original spellings of the headers that will be ignored.
+   *
+   * @see getUnknownResourceColumns()
+   */
+  public function getUnknownPostColumns(array $headers) {
+    return array_values(array_diff_key($headers, self::EXPECTED_POST_COLUMNS));
   }
 
   /**

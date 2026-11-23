@@ -6,7 +6,7 @@ use Drupal\Core\StringTranslation\TranslatableMarkup;
 use Drupal\ys_migrate\Service\CsvImportServiceInterface;
 
 /**
- * Batch API glue shared by the profile and resource CSV importers.
+ * Batch API glue shared by the profile, resource and post CSV importers.
  *
  * A CSV of any real size timed out in a single request before this existed.
  * Drupal stores batch operations as serialized callback strings and may
@@ -32,8 +32,10 @@ class CsvImportBatch {
    * @param array $options
    *   Batch options: 'import_service_id' (service id of a service
    *   implementing \Drupal\ys_migrate\Service\CsvImportServiceInterface),
-   *   'skip_duplicates' (whether to skip duplicates), and 'entity_label'
-   *   (singular noun for the imported entity, e.g. 'profile' or 'resource').
+   *   'skip_duplicates' (whether to skip duplicates), 'entity_label'
+   *   (singular noun for the imported entity, e.g. 'profile' or 'post'), and
+   *   optionally 'import_options' (passed on to processImport(), e.g.
+   *   ['publish' => TRUE] for posts).
    * @param array $rows
    *   The full set of already-parsed CSV rows.
    * @param int $file_id
@@ -66,14 +68,15 @@ class CsvImportBatch {
   /**
    * Batch operation: imports one chunk and folds its results into $context.
    *
-   * Each chunk's 'errors' and 'needs_media' are appended as their own
-   * sub-array rather than merged into a single running list, so this stays
-   * O(1) per chunk regardless of how many rows have failed or need media so
-   * far; finished() flattens the sub-arrays once, at the end.
+   * Each chunk's 'errors', 'needs_media', 'needs_images' and 'needs_body' are
+   * appended as their own sub-array rather than merged into a single running
+   * list, so this stays O(1) per chunk regardless of how many rows have
+   * failed or need follow-up so far; finished() flattens the sub-arrays once,
+   * at the end.
    *
    * @param array $options
-   *   The 'import_service_id', 'skip_duplicates' and 'entity_label' options
-   *   described in build().
+   *   The 'import_service_id', 'skip_duplicates', 'entity_label' and
+   *   'import_options' options described in build().
    * @param array $chunk
    *   The rows in this chunk.
    * @param array $context
@@ -87,6 +90,8 @@ class CsvImportBatch {
         'skipped' => 0,
         'errors' => [],
         'needs_media' => [],
+        'needs_images' => [],
+        'needs_body' => [],
       ];
     }
 
@@ -103,7 +108,7 @@ class CsvImportBatch {
       ));
     }
 
-    $chunk_result = $import_service->processImport($chunk, $options['skip_duplicates']);
+    $chunk_result = $import_service->processImport($chunk, $options['skip_duplicates'], $options['import_options'] ?? []);
 
     $context['results']['created'] += $chunk_result['created'];
     $context['results']['skipped'] += $chunk_result['skipped'];
@@ -111,6 +116,14 @@ class CsvImportBatch {
 
     if (!empty($chunk_result['needs_media'])) {
       $context['results']['needs_media'][] = $chunk_result['needs_media'];
+    }
+
+    if (!empty($chunk_result['needs_images'])) {
+      $context['results']['needs_images'][] = $chunk_result['needs_images'];
+    }
+
+    if (!empty($chunk_result['needs_body'])) {
+      $context['results']['needs_body'][] = $chunk_result['needs_body'];
     }
   }
 
@@ -136,8 +149,9 @@ class CsvImportBatch {
    *   Whether the batch completed without a fatal error.
    * @param array $results
    *   The accumulated $context['results'] from the last operation that ran,
-   *   with 'errors' and 'needs_media' still shaped as one sub-array per
-   *   chunk. Empty if the batch failed before its first chunk completed.
+   *   with 'errors', 'needs_media', 'needs_images' and 'needs_body' still
+   *   shaped as one sub-array per chunk. Empty if the batch failed before its
+   *   first chunk completed.
    * @param array $operations
    *   The operations that were queued but never reached, if the batch
    *   stopped early.
@@ -153,6 +167,8 @@ class CsvImportBatch {
       if (isset($results['created'])) {
         $results['errors'] = static::flatten($results['errors'] ?? []);
         $results['needs_media'] = static::flatten($results['needs_media'] ?? []);
+        $results['needs_images'] = static::flatten($results['needs_images'] ?? []);
+        $results['needs_body'] = static::flatten($results['needs_body'] ?? []);
         foreach (static::buildMessages($results) as [$method, $message]) {
           $messenger->$method($message);
         }
@@ -175,6 +191,8 @@ class CsvImportBatch {
 
     $results['errors'] = static::flatten($results['errors'] ?? []);
     $results['needs_media'] = static::flatten($results['needs_media'] ?? []);
+    $results['needs_images'] = static::flatten($results['needs_images'] ?? []);
+    $results['needs_body'] = static::flatten($results['needs_body'] ?? []);
 
     foreach (static::buildMessages($results) as [$method, $message]) {
       $messenger->$method($message);
@@ -202,7 +220,8 @@ class CsvImportBatch {
    *
    * @param array $results
    *   The accumulated results: 'entity_label', 'created', 'skipped', and
-   *   already-flat 'errors' and 'needs_media' lists.
+   *   already-flat 'errors', 'needs_media', 'needs_images' and 'needs_body'
+   *   lists.
    *
    * @return array
    *   A list of [messenger method name, message] pairs.
@@ -235,6 +254,30 @@ class CsvImportBatch {
           '@count imported resource(s) have no External Source and still need Resource Media attached: @titles', [
             '@count' => count($results['needs_media']),
             '@titles' => implode(', ', $results['needs_media']),
+          ]
+        ),
+      ];
+    }
+
+    if (!empty($results['needs_images'])) {
+      $messages[] = [
+        'addWarning',
+        new TranslatableMarkup(
+          '@count imported post(s) had images, video or embeds in the Body that could not be imported. Open each one in Layout Builder and add them: @titles', [
+            '@count' => count($results['needs_images']),
+            '@titles' => implode(', ', $results['needs_images']),
+          ]
+        ),
+      ];
+    }
+
+    if (!empty($results['needs_body'])) {
+      $messages[] = [
+        'addWarning',
+        new TranslatableMarkup(
+          '@count imported post(s) have no Body and no External Source, so their page shows only the title. Open each one in Layout Builder and add content: @titles', [
+            '@count' => count($results['needs_body']),
+            '@titles' => implode(', ', $results['needs_body']),
           ]
         ),
       ];
