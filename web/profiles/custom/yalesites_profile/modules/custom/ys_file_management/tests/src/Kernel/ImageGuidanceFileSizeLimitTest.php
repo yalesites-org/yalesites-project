@@ -4,8 +4,8 @@ namespace Drupal\Tests\ys_file_management\Kernel;
 
 use Drupal\file\Entity\File;
 use Drupal\field\Entity\FieldConfig;
-use Drupal\KernelTests\KernelTestBase;
 use Drupal\Tests\media\Traits\MediaTypeCreationTrait;
+use Drupal\Tests\ys_core\Kernel\YsKernelTestBase;
 
 /**
  * Tests the oversize-upload message names actual size, maximum and a fix.
@@ -13,7 +13,7 @@ use Drupal\Tests\media\Traits\MediaTypeCreationTrait;
  * @group ys_file_management
  * @group yalesites
  */
-class ImageGuidanceFileSizeLimitTest extends KernelTestBase {
+class ImageGuidanceFileSizeLimitTest extends YsKernelTestBase {
 
   use MediaTypeCreationTrait;
 
