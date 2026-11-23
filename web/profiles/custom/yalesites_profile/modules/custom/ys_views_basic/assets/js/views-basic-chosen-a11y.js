@@ -19,9 +19,16 @@
  * (a li.group-result header followed by sibling li.group-option rows), and
  * the sticky header CSS and arrow key movement depend on that shape, so the
  * rows are not wrapped: the header owns them with aria-owns instead.
+ *
+ * Selected options can be unselected from the list (#2349). Chosen drops
+ * active-result from a selected row, so its arrow keys skip it and its
+ * clicks ignore it. The handlers below add the missing behavior and call
+ * Chosen's own result_deselect(), which updates the real select, rebuilds
+ * the list and triggers the same change event as the remove button. Focus
+ * stays in the search box, so the active option is li.highlighted.
  */
 
-(function (Drupal, once) {
+(function (Drupal, once, $) {
   const SCOPE = '.layout-builder-configure-block';
   const CONTAINER = `${SCOPE} .chosen-container-multi`;
 
@@ -77,6 +84,113 @@
     closeGroup();
   }
 
+  function chosenFor(container) {
+    const select = container.previousElementSibling;
+    return select ? $(select).data('chosen') : null;
+  }
+
+  // Every option row Chosen would show, selected or not, in list order.
+  function optionRows(container) {
+    return Array.from(
+      container.querySelectorAll(
+        '.chosen-drop ul.chosen-results > li.active-result, .chosen-drop ul.chosen-results > li.result-selected',
+      ),
+    );
+  }
+
+  function highlight(chosen, row) {
+    chosen.result_do_highlight($(row));
+  }
+
+  function unselect(container, chosen, row) {
+    const index = row.getAttribute('data-option-array-index');
+    if (index === null || !chosen.result_deselect(index)) {
+      return;
+    }
+    // Chosen drops the selected chip itself on the remove button path only.
+    container
+      .querySelectorAll(
+        `.search-choice-close[data-option-array-index="${index}"]`,
+      )
+      .forEach(function (close) {
+        close.closest('li').remove();
+      });
+    chosen.set_search_field_placeholder();
+    // The rebuilt row is a normal option again. Keep it active so the next
+    // key press continues from the same place.
+    const again = container.querySelector(
+      `.chosen-results > li[data-option-array-index="${index}"]`,
+    );
+    if (again) {
+      highlight(chosen, again);
+    }
+  }
+
+  function onKeydown(event, container) {
+    delete container.dataset.vbSwallowKeyup;
+    const chosen = chosenFor(container);
+    if (!chosen || !container.classList.contains('chosen-with-drop')) {
+      return;
+    }
+    const current = chosen.result_highlight ? chosen.result_highlight[0] : null;
+    if (event.key === 'ArrowDown' || event.key === 'ArrowUp') {
+      const rows = optionRows(container);
+      const at = rows.indexOf(current);
+      // No active row yet: let Chosen pick its own first match.
+      if (at === -1) {
+        return;
+      }
+      // Up from the first row keeps Chosen's own behavior (close the list).
+      if (event.key === 'ArrowUp' && at <= 0) {
+        return;
+      }
+      const next = event.key === 'ArrowDown' ? rows[at + 1] : rows[at - 1];
+      if (next) {
+        event.preventDefault();
+        event.stopImmediatePropagation();
+        highlight(chosen, next);
+      }
+      return;
+    }
+    const isSpace = event.key === ' ' && chosen.get_search_field_value() === '';
+    if (
+      (event.key === 'Enter' || isSpace) &&
+      current &&
+      current.classList.contains('result-selected')
+    ) {
+      // Chosen selects on keyup, so swallow that key press too.
+      container.dataset.vbSwallowKeyup = event.key;
+      event.preventDefault();
+      event.stopImmediatePropagation();
+      unselect(container, chosen, current);
+    }
+  }
+
+  function onKeyup(event, container) {
+    if (container.dataset.vbSwallowKeyup === event.key) {
+      delete container.dataset.vbSwallowKeyup;
+      event.preventDefault();
+      event.stopImmediatePropagation();
+    }
+  }
+
+  function onClick(event, container) {
+    const row = event.target.closest('.chosen-results > li.result-selected');
+    const chosen = chosenFor(container);
+    if (!row || !chosen) {
+      return;
+    }
+    event.preventDefault();
+    // Chosen's document click handler would see the detached row and close
+    // the list, so keep the list open for unselecting several in a row.
+    event.stopPropagation();
+    unselect(container, chosen, row);
+    const search = container.querySelector('.chosen-search-input');
+    if (search) {
+      search.focus();
+    }
+  }
+
   function apply(container) {
     const choices = container.querySelector('ul.chosen-choices');
     if (choices) {
@@ -120,6 +234,33 @@
       const root = context.querySelectorAll ? context : document;
       once('vb-chosen-a11y', CONTAINER, root).forEach(function (container) {
         apply(container);
+        // Capture phase, so these run before Chosen's own handlers.
+        container.addEventListener(
+          'keydown',
+          function (event) {
+            onKeydown(event, container);
+          },
+          true,
+        );
+        container.addEventListener(
+          'keyup',
+          function (event) {
+            onKeyup(event, container);
+          },
+          true,
+        );
+        container.addEventListener('mouseover', function (event) {
+          const row = event.target.closest(
+            '.chosen-results > li.result-selected',
+          );
+          const chosen = chosenFor(container);
+          if (row && chosen) {
+            highlight(chosen, row);
+          }
+        });
+        container.addEventListener('click', function (event) {
+          onClick(event, container);
+        });
         // Chosen toggles classes on every hover and arrow key, so batch the
         // work to one pass per frame.
         let queued = false;
@@ -141,4 +282,4 @@
       });
     },
   };
-})(Drupal, once);
+})(Drupal, once, jQuery);
