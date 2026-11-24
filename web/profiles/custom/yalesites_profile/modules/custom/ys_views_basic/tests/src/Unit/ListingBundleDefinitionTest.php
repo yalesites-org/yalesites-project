@@ -194,9 +194,15 @@ class ListingBundleDefinitionTest extends UnitTestCase {
       $this->assertTrue($preset['params']['used_terms_only']);
     }
 
+    // Post Feed and Calendar List showed no teaser image, so their listings
+    // store the option switched off, in the shape that keeps the checkbox
+    // unchecked on the edit form. Directory showed photos (#2375).
+    $this->assertSame(['show_thumbnail' => 0], $post['params']['field_options']);
+    $this->assertSame(['show_thumbnail' => 0], $event['params']['field_options']);
+    $this->assertSame(['show_thumbnail' => 'show_thumbnail'], $directory['params']['field_options']);
+
     // Every preset carries the common defaults so setupView never warns.
     $this->assertArrayHasKey('operator', $post['params']);
-    $this->assertArrayHasKey('field_options', $post['params']);
 
     $this->assertNull(ViewsBasicManager::predecessorPreset('view'));
     $this->assertNull(ViewsBasicManager::predecessorPreset('unknown'));
