@@ -114,6 +114,22 @@ office_hours_widget:
   dependencies:
     - core/drupal
     - core/once
+# Keeps Linkit's suggestion list on screen, scrolling inside itself and attached
+# to its field. Attached by ys_core_linkit_suggestion_list() to every linkit
+# element that has an autocomplete, which is what reaches the Layout Builder
+# dialogs: they arrive over AJAX in the front-end theme.
+linkit_autocomplete:
+  css:
+    component:
+      css/linkit-autocomplete.css: {}
+  js:
+    js/linkit-autocomplete.js: {}
+  dependencies:
+    - core/drupal
+    - core/drupal.displace
+    - core/jquery
+    - core/once
+    - linkit/linkit.autocomplete
 form_error_focus:
   js:
     js/form-error-focus.js: {}
