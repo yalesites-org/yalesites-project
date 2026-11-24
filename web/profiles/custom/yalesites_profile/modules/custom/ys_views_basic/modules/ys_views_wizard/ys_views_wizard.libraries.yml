@@ -2,3 +2,10 @@ ys_views_wizard:
   css:
     theme:
       assets/css/views-wizard.css: {}
+
+continue_guard:
+  js:
+    assets/js/continue-guard.js: {}
+  dependencies:
+    - core/drupal
+    - core/jquery
