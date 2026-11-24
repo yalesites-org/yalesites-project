@@ -118,8 +118,8 @@
     "mathjax/mathjax": "2.7.9",
     "smalot/pdfparser": "2.11.0",
     "yalesites-org/ai_engine": "1.2.18",
-    "yalesites-org/atomic": "1.90.0",
-    "yalesites-org/yale_cas": "v1.3.0"
+    "yalesites-org/atomic": "1.91.0",
+    "yalesites-org/yale_cas": "v1.4.0"
   },
   "minimum-stability": "dev",
   "prefer-stable": true,

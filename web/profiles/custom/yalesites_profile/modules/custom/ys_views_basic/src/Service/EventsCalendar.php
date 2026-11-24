@@ -387,10 +387,7 @@ class EventsCalendar {
               if ($instanceStartTimestamp <= $endTimestamp && $instanceEndTimestamp >= $startTimestamp) {
                 $time = $this->isAllDay($instanceStartTimestamp, $instanceEndTimestamp)
                   ? $this->t('All Day')
-                  : $this->t('@start to @end', [
-                    '@start' => date('g:iA', $instanceStartTimestamp),
-                    '@end' => date('g:iA', $instanceEndTimestamp),
-                  ]);
+                  : $this->formatTimes($instanceStartTimestamp, $instanceEndTimestamp);
 
                 $events_data[] = $this->createEventArray($event, $time, $instanceStartTimestamp);
               }
@@ -411,10 +408,7 @@ class EventsCalendar {
               else {
                 $time = $this->isAllDay($eventStartTimestamp, $eventEndTimestamp)
                   ? $this->t('All Day')
-                  : $this->t('@start to @end', [
-                    '@start' => date('g:iA', $eventStartTimestamp),
-                    '@end' => date('g:iA', $eventEndTimestamp),
-                  ]);
+                  : $this->formatTimes($eventStartTimestamp, $eventEndTimestamp);
               }
 
               // Add event to the list if it overlaps with the current day.
@@ -464,6 +458,31 @@ class EventsCalendar {
       'type' => $tags,
       'timestamp' => $timestamp,
     ];
+  }
+
+  /**
+   * Formats a timed event's start and end times for a calendar day.
+   *
+   * Smart Date stores an event with no end time with its end equal to its
+   * start, so that event shows its start time alone.
+   *
+   * @param int $start_ts
+   *   Start timestamp.
+   * @param int $end_ts
+   *   End timestamp.
+   *
+   * @return \Drupal\Core\StringTranslation\TranslatableMarkup|string
+   *   The times, such as "7:00PM to 8:00PM", or "7:00PM" alone.
+   */
+  protected function formatTimes(int $start_ts, int $end_ts) {
+    if ($start_ts === $end_ts) {
+      return date('g:iA', $start_ts);
+    }
+
+    return $this->t('@start to @end', [
+      '@start' => date('g:iA', $start_ts),
+      '@end' => date('g:iA', $end_ts),
+    ]);
   }
 
   /**

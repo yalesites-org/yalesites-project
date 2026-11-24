@@ -232,32 +232,108 @@ class ListingMigrator {
    */
   public function replaceCurrentParams(int|string $entity_id, array $params): void {
     $storage = $this->entityTypeManager->getStorage('block_content');
-    $definition = $this->entityFieldManager->getFieldStorageDefinitions('block_content')['field_view_params'] ?? NULL;
-    if (!$definition || !$storage instanceof SqlEntityStorageInterface) {
-      return;
-    }
-    /** @var \Drupal\Core\Entity\Sql\DefaultTableMapping $mapping */
-    $mapping = $storage->getTableMapping();
-    $column = $mapping->getFieldColumnName($definition, 'params');
     $revision_id = $this->database->select($storage->getEntityType()->getBaseTable(), 'b')
       ->fields('b', [$storage->getEntityType()->getKey('revision')])
       ->condition($storage->getEntityType()->getKey('id'), $entity_id)
       ->execute()
       ->fetchField();
-    if (!$revision_id) {
+    if ($revision_id) {
+      $this->writeParams($entity_id, [$revision_id], $params);
+    }
+  }
+
+  /**
+   * Overrides keys in every revision whose params equal one of $matches.
+   *
+   * Compares loosely (same keys and values in any order), so a revision an
+   * editor has changed is left alone. Only the keys in $overrides change;
+   * the rest of each revision's params stay as they were. Writes the data
+   * and revision rows directly, so the block's changed time and revision log
+   * are not touched. Layout Builder renders an inline block by revision id,
+   * so older revisions matter as much as the current one.
+   *
+   * @param int|string $entity_id
+   *   The block content entity id.
+   * @param array[] $matches
+   *   The params sets a revision must hold one of to be changed.
+   * @param array $overrides
+   *   Top-level param keys and the values to store for them.
+   *
+   * @return int
+   *   The number of revisions changed.
+   */
+  public function overrideMatchingParams(int|string $entity_id, array $matches, array $overrides): int {
+    $info = $this->paramsStorage();
+    if (!$info || !$this->database->schema()->tableExists($info['revision_table'])) {
+      return 0;
+    }
+    $rows = $this->database->select($info['revision_table'], 'f')
+      ->fields('f', ['revision_id', $info['column']])
+      ->condition('entity_id', $entity_id)
+      ->condition('deleted', 0)
+      ->execute()
+      ->fetchAllKeyed();
+    $changed = 0;
+    foreach ($rows as $revision_id => $stored) {
+      // The params column is serialized, like every write in this class.
+      $json = unserialize((string) $stored, ['allowed_classes' => FALSE]);
+      $params = is_string($json) ? json_decode($json, TRUE) : NULL;
+      if (is_array($params) && in_array($params, $matches, FALSE)) {
+        $this->writeParams($entity_id, [$revision_id], array_replace($params, $overrides));
+        $changed++;
+      }
+    }
+    return $changed;
+  }
+
+  /**
+   * Writes params to the given revisions' data and revision field rows.
+   *
+   * @param int|string $entity_id
+   *   The block content entity id.
+   * @param array $revision_ids
+   *   The revisions to write.
+   * @param array $params
+   *   The params to store.
+   */
+  protected function writeParams(int|string $entity_id, array $revision_ids, array $params): void {
+    $info = $this->paramsStorage();
+    if (!$info) {
       return;
     }
     $schema = $this->database->schema();
-    foreach ([$mapping->getDedicatedDataTableName($definition), $mapping->getDedicatedRevisionTableName($definition)] as $table) {
+    foreach ([$info['data_table'], $info['revision_table']] as $table) {
       if ($schema->tableExists($table)) {
         $this->database->update($table)
-          ->fields([$column => serialize(json_encode($params))])
+          ->fields([$info['column'] => serialize(json_encode($params))])
           ->condition('entity_id', $entity_id)
-          ->condition('revision_id', $revision_id)
+          ->condition('revision_id', $revision_ids, 'IN')
           ->condition('deleted', 0)
           ->execute();
       }
     }
+  }
+
+  /**
+   * Returns the field_view_params column and dedicated table names.
+   *
+   * @return array|null
+   *   Keys column, data_table and revision_table, or NULL when the field or
+   *   SQL storage is missing.
+   */
+  protected function paramsStorage(): ?array {
+    $storage = $this->entityTypeManager->getStorage('block_content');
+    $definition = $this->entityFieldManager->getFieldStorageDefinitions('block_content')['field_view_params'] ?? NULL;
+    if (!$definition || !$storage instanceof SqlEntityStorageInterface) {
+      return NULL;
+    }
+    /** @var \Drupal\Core\Entity\Sql\DefaultTableMapping $mapping */
+    $mapping = $storage->getTableMapping();
+    return [
+      'column' => $mapping->getFieldColumnName($definition, 'params'),
+      'data_table' => $mapping->getDedicatedDataTableName($definition),
+      'revision_table' => $mapping->getDedicatedRevisionTableName($definition),
+    ];
   }
 
   /**

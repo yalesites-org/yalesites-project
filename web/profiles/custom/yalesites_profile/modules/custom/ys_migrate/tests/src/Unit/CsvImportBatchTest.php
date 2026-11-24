@@ -142,6 +142,7 @@ class CsvImportBatchTest extends UnitTestCase {
     $this->assertSame([['Row 2: boom'], []], $context['results']['errors']);
     $this->assertSame('profile', $context['results']['entity_label']);
     $this->assertSame([], $context['results']['needs_media']);
+    $this->assertSame([], $context['results']['needs_images']);
   }
 
   /**
@@ -205,6 +206,53 @@ class CsvImportBatchTest extends UnitTestCase {
     CsvImportBatch::processChunk($this->options('ys_migrate.resource_import', 'resource'), ['row2'], $context);
 
     $this->assertSame([['Resource A'], ['Resource B']], $context['results']['needs_media']);
+  }
+
+  /**
+   * ProcessChunk() collects 'needs_images' when the service returns it.
+   *
+   * @covers ::processChunk
+   */
+  public function testProcessChunkCollectsNeedsImages() {
+    $importService = $this->createMock(CsvImportServiceInterface::class);
+    $importService->method('processImport')->willReturnOnConsecutiveCalls(
+      ['created' => 1, 'skipped' => 0, 'errors' => [], 'needs_images' => ['Post A']],
+      ['created' => 1, 'skipped' => 0, 'errors' => [], 'needs_images' => []],
+      ['created' => 1, 'skipped' => 0, 'errors' => [], 'needs_images' => ['Post C']],
+    );
+
+    \Drupal::getContainer()->set('ys_migrate.post_import', $importService);
+
+    $context = [];
+    foreach (['row1', 'row2', 'row3'] as $row) {
+      CsvImportBatch::processChunk($this->options('ys_migrate.post_import', 'post'), [$row], $context);
+    }
+
+    // A chunk with nothing to flag adds no empty sub-array.
+    $this->assertSame([['Post A'], ['Post C']], $context['results']['needs_images']);
+    $this->assertSame([], $context['results']['needs_media']);
+  }
+
+  /**
+   * ProcessChunk() collects 'needs_body' when the service returns it.
+   *
+   * @covers ::processChunk
+   */
+  public function testProcessChunkCollectsNeedsBody() {
+    $importService = $this->createMock(CsvImportServiceInterface::class);
+    $importService->method('processImport')->willReturnOnConsecutiveCalls(
+      ['created' => 1, 'skipped' => 0, 'errors' => [], 'needs_body' => ['Post A']],
+      ['created' => 1, 'skipped' => 0, 'errors' => [], 'needs_body' => []],
+    );
+
+    \Drupal::getContainer()->set('ys_migrate.post_import', $importService);
+
+    $context = [];
+    foreach (['row1', 'row2'] as $row) {
+      CsvImportBatch::processChunk($this->options('ys_migrate.post_import', 'post'), [$row], $context);
+    }
+
+    $this->assertSame([['Post A']], $context['results']['needs_body']);
   }
 
   /**
@@ -310,6 +358,78 @@ class CsvImportBatchTest extends UnitTestCase {
   }
 
   /**
+   * BuildMessages() surfaces the needs_images titles as a warning.
+   *
+   * @covers ::buildMessages
+   */
+  public function testBuildMessagesReportsNeedsImages() {
+    $messages = CsvImportBatch::buildMessages([
+      'entity_label' => 'post',
+      'created' => 2,
+      'skipped' => 0,
+      'errors' => [],
+      'needs_media' => [],
+      'needs_images' => ['Post A', 'Post B'],
+    ]);
+
+    $needsImages = array_values(array_filter($messages, fn($m) => str_contains((string) $m[1], 'Layout Builder')));
+    $this->assertCount(1, $needsImages);
+    $this->assertSame('addWarning', $needsImages[0][0]);
+    $this->assertStringContainsString('2 imported post(s) had images, video or embeds', (string) $needsImages[0][1]);
+    $this->assertStringContainsString('Post A, Post B', (string) $needsImages[0][1]);
+  }
+
+  /**
+   * BuildMessages() sends editors to the Description for event images.
+   *
+   * Events keep their rich text in a field, not in Layout Builder, so the post
+   * wording would send the editor to the wrong place.
+   *
+   * @covers ::buildMessages
+   */
+  public function testBuildMessagesReportsEventsNeedingImages() {
+    $messages = CsvImportBatch::buildMessages([
+      'entity_label' => 'event',
+      'created' => 1,
+      'skipped' => 0,
+      'errors' => [],
+      'needs_media' => [],
+      'needs_images' => ['Event A'],
+    ]);
+
+    $needsImages = array_values(array_filter($messages, fn($m) => str_contains((string) $m[1], 'had images')));
+    $this->assertCount(1, $needsImages);
+    $this->assertSame('addWarning', $needsImages[0][0]);
+    $this->assertSame(
+      '1 imported event(s) had images, video or embeds in the Description that could not be imported. Edit each one and add them: Event A',
+      (string) $needsImages[0][1]
+    );
+  }
+
+  /**
+   * BuildMessages() surfaces the needs_body titles as a warning.
+   *
+   * @covers ::buildMessages
+   */
+  public function testBuildMessagesReportsNeedsBody() {
+    $messages = CsvImportBatch::buildMessages([
+      'entity_label' => 'post',
+      'created' => 2,
+      'skipped' => 0,
+      'errors' => [],
+      'needs_media' => [],
+      'needs_images' => [],
+      'needs_body' => ['Post A', 'Post B'],
+    ]);
+
+    $needsBody = array_values(array_filter($messages, fn($m) => str_contains((string) $m[1], 'no Body')));
+    $this->assertCount(1, $needsBody);
+    $this->assertSame('addWarning', $needsBody[0][0]);
+    $this->assertStringContainsString('2 imported post(s) have no Body and no External Source', (string) $needsBody[0][1]);
+    $this->assertStringContainsString('Post A, Post B', (string) $needsBody[0][1]);
+  }
+
+  /**
    * BuildMessages() forwards each error as its own addError entry, verbatim.
    *
    * @covers ::buildMessages
@@ -402,6 +522,59 @@ class CsvImportBatchTest extends UnitTestCase {
     ], []);
 
     $this->assertStringContainsString('Resource A, Resource B', implode(' ', $reported));
+  }
+
+  /**
+   * Finished() flattens the per-chunk 'needs_images' sub-arrays too.
+   *
+   * @covers ::finished
+   */
+  public function testFinishedFlattensChunkedNeedsImages() {
+    $reported = [];
+    $messenger = $this->createMock(MessengerInterface::class);
+    $messenger->method('addWarning')->willReturnCallback(function ($message) use (&$reported) {
+      $reported[] = (string) $message;
+    });
+
+    \Drupal::getContainer()->set('messenger', $messenger);
+
+    CsvImportBatch::finished(TRUE, [
+      'entity_label' => 'post',
+      'created' => 2,
+      'skipped' => 0,
+      'errors' => [],
+      'needs_media' => [],
+      'needs_images' => [['Post A'], ['Post B']],
+    ], []);
+
+    $this->assertStringContainsString('Post A, Post B', implode(' ', $reported));
+  }
+
+  /**
+   * Finished() flattens the per-chunk 'needs_body' sub-arrays too.
+   *
+   * @covers ::finished
+   */
+  public function testFinishedFlattensChunkedNeedsBody() {
+    $reported = [];
+    $messenger = $this->createMock(MessengerInterface::class);
+    $messenger->method('addWarning')->willReturnCallback(function ($message) use (&$reported) {
+      $reported[] = (string) $message;
+    });
+
+    \Drupal::getContainer()->set('messenger', $messenger);
+
+    CsvImportBatch::finished(TRUE, [
+      'entity_label' => 'post',
+      'created' => 2,
+      'skipped' => 0,
+      'errors' => [],
+      'needs_media' => [],
+      'needs_images' => [],
+      'needs_body' => [['Post A'], ['Post B']],
+    ], []);
+
+    $this->assertStringContainsString('Post A, Post B', implode(' ', $reported));
   }
 
   /**
