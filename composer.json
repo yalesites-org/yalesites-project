@@ -53,6 +53,7 @@
         "league/commonmark": "^2.0",
         "league/html-to-markdown": "^5.1",
         "pantheon-systems/drupal-integrations": "^10",
+        "twig/twig": "^3.31.1",
         "yalesites-org/yalesites_profile": "*"
     },
     "require-dev": {
