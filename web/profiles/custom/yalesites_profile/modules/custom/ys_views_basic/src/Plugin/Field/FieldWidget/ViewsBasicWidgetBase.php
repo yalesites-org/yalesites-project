@@ -445,11 +445,11 @@ abstract class ViewsBasicWidgetBase extends WidgetBase implements ContainerFacto
       '#view_mode' => $this->getViewMode(),
       // 1x1 transparent GIF; the CSS shows the placeholder as a grey box.
       '#image_src' => 'data:image/gif;base64,R0lGODlhAQABAAAAACH5BAEKAAEALAAAAAABAAEAAAICTAEAOw==',
-      // Mirrors the site's configured heading typeface (Site Settings > Font
-      // Pairing) so the mockup reads like the live front-end render. The
+      // Mirrors the site's configured heading font (Site Settings > Font
+      // styles) so the mockup reads like the live front-end render. The
       // webfonts themselves load via the ys_views_basic_preview library's
       // dependency on ys_core/font_preview.
-      '#font_pairing' => $this->configFactory->get('ys_core.site')->get('font_pairing') ?? 'yalenew',
+      '#font_pairing' => $this->configFactory->get('ys_core.site')->get('font_pairing.heading_font') ?? 'yalenew',
     ];
   }
 
