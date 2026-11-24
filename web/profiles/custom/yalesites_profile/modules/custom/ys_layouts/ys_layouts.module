@@ -233,6 +233,8 @@ function ys_layouts_form_alter(&$form, $form_state, $form_id) {
 
   // Updates the title and help text of reusable blocks.
   if ($form_id == 'layout_builder_update_block' || $form_id == 'layout_builder_add_block') {
+    _ys_layouts_restore_block_form_ajax($form);
+
     if (isset($form['reusable'])) {
       $form['reusable']['#title'] = t('Reusable Block');
       $form['reusable']['#description'] = t("Create reusable content with Reusable Blocks. Changes made to a Reusable Block's content are reflected anywhere the Block is used.");
@@ -325,6 +327,40 @@ function ys_layouts_form_alter(&$form, $form_state, $form_id) {
     $form['#attached']['library'][] = 'ys_layouts/block_dialog';
 
     $form['#after_build'][] = 'ys_layouts_lift_block_instructions';
+  }
+}
+
+/**
+ * Puts the Ajax submit back on the Layout Builder block add/configure forms.
+ *
+ * The layout_builder_browser_form_alter() hook strips #ajax from the submit
+ * button of both forms, to avoid a cached Ajax binding firing on a later
+ * non-Ajax request. The cost is that every validation error then comes back
+ * as a full page load of the add-block route: the editor lands on a bare form
+ * outside Layout Builder, for instance when a copied reusable Tiles block
+ * links to a page that was deleted (YaleSites-Internal#2209).
+ *
+ * ConfigureBlockFormBase only sets the binding when the request itself is an
+ * Ajax or dialog request, so restoring it under the same condition cannot
+ * leave a stale binding on a plain page load. Core's ::ajaxSubmit() then
+ * re-renders the form with its errors inside the dialog.
+ *
+ * Relies on running after layout_builder_browser_form_alter(), which holds as
+ * long as this module does not sort ahead of it.
+ *
+ * @param array $form
+ *   The configure-block form, passed by reference.
+ */
+function _ys_layouts_restore_block_form_ajax(array &$form): void {
+  if (!isset($form['actions']['submit']) || !empty($form['actions']['submit']['#ajax'])) {
+    return;
+  }
+  $wrapper_format = (string) \Drupal::request()->query->get('_wrapper_format', '');
+  foreach (['drupal_ajax', 'drupal_modal', 'drupal_dialog'] as $ajax_format) {
+    if (str_contains($wrapper_format, $ajax_format)) {
+      $form['actions']['submit']['#ajax']['callback'] = '::ajaxSubmit';
+      return;
+    }
   }
 }
 

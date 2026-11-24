@@ -18,6 +18,7 @@ use Drupal\Core\StringTranslation\TranslatableMarkup;
 use Drupal\Core\Theme\ThemeManagerInterface;
 use Drupal\layout_builder\SectionComponent;
 use Drupal\Tests\UnitTestCase;
+use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\RequestStack;
 use Symfony\Contracts\EventDispatcher\EventDispatcherInterface;
 
@@ -231,6 +232,69 @@ class BlockConfigureFormTest extends UnitTestCase {
     ys_layouts_form_alter($form, $form_state, 'layout_builder_add_block');
 
     $this->assertSame('Place Taxonomy Display Block', (string) $form['#title']);
+  }
+
+  /**
+   * Runs the alter against a request carrying the given wrapper format.
+   *
+   * @param string|null $wrapper_format
+   *   The _wrapper_format query value, or NULL for a plain page load.
+   *
+   * @return array
+   *   The altered form, whose submit button had its #ajax stripped first, as
+   *   layout_builder_browser_form_alter() does.
+   */
+  protected function alteredSubmitFor(?string $wrapper_format): array {
+    $stack = new RequestStack();
+    $stack->push(new Request($wrapper_format === NULL ? [] : ['_wrapper_format' => $wrapper_format]));
+    \Drupal::getContainer()->set('request_stack', $stack);
+
+    $form = $this->blockForm('Tiles');
+    $form['actions']['submit'] = ['#type' => 'submit', '#value' => 'Add block'];
+    ys_layouts_form_alter($form, $this->createMock(FormStateInterface::class), 'layout_builder_add_block');
+    return $form['actions']['submit'];
+  }
+
+  /**
+   * A modal request gets its Ajax submit back, so errors stay in the dialog.
+   *
+   * @dataProvider ajaxWrapperFormatProvider
+   */
+  public function testAjaxSubmitIsRestoredForDialogRequests(string $format): void {
+    $submit = $this->alteredSubmitFor($format);
+    $this->assertSame('::ajaxSubmit', $submit['#ajax']['callback']);
+  }
+
+  /**
+   * Wrapper formats core treats as Ajax.
+   */
+  public static function ajaxWrapperFormatProvider(): array {
+    return [
+      'modal' => ['drupal_modal'],
+      'ajax' => ['drupal_ajax'],
+      'off canvas' => ['drupal_dialog.off_canvas'],
+    ];
+  }
+
+  /**
+   * A plain page load keeps its submit free of Ajax.
+   */
+  public function testNoAjaxSubmitOnPlainPageLoad(): void {
+    $this->assertArrayNotHasKey('#ajax', $this->alteredSubmitFor(NULL));
+    $this->assertArrayNotHasKey('#ajax', $this->alteredSubmitFor('html'));
+  }
+
+  /**
+   * An existing Ajax binding is left alone.
+   */
+  public function testExistingAjaxBindingIsKept(): void {
+    $stack = new RequestStack();
+    $stack->push(new Request(['_wrapper_format' => 'drupal_modal']));
+    \Drupal::getContainer()->set('request_stack', $stack);
+    $form = $this->blockForm('Tiles');
+    $form['actions']['submit'] = ['#type' => 'submit', '#ajax' => ['callback' => '::other']];
+    ys_layouts_form_alter($form, $this->createMock(FormStateInterface::class), 'layout_builder_add_block');
+    $this->assertSame('::other', $form['actions']['submit']['#ajax']['callback']);
   }
 
   /**
