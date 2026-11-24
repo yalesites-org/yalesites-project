@@ -3,6 +3,7 @@
 namespace Drupal\Tests\ys_layouts\Unit;
 
 use Drupal\Component\Render\FormattableMarkup;
+use Drupal\Core\Ajax\AjaxResponse;
 use Drupal\Core\DependencyInjection\ClassResolverInterface;
 use Drupal\Core\DependencyInjection\ContainerBuilder;
 use Drupal\Core\Extension\ModuleHandlerInterface;
@@ -16,6 +17,7 @@ use Drupal\Core\Render\Element;
 use Drupal\Core\Render\ElementInfoManagerInterface;
 use Drupal\Core\StringTranslation\TranslatableMarkup;
 use Drupal\Core\Theme\ThemeManagerInterface;
+use Drupal\layout_builder\Form\AddBlockForm;
 use Drupal\layout_builder\SectionComponent;
 use Drupal\Tests\UnitTestCase;
 use Symfony\Component\HttpFoundation\Request;
@@ -262,7 +264,59 @@ class BlockConfigureFormTest extends UnitTestCase {
    */
   public function testAjaxSubmitIsRestoredForDialogRequests(string $format): void {
     $submit = $this->alteredSubmitFor($format);
-    $this->assertSame('::ajaxSubmit', $submit['#ajax']['callback']);
+    $this->assertSame('ys_layouts_block_form_ajax_submit', $submit['#ajax']['callback']);
+  }
+
+  /**
+   * Builds a form state whose form object's ajaxSubmit returns a response.
+   */
+  protected function ajaxFormState(): FormState {
+    $form_object = $this->createMock(AddBlockForm::class);
+    $form_object->method('ajaxSubmit')->willReturn(new AjaxResponse());
+    return (new FormState())->setFormObject($form_object);
+  }
+
+  /**
+   * Returns the selectors of the dialogs a response closes.
+   */
+  protected function closedDialogs(AjaxResponse $response): array {
+    $selectors = [];
+    foreach ($response->getCommands() as $command) {
+      if ($command['command'] === 'closeDialog') {
+        $selectors[] = $command['selector'];
+      }
+    }
+    return $selectors;
+  }
+
+  /**
+   * A successful submit also closes the centered block browser dialog.
+   *
+   * Core's ajaxSubmit() only closes the off-canvas tray, so without this the
+   * Add block dialog stayed open and a second click placed a duplicate.
+   */
+  public function testSuccessfulAjaxSubmitClosesTheBlockDialog(): void {
+    $form_state = $this->ajaxFormState();
+    $form_state->clearErrors();
+    $form = [];
+    $response = ys_layouts_block_form_ajax_submit($form, $form_state);
+    $this->assertSame(['#layout-builder-modal'], $this->closedDialogs($response));
+  }
+
+  /**
+   * A submit with validation errors keeps the dialog open to show them.
+   */
+  public function testFailedAjaxSubmitKeepsTheBlockDialogOpen(): void {
+    $form_state = $this->ajaxFormState();
+    $form_state->setErrorByName('label', 'Required.');
+    $form = [];
+    try {
+      $response = ys_layouts_block_form_ajax_submit($form, $form_state);
+    }
+    finally {
+      $form_state->clearErrors();
+    }
+    $this->assertSame([], $this->closedDialogs($response));
   }
 
   /**
