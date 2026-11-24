@@ -3,6 +3,7 @@
 namespace Drupal\ys_content_export;
 
 use Drupal\Core\Datetime\DateFormatterInterface;
+use Drupal\user\RoleInterface;
 use Drupal\user\UserInterface;
 
 /**
@@ -144,7 +145,11 @@ class PeopleExportBuilder {
   }
 
   /**
-   * Lists every role granted to the account.
+   * Lists every role granted to the account, in role weight order.
+   *
+   * The People screen sorts each account's roles by role weight (the order on
+   * Roles admin page), while the field stores them in the order they were
+   * granted. Sorting here keeps the cell in the same order as the screen.
    *
    * Reads the roles field rather than UserInterface::getRoles() so the cell
    * carries role labels, matching the on-screen column, and so the implicit
@@ -162,8 +167,11 @@ class PeopleExportBuilder {
     if (!$user->hasField('roles')) {
       return '';
     }
+    $roles = $user->get('roles')->referencedEntities();
+    // Stable sort: roles of equal weight keep their stored order.
+    usort($roles, static fn ($a, $b) => ($a instanceof RoleInterface ? $a->getWeight() : 0) <=> ($b instanceof RoleInterface ? $b->getWeight() : 0));
     $labels = [];
-    foreach ($user->get('roles')->referencedEntities() as $role) {
+    foreach ($roles as $role) {
       $labels[] = (string) $role->label();
     }
     return implode(', ', $labels);

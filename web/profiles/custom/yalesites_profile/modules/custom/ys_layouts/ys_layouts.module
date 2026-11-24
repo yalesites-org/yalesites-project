@@ -5,6 +5,8 @@
  * Contains ys_layouts.module functions.
  */
 
+use Drupal\Core\Ajax\AjaxResponse;
+use Drupal\Core\Ajax\CloseDialogCommand;
 use Drupal\Core\Entity\EntityInterface;
 use Drupal\Core\Entity\FieldableEntityInterface;
 use Drupal\Core\Form\FormStateInterface;
@@ -233,6 +235,8 @@ function ys_layouts_form_alter(&$form, $form_state, $form_id) {
 
   // Updates the title and help text of reusable blocks.
   if ($form_id == 'layout_builder_update_block' || $form_id == 'layout_builder_add_block') {
+    _ys_layouts_restore_block_form_ajax($form);
+
     if (isset($form['reusable'])) {
       $form['reusable']['#title'] = t('Reusable Block');
       $form['reusable']['#description'] = t("Create reusable content with Reusable Blocks. Changes made to a Reusable Block's content are reflected anywhere the Block is used.");
@@ -286,9 +290,18 @@ function ys_layouts_form_alter(&$form, $form_state, $form_id) {
     // that renders empty straight into the heading.
     $block_name = (string) ($form['settings']['admin_label']['#plain_text'] ?? '');
     if ($block_name !== '') {
-      $form['#title'] = $form_id == 'layout_builder_add_block'
-        ? t('Create @block', ['@block' => $block_name])
-        : t('Configure @block', ['@block' => $block_name]);
+      // Placing a block that already exists in the library (a block_content
+      // plugin) creates nothing, so that modal says Place, not Create.
+      $component = $form_id == 'layout_builder_add_block' ? $form_state->get('layout_builder__component') : NULL;
+      $places_existing = $component && str_starts_with((string) $component->getPluginId(), 'block_content:');
+      if ($form_id != 'layout_builder_add_block') {
+        $form['#title'] = t('Configure @block', ['@block' => $block_name]);
+      }
+      else {
+        $form['#title'] = $places_existing
+          ? t('Place @block', ['@block' => $block_name])
+          : t('Create @block', ['@block' => $block_name]);
+      }
 
       // That item now only restates the heading, so it can go, freeing the slot
       // the guidance moves into below. Nothing reads its value -
@@ -317,6 +330,67 @@ function ys_layouts_form_alter(&$form, $form_state, $form_id) {
 
     $form['#after_build'][] = 'ys_layouts_lift_block_instructions';
   }
+}
+
+/**
+ * Puts the Ajax submit back on the Layout Builder block add/configure forms.
+ *
+ * The layout_builder_browser_form_alter() hook strips #ajax from the submit
+ * button of both forms, to avoid a cached Ajax binding firing on a later
+ * non-Ajax request. The cost is that every validation error then comes back
+ * as a full page load of the add-block route: the editor lands on a bare form
+ * outside Layout Builder, for instance when a copied reusable Tiles block
+ * links to a page that was deleted (YaleSites-Internal#2209).
+ *
+ * ConfigureBlockFormBase only sets the binding when the request itself is an
+ * Ajax or dialog request, so restoring it under the same condition cannot
+ * leave a stale binding on a plain page load. Core's ::ajaxSubmit(), through
+ * ys_layouts_block_form_ajax_submit(), then re-renders the form with its
+ * errors inside the dialog.
+ *
+ * Relies on running after layout_builder_browser_form_alter(), which holds as
+ * long as this module does not sort ahead of it.
+ *
+ * @param array $form
+ *   The configure-block form, passed by reference.
+ */
+function _ys_layouts_restore_block_form_ajax(array &$form): void {
+  if (!isset($form['actions']['submit']) || !empty($form['actions']['submit']['#ajax'])) {
+    return;
+  }
+  $wrapper_format = (string) \Drupal::request()->query->get('_wrapper_format', '');
+  foreach (['drupal_ajax', 'drupal_modal', 'drupal_dialog'] as $ajax_format) {
+    if (str_contains($wrapper_format, $ajax_format)) {
+      $form['actions']['submit']['#ajax']['callback'] = 'ys_layouts_block_form_ajax_submit';
+      return;
+    }
+  }
+}
+
+/**
+ * Ajax submit for the Layout Builder block add/configure forms.
+ *
+ * Core's ::ajaxSubmit() re-renders the form with its errors, or on success
+ * rebuilds the layout and closes the off-canvas tray. The add form opens in
+ * layout_builder_browser's centered #layout-builder-modal dialog instead, which
+ * core does not close, so a successful add left it open and a second click
+ * placed a duplicate block. Close that dialog too on success; closing a dialog
+ * that is not open is a no-op, so the configure tray is unaffected.
+ *
+ * @param array $form
+ *   The configure-block form.
+ * @param \Drupal\Core\Form\FormStateInterface $form_state
+ *   The form state.
+ *
+ * @return \Drupal\Core\Ajax\AjaxResponse
+ *   Core's response, plus the dialog close on success.
+ */
+function ys_layouts_block_form_ajax_submit(array &$form, FormStateInterface $form_state): AjaxResponse {
+  $response = $form_state->getFormObject()->ajaxSubmit($form, $form_state);
+  if (!$form_state->hasAnyErrors()) {
+    $response->addCommand(new CloseDialogCommand('#layout-builder-modal'));
+  }
+  return $response;
 }
 
 /**
