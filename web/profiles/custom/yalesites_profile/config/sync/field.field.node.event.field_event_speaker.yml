@@ -10,7 +10,7 @@ field_name: field_event_speaker
 entity_type: node
 bundle: event
 label: Speaker
-description: 'Enter the speaker name, or several names separated by commas. To link a profile, use Associated Profile below.'
+description: 'Enter the speaker name, or several names separated by commas. To link a profile, use the Associated Profile field.'
 required: false
 translatable: false
 default_value: {  }
