@@ -952,6 +952,16 @@ class ViewsBasicManager extends ControllerBase implements ContainerInjectionInte
       $view = [];
       return;
     }
+    // Two listings with identical settings produce identical view arguments,
+    // so their rendered output would share one render cache entry. A URL that
+    // scopes a search to one listing then served that listing's output (for
+    // example its empty message) to the others. The listing key tells the
+    // blocks apart (YaleSites-Internal#2104).
+    $outputKey = $blockUuid ? self::listingKey($blockUuid) : $listingKey;
+    if ($outputKey !== NULL && isset($view['#cache']['keys'])) {
+      $view['#cache']['keys'][] = 'listing';
+      $view['#cache']['keys'][] = $outputKey;
+    }
     // Add cache keys for each display option.
     // This ensures that if the options for showing categories, tags,
     // or thumbnails change, the cache will be invalidated,
@@ -2038,6 +2048,9 @@ class ViewsBasicManager extends ControllerBase implements ContainerInjectionInte
    *   with the "Post Category" filter.
    * - event_list -> event_list_item: future events, event-date ASC, with the
    *   "Event Type" (Localist event type) and "Event Category" filters.
+   * Neither predecessor View showed a teaser image, so both store the option
+   * switched off (#2375). An empty field_options would render the same, but
+   * the edit form reads empty as "never saved" and would tick the box again.
    * - directory  -> profile_card: profiles, last-name A-Z, small cards with
    *   department, email and phone (the retired directory look, #1682), with
    *   the "Affiliation" filter.
@@ -2063,7 +2076,7 @@ class ViewsBasicManager extends ControllerBase implements ContainerInjectionInte
    */
   public static function predecessorPreset(string $legacy_bundle): ?array {
     $base = [
-      'field_options' => ['show_thumbnail' => 'show_thumbnail'],
+      'field_options' => ['show_thumbnail' => 0],
       'event_field_options' => [],
       'post_field_options' => [],
       'exposed_filter_options' => [],
@@ -2132,6 +2145,44 @@ class ViewsBasicManager extends ControllerBase implements ContainerInjectionInte
   }
 
   /**
+   * Returns the params deploy_10002 wrote before teaser images were fixed.
+   *
+   * Until #2375 the Post Feed and Calendar List presets switched the teaser
+   * image on, though neither predecessor View showed one. This is the current
+   * preset with that old option. deploy_10007 matches blocks still holding
+   * it, and the older variants (filterless, display "all") are built on it,
+   * since those were written with the option on too. Directory keeps its
+   * photos, so it has no such params.
+   *
+   * @param string $legacy_bundle
+   *   The predecessor block content bundle id.
+   *
+   * @return array|null
+   *   The old params, or NULL when the bundle never stored the image wrongly.
+   */
+  public static function thumbnailOnPredecessorParams(string $legacy_bundle): ?array {
+    if (!in_array($legacy_bundle, ['post_list', 'event_list'], TRUE)) {
+      return NULL;
+    }
+    $params = self::predecessorPreset($legacy_bundle)['params'];
+    $params['field_options'] = ['show_thumbnail' => 'show_thumbnail'];
+    return $params;
+  }
+
+  /**
+   * Returns the preset as earlier deploys wrote it, before #2375.
+   *
+   * @param string $legacy_bundle
+   *   The predecessor block content bundle id.
+   *
+   * @return array|null
+   *   The params, or NULL if not a known predecessor bundle.
+   */
+  private static function historicalPresetParams(string $legacy_bundle): ?array {
+    return self::thumbnailOnPredecessorParams($legacy_bundle) ?? self::predecessorPreset($legacy_bundle)['params'] ?? NULL;
+  }
+
+  /**
    * Returns the params the first deploy_10002 wrote for a predecessor block.
    *
    * That version migrated the blocks without their exposed filter: the
@@ -2145,7 +2196,7 @@ class ViewsBasicManager extends ControllerBase implements ContainerInjectionInte
    *   The filterless params, or NULL if not a known predecessor bundle.
    */
   public static function filterlessPredecessorParams(string $legacy_bundle): ?array {
-    $params = self::predecessorPreset($legacy_bundle)['params'] ?? NULL;
+    $params = self::historicalPresetParams($legacy_bundle);
     if ($params === NULL) {
       return NULL;
     }
@@ -2176,7 +2227,7 @@ class ViewsBasicManager extends ControllerBase implements ContainerInjectionInte
     }
     $params = $filterless
       ? self::filterlessPredecessorParams($legacy_bundle)
-      : self::predecessorPreset($legacy_bundle)['params'];
+      : self::historicalPresetParams($legacy_bundle);
     $params['display'] = 'all';
     return $params;
   }
@@ -2431,8 +2482,13 @@ class ViewsBasicManager extends ControllerBase implements ContainerInjectionInte
       // Falls back to the legacy shared 'operator' key, then '+', for a
       // block saved before the include/exclude split (#1316).
       case 'include_operator':
-      case 'exclude_operator':
         $defaultParam = $paramsDecoded[$type] ?? ($paramsDecoded['operator'] ?? '+');
+        break;
+
+      // The exclude list ignores the legacy key and defaults to '+', matching
+      // resolveTermOperators() so the form shows what the page does (#2325).
+      case 'exclude_operator':
+        $defaultParam = $paramsDecoded[$type] ?? '+';
         break;
 
       case 'limit':
@@ -2534,8 +2590,10 @@ class ViewsBasicManager extends ControllerBase implements ContainerInjectionInte
    * lists made "All" stricter for includes but looser for excludes at the
    * same time — implode() joining the exclude list with "," (AND) only
    * excludes a node that carries every excluded term, not any one of them.
-   * A block saved before the split carries only the legacy 'operator' key,
-   * which this applies to both lists as before (no migration, per #1316).
+   * A block saved before the split carries only the legacy 'operator' key.
+   * That applies to the include list as before (no migration, per #1316). The
+   * exclude list ignores it and defaults to "+" (Any), because the exclude
+   * filter used to hide on Any whatever was stored (#2325).
    *
    * @param array $paramsDecoded
    *   The decoded stored params.
@@ -2549,7 +2607,7 @@ class ViewsBasicManager extends ControllerBase implements ContainerInjectionInte
     $legacyOperator = $valid($paramsDecoded['operator'] ?? NULL) ? $paramsDecoded['operator'] : '+';
     return [
       $valid($paramsDecoded['include_operator'] ?? NULL) ? $paramsDecoded['include_operator'] : $legacyOperator,
-      $valid($paramsDecoded['exclude_operator'] ?? NULL) ? $paramsDecoded['exclude_operator'] : $legacyOperator,
+      $valid($paramsDecoded['exclude_operator'] ?? NULL) ? $paramsDecoded['exclude_operator'] : '+',
     ];
   }
 

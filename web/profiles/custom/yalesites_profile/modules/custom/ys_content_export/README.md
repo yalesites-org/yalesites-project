@@ -13,11 +13,16 @@ includes one row per item with these columns:
 
 - **Title**, **URL** (path alias), **Published** (Yes/No), and
   **CAS Protected** (Yes/No — whether the item requires CAS login)
-- The type's date column, immediately after Title — **Dates** (Events),
-  **Resource Publication Date** (Resources). Other types have no date column.
+- The type's date column, immediately after Title — **Publish Date** (Posts),
+  **Dates** (Events), **Resource Publication Date** (Resources). Other types
+  have no date column.
 - **Tags**, **Audience**, **Custom Vocab** (on every type)
 - The type's category column — **Category** (Pages, Posts), **Event Category**,
   **Resource Category** — or **Affiliation** (Profiles)
+- Events only: **Start** and **End** after Dates, and **Description**,
+  **Location Details**, **Event Experience**, **Event Website**, **Event
+  Website Text**, **Ticket Cost**, **Ticket Registration URL** and **Stream
+  URL** at the end — the columns, and headers, the Event CSV import reads
 
 Taxonomy cells list every applied term, separated by ", " (matching the on-screen
 columns).
@@ -27,14 +32,25 @@ separated by ", " — so a recurring series shows all of its dates, where the
 on-screen Date column shows only the first and last. Dates render in the site's
 timezone, and an all-day occurrence reads "(All day)" rather than a 12:00 am to
 11:59 pm range. **Resource Publication Date** is the same `YYYY-MM-DD` shown on
-the Manage Resources screen. An item with no date exports an empty cell.
+the Manage Resources screen, and **Publish Date** is a post's publish date in
+the same format — the format, and the header, the Post CSV import reads. An
+item with no date exports an empty cell.
 
 Note that a cell holding many dates cannot be sorted as a date in a spreadsheet;
 that trade-off was accepted in favour of showing every occurrence.
 
+**Start** and **End** give the event's _first_ occurrence as `YYYY-MM-DD HH:MM`
+in the site's timezone, or the date alone for an all-day occurrence, which the
+Event CSV import reads back as all day. A recurring series exports its first
+date only there; the Dates cell still lists them all. Links to pages on the
+same site are written as the path (`/events/register`) rather than the
+`internal:` or `entity:` form Drupal stores.
+
 The export reflects the same items you see in the Manage view — including
 any filters or search you have applied — and both published and unpublished items,
-subject to your access.
+subject to your access. A filter value that no longer exists, such as a deleted
+category kept in a bookmarked link, makes the Manage view show an error and no
+items, so the export has no items either.
 
 The last row of the file reports how many rows were exported, for example
 "Export complete: 48 of 50 rows exported (1 failed, 1 skipped)". If that row is
@@ -49,7 +65,9 @@ skipped.
 On the People page (`admin/people`) use the **Export to CSV** button, next to
 the Add user actions. It is available to anyone who can open the page, and it
 exports the accounts matching the filters and search currently applied on
-screen. One row per account, with these columns:
+screen. A filter value that no longer exists, such as a deleted role kept in a
+bookmarked link, matches no accounts, so the file holds only the header row.
+One row per account, with these columns:
 
 - **NetID** — the account username. Accounts here are provisioned from CAS, so
   that username is the person's NetID, and the column is headed the way admins
@@ -73,12 +91,14 @@ Dates render in the site's timezone.
 
 - `ContentExportBuilder` — pure column map + row builder for nodes;
   `sanitizeCell()` neutralises CSV formula injection (values starting with
-  `=`, `+`, `-`, `@`, tab or carriage return are prefixed with a quote). Unit
-  tested. It takes no injected services, so a `DateFormatterInterface` is
+  `=`, `+`, `-`, `@`, tab, carriage return or newline, including after leading
+  spaces, are prefixed with a quote). Unit tested. The resource CSV import in
+  `ys_migrate` removes that quote again so an export can be imported back
+  (`CsvValidatorService::removeFormulaGuard()`); change the two together. It takes no injected services, so a `DateFormatterInterface` is
   passed into `getRow()` rather than resolved inside it; event dates reuse the
   platform's existing `event_date_only` / `event_time_only` date formats. The
-  resource publication date is a date-only field already stored as `Y-m-d`, so
-  it is emitted verbatim — reformatting it would only risk a timezone shift of
+  post and resource publish date is a date-only field already stored as
+  `Y-m-d`, so it is emitted verbatim — reformatting it would only risk a timezone shift of
   a day.
 - `PeopleExportBuilder` — the same shape for user accounts: a pure column map
   and row builder, service-free and unit tested, reusing
@@ -92,7 +112,9 @@ Dates render in the site's timezone.
 - `Controller\ExportControllerBase` — the shared half of both exports: it
   resolves an admin view's filtered entity ids (replaying the request's
   exposed-filter query, de-duplicated because a multi-value join can repeat an
-  entity) and streams them to a CSV download in `CHUNK_SIZE` batches, loading
+  entity; when the exposed form rejects a value, Views stops the build without a
+  query, so it returns no ids and drops the form errors the download would
+  otherwise leave queued for the admin's next page) and streams them to a CSV download in `CHUNK_SIZE` batches, loading
   and releasing each chunk so memory stays bounded on a long list. Each row is
   built inside a `\Throwable` catch (failure becomes a placeholder row plus a
   watchdog entry), entities failing `access('view')` are skipped and logged in
@@ -104,9 +126,8 @@ Dates render in the site's timezone.
   views, gated by the `yalesites manage settings` permission (same as those
   views).
 - `Controller\PeopleExportController::export($request)` — the
-  `user_admin_people` view, gated by `administer users` (same as that view's
-  own access check, so the button is visible to exactly the admins who can
-  open the page).
+  `user_admin_people` view, gated by the dedicated `export people to csv`
+  permission, granted only to the Site and Platform administrator roles.
 - `Plugin\Menu\LocalAction\ContentExportLocalAction` — shared by every export
   button; forwards the admin page's active filter query onto the export link so
   the button exports what you see.

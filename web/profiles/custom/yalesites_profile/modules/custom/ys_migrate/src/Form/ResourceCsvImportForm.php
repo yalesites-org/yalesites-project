@@ -130,7 +130,18 @@ class ResourceCsvImportForm extends FormBase {
       '#value' => $this->t('Resources are imported as drafts, so review and publish them once the import finishes. Resource Media cannot be set from a CSV file: rows with an External Source are ready to use straight away, and the import summary lists the rest, which you will need to open and attach media to.'),
     ];
 
-    $form['columns'] = $this->columnReferenceTable($this->csvValidator->getExpectedResourceColumns(), $this->columnNotes());
+    $form['export_notice'] = [
+      '#type' => 'html_tag',
+      '#tag' => 'p',
+      '#value' => $this->t('A file from Export to CSV on Manage Resources can be uploaded as it is. The apostrophe the export adds in front of a value that starts with -, +, @ or = is removed, so Skip duplicates still recognises those titles.'),
+    ];
+
+    // The export-only columns are listed too, so an editor uploading an export
+    // can see they are understood and why they have no effect.
+    $form['columns'] = $this->columnReferenceTable(
+      $this->csvValidator->getExpectedResourceColumns() + $this->csvValidator->getIgnoredResourceColumns(),
+      $this->columnNotes()
+    );
 
     $form['sample_download'] = [
       '#type' => 'link',
@@ -283,7 +294,7 @@ class ResourceCsvImportForm extends FormBase {
       'resource category' => $this->t('Comma-separated. Terms are created if missing.'),
       'audience' => $this->t('Comma-separated. Terms are created if missing.'),
       'custom vocab' => $this->t('Comma-separated. "Custom Vocabulary" also works as a header.'),
-      'resource publication date' => $this->t('YYYY-MM-DD or MM/DD/YYYY.'),
+      'resource publication date' => $this->t('A date such as 2026-03-04, 3/4/2026 or March 4, 2026.'),
       'date format' => $this->t('Year, Month/Year, or Month/Day/Year.'),
       'tags' => $this->t('Comma-separated. Terms are created if missing.'),
       'teaser title' => $this->t('Plain text.'),
@@ -291,6 +302,8 @@ class ResourceCsvImportForm extends FormBase {
       'external source' => $this->t('Full http:// or https:// URL.'),
       'cas login required' => $this->t('Yes or No.'),
       'pin to beginning of list' => $this->t('Yes or No.'),
+      'url' => $this->t('Ignored. Comes from Export to CSV; a new resource gets its URL from its title.'),
+      'published' => $this->t('Ignored. Comes from Export to CSV; resources are always imported as drafts.'),
     ];
   }
 

@@ -97,6 +97,7 @@ class ViewsWizardPairValidationTest extends UnitTestCase {
     $form_state->set('delta', 0);
     $form_state->set('region', 'content');
     $form_state->setValues(['entity_types' => $type, 'view_mode' => $mode]);
+    $form_state->setUserInput(['entity_types' => $type, 'view_mode' => $mode]);
     $form_state->setTriggeringElement(['#name' => $trigger]);
     return $form_state;
   }
@@ -139,6 +140,22 @@ class ViewsWizardPairValidationTest extends UnitTestCase {
       'missing type' => [NULL, 'card'],
       'array value' => [['post'], 'card'],
     ];
+  }
+
+  /**
+   * A submit whose POST carried no content type is refused.
+   *
+   * The browser omits a radio while its own change request is in flight, and
+   * the form then falls back to the first type as its default value.
+   *
+   * @covers ::validateForm
+   */
+  public function testSubmitWithoutPostedContentTypeIsRefused(): void {
+    $form = [];
+    $form_state = $this->formState('post', 'card');
+    $form_state->setUserInput(['view_mode' => 'card']);
+    $this->form->validateForm($form, $form_state);
+    $this->assertArrayHasKey('entity_types', $form_state->getErrors());
   }
 
   /**

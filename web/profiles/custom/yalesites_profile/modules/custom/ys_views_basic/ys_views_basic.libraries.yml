@@ -24,6 +24,13 @@ listing_form_tabs:
   css:
     theme:
       assets/css/views-basic-form-tabs.css: {}
+  js:
+    assets/js/views-basic-form-a11y.js: {}
+  dependencies:
+    - core/drupal
+    - core/once
+    - core/jquery
+    - field_group/element.horizontal_tabs
 
 term_operator:
   css:
@@ -51,5 +58,13 @@ event_calendar_live_filter:
     - core/drupal
     - core/drupal.ajax
     - core/drupal.announce
+    - core/jquery
+    - core/once
+
+chosen_a11y:
+  js:
+    assets/js/views-basic-chosen-a11y.js: {}
+  dependencies:
+    - core/drupal
     - core/jquery
     - core/once

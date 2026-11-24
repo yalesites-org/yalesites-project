@@ -539,6 +539,16 @@ function ys_core_deploy_10009() {
     }
   }
 
+  // focus_header_image is typed as a string, but legacy data can hold a list.
+  // The save below casts every value to the schema and throws on a list, which
+  // would stop the whole deploy, so collapse it to its first item first.
+  $focus_image = $configs['ys_core.header_settings']->get('focus_header_image');
+  if (is_array($focus_image)) {
+    $configs['ys_core.header_settings']->set('focus_header_image', $focus_image === [] ? '' : (string) reset($focus_image));
+    $changed['ys_core.header_settings'] = TRUE;
+    $messages[] = (string) t('Collapsed ys_core.header_settings focus_header_image from a list to a single value.');
+  }
+
   foreach (array_keys($changed) as $name) {
     $configs[$name]->save();
   }

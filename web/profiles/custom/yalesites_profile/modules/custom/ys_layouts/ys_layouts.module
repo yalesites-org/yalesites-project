@@ -5,16 +5,22 @@
  * Contains ys_layouts.module functions.
  */
 
+use Drupal\Core\Ajax\AjaxResponse;
+use Drupal\Core\Ajax\CloseDialogCommand;
 use Drupal\Core\Entity\EntityInterface;
 use Drupal\Core\Entity\FieldableEntityInterface;
+use Drupal\Core\Form\FormBuilderInterface;
 use Drupal\Core\Form\FormStateInterface;
 use Drupal\Core\Plugin\Context\Context;
 use Drupal\Core\Plugin\Context\EntityContextDefinition;
 use Drupal\Core\Render\Element;
+use Drupal\Core\Url;
+use Drupal\layout_builder\SectionStorageInterface;
 use Drupal\ys_layouts\CloneBlockLinkBuilder;
 use Drupal\ys_layouts\Plugin\Layout\YSLayoutOneColumn;
 use Drupal\ys_layouts\Render\DetachContextualOperations;
 use Drupal\ys_layouts\SectionCloneLinkBuilder;
+use Drupal\ys_layouts\Theme\ExposedFormSuggestions;
 use Drupal\ys_layouts\WebformResultsLinkBuilder;
 
 /**
@@ -232,6 +238,8 @@ function ys_layouts_form_alter(&$form, $form_state, $form_id) {
 
   // Updates the title and help text of reusable blocks.
   if ($form_id == 'layout_builder_update_block' || $form_id == 'layout_builder_add_block') {
+    _ys_layouts_restore_block_form_ajax($form, $form_state, $form_id);
+
     if (isset($form['reusable'])) {
       $form['reusable']['#title'] = t('Reusable Block');
       $form['reusable']['#description'] = t("Create reusable content with Reusable Blocks. Changes made to a Reusable Block's content are reflected anywhere the Block is used.");
@@ -285,9 +293,18 @@ function ys_layouts_form_alter(&$form, $form_state, $form_id) {
     // that renders empty straight into the heading.
     $block_name = (string) ($form['settings']['admin_label']['#plain_text'] ?? '');
     if ($block_name !== '') {
-      $form['#title'] = $form_id == 'layout_builder_add_block'
-        ? t('Create @block', ['@block' => $block_name])
-        : t('Configure @block', ['@block' => $block_name]);
+      // Placing a block that already exists in the library (a block_content
+      // plugin) creates nothing, so that modal says Place, not Create.
+      $component = $form_id == 'layout_builder_add_block' ? $form_state->get('layout_builder__component') : NULL;
+      $places_existing = $component && str_starts_with((string) $component->getPluginId(), 'block_content:');
+      if ($form_id != 'layout_builder_add_block') {
+        $form['#title'] = t('Configure @block', ['@block' => $block_name]);
+      }
+      else {
+        $form['#title'] = $places_existing
+          ? t('Place @block', ['@block' => $block_name])
+          : t('Create @block', ['@block' => $block_name]);
+      }
 
       // That item now only restates the heading, so it can go, freeing the slot
       // the guidance moves into below. Nothing reads its value -
@@ -316,6 +333,121 @@ function ys_layouts_form_alter(&$form, $form_state, $form_id) {
 
     $form['#after_build'][] = 'ys_layouts_lift_block_instructions';
   }
+}
+
+/**
+ * Puts the Ajax submit back on the Layout Builder block add/configure forms.
+ *
+ * The layout_builder_browser_form_alter() hook strips #ajax from the submit
+ * button of both forms, to avoid a cached Ajax binding firing on a later
+ * non-Ajax request. The cost is that every validation error then comes back
+ * as a full page load of the add-block route: the editor lands on a bare form
+ * outside Layout Builder, for instance when a copied reusable Tiles block
+ * links to a page that was deleted (YaleSites-Internal#2209).
+ *
+ * ConfigureBlockFormBase only sets the binding when the request itself is an
+ * Ajax or dialog request, so restoring it under the same condition cannot
+ * leave a stale binding on a plain page load. Core's ::ajaxSubmit(), through
+ * ys_layouts_block_form_ajax_submit(), then re-renders the form with its
+ * errors inside the dialog.
+ *
+ * Relies on running after layout_builder_browser_form_alter(), which holds as
+ * long as this module does not sort ahead of it.
+ *
+ * @param array $form
+ *   The configure-block form, passed by reference.
+ * @param \Drupal\Core\Form\FormStateInterface $form_state
+ *   The form state.
+ * @param string $form_id
+ *   Either layout_builder_add_block or layout_builder_update_block.
+ */
+function _ys_layouts_restore_block_form_ajax(array &$form, FormStateInterface $form_state, string $form_id): void {
+  if (!isset($form['actions']['submit']) || !empty($form['actions']['submit']['#ajax'])) {
+    return;
+  }
+  $wrapper_format = (string) \Drupal::request()->query->get('_wrapper_format', '');
+  foreach (['drupal_ajax', 'drupal_modal', 'drupal_dialog'] as $ajax_format) {
+    if (str_contains($wrapper_format, $ajax_format)) {
+      $ajax = _ys_layouts_block_form_ajax_settings($form_state, $form_id);
+      if ($ajax !== NULL) {
+        $form['actions']['submit']['#ajax'] = $ajax;
+      }
+      return;
+    }
+  }
+}
+
+/**
+ * Builds the #ajax settings for a block form's submit, on the form's own route.
+ *
+ * Core aims an #ajax binding with no URL at the current route. That is right
+ * when the form is served by its own route, but the Views wizard builds the
+ * add form inside its own Ajax request (ViewsWizardForm::openConfigureForm()).
+ * There Add block posted back to the wizard route, which built the wizard
+ * form instead, returned a full HTML page, and the dialog threw a parsererror
+ * (YaleSites-Internal#2390).
+ *
+ * @param \Drupal\Core\Form\FormStateInterface $form_state
+ *   The form state.
+ * @param string $form_id
+ *   Either layout_builder_add_block or layout_builder_update_block.
+ *
+ * @return array|null
+ *   The #ajax settings, or NULL when the form was built elsewhere and its own
+ *   route cannot be resolved, in which case the submit must stay a plain POST
+ *   to #action.
+ */
+function _ys_layouts_block_form_ajax_settings(FormStateInterface $form_state, string $form_id): ?array {
+  $ajax = ['callback' => 'ys_layouts_block_form_ajax_submit'];
+  [$route, $last_parameter] = $form_id === 'layout_builder_add_block'
+    ? ['layout_builder.add_block', 'plugin_id']
+    : ['layout_builder.update_block', 'uuid'];
+  if (\Drupal::routeMatch()->getRouteName() === $route) {
+    return $ajax;
+  }
+  // The add and update forms both take (section storage, delta, region,
+  // plugin ID or UUID), and FormBuilder::getForm() records them in order.
+  [$section_storage, $delta, $region, $last] = ($form_state->getBuildInfo()['args'] ?? []) + [NULL, NULL, NULL, NULL];
+  if (!$section_storage instanceof SectionStorageInterface || $last === NULL) {
+    return NULL;
+  }
+  $ajax['url'] = Url::fromRoute($route, [
+    'section_storage_type' => $section_storage->getStorageType(),
+    'section_storage' => $section_storage->getStorageId(),
+    'delta' => $delta,
+    'region' => $region,
+    $last_parameter => $last,
+  ]);
+  // Core adds this itself only when it picks the URL. Without it FormBuilder
+  // does not treat the POST as an Ajax form submit.
+  $ajax['options']['query'][FormBuilderInterface::AJAX_FORM_REQUEST] = TRUE;
+  return $ajax;
+}
+
+/**
+ * Ajax submit for the Layout Builder block add/configure forms.
+ *
+ * Core's ::ajaxSubmit() re-renders the form with its errors, or on success
+ * rebuilds the layout and closes the off-canvas tray. The add form opens in
+ * layout_builder_browser's centered #layout-builder-modal dialog instead, which
+ * core does not close, so a successful add left it open and a second click
+ * placed a duplicate block. Close that dialog too on success; closing a dialog
+ * that is not open is a no-op, so the configure tray is unaffected.
+ *
+ * @param array $form
+ *   The configure-block form.
+ * @param \Drupal\Core\Form\FormStateInterface $form_state
+ *   The form state.
+ *
+ * @return \Drupal\Core\Ajax\AjaxResponse
+ *   Core's response, plus the dialog close on success.
+ */
+function ys_layouts_block_form_ajax_submit(array &$form, FormStateInterface $form_state): AjaxResponse {
+  $response = $form_state->getFormObject()->ajaxSubmit($form, $form_state);
+  if (!$form_state->hasAnyErrors()) {
+    $response->addCommand(new CloseDialogCommand('#layout-builder-modal'));
+  }
+  return $response;
 }
 
 /**
@@ -633,6 +765,42 @@ function ys_layouts_theme_suggestions_text_format_wrapper_alter(array &$suggesti
     && !in_array('text_format_wrapper__gin_lb', $suggestions, TRUE)) {
     $suggestions[] = 'text_format_wrapper__gin_lb';
   }
+}
+
+/**
+ * Implements hook_theme_suggestions_alter().
+ *
+ * Runs after gin_lb's own alter (module order) and removes its __gin_lb form
+ * suggestions from View block filter forms, so atomic's ys-filter-form
+ * template still wins after a Layout Builder AJAX refresh (#2310).
+ */
+function ys_layouts_theme_suggestions_alter(array &$suggestions, array $variables, string $hook): void {
+  if (isset($variables['element']) && is_array($variables['element'])) {
+    $suggestions = ExposedFormSuggestions::filter($suggestions, $variables['element']);
+  }
+}
+
+/**
+ * Implements hook_form_views_exposed_form_alter().
+ *
+ * Queues marking of site filter form fields so their label, input and select
+ * templates also lose gin_lb's __gin_lb suggestions (#2310).
+ */
+function ys_layouts_form_views_exposed_form_alter(array &$form, FormStateInterface $form_state, string $form_id): void {
+  if (ExposedFormSuggestions::isSiteExposedForm($form)) {
+    // Mark in #after_build so fields other modules swap in later are covered.
+    $form['#after_build'][] = [ExposedFormSuggestions::class, 'afterBuild'];
+  }
+}
+
+/**
+ * Implements hook_preprocess_form_element().
+ *
+ * Carries the filter form marker onto the label so the label template also
+ * loses its __gin_lb suggestion (#2310).
+ */
+function ys_layouts_preprocess_form_element(array &$variables): void {
+  ExposedFormSuggestions::markLabel($variables);
 }
 
 /**

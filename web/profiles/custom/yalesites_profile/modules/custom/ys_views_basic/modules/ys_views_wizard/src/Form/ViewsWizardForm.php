@@ -105,6 +105,8 @@ class ViewsWizardForm extends FormBase {
     // views-basic.css so ys_views_basic holds no reference to its optional
     // add-on and uninstalling the wizard removes the rules with it.
     $form['#attached']['library'][] = 'ys_views_wizard/ys_views_wizard';
+    // Keeps Continue disabled while the content type swap is in flight.
+    $form['#attached']['library'][] = 'ys_views_wizard/continue_guard';
     $form['wrapper'] = [
       '#type' => 'container',
       '#attributes' => [
@@ -203,6 +205,7 @@ class ViewsWizardForm extends FormBase {
     // same seam problem GinLbContextValidator documents for
     // isLayoutBuilderFormId(), so the form has to apply it itself.
     $form['#attributes']['class'][] = 'canvas-form';
+    $form['#attributes']['class'][] = 'ys-views-wizard-form';
     $form['actions']['#type'] = 'container';
     $form['actions']['#attributes']['class'][] = 'canvas-form__actions';
     $form['actions']['submit'] = [
@@ -297,10 +300,12 @@ class ViewsWizardForm extends FormBase {
     //
     // It still does not fix the embedded form's own #ajax URLs, which are
     // derived from the request the same way. On develop that sank approach B.
-    // On the views rework branch it does not bite: the listing bundles'
-    // configure forms have zero #ajax bindings, because the per-bundle widget
-    // dropped the content-type / display-mode radios that carried them. See
-    // the README for the measurement.
+    // On the views rework branch the listing bundles' widgets carry no #ajax
+    // bindings, because the per-bundle widget dropped the content-type /
+    // display-mode radios that carried them. See the README for the
+    // measurement. The one binding left, the Ajax submit ys_layouts restores
+    // on Add block, is pointed at the add-block route by
+    // _ys_layouts_block_form_ajax_settings() (YaleSites-Internal#2390).
     $configure_form['#action'] = Url::fromRoute('layout_builder.add_block', [
       'section_storage_type' => $section_storage->getStorageType(),
       'section_storage' => $section_storage->getStorageId(),
@@ -363,6 +368,15 @@ class ViewsWizardForm extends FormBase {
     // the pair.
     if (($form_state->getTriggeringElement()['#name'] ?? NULL) === 'entity_types') {
       return;
+    }
+    // A browser leaves a radio out of the POST while its own change request is
+    // still in flight (core's ajax.js disables the element that triggered it),
+    // so a fast Continue arrives with no content type at all and the radios
+    // fall back to #default_value - the first type, not the one picked. The
+    // library disables Continue during that window; this refuses the stale
+    // submit if one still gets through.
+    if (!is_string($form_state->getUserInput()['entity_types'] ?? NULL)) {
+      $form_state->setErrorByName('entity_types', $this->t('Choose what to show, then continue.'));
     }
     if ($this->resolveSubmittedPluginId($form_state) === NULL) {
       $form_state->setErrorByName('view_mode', $this->t('That combination has no Views block.'));

@@ -56,7 +56,7 @@ class PostViewWidgetTest extends UnitTestCase {
   /**
    * Builds a PostViewWidget bound to the given bundle.
    */
-  private function widget(string $bundle): PostViewWidget {
+  private function widget(string $bundle, array $site = ['font_pairing' => 'yalenew']): PostViewWidget {
     $field_definition = $this->createMock(FieldDefinitionInterface::class);
     $field_definition->method('getTargetBundle')->willReturn($bundle);
     $widget = new PostViewWidget(
@@ -67,7 +67,7 @@ class PostViewWidgetTest extends UnitTestCase {
       [],
       $this->manager,
       $this->entityTypeManager,
-      $this->getConfigFactoryStub(['ys_core.site' => ['font_pairing' => 'yalenew']]),
+      $this->getConfigFactoryStub(['ys_core.site' => $site]),
     );
     $widget->setStringTranslation($this->getStringTranslationStub());
     return $widget;
@@ -189,6 +189,32 @@ class PostViewWidgetTest extends UnitTestCase {
   }
 
   /**
+   * The preview gets the heading font string from the font_pairing mapping.
+   *
+   * After ys_core_update_10021 font_pairing is a mapping, which Twig cannot
+   * print as an attribute value; the panel must pass the heading font only.
+   *
+   * @covers \Drupal\ys_views_basic\Plugin\Field\FieldWidget\ViewsBasicWidgetBase::buildPreviewPanel
+   */
+  public function testPreviewPanelReadsHeadingFont() {
+    $site = [
+      'font_pairing' => [
+        'heading_font' => 'mallory',
+        'heading_numerals' => 'lining',
+        'body_numerals' => 'oldstyle',
+      ],
+    ];
+    $form = [];
+    $this->invoke($this->widget('post_card', $site), 'buildPreviewPanel', [&$form]);
+    $this->assertSame('mallory', $form['group_user_selection']['entity_and_view_mode']['preview']['#font_pairing']);
+
+    // A site not yet migrated (legacy string) falls back to the default.
+    $form = [];
+    $this->invoke($this->widget('post_card'), 'buildPreviewPanel', [&$form]);
+    $this->assertSame('yalenew', $form['group_user_selection']['entity_and_view_mode']['preview']['#font_pairing']);
+  }
+
+  /**
    * The preview is shown only on the creation form, not when reconfiguring.
    *
    * @covers \Drupal\ys_views_basic\Plugin\Field\FieldWidget\ViewsBasicWidgetBase::isCreateForm
@@ -207,6 +233,55 @@ class PostViewWidgetTest extends UnitTestCase {
     $editItems = $this->createMock(FieldItemListInterface::class);
     $editItems->method('getEntity')->willReturn($existingBlock);
     $this->assertFalse($this->invoke($widget, 'isCreateForm', [$editItems]), 'Preview is hidden when reconfiguring an existing block.');
+  }
+
+  /**
+   * The stylesheet hides the preview in a narrow Layout Builder side panel.
+   *
+   * A block not yet saved with the page is still new when configured in the
+   * side panel, so isNew() alone cannot keep the preview out of it. The hide
+   * rule is limited to containers narrower than the 40rem two-column
+   * breakpoint, so a widened panel shows it beside the options (#2256).
+   */
+  public function testPreviewHiddenOnlyInNarrowSidePanel() {
+    $css = file_get_contents(dirname(__DIR__, 3) . '/assets/css/views-basic-preview.css');
+
+    $this->assertMatchesRegularExpression(
+      '/@container\s*\(width\s*<\s*40rem\)\s*\{\s*#drupal-off-canvas-wrapper\s+\.vb-preview-wrapper\s*\{[^}]*display:\s*none/',
+      $css,
+      'The preview is hidden in the off-canvas side panel only below the 40rem breakpoint.'
+    );
+
+    // Unconditional off-canvas rules may only cap the card's max-width (and
+    // restore width: 100% that core's reset drops), never
+    // hide the preview or collapse the grid in a wide panel.
+    preg_match_all('/^#drupal-off-canvas-wrapper[^{]*\{([^}]*)\}/m', $css, $rules);
+    foreach ($rules[1] as $body) {
+      $this->assertMatchesRegularExpression('/^\s*max-width:\s*[\d.]+rem\s*!important;(\s*width:\s*100%\s*!important;)?\s*$/', $body, 'Unconditional off-canvas rules only cap the card width and restore width: 100%.');
+    }
+  }
+
+  /**
+   * The side panel keeps the card at its pop-up size (#2256).
+   *
+   * Core's off-canvas reset forces max-width: inherit !important, so each cap
+   * is repeated with !important under a side-panel selector.
+   */
+  public function testPreviewCardCappedInSidePanel() {
+    $css = file_get_contents(dirname(__DIR__, 3) . '/assets/css/views-basic-preview.css');
+    $caps = [
+      "div.vb-preview {" => '22rem',
+      "[data-view-mode='list_item']," => '26rem',
+      "[data-view-mode='condensed'] {" => '26rem',
+      "[data-view-mode='portrait_grid'] {" => '12rem',
+    ];
+    foreach ($caps as $needle => $width) {
+      $this->assertMatchesRegularExpression(
+        '/#drupal-off-canvas-wrapper[^{]*' . preg_quote($needle, '/') . '[^}]*max-width:\s*' . $width . '\s*!important/s',
+        $css,
+        "Side panel caps $needle at $width."
+      );
+    }
   }
 
   /**

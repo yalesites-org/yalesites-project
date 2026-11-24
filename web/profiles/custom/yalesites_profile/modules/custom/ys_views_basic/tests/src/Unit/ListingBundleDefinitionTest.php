@@ -2,6 +2,7 @@
 
 namespace Drupal\Tests\ys_views_basic\Unit;
 
+use Drupal\Component\Serialization\Yaml;
 use Drupal\Tests\UnitTestCase;
 use Drupal\ys_views_basic\ViewsBasicManager;
 
@@ -193,9 +194,15 @@ class ListingBundleDefinitionTest extends UnitTestCase {
       $this->assertTrue($preset['params']['used_terms_only']);
     }
 
+    // Post Feed and Calendar List showed no teaser image, so their listings
+    // store the option switched off, in the shape that keeps the checkbox
+    // unchecked on the edit form. Directory showed photos (#2375).
+    $this->assertSame(['show_thumbnail' => 0], $post['params']['field_options']);
+    $this->assertSame(['show_thumbnail' => 0], $event['params']['field_options']);
+    $this->assertSame(['show_thumbnail' => 'show_thumbnail'], $directory['params']['field_options']);
+
     // Every preset carries the common defaults so setupView never warns.
     $this->assertArrayHasKey('operator', $post['params']);
-    $this->assertArrayHasKey('field_options', $post['params']);
 
     $this->assertNull(ViewsBasicManager::predecessorPreset('view'));
     $this->assertNull(ViewsBasicManager::predecessorPreset('unknown'));
@@ -227,6 +234,22 @@ class ListingBundleDefinitionTest extends UnitTestCase {
     $this->assertSame('field_last_name:DESC', $card['sort_by']);
     $this->assertSame('limit', $card['display']);
     $this->assertSame(8, $card['limit']);
+  }
+
+  /**
+   * Every listing bundle is offered in Layout Builder's "Reusable blocks".
+   *
+   * Layout Builder Browser only lists a saved reusable block when its bundle
+   * is in auto_added_reusable_block_content_bundles. A bundle missing there
+   * saves fine but never shows in the picker (#2322).
+   */
+  public function testListingBundlesAreInReusablePicker(): void {
+    $path = dirname(__DIR__, 6) . '/config/sync/layout_builder_browser.settings.yml';
+    $settings = Yaml::decode(file_get_contents($path));
+    $allowed = array_keys($settings['auto_added_reusable_block_content_bundles']);
+
+    $missing = array_diff(array_keys(ViewsBasicManager::LISTING_BUNDLES), $allowed);
+    $this->assertSame([], array_values($missing), 'Listing bundles missing from the reusable picker.');
   }
 
 }

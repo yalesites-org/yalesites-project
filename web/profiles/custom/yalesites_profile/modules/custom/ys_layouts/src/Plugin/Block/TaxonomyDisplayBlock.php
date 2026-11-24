@@ -9,28 +9,36 @@ use Drupal\Core\Block\BlockBase;
 use Drupal\Core\Entity\EntityTypeManagerInterface;
 use Drupal\Core\Form\FormStateInterface;
 use Drupal\Core\Plugin\ContainerFactoryPluginInterface;
-use Drupal\Core\Plugin\ContextAwarePluginAssignmentTrait;
-use Drupal\Core\Plugin\ContextAwarePluginInterface;
-use Drupal\Core\Plugin\ContextAwarePluginTrait;
-use Drupal\Core\Routing\CurrentRouteMatch;
+use Drupal\node\NodeInterface;
+use Drupal\ys_core\Plugin\Block\LayoutBuilderEntityContextTrait;
+use Drupal\Core\Plugin\Context\ContextDefinition;
 use Drupal\Core\StringTranslation\TranslatableMarkup;
-use Drupal\node\Entity\Node;
 use Drupal\ys_themes\ColorTokenResolver;
 use Symfony\Component\DependencyInjection\ContainerInterface;
 use Symfony\Component\HttpFoundation\RequestStack;
 
 /**
  * Provides a yalesites taxonomy display block block.
+ *
+ * The "layout_builder.entity" context slot and its name are explained on
+ * \Drupal\ys_core\Plugin\Block\LayoutBuilderEntityContextTrait. An
+ * attribute cannot be inherited from a trait, so the slot is declared here.
  */
 #[Block(
   id: 'ys_taxonomy_display_block',
   admin_label: new TranslatableMarkup('Taxonomy Display Block'),
   category: new TranslatableMarkup('YaleSites Layouts'),
+  context_definitions: [
+    'layout_builder.entity' => new ContextDefinition(
+      data_type: 'entity',
+      label: new TranslatableMarkup('Entity being viewed'),
+      required: FALSE,
+    ),
+  ],
 )]
-class TaxonomyDisplayBlock extends BlockBase implements ContextAwarePluginInterface, ContainerFactoryPluginInterface {
+class TaxonomyDisplayBlock extends BlockBase implements ContainerFactoryPluginInterface {
 
-  use ContextAwarePluginTrait;
-  use ContextAwarePluginAssignmentTrait;
+  use LayoutBuilderEntityContextTrait;
 
   /**
    * The request stack.
@@ -38,13 +46,6 @@ class TaxonomyDisplayBlock extends BlockBase implements ContextAwarePluginInterf
    * @var \Symfony\Component\HttpFoundation\RequestStack
    */
   protected $requestStack;
-
-  /**
-   * The route match service.
-   *
-   * @var \Drupal\Core\Routing\CurrentRouteMatch
-   */
-  protected CurrentRouteMatch $routeMatch;
 
   /**
    * The entity type manager.
@@ -68,13 +69,11 @@ class TaxonomyDisplayBlock extends BlockBase implements ContextAwarePluginInterf
     $plugin_id,
     $plugin_definition,
     EntityTypeManagerInterface $entityTypeManager,
-    CurrentRouteMatch $routeMatch,
     RequestStack $requestStack,
     ColorTokenResolver $colorTokenResolver,
   ) {
     parent::__construct($configuration, $plugin_id, $plugin_definition);
     $this->entityTypeManager = $entityTypeManager;
-    $this->routeMatch = $routeMatch;
     $this->requestStack = $requestStack;
     $this->colorTokenResolver = $colorTokenResolver;
   }
@@ -88,7 +87,6 @@ class TaxonomyDisplayBlock extends BlockBase implements ContextAwarePluginInterf
       $plugin_id,
       $plugin_definition,
       $container->get('entity_type.manager'),
-      $container->get('current_route_match'),
       $container->get('request_stack'),
       $container->get('ys_themes.color_token_resolver'),
     );
@@ -112,7 +110,7 @@ class TaxonomyDisplayBlock extends BlockBase implements ContextAwarePluginInterf
     $node = $this->getCurrentNode();
     $event_vocabularies = ['event_category', 'audience', 'custom_vocab'];
 
-    if ($node instanceof Node) {
+    if ($node) {
       // Get all fields on this node.
       $fields = $node->getFields();
       $vocabulary_fields = [];
@@ -246,26 +244,42 @@ class TaxonomyDisplayBlock extends BlockBase implements ContextAwarePluginInterf
   }
 
   /**
-   * Get the current node from either route match or Layout Builder context.
+   * Gets the node being rendered.
+   *
+   * The entity Layout Builder hands over is preferred over anything the
+   * request names; the request tiers below it are kept for the contexts
+   * Layout Builder offers nothing in.
+   *
+   * @return \Drupal\node\NodeInterface|null
+   *   The node being rendered, or NULL when no source resolves one.
    */
-  protected function getCurrentNode() {
+  protected function getCurrentNode(): ?NodeInterface {
+    $node = $this->getRenderedEntitySavedNode();
+    if ($node) {
+      return $node;
+    }
 
     $request = $this->requestStack->getCurrentRequest();
+    if (!$request) {
+      return NULL;
+    }
+
     $node = $request->attributes->get('node');
 
     // When removing the contact block when one already exists,
     // it no longer has access to the node object. Therefore, we must load it
     // manually via the ajaxified path.
     if (!$node) {
+      // The Layout Builder ajax path names the entity as "node.<nid>." --
+      // e.g. /layout_builder/update/overrides/node.42.default.en/0/content.
       $layoutBuilderPath = $request->getPathInfo();
-      preg_match('/(node\.+(\d+))/', $layoutBuilderPath, $matches);
-      if (!empty($matches)) {
+      if (preg_match('/node\.(\d+)/', $layoutBuilderPath, $matches)) {
         $nodeStorage = $this->entityTypeManager->getStorage('node');
-        $node = $nodeStorage->load($matches[2]);
+        $node = $nodeStorage->load($matches[1]);
       }
     }
 
-    return $node ?? NULL;
+    return $node instanceof NodeInterface ? $node : NULL;
   }
 
   /**

@@ -361,9 +361,11 @@ abstract class ViewsBasicWidgetBase extends WidgetBase implements ContainerFacto
       '#attributes' => ['class' => ['views-basic--params']],
     ];
 
-    // The live mockup preview is scoped to the block-creation form only
-    // (#1318): it helps a site builder picture the result while placing a new
-    // block and is not shown when reconfiguring an existing one.
+    // The live mockup preview is for the "Add block" pop-up only (#1318): it
+    // helps a site builder picture the result while placing a new block and is
+    // not built when reconfiguring a saved one. A block not yet saved with the
+    // page still counts as new in the side panel, so the stylesheet hides the
+    // preview there while the panel is narrow (#2256).
     $is_create_form = $this->isCreateForm($items);
 
     $this->initSelectionContainers($form);
@@ -388,6 +390,7 @@ abstract class ViewsBasicWidgetBase extends WidgetBase implements ContainerFacto
     ];
 
     $form['#attached']['library'][] = 'ys_views_basic/ys_views_basic';
+    $form['#attached']['library'][] = 'ys_views_basic/chosen_a11y';
     $form['#attached']['library'][] = 'ys_views_basic/term_operator';
     if ($is_create_form) {
       $form['#attached']['library'][] = 'ys_views_basic/ys_views_basic_preview';
@@ -399,9 +402,11 @@ abstract class ViewsBasicWidgetBase extends WidgetBase implements ContainerFacto
   /**
    * Determines whether the form is creating a new block (vs. configuring one).
    *
-   * The live mockup preview (#1318) is scoped to the creation form. A new
-   * inline block's host entity is unsaved, so isNew() distinguishes the
-   * "Add block" form from the "Configure" form of an existing block.
+   * The live mockup preview (#1318) is built only for new blocks. A new
+   * inline block's host entity is unsaved, so isNew() separates the "Add
+   * block" pop-up from the "Configure" form of a saved block. It cannot tell
+   * the pop-up from the side panel for a block not yet saved with the page;
+   * views-basic-preview.css hides the preview in a narrow side panel (#2256).
    *
    * @param \Drupal\Core\Field\FieldItemListInterface $items
    *   The field items whose host entity is the block being placed.
@@ -440,11 +445,11 @@ abstract class ViewsBasicWidgetBase extends WidgetBase implements ContainerFacto
       '#view_mode' => $this->getViewMode(),
       // 1x1 transparent GIF; the CSS shows the placeholder as a grey box.
       '#image_src' => 'data:image/gif;base64,R0lGODlhAQABAAAAACH5BAEKAAEALAAAAAABAAEAAAICTAEAOw==',
-      // Mirrors the site's configured heading typeface (Site Settings > Font
-      // Pairing) so the mockup reads like the live front-end render. The
+      // Mirrors the site's configured heading font (Site Settings > Font
+      // styles) so the mockup reads like the live front-end render. The
       // webfonts themselves load via the ys_views_basic_preview library's
       // dependency on ys_core/font_preview.
-      '#font_pairing' => $this->configFactory->get('ys_core.site')->get('font_pairing') ?? 'yalenew',
+      '#font_pairing' => $this->configFactory->get('ys_core.site')->get('font_pairing.heading_font') ?? 'yalenew',
     ];
   }
 
@@ -713,13 +718,18 @@ abstract class ViewsBasicWidgetBase extends WidgetBase implements ContainerFacto
     // so a visible title here duplicated it as two headings 32px apart.
     $field_options_title = $this->t('Show on each result');
 
-    // Default to the saved field options, falling back to showing the teaser
-    // image on a brand-new block where that option is offered.
-    $saved = $items[$delta]->params
-      ? $this->viewsBasicManager->getDefaultParamValue('field_options', $items[$delta]->params)
-      : [];
-    if (empty($saved) && isset($options['show_thumbnail'])) {
-      $saved = ['show_thumbnail'];
+    // Default to the saved field options. A brand-new block (whose field
+    // default stores an empty set) and a block saved before the options
+    // existed fall back to showing the teaser image, the same rule
+    // setupView() renders by. On a saved block an empty set means every box
+    // was unchecked, so it stays unchecked (#2375).
+    $decoded = $items[$delta]->params ? json_decode($items[$delta]->params, TRUE) : NULL;
+    $saved = $decoded['field_options'] ?? NULL;
+    if (!is_array($saved)) {
+      $saved = NULL;
+    }
+    if ($saved === NULL || (!$saved && $this->isCreateForm($items))) {
+      $saved = isset($options['show_thumbnail']) ? ['show_thumbnail'] : [];
     }
 
     $form['group_user_selection']['entity_and_view_mode']['field_options'] = [
@@ -807,7 +817,7 @@ abstract class ViewsBasicWidgetBase extends WidgetBase implements ContainerFacto
       // Renamed from "Filter by Category Parent Term" (#1481) — "Parent
       // Term" is taxonomy-internal vocabulary.
       '#title' => $this->t('Limit choices to'),
-      '#description' => $this->t("Select a parent term to show content tagged with that term's sub-items. This ignores content tagged as the parent term and any other parent terms in the vocabulary."),
+      '#description' => $this->t("Select a parent term to limit the choices visitors see in the filter dropdown. This does not hide any content from the list."),
       '#options' => $category_parents,
       '#default_value' => static::offeredDefault($category_parents, $params ? $this->viewsBasicManager->getDefaultParamValue('category_included_terms', $params) : NULL),
       '#prefix' => '<div id="edit-category-included-terms">',
@@ -819,7 +829,7 @@ abstract class ViewsBasicWidgetBase extends WidgetBase implements ContainerFacto
     $form['group_user_selection']['entity_and_view_mode']['custom_vocab_included_terms'] = [
       '#type' => 'select',
       '#title' => $this->t('Filter by @vocab Parent Term', ['@vocab' => $custom_vocab_label]),
-      '#description' => $this->t("Select a parent term to show content tagged with that term's sub-items. This ignores content tagged as the parent term and any other parent terms in the vocabulary."),
+      '#description' => $this->t("Select a parent term to limit the choices visitors see in the filter dropdown. This does not hide any content from the list."),
       '#options' => $custom_vocab_parents,
       '#default_value' => static::offeredDefault($custom_vocab_parents, $params ? $this->viewsBasicManager->getDefaultParamValue('custom_vocab_included_terms', $params) : NULL),
       '#prefix' => '<div id="edit-custom-vocab-included-terms">',

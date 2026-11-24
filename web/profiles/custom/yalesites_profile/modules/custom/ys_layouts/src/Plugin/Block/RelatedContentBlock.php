@@ -9,10 +9,12 @@ use Drupal\Core\Cache\Cache;
 use Drupal\Core\Entity\EntityTypeManagerInterface;
 use Drupal\Core\Form\FormStateInterface;
 use Drupal\Core\Plugin\ContainerFactoryPluginInterface;
+use Drupal\Core\Plugin\Context\ContextDefinition;
 use Drupal\Core\Routing\RouteMatchInterface;
 use Drupal\Core\StringTranslation\TranslatableMarkup;
 use Drupal\node\NodeInterface;
 use Drupal\views\Views;
+use Drupal\ys_core\Plugin\Block\LayoutBuilderEntityContextTrait;
 use Symfony\Component\DependencyInjection\ContainerInterface;
 use Symfony\Component\HttpFoundation\RequestStack;
 
@@ -26,13 +28,26 @@ use Symfony\Component\HttpFoundation\RequestStack;
  * Hides itself entirely when the route node has no field_related_content
  * or the field is empty, so the locked Related Resources Layout Builder
  * section collapses for nodes that haven't picked any related items.
+ *
+ * The "layout_builder.entity" context slot and its name are explained on
+ * \Drupal\ys_core\Plugin\Block\LayoutBuilderEntityContextTrait. An
+ * attribute cannot be inherited from a trait, so the slot is declared here.
  */
 #[Block(
   id: 'related_content_block',
   admin_label: new TranslatableMarkup('Related Content'),
   category: new TranslatableMarkup('YaleSites Layouts'),
+  context_definitions: [
+    'layout_builder.entity' => new ContextDefinition(
+      data_type: 'entity',
+      label: new TranslatableMarkup('Entity being viewed'),
+      required: FALSE,
+    ),
+  ],
 )]
 class RelatedContentBlock extends BlockBase implements ContainerFactoryPluginInterface {
+
+  use LayoutBuilderEntityContextTrait;
 
   /**
    * The current route match.
@@ -204,9 +219,20 @@ class RelatedContentBlock extends BlockBase implements ContainerFactoryPluginInt
   }
 
   /**
-   * Get the current node from either route match or Layout Builder context.
+   * Gets the node being rendered.
+   *
+   * The entity Layout Builder hands over is preferred over anything the
+   * request names; the request tiers below it are kept for the contexts
+   * Layout Builder offers nothing in.
+   *
+   * @return \Drupal\node\NodeInterface|null
+   *   The node being rendered, or NULL when no source resolves one.
    */
-  protected function getCurrentNode() {
+  protected function getCurrentNode(): ?NodeInterface {
+    $node = $this->getRenderedEntitySavedNode();
+    if ($node) {
+      return $node;
+    }
 
     $node = $this->routeMatch->getParameter('node');
 
@@ -215,15 +241,20 @@ class RelatedContentBlock extends BlockBase implements ContainerFactoryPluginInt
     // manually via the ajaxified path.
     if (!$node) {
       $request = $this->requestStack->getCurrentRequest();
+      if (!$request) {
+        return NULL;
+      }
+
+      // The Layout Builder ajax path names the entity as "node.<nid>." --
+      // e.g. /layout_builder/update/overrides/node.42.default.en/0/content.
       $layoutBuilderPath = $request->getPathInfo();
-      preg_match('/(node\.+(\d+))/', $layoutBuilderPath, $matches);
-      if (!empty($matches)) {
+      if (preg_match('/node\.(\d+)/', $layoutBuilderPath, $matches)) {
         $nodeStorage = $this->entityTypeManager->getStorage('node');
-        $node = $nodeStorage->load($matches[2]);
+        $node = $nodeStorage->load($matches[1]);
       }
     }
 
-    return $node ?? NULL;
+    return $node instanceof NodeInterface ? $node : NULL;
   }
 
 }

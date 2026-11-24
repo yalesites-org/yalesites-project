@@ -252,6 +252,10 @@ function ys_views_basic_deploy_10002(&$sandbox) {
   $block_storage = \Drupal::entityTypeManager()->getStorage('block_content');
 
   $legacy_bundles = ['post_list', 'event_list', 'directory'];
+  $target_bundles = [];
+  foreach ($legacy_bundles as $legacy) {
+    $target_bundles[$legacy] = ViewsBasicManager::predecessorPreset($legacy)['target'] ?? NULL;
+  }
   if (!isset($sandbox['ids'])) {
     $sandbox['ids'] = [];
     $sandbox['counts'] = [];
@@ -264,6 +268,15 @@ function ys_views_basic_deploy_10002(&$sandbox) {
         ->accessCheck(FALSE)
         ->execute();
       $sandbox['ids'] = array_merge($sandbox['ids'], array_values($ids));
+      // A run that stopped between converting a block and filling its params
+      // left a block of the new type with none, which the legacy query above
+      // no longer finds. Pick those up too (#2335).
+      $stranded = $block_storage->getQuery()
+        ->condition('type', $target_bundles[$legacy])
+        ->notExists('field_view_params.params')
+        ->accessCheck(FALSE)
+        ->execute();
+      $sandbox['ids'] = array_merge($sandbox['ids'], array_values($stranded));
       $sandbox['counts'][$legacy] = 0;
     }
     $sandbox['total'] = count($sandbox['ids']);
@@ -276,6 +289,13 @@ function ys_views_basic_deploy_10002(&$sandbox) {
     $chunk = array_splice($sandbox['ids'], 0, ListingMigrator::BATCH_SIZE);
     foreach ($block_storage->loadMultiple($chunk) as $block) {
       $legacy = $block->bundle();
+      if (!in_array($legacy, $legacy_bundles, TRUE)) {
+        // A block of the new type that an earlier run left without params.
+        $legacy = array_search($legacy, $target_bundles, TRUE);
+        if ($legacy === FALSE) {
+          continue;
+        }
+      }
       $preset = ViewsBasicManager::predecessorPreset($legacy);
       if (!$preset) {
         continue;
@@ -286,6 +306,9 @@ function ys_views_basic_deploy_10002(&$sandbox) {
       // Reload so the new bundle's field list (which includes
       // field_view_params, absent on the predecessor bundle) is available,
       // then pre-fill the params that reproduce the predecessor View's query.
+      // Core caches the bundle on the entity, so this cannot be one save. A
+      // run that stops between the two is repaired by the next run, which
+      // also selects blocks of the new type that have no params (#2335).
       $block = $block_storage->load($block_id);
       $block->set('field_view_params', ['params' => json_encode($preset['params'])]);
       $block->save();
@@ -620,4 +643,71 @@ function ys_views_basic_deploy_10006(&$sandbox) {
   $sandbox['#finished'] = 1;
   \Drupal::logger('ys_views_basic')->notice('Predecessor pager: put @n migrated blocks back on a pager.', ['@n' => $sandbox['updated']]);
   return t('Predecessor pager: put @n migrated blocks back on a pager.', ['@n' => $sandbox['updated']]);
+}
+
+/**
+ * Switches the teaser image off on migrated Post Feed and Calendar List blocks.
+ *
+ * The predecessor Post Feed and Calendar List Views never showed a teaser
+ * image, but deploy_10002 stored the option switched on, so their cards
+ * asked for one after the migration (#2375). Every revision whose params
+ * still equal a preset an earlier deploy wrote (the current shape, the
+ * filterless one, or the display "all" ones) gets the option switched off;
+ * its other settings stay. Blocks an editor has changed since, and listings
+ * built in the same bundles from scratch, are left alone. Directory blocks
+ * keep their photos. The rows are written directly, so Updated dates stay.
+ * Idempotent: a second run finds no old preset. On a site where 10002 runs
+ * with the current preset, this finds nothing. Batched like deploy_10004.
+ */
+function ys_views_basic_deploy_10007(&$sandbox) {
+  /** @var \Drupal\ys_views_basic\Service\ListingMigrator $migrator */
+  $migrator = \Drupal::service('ys_views_basic.listing_migrator');
+
+  if (!isset($sandbox['ids'])) {
+    // Predecessor bundle => the params earlier deploys wrote; block id =>
+    // predecessor bundle.
+    $sandbox['matches'] = [];
+    $sandbox['ids'] = [];
+    foreach (['post_list', 'event_list'] as $legacy) {
+      $preset = ViewsBasicManager::predecessorPreset($legacy);
+      $sandbox['matches'][$legacy] = array_values(array_filter([
+        ViewsBasicManager::thumbnailOnPredecessorParams($legacy),
+        ViewsBasicManager::filterlessPredecessorParams($legacy),
+        ViewsBasicManager::displayAllPredecessorParams($legacy),
+        ViewsBasicManager::displayAllPredecessorParams($legacy, TRUE),
+      ]));
+      $ids = \Drupal::entityTypeManager()->getStorage('block_content')->getQuery()
+        ->condition('type', $preset['target'])
+        ->accessCheck(FALSE)
+        ->execute();
+      $sandbox['ids'] += array_fill_keys(array_values($ids), $legacy);
+    }
+    $sandbox['total'] = count($sandbox['ids']);
+    $sandbox['updated'] = 0;
+  }
+
+  // array_slice() with preserve_keys: array_splice() would renumber the ids.
+  $chunk = array_slice($sandbox['ids'], 0, ListingMigrator::BATCH_SIZE, TRUE);
+  $sandbox['ids'] = array_diff_key($sandbox['ids'], $chunk);
+  $off = ['field_options' => ViewsBasicManager::predecessorPreset('post_list')['params']['field_options']];
+  foreach ($chunk as $id => $legacy) {
+    if ($migrator->overrideMatchingParams($id, $sandbox['matches'][$legacy], $off)) {
+      $sandbox['updated']++;
+    }
+  }
+  if ($chunk) {
+    // The rows were written directly; drop the stale cached blocks.
+    \Drupal::entityTypeManager()->getStorage('block_content')->resetCache(array_keys($chunk));
+  }
+
+  if ($sandbox['ids']) {
+    $sandbox['#finished'] = ($sandbox['total'] - count($sandbox['ids'])) / $sandbox['total'];
+    return NULL;
+  }
+  if ($sandbox['updated']) {
+    \Drupal::service('cache.render')->invalidateAll();
+  }
+  $sandbox['#finished'] = 1;
+  \Drupal::logger('ys_views_basic')->notice('Predecessor teaser images: switched off on @n migrated blocks.', ['@n' => $sandbox['updated']]);
+  return t('Predecessor teaser images: switched off on @n migrated blocks.', ['@n' => $sandbox['updated']]);
 }
