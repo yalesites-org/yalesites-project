@@ -9,10 +9,13 @@ use Drupal\Core\Ajax\AjaxResponse;
 use Drupal\Core\Ajax\CloseDialogCommand;
 use Drupal\Core\Entity\EntityInterface;
 use Drupal\Core\Entity\FieldableEntityInterface;
+use Drupal\Core\Form\FormBuilderInterface;
 use Drupal\Core\Form\FormStateInterface;
 use Drupal\Core\Plugin\Context\Context;
 use Drupal\Core\Plugin\Context\EntityContextDefinition;
 use Drupal\Core\Render\Element;
+use Drupal\Core\Url;
+use Drupal\layout_builder\SectionStorageInterface;
 use Drupal\ys_layouts\CloneBlockLinkBuilder;
 use Drupal\ys_layouts\Plugin\Layout\YSLayoutOneColumn;
 use Drupal\ys_layouts\Render\DetachContextualOperations;
@@ -235,7 +238,7 @@ function ys_layouts_form_alter(&$form, $form_state, $form_id) {
 
   // Updates the title and help text of reusable blocks.
   if ($form_id == 'layout_builder_update_block' || $form_id == 'layout_builder_add_block') {
-    _ys_layouts_restore_block_form_ajax($form);
+    _ys_layouts_restore_block_form_ajax($form, $form_state, $form_id);
 
     if (isset($form['reusable'])) {
       $form['reusable']['#title'] = t('Reusable Block');
@@ -353,18 +356,72 @@ function ys_layouts_form_alter(&$form, $form_state, $form_id) {
  *
  * @param array $form
  *   The configure-block form, passed by reference.
+ * @param \Drupal\Core\Form\FormStateInterface $form_state
+ *   The form state.
+ * @param string $form_id
+ *   Either layout_builder_add_block or layout_builder_update_block.
  */
-function _ys_layouts_restore_block_form_ajax(array &$form): void {
+function _ys_layouts_restore_block_form_ajax(array &$form, FormStateInterface $form_state, string $form_id): void {
   if (!isset($form['actions']['submit']) || !empty($form['actions']['submit']['#ajax'])) {
     return;
   }
   $wrapper_format = (string) \Drupal::request()->query->get('_wrapper_format', '');
   foreach (['drupal_ajax', 'drupal_modal', 'drupal_dialog'] as $ajax_format) {
     if (str_contains($wrapper_format, $ajax_format)) {
-      $form['actions']['submit']['#ajax']['callback'] = 'ys_layouts_block_form_ajax_submit';
+      $ajax = _ys_layouts_block_form_ajax_settings($form_state, $form_id);
+      if ($ajax !== NULL) {
+        $form['actions']['submit']['#ajax'] = $ajax;
+      }
       return;
     }
   }
+}
+
+/**
+ * Builds the #ajax settings for a block form's submit, on the form's own route.
+ *
+ * Core aims an #ajax binding with no URL at the current route. That is right
+ * when the form is served by its own route, but the Views wizard builds the
+ * add form inside its own Ajax request (ViewsWizardForm::openConfigureForm()).
+ * There Add block posted back to the wizard route, which built the wizard
+ * form instead, returned a full HTML page, and the dialog threw a parsererror
+ * (YaleSites-Internal#2390).
+ *
+ * @param \Drupal\Core\Form\FormStateInterface $form_state
+ *   The form state.
+ * @param string $form_id
+ *   Either layout_builder_add_block or layout_builder_update_block.
+ *
+ * @return array|null
+ *   The #ajax settings, or NULL when the form was built elsewhere and its own
+ *   route cannot be resolved, in which case the submit must stay a plain POST
+ *   to #action.
+ */
+function _ys_layouts_block_form_ajax_settings(FormStateInterface $form_state, string $form_id): ?array {
+  $ajax = ['callback' => 'ys_layouts_block_form_ajax_submit'];
+  [$route, $last_parameter] = $form_id === 'layout_builder_add_block'
+    ? ['layout_builder.add_block', 'plugin_id']
+    : ['layout_builder.update_block', 'uuid'];
+  if (\Drupal::routeMatch()->getRouteName() === $route) {
+    return $ajax;
+  }
+  // The add and update forms both take (section storage, delta, region,
+  // plugin ID or UUID), and FormBuilder::getForm() records them in order.
+  [$section_storage, $delta, $region, $last] = ($form_state->getBuildInfo()['args'] ?? []) + [NULL, NULL, NULL, NULL];
+  if (!$section_storage instanceof SectionStorageInterface || $last === NULL) {
+    return NULL;
+  }
+  $ajax['url'] = Url::fromRoute($route, [
+    'section_storage_type' => $section_storage->getStorageType(),
+    'section_storage' => $section_storage->getStorageId(),
+    'delta' => $delta,
+    'region' => $region,
+    $last_parameter => $last,
+  ]);
+  // Core adds this itself only when it picks the URL. Without it FormBuilder
+  // does not treat the POST as an Ajax form submit.
+  $ajax['options']['query'][FormBuilderInterface::AJAX_FORM_REQUEST] = TRUE;
+  return $ajax;
 }
 
 /**

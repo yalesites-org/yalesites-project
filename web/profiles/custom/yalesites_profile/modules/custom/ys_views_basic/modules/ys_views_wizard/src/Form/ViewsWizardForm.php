@@ -300,10 +300,12 @@ class ViewsWizardForm extends FormBase {
     //
     // It still does not fix the embedded form's own #ajax URLs, which are
     // derived from the request the same way. On develop that sank approach B.
-    // On the views rework branch it does not bite: the listing bundles'
-    // configure forms have zero #ajax bindings, because the per-bundle widget
-    // dropped the content-type / display-mode radios that carried them. See
-    // the README for the measurement.
+    // On the views rework branch the listing bundles' widgets carry no #ajax
+    // bindings, because the per-bundle widget dropped the content-type /
+    // display-mode radios that carried them. See the README for the
+    // measurement. The one binding left, the Ajax submit ys_layouts restores
+    // on Add block, is pointed at the add-block route by
+    // _ys_layouts_block_form_ajax_settings() (YaleSites-Internal#2390).
     $configure_form['#action'] = Url::fromRoute('layout_builder.add_block', [
       'section_storage_type' => $section_storage->getStorageType(),
       'section_storage' => $section_storage->getStorageId(),
