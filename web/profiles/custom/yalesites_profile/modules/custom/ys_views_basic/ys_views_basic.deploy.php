@@ -644,3 +644,70 @@ function ys_views_basic_deploy_10006(&$sandbox) {
   \Drupal::logger('ys_views_basic')->notice('Predecessor pager: put @n migrated blocks back on a pager.', ['@n' => $sandbox['updated']]);
   return t('Predecessor pager: put @n migrated blocks back on a pager.', ['@n' => $sandbox['updated']]);
 }
+
+/**
+ * Switches the teaser image off on migrated Post Feed and Calendar List blocks.
+ *
+ * The predecessor Post Feed and Calendar List Views never showed a teaser
+ * image, but deploy_10002 stored the option switched on, so their cards
+ * asked for one after the migration (#2375). Every revision whose params
+ * still equal a preset an earlier deploy wrote (the current shape, the
+ * filterless one, or the display "all" ones) gets the option switched off;
+ * its other settings stay. Blocks an editor has changed since, and listings
+ * built in the same bundles from scratch, are left alone. Directory blocks
+ * keep their photos. The rows are written directly, so Updated dates stay.
+ * Idempotent: a second run finds no old preset. On a site where 10002 runs
+ * with the current preset, this finds nothing. Batched like deploy_10004.
+ */
+function ys_views_basic_deploy_10007(&$sandbox) {
+  /** @var \Drupal\ys_views_basic\Service\ListingMigrator $migrator */
+  $migrator = \Drupal::service('ys_views_basic.listing_migrator');
+
+  if (!isset($sandbox['ids'])) {
+    // Predecessor bundle => the params earlier deploys wrote; block id =>
+    // predecessor bundle.
+    $sandbox['matches'] = [];
+    $sandbox['ids'] = [];
+    foreach (['post_list', 'event_list'] as $legacy) {
+      $preset = ViewsBasicManager::predecessorPreset($legacy);
+      $sandbox['matches'][$legacy] = array_values(array_filter([
+        ViewsBasicManager::thumbnailOnPredecessorParams($legacy),
+        ViewsBasicManager::filterlessPredecessorParams($legacy),
+        ViewsBasicManager::displayAllPredecessorParams($legacy),
+        ViewsBasicManager::displayAllPredecessorParams($legacy, TRUE),
+      ]));
+      $ids = \Drupal::entityTypeManager()->getStorage('block_content')->getQuery()
+        ->condition('type', $preset['target'])
+        ->accessCheck(FALSE)
+        ->execute();
+      $sandbox['ids'] += array_fill_keys(array_values($ids), $legacy);
+    }
+    $sandbox['total'] = count($sandbox['ids']);
+    $sandbox['updated'] = 0;
+  }
+
+  // array_slice() with preserve_keys: array_splice() would renumber the ids.
+  $chunk = array_slice($sandbox['ids'], 0, ListingMigrator::BATCH_SIZE, TRUE);
+  $sandbox['ids'] = array_diff_key($sandbox['ids'], $chunk);
+  $off = ['field_options' => ViewsBasicManager::predecessorPreset('post_list')['params']['field_options']];
+  foreach ($chunk as $id => $legacy) {
+    if ($migrator->overrideMatchingParams($id, $sandbox['matches'][$legacy], $off)) {
+      $sandbox['updated']++;
+    }
+  }
+  if ($chunk) {
+    // The rows were written directly; drop the stale cached blocks.
+    \Drupal::entityTypeManager()->getStorage('block_content')->resetCache(array_keys($chunk));
+  }
+
+  if ($sandbox['ids']) {
+    $sandbox['#finished'] = ($sandbox['total'] - count($sandbox['ids'])) / $sandbox['total'];
+    return NULL;
+  }
+  if ($sandbox['updated']) {
+    \Drupal::service('cache.render')->invalidateAll();
+  }
+  $sandbox['#finished'] = 1;
+  \Drupal::logger('ys_views_basic')->notice('Predecessor teaser images: switched off on @n migrated blocks.', ['@n' => $sandbox['updated']]);
+  return t('Predecessor teaser images: switched off on @n migrated blocks.', ['@n' => $sandbox['updated']]);
+}

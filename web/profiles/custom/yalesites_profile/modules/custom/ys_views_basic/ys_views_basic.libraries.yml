@@ -66,4 +66,5 @@ chosen_a11y:
     assets/js/views-basic-chosen-a11y.js: {}
   dependencies:
     - core/drupal
+    - core/jquery
     - core/once
