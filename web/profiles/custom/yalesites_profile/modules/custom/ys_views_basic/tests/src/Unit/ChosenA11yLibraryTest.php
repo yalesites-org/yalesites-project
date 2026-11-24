@@ -21,6 +21,7 @@ class ChosenA11yLibraryTest extends UnitTestCase {
     $this->assertArrayHasKey('chosen_a11y', $libraries);
     $this->assertArrayHasKey('assets/js/views-basic-chosen-a11y.js', $libraries['chosen_a11y']['js']);
     $this->assertContains('core/once', $libraries['chosen_a11y']['dependencies']);
+    $this->assertContains('core/jquery', $libraries['chosen_a11y']['dependencies']);
   }
 
   /**
@@ -65,6 +66,31 @@ class ChosenA11yLibraryTest extends UnitTestCase {
     $this->assertStringContainsString("'aria-owns'", $js);
     $this->assertStringNotContainsString('createElement', $js);
     $this->assertStringNotContainsString('wrapAll', $js);
+  }
+
+  /**
+   * Selected options can be unselected and every option is reachable.
+   */
+  public function testUnselectBehaviorUsesChosenApi(): void {
+    $js = file_get_contents(dirname(__DIR__, 3) . '/assets/js/views-basic-chosen-a11y.js');
+    $this->assertStringContainsString('result_deselect', $js);
+    $this->assertStringContainsString("'ArrowDown'", $js);
+    $this->assertStringContainsString("'Enter'", $js);
+    $this->assertStringContainsString("event.key === ' '", $js);
+    $this->assertStringContainsString("get_search_field_value() === ''", $js);
+    $this->assertStringContainsString('li.result-selected', $js);
+  }
+
+  /**
+   * The active option has a focus ring in light and dark mode, admin-scoped.
+   */
+  public function testFocusRingRulesExist(): void {
+    $css = file_get_contents(dirname(__DIR__, 3) . '/assets/css/views-basic.css');
+    foreach (['include', 'exclude'] as $picker) {
+      $form_item = '\.form-item-settings-block-form-group-user-selection-filter-and-sort-terms-' . $picker;
+      $this->assertMatchesRegularExpression('/\.layout-builder-configure-block\s+' . $form_item . '\s+\.chosen-container\s+\.chosen-results\s+li\.highlighted\s*[,{][^}]*outline:/', $css, "Light-mode ring for the $picker picker.");
+      $this->assertMatchesRegularExpression('/\.gin--dark-mode\s+\.layout-builder-configure-block\s+' . $form_item . '\s+\.chosen-container\s+\.chosen-results\s+li\.highlighted\s*[,{][^}]*outline-color/', $css, "Dark-mode ring for the $picker picker.");
+    }
   }
 
   /**
