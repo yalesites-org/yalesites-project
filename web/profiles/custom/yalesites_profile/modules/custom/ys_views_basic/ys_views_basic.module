@@ -25,10 +25,15 @@ use Drupal\ys_views_basic\ViewsBasicManager;
  * drop-in replacement (no atomic change required).
  */
 function ys_views_basic_theme_suggestions_block_alter(array &$suggestions, array $variables) {
-  if (($variables['elements']['#base_plugin_id'] ?? NULL) !== 'inline_block') {
+  $base = $variables['elements']['#base_plugin_id'] ?? NULL;
+  if (!in_array($base, ['inline_block', 'block_content'], TRUE)) {
     return;
   }
-  $bundle = _ys_views_basic_inline_block_bundle($variables['elements'], $variables['elements']['#derivative_plugin_id'] ?? NULL);
+  // A reusable listing placed by reference (block_content:UUID) renders the
+  // same bundle, so it takes the same template (#2366). Its derivative is a
+  // UUID, not a bundle, so only the rendered entity can name the bundle.
+  $derivative = $base === 'inline_block' ? ($variables['elements']['#derivative_plugin_id'] ?? NULL) : NULL;
+  $bundle = _ys_views_basic_inline_block_bundle($variables['elements'], $derivative);
   if ($bundle !== NULL && isset(ViewsBasicManager::LISTING_BUNDLES[$bundle])) {
     // Appended last so it takes priority over the (template-less) per-bundle
     // suggestion and resolves to block--inline-block--view.html.twig.
@@ -56,8 +61,10 @@ function ys_views_basic_theme_suggestions_block_alter(array &$suggestions, array
  *   yalesites-org/YaleSites-Internal#1723, once Atomic reads field_view_params.
  */
 function ys_views_basic_preprocess_block(array &$variables): void {
-  $bundle = _ys_views_basic_inline_block_bundle($variables['elements'] ?? [], $variables['derivative_plugin_id'] ?? NULL);
-  if (($variables['base_plugin_id'] ?? NULL) !== 'inline_block'
+  $base = $variables['base_plugin_id'] ?? NULL;
+  $derivative = $base === 'inline_block' ? ($variables['derivative_plugin_id'] ?? NULL) : NULL;
+  $bundle = _ys_views_basic_inline_block_bundle($variables['elements'] ?? [], $derivative);
+  if (!in_array($base, ['inline_block', 'block_content'], TRUE)
     || !_ys_views_basic_is_resource_listing($bundle)
     || !isset($variables['content']['field_view_params'])) {
     return;
@@ -601,10 +608,10 @@ function _ys_views_basic_listing_form_tabs(array $element, FormStateInterface $f
   // fixed paths still resolve; only #group (and the active-tab #open flag) are
   // set here.
   // Weight the widget groups after General (#weight 0) so the bar reads
-  // General | Field display & filters | Tags, sorting & pinned |
+  // General | Tags, sorting & pinned | Results & filters |
   // Display options.
   $group_weight = 1;
-  foreach (['entity_and_view_mode', 'filter_and_sort', 'options'] as $group) {
+  foreach (['filter_and_sort', 'entity_and_view_mode', 'options'] as $group) {
     if (isset($element['group_user_selection'][$group])) {
       $element['group_user_selection'][$group]['#group'] = $tabs;
       $element['group_user_selection'][$group]['#open'] = FALSE;

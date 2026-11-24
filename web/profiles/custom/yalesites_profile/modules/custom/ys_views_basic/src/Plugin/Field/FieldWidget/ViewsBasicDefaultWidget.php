@@ -490,6 +490,7 @@ class ViewsBasicDefaultWidget extends ViewsBasicWidgetBase {
     ];
 
     $form['#attached']['library'][] = 'ys_views_basic/ys_views_basic';
+    $form['#attached']['library'][] = 'ys_views_basic/chosen_a11y';
 
     return $element;
   }

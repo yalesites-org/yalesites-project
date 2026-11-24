@@ -5,6 +5,8 @@
  * YaleSites File Management module.
  */
 
+use Drupal\ys_file_management\Plugin\Validation\Constraint\ImageGuidanceFileSizeLimitConstraint;
+
 /**
  * Implements hook_entity_type_alter().
  */
@@ -33,5 +35,17 @@ function ys_file_management_help($route_name, $route_match) {
       $output .= '</ul>';
       $output .= '<p>' . t('Users without this permission will only see standard media deletion (media entity removed, files retained).') . '</p>';
       return $output;
+  }
+}
+
+/**
+ * Implements hook_validation_constraint_alter().
+ *
+ * Swaps core's FileSizeLimit constraint for one whose oversize-image message
+ * says how to fix the problem, not only what the limit is.
+ */
+function ys_file_management_validation_constraint_alter(array &$definitions): void {
+  if (isset($definitions['FileSizeLimit'])) {
+    $definitions['FileSizeLimit']['class'] = ImageGuidanceFileSizeLimitConstraint::class;
   }
 }

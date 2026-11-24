@@ -390,6 +390,7 @@ abstract class ViewsBasicWidgetBase extends WidgetBase implements ContainerFacto
     ];
 
     $form['#attached']['library'][] = 'ys_views_basic/ys_views_basic';
+    $form['#attached']['library'][] = 'ys_views_basic/chosen_a11y';
     $form['#attached']['library'][] = 'ys_views_basic/term_operator';
     if ($is_create_form) {
       $form['#attached']['library'][] = 'ys_views_basic/ys_views_basic_preview';
@@ -717,13 +718,18 @@ abstract class ViewsBasicWidgetBase extends WidgetBase implements ContainerFacto
     // so a visible title here duplicated it as two headings 32px apart.
     $field_options_title = $this->t('Show on each result');
 
-    // Default to the saved field options, falling back to showing the teaser
-    // image on a brand-new block where that option is offered.
-    $saved = $items[$delta]->params
-      ? $this->viewsBasicManager->getDefaultParamValue('field_options', $items[$delta]->params)
-      : [];
-    if (empty($saved) && isset($options['show_thumbnail'])) {
-      $saved = ['show_thumbnail'];
+    // Default to the saved field options. A brand-new block (whose field
+    // default stores an empty set) and a block saved before the options
+    // existed fall back to showing the teaser image, the same rule
+    // setupView() renders by. On a saved block an empty set means every box
+    // was unchecked, so it stays unchecked (#2375).
+    $decoded = $items[$delta]->params ? json_decode($items[$delta]->params, TRUE) : NULL;
+    $saved = $decoded['field_options'] ?? NULL;
+    if (!is_array($saved)) {
+      $saved = NULL;
+    }
+    if ($saved === NULL || (!$saved && $this->isCreateForm($items))) {
+      $saved = isset($options['show_thumbnail']) ? ['show_thumbnail'] : [];
     }
 
     $form['group_user_selection']['entity_and_view_mode']['field_options'] = [

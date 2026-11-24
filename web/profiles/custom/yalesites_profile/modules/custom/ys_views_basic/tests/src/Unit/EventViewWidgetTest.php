@@ -2,6 +2,7 @@
 
 namespace Drupal\Tests\ys_views_basic\Unit;
 
+use Drupal\Core\Entity\ContentEntityInterface;
 use Drupal\Core\Entity\EntityStorageInterface;
 use Drupal\Core\Entity\EntityTypeManagerInterface;
 use Drupal\Core\Field\FieldDefinitionInterface;
@@ -252,6 +253,37 @@ class EventViewWidgetTest extends UnitTestCase {
       $filter_and_sort['exclude_operator_wrapper']['exclude_operator']['#attributes']['disabled'],
       'Exclude operator stays disabled: terms_exclude is empty.'
     );
+  }
+
+  /**
+   * The teaser image box defaults on only when no options were ever saved.
+   *
+   * A listing saved with every result option unchecked stores an empty
+   * field_options and renders without pictures, so its form must show the
+   * box unchecked too, or the next save switches pictures back on (#2375).
+   *
+   * @covers ::buildFieldDisplayOptions
+   */
+  public function testThumbnailDefaultFollowsSavedOptions() {
+    $default = function (?array $params, bool $new = FALSE): array {
+      $item = (object) ['params' => $params === NULL ? NULL : json_encode($params)];
+      $block = $this->createMock(ContentEntityInterface::class);
+      $block->method('isNew')->willReturn($new);
+      $items = $this->createMock(FieldItemListInterface::class);
+      $items->method('offsetGet')->willReturn($item);
+      $items->method('getEntity')->willReturn($block);
+      $form = [];
+      $this->invoke($this->widget('event_list_item'), 'buildFieldDisplayOptions', [&$form, $items, 0]);
+      return $form['group_user_selection']['entity_and_view_mode']['field_options']['#default_value'];
+    };
+
+    $this->assertSame(['show_thumbnail'], $default(NULL, TRUE), 'A new listing shows the teaser image.');
+    // The field's configured default value stores an empty set.
+    $this->assertSame(['show_thumbnail'], $default(['field_options' => []], TRUE), 'A new listing shows the teaser image.');
+    $this->assertSame(['show_thumbnail'], $default(['view_mode' => 'list_item']), 'A listing saved before the option existed shows it.');
+    $this->assertSame([], $default(['field_options' => []]), 'Everything unchecked stays unchecked.');
+    $this->assertSame(['show_thumbnail' => 0], $default(['field_options' => ['show_thumbnail' => 0]]));
+    $this->assertSame(['show_tags' => 'show_tags'], $default(['field_options' => ['show_tags' => 'show_tags']]));
   }
 
   /**
