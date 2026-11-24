@@ -26,6 +26,19 @@ off_canvas_resize_handle:
     theme:
       css/off-canvas-resize-handle.css: {}
 
+# Keeps Linkit's suggestion list on screen in the Layout Builder dialogs and
+# lists exact title matches first; loaded like the two above.
+linkit_suggestions:
+  version: VERSION
+  css:
+    theme:
+      css/linkit-suggestions.css: {}
+  js:
+    js/linkit-suggestions.js: {}
+  dependencies:
+    - core/jquery
+    - core/drupal.jquery.position
+
 # Help-text spacing for rich-text fields in gin_lb forms. Attached by
 # ys_layouts_preprocess_text_format_wrapper__gin_lb().
 gin_lb_text_format:

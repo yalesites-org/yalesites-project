@@ -14,18 +14,12 @@ use Drupal\Core\Routing\RouteMatchInterface;
 use Drupal\Core\Routing\RouteObjectInterface;
 use Drupal\Core\Url;
 use Drupal\link\Plugin\Field\FieldWidget\LinkWidget;
-use Drupal\linkit\Plugin\Linkit\Matcher\EntityMatcher;
-use Drupal\linkit\Plugin\Linkit\Matcher\FileMatcher;
-use Drupal\linkit\Plugin\Linkit\Matcher\NodeMatcher;
 use Drupal\menu_link_content\Entity\MenuLinkContent;
 use Drupal\node\Entity\Node;
 use Drupal\node\NodeInterface;
 use Drupal\Component\Utility\NestedArray;
 use Drupal\ys_core\Editoria11yRouteSuppressor;
 use Drupal\ys_core\FormErrorDescription;
-use Drupal\ys_core\Linkit\RankedEntityMatcher;
-use Drupal\ys_core\Linkit\RankedFileMatcher;
-use Drupal\ys_core\Linkit\RankedNodeMatcher;
 use Drupal\ys_core\Plugin\PlatformAdminSetting\EnvironmentIndicatorPlatformAdminSetting;
 use Drupal\ys_core\SiteMail;
 use Drupal\ys_core\SiteimproveRouteChecker;
@@ -106,7 +100,6 @@ function ys_core_theme($existing, $type, $theme, $path): array {
 function ys_core_element_info_alter(array &$info) {
   if (isset($info['linkit'])) {
     $info['linkit']['#process'][] = 'ys_core_linkit_uri_selector';
-    $info['linkit']['#process'][] = 'ys_core_linkit_suggestion_list';
   }
   foreach (['datetime', 'datelist'] as $type) {
     if (isset($info[$type])) {
@@ -140,54 +133,6 @@ function ys_core_linkit_uri_selector(array $element) {
     $element['#attributes']['data-drupal-selector'] = $selector . '-uri';
   }
   return $element;
-}
-
-/**
- * Process callback: keeps a linkit element's suggestion list on screen.
- *
- * Linkit's process callback, which runs before this one, marks the input with
- * "form-linkit-autocomplete" only when the editor may use the autocomplete
- * route; the library is attached on the same condition. Attaching it to the
- * element rather than to a form or theme is what reaches every link field,
- * including the Layout Builder dialogs, which arrive over AJAX.
- *
- * @param array $element
- *   The linkit element being processed.
- *
- * @return array
- *   The processed element.
- *
- * @see js/linkit-autocomplete.js
- */
-function ys_core_linkit_suggestion_list(array $element) {
-  if (in_array('form-linkit-autocomplete', $element['#attributes']['class'] ?? [], TRUE)) {
-    $element['#attached']['library'][] = 'ys_core/linkit_autocomplete';
-  }
-  return $element;
-}
-
-/**
- * Implements hook_linkit_matcher_alter().
- *
- * Swaps Linkit's entity matchers for subclasses that list exact label matches
- * first, then labels starting with the search, then the rest. Keyed on class
- * rather than plugin ID so the derived "entity:*" matchers (media, and any
- * other entity type a profile adds) are covered along with node and file.
- *
- * @see \Drupal\ys_core\Linkit\RankedMatcherTrait
- */
-function ys_core_linkit_matcher_alter(array &$definitions) {
-  $ranked = [
-    EntityMatcher::class => RankedEntityMatcher::class,
-    FileMatcher::class => RankedFileMatcher::class,
-    NodeMatcher::class => RankedNodeMatcher::class,
-  ];
-  foreach ($definitions as &$definition) {
-    $class = ltrim($definition['class'] ?? '', '\\');
-    if (isset($ranked[$class])) {
-      $definition['class'] = $ranked[$class];
-    }
-  }
 }
 
 /**
