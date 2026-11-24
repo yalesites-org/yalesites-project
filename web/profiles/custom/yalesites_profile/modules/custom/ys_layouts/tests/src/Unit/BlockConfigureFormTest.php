@@ -16,6 +16,7 @@ use Drupal\Core\Render\Element;
 use Drupal\Core\Render\ElementInfoManagerInterface;
 use Drupal\Core\StringTranslation\TranslatableMarkup;
 use Drupal\Core\Theme\ThemeManagerInterface;
+use Drupal\layout_builder\SectionComponent;
 use Drupal\Tests\UnitTestCase;
 use Symfony\Component\HttpFoundation\RequestStack;
 use Symfony\Contracts\EventDispatcher\EventDispatcherInterface;
@@ -215,6 +216,21 @@ class BlockConfigureFormTest extends UnitTestCase {
     // A second name, so the block cannot be hardcoded into the heading.
     $form = $this->alter($this->blockForm('Views: Recent posts'), 'layout_builder_add_block');
     $this->assertSame('Create Views: Recent posts', (string) $form['#title']);
+  }
+
+  /**
+   * Placing an existing reusable block is headed "Place [Block Name]".
+   */
+  public function testAddFormForExistingReusableBlockIsHeadedPlace(): void {
+    $component = $this->createMock(SectionComponent::class);
+    $component->method('getPluginId')->willReturn('block_content:4f1c0e6a-0000-4000-8000-000000000000');
+    $form_state = $this->createMock(FormStateInterface::class);
+    $form_state->method('get')->with('layout_builder__component')->willReturn($component);
+
+    $form = $this->blockForm('Taxonomy Display Block');
+    ys_layouts_form_alter($form, $form_state, 'layout_builder_add_block');
+
+    $this->assertSame('Place Taxonomy Display Block', (string) $form['#title']);
   }
 
   /**

@@ -19,6 +19,22 @@ function ys_admin_theme_preprocess_page_title(&$variables) {
 }
 
 /**
+ * Implements hook_preprocess_HOOK() for menu-local-action templates.
+ *
+ * The "+" icon belongs to buttons that add something. Export to CSV adds
+ * nothing, so drop the class that draws it (button--action) and keep the
+ * button styling.
+ */
+function ys_admin_theme_preprocess_menu_local_action(array &$variables) {
+  $route = $variables['element']['#link']['url']->getRouteName() ?? '';
+  if (!str_starts_with($route, 'ys_content_export.')) {
+    return;
+  }
+  $classes = &$variables['link']['#options']['attributes']['class'];
+  $classes = array_values(array_diff($classes ?? [], ['button--action', 'button-action']));
+}
+
+/**
  * Set the page title on node edit forms.
  *
  * Override page title defined in gin/includes/page.theme. The name of the node

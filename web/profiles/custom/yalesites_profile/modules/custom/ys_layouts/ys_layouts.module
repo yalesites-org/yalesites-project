@@ -286,9 +286,18 @@ function ys_layouts_form_alter(&$form, $form_state, $form_id) {
     // that renders empty straight into the heading.
     $block_name = (string) ($form['settings']['admin_label']['#plain_text'] ?? '');
     if ($block_name !== '') {
-      $form['#title'] = $form_id == 'layout_builder_add_block'
-        ? t('Create @block', ['@block' => $block_name])
-        : t('Configure @block', ['@block' => $block_name]);
+      // Placing a block that already exists in the library (a block_content
+      // plugin) creates nothing, so that modal says Place, not Create.
+      $component = $form_id == 'layout_builder_add_block' ? $form_state->get('layout_builder__component') : NULL;
+      $places_existing = $component && str_starts_with((string) $component->getPluginId(), 'block_content:');
+      if ($form_id != 'layout_builder_add_block') {
+        $form['#title'] = t('Configure @block', ['@block' => $block_name]);
+      }
+      else {
+        $form['#title'] = $places_existing
+          ? t('Place @block', ['@block' => $block_name])
+          : t('Create @block', ['@block' => $block_name]);
+      }
 
       // That item now only restates the heading, so it can go, freeing the slot
       // the guidance moves into below. Nothing reads its value -
