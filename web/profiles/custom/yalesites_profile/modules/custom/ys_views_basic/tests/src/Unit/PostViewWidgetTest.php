@@ -56,7 +56,7 @@ class PostViewWidgetTest extends UnitTestCase {
   /**
    * Builds a PostViewWidget bound to the given bundle.
    */
-  private function widget(string $bundle): PostViewWidget {
+  private function widget(string $bundle, array $site = ['font_pairing' => 'yalenew']): PostViewWidget {
     $field_definition = $this->createMock(FieldDefinitionInterface::class);
     $field_definition->method('getTargetBundle')->willReturn($bundle);
     $widget = new PostViewWidget(
@@ -67,7 +67,7 @@ class PostViewWidgetTest extends UnitTestCase {
       [],
       $this->manager,
       $this->entityTypeManager,
-      $this->getConfigFactoryStub(['ys_core.site' => ['font_pairing' => 'yalenew']]),
+      $this->getConfigFactoryStub(['ys_core.site' => $site]),
     );
     $widget->setStringTranslation($this->getStringTranslationStub());
     return $widget;
@@ -186,6 +186,32 @@ class PostViewWidgetTest extends UnitTestCase {
     $this->assertSame('post', $preview['#content_type']);
     $this->assertSame('card', $preview['#view_mode']);
     $this->assertSame(100, $preview['#weight']);
+  }
+
+  /**
+   * The preview gets the heading font string from the font_pairing mapping.
+   *
+   * After ys_core_update_10021 font_pairing is a mapping, which Twig cannot
+   * print as an attribute value; the panel must pass the heading font only.
+   *
+   * @covers \Drupal\ys_views_basic\Plugin\Field\FieldWidget\ViewsBasicWidgetBase::buildPreviewPanel
+   */
+  public function testPreviewPanelReadsHeadingFont() {
+    $site = [
+      'font_pairing' => [
+        'heading_font' => 'mallory',
+        'heading_numerals' => 'lining',
+        'body_numerals' => 'oldstyle',
+      ],
+    ];
+    $form = [];
+    $this->invoke($this->widget('post_card', $site), 'buildPreviewPanel', [&$form]);
+    $this->assertSame('mallory', $form['group_user_selection']['entity_and_view_mode']['preview']['#font_pairing']);
+
+    // A site not yet migrated (legacy string) falls back to the default.
+    $form = [];
+    $this->invoke($this->widget('post_card'), 'buildPreviewPanel', [&$form]);
+    $this->assertSame('yalenew', $form['group_user_selection']['entity_and_view_mode']['preview']['#font_pairing']);
   }
 
   /**

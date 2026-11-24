@@ -100,3 +100,7 @@
 .gin--dark-mode .font-preview-container {
   background: var(--gin-bg-input);
 }
+
+.gin--dark-mode .numeral-sample-label {
+  color: var(--gin-color-text);
+}
