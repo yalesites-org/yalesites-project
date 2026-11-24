@@ -62,7 +62,7 @@
     "drupal/layout_builder_restrictions_by_role": "1.0.0-rc1",
     "drupal/libraries": "4.2.1",
     "drupal/linkit": "7.0.19",
-    "drupal/mailchimp_transactional": "1.2.0",
+    "drupal/mailchimp_transactional": "1.2.1",
     "drupal/mailsystem": "4.5.0",
     "drupal/markup": "2.0.1",
     "drupal/mathjax": "4.1.2",
