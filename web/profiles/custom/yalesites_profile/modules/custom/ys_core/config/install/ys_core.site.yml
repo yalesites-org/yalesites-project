@@ -6,6 +6,6 @@ seo:
   google_analytics_id: ''
 image_fallback:
   teaser: ''
-custom_favicon: ''
+custom_favicon: []
 environment_indicator:
   show: true

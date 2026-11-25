@@ -82,9 +82,9 @@ class YaleSitesVocabularyListBuilder extends VocabularyListBuilder {
    * {@inheritdoc}
    */
   public function buildHeader() {
-    $header['label'] = $this->t('Vocabulary name');
-    $header['content_types'] = $this->t('Content Types');
-    $header['operations'] = $this->t('Operations');
+    $header['label'] = ['data' => $this->t('Vocabulary name'), 'scope' => 'col'];
+    $header['content_types'] = ['data' => $this->t('Content Types'), 'scope' => 'col'];
+    $header['operations'] = ['data' => $this->t('Operations'), 'scope' => 'col'];
     return $header;
   }
 

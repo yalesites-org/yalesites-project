@@ -58,6 +58,21 @@ class ViewsContentResourcesManager extends ControllerBase implements ContainerIn
   const DEFAULT_PIN_LABEL = 'Pinned';
 
   /**
+   * Longest label accepted for the pin and category filter labels.
+   */
+  const MAX_LABEL_LENGTH = 255;
+
+  /**
+   * Fields the search filter can search, as offered by the block form.
+   */
+  const ALLOWED_SEARCH_FIELDS = [
+    'title',
+    'field_teaser_text',
+    'field_teaser_title',
+    'field_journal_publication_name',
+  ];
+
+  /**
    * The entity type manager.
    *
    * @var \Drupal\Core\Entity\EntityTypeManagerInterface
@@ -147,12 +162,17 @@ class ViewsContentResourcesManager extends ControllerBase implements ContainerIn
       return;
     }
     $setupRunning = TRUE;
-    $paramsDecoded = empty($params) ? [] : json_decode($params, TRUE);
+    // On AJAX requests the parameters come from the request, so anything
+    // that is not a known value falls back to a safe default.
+    $paramsDecoded = is_string($params) ? json_decode($params, TRUE) : NULL;
+    if (!is_array($paramsDecoded)) {
+      $paramsDecoded = [];
+    }
     $pinned_to_top = isset($paramsDecoded['pinned_to_top']) ? (bool) $paramsDecoded['pinned_to_top'] : FALSE;
 
     $view->setDisplay('block_1');
 
-    $filterType = empty($params) ? 'resource' : implode('+', $paramsDecoded['filters']['types']);
+    $filterType = self::getValidatedFilterType($paramsDecoded['filters']['types'] ?? NULL);
 
     // Retrieve the current filter options from the view's display settings.
     $filters = $view->getDisplay()->getOption('filters');
@@ -180,18 +200,20 @@ class ViewsContentResourcesManager extends ControllerBase implements ContainerIn
 
       // Check if 'category_included_terms' is provided for the current
       // filter type.
-      if (!empty($paramsDecoded['category_included_terms'])) {
+      $categoryParentId = self::getValidatedTermId($paramsDecoded['category_included_terms'] ?? NULL);
+      if ($categoryParentId) {
         $vid = "resource_category";
 
         // Limit the filter to specific terms if provided.
-        $filters[$category_filter_name]['value'] = $this->getChildTermsByParentId($paramsDecoded['category_included_terms'], $vid);
+        $filters[$category_filter_name]['value'] = $this->getChildTermsByParentId($categoryParentId, $vid);
         $filters[$category_filter_name]['limit'] = TRUE;
         $filters[$category_filter_name]['expose']['reduce'] = TRUE;
       }
 
       // Set a custom label for the 'Category' filter if provided.
-      if (!empty($paramsDecoded['category_filter_label'])) {
-        $filters[$category_filter_name]['expose']['label'] = $paramsDecoded['category_filter_label'];
+      $categoryLabel = self::getValidatedLabel($paramsDecoded['category_filter_label'] ?? NULL, '');
+      if ($categoryLabel !== '') {
+        $filters[$category_filter_name]['expose']['label'] = $categoryLabel;
       }
     }
     else {
@@ -210,12 +232,13 @@ class ViewsContentResourcesManager extends ControllerBase implements ContainerIn
 
       // Check if 'custom_vocab_included_terms' is provided for the current
       // filter type.
-      if (!empty($paramsDecoded['custom_vocab_included_terms'])) {
+      $customVocabParentId = self::getValidatedTermId($paramsDecoded['custom_vocab_included_terms'] ?? NULL);
+      if ($customVocabParentId) {
         // Determine the vocabulary ID based on the selected filter type.
         $vid = 'custom_vocab';
 
         // Limit the filter to specific terms if provided.
-        $filters['field_custom_vocab_target_id']['value'] = $this->getChildTermsByParentId($paramsDecoded['custom_vocab_included_terms'], $vid);
+        $filters['field_custom_vocab_target_id']['value'] = $this->getChildTermsByParentId($customVocabParentId, $vid);
         $filters['field_custom_vocab_target_id']['limit'] = TRUE;
         $filters['field_custom_vocab_target_id']['expose']['reduce'] = TRUE;
       }
@@ -244,6 +267,8 @@ class ViewsContentResourcesManager extends ControllerBase implements ContainerIn
       unset($filters['combine']);
     }
     else {
+      $paramsDecoded['search_fields'] = self::getValidatedSearchFields($paramsDecoded['search_fields'] ?? NULL);
+
       // Legacy: map old journal publication name filter to search fields.
       if (!empty($paramsDecoded['exposed_filter_options']['show_journal_publication_name_filter'])
           && empty($paramsDecoded['search_fields'])) {
@@ -307,21 +332,25 @@ class ViewsContentResourcesManager extends ControllerBase implements ContainerIn
     $termsExcludeArray = [];
 
     // Get terms to include.
-    if (isset($paramsDecoded['filters']['terms_include'])) {
+    if (is_array($paramsDecoded['filters']['terms_include'] ?? NULL)) {
       foreach ($paramsDecoded['filters']['terms_include'] as $term) {
-        $termsIncludeArray[] = $this->getTermId($term);
+        if (self::isValidTermValue($term)) {
+          $termsIncludeArray[] = $this->getTermId($term);
+        }
       }
     }
 
     // Get terms to exclude.
-    if (isset($paramsDecoded['filters']['terms_exclude'])) {
+    if (is_array($paramsDecoded['filters']['terms_exclude'] ?? NULL)) {
       foreach ($paramsDecoded['filters']['terms_exclude'] as $term) {
-        $termsExcludeArray[] = $this->getTermId($term);
+        if (self::isValidTermValue($term)) {
+          $termsExcludeArray[] = $this->getTermId($term);
+        }
       }
     }
 
     // Set operator: "+" is "OR" and "," is "AND".
-    $operator = $paramsDecoded['operator'] ?? '+';
+    $operator = in_array($paramsDecoded['operator'] ?? NULL, ['+', ','], TRUE) ? $paramsDecoded['operator'] : '+';
 
     // Fix for older setting terms for nodes not saved with the new storage.
     if (isset($termsIncludeArray[0]) && is_array($termsIncludeArray[0])) {
@@ -365,14 +394,14 @@ class ViewsContentResourcesManager extends ControllerBase implements ContainerIn
       'show_tags' => (int) !empty($paramsDecoded['field_options']['show_tags']),
     ];
 
-    if ($paramsDecoded['display'] == 'all') {
+    if (($paramsDecoded['display'] ?? NULL) == 'all') {
       $itemsLimit = 0;
     }
     else {
-      $itemsLimit = $paramsDecoded['limit'];
+      $itemsLimit = isset($paramsDecoded['limit']) ? max(0, (int) $paramsDecoded['limit']) : NULL;
     }
 
-    $pin_label = $paramsDecoded['pin_label'] ?? self::DEFAULT_PIN_LABEL;
+    $pin_label = self::getValidatedLabel($paramsDecoded['pin_label'] ?? NULL, self::DEFAULT_PIN_LABEL);
 
     if (!$pinned_to_top) {
       $pin_label = NULL;
@@ -412,29 +441,37 @@ class ViewsContentResourcesManager extends ControllerBase implements ContainerIn
       'type' => 'resource',
       'terms_include' => $termsInclude,
       'terms_exclude' => $termsExclude,
-      'sort' => $paramsDecoded['sort_by'],
-      'view' => $paramsDecoded['view_mode'],
+      'sort' => $this->getValidatedSort($paramsDecoded['sort_by'] ?? NULL),
+      'view' => self::getValidatedViewMode($paramsDecoded['view_mode'] ?? NULL),
       'items' => $itemsLimit,
-      'offset' => $paramsDecoded['offset'] ?? 0,
+      'offset' => max(0, (int) ($paramsDecoded['offset'] ?? 0)),
       'field_display_options' => json_encode($field_display_options),
       'pin_settings' => json_encode($pin_options),
       'original_settings' => $params,
     ];
 
     $view->setArguments($view_args);
+    // See ViewsBasicFullPager::query().
+    $view->setOffset((int) $view_args['offset']);
     $view->execute();
 
     // Unset the pager. Needs to be done after view->execute();
-    if ($paramsDecoded['display'] != "pager") {
+    if (($paramsDecoded['display'] ?? NULL) != "pager") {
       unset($view->pager);
     }
 
     $view = $view->preview();
+    // preview() returns NULL or FALSE when there is nothing to render; see
+    // ViewsBasicManager::setupView(). No early return: the re-entry flag
+    // below must still be cleared.
+    if (!is_array($view)) {
+      $view = [];
+    }
     // Add cache keys for each display option.
     // This ensures that if the options for showing categories, tags,
     // or thumbnails change, the cache will be invalidated,
     // and the view will be re-rendered with the new options.
-    if ($view['#rows'] && $view['#rows']['#rows']) {
+    if (!empty($view['#rows']['#rows'])) {
       foreach ($view['#rows']['#rows'] as &$resultRow) {
         $resultRow['#cache']['keys'][] = $pin_options['pinned_to_top'];
         $resultRow['#cache']['keys'][] = $pin_options['pin_label'];
@@ -502,6 +539,134 @@ class ViewsContentResourcesManager extends ControllerBase implements ContainerIn
     return [
       'field_publish_date:DESC' => 'Published Date - newer first',
       'field_publish_date:ASC' => 'Published Date - older first',
+    ];
+  }
+
+  /**
+   * Returns the content type filter string from the stored types.
+   *
+   * @param mixed $types
+   *   The content type machine names read from the stored parameters.
+   *
+   * @return string
+   *   The string types joined with "+", or "resource" when the input is not
+   *   an array or holds no string.
+   */
+  public static function getValidatedFilterType($types): string {
+    if (!is_array($types)) {
+      return 'resource';
+    }
+    $types = array_filter($types, 'is_string');
+    return $types ? implode('+', $types) : 'resource';
+  }
+
+  /**
+   * Returns the sort to use.
+   *
+   * @param mixed $sortBy
+   *   The requested sort, in the format "field_name:DIRECTION".
+   *
+   * @return string
+   *   The requested sort when it is listed in sortByList(), otherwise the
+   *   first listed sort.
+   */
+  public function getValidatedSort($sortBy): string {
+    $sorts = $this->sortByList();
+    if (is_string($sortBy) && isset($sorts[$sortBy])) {
+      return $sortBy;
+    }
+    return array_key_first($sorts);
+  }
+
+  /**
+   * Returns the view mode to use.
+   *
+   * @param mixed $viewMode
+   *   The requested view mode machine name.
+   *
+   * @return string
+   *   The requested view mode when it is listed in ALLOWED_VIEW_MODES,
+   *   otherwise the first listed view mode.
+   */
+  public static function getValidatedViewMode($viewMode): string {
+    if (is_string($viewMode) && isset(self::ALLOWED_VIEW_MODES[$viewMode])) {
+      return $viewMode;
+    }
+    return array_key_first(self::ALLOWED_VIEW_MODES);
+  }
+
+  /**
+   * Returns a label to show, as plain text.
+   *
+   * @param mixed $label
+   *   The requested label.
+   * @param string $default
+   *   The label to use when the requested one is not usable.
+   *
+   * @return string
+   *   The requested label when it is a string of at most MAX_LABEL_LENGTH
+   *   characters with no markup or control characters, otherwise the default.
+   */
+  public static function getValidatedLabel($label, string $default): string {
+    if (!is_string($label)) {
+      return $default;
+    }
+    $label = trim($label);
+    if ($label === ''
+      || mb_strlen($label) > self::MAX_LABEL_LENGTH
+      || strip_tags($label) !== $label
+      || preg_match('/[\x00-\x1F\x7F]/', $label)) {
+      return $default;
+    }
+    return $label;
+  }
+
+  /**
+   * Returns the term ID to use.
+   *
+   * @param mixed $termId
+   *   The requested parent term ID.
+   *
+   * @return int|null
+   *   The requested ID when it is a whole number above zero, otherwise NULL.
+   */
+  public static function getValidatedTermId($termId): ?int {
+    if (is_int($termId)) {
+      return $termId > 0 ? $termId : NULL;
+    }
+    if (is_string($termId) && ctype_digit($termId) && (int) $termId > 0) {
+      return (int) $termId;
+    }
+    return NULL;
+  }
+
+  /**
+   * Returns the search fields to use.
+   *
+   * @param mixed $fields
+   *   The requested search fields, as submitted by the block form's checkboxes.
+   *
+   * @return array|null
+   *   The selected fields that are listed in ALLOWED_SEARCH_FIELDS, keyed by
+   *   field name, or the default fields when none are. NULL when the input is
+   *   not an array or empty, so the caller leaves the view's own fields alone.
+   */
+  public static function getValidatedSearchFields($fields): ?array {
+    if (!is_array($fields) || !$fields) {
+      return NULL;
+    }
+    $valid = [];
+    foreach (array_filter($fields) as $field) {
+      if (is_string($field) && in_array($field, self::ALLOWED_SEARCH_FIELDS, TRUE)) {
+        $valid[$field] = $field;
+      }
+    }
+    // Nothing usable selected: search the default fields, as an empty
+    // selection always has.
+    return $valid ?: [
+      'title' => 'title',
+      'field_teaser_text' => 'field_teaser_text',
+      'field_teaser_title' => 'field_teaser_title',
     ];
   }
 
@@ -788,7 +953,23 @@ class ViewsContentResourcesManager extends ControllerBase implements ContainerIn
    *   The term ID.
    */
   private function getTermId($term) : int {
-    return (int) is_array($term) ? $term['target_id'] : $term;
+    return (int) (is_array($term) ? ($term['target_id'] ?? 0) : $term);
+  }
+
+  /**
+   * Checks that a stored term value can be read as a term ID.
+   *
+   * @param mixed $term
+   *   A term ID, or an array with a "target_id" key (older storage).
+   *
+   * @return bool
+   *   TRUE for a numeric ID or an array with a numeric "target_id".
+   */
+  private static function isValidTermValue($term) : bool {
+    if (is_array($term)) {
+      $term = $term['target_id'] ?? NULL;
+    }
+    return (is_int($term) || is_string($term)) && is_numeric($term);
   }
 
   /**

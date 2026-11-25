@@ -43,6 +43,7 @@ install:
   - file
   - filter
   - image
+  - inline_form_errors
   - link
   - media
   - media_library

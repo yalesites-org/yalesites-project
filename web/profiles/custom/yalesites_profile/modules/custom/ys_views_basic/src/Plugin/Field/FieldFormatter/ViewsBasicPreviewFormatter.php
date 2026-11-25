@@ -2,24 +2,23 @@
 
 namespace Drupal\ys_views_basic\Plugin\Field\FieldFormatter;
 
+use Drupal\Core\Field\Attribute\FieldFormatter;
 use Drupal\Core\Field\FieldDefinitionInterface;
 use Drupal\Core\Field\FieldItemListInterface;
 use Drupal\Core\Field\FormatterBase;
 use Drupal\Core\Plugin\ContainerFactoryPluginInterface;
+use Drupal\Core\StringTranslation\TranslatableMarkup;
 use Drupal\ys_views_basic\ViewsBasicManager;
 use Symfony\Component\DependencyInjection\ContainerInterface;
 
 /**
  * Plugin implementation of the 'views_basic_preview' formatter.
- *
- * @FieldFormatter(
- *   id = "views_basic_preview_formatter",
- *   label = @Translation("Views Basic Settings Overview"),
- *   field_types = {
- *     "views_basic_params"
- *   }
- * )
  */
+#[FieldFormatter(
+  id: 'views_basic_preview_formatter',
+  label: new TranslatableMarkup('Views Basic Settings Overview'),
+  field_types: ['views_basic_params'],
+)]
 class ViewsBasicPreviewFormatter extends FormatterBase implements ContainerFactoryPluginInterface {
 
   /**
@@ -134,8 +133,10 @@ class ViewsBasicPreviewFormatter extends FormatterBase implements ContainerFacto
       // Gets the limit.
       $paramsForRender['limit'] = $paramsDecoded['limit'];
 
-      // Gets the number of results for the view.
-      $paramsForRender['count'] = $this->viewsBasicManager->getView('count', $item->params);
+      // Gets the number of results for the view. getView() returns NULL when
+      // the scaffold view is missing; fall back to an empty render to avoid
+      // passing NULL into the preview template.
+      $paramsForRender['count'] = $this->viewsBasicManager->getView('count', $item->params) ?? [];
 
       $elements[$delta] = [
         '#theme' => 'views_basic_formatter_preview',

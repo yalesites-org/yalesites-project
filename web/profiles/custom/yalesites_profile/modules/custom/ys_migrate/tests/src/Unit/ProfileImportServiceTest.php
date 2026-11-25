@@ -395,6 +395,29 @@ class ProfileImportServiceTest extends UnitTestCase {
   }
 
   /**
+   * ProcessImport() falls back to the array offset plus two.
+   *
+   * A row that reaches the service without a '_row_number' still has to name
+   * a line the editor can find: the offset is 0-based and the file has a
+   * header, so offset 3 is line 5.
+   *
+   * @covers ::processImport
+   */
+  public function testProcessImportFallsBackToTheOffsetPlusTwo() {
+    $service = $this->partialProfileImport(['prepareProfileData', 'createProfileNode']);
+    $service->method('prepareProfileData')->willReturn(['display_name' => 'Someone', 'email' => '']);
+    $service->method('createProfileNode')->willThrowException(new \Exception('Save failed'));
+
+    // One row with no '_row_number', kept at offset 3, so the fallback has
+    // to report line 5. array_slice() preserves the key -- that is the point.
+    $rows = [['a'], ['b'], ['c'], ['d']];
+    $result = $service->processImport(array_slice($rows, 3, 1, TRUE), TRUE);
+
+    $this->assertCount(1, $result['errors']);
+    $this->assertStringContainsString('Row 5', (string) $result['errors'][0]);
+  }
+
+  /**
    * ProcessImport() catches a per-row exception and records it with its row.
    *
    * @covers ::processImport

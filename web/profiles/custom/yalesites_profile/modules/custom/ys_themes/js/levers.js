@@ -1,6 +1,6 @@
 ((Drupal) => {
   Drupal.behaviors.ysLevers = {
-    attach: function (context, settings) {
+    attach(context, settings) {
       // eslint-disable-line
       once('ysLevers', '.layout-container', context).forEach((element) => {
         // Update root CSS variables
@@ -8,7 +8,7 @@
           const prefix = selector.match(/--([a-z]*[0-9]*)/g);
           document.documentElement.style.setProperty(
             selector,
-            `var(${prefix[0]}-${value})`
+            `var(${prefix[0]}-${value})`,
           );
         }
 
@@ -30,7 +30,7 @@
 
         function initStyleDrawer() {
           const formItems = context.querySelectorAll(
-            'input.ys-themes--setting'
+            'input.ys-themes--setting',
           );
 
           for (let i = 0; i < formItems.length; i++) {
@@ -59,7 +59,7 @@
 
       // Get all radio inputs in the glogal_theme name group
       const radioInputs = document.querySelectorAll(
-        'input[name="global_theme"]'
+        'input[name="global_theme"]',
       );
 
       // Add event listener to each radio input
@@ -76,32 +76,27 @@
             });
           }
 
-          // Get each component-color span element
-          const targetElements = document.querySelectorAll(
-            'span.component-color'
-          );
+          // Re-tint the swatches that follow the palette (button, header,
+          // footer, book navigation) so they preview the palette just picked
+          // rather than the saved one. The palette swatches themselves are
+          // excluded: each one shows its own palette.
+          //
+          // The newly selected palette is this radio's own value -- the page
+          // used to be asked for it via div[data-global-theme], which only
+          // exists on front-end pages and so is null on the settings page.
+          const slotColors = (settings.ysThemes || {}).paletteColors || {};
+          const paletteColors = slotColors[this.value];
 
-          // Read active global theme and capture the number in a variable and
-          // update it on radio input paletter selection change.
-          targetElements.forEach((targetElement) => {
-            const globalTheme = document.querySelector(
-              'div[data-global-theme]'
-            );
-            const currentTheme = globalTheme.getAttribute('data-global-theme');
-            const originalBackground = targetElement.style.background;
-
-            // Construct the regular expression pattern dynamically
-            const regexPattern = new RegExp(`--global-themes-(\\w+)-`);
-
-            // Replace the --global-themes-${globalTheme}- portion
-            const updatedBackground = originalBackground.replace(
-              regexPattern,
-              `--global-themes-${currentTheme}-`
-            );
-
-            // Update the inline style with the modified background value
-            targetElement.style.background = updatedBackground;
-          });
+          if (paletteColors) {
+            document
+              .querySelectorAll('span.component-color[data-slot]')
+              .forEach((swatch) => {
+                const hex = paletteColors[`slot-${swatch.dataset.slot}`];
+                if (hex) {
+                  swatch.style.background = hex;
+                }
+              });
+          }
         });
       });
 
@@ -110,15 +105,15 @@
       // but adding on to it.
       function handleRadioInputs(radioGroup) {
         // Get references to the radio input elements within the specified group
-        const radioInputs = document.querySelectorAll(radioGroup);
+        const groupInputs = document.querySelectorAll(radioGroup);
 
         // Add event listener to each radio input
-        radioInputs.forEach((input) => {
+        groupInputs.forEach((input) => {
           input.addEventListener('change', function () {
             if (this.checked) {
               this.setAttribute('checked', 'checked');
               // Remove the 'checked' attribute from other radio inputs
-              radioInputs.forEach((otherInput) => {
+              groupInputs.forEach((otherInput) => {
                 if (otherInput !== this) {
                   otherInput.removeAttribute('checked');
                 }

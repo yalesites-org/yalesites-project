@@ -14,7 +14,7 @@ field_name: field_cf_dcn
 entity_type: node
 bundle: resource
 label: 'Document Control Number(s)'
-description: 'Custom field implementation using taxonomy for DCN types.'
+description: 'The document control number (DCN) for this resource, such as an ISBN. Choose the DCN type, then enter the identifier.'
 required: false
 translatable: false
 default_value: {  }

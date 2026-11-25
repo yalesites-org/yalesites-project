@@ -94,6 +94,8 @@ display:
             - pathauto_update_alias_node
             - publish_moderated_content
             - unpublish_moderated_content
+            - node_cas_protect_action
+            - node_cas_unprotect_action
         thumbnail__target_id:
           id: thumbnail__target_id
           table: media_field_data

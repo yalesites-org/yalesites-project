@@ -2,31 +2,40 @@
 
 namespace Drupal\ys_layouts\Plugin\Block;
 
+use Drupal\Core\Block\Attribute\Block;
 use Drupal\Core\Block\BlockBase;
 use Drupal\Core\Entity\EntityTypeManagerInterface;
 use Drupal\Core\Form\FormStateInterface;
 use Drupal\Core\Plugin\ContainerFactoryPluginInterface;
-use Drupal\Core\Routing\RouteMatchInterface;
+use Drupal\node\NodeInterface;
+use Drupal\ys_core\Plugin\Block\LayoutBuilderEntityContextTrait;
+use Drupal\Core\Plugin\Context\ContextDefinition;
+use Drupal\Core\StringTranslation\TranslatableMarkup;
 use Symfony\Component\DependencyInjection\ContainerInterface;
 use Symfony\Component\HttpFoundation\RequestStack;
 
 /**
  * Block for profile contact data that appears in the sidebar of profiles.
  *
- * @Block(
- *   id = "profile_contact_block",
- *   admin_label = @Translation("Profile Contact Block"),
- *   category = @Translation("YaleSites Layouts"),
- * )
+ * The "layout_builder.entity" context slot and its name are explained on
+ * \Drupal\ys_core\Plugin\Block\LayoutBuilderEntityContextTrait. An
+ * attribute cannot be inherited from a trait, so the slot is declared here.
  */
+#[Block(
+  id: 'profile_contact_block',
+  admin_label: new TranslatableMarkup('Profile Contact Block'),
+  category: new TranslatableMarkup('YaleSites Layouts'),
+  context_definitions: [
+    'layout_builder.entity' => new ContextDefinition(
+      data_type: 'entity',
+      label: new TranslatableMarkup('Entity being viewed'),
+      required: FALSE,
+    ),
+  ],
+)]
 class ProfileContactBlock extends BlockBase implements ContainerFactoryPluginInterface {
 
-  /**
-   * The current route match.
-   *
-   * @var \Drupal\Core\Routing\RouteMatchInterface
-   */
-  protected $routeMatch;
+  use LayoutBuilderEntityContextTrait;
 
   /**
    * The request stack.
@@ -51,8 +60,6 @@ class ProfileContactBlock extends BlockBase implements ContainerFactoryPluginInt
    *   The plugin_id for the plugin instance.
    * @param mixed $plugin_definition
    *   The plugin implementation definition.
-   * @param \Drupal\Core\Routing\RouteMatchInterface $route_match
-   *   The current route match.
    * @param \Symfony\Component\HttpFoundation\RequestStack $request_stack
    *   The request stack.
    * @param \Drupal\Core\Entity\EntityTypeManagerInterface $entity_type_manager
@@ -62,13 +69,11 @@ class ProfileContactBlock extends BlockBase implements ContainerFactoryPluginInt
     array $configuration,
     $plugin_id,
     $plugin_definition,
-    RouteMatchInterface $route_match,
     RequestStack $request_stack,
     EntityTypeManagerInterface $entity_type_manager,
   ) {
     parent::__construct($configuration, $plugin_id, $plugin_definition);
 
-    $this->routeMatch = $route_match;
     $this->requestStack = $request_stack;
     $this->entityTypeManager = $entity_type_manager;
   }
@@ -86,7 +91,6 @@ class ProfileContactBlock extends BlockBase implements ContainerFactoryPluginInt
       $configuration,
       $plugin_id,
       $plugin_definition,
-      $container->get('current_route_match'),
       $container->get('request_stack'),
       $container->get('entity_type.manager'),
     );
@@ -139,22 +143,9 @@ class ProfileContactBlock extends BlockBase implements ContainerFactoryPluginInt
     $phone = NULL;
     $address = NULL;
 
-    $request = $this->requestStack->getCurrentRequest();
-    $route = $this->routeMatch->getRouteObject();
-    $node = $request->attributes->get('node');
-    // When removing the contact block when one already exists,
-    // it no longer has access to the node object. Therefore, we must load it
-    // manually via the ajaxified path.
-    if (!$node) {
-      $layoutBuilderPath = $request->getPathInfo();
-      preg_match('/(node\.+(\d+))/', $layoutBuilderPath, $matches);
-      if (!empty($matches)) {
-        $nodeStorage = $this->entityTypeManager->getStorage('node');
-        $node = $nodeStorage->load($matches[2]);
-      }
-    }
+    $node = $this->getCurrentNode();
 
-    if ($route && $node) {
+    if ($node) {
       // Profile fields.
       $email = $this->getValueFor($node, 'field_email');
       $phone = $this->getValueFor($node, 'field_telephone');
@@ -168,6 +159,45 @@ class ProfileContactBlock extends BlockBase implements ContainerFactoryPluginInt
       '#address' => $address,
       '#padding_options' => $this->configuration['padding_options'] ?? 'default',
     ];
+  }
+
+  /**
+   * Gets the node being rendered.
+   *
+   * The entity Layout Builder hands over is preferred over anything the
+   * request names; the request tiers below it are kept for the contexts
+   * Layout Builder offers nothing in.
+   *
+   * @return \Drupal\node\NodeInterface|null
+   *   The node being rendered, or NULL when no source resolves one.
+   */
+  protected function getCurrentNode(): ?NodeInterface {
+    $node = $this->getRenderedEntitySavedNode();
+    if ($node) {
+      return $node;
+    }
+
+    $request = $this->requestStack->getCurrentRequest();
+    if (!$request) {
+      return NULL;
+    }
+
+    $node = $request->attributes->get('node');
+
+    // When removing the contact block when one already exists,
+    // it no longer has access to the node object. Therefore, we must load it
+    // manually via the ajaxified path.
+    if (!$node) {
+      // The Layout Builder ajax path names the entity as "node.<nid>." --
+      // e.g. /layout_builder/update/overrides/node.42.default.en/0/content.
+      $layoutBuilderPath = $request->getPathInfo();
+      if (preg_match('/node\.(\d+)/', $layoutBuilderPath, $matches)) {
+        $nodeStorage = $this->entityTypeManager->getStorage('node');
+        $node = $nodeStorage->load($matches[1]);
+      }
+    }
+
+    return $node instanceof NodeInterface ? $node : NULL;
   }
 
   /**

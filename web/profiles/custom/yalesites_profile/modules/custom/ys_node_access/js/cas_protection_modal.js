@@ -13,45 +13,45 @@
  * - Returns focus to original checkbox after modal closes
  */
 
-(function ($, Drupal) {
+(function ($, Drupal, drupalSettings) {
+  /**
+   * Returns the warning copy: its title, paragraphs, policy link and the
+   * confirm button's label.
+   *
+   * The copy is defined once, in \Drupal\ys_node_access\CasProtectionWarning,
+   * because the bulk "CAS protect" action on the Manage Content views shows
+   * the same warning on a server-rendered page. ys_node_access_form_alter()
+   * passes it here through drupalSettings. CHANGE THE WORDING THERE, not here.
+   *
+   * @return {object}
+   *   The copy, as CasProtectionWarning::toJsSettings() returns it.
+   */
+  function warningCopy() {
+    return drupalSettings.ysNodeAccess.casProtectionWarning;
+  }
+
   /**
    * Configuration object for easy customization of modal content and behavior.
    *
-   * CUSTOMIZE THIS SECTION to change modal text, titles, and settings.
+   * CUSTOMIZE THIS SECTION to change modal titles and settings; the warning
+   * copy itself comes from warningCopy().
    * Note: This modal only appears when ENABLING CAS protection, not when disabling.
    */
   const modalConfig = {
     // Modal content and titles
     content: {
-      title: Drupal.t("⚠️ Warning: YaleSites is NOT secure for sensitive data"),
-
-      // Body content array - supports unlimited paragraphs and different content types
-      // String items become paragraphs, objects can be links or other content types
-      bodyContent: [
-        Drupal.t(
-          "Never upload personal information, student records, research data, or confidential documents to YaleSites. All content is stored on the public internet."
-        ),
-        Drupal.t(
-          "CAS protection only limits who can view content - it does not make this platform secure for sensitive data."
-        ),
-        {
-          type: "link",
-          text: Drupal.t("Learn more about Yale's Data Classification Policy"),
-          url: "https://your.yale.edu/policies-procedures/policies/1604-data-classification-policy#1604.1",
-        },
-      ],
-      confirmationText: Drupal.t(""),
+      confirmationText: '',
       successMessage: Drupal.t(
-        "CAS protection has been enabled for this page."
+        'CAS protection has been enabled for this page.',
       ),
     },
 
     // Modal dialog settings
     dialog: {
-      title: Drupal.t("CAS Protection Confirmation"),
-      dialogClass: "cas-protection-modal",
+      title: Drupal.t('CAS Protection Confirmation'),
+      dialogClass: 'cas-protection-modal',
       width: 500,
-      height: "auto",
+      height: 'auto',
       modal: true,
       resizable: false,
       closeOnEscape: true,
@@ -60,25 +60,25 @@
     // Button configurations
     buttons: {
       cancel: {
-        text: Drupal.t("Cancel"),
-        class: "button button--secondary",
+        text: Drupal.t('Cancel'),
+        class: 'button button--secondary',
       },
       confirm: {
-        text: Drupal.t("I understand - Enable CAS Protection"),
-        class: "button button--primary",
+        // The label comes from warningCopy().
+        class: 'button button--primary',
       },
     },
 
     // CSS classes and IDs for styling and accessibility
     classes: {
-      modalContent: "cas-protection-modal-content",
-      modalTitle: "modal-title",
+      modalContent: 'cas-protection-modal-content',
+      modalTitle: 'modal-title',
     },
 
     // Accessibility settings
     accessibility: {
-      titleId: "cas-modal-title",
-      descriptionId: "cas-modal-description",
+      titleId: 'cas-modal-title',
+      descriptionId: 'cas-modal-description',
       focusDelay: 100,
     },
   };
@@ -122,8 +122,8 @@
     initializeCheckboxStates($casField) {
       $casField.each(function () {
         const $checkbox = $(this);
-        const initialState = $checkbox.is(":checked");
-        $checkbox.data("original-state", initialState);
+        const initialState = $checkbox.is(':checked');
+        $checkbox.data('original-state', initialState);
       });
     },
 
@@ -132,15 +132,15 @@
      */
     attachChangeHandler() {
       // Prevent multiple event handlers from being attached
-      if ($(document).data("cas-protection-modal-attached")) {
+      if ($(document).data('cas-protection-modal-attached')) {
         return;
       }
 
-      $(document).data("cas-protection-modal-attached", true);
+      $(document).data('cas-protection-modal-attached', true);
       $(document).on(
-        "change.casProtectionModal",
+        'change.casProtectionModal',
         '[name="field_login_required[value]"]',
-        this.handleCheckboxChange
+        this.handleCheckboxChange,
       );
     },
 
@@ -152,16 +152,16 @@
      */
     handleCheckboxChange() {
       const $checkbox = $(this);
-      const isChecked = $checkbox.is(":checked");
-      const originalState = $checkbox.data("original-state");
+      const isChecked = $checkbox.is(':checked');
+      const originalState = $checkbox.data('original-state');
 
       if (originalState === false && isChecked === true) {
         // User is enabling CAS protection - show confirmation modal
-        $checkbox.prop("checked", originalState); // Revert temporarily
+        $checkbox.prop('checked', originalState); // Revert temporarily
         Drupal.casProtectionModal.showConfirmation(isChecked, $checkbox);
       } else if (originalState !== isChecked) {
         // User is disabling CAS protection - allow without modal
-        $checkbox.data("original-state", isChecked);
+        $checkbox.data('original-state', isChecked);
       }
     },
   };
@@ -235,7 +235,7 @@
     if (Drupal.messenger) {
       Drupal.messenger().addMessage(
         modalConfig.content.successMessage,
-        "status"
+        'status',
       );
     }
   };
@@ -247,7 +247,7 @@
    *   The element to scroll into view.
    */
   Drupal.casProtectionModal.scrollElementIntoView = function (element) {
-    element.scrollIntoView({ behavior: "smooth", block: "center" });
+    element.scrollIntoView({ behavior: 'smooth', block: 'center' });
   };
 
   /**
@@ -277,9 +277,9 @@
       }
 
       // Third attempt: Focus associated label
-      const $label = $element.closest(".form-item").find("label").first();
+      const $label = $element.closest('.form-item').find('label').first();
       if ($label.length) {
-        $label.attr("tabindex", "0").focus();
+        $label.attr('tabindex', '0').focus();
         return document.activeElement === $label[0];
       }
 
@@ -311,7 +311,7 @@
 
     return [
       {
-        text: config.buttons.confirm.text,
+        text: warningCopy().confirmLabel,
         class: config.buttons.confirm.class,
         click() {
           Drupal.casProtectionModal.confirm();
@@ -358,8 +358,29 @@
    */
   Drupal.casProtectionModal.setInitialDialogFocus = function ($dialogElement) {
     setTimeout(function () {
-      $dialogElement.parent().find(".button--secondary").focus();
+      $dialogElement.parent().find('.button--secondary').focus();
     }, modalConfig.accessibility.focusDelay);
+  };
+
+  /**
+   * Returns the body content as a flexible content array.
+   *
+   * String items become paragraphs, objects can be links or other content types.
+   *
+   * @return {Array}
+   *   The body content items, in display order.
+   */
+  Drupal.casProtectionModal.getBodyContent = function () {
+    const copy = warningCopy();
+
+    return [
+      ...copy.paragraphs,
+      {
+        type: 'link',
+        text: copy.policyLink.text,
+        url: copy.policyLink.url,
+      },
+    ];
   };
 
   /**
@@ -369,16 +390,17 @@
    *   The body content HTML.
    */
   Drupal.casProtectionModal.generateBodyContent = function () {
-    const config = modalConfig;
-    let bodyHtml = "";
+    let bodyHtml = '';
 
-    config.content.bodyContent.forEach(function (item) {
-      if (typeof item === "string") {
+    this.getBodyContent().forEach(function (item) {
+      if (typeof item === 'string') {
         // Regular paragraph
-        bodyHtml += `<p>${item}</p>`;
-      } else if (item.type === "link") {
+        bodyHtml += `<p>${Drupal.checkPlain(item)}</p>`;
+      } else if (item.type === 'link') {
         // Link paragraph
-        bodyHtml += `<p><a href="${item.url}" target="_blank" rel="noopener">${item.text}</a></p>`;
+        const url = Drupal.checkPlain(item.url);
+        const text = Drupal.checkPlain(item.text);
+        bodyHtml += `<p><a href="${url}" target="_blank" rel="noopener">${text}</a></p>`;
       }
       // Future: could easily add support for other content types like lists, warnings, etc.
     });
@@ -396,16 +418,17 @@
   Drupal.casProtectionModal.generateModalContent = function () {
     const config = modalConfig;
     const bodyContent = this.generateBodyContent();
+    const title = Drupal.checkPlain(warningCopy().title);
 
     return [
       `<div class="${config.classes.modalContent}" aria-labelledby="${config.accessibility.titleId}" aria-describedby="${config.accessibility.descriptionId}">`,
-      `<h2 id="${config.accessibility.titleId}" class="${config.classes.modalTitle}">${config.content.title}</h2>`,
+      `<h2 id="${config.accessibility.titleId}" class="${config.classes.modalTitle}">${title}</h2>`,
       bodyContent,
       `<p id="${config.accessibility.descriptionId}">`,
       config.content.confirmationText,
-      "</p>",
-      "</div>",
-    ].join("");
+      '</p>',
+      '</div>',
+    ].join('');
   };
 
   // =============================================================================
@@ -440,10 +463,10 @@
   Drupal.casProtectionModal.applyCasProtectionChange = function () {
     if (this.currentCheckbox && this.targetState !== null) {
       // Enable CAS protection on the checkbox
-      this.currentCheckbox.prop("checked", this.targetState);
+      this.currentCheckbox.prop('checked', this.targetState);
 
       // Update stored state to prevent re-triggering the modal
-      this.currentCheckbox.data("original-state", this.targetState);
+      this.currentCheckbox.data('original-state', this.targetState);
     }
   };
 
@@ -494,18 +517,18 @@
    * Closes any open CAS protection modal dialogs.
    */
   Drupal.casProtectionModal.closeModalDialogs = function () {
-    $(".ui-dialog").each(function () {
+    $('.ui-dialog').each(function () {
       const $dialog = $(this);
-      if ($dialog.find(".cas-protection-modal-content").length) {
+      if ($dialog.find('.cas-protection-modal-content').length) {
         const dialog = $dialog
-          .find(".cas-protection-modal-content")
-          .data("dialog");
+          .find('.cas-protection-modal-content')
+          .data('dialog');
         if (dialog && dialog.close) {
           dialog.close();
         } else {
           // Fallback for manual cleanup
           $dialog.remove();
-          $(".ui-widget-overlay").remove();
+          $('.ui-widget-overlay').remove();
         }
       }
     });
@@ -520,7 +543,7 @@
   Drupal.casProtectionModal.restoreBodyScroll = function () {
     // Method 1: Use Drupal's body scroll lock API if available
     if (
-      typeof bodyScrollLock !== "undefined" &&
+      typeof bodyScrollLock !== 'undefined' &&
       bodyScrollLock.clearBodyLocks
     ) {
       try {
@@ -531,35 +554,35 @@
     }
 
     // Method 2: Remove any overflow restrictions on body and html
-    const $body = $("body");
-    const $html = $("html");
+    const $body = $('body');
+    const $html = $('html');
 
     $body.css({
-      overflow: "",
-      "overflow-x": "",
-      "overflow-y": "",
-      position: "",
-      height: "",
-      width: "",
+      overflow: '',
+      'overflow-x': '',
+      'overflow-y': '',
+      position: '',
+      height: '',
+      width: '',
     });
 
     $html.css({
-      overflow: "",
-      "overflow-x": "",
-      "overflow-y": "",
-      position: "",
-      height: "",
-      width: "",
+      overflow: '',
+      'overflow-x': '',
+      'overflow-y': '',
+      position: '',
+      height: '',
+      width: '',
     });
 
     // Method 3: Remove any data attributes that might affect scrolling
-    $body.removeAttr("data-scroll-locked");
-    $html.removeAttr("data-scroll-locked");
+    $body.removeAttr('data-scroll-locked');
+    $html.removeAttr('data-scroll-locked');
 
     // Method 4: Timeout-based cleanup as final fallback
     setTimeout(function () {
-      $body.css("overflow", "");
-      $html.css("overflow", "");
+      $body.css('overflow', '');
+      $html.css('overflow', '');
 
       // Force a reflow to ensure styles are applied
       // eslint-disable-next-line no-unused-expressions
@@ -587,7 +610,7 @@
   /**
    * Keyboard event handler for accessibility.
    */
-  $(document).on("keydown", ".cas-protection-modal", function (event) {
+  $(document).on('keydown', '.cas-protection-modal', function (event) {
     // Handle Escape key.
     if (event.which === 27) {
       Drupal.casProtectionModal.cancel();
@@ -597,7 +620,7 @@
     // Trap focus within modal.
     const $modal = $(this);
     const $focusableElements = $modal.find(
-      'button, [href], input, select, textarea, [tabindex]:not([tabindex="-1"])'
+      'button, [href], input, select, textarea, [tabindex]:not([tabindex="-1"])',
     );
     const $firstElement = $focusableElements.first();
     const $lastElement = $focusableElements.last();
@@ -629,12 +652,12 @@
    * aria-modal="true" on the outer dialog container, following Drupal best practices
    * instead of manual DOM manipulation.
    */
-  $(window).on("dialog:aftercreate", function (event, dialog, $element) {
+  $(window).on('dialog:aftercreate', function (event, dialog, $element) {
     // Only apply to CAS protection modals
     if ($element.hasClass(modalConfig.classes.modalContent)) {
-      const $dialogContainer = $element.parent(".ui-dialog");
+      const $dialogContainer = $element.parent('.ui-dialog');
       if ($dialogContainer.length) {
-        $dialogContainer.attr("aria-modal", "true");
+        $dialogContainer.attr('aria-modal', 'true');
       }
     }
   });
@@ -646,7 +669,7 @@
    * to provide additional scroll restoration for CAS protection modals, ensuring
    * scrolling is reliably restored even if the standard cleanup fails.
    */
-  $(window).on("dialog:beforeclose", function (event, dialog, $element) {
+  $(window).on('dialog:beforeclose', function (event, dialog, $element) {
     // Only apply to CAS protection modals
     if (
       $element &&
@@ -658,7 +681,7 @@
     }
   });
 
-  $(window).on("dialog:afterclose", function (event, dialog, $element) {
+  $(window).on('dialog:afterclose', function (event, dialog, $element) {
     // Only apply to CAS protection modals
     if (
       $element &&
@@ -671,4 +694,4 @@
       }, 100);
     }
   });
-})(jQuery, Drupal);
+})(jQuery, Drupal, drupalSettings);

@@ -8,6 +8,7 @@
 use Drupal\node\Entity\Node;
 use Drupal\Core\Session\AccountInterface;
 use Drupal\menu_item_extras\Entity\MenuItemExtrasMenuLinkContent;
+use Drupal\ys_node_access\CasProtectionWarning;
 use Drupal\ys_node_access\NodeAccessManager;
 use Drupal\Core\Form\FormStateInterface;
 
@@ -164,8 +165,10 @@ function ys_node_access_form_alter(&$form, FormStateInterface $form_state, $form
     if (method_exists($form_object, 'getEntity')) {
       $entity = $form_object->getEntity();
       if ($entity instanceof Node && $entity->hasField('field_login_required')) {
-        // Attach the modal library.
+        // Attach the modal library, and the warning it shows. The copy lives in
+        // PHP because the bulk CAS protect action shows it too.
         $form['#attached']['library'][] = 'ys_node_access/cas_protection_modal';
+        $form['#attached']['drupalSettings']['ysNodeAccess']['casProtectionWarning'] = CasProtectionWarning::toJsSettings();
 
         // Add validation for the field to handle modal confirmation.
         $form['#validate'][] = 'ys_node_access_cas_protection_validate';

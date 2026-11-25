@@ -2,69 +2,15 @@
 
 namespace Drupal\ys_migrate\Service;
 
-use Drupal\Core\Entity\EntityTypeManagerInterface;
-use Drupal\Core\Logger\LoggerChannelFactoryInterface;
-use Drupal\Core\Session\AccountInterface;
-use Drupal\Core\StringTranslation\StringTranslationTrait;
-
 /**
  * Service for importing profile content from CSV data.
  */
-class ProfileImportService {
-
-  use StringTranslationTrait;
+class ProfileImportService extends CsvImportServiceBase {
 
   /**
-   * The current user.
-   *
-   * @var \Drupal\Core\Session\AccountInterface
+   * {@inheritdoc}
    */
-  protected $currentUser;
-
-  /**
-   * The taxonomy resolver service.
-   *
-   * @var \Drupal\ys_migrate\Service\TaxonomyResolverService
-   */
-  protected $taxonomyResolver;
-
-  /**
-   * The entity type manager.
-   *
-   * @var \Drupal\Core\Entity\EntityTypeManagerInterface
-   */
-  protected $entityTypeManager;
-
-  /**
-   * The logger factory.
-   *
-   * @var \Drupal\Core\Logger\LoggerChannelFactoryInterface
-   */
-  protected $loggerFactory;
-
-  /**
-   * Constructs a ProfileImportService object.
-   *
-   * @param \Drupal\Core\Session\AccountInterface $current_user
-   *   The current user.
-   * @param \Drupal\ys_migrate\Service\TaxonomyResolverService $taxonomy_resolver
-   *   The taxonomy resolver service.
-   * @param \Drupal\Core\Entity\EntityTypeManagerInterface $entity_type_manager
-   *   The entity type manager.
-   * @param \Drupal\Core\Logger\LoggerChannelFactoryInterface $logger_factory
-   *   The logger factory.
-   */
-  public function __construct(
-    AccountInterface $current_user,
-    TaxonomyResolverService $taxonomy_resolver,
-    EntityTypeManagerInterface $entity_type_manager,
-    LoggerChannelFactoryInterface $logger_factory,
-  ) {
-    $this->currentUser = $current_user;
-    $this->taxonomyResolver = $taxonomy_resolver;
-    $this->entityTypeManager = $entity_type_manager;
-    $this->loggerFactory = $logger_factory;
-  }
+  const BUNDLE = 'profile';
 
   /**
    * Prepares profile data from CSV row.
@@ -176,26 +122,14 @@ class ProfileImportService {
   }
 
   /**
-   * Processes the import and creates profile nodes.
-   *
-   * @param array $data
-   *   The CSV data.
-   * @param bool $skip_duplicates
-   *   Whether to skip duplicates.
-   *
-   * @return array
-   *   Import results with 'created', 'skipped', and 'errors' keys.
+   * {@inheritdoc}
    */
-  public function processImport(array $data, $skip_duplicates) {
+  public function processImport(array $data, $skip_duplicates, array $options = []) {
     $created = 0;
     $skipped = 0;
     $errors = [];
 
     foreach ($data as $index => $row) {
-      // Use the true CSV line threaded through by the validator, falling
-      // back to the array offset (+2 for header and 0-based index).
-      $row_number = $row['_row_number'] ?? ($index + 2);
-
       try {
         $profile_data = $this->prepareProfileData($row);
 
@@ -213,12 +147,7 @@ class ProfileImportService {
         $created++;
       }
       catch (\Exception $e) {
-        $errors[] = $this->t(
-          'Row @row: @error', [
-            '@row' => $row_number,
-            '@error' => $e->getMessage(),
-          ]
-        );
+        $errors[] = $this->rowError($row, $index, $e);
       }
     }
 
@@ -230,15 +159,10 @@ class ProfileImportService {
   }
 
   /**
-   * Previews the import without creating content.
+   * {@inheritdoc}
    *
-   * @param array $data
-   *   The CSV data.
-   * @param bool $skip_duplicates
-   *   Whether to skip duplicates.
-   *
-   * @return array
-   *   Preview results with 'valid_profiles', 'duplicates', and 'total' keys.
+   * Profiles are keyed by email, and a row with no email is never treated as
+   * a duplicate. The importable rows come back under 'valid_profiles'.
    */
   public function previewImport(array $data, $skip_duplicates) {
     $duplicates = [];

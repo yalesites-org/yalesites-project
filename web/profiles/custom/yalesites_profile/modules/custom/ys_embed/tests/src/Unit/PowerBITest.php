@@ -121,4 +121,12 @@ class PowerBITest extends UnitTestCase {
     $this->assertSame('form', $build['#displayAttributes']['embedType']);
   }
 
+  /**
+   * @covers ::isValid
+   */
+  public function testIsValidRejectsLookAlikeHost(): void {
+    $this->assertFalse(PowerBI::isValid('https://appxpowerbi.com/view?r=abc'));
+    $this->assertFalse(PowerBI::isValid('https://app.powerbixcom/view?r=abc'));
+  }
+
 }

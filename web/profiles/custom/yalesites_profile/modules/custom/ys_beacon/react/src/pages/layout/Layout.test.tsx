@@ -1,8 +1,9 @@
 import { describe, it, expect, beforeEach, afterEach, vi } from "vitest";
-import { render, screen } from "@testing-library/react";
+import { act, render, screen, waitFor, within } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import Layout from "./Layout";
-import { AppStateProvider } from "../../state/AppProvider";
+import { AppStateContext, AppStateProvider } from "../../state/AppProvider";
+import { Conversation } from "../../api";
 
 const SCROLL_OFFSET = 120;
 
@@ -33,6 +34,15 @@ const renderLayout = () =>
     </AppStateProvider>
   );
 
+// The launch button is aria-hidden (YaleSites-Internal#1944), which leaves it no accessible name,
+// so look it up by the id js/events.js uses and check its visible text.
+const getLaunchButton = () => {
+  const button = document.getElementById("ys-beacon-launch-modal");
+  expect(button?.tagName).toBe("BUTTON");
+  expect(button).toHaveTextContent(/try beacon now/i);
+  return button as HTMLElement;
+};
+
 describe("Layout body scroll lock", () => {
   it("does not freeze the body before the modal is opened", () => {
     renderLayout();
@@ -45,7 +55,7 @@ describe("Layout body scroll lock", () => {
     renderLayout();
 
     await userEvent.click(
-      screen.getByRole("button", { name: /try beacon now/i })
+      getLaunchButton()
     );
 
     expect(document.body.getAttribute("data-body-frozen")).toBe("true");
@@ -57,9 +67,9 @@ describe("Layout body scroll lock", () => {
     renderLayout();
 
     await userEvent.click(
-      screen.getByRole("button", { name: /try beacon now/i })
+      getLaunchButton()
     );
-    // Layout closes the modal on Escape.
+    // Escape closes the chat modal.
     await userEvent.keyboard("{Escape}");
 
     expect(document.body.hasAttribute("data-body-frozen")).toBe(false);
@@ -81,7 +91,7 @@ describe("Layout background inert while the modal is open (#1441)", () => {
       expect(pageContent.hasAttribute("inert")).toBe(false);
 
       await userEvent.click(
-        screen.getByRole("button", { name: /try beacon now/i })
+        getLaunchButton()
       );
 
       // Background page is inert (removed from the a11y tree + tab order) so the
@@ -94,11 +104,246 @@ describe("Layout background inert while the modal is open (#1441)", () => {
           ?.hasAttribute("inert")
       ).toBe(false);
 
-      // Layout closes the modal on Escape.
+      // Escape closes the chat modal.
       await userEvent.keyboard("{Escape}");
       expect(pageContent.hasAttribute("inert")).toBe(false);
     } finally {
       pageContent.remove();
     }
+  });
+});
+
+describe("Layout launch button is a programmatic hook only (#1944)", () => {
+  it("hides the launch button from assistive technology and the tab order", () => {
+    renderLayout();
+
+    const button = document.getElementById("ys-beacon-launch-modal");
+    expect(button).not.toBeNull();
+    expect(button?.getAttribute("aria-hidden")).toBe("true");
+    expect(button?.getAttribute("tabindex")).toBe("-1");
+    // Not exposed to AT, so a role query without hidden: true finds nothing.
+    expect(
+      screen.queryByRole("button", { name: /try beacon now/i })
+    ).toBeNull();
+  });
+
+  it("still opens the modal when clicked programmatically, as js/events.js does", async () => {
+    renderLayout();
+
+    const button = document.getElementById("ys-beacon-launch-modal");
+    act(() => {
+      button?.click();
+    });
+
+    expect(document.body.getAttribute("data-modal-active")).toBe("true");
+    expect(await screen.findByRole("dialog")).toBeTruthy();
+  });
+});
+
+// YaleSites-Internal#1945: closing the chat must hand focus back to the Beacon
+// link that opened it (WCAG 2.4.3).
+describe("Layout returns focus to the launching link on close (#1945)", () => {
+  // jsdom does not implement `inert`, so focus() on an element inside an inert
+  // subtree succeeds there while a browser silently ignores it. Emulate the
+  // browser so the test catches a focus call made before the page is restored.
+  // HTMLElement.prototype.focus is an accessor here (user-event wraps it), so
+  // swap the descriptor rather than assigning.
+  const realDescriptor = Object.getOwnPropertyDescriptor(
+    HTMLElement.prototype,
+    "focus"
+  ) as PropertyDescriptor;
+  const realFocus = HTMLElement.prototype.focus;
+  beforeEach(() => {
+    Object.defineProperty(HTMLElement.prototype, "focus", {
+      configurable: true,
+      writable: true,
+      value: function focus(this: HTMLElement, options?: FocusOptions) {
+        if (this.closest("[inert]")) {
+          return;
+        }
+        realFocus.call(this, options);
+      },
+    });
+  });
+  afterEach(() => {
+    Object.defineProperty(HTMLElement.prototype, "focus", realDescriptor);
+  });
+
+  // Launch links live in the host page, outside the widget host, exactly as
+  // the floating button template and editor-placed links do.
+  const addLaunchLink = (text: string) => {
+    const region = document.createElement("div");
+    const link = document.createElement("a");
+    link.href = "#launch-chat";
+    link.textContent = text;
+    region.appendChild(link);
+    document.body.insertBefore(region, document.body.firstChild);
+    return link;
+  };
+
+  // What js/events.js does on Enter or click: the link has focus, then the
+  // hidden launch button is clicked programmatically.
+  const launchFrom = async (link: HTMLElement | null) => {
+    link?.focus();
+    act(() => {
+      document.getElementById("ys-beacon-launch-modal")?.click();
+    });
+    await screen.findByRole("dialog");
+  };
+
+  let floating: HTMLAnchorElement;
+  let inline: HTMLAnchorElement;
+  beforeEach(() => {
+    floating = addLaunchLink("Beacon Chat");
+    inline = addLaunchLink("Ask Beacon");
+  });
+  afterEach(() => {
+    floating.parentElement?.remove();
+    inline.parentElement?.remove();
+  });
+
+  it("returns focus to the launching link when Escape closes the chat", async () => {
+    const user = userEvent.setup();
+    renderLayout();
+    await launchFrom(floating);
+    expect(floating.closest("[inert]")).not.toBeNull();
+
+    await user.keyboard("{Escape}");
+
+    expect(screen.queryByRole("dialog")).toBeNull();
+    await waitFor(() => expect(floating).toHaveFocus());
+  });
+
+  it("returns focus to the launching link when the close button closes the chat", async () => {
+    const user = userEvent.setup();
+    renderLayout();
+    await launchFrom(floating);
+
+    await user.click(screen.getByRole("button", { name: /close modal/i }));
+
+    await waitFor(() => expect(floating).toHaveFocus());
+  });
+
+  it("returns focus to whichever #launch-chat link opened the chat", async () => {
+    const user = userEvent.setup();
+    renderLayout();
+    await launchFrom(inline);
+
+    await user.keyboard("{Escape}");
+
+    await waitFor(() => expect(inline).toHaveFocus());
+  });
+
+  it("focuses a Beacon launch link, not <body>, when the chat was opened by a #launch-chat page load", async () => {
+    const user = userEvent.setup();
+    renderLayout();
+    // A page load with #launch-chat in the URL opens the chat with nothing
+    // focused.
+    (document.activeElement as HTMLElement | null)?.blur();
+    await launchFrom(null);
+
+    await user.keyboard("{Escape}");
+
+    await waitFor(() =>
+      expect(document.activeElement?.getAttribute("href")).toBe("#launch-chat")
+    );
+  });
+
+  // A [tool, assistant] turn whose answer cites one source, so the chat shows
+  // both a "Citation 1" reference button and an inline superscript citation.
+  const conversationWithCitation = (): Conversation => ({
+    id: "conversation-1",
+    title: "Office hours",
+    messages: [
+      {
+        id: "message-tool",
+        role: "tool",
+        content: JSON.stringify({
+          citations: [
+            {
+              content: "Office hours are 9am to 5pm.",
+              id: "1",
+              title: "Example Source",
+              filepath: null,
+              url: "https://example.com",
+              metadata: null,
+              chunk_id: null,
+              reindex_id: null,
+            },
+          ],
+          intent: "",
+        }),
+        date: "2026-01-01T00:00:00Z",
+      },
+      {
+        id: "message-assistant",
+        role: "assistant",
+        content: "Office hours are listed in the handbook. [doc1]",
+        date: "2026-01-01T00:00:00Z",
+      },
+    ],
+    date: "2026-01-01T00:00:00Z",
+  });
+
+  const renderLayoutWithCitation = () =>
+    render(
+      <AppStateContext.Provider
+        value={{ state: { currentChat: conversationWithCitation() }, dispatch: vi.fn() }}
+      >
+        <Layout />
+      </AppStateContext.Provider>
+    );
+
+  // Open the chat, then open the citation overlay the way a keyboard user
+  // would: focus the citation button and activate it.
+  const openCitationFrom = async (
+    user: ReturnType<typeof userEvent.setup>,
+    name: string | RegExp
+  ) => {
+    await launchFrom(floating);
+    const chat = screen.getByRole("dialog", { name: "Beacon chat" });
+    const citationButton = within(chat).getByRole("button", { name });
+    citationButton.focus();
+    await user.keyboard("{Enter}");
+    await screen.findByRole("dialog", { name: "Citation 1" });
+    return chat;
+  };
+
+  describe.each([
+    ["the citation reference button", "Citation 1"],
+    ["the inline superscript citation", /view citation 1/i],
+  ])("with the citation overlay opened from %s", (_label, name) => {
+    it("returns focus to that citation button when the overlay's close button closes it", async () => {
+      const user = userEvent.setup();
+      renderLayoutWithCitation();
+      const chat = await openCitationFrom(user, name);
+
+      await user.click(
+        within(screen.getByRole("dialog", { name: "Citation 1" })).getByRole(
+          "button",
+          { name: /close modal/i }
+        )
+      );
+
+      expect(screen.queryByRole("dialog", { name: "Citation 1" })).toBeNull();
+      await waitFor(() =>
+        expect(within(chat).getByRole("button", { name })).toHaveFocus()
+      );
+    });
+
+    it("closes only the citation overlay on Escape and returns focus to that citation button", async () => {
+      const user = userEvent.setup();
+      renderLayoutWithCitation();
+      const chat = await openCitationFrom(user, name);
+
+      await user.keyboard("{Escape}");
+
+      expect(screen.queryByRole("dialog", { name: "Citation 1" })).toBeNull();
+      expect(screen.getByRole("dialog", { name: "Beacon chat" })).toBe(chat);
+      expect(floating).not.toHaveFocus();
+      await waitFor(() =>
+        expect(within(chat).getByRole("button", { name })).toHaveFocus()
+      );
+    });
   });
 });
