@@ -3,10 +3,12 @@
 namespace Drupal\Tests\ys_layouts\Unit;
 
 use Drupal\Component\Render\FormattableMarkup;
+use Drupal\Core\Ajax\AjaxResponse;
 use Drupal\Core\DependencyInjection\ClassResolverInterface;
 use Drupal\Core\DependencyInjection\ContainerBuilder;
 use Drupal\Core\Extension\ModuleHandlerInterface;
 use Drupal\Core\Form\FormBuilder;
+use Drupal\Core\Form\FormBuilderInterface;
 use Drupal\Core\Form\FormCacheInterface;
 use Drupal\Core\Form\FormState;
 use Drupal\Core\Form\FormStateInterface;
@@ -14,9 +16,15 @@ use Drupal\Core\Form\FormSubmitterInterface;
 use Drupal\Core\Form\FormValidatorInterface;
 use Drupal\Core\Render\Element;
 use Drupal\Core\Render\ElementInfoManagerInterface;
+use Drupal\Core\Routing\RouteMatchInterface;
 use Drupal\Core\StringTranslation\TranslatableMarkup;
 use Drupal\Core\Theme\ThemeManagerInterface;
+use Drupal\Core\Url;
+use Drupal\layout_builder\Form\AddBlockForm;
+use Drupal\layout_builder\SectionComponent;
+use Drupal\layout_builder\SectionStorageInterface;
 use Drupal\Tests\UnitTestCase;
+use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\RequestStack;
 use Symfony\Contracts\EventDispatcher\EventDispatcherInterface;
 
@@ -215,6 +223,215 @@ class BlockConfigureFormTest extends UnitTestCase {
     // A second name, so the block cannot be hardcoded into the heading.
     $form = $this->alter($this->blockForm('Views: Recent posts'), 'layout_builder_add_block');
     $this->assertSame('Create Views: Recent posts', (string) $form['#title']);
+  }
+
+  /**
+   * Placing an existing reusable block is headed "Place [Block Name]".
+   */
+  public function testAddFormForExistingReusableBlockIsHeadedPlace(): void {
+    $component = $this->createMock(SectionComponent::class);
+    $component->method('getPluginId')->willReturn('block_content:4f1c0e6a-0000-4000-8000-000000000000');
+    $form_state = $this->createMock(FormStateInterface::class);
+    $form_state->method('get')->with('layout_builder__component')->willReturn($component);
+
+    $form = $this->blockForm('Taxonomy Display Block');
+    ys_layouts_form_alter($form, $form_state, 'layout_builder_add_block');
+
+    $this->assertSame('Place Taxonomy Display Block', (string) $form['#title']);
+  }
+
+  /**
+   * Runs the alter against a request carrying the given wrapper format.
+   *
+   * @param string|null $wrapper_format
+   *   The _wrapper_format query value, or NULL for a plain page load.
+   * @param string $route_name
+   *   The route the request is for. Defaults to the add form's own route.
+   * @param array $build_args
+   *   The form's build info args, as FormBuilder::getForm() records them.
+   * @param string $form_id
+   *   The form ID to alter.
+   *
+   * @return array
+   *   The altered form, whose submit button had its #ajax stripped first, as
+   *   layout_builder_browser_form_alter() does.
+   */
+  protected function alteredSubmitFor(?string $wrapper_format, string $route_name = 'layout_builder.add_block', array $build_args = [], string $form_id = 'layout_builder_add_block'): array {
+    $stack = new RequestStack();
+    $stack->push(new Request($wrapper_format === NULL ? [] : ['_wrapper_format' => $wrapper_format]));
+    \Drupal::getContainer()->set('request_stack', $stack);
+    $route_match = $this->createMock(RouteMatchInterface::class);
+    $route_match->method('getRouteName')->willReturn($route_name);
+    \Drupal::getContainer()->set('current_route_match', $route_match);
+
+    $form = $this->blockForm('Tiles');
+    $form['actions']['submit'] = ['#type' => 'submit', '#value' => 'Add block'];
+    $form_state = (new FormState())->addBuildInfo('args', $build_args);
+    ys_layouts_form_alter($form, $form_state, $form_id);
+    return $form['actions']['submit'];
+  }
+
+  /**
+   * Build info args for a block form placed in node 1's section 2, content.
+   *
+   * @param string $last
+   *   The plugin ID (add form) or component UUID (update form).
+   *
+   * @return array
+   *   The args, in the order the add and update forms take them.
+   */
+  protected function buildArgs(string $last): array {
+    $section_storage = $this->createMock(SectionStorageInterface::class);
+    $section_storage->method('getStorageType')->willReturn('overrides');
+    $section_storage->method('getStorageId')->willReturn('node.1');
+    return [$section_storage, 2, 'content', $last];
+  }
+
+  /**
+   * On its own route the add form leaves the Ajax URL to core.
+   */
+  public function testOwnRouteLeavesTheAjaxUrlToCore(): void {
+    $submit = $this->alteredSubmitFor('drupal_modal', 'layout_builder.add_block', $this->buildArgs('inline_block:post_card'));
+    $this->assertSame('ys_layouts_block_form_ajax_submit', $submit['#ajax']['callback']);
+    $this->assertArrayNotHasKey('url', $submit['#ajax']);
+  }
+
+  /**
+   * An add form built by another route posts to the add-block route.
+   *
+   * The Views wizard builds the add form inside its own Ajax request. Core
+   * points a missing #ajax URL at the current route, so Add block posted back
+   * to the wizard, got a full HTML page, and threw a parsererror
+   * (YaleSites-Internal#2390).
+   */
+  public function testAddFormBuiltElsewherePostsToTheAddBlockRoute(): void {
+    $submit = $this->alteredSubmitFor('drupal_ajax', 'ys_views_wizard.choose', $this->buildArgs('inline_block:post_card'));
+    $url = $submit['#ajax']['url'];
+    $this->assertInstanceOf(Url::class, $url);
+    $this->assertSame('layout_builder.add_block', $url->getRouteName());
+    $this->assertSame([
+      'section_storage_type' => 'overrides',
+      'section_storage' => 'node.1',
+      'delta' => 2,
+      'region' => 'content',
+      'plugin_id' => 'inline_block:post_card',
+    ], $url->getRouteParameters());
+    $this->assertTrue($submit['#ajax']['options']['query'][FormBuilderInterface::AJAX_FORM_REQUEST]);
+  }
+
+  /**
+   * An update form built by another route posts to the update-block route.
+   */
+  public function testUpdateFormBuiltElsewherePostsToTheUpdateBlockRoute(): void {
+    $submit = $this->alteredSubmitFor('drupal_ajax', 'some.other_route', $this->buildArgs('abc-uuid'), 'layout_builder_update_block');
+    $url = $submit['#ajax']['url'];
+    $this->assertSame('layout_builder.update_block', $url->getRouteName());
+    $this->assertSame('abc-uuid', $url->getRouteParameters()['uuid']);
+  }
+
+  /**
+   * Built elsewhere with no section storage, the submit stays a plain POST.
+   *
+   * Without the form's own route there is no URL to point the Ajax at, and the
+   * current route's URL is the bug. A plain POST to the form's #action works.
+   */
+  public function testFormBuiltElsewhereWithoutStorageGetsNoAjax(): void {
+    $submit = $this->alteredSubmitFor('drupal_ajax', 'ys_views_wizard.choose');
+    $this->assertArrayNotHasKey('#ajax', $submit);
+  }
+
+  /**
+   * A modal request gets its Ajax submit back, so errors stay in the dialog.
+   *
+   * @dataProvider ajaxWrapperFormatProvider
+   */
+  public function testAjaxSubmitIsRestoredForDialogRequests(string $format): void {
+    $submit = $this->alteredSubmitFor($format);
+    $this->assertSame('ys_layouts_block_form_ajax_submit', $submit['#ajax']['callback']);
+  }
+
+  /**
+   * Builds a form state whose form object's ajaxSubmit returns a response.
+   */
+  protected function ajaxFormState(): FormState {
+    $form_object = $this->createMock(AddBlockForm::class);
+    $form_object->method('ajaxSubmit')->willReturn(new AjaxResponse());
+    return (new FormState())->setFormObject($form_object);
+  }
+
+  /**
+   * Returns the selectors of the dialogs a response closes.
+   */
+  protected function closedDialogs(AjaxResponse $response): array {
+    $selectors = [];
+    foreach ($response->getCommands() as $command) {
+      if ($command['command'] === 'closeDialog') {
+        $selectors[] = $command['selector'];
+      }
+    }
+    return $selectors;
+  }
+
+  /**
+   * A successful submit also closes the centered block browser dialog.
+   *
+   * Core's ajaxSubmit() only closes the off-canvas tray, so without this the
+   * Add block dialog stayed open and a second click placed a duplicate.
+   */
+  public function testSuccessfulAjaxSubmitClosesTheBlockDialog(): void {
+    $form_state = $this->ajaxFormState();
+    $form_state->clearErrors();
+    $form = [];
+    $response = ys_layouts_block_form_ajax_submit($form, $form_state);
+    $this->assertSame(['#layout-builder-modal'], $this->closedDialogs($response));
+  }
+
+  /**
+   * A submit with validation errors keeps the dialog open to show them.
+   */
+  public function testFailedAjaxSubmitKeepsTheBlockDialogOpen(): void {
+    $form_state = $this->ajaxFormState();
+    $form_state->setErrorByName('label', 'Required.');
+    $form = [];
+    try {
+      $response = ys_layouts_block_form_ajax_submit($form, $form_state);
+    }
+    finally {
+      $form_state->clearErrors();
+    }
+    $this->assertSame([], $this->closedDialogs($response));
+  }
+
+  /**
+   * Wrapper formats core treats as Ajax.
+   */
+  public static function ajaxWrapperFormatProvider(): array {
+    return [
+      'modal' => ['drupal_modal'],
+      'ajax' => ['drupal_ajax'],
+      'off canvas' => ['drupal_dialog.off_canvas'],
+    ];
+  }
+
+  /**
+   * A plain page load keeps its submit free of Ajax.
+   */
+  public function testNoAjaxSubmitOnPlainPageLoad(): void {
+    $this->assertArrayNotHasKey('#ajax', $this->alteredSubmitFor(NULL));
+    $this->assertArrayNotHasKey('#ajax', $this->alteredSubmitFor('html'));
+  }
+
+  /**
+   * An existing Ajax binding is left alone.
+   */
+  public function testExistingAjaxBindingIsKept(): void {
+    $stack = new RequestStack();
+    $stack->push(new Request(['_wrapper_format' => 'drupal_modal']));
+    \Drupal::getContainer()->set('request_stack', $stack);
+    $form = $this->blockForm('Tiles');
+    $form['actions']['submit'] = ['#type' => 'submit', '#ajax' => ['callback' => '::other']];
+    ys_layouts_form_alter($form, $this->createMock(FormStateInterface::class), 'layout_builder_add_block');
+    $this->assertSame('::other', $form['actions']['submit']['#ajax']['callback']);
   }
 
   /**

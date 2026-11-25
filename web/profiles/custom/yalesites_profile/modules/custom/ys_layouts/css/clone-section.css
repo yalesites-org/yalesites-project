@@ -123,8 +123,15 @@
  * needs the same treatment. Ordered after the rules above so it wins on source
  * order.
  */
-.gin--dark-mode .layout-builder__link--clone {
-  background-color: var(--ys-contrast-blue);
+/*
+ * !important because `.layout-builder__section:hover .layout-builder__link--
+ * clone` above is one class more specific and, in dark mode, paints the icon
+ * with gin's pale primary whenever the pointer is anywhere in the section.
+ * Remove's rule in atomic is !important for the same reason. Hover and focus on
+ * the link itself keep their own rules below.
+ */
+.gin--dark-mode .layout-builder__link--clone:not(:hover):not(:focus) {
+  background-color: var(--ys-contrast-blue) !important;
 }
 
 /*

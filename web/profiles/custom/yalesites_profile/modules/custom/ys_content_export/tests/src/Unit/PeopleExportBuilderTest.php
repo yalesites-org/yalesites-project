@@ -7,6 +7,7 @@ use Drupal\Core\Entity\EntityInterface;
 use Drupal\Core\Field\EntityReferenceFieldItemListInterface;
 use Drupal\Tests\UnitTestCase;
 use Drupal\ys_content_export\PeopleExportBuilder;
+use Drupal\user\RoleInterface;
 use Drupal\user\UserInterface;
 
 /**
@@ -180,6 +181,18 @@ class PeopleExportBuilderTest extends UnitTestCase {
   }
 
   /**
+   * Tests the Roles cell follows role weight, as the People screen does.
+   *
+   * @covers ::roles
+   */
+  public function testRolesCellIsInRoleWeightOrder(): void {
+    // Granted in the order Editor, Site Admin; Site Admin weighs less.
+    $user = $this->userWithRoles(['Editor', 'Site Admin'], [5, 2]);
+
+    $this->assertSame('Site Admin, Editor', $this->cellValue($user, 'roles'));
+  }
+
+  /**
    * Tests an account with no roles beyond authenticated exports an empty cell.
    *
    * @covers ::roles
@@ -264,14 +277,19 @@ class PeopleExportBuilderTest extends UnitTestCase {
    *
    * @param string[] $labels
    *   The role labels to expose.
+   * @param int[]|null $weights
+   *   Role weights matching $labels, or NULL for plain entities with none.
    *
    * @return \PHPUnit\Framework\MockObject\MockObject
    *   The user mock.
    */
-  protected function userWithRoles(array $labels) {
+  protected function userWithRoles(array $labels, ?array $weights = NULL) {
     $roles = [];
-    foreach ($labels as $label) {
-      $role = $this->createMock(EntityInterface::class);
+    foreach ($labels as $i => $label) {
+      $role = $this->createMock($weights === NULL ? EntityInterface::class : RoleInterface::class);
+      if ($weights !== NULL) {
+        $role->method('getWeight')->willReturn($weights[$i]);
+      }
       $role->method('label')->willReturn($label);
       $roles[] = $role;
     }

@@ -149,7 +149,8 @@ class ResourceViewWidgetTest extends UnitTestCase {
     $this->assertSame([
       'show_search_filter' => 'Show Search',
       'show_year_filter' => 'Show Year',
-      'show_category_filter' => 'Show Category',
+      // Differs from the display checkbox's "Show Category" (#2209).
+      'show_category_filter' => 'Show Category Filter',
       'show_custom_vocab_filter' => 'Show Custom Vocab',
       'show_audience_filter' => 'Show Audience',
       'show_academic_year_filter' => 'Show Academic Year',
