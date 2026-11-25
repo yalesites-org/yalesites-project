@@ -1,0 +1,12 @@
+/**
+ * @file
+ * Lets Linkit's suggestion list scroll inside itself.
+ *
+ * js/linkit-suggestions.js caps its height to fit the dialog.
+ */
+
+/* Scrolling past either end of the list must not scroll the dialog. */
+.linkit-ui-autocomplete {
+  overflow-y: auto;
+  overscroll-behavior: contain;
+}
