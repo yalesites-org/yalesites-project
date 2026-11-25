@@ -539,6 +539,11 @@ class BlockConfigureFormTest extends UnitTestCase {
         "The dialog stylesheet is what centres the heading ($form_id)."
       );
       $this->assertContains(
+        'ys_layouts/block_dialog_paragraphs',
+        $form['#attached']['library'] ?? [],
+        "Without it, Tabs and Accordion item rows shrink to a letter in the sidebar ($form_id)."
+      );
+      $this->assertContains(
         'ys-block-dialog',
         $form['#attributes']['class'] ?? [],
         "Without this class the stylesheet restyles every dialog ($form_id)."

@@ -4,6 +4,14 @@ block_dialog:
     theme:
       css/block-dialog.css: {}
 
+# Paragraphs item rows (Tabs, Accordion...) sized to the block dialog. Attached
+# with block_dialog by ys_layouts_form_alter().
+block_dialog_paragraphs:
+  version: VERSION
+  css:
+    theme:
+      css/block-dialog-paragraphs.css: {}
+
 detach_reusable_block:
   version: VERSION
   css:

@@ -1,0 +1,88 @@
+/**
+ * @file
+ * Fits Paragraphs item rows (Tabs, Accordion, Tiles...) to the block dialog.
+ *
+ * Two things broke these rows in the Configure sidebar (YaleSites-Internal#2293):
+ *
+ * - Paragraphs lays out each row's header (type, badge, summary, actions) on a
+ *   grid that changes with the viewport width. On a desktop window it picks
+ *   the wide layout, with the summary squeezed between the type label and the
+ *   buttons. In a sidebar about 300px wide, that left the summary about 18px,
+ *   so every row read as one letter.
+ * - The tables size their columns to fit content. An open item's CKEditor
+ *   toolbar keeps all its buttons on one line, so the table kept widening to
+ *   fit them, to about 950px in a 438px panel. The toolbar never ran out of
+ *   room, so it never moved buttons into its "⋮" menu.
+ *
+ * Each row's wrapper is now a size container. Its content no longer sets the
+ * column width, so the table stays inside the dialog and CKEditor groups its
+ * buttons. The grid breakpoints are the ones in paragraphs.widget.css, applied
+ * to the row's width instead of the window's. Below 600px the summary takes
+ * its own full-width line, as Paragraphs already does on small screens.
+ *
+ * Attached by ys_layouts_form_alter() with block-dialog.css, and scoped to
+ * .ys-block-dialog for the same reason: Ajax dialog CSS stays on the page after
+ * the dialog closes.
+ */
+
+/* Paragraphs rows only (Paragraphs classes them by type), so other multi-value
+ * tables are left alone. The cell after the drag handle holds the item. Core's
+ * off-canvas tabledrag.css makes the drag cell display: flex, so the table
+ * wraps it in an anonymous cell that would otherwise take the spare width once
+ * the item stops claiming it. */
+.ys-block-dialog tr[class*='paragraph-type--'] > td.field-multiple-drag + td {
+  width: 100%;
+}
+
+.ys-block-dialog
+  tr[class*='paragraph-type--']
+  > td.field-multiple-drag
+  + td
+  > div {
+  container: ys-paragraph-row / inline-size;
+}
+
+/* Atomic's layout-builder.css gives every div in the sidebar
+ * `width: inherit !important`. That would pass the cell's 100% down to every
+ * div in the item and stretch fit-content widgets, such as the Facts icon
+ * preview, past the panel. Resetting the row wrapper lets its descendants
+ * inherit auto, as they did before. The ID matches Atomic's specificity. */
+#drupal-off-canvas-wrapper
+  .ys-block-dialog
+  tr[class*='paragraph-type--']
+  > td.field-multiple-drag
+  + td
+  > div {
+  width: auto !important;
+}
+
+/* Narrow rows: Paragraphs' own small-screen layout. */
+.js .ys-block-dialog .paragraph-top {
+  grid-template-columns: 100px auto 1fr auto;
+}
+
+.js .ys-block-dialog .paragraph-top .paragraph-summary {
+  grid-row: 2 / span 1;
+  grid-column: 1 / 5;
+}
+
+.js .ys-block-dialog .paragraph-top .paragraphs-actions {
+  grid-column: 3 / 5;
+}
+
+@container ys-paragraph-row (min-width: 600px) {
+  .js .ys-block-dialog .paragraph-top .paragraph-summary {
+    grid-row: 1 / span 2;
+    grid-column: 3 / 4;
+  }
+
+  .js .ys-block-dialog .paragraph-top .paragraphs-actions {
+    grid-column: 4 / 5;
+  }
+}
+
+@container ys-paragraph-row (min-width: 992px) {
+  .js .ys-block-dialog .paragraph-top {
+    grid-template-columns: 150px auto 1fr auto;
+  }
+}

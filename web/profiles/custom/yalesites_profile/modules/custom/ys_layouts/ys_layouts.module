@@ -330,6 +330,9 @@ function ys_layouts_form_alter(&$form, $form_state, $form_id) {
     // stylesheet reaches it with :has() on the dialog.
     $form['#attributes']['class'][] = 'ys-block-dialog';
     $form['#attached']['library'][] = 'ys_layouts/block_dialog';
+    // Keeps Paragraphs item rows readable and inside the dialog; see
+    // css/block-dialog-paragraphs.css.
+    $form['#attached']['library'][] = 'ys_layouts/block_dialog_paragraphs';
 
     $form['#after_build'][] = 'ys_layouts_lift_block_instructions';
   }
