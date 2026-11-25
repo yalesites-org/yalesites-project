@@ -98,7 +98,7 @@
     "drupal/recaptcha_v3": "2.0.5",
     "drupal/redirect": "1.13",
     "drupal/redis": "1.11.0",
-    "drupal/role_delegation": "1.6.0",
+    "drupal/role_delegation": "1.7.0",
     "drupal/search_api": "1.43.0",
     "drupal/search_api_exclude": "2.0.3",
     "drupal/search_api_html_element_filter": "1.0.7",
