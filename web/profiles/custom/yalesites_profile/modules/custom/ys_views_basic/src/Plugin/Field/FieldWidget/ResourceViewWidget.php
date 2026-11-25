@@ -157,7 +157,7 @@ class ResourceViewWidget extends ViewsBasicWidgetBase {
     return [
       'show_search_filter' => $shared['show_search_filter'],
       'show_year_filter' => $this->t('Show Year'),
-      'show_category_filter' => $shared['show_category_filter'],
+      'show_category_filter' => $this->t('Show Category Filter'),
       'show_custom_vocab_filter' => $shared['show_custom_vocab_filter'],
       'show_audience_filter' => $shared['show_audience_filter'],
       'show_academic_year_filter' => $this->t('Show Academic Year'),
