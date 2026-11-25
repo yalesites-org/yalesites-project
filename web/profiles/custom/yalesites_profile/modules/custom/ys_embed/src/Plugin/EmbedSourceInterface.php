@@ -64,6 +64,19 @@ interface EmbedSourceInterface extends PluginInspectionInterface {
   public static function exampleContainsMarkup(): bool;
 
   /**
+   * Get the Klaro consent service this embed source belongs to.
+   *
+   * Sources that load third-party content declare the Klaro service (app) the
+   * visitor must consent to before that content may load. Returning NULL marks
+   * the source as ungated, which is only correct for Yale-controlled tenants
+   * and for sources that make no third-party request at all.
+   *
+   * @return string|null
+   *   The Klaro service (app) ID, or NULL if the source is not consent-gated.
+   */
+  public function getKlaroService(): ?string;
+
+  /**
    * Get a render array for an embed code.
    *
    * @param array $params
