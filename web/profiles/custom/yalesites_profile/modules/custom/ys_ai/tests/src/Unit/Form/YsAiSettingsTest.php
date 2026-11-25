@@ -380,6 +380,10 @@ class YsAiSettingsTest extends UnitTestCase {
     $container = new ContainerBuilder();
     $container->set('config.factory', $this->configFactory);
     $container->set('config.typed', $typed_config_manager);
+    // ConfigFormBase::create() autowires its constructor arguments by
+    // interface, which core resolves through these service aliases.
+    $container->setAlias(ConfigFactoryInterface::class, 'config.factory');
+    $container->setAlias(TypedConfigManagerInterface::class, 'config.typed');
     $container->set('ys_ai_system_instructions.access_check', $system_instructions_access);
 
     $instance = YsAiSettings::create($container);

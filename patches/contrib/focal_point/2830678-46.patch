@@ -1,8 +1,8 @@
 diff --git a/config/schema/focal_point.schema.yml b/config/schema/focal_point.schema.yml
-index db4745f5db12bf830f0bc5a3d31d93fe57f6f7a8..04139aed23b378a176fb6f460c4ed9df106054ee 100644
+index 396870d..8b0e70a 100644
 --- a/config/schema/focal_point.schema.yml
 +++ b/config/schema/focal_point.schema.yml
-@@ -41,3 +41,8 @@ field.widget.settings.image_focal_point:
+@@ -49,3 +49,8 @@ field.widget.settings.image_focal_point:
      offsets:
        type: string
        label: 'Focal point offsets'
@@ -12,7 +12,7 @@ index db4745f5db12bf830f0bc5a3d31d93fe57f6f7a8..04139aed23b378a176fb6f460c4ed9df
 +      sequence:
 +        type: string
 diff --git a/src/Controller/FocalPointPreviewController.php b/src/Controller/FocalPointPreviewController.php
-index 5362bd32c0512c71b482ebad94bfc25ca69e8018..0184bc5ae4f3d5c62c799e065c509d3bed3f49fb 100644
+index 1316574..1fc6399 100644
 --- a/src/Controller/FocalPointPreviewController.php
 +++ b/src/Controller/FocalPointPreviewController.php
 @@ -12,7 +12,7 @@ use Drupal\Core\Logger\LoggerChannelFactoryInterface;
@@ -24,9 +24,9 @@ index 5362bd32c0512c71b482ebad94bfc25ca69e8018..0184bc5ae4f3d5c62c799e065c509d3b
  use Drupal\focal_point\Plugin\Field\FieldWidget\FocalPointImageWidget;
  use Drupal\image\ImageEffectManager;
  use Drupal\image\ImageStyleInterface;
-@@ -26,6 +26,13 @@ use Symfony\Component\HttpFoundation\RequestStack;
-  */
- class FocalPointPreviewController extends ControllerBase {
+@@ -61,6 +61,13 @@ class FocalPointPreviewController extends ControllerBase {
+    */
+   protected $logger;
  
 +  /**
 +   * The Focal Point manager.
@@ -36,31 +36,29 @@ index 5362bd32c0512c71b482ebad94bfc25ca69e8018..0184bc5ae4f3d5c62c799e065c509d3b
 +  protected $focalPointManager;
 +
    /**
-    * The image factory service.
+    * {@inheritdoc}
     *
-@@ -68,6 +75,8 @@ class FocalPointPreviewController extends ControllerBase {
-    *   The image_factory parameter.
-    * @param \Symfony\Component\HttpFoundation\RequestStack $request_stack
-    *   The request parameter.
-+   * @param \Drupal\focal_point\FocalPointManagerInterface $focal_point_manager
-+   *   The Focal Point manager.
-    * @param \Drupal\Core\Logger\LoggerChannelFactoryInterface $logger
-    *   The logger factory.
-    * @param \Drupal\image\ImageEffectManager $imageEffectManager
-@@ -80,13 +89,15 @@ class FocalPointPreviewController extends ControllerBase {
-     RequestStack $request_stack,
+@@ -74,6 +81,8 @@ class FocalPointPreviewController extends ControllerBase {
+    *   The image effect manager.
+    * @param \Drupal\Core\Entity\EntityStorageInterface $fileStorage
+    *   The file storage service.
++   * @param \Drupal\focal_point\FocalPointManagerInterface $focalPointManager
++   *      The Focal Point manager.
+    */
+   public function __construct(
+     ImageFactory $image_factory,
+@@ -81,12 +90,14 @@ class FocalPointPreviewController extends ControllerBase {
      LoggerChannelFactoryInterface $logger,
      ImageEffectManager $imageEffectManager,
--    EntityStorageInterface $fileStorage
-+    EntityStorageInterface $fileStorage,
-+    FocalPointManagerInterface $focal_point_manager
+     EntityStorageInterface $fileStorage,
++    FocalPointManagerInterface $focalPointManager,
    ) {
      $this->imageFactory = $image_factory;
      $this->request = $request_stack->getCurrentRequest();
      $this->logger = $logger->get('focal_point');
      $this->imageEffectManager = $imageEffectManager;
      $this->fileStorage = $fileStorage;
-+    $this->focalPointManager = $focal_point_manager;
++    $this->focalPointManager = $focalPointManager;
    }
  
    /**
@@ -70,12 +68,12 @@ index 5362bd32c0512c71b482ebad94bfc25ca69e8018..0184bc5ae4f3d5c62c799e065c509d3b
        $container->get('plugin.manager.image.effect'),
 -      $container->get('entity_type.manager')->getStorage('file')
 +      $container->get('entity_type.manager')->getStorage('file'),
-+      $container->get('focal_point.manager'),
++      $container->get('focal_point.manager')
      );
    }
  
 @@ -115,7 +127,11 @@ class FocalPointPreviewController extends ControllerBase {
-       $this->logger->warning($this->t('Source image with fid=%fid not confirmed as valid.'), ['%fid' => $fid]);
+       $this->logger->warning('Source image with fid=%fid not confirmed as valid.', ['%fid' => $fid]);
      }
  
 -    $styles = $this->getFocalPointImageStyles();
@@ -125,43 +123,36 @@ index 5362bd32c0512c71b482ebad94bfc25ca69e8018..0184bc5ae4f3d5c62c799e065c509d3b
     * Create the URL for a preview image including a query parameter.
     *
 diff --git a/src/FocalPointManager.php b/src/FocalPointManager.php
-index aa3b8c5b3ada7b76533f01163817f3a0aab634b3..b98af64e95efb606634c156d1642bf5010c7ec85 100644
+index d0c6eff..3b7c099 100644
 --- a/src/FocalPointManager.php
 +++ b/src/FocalPointManager.php
-@@ -20,11 +20,11 @@ class FocalPointManager implements FocalPointManagerInterface {
-   const FOCAL_POINT_VALIDATION_REGEXP = '/^(100|[0-9]{1,2})(,)(100|[0-9]{1,2})$/';
- 
-   /**
--   * Crop entity storage.
-+   * Entity type manager.
-    *
--   * @var \Drupal\crop\CropStorageInterface
-+   * @var \Drupal\Core\Entity\EntityTypeManagerInterface
+@@ -26,14 +26,22 @@ class FocalPointManager implements FocalPointManagerInterface {
     */
--  protected $cropStorage;
-+  protected $entityTypeManager;
+   protected $cropStorage;
  
++  /**
++   * Entity type manager.
++   *
++   * @var \Drupal\Core\Entity\EntityTypeManagerInterface
++   */
++  protected $entityTypeManager;
++
    /**
     * Constructs FocalPointManager.
-@@ -33,7 +33,7 @@ class FocalPointManager implements FocalPointManagerInterface {
+    *
+-   * @param \Drupal\Core\Entity\EntityTypeManagerInterface $entity_type_manager
++   * @param \Drupal\Core\Entity\EntityTypeManagerInterface $entityTypeManager
     *   Entity type manager service.
     */
-   public function __construct(EntityTypeManagerInterface $entity_type_manager) {
+-  public function __construct(EntityTypeManagerInterface $entity_type_manager) {
 -    $this->cropStorage = $entity_type_manager->getStorage('crop');
-+    $this->entityTypeManager = $entity_type_manager;
++  public function __construct(EntityTypeManagerInterface $entityTypeManager) {
++    $this->cropStorage = $entityTypeManager->getStorage('crop');
++    $this->entityTypeManager = $entityTypeManager;
    }
  
    /**
-@@ -81,7 +81,7 @@ class FocalPointManager implements FocalPointManagerInterface {
-         'uri' => $file->getFileUri(),
-       ];
- 
--      $crop = $this->cropStorage
-+      $crop = $this->entityTypeManager->getStorage('crop')
-         ->create($values);
-     }
- 
-@@ -103,4 +103,26 @@ class FocalPointManager implements FocalPointManagerInterface {
+@@ -100,4 +108,26 @@ class FocalPointManager implements FocalPointManagerInterface {
      return $crop;
    }
  
@@ -189,7 +180,7 @@ index aa3b8c5b3ada7b76533f01163817f3a0aab634b3..b98af64e95efb606634c156d1642bf50
 +
  }
 diff --git a/src/FocalPointManagerInterface.php b/src/FocalPointManagerInterface.php
-index 32cf67a8da0206be3812a24f704e1b66d6a31a3b..f5e6d4fc567203a56206825fadf112bb3caed101 100644
+index 32cf67a..f5e6d4f 100644
 --- a/src/FocalPointManagerInterface.php
 +++ b/src/FocalPointManagerInterface.php
 @@ -106,4 +106,16 @@ interface FocalPointManagerInterface {
@@ -210,7 +201,7 @@ index 32cf67a8da0206be3812a24f704e1b66d6a31a3b..f5e6d4fc567203a56206825fadf112bb
 +
  }
 diff --git a/src/Plugin/Field/FieldWidget/FocalPointImageWidget.php b/src/Plugin/Field/FieldWidget/FocalPointImageWidget.php
-index 978082ddd3a8c7ee6b795b9ca839282a89a797e0..6507891ff0fc3420e5cf3d55a74ca125b9c77565 100644
+index 978082d..f4b18ab 100644
 --- a/src/Plugin/Field/FieldWidget/FocalPointImageWidget.php
 +++ b/src/Plugin/Field/FieldWidget/FocalPointImageWidget.php
 @@ -2,12 +2,17 @@
@@ -219,8 +210,8 @@ index 978082ddd3a8c7ee6b795b9ca839282a89a797e0..6507891ff0fc3420e5cf3d55a74ca125
  
 +use Drupal\Core\Field\FieldDefinitionInterface;
  use Drupal\Core\Field\FieldItemListInterface;
-+use Drupal\Core\Image\ImageFactory;
  use Drupal\Core\Form\FormStateInterface;
++use Drupal\Core\Image\ImageFactory;
 +use Drupal\Core\Render\ElementInfoManagerInterface;
  use Drupal\Core\StringTranslation\TranslatableMarkup;
  use Drupal\Core\Url;
@@ -343,14 +334,14 @@ index 978082ddd3a8c7ee6b795b9ca839282a89a797e0..6507891ff0fc3420e5cf3d55a74ca125
  
      $offsets = $this->getSetting('offsets');
      $summary[] = $this->t('Default focal point: @offsets', ['@offsets' => $offsets]);
-@@ -101,6 +180,7 @@ class FocalPointImageWidget extends ImageWidget {
-     $element = parent::formElement($items, $delta, $element, $form, $form_state);
+@@ -102,6 +181,7 @@ class FocalPointImageWidget extends ImageWidget {
      $element['#focal_point'] = [
        'preview_link' => $this->getSetting('preview_link'),
-+      'preview_styles' => $this->getSetting('preview_styles'),
        'offsets' => $this->getSetting('offsets'),
++      'preview_styles' => $this->getSetting('preview_styles'),
      ];
  
+     return $element;
 @@ -150,7 +230,7 @@ class FocalPointImageWidget extends ImageWidget {
        // can always be found in $item['fids'][0].
        $fid = $item['fids'][0] ?? '';
@@ -365,7 +356,7 @@ index 978082ddd3a8c7ee6b795b9ca839282a89a797e0..6507891ff0fc3420e5cf3d55a74ca125
     * @param string $default_focal_point_value
     *   The default focal point value in the form x,y.
 +   * @param array $preview_image_styles
-+   *   (Optional) Array of image styles ID to use. Defaults to any available.
++   *    (Optional) Array of image styles ID to use. Defaults to any available.
     *
     * @return array
     *   The preview link form element.
@@ -396,17 +387,17 @@ index 978082ddd3a8c7ee6b795b9ca839282a89a797e0..6507891ff0fc3420e5cf3d55a74ca125
        '#attached' => [
          'library' => ['core/drupal.dialog.ajax'],
 diff --git a/tests/src/Unit/FieldWidgets/FocalPointFieldWidgetTest.php b/tests/src/Unit/FieldWidgets/FocalPointFieldWidgetTest.php
-index 344b0a67a9da8f7566672274f32863073359ed14..41ff9419929f783c07493731a6dcb6f31cb222d6 100644
+index 074e635..e711432 100644
 --- a/tests/src/Unit/FieldWidgets/FocalPointFieldWidgetTest.php
 +++ b/tests/src/Unit/FieldWidgets/FocalPointFieldWidgetTest.php
-@@ -12,6 +12,7 @@ use Drupal\focal_point\FocalPointManager;
+@@ -9,6 +9,7 @@ use Drupal\Core\Field\FieldDefinitionInterface;
+ use Drupal\Core\Image\ImageFactory;
+ use Drupal\Core\Render\ElementInfoManagerInterface;
+ use Drupal\focal_point\FocalPointManager;
++use Drupal\focal_point\FocalPointManagerInterface;
  use Drupal\focal_point\Plugin\Field\FieldWidget\FocalPointImageWidget;
  use Drupal\Tests\UnitTestCase;
  use Symfony\Component\DependencyInjection\ContainerInterface;
-+use Drupal\focal_point\FocalPointManagerInterface;
- 
- /**
-  * @coversDefaultClass \Drupal\focal_point\Plugin\Field\FieldWidget\FocalPointImageWidget
 @@ -94,7 +95,7 @@ class FocalPointFieldWidgetTest extends UnitTestCase {
        $focalPointImageWidget = new FocalPointImageWidget([], [], $this->prophesize(FieldDefinitionInterface::class)->reveal(), [], [], $this->prophesize(ElementInfoManagerInterface::class)->reveal());
      }

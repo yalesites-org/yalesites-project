@@ -3,6 +3,7 @@
 namespace Drupal\Tests\ys_layouts\Unit;
 
 use Drupal\Component\Render\FormattableMarkup;
+use Drupal\Core\Access\CsrfTokenGenerator;
 use Drupal\Core\Ajax\AjaxResponse;
 use Drupal\Core\DependencyInjection\ClassResolverInterface;
 use Drupal\Core\DependencyInjection\ContainerBuilder;
@@ -20,6 +21,7 @@ use Drupal\Core\Routing\RouteMatchInterface;
 use Drupal\Core\StringTranslation\TranslatableMarkup;
 use Drupal\Core\Theme\ThemeManagerInterface;
 use Drupal\Core\Url;
+use Drupal\Core\Utility\CallableResolver;
 use Drupal\layout_builder\Form\AddBlockForm;
 use Drupal\layout_builder\SectionComponent;
 use Drupal\layout_builder\SectionStorageInterface;
@@ -913,6 +915,8 @@ class BlockConfigureFormTest extends UnitTestCase {
       $this->createMock(ClassResolverInterface::class),
       $element_info,
       $this->createMock(ThemeManagerInterface::class),
+      $this->createMock(CsrfTokenGenerator::class),
+      $this->createStub(CallableResolver::class),
     );
     $form_state = (new FormState())
       ->setProgrammed()

@@ -46,7 +46,7 @@ class RunComparatorTest extends UnitTestCase {
   /**
    * Builds a result row with decoded citations.
    */
-  protected function result(string $question, string $answer, array $citations = []): array {
+  protected function resultRow(string $question, string $answer, array $citations = []): array {
     return [
       'question' => $question,
       'answer' => $answer,
@@ -68,8 +68,8 @@ class RunComparatorTest extends UnitTestCase {
     $out = $this->comparator->compareResults(
       $this->meta(1),
       $this->meta(2),
-      [$this->result('Q1', 'Same answer')],
-      [$this->result('Q1', 'Same answer')],
+      [$this->resultRow('Q1', 'Same answer')],
+      [$this->resultRow('Q1', 'Same answer')],
     );
 
     $this->assertCount(1, $out['pairs']);
@@ -86,8 +86,8 @@ class RunComparatorTest extends UnitTestCase {
     $out = $this->comparator->compareResults(
       $this->meta(1),
       $this->meta(2),
-      [$this->result('Q1', 'Answer A')],
-      [$this->result('Q1', 'Answer B')],
+      [$this->resultRow('Q1', 'Answer A')],
+      [$this->resultRow('Q1', 'Answer B')],
     );
 
     $this->assertSame('differs', $out['pairs'][0]['status']);
@@ -102,8 +102,8 @@ class RunComparatorTest extends UnitTestCase {
     $out = $this->comparator->compareResults(
       $this->meta(1),
       $this->meta(2),
-      [$this->result('Q1', 'x'), $this->result('Q2', 'y')],
-      [$this->result('Q1', 'x')],
+      [$this->resultRow('Q1', 'x'), $this->resultRow('Q2', 'y')],
+      [$this->resultRow('Q1', 'x')],
     );
 
     $this->assertCount(2, $out['pairs']);
@@ -124,8 +124,8 @@ class RunComparatorTest extends UnitTestCase {
     $out = $this->comparator->compareResults(
       $this->meta(1),
       $this->meta(2),
-      [$this->result('Q1', 'x')],
-      [$this->result('Q1', 'x'), $this->result('Q3', 'z')],
+      [$this->resultRow('Q1', 'x')],
+      [$this->resultRow('Q1', 'x'), $this->resultRow('Q3', 'z')],
     );
 
     $this->assertCount(2, $out['pairs']);
@@ -144,8 +144,8 @@ class RunComparatorTest extends UnitTestCase {
     $out = $this->comparator->compareResults(
       $this->meta(1),
       $this->meta(2),
-      [$this->result('Dup', 'a1'), $this->result('Dup', 'a2')],
-      [$this->result('Dup', 'b1')],
+      [$this->resultRow('Dup', 'a1'), $this->resultRow('Dup', 'a2')],
+      [$this->resultRow('Dup', 'b1')],
     );
 
     $this->assertCount(2, $out['pairs']);
@@ -165,8 +165,8 @@ class RunComparatorTest extends UnitTestCase {
     $out = $this->comparator->compareResults(
       $this->meta(1),
       $this->meta(2),
-      [$this->result('  Q1  ', 'answer')],
-      [$this->result('Q1', '  answer  ')],
+      [$this->resultRow('  Q1  ', 'answer')],
+      [$this->resultRow('Q1', '  answer  ')],
     );
 
     $this->assertCount(1, $out['pairs']);
@@ -181,7 +181,7 @@ class RunComparatorTest extends UnitTestCase {
       $this->meta(1),
       $this->meta(2),
       [
-        $this->result('Q1', 'a', [
+        $this->resultRow('Q1', 'a', [
           $this->citation('http://x', 'X', TRUE),
           $this->citation('http://y', 'Y', FALSE),
           // Empty URL is skipped from overlap entirely.
@@ -189,7 +189,7 @@ class RunComparatorTest extends UnitTestCase {
         ]),
       ],
       [
-        $this->result('Q1', 'b', [
+        $this->resultRow('Q1', 'b', [
           $this->citation('http://x', 'X', TRUE),
           $this->citation('http://z', 'Z', TRUE),
         ]),
@@ -210,12 +210,12 @@ class RunComparatorTest extends UnitTestCase {
       $this->meta(1),
       $this->meta(2),
       [
-        $this->result('Q1', 'hello', [
+        $this->resultRow('Q1', 'hello', [
           $this->citation('http://x', 'X', TRUE),
           $this->citation('http://y', 'Y', FALSE),
         ]),
       ],
-      [$this->result('Q1', '')],
+      [$this->resultRow('Q1', '')],
     );
 
     $pair = $out['pairs'][0];
@@ -239,14 +239,14 @@ class RunComparatorTest extends UnitTestCase {
       $this->meta(1),
       $this->meta(2),
       [
-        $this->result('Same', 'x'),
-        $this->result('Changed', 'a'),
-        $this->result('OnlyA', 'q'),
+        $this->resultRow('Same', 'x'),
+        $this->resultRow('Changed', 'a'),
+        $this->resultRow('OnlyA', 'q'),
       ],
       [
-        $this->result('Same', 'x'),
-        $this->result('Changed', 'b'),
-        $this->result('OnlyB', 'r'),
+        $this->resultRow('Same', 'x'),
+        $this->resultRow('Changed', 'b'),
+        $this->resultRow('OnlyB', 'r'),
       ],
     );
 
@@ -264,8 +264,8 @@ class RunComparatorTest extends UnitTestCase {
     $out = $this->comparator->compareResults(
       $this->meta(7),
       $this->meta(9),
-      [$this->result('Q1', 'x')],
-      [$this->result('Q1', 'x')],
+      [$this->resultRow('Q1', 'x')],
+      [$this->resultRow('Q1', 'x')],
     );
 
     $this->assertSame(7, $out['run_a']['id']);
@@ -282,8 +282,8 @@ class RunComparatorTest extends UnitTestCase {
     $out = $this->comparator->compareResults(
       ['backend' => 'beacon'] + $this->meta(7),
       ['backend' => 'legacy'] + $this->meta(9),
-      [$this->result('Q1', 'x')],
-      [$this->result('Q1', 'y')],
+      [$this->resultRow('Q1', 'x')],
+      [$this->resultRow('Q1', 'y')],
     );
 
     $this->assertSame('beacon', $out['run_a']['backend']);
@@ -299,8 +299,8 @@ class RunComparatorTest extends UnitTestCase {
     $out = $this->comparator->compareResults(
       $this->meta(1),
       $this->meta(2),
-      [$this->result('Q1', 'x')],
-      [$this->result('Q1', 'x')],
+      [$this->resultRow('Q1', 'x')],
+      [$this->resultRow('Q1', 'x')],
     );
 
     $this->assertSame('beacon', $out['run_a']['backend']);
@@ -322,8 +322,8 @@ class RunComparatorTest extends UnitTestCase {
     $out = $this->comparator->compareResults(
       $this->meta(1),
       $this->meta(2),
-      [$this->result('Q1', 'a', $cite($urls_a))],
-      [$this->result('Q1', 'b', $cite($urls_b))],
+      [$this->resultRow('Q1', 'a', $cite($urls_a))],
+      [$this->resultRow('Q1', 'b', $cite($urls_b))],
     );
 
     return $out['pairs'][0]['citation_overlap'];
@@ -530,14 +530,14 @@ class RunComparatorTest extends UnitTestCase {
       $this->meta(1),
       $this->meta(2),
       [
-        $this->result('Q1', 'a', [
+        $this->resultRow('Q1', 'a', [
           // A source without a URL cannot name a host; the next one can.
           $this->citation('', 'NoUrl', TRUE),
           $this->citation('https://v2260-ys-gatewayassist-yale-edu.pantheonsite.io/x', 'X', TRUE),
         ]),
       ],
       [
-        $this->result('Q1', 'b', [
+        $this->resultRow('Q1', 'b', [
           $this->citation('https://gatewayassist.yale.edu/x', 'X', TRUE),
         ]),
       ],
@@ -642,13 +642,13 @@ class RunComparatorTest extends UnitTestCase {
       $this->meta(1),
       $this->meta(2),
       [
-        $this->result('Q1', 'a', [
+        $this->resultRow('Q1', 'a', [
           $this->citation('https://a.example.edu/about', 'T', TRUE),
           $this->citation('https://a.example.edu/about/', 'T', TRUE),
         ]),
       ],
       [
-        $this->result('Q1', 'b', [
+        $this->resultRow('Q1', 'b', [
           $this->citation('https://b.example.edu/about', 'T', TRUE),
         ]),
       ],
@@ -685,8 +685,8 @@ class RunComparatorTest extends UnitTestCase {
     $out = $this->comparator->compareResults(
       $this->meta(1),
       $this->meta(2),
-      [$this->result('Q1', 'a', [$this->citation('/relative/only', 'R', TRUE)])],
-      [$this->result('Q1', 'b')],
+      [$this->resultRow('Q1', 'a', [$this->citation('/relative/only', 'R', TRUE)])],
+      [$this->resultRow('Q1', 'b')],
     );
 
     $this->assertSame('', $out['run_a']['host']);
@@ -707,14 +707,14 @@ class RunComparatorTest extends UnitTestCase {
       $this->meta(1),
       $this->meta(2),
       [
-        $this->result('Q1', 'a', [
+        $this->resultRow('Q1', 'a', [
           // A borrowed source ranks first, but the run is not answered on it.
           $this->citation('https://borrowed.yale.edu/policies', 'B', TRUE),
           $this->citation('https://own.yale.edu/about', 'O', TRUE),
           $this->citation('https://own.yale.edu/directory', 'O', TRUE),
         ]),
       ],
-      [$this->result('Q1', 'b')],
+      [$this->resultRow('Q1', 'b')],
     );
 
     $this->assertSame('own.yale.edu', $out['run_a']['host']);

@@ -23,12 +23,6 @@ targetEntityType: block_content
 bundle: inline_message
 mode: default
 content:
-  field_icon:
-    type: chosen_select
-    weight: 7
-    region: content
-    settings: {  }
-    third_party_settings: {  }
   field_heading:
     type: text_textfield
     weight: 2
@@ -44,6 +38,12 @@ content:
         maxlength_js: 50
         maxlength_js_label: 'Content recommended length set to @limit characters, remaining: <strong>@remaining</strong>'
         maxlength_js_enforce: false
+  field_icon:
+    type: chosen_select
+    weight: 7
+    region: content
+    settings: {  }
+    third_party_settings: {  }
   field_link:
     type: linkit
     weight: 4

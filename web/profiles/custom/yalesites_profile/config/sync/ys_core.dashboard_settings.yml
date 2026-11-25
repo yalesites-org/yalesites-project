@@ -6,5 +6,5 @@ announcements_source_enabled: false
 announcements_source_term: 'Dashboard Announcement'
 announcements_source_categories:
   - 'Feature release'
-  - 'News'
+  - News
   - 'Important update'

@@ -534,7 +534,7 @@ class IndexableHtmlFilterTest extends UnitTestCase {
    * @return array<string, array{string, string}>
    *   Markup and the needle that must be absent, keyed by case name.
    */
-  public function furnitureButtonProvider(): array {
+  public static function furnitureButtonProvider(): array {
     return [
       'accordion expand all' => [
         '<div class="accordion__controls"><button class="accordion__toggle-all" aria-expanded="false">Expand All</button></div>',
@@ -818,7 +818,7 @@ class IndexableHtmlFilterTest extends UnitTestCase {
    * @return array<string, array{string}>
    *   One editor-authorable id per case.
    */
-  public function unsafeIdProvider(): array {
+  public static function unsafeIdProvider(): array {
     return [
       'closing parenthesis ends the markdown destination' => ['faq)x'],
       'opening bracket starts a new markdown link' => ['faq[x'],

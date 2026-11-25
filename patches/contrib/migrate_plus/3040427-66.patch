@@ -1,92 +1,129 @@
 diff --git a/src/Plugin/migrate/source/Url.php b/src/Plugin/migrate/source/Url.php
+index c1c3256163544c2d72d2d513cf552cc86368f3ff..e9b4805989ee7e78407cdd6ca4ae272f3ed2dce9 100644
 --- a/src/Plugin/migrate/source/Url.php
-+++ b/src/Plugin/migrate/source/Url.php	(date 1753029926139)
-@@ -4,13 +4,51 @@
++++ b/src/Plugin/migrate/source/Url.php
+@@ -4,6 +4,7 @@ declare(strict_types=1);
 
  namespace Drupal\migrate_plus\Plugin\migrate\source;
 
 +use Drupal\Component\Plugin\Exception\InvalidPluginDefinitionException;
  use Drupal\Core\Plugin\ContainerFactoryPluginInterface;
- use Drupal\migrate_plus\DataParserPluginInterface;
+ use Drupal\migrate\Attribute\MigrateSource;
  use Drupal\migrate\Plugin\MigrationInterface;
- use Drupal\migrate_plus\DataParserPluginManager;
-
+@@ -13,6 +14,43 @@ use Drupal\migrate_plus\DataParserPluginManager;
  /**
-- * Source plugin for retrieving data via URLs.
-+ * Source plugin to provide a list of source URLs.
-+ *
-+ * This plugin allows the user to specify file or stream-based content (where a
-+ * URL, including potentially a local filepath, points to a file containing data
-+ * to be migrated). The source plugin itself simply manages the (potentially
-+ * multiple) source URLs, and works with Http and File fetcher plugins for
-+ * retrieving the data.
-+ *
-+ * Available configuration keys:
-+ * - urls: a URL, a list of URLs, or a callback that returns a list of URLs
-+ * - data_fetcher_plugin: id of valid DataFetcherPluginInterface - eg. http, file
-+ * - data_parser_plugin: id of valid DataParserPluginInterface - eg. json, xml
-+ *
-+ * Examples:
-+ *
-+ * @code
-+ * source:
-+ * plugin: url
-+ * urls: https://example.com/jsonapi/node/article
-+ * data_fetcher_plugin: http
-+ * data_parser_plugin: json
-+ * item_selector: data
-+ * @endcode
-+ *
-+ * The above will import articles from a single URL endpoint.
-+ *
-+ * @code
-+ * source:
-+ * plugin: url
-+ * urls:
-+ * callback: my_module_get_urls_to_import
-+ * data_fetcher_plugin: http
-+ * data_parser_plugin: json
-+ * item_selector: data
-+ * @endcode
-+ *
-+ * The above will call the function my_module_get_urls_to_import() which should
-+ * return an array of URLs or files corresponding to all data sources to import.
+  * Source plugin for retrieving data via URLs.
   *
++ * Available configuration keys:
++ * - urls: (Required) A list of source URLs to retrieve.
++ *   - Static URLs can be provided as a string or array of strings.
++ *   - A callback function can be provided to dynamically generate URLs.
++ *     The callback receives the MigrationInterface object and should return
++ *     an array of URLs.
++ *
++ * Example with static URLs:
++ * @code
++ * source:
++ *   plugin: url
++ *   data_fetcher_plugin: http
++ *   data_parser_plugin: json
++ *   urls:
++ *     - 'https://example.com/api/items'
++ *   item_selector: /data
++ * @endcode
++ *
++ * Example with callback:
++ * @code
++ * source:
++ *   plugin: url
++ *   data_fetcher_plugin: http
++ *   data_parser_plugin: json
++ *   urls:
++ *     callback: my_module_get_migration_urls
++ *   item_selector: /data
++ * @endcode
++ *
++ * The callback function signature:
++ * @code
++ * function my_module_get_migration_urls(\Drupal\migrate\Plugin\MigrationInterface $migration): array {
++ *   // Return array of URLs to process.
++ *   return ['https://example.com/api/item/1', 'https://example.com/api/item/2'];
++ * }
++ * @endcode
++ *
   * @MigrateSource(
   *   id = "url"
-@@ -45,6 +83,17 @@
-     if (!is_array($configuration['urls'])) {
+  * )
+@@ -44,13 +82,25 @@ class Url extends SourcePluginExtension implements ContainerFactoryPluginInterfa
+     MigrationInterface $migration,
+     protected DataParserPluginManager $parserPluginManager,
+   ) {
+-
+     if (!array_key_exists('urls', $configuration)) {
+       $configuration['urls'] = [];
+     }
++    // Handle callback-based URL generation.
++    elseif (is_array($configuration['urls']) && isset($configuration['urls']['callback'])) {
++      $callback = $configuration['urls']['callback'];
++      if (!is_callable($callback)) {
++        throw new InvalidPluginDefinitionException(
++          $plugin_id,
++          sprintf('The "urls" callback "%s" is not callable.', $callback)
++        );
++      }
++      $configuration['urls'] = call_user_func($callback, $migration);
++    }
++    // Normalize single URL to array.
+     elseif (is_scalar($configuration['urls'])) {
        $configuration['urls'] = [$configuration['urls']];
      }
-+    // Support a callback to return arrays of URLs.
-+    elseif (!empty($configuration['urls']['callback'])) {
-+      if (is_callable($configuration['urls']['callback'])) {
-+        $configuration['urls'] = $configuration['urls']['callback']($migration);
-+      }
-+      else {
-+        $message = 'The URL callback function is not callable.';
-+        // \Drupal\Component\Plugin\Exception\InvalidPluginDefinitionException
-+        throw new InvalidPluginDefinitionException($this->getPluginId(), $message);
-+      }
-+    }
++
      parent::__construct($configuration, $plugin_id, $plugin_definition, $migration);
 
      $this->sourceUrls = $configuration['urls'];
-
 diff --git a/src/Plugin/migrate_plus/data_parser/Json.php b/src/Plugin/migrate_plus/data_parser/Json.php
-index c4d100e..0512354 100755
+index 51b5a1de0730d57d2d2f5031b72b742fb0cfa092..cb69450de855a47296bef9c7e24a88c2047b599e 100755
 --- a/src/Plugin/migrate_plus/data_parser/Json.php
 +++ b/src/Plugin/migrate_plus/data_parser/Json.php
-@@ -48,6 +48,12 @@ class Json extends DataParserPluginBase implements ContainerFactoryPluginInterfa
-       return $this->selectByDepth($source_data);
+@@ -45,12 +45,13 @@ class Json extends DataParserPluginBase implements ContainerFactoryPluginInterfa
+    *
+    * @param string $url
+    *   URL of a JSON feed.
+-   * @param string|int $item_selector
++   * @param string|int|bool $item_selector
+    *   Selector within the data content at which useful data is found.
++   *   Set to FALSE to return the entire source data as a single item.
+    *
+    * @throws \GuzzleHttp\Exception\RequestException
+    */
+-  protected function getSourceData(string $url, string|int $item_selector = '') {
++  protected function getSourceData(string $url, string|int|bool $item_selector = '') {
+     // Use cached source data if this is the first request or URL is same as the
+     // last time we made the request.
+     if ($this->currentUrl != $url || !$this->sourceData) {
+@@ -69,6 +70,12 @@ class Json extends DataParserPluginBase implements ContainerFactoryPluginInterfa
+       $this->currentUrl = $url;
      }
 
-+    // Treat source data as a single object to import if itemSelector is
-+    // explicitly set to FALSE.
-+    if ($this->itemSelector === FALSE) {
-+      return [$source_data];
++    // If item_selector is explicitly FALSE, return the entire source data
++    // as a single item to import.
++    if ($item_selector === FALSE) {
++      return [$this->sourceData];
 +    }
 +
-     // Otherwise, we're using xpath-like selectors.
-     $selectors = explode('/', trim((string) $this->itemSelector, '/'));
-     foreach ($selectors as $selector) {
+     // Backwards-compatibility for depth selection.
+     if (is_numeric($this->itemSelector)) {
+       return $this->selectByDepth($this->sourceData, (int) $item_selector);
+diff --git a/src/Plugin/migrate_plus/data_parser/JsonSubitem.php b/src/Plugin/migrate_plus/data_parser/JsonSubitem.php
+index bdc7e2a4bd650aa844d645a4b5ed90c0c96d529a..cefd73997119ae402d80e9360ee97caf80f351fa 100755
+--- a/src/Plugin/migrate_plus/data_parser/JsonSubitem.php
++++ b/src/Plugin/migrate_plus/data_parser/JsonSubitem.php
+@@ -19,7 +19,7 @@ class JsonSubitem extends Json {
+   /**
+    * {@inheritdoc}
+    */
+-  protected function getSourceData(string $url, string|int $item_selector = '') {
++  protected function getSourceData(string $url, string|int|bool $item_selector = '') {
+     $source_data = parent::getSourceData($url, $item_selector);
+
+     // If this is not the data item selector, skip getting subitems.

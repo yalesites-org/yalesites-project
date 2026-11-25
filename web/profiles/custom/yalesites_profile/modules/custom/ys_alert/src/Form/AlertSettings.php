@@ -5,6 +5,7 @@ namespace Drupal\ys_alert\Form;
 use Drupal\Core\Cache\Cache;
 use Drupal\Core\Cache\CacheBackendInterface;
 use Drupal\Core\Config\ConfigFactoryInterface;
+use Drupal\Core\Config\TypedConfigManagerInterface;
 use Drupal\Core\Form\ConfigFormBase;
 use Drupal\Core\Form\FormStateInterface;
 use Drupal\Core\Plugin\CachedDiscoveryClearerInterface;
@@ -50,6 +51,8 @@ class AlertSettings extends ConfigFormBase {
    *
    * @param \Drupal\Core\Config\ConfigFactoryInterface $config_factory
    *   The factory for configuration objects.
+   * @param \Drupal\Core\Config\TypedConfigManagerInterface $typed_config_manager
+   *   The typed config manager.
    * @param \Drupal\Core\Path\CacheBackendInterface $cacheRender
    *   The Cache BE interface.
    * @param \Drupal\Core\Routing\CachedDiscoveryClearerInterface $plugin_cache_clearer
@@ -61,12 +64,13 @@ class AlertSettings extends ConfigFormBase {
    */
   public function __construct(
     ConfigFactoryInterface $config_factory,
+    TypedConfigManagerInterface $typed_config_manager,
     CacheBackendInterface $cacheRender,
     CachedDiscoveryClearerInterface $plugin_cache_clearer,
     AlertManager $alert_manager,
     AliasManager $path_alias_manager,
   ) {
-    parent::__construct($config_factory);
+    parent::__construct($config_factory, $typed_config_manager);
     $this->cacheRender = $cacheRender;
     $this->pluginCacheClearer = $plugin_cache_clearer;
     $this->alertManager = $alert_manager;
@@ -79,6 +83,7 @@ class AlertSettings extends ConfigFormBase {
   public static function create(ContainerInterface $container) {
     return new static(
       $container->get('config.factory'),
+      $container->get('config.typed'),
       $container->get('cache.render'),
       $container->get('plugin.cache_clearer'),
       $container->get('ys_alert.manager'),

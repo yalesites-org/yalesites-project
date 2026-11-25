@@ -57,6 +57,7 @@ third_party_settings:
           context_mapping: {  }
           ys_layouts_sections_config:
             padding_options: default
+          divider: 0
         components:
           97ac234f-73aa-4c3b-8180-82a1908c1262:
             uuid: 97ac234f-73aa-4c3b-8180-82a1908c1262
@@ -113,6 +114,7 @@ third_party_settings:
           context_mapping: {  }
           ys_layouts_sections_config:
             padding_options: default
+          divider: 0
         components: {  }
         third_party_settings: {  }
       -
@@ -122,6 +124,7 @@ third_party_settings:
           context_mapping: {  }
           ys_layouts_sections_config:
             padding_options: default
+          divider: 0
         components:
           caee8682-e1e1-4901-9773-221f7190fcd3:
             uuid: caee8682-e1e1-4901-9773-221f7190fcd3

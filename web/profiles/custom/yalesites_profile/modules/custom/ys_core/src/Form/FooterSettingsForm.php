@@ -4,6 +4,7 @@ namespace Drupal\ys_core\Form;
 
 use Drupal\Core\Cache\CacheBackendInterface;
 use Drupal\Core\Config\ConfigFactoryInterface;
+use Drupal\Core\Config\TypedConfigManagerInterface;
 use Drupal\Core\Form\ConfigFormBase;
 use Drupal\Core\Form\FormStateInterface;
 use Drupal\path_alias\AliasManager;
@@ -364,6 +365,7 @@ class FooterSettingsForm extends ConfigFormBase {
   public static function create(ContainerInterface $container) {
     return new static(
       $container->get('config.factory'),
+      $container->get('config.typed'),
       $container->get('cache.render'),
       $container->get('ys_core.social_links_manager'),
       $container->get('path_alias.manager'),
@@ -375,6 +377,8 @@ class FooterSettingsForm extends ConfigFormBase {
    *
    * @param \Drupal\Core\Config\ConfigFactoryInterface $config_factory
    *   The factory for configuration objects.
+   * @param \Drupal\Core\Config\TypedConfigManagerInterface $typed_config_manager
+   *   The typed config manager.
    * @param \Drupal\Core\Path\CacheBackendInterface $cache_render
    *   The Cache backend interface.
    * @param \Drupal\ys_core\SocialLinksManager $social_links_manager
@@ -384,11 +388,12 @@ class FooterSettingsForm extends ConfigFormBase {
    */
   public function __construct(
     ConfigFactoryInterface $config_factory,
+    TypedConfigManagerInterface $typed_config_manager,
     CacheBackendInterface $cache_render,
     SocialLinksManager $social_links_manager,
     AliasManager $path_alias_manager,
   ) {
-    parent::__construct($config_factory);
+    parent::__construct($config_factory, $typed_config_manager);
     $this->cacheRender = $cache_render;
     $this->socialLinks = $social_links_manager;
     $this->pathAliasManager = $path_alias_manager;

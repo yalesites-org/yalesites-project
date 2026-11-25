@@ -6,6 +6,7 @@ namespace Drupal\Tests\ys_migrate_sustainability_news\Unit;
 
 use Drupal\Core\Database\Connection;
 use Drupal\Core\Database\Query\SelectInterface;
+use Drupal\Core\Database\Statement\FetchAs;
 use Drupal\Core\Entity\EntityTypeManagerInterface;
 use Drupal\Core\Extension\ModuleHandlerInterface;
 use Drupal\Core\State\StateInterface;
@@ -119,7 +120,7 @@ class D7NewsImagesTest extends UnitTestCase {
     $database = $this->createMock(Connection::class);
     $database->expects($this->once())
       ->method('select')
-      ->with('file_managed', 'fm', ['fetch' => \PDO::FETCH_ASSOC])
+      ->with('file_managed', 'fm', ['fetch' => FetchAs::Associative])
       ->willReturn($select);
     $this->setDatabase($plugin, $database);
 
