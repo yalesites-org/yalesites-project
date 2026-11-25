@@ -1,0 +1,19 @@
+uuid: 9cd12155-e11e-468c-aba6-6e11713e700d
+langcode: en
+status: true
+dependencies:
+  config:
+    - field.storage.node.field_event_speaker
+    - node.type.event
+id: node.event.field_event_speaker
+field_name: field_event_speaker
+entity_type: node
+bundle: event
+label: Speaker
+description: 'Enter the speaker name, or several names separated by commas. To link a profile, use the Associated Profile field.'
+required: false
+translatable: false
+default_value: {  }
+default_value_callback: ''
+settings: {  }
+field_type: string
