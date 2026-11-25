@@ -3,6 +3,7 @@
 namespace Drupal\ys_localist\Form;
 
 use Drupal\Core\Config\ConfigFactoryInterface;
+use Drupal\Core\Config\TypedConfigManagerInterface;
 use Drupal\Core\Entity\EntityTypeManagerInterface;
 use Drupal\Core\Form\ConfigFormBase;
 use Drupal\Core\Form\FormStateInterface;
@@ -42,6 +43,8 @@ class LocalistSettings extends ConfigFormBase {
    *
    * @param \Drupal\Core\Config\ConfigFactoryInterface $config_factory
    *   The factory for configuration objects.
+   * @param \Drupal\Core\Config\TypedConfigManagerInterface $typed_config_manager
+   *   The typed config manager.
    * @param \Drupal\Core\Entity\EntityTypeManagerInterface $entity_type_manager
    *   The entity type manager.
    * @param \Drupal\ys_localist\LocalistManager $localist_manager
@@ -51,11 +54,12 @@ class LocalistSettings extends ConfigFormBase {
    */
   public function __construct(
     ConfigFactoryInterface $config_factory,
+    TypedConfigManagerInterface $typed_config_manager,
     EntityTypeManagerInterface $entity_type_manager,
     LocalistManager $localist_manager,
     PlatformAdminCheckerInterface $platform_admin_checker,
   ) {
-    parent::__construct($config_factory);
+    parent::__construct($config_factory, $typed_config_manager);
     $this->entityTypeManager = $entity_type_manager;
     $this->localistManager = $localist_manager;
     $this->platformAdminChecker = $platform_admin_checker;
@@ -67,6 +71,7 @@ class LocalistSettings extends ConfigFormBase {
   public static function create(ContainerInterface $container) {
     return new static(
       $container->get('config.factory'),
+      $container->get('config.typed'),
       $container->get('entity_type.manager'),
       $container->get('ys_localist.manager'),
       $container->get('ys_core.platform_admin_checker'),

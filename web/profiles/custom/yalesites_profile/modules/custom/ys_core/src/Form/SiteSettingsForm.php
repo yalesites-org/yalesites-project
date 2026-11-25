@@ -6,6 +6,7 @@ use Drupal\Core\Link;
 use Drupal\Core\Url;
 use Drupal\Core\Cache\CacheBackendInterface;
 use Drupal\Core\Config\ConfigFactoryInterface;
+use Drupal\Core\Config\TypedConfigManagerInterface;
 use Drupal\Core\DependencyInjection\ContainerInjectionInterface;
 use Drupal\Core\Entity\EntityTypeManagerInterface;
 use Drupal\Core\Form\ConfigFormBase;
@@ -84,6 +85,8 @@ class SiteSettingsForm extends ConfigFormBase implements ContainerInjectionInter
    *
    * @param \Drupal\Core\Config\ConfigFactoryInterface $config_factory
    *   The factory for configuration objects.
+   * @param \Drupal\Core\Config\TypedConfigManagerInterface $typed_config_manager
+   *   The typed config manager.
    * @param \Drupal\path_alias\AliasManagerInterface $alias_manager
    *   The path alias manager.
    * @param \Drupal\Core\Path\PathValidatorInterface $path_validator
@@ -101,6 +104,7 @@ class SiteSettingsForm extends ConfigFormBase implements ContainerInjectionInter
    */
   public function __construct(
     ConfigFactoryInterface $config_factory,
+    TypedConfigManagerInterface $typed_config_manager,
     AliasManagerInterface $alias_manager,
     PathValidatorInterface $path_validator,
     RequestContext $request_context,
@@ -109,7 +113,7 @@ class SiteSettingsForm extends ConfigFormBase implements ContainerInjectionInter
     AccountProxy $account_interface,
     CacheBackendInterface $cache_discovery,
   ) {
-    parent::__construct($config_factory);
+    parent::__construct($config_factory, $typed_config_manager);
     $this->aliasManager = $alias_manager;
     $this->pathValidator = $path_validator;
     $this->requestContext = $request_context;
@@ -125,6 +129,7 @@ class SiteSettingsForm extends ConfigFormBase implements ContainerInjectionInter
   public static function create(ContainerInterface $container) {
     return new static(
       $container->get('config.factory'),
+      $container->get('config.typed'),
       $container->get('path_alias.manager'),
       $container->get('path.validator'),
       $container->get('router.request_context'),

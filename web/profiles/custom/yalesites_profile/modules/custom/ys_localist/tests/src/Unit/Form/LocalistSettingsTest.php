@@ -3,6 +3,7 @@
 namespace Drupal\Tests\ys_localist\Unit\Form;
 
 use Drupal\Core\Config\Config;
+use Drupal\Core\Config\TypedConfigManagerInterface;
 use Drupal\Core\Entity\EntityTypeManagerInterface;
 use Drupal\Core\Entity\EntityStorageInterface;
 use Drupal\Core\Form\FormState;
@@ -79,6 +80,7 @@ class LocalistSettingsTest extends UnitTestCase {
 
     return new LocalistSettings(
       $config_factory,
+      $this->createMock(TypedConfigManagerInterface::class),
       $this->entityTypeManager,
       $this->localistManager,
       $checker
@@ -274,6 +276,7 @@ class LocalistSettingsTest extends UnitTestCase {
 
     $form_object = new LocalistSettings(
       $config_factory,
+      $this->createMock(TypedConfigManagerInterface::class),
       $this->entityTypeManager,
       $this->localistManager,
       $this->createMock(PlatformAdminCheckerInterface::class)
