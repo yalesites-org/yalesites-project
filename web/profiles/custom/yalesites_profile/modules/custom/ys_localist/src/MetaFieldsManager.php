@@ -263,6 +263,20 @@ class MetaFieldsManager implements ContainerFactoryPluginInterface {
   }
 
   /**
+   * Gets the speaker name shown under an event title.
+   *
+   * @param \Drupal\node\NodeInterface $node
+   *   The event node.
+   *
+   * @return string|null
+   *   The speaker, or NULL when there is no speaker.
+   */
+  public function getSpeakerLine(NodeInterface $node): ?string {
+    $speaker = trim($node->get('field_event_speaker')->getString());
+    return $speaker !== '' ? $speaker : NULL;
+  }
+
+  /**
    * Gets event all fields.
    */
   public function getEventData($node) {
@@ -405,6 +419,7 @@ class MetaFieldsManager implements ContainerFactoryPluginInterface {
       'ticket_url' => $ticketLink,
       'ticket_cost' => $ticketCost,
       'description' => $description,
+      'speaker' => $this->getSpeakerLine($node),
       'room' => $location['room'],
       'location_details' => $location['location_details'],
       'external_website_url' => $externalEventWebsiteUrl,
