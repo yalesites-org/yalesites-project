@@ -272,3 +272,4 @@ This project uses semantic release for automated versioning and publishing:
 - `fix:` commits trigger patch releases (e.g., 1.0.1)
 - `feat:` commits trigger minor releases (e.g., 1.1.0)
 - `BREAKING CHANGE:` in commit body triggers major releases (e.g., 2.0.0)
+- A major release can also mark the size of a release rather than a specific break (YaleSites 3.0 does this); the `BREAKING CHANGE:` footer then says so
