@@ -16,11 +16,11 @@ use Symfony\Component\DependencyInjection\ContainerInterface;
  * Platform-facing administration form for Beacon.
  *
  * Holds the sensitive, platform-operator settings restricted to user 1 only
- * (see \Drupal\ys_beacon\Access\BeaconAdminAccessCheck): the Azure AI Search
- * index connection, the retrieval and response tuning (sources per answer,
- * relevance threshold, streaming, and the fallback system prompt), the site
- * guardrail supplement, and the content indexing controls (re-index all /
- * index now).
+ * (see \Drupal\ys_beacon\Access\BeaconSuperadminOnlyAccessCheck): the Azure
+ * AI Search index connection, the retrieval and response tuning (sources per
+ * answer, relevance threshold, streaming, and the fallback system prompt),
+ * the site guardrail supplement, and the content indexing controls (re-index
+ * all / index now).
  */
 class YsBeaconAdminSettings extends ConfigFormBase {
 

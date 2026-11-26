@@ -35,12 +35,16 @@ class SiteSettingsFormTest extends UnitTestCase {
    */
   public function testSubmitSavesTheFieldsTheFormStillOwns(): void {
     $written = $this->submit([
-      'font_pairing' => 'mallory',
+      'heading_font' => 'mallory',
+      'heading_numerals' => 'lining',
+      'body_numerals' => 'lining',
       'cas_app_name' => 'yalesites',
       'google_site_verification' => 'token',
     ]);
 
-    $this->assertSame('mallory', $written['ys_core.site']['font_pairing']);
+    $this->assertSame('mallory', $written['ys_core.site']['font_pairing.heading_font']);
+    $this->assertSame('lining', $written['ys_core.site']['font_pairing.heading_numerals']);
+    $this->assertSame('lining', $written['ys_core.site']['font_pairing.body_numerals']);
     $this->assertSame('yalesites', $written['ys_core.site']['cas_app_name']);
     $this->assertSame('token', $written['ys_core.site']['seo.google_site_verification']);
   }

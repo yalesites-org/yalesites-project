@@ -70,12 +70,15 @@ The module is installed on every site and is off by default.
    secrets but is no longer required for these four:
    - `portkey_llm_api_key` - Portkey API key for chat
    - `portkey_embedding_api_key` - Portkey API key for embeddings
-   - `azure_ai_search_api_key` - Azure AI Search admin key
+   - `azure_ai_search_api_keys` - Azure AI Search admin keys, as a JSON
+     object of endpoint URL => admin key, for example
+     `{"https://x.search.windows.net": "<key>"}`. Beacon uses the entry
+     matching the site's endpoint.
    - `azure_ai_search_url` - Azure AI Search endpoint URL
 2. User 1 (the platform superadmin) sets the per-site Azure index name at
    `/admin/config/yalesites/ys-beacon/admin`. This administration form is
    restricted to user 1 only — no other role, however privileged, can reach it
-   (`\Drupal\ys_beacon\Access\BeaconAdminAccessCheck`). Until the index name is
+   (`\Drupal\ys_beacon\Access\BeaconSuperadminOnlyAccessCheck`). Until the index name is
    set, the Beacon search index stays disabled at runtime and no Azure traffic
    occurs.
 3. A site administrator enables the chat widget at
@@ -136,7 +139,7 @@ button. To roll back after step 4, re-enable "Enable chat widget" on the
 Tracked by yalesites-org/YaleSites-Internal#1459. Two independent reasons:
 
 - **Beacon cannot be brought up during a deploy.** `ys_beacon` is enabled by the
-  `core.extension` diff in the config import's *extension* step, which core runs
+  `core.extension` diff in the config import's _extension_ step, which core runs
   strictly before the step that creates configuration
   (`ConfigImporter::processExtensions()` then `::processConfigurations()`). The
   `key.key.azure_ai_search_*` entities and the Beacon Search API server and
@@ -196,7 +199,7 @@ import will reset the persisted database name and read-only flag.
 (A read-only index still tracks items locally in Search API, but tracking is
 local bookkeeping and never reaches the borrowed collection, so the owning
 site's data is untouched. Retrieving and citing content that belongs to a
-*different* site's collection additionally requires the cross-site citation work
+_different_ site's collection additionally requires the cross-site citation work
 tracked in the shared multi-tenant index epic; a same-content borrow - for
 example across environments of one site - works today.)
 
@@ -212,9 +215,9 @@ Indexes are provisioned automatically by `BeaconIndexManager`:
 - Creation is strictly conditional: existence is checked first and the create
   call uses `POST /indexes`, which Azure rejects for existing indexes - an
   existing index is adopted as-is and never modified.
-- The configured `azure_ai_search_api_key` already performs document writes,
-  which require an Azure admin key, so the same key authorizes index
-  creation. No separate key is needed.
+- The key resolved for the site's endpoint from the `azure_ai_search_api_keys`
+  map already performs document writes, which require an Azure admin key, so
+  the same key authorizes index creation. No separate key is needed.
 
 The generated schema matches the Azure VDB provider template (`id` key,
 `drupal_entity_id`, `drupal_long_id`, `index_id`, `server_id`, `content`)
@@ -340,7 +343,7 @@ for the cited/de-duplicated list, so the two cannot drift.
 
 ## AI tester
 
-The `ys_ai_tester` submodule batch-runs a YAML list of questions through the
+The `ys_ai_tester` submodule batch-runs a plain-text list of questions (one per line) through the
 Beacon assistant for QA. It uses `BeaconAnswerService` (the non-streamed
 counterpart of the chat endpoint: same retrieval and system prompt, whole
 answer at once) and `CitationFormatter`, so each result shows **every** retrieved
@@ -363,7 +366,7 @@ trust.
 
 **No Beacon store holds conversation text.** Neither this table nor the
 flagged-turn table below has a column a question or an answer could be written
-into. `SuspectTurnLog` records *that* a turn was flagged and *why* (see
+into. `SuspectTurnLog` records _that_ a turn was flagged and _why_ (see
 [Flagged turns](#flagged-turns-suspected-injection-attempts) below); ordinary
 turns are counted and nothing else.
 
@@ -378,13 +381,13 @@ permission and nothing else.
 **Recorded** — a count, per day, for each event type, plus dimensioned breakdown
 rows:
 
-| Event | Counted when | Breakdowns |
-| --- | --- | --- |
-| `turns` | a turn reached the model — the denominator for the rest | — |
-| `refusal` | the answer's opening reads as a declined request | — |
-| `guardrail_stop` | a guardrail returned a stop (per stopping guardrail, so one turn can contribute more than one) | `mode.<pre\|during\|post>`, `plugin.<label>`, `set.<id>` |
-| `zero_citations` | retrieval returned no citations | — |
-| `injection_pattern` | the question matched a known injection pattern | `pattern.<name>` |
+| Event               | Counted when                                                                                   | Breakdowns                                               |
+| ------------------- | ---------------------------------------------------------------------------------------------- | -------------------------------------------------------- |
+| `turns`             | a turn reached the model — the denominator for the rest                                        | —                                                        |
+| `refusal`           | the answer's opening reads as a declined request                                               | —                                                        |
+| `guardrail_stop`    | a guardrail returned a stop (per stopping guardrail, so one turn can contribute more than one) | `mode.<pre\|during\|post>`, `plugin.<label>`, `set.<id>` |
+| `zero_citations`    | retrieval returned no citations                                                                | —                                                        |
+| `injection_pattern` | the question matched a known injection pattern                                                 | `pattern.<name>`                                         |
 
 `turns` exists so the others can be read as rates: without a denominator, a rise
 in refusals cannot be told apart from a rise in traffic.
@@ -469,8 +472,8 @@ than choices here:
 
 ### Flagged turns (suspected injection attempts)
 
-The daily counters answer "how often on which day". `SuspectTurnLog` adds *when*,
-to the second, and *why*: a row in `ys_beacon_suspect_turn` is a timestamp plus a
+The daily counters answer "how often on which day". `SuspectTurnLog` adds _when_,
+to the second, and _why_: a row in `ys_beacon_suspect_turn` is a timestamp plus a
 reason — the `GuardrailSignalDetector` pattern the question matched, or
 `SuspectTurnLog::REASON_GUARDRAIL_STOP` when a guardrail stopped the turn. That
 is enough to see the shape of a probe (a burst at 03:00, one pattern tried
@@ -492,10 +495,10 @@ conversation text even by accident — the same closed-API property
 
 Two bounds, each stated on the report page rather than left to the schema:
 
-| Bound | Value | Why |
-| --- | --- | --- |
-| Retention | 90 days (`SuspectTurnLog::RETENTION_DAYS`) | Pruned on write, and on cron so a site that stops being probed does not keep its last rows forever. Reads also filter on the window, so an expired row is never shown even before a write prunes it. |
-| Rows per pattern per UTC day | 60 (`MAX_ROWS_PER_PATTERN_PER_DAY`) | The chat endpoint is public and unauthenticated. Per **pattern**, not per day overall: a single day-wide quota is steerable by the attacker it exists to record — 200 throwaway `ignore_instructions` hits would fill it and silently drop every later flagged turn, including a novel attack under another pattern. At quota the pattern's oldest row for the day is evicted, so what survives is the most recent attempts rather than whichever the attacker submitted first. |
+| Bound                        | Value                                      | Why                                                                                                                                                                                                                                                                                                                                                                                                                                                                             |
+| ---------------------------- | ------------------------------------------ | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Retention                    | 90 days (`SuspectTurnLog::RETENTION_DAYS`) | Pruned on write, and on cron so a site that stops being probed does not keep its last rows forever. Reads also filter on the window, so an expired row is never shown even before a write prunes it.                                                                                                                                                                                                                                                                            |
+| Rows per pattern per UTC day | 60 (`MAX_ROWS_PER_PATTERN_PER_DAY`)        | The chat endpoint is public and unauthenticated. Per **pattern**, not per day overall: a single day-wide quota is steerable by the attacker it exists to record — 200 throwaway `ignore_instructions` hits would fill it and silently drop every later flagged turn, including a novel attack under another pattern. At quota the pattern's oldest row for the day is evicted, so what survives is the most recent attempts rather than whichever the attacker submitted first. |
 
 The per-day quota means a sustained campaign is **sampled** here. The aggregate
 `injection_pattern` counters are not capped, so the campaign is still fully
@@ -562,7 +565,7 @@ weaknesses (no touch, no keyboard) cost nothing.
 **Days are UTC, and the report says so in three places** — the column header, a
 note under the by-day table, and the disclosure list. This matters at Yale
 specifically: a UTC day starts at 8pm the previous evening in EDT (7pm in EST), so
-between 8pm and midnight an Eastern reader sees the newest row dated *tomorrow*
+between 8pm and midnight an Eastern reader sees the newest row dated _tomorrow_
 and reasonably suspects a clock bug. It is not one. UTC is deliberate — buckets do
 not shift when the site timezone changes and are not distorted by the 23-hour and
 25-hour days daylight saving produces. `gmdate()` is used throughout, so the
@@ -584,8 +587,8 @@ Nothing else references it: no library, no config, no schema, no test fixture
 outside `TelemetryControllerTest`. The export reports its own limits in the
 payload (`flagged_turns.truncated`, `max_rows_per_export`) rather than silently
 truncating, and is capped at `SuspectTurnLog::MAX_EXPORT_ROWS` rows so a response
-cannot grow unbounded. It carries no conversation text, but *when* a site was
-probed and under *which* pattern is still operational security detail, so it stays
+cannot grow unbounded. It carries no conversation text, but _when_ a site was
+probed and under _which_ pattern is still operational security detail, so it stays
 gated on the same platform-admin-only permission as the page and sent
 `Cache-Control: no-store`.
 
@@ -710,6 +713,19 @@ npm run build      # tsc && vite build -> react/static/assets
 
 Commit the regenerated `react/static` output together with the source change.
 
+`vite build` keeps debug output out of the bundle, because it is served to
+every site visitor: `console.log`, `console.debug`, `console.info`,
+`console.warn` and `console.trace` are marked `esbuild.pure` so minification
+removes them, and `debugger` statements are dropped. They all still work under
+`npm run dev`, so keep using them while developing - just do not rely on one
+being present in production.
+
+**`console.error` is intentionally kept.** Some failure paths (for example the
+"Conversation not found" branch in `Chat.tsx`) return without showing the
+visitor anything, so the console is the only trace they leave - and the source
+map this bundle ships is only useful if something reaches the console. Use
+`console.error` for anything you would want to see in a production report.
+
 The `.github/workflows/verify_beacon_bundle.yml` CI check rebuilds the bundle
 from source on every pull request that touches `react/` and fails if the
 result differs from the committed `react/static` output, so a source change
@@ -738,7 +754,7 @@ deltas. `[docN]` markers in the answer map to `citations[N-1]`.
 The four key ids above are created by `config:import` as pantheon-provider
 entities, so do not create keys with those ids yourself - they already exist.
 Where the local environment can reach the Pantheon secrets they resolve as-is;
-where it cannot, create a config-provider key under a *different* id at
+where it cannot, create a config-provider key under a _different_ id at
 `/admin/config/system/keys`, put your dev value in it, and select it in the
 Beacon and Portkey forms (`ys_beacon_portkey.settings` is in `config_ignore`, so
 a local Portkey selection persists across imports). Then:
@@ -749,10 +765,22 @@ lando drush cset ys_beacon.settings azure_index_name <dev-index> -y
 lando drush cset ys_beacon.settings enable_chat 1 -y
 lando drush sapi-rt ys_beacon   # rebuild tracking after setting the index name via CLI
 lando drush sapi-i ys_beacon
-curl -sN -X POST https://yalesites-fable.lndo.site/api/ys-beacon/v1/conversation \
+curl -sN -X POST https://<your-lando-host>/api/ys-beacon/v1/conversation \
   -H 'Content-Type: application/json' \
   -d '{"messages":[{"id":"1","role":"user","content":"What is this site about?","date":"2026-01-01T00:00:00Z"}]}'
 ```
 
+(`<your-lando-host>` is `<name>.lndo.site` for the `name` in your
+`.lando.local.yml` at the repo root.)
+
 For frontend work, `npm run dev` serves the widget with `/api/ys-beacon`
-proxied to the Lando site (see `react/vite.config.ts`).
+proxied to the Lando site. Point it at your own instance with
+`YS_BEACON_PROXY_TARGET`, since every checkout has a different host:
+
+```
+cd react
+YS_BEACON_PROXY_TARGET=https://<your-lando-host> npm run dev
+```
+
+Unset, it falls back to `https://yalesites-platform.lndo.site` - the host
+shipped in `.lando.local.example.yml`.

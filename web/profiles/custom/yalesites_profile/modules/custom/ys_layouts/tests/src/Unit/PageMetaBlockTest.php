@@ -2,19 +2,14 @@
 
 namespace Drupal\Tests\ys_layouts\Unit;
 
-use Drupal\Component\Annotation\Doctrine\SimpleAnnotationReader;
-use Drupal\Core\Block\Annotation\Block;
 use Drupal\Core\Controller\TitleResolver;
-use Drupal\Core\DependencyInjection\ContainerBuilder;
-use Drupal\Core\Entity\EntityInterface;
 use Drupal\Core\Form\FormState;
-use Drupal\Core\Plugin\Context\ContextDefinition;
-use Drupal\Core\Plugin\Context\ContextHandler;
-use Drupal\Core\Plugin\Context\ContextInterface;
 use Drupal\Core\Routing\RouteMatchInterface;
 use Drupal\Tests\UnitTestCase;
+use Drupal\Tests\ys_core\Traits\LayoutBuilderEntityContextTestTrait;
 use Drupal\node\NodeInterface;
 use Drupal\ys_layouts\Plugin\Block\PageMetaBlock;
+use Drupal\ys_themes\ColorTokenResolver;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\RequestStack;
 use Symfony\Component\Routing\Route;
@@ -28,6 +23,8 @@ use Symfony\Component\Routing\Route;
  * @group ys_layouts
  */
 class PageMetaBlockTest extends UnitTestCase {
+
+  use LayoutBuilderEntityContextTestTrait;
 
   /**
    * The route match mock.
@@ -60,13 +57,7 @@ class PageMetaBlockTest extends UnitTestCase {
     $this->titleResolver = $this->createMock(TitleResolver::class);
     $this->requestStack = $this->createMock(RequestStack::class);
 
-    // The @Translation inside the plugin annotation renders through
-    // string_translation, and BlockBase's configuration form reaches for
-    // context.handler. Both are needed by the annotation and form tests below.
-    $container = new ContainerBuilder();
-    $container->set('string_translation', $this->getStringTranslationStub());
-    $container->set('context.handler', new ContextHandler());
-    \Drupal::setContainer($container);
+    $this->setUpLayoutBuilderEntityContextContainer();
   }
 
   /**
@@ -79,26 +70,10 @@ class PageMetaBlockTest extends UnitTestCase {
     $definition = [
       'provider' => 'ys_layouts',
       'admin_label' => 'Page Meta Block',
-      'context_definitions' => [
-        PageMetaBlock::ENTITY_CONTEXT => new ContextDefinition('entity', NULL, FALSE),
-      ],
+      'context_definitions' => $this->layoutBuilderEntityContextDefinitions(PageMetaBlock::class),
     ];
 
-    return new PageMetaBlock($configuration, 'page_meta_block', $definition, $this->routeMatch, $this->titleResolver, $this->requestStack);
-  }
-
-  /**
-   * Puts an entity into the block's Layout Builder entity context.
-   *
-   * @param \Drupal\ys_layouts\Plugin\Block\PageMetaBlock $block
-   *   The block plugin.
-   * @param mixed $value
-   *   The context value, normally a node.
-   */
-  protected function setRenderedEntity(PageMetaBlock $block, $value): void {
-    $context = $this->createMock(ContextInterface::class);
-    $context->method('getContextValue')->willReturn($value);
-    $block->setContext(PageMetaBlock::ENTITY_CONTEXT, $context);
+    return new PageMetaBlock($configuration, 'page_meta_block', $definition, $this->routeMatch, $this->titleResolver, $this->requestStack, $this->createMock(ColorTokenResolver::class));
   }
 
   /**
@@ -317,19 +292,6 @@ class PageMetaBlockTest extends UnitTestCase {
   }
 
   /**
-   * Data provider of context values that must not become the title.
-   *
-   * @return array<string, array{mixed}>
-   *   Test cases of a context value.
-   */
-  public function providerNonNodeContextValues(): array {
-    return [
-      'an entity that is not a node' => [$this->createMock(EntityInterface::class)],
-      'no entity at all' => ['not-an-entity'],
-    ];
-  }
-
-  /**
    * The ANNOTATION declares the slot Layout Builder actually publishes.
    *
    * This is the guard for the whole approach, so it deliberately reads the
@@ -344,40 +306,16 @@ class PageMetaBlockTest extends UnitTestCase {
    * instead of degrading to the route.
    */
   public function testAnnotationDeclaresTheLayoutBuilderEntitySlot(): void {
-    $reader = new SimpleAnnotationReader();
-    $reader->addNamespace('Drupal\Core\Block\Annotation');
-    $reader->addNamespace('Drupal\Core\Annotation');
-
-    $annotation = $reader->getClassAnnotation(
-      new \ReflectionClass(PageMetaBlock::class),
-      Block::class
-    );
-    $definition = $annotation->get();
-
-    $this->assertSame('layout_builder.entity', PageMetaBlock::ENTITY_CONTEXT);
-    $this->assertArrayHasKey(PageMetaBlock::ENTITY_CONTEXT, $definition['context_definitions']);
-    $this->assertFalse($definition['context_definitions'][PageMetaBlock::ENTITY_CONTEXT]->isRequired());
+    $this->assertDeclaresLayoutBuilderEntitySlot(PageMetaBlock::class);
   }
 
   /**
    * The context-assignment select is kept off the editor's block form.
    *
-   * BlockBase::buildConfigurationForm() sets $form['context_mapping'] for any
-   * plugin declaring a context -- always, even when it resolves to an empty
-   * element -- so this assertion fails if the override stops removing it.
-   * Editors open this form to set Title Display, and choosing a route-derived
-   * entity context there would store a context_mapping that reinstates the
-   * indexed-wrong-title bug on that page alone.
-   *
    * @covers ::buildConfigurationForm
    */
   public function testConfigurationFormHasNoContextAssignmentSelect(): void {
-    $block = $this->buildBlock();
-    $block->setStringTranslation($this->getStringTranslationStub());
-
-    $form = $block->buildConfigurationForm([], new FormState());
-
-    $this->assertArrayNotHasKey('context_mapping', $form);
+    $this->assertNoContextAssignmentSelect($this->buildBlock());
   }
 
   /**
@@ -410,6 +348,57 @@ class PageMetaBlockTest extends UnitTestCase {
 
     $configuration = $block->getConfiguration();
     $this->assertSame('visually-hidden', $configuration['page_title_display']);
+  }
+
+  /**
+   * The section theme select follows breadcrumb display and defaults.
+   *
+   * @covers ::blockForm
+   */
+  public function testBlockFormExposesSectionThemeAfterBreadcrumbs(): void {
+    $block = $this->buildBlock();
+    $block->setStringTranslation($this->getStringTranslationStub());
+
+    $form = $block->blockForm([], new FormState());
+
+    $this->assertSame('select', $form['section_theme']['#type']);
+    $this->assertSame('default', $form['section_theme']['#default_value']);
+    $this->assertSame(
+      ['default', 'one', 'two', 'three', 'four', 'five', 'six'],
+      array_keys($form['section_theme']['#options'])
+    );
+    $keys = array_keys($form);
+    $this->assertGreaterThan(array_search('breadcrumb_display', $keys), array_search('section_theme', $keys));
+    $this->assertNotEmpty($form['section_theme']['#after_build']);
+  }
+
+  /**
+   * The section theme select carries the stored value.
+   *
+   * @covers ::blockForm
+   */
+  public function testBlockFormUsesConfiguredSectionTheme(): void {
+    $block = $this->buildBlock(['section_theme' => 'three']);
+    $block->setStringTranslation($this->getStringTranslationStub());
+
+    $form = $block->blockForm([], new FormState());
+
+    $this->assertSame('three', $form['section_theme']['#default_value']);
+  }
+
+  /**
+   * Submitting the form stores the selected section theme.
+   *
+   * @covers ::blockSubmit
+   */
+  public function testBlockSubmitStoresSectionTheme(): void {
+    $block = $this->buildBlock();
+    $form_state = new FormState();
+    $form_state->setValue('section_theme', 'five');
+
+    $block->blockSubmit([], $form_state);
+
+    $this->assertSame('five', $block->getConfiguration()['section_theme']);
   }
 
 }

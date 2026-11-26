@@ -1,3 +1,5 @@
 #!/bin/bash
 
-lando pull --code=none --database=none --files=dev
+source ./scripts/local/local-dev-tool.sh
+
+ys_local_pull_files

@@ -6,6 +6,8 @@
  */
 
 use Drupal\Component\Utility\UrlHelper;
+use Drupal\Core\Cache\CacheableMetadata;
+use Drupal\Core\Render\Markup;
 use Drupal\migrate\Plugin\MigrationInterface;
 
 /**
@@ -64,6 +66,53 @@ function ys_localist_preprocess_node(&$variables) {
     $variables['localist_url'] = $eventFieldData['localist_url'];
     $variables['event_source'] = $eventFieldData['event_source'];
   }
+}
+
+/**
+ * Implements hook_page_attachments().
+ *
+ * Adds schema.org Event JSON-LD to the head of a published event's full page.
+ *
+ * @see https://github.com/yalesites-org/YaleSites-Internal/issues/1808
+ */
+function ys_localist_page_attachments(array &$attachments) {
+  if (\Drupal::routeMatch()->getRouteName() !== 'entity.node.canonical') {
+    return;
+  }
+  $node = \Drupal::routeMatch()->getParameter('node');
+  if (!$node || $node->getType() !== 'event') {
+    return;
+  }
+
+  // The output depends on the node and the terms it references, and on the
+  // featured date, which moves on when the current occurrence ends.
+  $cacheability = new CacheableMetadata();
+  $cacheability->addCacheableDependency($node);
+  foreach (['field_event_place', 'field_event_status', 'field_localist_event_experience'] as $field) {
+    if ($node->hasField($field)) {
+      foreach ($node->get($field)->referencedEntities() as $term) {
+        $cacheability->addCacheableDependency($term);
+      }
+    }
+  }
+
+  $structuredData = \Drupal::service('ys_localist.event_structured_data');
+  $eventData = $node->isPublished() ? \Drupal::service('ys_localist.meta_fields_manager')->getEventData($node) : [];
+  $data = $eventData ? $structuredData->buildForNode($node, $eventData) : NULL;
+  if ($data) {
+    $cacheability->setCacheMaxAge($structuredData->getMaxAge($eventData, \Drupal::time()->getRequestTime()));
+    $json = json_encode($data, JSON_HEX_TAG | JSON_HEX_AMP | JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE | JSON_PARTIAL_OUTPUT_ON_ERROR);
+    $attachments['#attached']['html_head'][] = [
+      [
+        '#type' => 'html_tag',
+        '#tag' => 'script',
+        '#attributes' => ['type' => 'application/ld+json'],
+        '#value' => Markup::create($json),
+      ],
+      'ys_localist_event_structured_data',
+    ];
+  }
+  $cacheability->applyTo($attachments);
 }
 
 /**

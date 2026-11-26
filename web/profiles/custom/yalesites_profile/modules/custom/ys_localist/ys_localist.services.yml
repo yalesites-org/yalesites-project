@@ -2,8 +2,12 @@ services:
   # Service for interacting with Localist sync and configuration.
   ys_localist.manager:
     class: Drupal\ys_localist\LocalistManager
-    arguments: ['@config.factory', '@http_client', '@entity_type.manager', '@plugin.manager.migration', '@module_handler', '@datetime.time', '@messenger']
+    arguments: ['@config.factory', '@http_client', '@entity_type.manager', '@plugin.manager.migration', '@module_handler', '@datetime.time', '@messenger', '@logger.factory']
   # Service for retrieving event field data.
   ys_localist.meta_fields_manager:
     class: Drupal\ys_localist\MetaFieldsManager
     arguments: ['@date.formatter', '@entity_type.manager', '@ys_localist.manager']
+  # Builds schema.org Event JSON-LD for event pages.
+  ys_localist.event_structured_data:
+    class: Drupal\ys_localist\EventStructuredData
+    arguments: ['@ys_localist.meta_fields_manager', '@file_url_generator']

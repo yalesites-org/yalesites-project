@@ -78,7 +78,10 @@ class YaleSitesLayoutsSettingsFormTest extends UnitTestCase {
 
     $this->layoutUpdater->method('getContentTypes')->willReturn(['page' => $pageType]);
     $this->layoutUpdater->method('getAllNodeIds')->with('page')->willReturn([1, 2, 3]);
-    $this->layoutUpdater->method('getLockConfigs')->with('page')->willReturn(['ys_layout_banner' => [5 => 5]]);
+    $this->layoutUpdater->method('getLockConfigs')->with('page')->willReturn([
+      ['layout_id' => 'layout_onecol', 'label' => 'Title and Metadata', 'lock' => [1 => 1]],
+      ['layout_id' => 'ys_layout_banner', 'label' => NULL, 'lock' => [5 => 5]],
+    ]);
     $this->layoutUpdater->method('getBlockTypes')->willReturn(['' => 'Select']);
     $this->layoutUpdater->method('getTempStoreNodes')->willReturn([]);
 
@@ -86,7 +89,7 @@ class YaleSitesLayoutsSettingsFormTest extends UnitTestCase {
 
     $rows = $form['content']['content_types_table']['#rows'];
     $this->assertCount(1, $rows);
-    $this->assertSame(['Page', 3, 'ys_layout_banner'], $rows[0]);
+    $this->assertSame(['Page', 3, 'Title and Metadata, ys_layout_banner'], $rows[0]);
   }
 
   /**

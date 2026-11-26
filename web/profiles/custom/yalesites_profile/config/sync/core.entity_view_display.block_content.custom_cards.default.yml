@@ -8,6 +8,7 @@ dependencies:
     - field.field.block_content.custom_cards.field_heading
     - field.field.block_content.custom_cards.field_instructions
     - field.field.block_content.custom_cards.field_padding_options
+    - field.field.block_content.custom_cards.field_style_width
   module:
     - entity_reference_revisions
     - options
@@ -33,13 +34,14 @@ content:
     third_party_settings: {  }
     weight: 0
     region: content
-  field_padding_options:
-    type: list_default
-    label: above
+  field_style_width:
+    type: list_key
+    label: hidden
     settings: {  }
     third_party_settings: {  }
-    weight: 10
+    weight: 9
     region: content
 hidden:
   field_instructions: true
+  field_padding_options: true
   search_api_excerpt: true

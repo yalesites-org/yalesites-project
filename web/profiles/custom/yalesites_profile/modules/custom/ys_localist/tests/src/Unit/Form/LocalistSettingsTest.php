@@ -150,7 +150,10 @@ class LocalistSettingsTest extends UnitTestCase {
     ], 1)->buildForm([], new FormState());
 
     $this->assertArrayHasKey('sync_now_button', $form);
-    $this->assertStringContainsString('/admin/yalesites/localist/sync', $form['sync_now_button']['#markup']);
+    // A link element built from the route, so core's CSRF route processor can
+    // add the token the route requires when the link is rendered.
+    $this->assertSame('link', $form['sync_now_button']['#type']);
+    $this->assertSame('ys_localist.run_migrations', $form['sync_now_button']['#url']->getRouteName());
     $this->assertArrayHasKey('localist_group', $form);
     $this->assertSame($term, $form['localist_group']['#default_value']);
     $this->assertArrayNotHasKey('no_group_sync_message', $form);
@@ -206,7 +209,8 @@ class LocalistSettingsTest extends UnitTestCase {
     $this->assertArrayNotHasKey('sync_now_button', $form);
     $this->assertArrayNotHasKey('localist_group', $form);
     $this->assertArrayHasKey('no_group_sync_message', $form);
-    $this->assertStringContainsString('/admin/yalesites/localist/sync-groups', $form['no_group_sync_message']['#markup']);
+    $this->assertSame('link', $form['no_group_sync_message']['create_groups']['#type']);
+    $this->assertSame('ys_localist.sync_groups', $form['no_group_sync_message']['create_groups']['#url']->getRouteName());
   }
 
   /**

@@ -8,6 +8,7 @@ use Drupal\Core\Config\ImmutableConfig;
 use Drupal\Core\Entity\EntityStorageInterface;
 use Drupal\Core\Entity\EntityTypeManager;
 use Drupal\Core\Extension\ModuleHandler;
+use Drupal\Core\Logger\LoggerChannelFactoryInterface;
 use Drupal\Core\Messenger\MessengerInterface;
 use Drupal\Tests\UnitTestCase;
 use Drupal\migrate\Plugin\MigrationPluginManager;
@@ -18,6 +19,7 @@ use GuzzleHttp\Exception\RequestException;
 use GuzzleHttp\Psr7\Request as GuzzleRequest;
 use Psr\Http\Message\ResponseInterface;
 use Psr\Http\Message\StreamInterface;
+use Psr\Log\LoggerInterface;
 
 /**
  * Unit tests for the LocalistManager service.
@@ -68,6 +70,13 @@ class LocalistManagerTest extends UnitTestCase {
   protected $messenger;
 
   /**
+   * The mocked ys_localist logger channel.
+   *
+   * @var \Psr\Log\LoggerInterface|\PHPUnit\Framework\MockObject\MockObject
+   */
+  protected $loggerChannel;
+
+  /**
    * {@inheritdoc}
    */
   protected function setUp(): void {
@@ -82,6 +91,7 @@ class LocalistManagerTest extends UnitTestCase {
     $this->httpClient = $this->createMock(Client::class);
     $this->entityTypeManager = $this->createMock(EntityTypeManager::class);
     $this->messenger = $this->createMock(MessengerInterface::class);
+    $this->loggerChannel = $this->createMock(LoggerInterface::class);
   }
 
   /**
@@ -98,7 +108,8 @@ class LocalistManagerTest extends UnitTestCase {
       $this->createMock(MigrationPluginManager::class),
       $this->createMock(ModuleHandler::class),
       $this->createMock(TimeInterface::class),
-      $this->messenger
+      $this->messenger,
+      $this->createLoggerFactory()
     );
   }
 
@@ -232,6 +243,7 @@ class LocalistManagerTest extends UnitTestCase {
         $this->createMock(ModuleHandler::class),
         $this->createMock(TimeInterface::class),
         $this->messenger,
+        $this->createLoggerFactory(),
       ])
       ->onlyMethods(['getEndpointUrls', 'runMigration', 'getMigrationStatus'])
       ->getMock();
@@ -265,6 +277,7 @@ class LocalistManagerTest extends UnitTestCase {
         $this->createMock(ModuleHandler::class),
         $this->createMock(TimeInterface::class),
         $this->messenger,
+        $this->createLoggerFactory(),
       ])
       ->onlyMethods(['getEndpointUrls', 'runMigration'])
       ->getMock();
@@ -378,10 +391,60 @@ class LocalistManagerTest extends UnitTestCase {
   }
 
   /**
+   * Tests the render-path ticket lookup bounds itself tighter than the default.
+   *
+   * It runs once per event teaser against a cache-busted URL, so it must not
+   * fall back to the platform-wide timeouts
+   * (yalesites-org/YaleSites-Internal#1701).
+   *
+   * @covers ::getTicketInfo
+   */
+  public function testGetTicketInfoSendsRenderPathTimeouts(): void {
+    $captured = [];
+    $this->httpClient->method('get')->willReturnCallback(
+      function (string $url, array $options) use (&$captured) {
+        $captured = $options;
+        return $this->jsonResponse(['tickets' => []]);
+      },
+    );
+
+    $this->createManager()->getTicketInfo(555);
+
+    $this->assertSame(LocalistManager::TICKET_REQUEST_TIMEOUT, $captured['timeout'] ?? NULL);
+    $this->assertSame(LocalistManager::TICKET_CONNECT_TIMEOUT, $captured['connect_timeout'] ?? NULL);
+  }
+
+  /**
    * @covers ::getTicketInfo
    */
   public function testGetTicketInfoReturnsEmptyArrayOnThrowable(): void {
     $this->httpClient->method('get')->willThrowException(new \RuntimeException('Connection refused'));
+
+    $this->assertSame([], $this->createManager()->getTicketInfo(555));
+  }
+
+  /**
+   * Tests a failed ticket lookup is logged rather than swallowed silently.
+   *
+   * The empty return is byte-identical to an event that genuinely has no
+   * tickets, and MetaFieldsManager reads it as "no registration" and lets it
+   * be cached, so without a log entry a timed-out registration link just
+   * quietly disappears. See yalesites-org/YaleSites-Internal#1701.
+   *
+   * @covers ::getTicketInfo
+   */
+  public function testGetTicketInfoLogsFailedLookup(): void {
+    $this->httpClient->method('get')->willThrowException(new \RuntimeException('Connection timed out'));
+
+    $this->loggerChannel->expects($this->once())
+      ->method('warning')
+      ->with(
+        $this->stringContains('ticket'),
+        $this->callback(
+          fn (array $context) => $context['@event_id'] === 555
+            && $context['@message'] === 'Connection timed out'
+        ),
+      );
 
     $this->assertSame([], $this->createManager()->getTicketInfo(555));
   }
@@ -393,6 +456,15 @@ class LocalistManagerTest extends UnitTestCase {
     $config_factory = $this->createMock(ConfigFactoryInterface::class);
     $config_factory->method('get')->with('ys_localist.settings')->willReturn($this->config);
     return $config_factory;
+  }
+
+  /**
+   * Builds a logger factory mock returning $this->loggerChannel.
+   */
+  protected function createLoggerFactory(): LoggerChannelFactoryInterface {
+    $logger_factory = $this->createMock(LoggerChannelFactoryInterface::class);
+    $logger_factory->method('get')->with('ys_localist')->willReturn($this->loggerChannel);
+    return $logger_factory;
   }
 
 }

@@ -5,3 +5,4 @@ package: YaleSites
 core_version_requirement: ^10 || ^11
 dependencies:
   - taxonomy_manager:taxonomy_manager
+  - ys_core:ys_core

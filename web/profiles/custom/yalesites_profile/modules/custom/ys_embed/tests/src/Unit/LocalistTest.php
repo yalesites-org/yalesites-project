@@ -96,4 +96,99 @@ class LocalistTest extends UnitTestCase {
     $this->assertSame('form', $build['#displayAttributes']['embed_type']);
   }
 
+  /**
+   * @covers ::isValid
+   */
+  public function testIsValidAcceptsPluginExample(): void {
+    $this->assertTrue(Localist::isValid(Localist::getExample()));
+  }
+
+  /**
+   * @covers ::isValid
+   */
+  public function testIsValidAcceptsNonEnterpriseLocalistHost(): void {
+    $this->assertTrue(Localist::isValid(self::embedWithSource('https://yale.localist.com/widget/view?container=localist-widget-1')));
+  }
+
+  /**
+   * Yale's own Localist host, the ys_localist default endpoint, validates.
+   *
+   * @covers ::isValid
+   */
+  public function testIsValidAcceptsYaleEventsHost(): void {
+    $this->assertTrue(Localist::isValid(self::embedWithSource('https://events.yale.edu/widget/view?container=localist-widget-1')));
+  }
+
+  /**
+   * A stored source on a Localist host is still output.
+   *
+   * @covers ::build
+   */
+  public function testBuildKeepsAllowedStoredSource(): void {
+    $build = $this->plugin->build([
+      'widget_id' => '1',
+      'localist_source' => 'https://events.yale.edu/widget/view',
+      'title' => '',
+    ]);
+    $this->assertSame('https://events.yale.edu/widget/view', $build['#embedSource']['#context']['localist_source']);
+  }
+
+  /**
+   * A stored source saved before host validation is dropped at output.
+   *
+   * @covers ::build
+   */
+  public function testBuildDropsDisallowedStoredSource(): void {
+    $build = $this->plugin->build([
+      'widget_id' => '1',
+      'localist_source' => 'https://evil.example.com/widget.js',
+      'title' => '',
+    ]);
+    $this->assertSame('', $build['#embedSource']['#context']['localist_source']);
+    $this->assertSame('1', $build['#embedSource']['#context']['widget_id']);
+    // The template only prints the script tag when a source is present.
+    $this->assertStringContainsString('{% if localist_source %}', $build['#embedSource']['#template']);
+  }
+
+  /**
+   * Data provider for testIsValidRejectsNonLocalistSource().
+   *
+   * @return array
+   *   Script sources that must not validate.
+   */
+  public static function nonLocalistSourceProvider(): array {
+    return [
+      'other host' => ['https://evil.example.com/widget.js'],
+      'localist in path' => ['https://evil.example.com/yale.localist.com/widget/view'],
+      'localist as subdomain prefix' => ['https://yale.localist.com.evil.example.com/widget/view'],
+      'look-alike dot' => ['https://yale.enterprisexlocalist.com/widget/view'],
+      'plain http' => ['http://yale.localist.com/widget/view'],
+      'protocol relative' => ['//yale.localist.com/widget/view'],
+      'credentials trick' => ['https://yale.localist.com@evil.example.com/widget/view'],
+      'yale host as subdomain prefix' => ['https://events.yale.edu.evil.example.com/widget/view'],
+      'yale host look-alike dot' => ['https://eventsxyale.edu/widget/view'],
+    ];
+  }
+
+  /**
+   * @covers ::isValid
+   * @dataProvider nonLocalistSourceProvider
+   */
+  public function testIsValidRejectsNonLocalistSource(string $src): void {
+    $this->assertFalse(Localist::isValid(self::embedWithSource($src)));
+  }
+
+  /**
+   * Builds a Localist embed code with the given script source.
+   *
+   * @param string $src
+   *   The script src attribute value.
+   *
+   * @return string
+   *   The embed code.
+   */
+  protected static function embedWithSource(string $src): string {
+    return '<div id="localist-widget-1" class="localist-widget"></div><script defer type="text/javascript" src="' . $src . '"></script>';
+  }
+
 }

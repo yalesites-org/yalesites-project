@@ -321,8 +321,11 @@ class TelemetryControllerTest extends UnitTestCase {
 
     $build = $this->controller($this->telemetryDouble($this->emptyReport()), $log, $this->generatedAt())->flaggedBuild();
 
-    $header = array_map('strval', $build['table']['#header']);
-    $this->assertSame(['Recorded (UTC)', 'Why kept'], $header);
+    // Split in two because the labels are TranslatableMarkup objects, so the
+    // whole cell arrays cannot be compared against literals in one assertion.
+    $header = $build['table']['#header'];
+    $this->assertSame(['Recorded (UTC)', 'Why kept'], array_map(fn(array $cell) => (string) $cell['data'], $header));
+    $this->assertSame(['col', 'col'], array_column($header, 'scope'));
 
     $row = $build['table']['#rows'][0];
     $this->assertSame(['2026-07-28 12:00 UTC', 'jailbreak'], array_map('strval', $row));

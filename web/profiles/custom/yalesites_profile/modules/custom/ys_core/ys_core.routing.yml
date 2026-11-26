@@ -77,7 +77,13 @@ ys_core.platform_admin_settings:
     _form: '\Drupal\ys_core\Form\PlatformAdminSettingsForm'
     _title: 'Platform Admin Settings'
   requirements:
-    _permission: 'administer platform admin settings'
+    # Gated on the access check rather than on 'administer platform admin
+    # settings' directly, so this route resolves "platform admin" through
+    # ys_core.platform_admin_checker like every PHP caller does. A bare
+    # _permission requirement cannot call a service, which left the route and
+    # the service free to disagree about user 1.
+    # @see \Drupal\ys_core\Access\PlatformAdminAccessCheck
+    _ys_core_platform_admin: 'TRUE'
 # Dashboard settings form.
 ys_core.admin_dashboard_settings:
   path: '/admin/yalesites/dashboard-settings'

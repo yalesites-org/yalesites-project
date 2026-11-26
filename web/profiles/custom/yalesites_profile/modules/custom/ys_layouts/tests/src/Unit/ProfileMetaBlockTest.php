@@ -6,13 +6,12 @@ use Drupal\Core\Entity\EntityStorageInterface;
 use Drupal\Core\Entity\EntityTypeManagerInterface;
 use Drupal\Core\Field\FieldItemListInterface;
 use Drupal\Core\Form\FormState;
-use Drupal\Core\Routing\RouteMatchInterface;
 use Drupal\Tests\UnitTestCase;
+use Drupal\Tests\ys_core\Traits\LayoutBuilderEntityContextTestTrait;
 use Drupal\node\NodeInterface;
 use Drupal\ys_layouts\Plugin\Block\ProfileMetaBlock;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\RequestStack;
-use Symfony\Component\Routing\Route;
 
 /**
  * Tests the profile meta block.
@@ -24,12 +23,7 @@ use Symfony\Component\Routing\Route;
  */
 class ProfileMetaBlockTest extends UnitTestCase {
 
-  /**
-   * The route match mock.
-   *
-   * @var \Drupal\Core\Routing\RouteMatchInterface|\PHPUnit\Framework\MockObject\MockObject
-   */
-  protected $routeMatch;
+  use LayoutBuilderEntityContextTestTrait;
 
   /**
    * The request stack mock.
@@ -58,18 +52,32 @@ class ProfileMetaBlockTest extends UnitTestCase {
   protected function setUp(): void {
     parent::setUp();
 
-    $this->routeMatch = $this->createMock(RouteMatchInterface::class);
     $this->requestStack = $this->createMock(RequestStack::class);
     $this->entityTypeManager = $this->createMock(EntityTypeManagerInterface::class);
+
+    $this->setUpLayoutBuilderEntityContextContainer();
 
     $this->block = new ProfileMetaBlock(
       [],
       'profile_meta_block',
-      ['provider' => 'ys_layouts'],
-      $this->routeMatch,
+      $this->profileMetaBlockDefinition(),
       $this->requestStack,
       $this->entityTypeManager
     );
+  }
+
+  /**
+   * The plugin definition the block under test is constructed with.
+   *
+   * @return array
+   *   The plugin definition.
+   */
+  protected function profileMetaBlockDefinition(): array {
+    return [
+      'provider' => 'ys_layouts',
+      'admin_label' => 'Profile Meta Block',
+      'context_definitions' => $this->layoutBuilderEntityContextDefinitions(ProfileMetaBlock::class),
+    ];
   }
 
   /**
@@ -109,7 +117,6 @@ class ProfileMetaBlockTest extends UnitTestCase {
     $request = new Request();
     $request->attributes->set('node', $node);
     $this->requestStack->method('getCurrentRequest')->willReturn($request);
-    $this->routeMatch->method('getRouteObject')->willReturn(new Route('/profiles/jane'));
 
     $build = $this->block->build();
 
@@ -135,12 +142,31 @@ class ProfileMetaBlockTest extends UnitTestCase {
     $request = new Request();
     $request->attributes->set('node', $node);
     $this->requestStack->method('getCurrentRequest')->willReturn($request);
-    $this->routeMatch->method('getRouteObject')->willReturn(new Route('/about'));
 
     $build = $this->block->build();
 
     $this->assertNull($build['#profile_meta__heading']);
     $this->assertNull($build['#media_id']);
+  }
+
+  /**
+   * A path naming no node loads nothing rather than guessing an id.
+   *
+   * The ajax-path tier reads the entity id out of the Layout Builder path with
+   * a regex, so the guard that matters is the negative one: on a path with no
+   * "node.<nid>" segment it must not reach storage at all. Pairs with
+   * ::testBuildFallsBackToLoadingNodeFromAjaxPath(), which pins the positive
+   * case, so the pattern cannot be loosened in either direction unnoticed.
+   *
+   * @covers ::getCurrentNode
+   */
+  public function testBuildIgnoresPathWithNoNodeSegment(): void {
+    $request = Request::create('/admin/config/content/layout_builder/update/overrides/block_content.7.default.en/0/content');
+    $this->requestStack->method('getCurrentRequest')->willReturn($request);
+
+    $this->entityTypeManager->expects($this->never())->method('getStorage');
+
+    $this->assertNull($this->block->build()['#profile_meta__heading']);
   }
 
   /**
@@ -157,7 +183,6 @@ class ProfileMetaBlockTest extends UnitTestCase {
     $path = '/admin/config/content/layout_builder/update/overrides/node.42.default.en/0/content';
     $request = Request::create($path);
     $this->requestStack->method('getCurrentRequest')->willReturn($request);
-    $this->routeMatch->method('getRouteObject')->willReturn(new Route($path));
 
     $nodeStorage = $this->createMock(EntityStorageInterface::class);
     $nodeStorage->method('load')->with('42')->willReturn($node);
@@ -181,8 +206,7 @@ class ProfileMetaBlockTest extends UnitTestCase {
         'image_alignment' => 'right',
       ],
       'profile_meta_block',
-      ['provider' => 'ys_layouts'],
-      $this->routeMatch,
+      $this->profileMetaBlockDefinition(),
       $this->requestStack,
       $this->entityTypeManager
     );
@@ -212,6 +236,139 @@ class ProfileMetaBlockTest extends UnitTestCase {
     $this->assertSame('landscape', $configuration['image_orientation']);
     $this->assertSame('outdent', $configuration['image_style']);
     $this->assertSame('right', $configuration['image_alignment']);
+  }
+
+  /**
+   * Builds a profile node mock whose fields resolve.
+   *
+   * @param string $title
+   *   The node title.
+   *
+   * @return \Drupal\node\NodeInterface|\PHPUnit\Framework\MockObject\MockObject
+   *   The node mock.
+   */
+  protected function mockProfileNode(string $title) {
+    $node = $this->createMock(NodeInterface::class);
+    $node->method('bundle')->willReturn('profile');
+    $node->method('getTitle')->willReturn($title);
+    $node->method('get')->willReturn($this->createFieldWithValue('Professor'));
+
+    return $node;
+  }
+
+  /**
+   * The entity being rendered beats a request that names no node at all.
+   *
+   * This is the reported bug: /node/add/profile (every new profile's first
+   * save) and a bulk operation from /admin/content carry no node on the
+   * request, so the block rendered an EMPTY <h1> -- a WCAG 2.1 AA problem as
+   * well as a blank heading in what Beacon indexes.
+   *
+   * There is no route object at all when Search API indexes from cron or from
+   * drush, and the block used to gate every field read -- including the title
+   * -- on one, so the heading was blank on the path that does most of the
+   * indexing.
+   *
+   * @covers ::build
+   */
+  public function testBuildUsesRenderedEntityWhenRequestHasNoNode(): void {
+    $request = Request::create('/node/add/profile');
+    $this->requestStack->method('getCurrentRequest')->willReturn($request);
+    $this->entityTypeManager->expects($this->never())->method('getStorage');
+
+    $this->setRenderedEntity($this->block, $this->mockProfileNode('Dr. Jane Smith'));
+
+    $build = $this->block->build();
+
+    $this->assertSame('ys_profile_meta_block', $build['#theme']);
+    $this->assertSame('Dr. Jane Smith', $build['#profile_meta__heading']);
+  }
+
+  /**
+   * The entity being rendered beats a DIFFERENT node named by the request.
+   *
+   * @covers ::build
+   */
+  public function testBuildPrefersRenderedEntityOverRequestNode(): void {
+    $request = new Request();
+    $request->attributes->set('node', $this->mockProfileNode('Someone Else'));
+    $this->requestStack->method('getCurrentRequest')->willReturn($request);
+
+    $this->setRenderedEntity($this->block, $this->mockProfileNode('Dr. Jane Smith'));
+
+    $this->assertSame('Dr. Jane Smith', $this->block->build()['#profile_meta__heading']);
+  }
+
+  /**
+   * A context holding something other than a node falls through to the request.
+   *
+   * Layout Builder hands over whatever entity the display belongs to, so the
+   * context is not guaranteed to hold a node -- the defaults layout screen
+   * passes a generated sample entity of the display's own type.
+   *
+   * @covers ::build
+   *
+   * @dataProvider providerNonNodeContextValues
+   */
+  public function testBuildIgnoresNonNodeEntityContext($value): void {
+    $request = new Request();
+    $request->attributes->set('node', $this->mockProfileNode('Someone Else'));
+    $this->requestStack->method('getCurrentRequest')->willReturn($request);
+
+    $this->setRenderedEntity($this->block, $value);
+
+    $this->assertSame('Someone Else', $this->block->build()['#profile_meta__heading']);
+  }
+
+  /**
+   * With no current request at all, the block resolves no node.
+   *
+   * There is no HTTP request in a drush or cron process, so the request tier
+   * has nothing to read. The guard is what keeps that path from calling
+   * attributes->get() on NULL.
+   *
+   * @covers ::getCurrentNode
+   */
+  public function testBuildWithNoCurrentRequestResolvesNoNode(): void {
+    $this->requestStack->method('getCurrentRequest')->willReturn(NULL);
+
+    $this->assertNull($this->block->build()['#profile_meta__heading']);
+  }
+
+  /**
+   * The ANNOTATION declares the slot Layout Builder actually publishes.
+   */
+  public function testAnnotationDeclaresTheLayoutBuilderEntitySlot(): void {
+    $this->assertDeclaresLayoutBuilderEntitySlot(ProfileMetaBlock::class);
+  }
+
+  /**
+   * The context-assignment select is kept off the editor's block form.
+   *
+   * @covers ::buildConfigurationForm
+   */
+  public function testConfigurationFormHasNoContextAssignmentSelect(): void {
+    $this->assertNoContextAssignmentSelect($this->block);
+  }
+
+  /**
+   * An unsaved sample entity does not stand in for real content.
+   *
+   * Layout Builder's Defaults layout screen offers a generated sample entity
+   * that core never saves (LayoutBuilderSampleEntityGenerator::get() calls
+   * createWithSampleValues() and stashes it in a tempstore). Before this block
+   * declared a context it left every field NULL there.
+   *
+   * @covers ::build
+   */
+  public function testBuildIgnoresUnsavedSampleEntity(): void {
+    $this->requestStack->method('getCurrentRequest')->willReturn(new Request());
+
+    $sample = $this->mockProfileNode('Sample Profile');
+    $sample->method('isNew')->willReturn(TRUE);
+    $this->setRenderedEntity($this->block, $sample);
+
+    $this->assertNull($this->block->build()['#profile_meta__heading']);
   }
 
 }

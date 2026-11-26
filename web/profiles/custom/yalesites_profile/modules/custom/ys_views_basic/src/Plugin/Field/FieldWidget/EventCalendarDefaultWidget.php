@@ -2,21 +2,21 @@
 
 namespace Drupal\ys_views_basic\Plugin\Field\FieldWidget;
 
+use Drupal\Core\Field\Attribute\FieldWidget;
 use Drupal\Core\Field\FieldItemListInterface;
 use Drupal\Core\Form\FormStateInterface;
+use Drupal\Core\StringTranslation\TranslatableMarkup;
+use Drupal\ys_views_basic\ViewsBasicManager;
 
 /**
  * Plugin implementation of the 'event_calendar_default' widget.
- *
- * @FieldWidget(
- *   id = "event_calendar_default_widget",
- *   label = @Translation("Event calendar default widget"),
- *   field_types = {
- *     "event_calendar_basic_params"
- *   }
- * )
  */
-class EventCalendarDefaultWidget extends ViewsBasicDefaultWidget {
+#[FieldWidget(
+  id: 'event_calendar_default_widget',
+  label: new TranslatableMarkup('Event calendar default widget'),
+  field_types: ['event_calendar_basic_params'],
+)]
+class EventCalendarDefaultWidget extends ViewsBasicWidgetBase {
 
   /**
    * Vocabulary IDs used in the widget.
@@ -37,6 +37,23 @@ class EventCalendarDefaultWidget extends ViewsBasicDefaultWidget {
   const TIME_PERIOD_FUTURE = 'future';
   const TIME_PERIOD_PAST = 'past';
   const TIME_PERIOD_ALL = 'all';
+
+  /**
+   * {@inheritdoc}
+   */
+  protected function getContentType(): ?string {
+    return ViewsBasicManager::CONTENT_TYPE_EVENT;
+  }
+
+  /**
+   * {@inheritdoc}
+   *
+   * The calendar widget's only entity-specific control is the event time
+   * period, built by buildEventSpecificOptions().
+   */
+  protected function buildEntitySpecificOptions(array &$form, FieldItemListInterface $items, int $delta): void {
+    $this->buildEventSpecificOptions($form, $items, $delta);
+  }
 
   /**
    * {@inheritdoc}
@@ -63,6 +80,7 @@ class EventCalendarDefaultWidget extends ViewsBasicDefaultWidget {
 
     // Attach necessary libraries.
     $form['#attached']['library'][] = 'ys_views_basic/ys_views_basic';
+    $form['#attached']['library'][] = 'ys_views_basic/chosen_a11y';
 
     return $element;
   }
@@ -213,7 +231,14 @@ class EventCalendarDefaultWidget extends ViewsBasicDefaultWidget {
    *   The delta value.
    */
   private function buildTermFilters(array &$form, FieldItemListInterface $items, int $delta) {
-    $event_tags = $this->viewsBasicManager->getEventTags();
+    // Same grouped, plain-name options as the Views block pickers. Term IDs
+    // are unchanged, so saved values still match.
+    $event_tags = $this->viewsBasicManager->getTagsForVocabularies([
+      'event_category',
+      'audience',
+      'custom_vocab',
+      'tags',
+    ]);
 
     // Get default values from saved params (stored at root level for calendar).
     $terms_include_default = [];
@@ -227,6 +252,10 @@ class EventCalendarDefaultWidget extends ViewsBasicDefaultWidget {
         $terms_exclude_default = array_map('intval', $paramsDecoded['terms_exclude']);
       }
     }
+
+    // Keep stored terms from other vocabularies selectable, as the Views
+    // block does (#2101), so re-saving does not drop them.
+    $event_tags = $this->viewsBasicManager->addStoredTermOptions($event_tags, array_merge($terms_include_default, $terms_exclude_default));
 
     // Include terms.
     $form['group_user_selection']['filter_and_sort']['terms_include'] = [

@@ -6,25 +6,24 @@ use Drupal\Core\Ajax\AjaxResponse;
 use Drupal\Core\Ajax\InvokeCommand;
 use Drupal\Core\Ajax\ReplaceCommand;
 use Drupal\Core\Entity\EntityTypeManagerInterface;
+use Drupal\Core\Field\Attribute\FieldWidget;
 use Drupal\Core\Field\FieldDefinitionInterface;
 use Drupal\Core\Field\FieldItemListInterface;
 use Drupal\Core\Field\WidgetBase;
 use Drupal\Core\Form\FormStateInterface;
 use Drupal\Core\Plugin\ContainerFactoryPluginInterface;
+use Drupal\Core\StringTranslation\TranslatableMarkup;
 use Drupal\ys_views_content_resources\ViewsContentResourcesManager;
 use Symfony\Component\DependencyInjection\ContainerInterface;
 
 /**
  * Plugin implementation of the 'views_content_resources_default' widget.
- *
- * @FieldWidget(
- *   id = "views_content_resources_default_widget",
- *   label = @Translation("Views Content Resources default widget"),
- *   field_types = {
- *     "views_content_resources_params"
- *   }
- * )
  */
+#[FieldWidget(
+  id: 'views_content_resources_default_widget',
+  label: new TranslatableMarkup('Views Content Resources default widget'),
+  field_types: ['views_content_resources_params'],
+)]
 class ViewsContentResourcesDefaultWidget extends WidgetBase implements ContainerFactoryPluginInterface {
 
   /**
@@ -388,7 +387,7 @@ class ViewsContentResourcesDefaultWidget extends WidgetBase implements Container
     $form['group_user_selection']['entity_and_view_mode']['category_included_terms'] = [
       '#type' => 'select',
       '#title' => $this->t('Filter by Category Parent Term'),
-      '#description' => $this->t("Select a parent term to show content tagged with that terms sub-items. This ignores content tagged as the parent term and any other parent terms in the vocabulary."),
+      '#description' => $this->t("Select a parent term to limit the choices visitors see in the filter dropdown. This does not hide any content from the list."),
       '#options' => $this->viewsContentResourcesManager->getTaxonomyParents($vocabulary_id),
       '#default_value' => ($items[$delta]->params) ? $this->viewsContentResourcesManager->getDefaultParamValue('category_included_terms', $items[$delta]->params) : NULL,
       '#validated' => 'true',
@@ -402,7 +401,7 @@ class ViewsContentResourcesDefaultWidget extends WidgetBase implements Container
     $form['group_user_selection']['entity_and_view_mode']['custom_vocab_included_terms'] = [
       '#type' => 'select',
       '#title' => $this->t('Filter by @vocab Parent Term', ['@vocab' => $custom_vocab_label]),
-      '#description' => $this->t("Select a parent term to show content tagged with that terms sub-items. This ignores content tagged as the parent term and any other parent terms in the vocabulary."),
+      '#description' => $this->t("Select a parent term to limit the choices visitors see in the filter dropdown. This does not hide any content from the list."),
       '#options' => $this->viewsContentResourcesManager->getTaxonomyParents('custom_vocab'),
       '#default_value' => ($items[$delta]->params) ? $this->viewsContentResourcesManager->getDefaultParamValue('custom_vocab_included_terms', $items[$delta]->params) : NULL,
       '#validated' => 'true',
@@ -549,6 +548,7 @@ class ViewsContentResourcesDefaultWidget extends WidgetBase implements Container
     ];
 
     $form['#attached']['library'][] = 'ys_views_basic/ys_views_basic';
+    $form['#attached']['library'][] = 'ys_views_basic/chosen_a11y';
 
     return $element;
   }
