@@ -123,4 +123,3 @@ See [docs/setup.md](/docs/setup.md) for the full DDEV section, including Pantheo
 - **Branch Strategy**: `develop` (primary), `master` (releases), `YALB-XXX-description` (features)
 - **Semantic Release**: Automated versioning on master branch using conventional commits
 
-
