@@ -28,6 +28,13 @@ class MicrosoftFormTest extends UnitTestCase {
   const R_EMBED = '<iframe width="640px" height="480px" src="https://forms.cloud.microsoft/r/abc123XYZ?embed=true" frameborder="0"></iframe>';
 
   /**
+   * A forms.cloud.microsoft "Pages/ResponsePage.aspx" embed.
+   *
+   * @var string
+   */
+  const CLOUD_PAGES_EMBED = '<iframe width="640px" height="480px" src="https://forms.cloud.microsoft/Pages/ResponsePage.aspx?id=u76M3Tkh-E20EU4-h6vrXJ-OMhrDFtBEifIUjjt2g_xUNlNCT1ozT05QT0NBWlpVRkJWNlZSRVdDTS4u&embed=true" frameborder="0"></iframe>';
+
+  /**
    * The MicrosoftForm plugin instance.
    *
    * @var \Drupal\ys_embed\Plugin\EmbedSource\MicrosoftForm
@@ -97,6 +104,21 @@ class MicrosoftFormTest extends UnitTestCase {
     );
     $this->assertStringContainsString('&embed=true', $url);
     $this->assertStringNotContainsString('&amp;', $url);
+  }
+
+  /**
+   * A cloud.microsoft Pages/ResponsePage.aspx embed is valid and rebuilt.
+   *
+   * @covers ::isValid
+   * @covers ::getUrl
+   */
+  public function testCloudMicrosoftPagesResponsePageEmbed(): void {
+    $this->assertTrue(MicrosoftForm::isValid(self::CLOUD_PAGES_EMBED));
+    $url = $this->plugin->getUrl($this->plugin->getParams(self::CLOUD_PAGES_EMBED));
+    $this->assertSame(
+      'https://forms.cloud.microsoft/Pages/ResponsePage.aspx?id=u76M3Tkh-E20EU4-h6vrXJ-OMhrDFtBEifIUjjt2g_xUNlNCT1ozT05QT0NBWlpVRkJWNlZSRVdDTS4u&embed=true',
+      $url
+    );
   }
 
   /**
